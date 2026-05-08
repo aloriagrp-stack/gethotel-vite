@@ -40,15 +40,9 @@ jobs:
           cd "GetHotel frontend"
           zip -r ../frontend_build.zip .next public package.json next.config.js
           
-      - name: Upload Frontend ZIP via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: 103.108.220.145
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: "./"
-          server-dir: "./"
-          include: "frontend_build.zip"
+      - name: Upload Frontend ZIP via cURL
+        run: |
+          curl -T frontend_build.zip ftp://103.108.220.145/ --user "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" --ftp-create-dirs
 
       - name: Deploy and Restart Everything via SSH
         uses: appleboy/ssh-action@master
