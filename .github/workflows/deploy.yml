@@ -35,11 +35,19 @@ jobs:
         working-directory: ./GetHotel backend
         run: npm install --production
 
-      - name: Deploy via LFTP
-        run: |
-          sudo apt-get install -y lftp
-          lftp -c "set ftp:list-options -a; 
-          set ftp:ssl-allow no; 
-          open -u '${{ secrets.FTP_USERNAME }}','${{ secrets.FTP_PASSWORD }}' 103.108.220.145; 
-          mirror -R --verbose --delete --exclude .git/ --exclude node_modules/ ./GetHotel\ backend/ ./"
-          echo "Backend Deployment successful!"
+      - name: Deploy via SSH (Git Pull)
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          script: |
+            cd ~/gethotel_backend
+            git fetch --all
+            git reset --hard origin/main
+            # Trigger restart for Phusion Passenger
+            mkdir -p tmp
+            touch tmp/restart.txt
+            echo "Deployment successful and app restarted!"
