@@ -35,7 +35,22 @@ jobs:
         working-directory: ./GetHotel backend
         run: npm install --production
 
-      - name: Deploy via SSH (Git Pull)
+      - name: ZIP Frontend Build
+        run: |
+          cd "GetHotel frontend"
+          zip -r ../frontend_build.zip .next public package.json next.config.js
+          
+      - name: Upload Frontend ZIP via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: 103.108.220.145
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: "./"
+          server-dir: "./"
+          include: "frontend_build.zip"
+
+      - name: Deploy and Restart Everything via SSH
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -44,10 +59,16 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
+            # 1. Update Backend
             cd ~/gethotel_backend
             git fetch --all
             git reset --hard origin/main
-            # Trigger restart for Phusion Passenger
-            mkdir -p tmp
-            touch tmp/restart.txt
-            echo "Deployment successful and app restarted!"
+            mkdir -p tmp && touch tmp/restart.txt
+            
+            # 2. Update Frontend (Website)
+            cd ~/
+            unzip -o frontend_build.zip -d gethotel_app/
+            rm frontend_build.zip
+            cd gethotel_app
+            mkdir -p tmp && touch tmp/restart.txt
+            echo "Both Frontend and Backend updated successfully!"
