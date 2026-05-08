@@ -41,5 +41,5 @@ jobs:
           lftp -c "set ftp:list-options -a; 
           set ftp:ssl-allow no; 
           open -u '${{ secrets.FTP_USERNAME }}','${{ secrets.FTP_PASSWORD }}' 103.108.220.145; 
-          mirror -R --delete --exclude .git/ --exclude node_modules/ --exclude GetHotel\ frontend/node_modules/ --exclude GetHotel\ backend/node_modules/ . ./"
-          echo "Deployment successful!"
+          mirror -R --verbose --delete --exclude .git/ --exclude node_modules/ ./GetHotel\ backend/ ./"
+          echo "Backend Deployment successful!"
