@@ -43,11 +43,11 @@ jobs:
       - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: gethotelstays.com
+          server: 103.108.220.145
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: "./"
-          server-dir: "/gethotel_backend/"
+          server-dir: "./" # We will adjust this based on the FTP user's root
           exclude: |
             **/.git*
             **/.git*/**
