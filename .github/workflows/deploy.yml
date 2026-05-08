@@ -1,0 +1,52 @@
+name: Deploy to CPanel
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install & Build Frontend
+        working-directory: ./GetHotel frontend
+        run: |
+          npm install
+          npm run build
+
+      - name: Install Backend Dependencies
+        working-directory: ./GetHotel backend
+        run: npm install --production
+
+      - name: Deploy to Server via SSH
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "."
+          target: "~/gethotel_app"
+          rm: false # Set to true if you want to clear the folder before upload
+
+      - name: Restart Node.js App
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            # Create a restart signal for Phusion Passenger (standard on CPanel)
+            mkdir -p ~/gethotel_app/GetHotel\ frontend/tmp
+            touch ~/gethotel_app/GetHotel\ frontend/tmp/restart.txt
+            mkdir -p ~/gethotel_app/GetHotel\ backend/tmp
+            touch ~/gethotel_app/GetHotel\ backend/tmp/restart.txt
+            echo "Deployment successful and app restart triggered!"
