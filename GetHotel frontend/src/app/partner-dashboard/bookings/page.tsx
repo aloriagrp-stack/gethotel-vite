@@ -9,7 +9,7 @@ import {
     AlertCircle, Loader2, MoreVertical, 
     ChevronRight, Phone, Mail, MapPin,
     Printer, Download, Eye, Check,
-    LogIn, LogOut, Ban, Bed, Users, ShieldAlert
+    LogIn, LogOut, Ban, Bed, Users, ShieldAlert, MessageSquare
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { hotelApi, bookingApi } from "@/lib/api";
