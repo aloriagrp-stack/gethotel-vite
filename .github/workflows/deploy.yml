@@ -35,22 +35,11 @@ jobs:
         working-directory: ./GetHotel backend
         run: npm install --production
 
-      - name: Create Restart File
+      - name: Deploy via LFTP
         run: |
-          mkdir -p "./GetHotel backend/tmp"
-          touch "./GetHotel backend/tmp/restart.txt"
-
-      - name: Deploy via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: 103.108.220.145
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: "./"
-          server-dir: "./" # We will adjust this based on the FTP user's root
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/node_modules/**
-            GetHotel frontend/node_modules/**
-            GetHotel backend/node_modules/**
+          sudo apt-get install -y lftp
+          lftp -c "set ftp:list-options -a; 
+          set ftp:ssl-allow no; 
+          open -u '${{ secrets.FTP_USERNAME }}','${{ secrets.FTP_PASSWORD }}' 103.108.220.145; 
+          mirror -R --delete --exclude .git/ --exclude node_modules/ --exclude GetHotel\ frontend/node_modules/ --exclude GetHotel\ backend/node_modules/ . ./"
+          echo "Deployment successful!"
