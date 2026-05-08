@@ -1,0 +1,7 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/vgyuvmpi/gethotel_app/
+    - /bin/unzip -o /home/vgyuvmpi/gethotel_backend/frontend_build.zip -d $DEPLOYPATH
+    - /bin/touch /home/vgyuvmpi/gethotel_app/tmp/restart.txt
+    - /bin/touch /home/vgyuvmpi/gethotel_backend/tmp/restart.txt
