@@ -45,4 +45,11 @@ jobs:
             || curl -T frontend_build.zip "ftp://103.108.220.145/frontend_build.zip" \
             --user "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
             --ftp-create-dirs
-          echo "ZIP uploaded! Now go to CPanel Terminal and run: cd ~/gethotel_app && unzip -o ~/frontend_build.zip && touch tmp/restart.txt"
+
+      - name: Trigger Server-side Deployment (PHP Hook)
+        run: |
+          # Wait a few seconds for FTP to settle
+          sleep 5
+          # Hit the deploy.php to unzip and restart apps
+          curl -s https://gethotelstays.com/deploy.php
+          echo "Deployment triggered via PHP hook!"
