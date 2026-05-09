@@ -8,38 +8,38 @@ datasource db {
 }
 
 model booking {
-  id                Int      @id @default(autoincrement())
-  userId            Int
-  hotelId           Int
-  roomId            Int
-  guestFirstName    String   @default("")
-  guestLastName     String   @default("")
-  guestEmail        String   @default("")
-  guestPhone        String   @default("")
-  specialRequests   String?  @db.Text
-  isBusiness        Boolean  @default(false)
-  gstNumber         String?
-  companyName       String?
-  roomDetails       String?  @db.Text // JSON string of selected rooms & quantities
-  checkIn           DateTime
-  checkOut          DateTime
-  totalPrice        Float
-  totalGuests       Int
-  status            String   @default("held") // held, confirmed, checked-in, checked-out, cancelled, refunded, failed
-  paymentStatus     String   @default("pending") // pending, paid, failed, refunded, partially_refunded
-  amountPaid        Float    @default(0)
-  razorpayOrderId   String?  @unique(map: "Booking_razorpayOrderId_key")
-  razorpayPaymentId String?  @unique(map: "Booking_razorpayPaymentId_key")
-  razorpaySignature String?  @db.Text
-  holdExpiresAt     DateTime? // For 10-minute hold logic
-  internalNotes     String?   @db.Text // Hotel staff notes
-  cancellationReason String?  @db.Text
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  hotel             hotel    @relation(fields: [hotelId], references: [id], map: "Booking_hotelId_fkey")
-  room              room     @relation(fields: [roomId], references: [id], map: "Booking_roomId_fkey")
-  user              user     @relation(fields: [userId], references: [id], map: "Booking_userId_fkey")
-  transactions      transaction[]
+  id                 Int           @id @default(autoincrement())
+  userId             Int
+  hotelId            Int
+  roomId             Int
+  checkIn            DateTime
+  checkOut           DateTime
+  totalPrice         Float
+  totalGuests        Int
+  status             String        @default("held")
+  paymentStatus      String        @default("pending")
+  amountPaid         Float         @default(0)
+  razorpayOrderId    String?       @unique(map: "Booking_razorpayOrderId_key")
+  razorpayPaymentId  String?       @unique(map: "Booking_razorpayPaymentId_key")
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  companyName        String?
+  gstNumber          String?
+  guestEmail         String        @default("")
+  guestFirstName     String        @default("")
+  guestLastName      String        @default("")
+  guestPhone         String        @default("")
+  isBusiness         Boolean       @default(false)
+  roomDetails        String?       @db.Text
+  specialRequests    String?       @db.Text
+  holdExpiresAt      DateTime?
+  razorpaySignature  String?       @db.Text
+  cancellationReason String?       @db.Text
+  internalNotes      String?       @db.Text
+  hotel              hotel         @relation(fields: [hotelId], references: [id], map: "Booking_hotelId_fkey")
+  room               room          @relation(fields: [roomId], references: [id], map: "Booking_roomId_fkey")
+  user               user          @relation(fields: [userId], references: [id], map: "Booking_userId_fkey")
+  transactions       transaction[]
 
   @@index([hotelId], map: "Booking_hotelId_fkey")
   @@index([roomId], map: "Booking_roomId_fkey")
@@ -47,18 +47,18 @@ model booking {
 }
 
 model transaction {
-  id                Int      @id @default(autoincrement())
-  bookingId         Int
-  amount            Float
-  currency          String   @default("INR")
-  status            String   // pending, success, failed
-  gateway           String   @default("razorpay")
-  gatewayOrderId    String?
-  gatewayPaymentId  String?
-  gatewaySignature  String?  @db.Text
-  rawResponse       String?  @db.LongText // Log everything for debugging
-  createdAt         DateTime @default(now())
-  booking           booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  id               Int      @id @default(autoincrement())
+  bookingId        Int
+  amount           Float
+  currency         String   @default("INR")
+  status           String
+  gateway          String   @default("razorpay")
+  gatewayOrderId   String?
+  gatewayPaymentId String?
+  gatewaySignature String?  @db.Text
+  rawResponse      String?  @db.LongText
+  createdAt        DateTime @default(now())
+  booking          booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@index([bookingId])
 }
@@ -97,47 +97,46 @@ model dailyrate {
 }
 
 model hotel {
-  id            Int            @id @default(autoincrement())
-  name          String
-  tagline       String?
-  description   String         @db.Text
-  city          String
-  address       String
-  pricePerNight Float
-  starRating    Int            @default(3)
-  guestRating   Float          @default(0)
-  reviewCount   Int            @default(0)
-  thumbnail     String?        @db.LongText
-  images        String?        @db.LongText
-  amenities     String?        @db.LongText
-  isFeatured    Boolean        @default(false)
-  isTrending    Boolean        @default(false)
-  dining        String?        @db.LongText
-  wellness      String?        @db.LongText
-  faqs          String?        @db.LongText
-  safety        String?        @db.LongText
-  policies      String?        @db.LongText
-  userId        Int
-  qualityScore  Float          @default(85.0) // 0-100 Performance Score
-  cancellationRate Float       @default(0)    // Percentage
-  responseSpeed String?        @default("Fast") // "Fast", "Instant", "Within hour"
-  noShowRate    Float          @default(0)    // Percentage
-  bookingAcceptanceRate Float  @default(100)  // Percentage
-  complaintsCount Int          @default(0)
-  badges        String?        @db.Text       // JSON or comma-separated: "Trusted Partner", "Top Selling"
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  hotelUsername String?        @unique(map: "Hotel_hotelUsername_key")
-  booking       booking[]
-  coupon        coupon[]
-  user          user           @relation(fields: [userId], references: [id], map: "Hotel_userId_fkey")
-  notification  notification[]
-  review        review[]
-  room          room[]
-  staff         staff[]
-  wallet        hotelWallet?
-  payouts       payout[]
-  message       message[]
+  id                    Int            @id @default(autoincrement())
+  name                  String
+  tagline               String?
+  description           String         @db.Text
+  city                  String
+  address               String
+  pricePerNight         Float
+  starRating            Int            @default(3)
+  guestRating           Float          @default(0)
+  reviewCount           Int            @default(0)
+  thumbnail             String?        @db.LongText
+  images                String?        @db.LongText
+  amenities             String?        @db.LongText
+  isFeatured            Boolean        @default(false)
+  isTrending            Boolean        @default(false)
+  dining                String?        @db.LongText
+  wellness              String?        @db.LongText
+  faqs                  String?        @db.LongText
+  safety                String?        @db.LongText
+  policies              String?        @db.LongText
+  userId                Int
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  hotelUsername         String?        @unique(map: "Hotel_hotelUsername_key")
+  badges                String?        @db.Text
+  bookingAcceptanceRate Float          @default(100)
+  cancellationRate      Float          @default(0)
+  complaintsCount       Int            @default(0)
+  noShowRate            Float          @default(0)
+  qualityScore          Float          @default(85)
+  responseSpeed         String?        @default("Fast")
+  booking               booking[]
+  coupon                coupon[]
+  user                  user           @relation(fields: [userId], references: [id], map: "Hotel_userId_fkey")
+  hotelwallet           hotelwallet?
+  notification          notification[]
+  payouts               payout[]
+  review                review[]
+  room                  room[]
+  staff                 staff[]
 
   @@index([userId], map: "Hotel_userId_fkey")
 }
@@ -177,20 +176,20 @@ model partnerrequest {
 }
 
 model review {
-  id               Int      @id @default(autoincrement())
-  userId           Int
-  hotelId          Int
-  rating           Int      // Overall Average
-  cleanliness      Int      @default(5)
-  location         Int      @default(5)
-  staff            Int      @default(5)
-  comfort          Int      @default(5)
-  valueForMoney    Int      @default(5)
-  comment          String?  @db.Text
-  partnerReply     String?  @db.Text
-  createdAt        DateTime @default(now())
-  hotel            hotel    @relation(fields: [hotelId], references: [id], map: "Review_hotelId_fkey")
-  user             user     @relation(fields: [userId], references: [id], map: "Review_userId_fkey")
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  hotelId       Int
+  rating        Int
+  comment       String?  @db.Text
+  createdAt     DateTime @default(now())
+  cleanliness   Int      @default(5)
+  comfort       Int      @default(5)
+  location      Int      @default(5)
+  partnerReply  String?  @db.Text
+  staff         Int      @default(5)
+  valueForMoney Int      @default(5)
+  hotel         hotel    @relation(fields: [hotelId], references: [id], map: "Review_hotelId_fkey")
+  user          user     @relation(fields: [userId], references: [id], map: "Review_userId_fkey")
 
   @@unique([userId, hotelId], map: "Review_userId_hotelId_key")
   @@index([hotelId], map: "Review_hotelId_fkey")
@@ -245,44 +244,29 @@ model user {
   notification      notification[]
   review            review[]
   staff             staff[]
-  message           message[]
-}
-
-model hotelWallet {
-  id              Int      @id @default(autoincrement())
-  hotelId         Int      @unique
-  totalRevenue    Float    @default(0)
-  availableBalance Float   @default(0)
-  pendingPayouts  Float    @default(0)
-  commissionRate  Float    @default(15.0) // 15% Platform Commission
-  lastPayoutDate  DateTime?
-  updatedAt       DateTime @updatedAt
-  hotel           hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
 }
 
 model payout {
-  id              Int      @id @default(autoincrement())
-  hotelId         Int
-  amount          Float
-  status          String   @default("pending") // pending, processed, failed
-  bankReference   String?
-  payoutDate      DateTime?
-  createdAt       DateTime @default(now())
-  hotel           hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  id            Int       @id @default(autoincrement())
+  hotelId       Int
+  amount        Float
+  status        String    @default("pending")
+  bankReference String?
+  payoutDate    DateTime?
+  createdAt     DateTime  @default(now())
+  hotel         hotel     @relation(fields: [hotelId], references: [id], onDelete: Cascade)
 
   @@index([hotelId])
 }
-model message {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  hotelId   Int
-  sender    String   // "user" or "hotel"
-  content   String   @db.Text
-  isRead    Boolean  @default(false)
-  createdAt DateTime @default(now())
-  hotel     hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
-  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([hotelId])
-  @@index([userId])
+model hotelwallet {
+  id               Int       @id @default(autoincrement())
+  hotelId          Int       @unique(map: "hotelWallet_hotelId_key")
+  totalRevenue     Float     @default(0)
+  availableBalance Float     @default(0)
+  pendingPayouts   Float     @default(0)
+  commissionRate   Float     @default(15)
+  lastPayoutDate   DateTime?
+  updatedAt        DateTime
+  hotel            hotel     @relation(fields: [hotelId], references: [id], onDelete: Cascade, map: "hotelWallet_hotelId_fkey")
 }

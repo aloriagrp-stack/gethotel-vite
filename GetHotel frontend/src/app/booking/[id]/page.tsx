@@ -170,20 +170,11 @@ function BookingContent() {
                 guestInfo: {
                     ...guestData,
                     phone: `${guestData.countryCode} ${guestData.phone}`
-                },
-                status: 'confirmed', // TEST MODE: Mark as confirmed immediately
-                paymentStatus: 'paid' // TEST MODE: Mark as paid immediately
+                }
             });
 
             const booking = bookingRes.data;
 
-            // TEST MODE: Bypass Razorpay for demonstration/testing
-            console.log("TEST MODE: Bypassing Razorpay for Booking ID:", booking.id);
-            setCreatedBookingId(booking.id.toString());
-            sessionStorage.removeItem(`booking_guest_data_${hotelId}`);
-            setSuccess(true);
-
-            /* RAZORPAY DISCONNECTED FOR TESTING
             // 2. Create Razorpay Order
             const orderRes = await paymentApi.createOrder(booking.id);
             
@@ -231,7 +222,6 @@ function BookingContent() {
 
             const rzp = new (window as any).Razorpay(options);
             rzp.open();
-            */
 
         } catch (err: any) {
             setError(err.message || "Booking failed. Please try again.");

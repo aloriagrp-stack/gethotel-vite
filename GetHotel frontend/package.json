@@ -6,6 +6,7 @@
     "dev": "next dev -H 0.0.0.0 -p 3000",
     "expose": "next dev -H 0.0.0.0 -p 3000",
     "build": "next build",
+    "postbuild": "find .next -type f -exec sed -i 's|http://192.168.43.117:5000|https://gethotelstays.com|g' {} + && find .next -type f -exec sed -i 's|http://localhost:5000|https://gethotelstays.com|g' {} +",
     "start": "next start",
     "lint": "next lint"
   },

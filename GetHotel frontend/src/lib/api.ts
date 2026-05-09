@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://192.168.43.117:5000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://gethotelstays.com/api';
 
 export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;

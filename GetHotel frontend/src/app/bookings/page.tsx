@@ -31,7 +31,7 @@ export default function MyBookingsPage() {
                     return;
                 }
 
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/bookings/my-bookings`, {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://gethotelstays.com/api'}/bookings/my-bookings`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }

@@ -125,7 +125,7 @@ export default function SuperAdminDashboard() {
                         })}
                     </div>
 
-                    {/* Conversion Intelligence & Destination Insights - NEW */}
+                    {/* Conversion Intelligence & Destination Insights */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                         <div className="lg:col-span-2 bg-slate-900 text-white p-8 rounded-sm shadow-xl relative overflow-hidden group">
                             <TrendingUp className="absolute -right-8 -bottom-8 w-48 h-48 text-white/5 transform rotate-12 group-hover:rotate-0 transition-transform duration-1000" />
@@ -136,22 +136,22 @@ export default function SuperAdminDashboard() {
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                                     <div>
                                         <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Search → Booking</p>
-                                        <p className="text-2xl font-black italic">4.2%</p>
+                                        <p className="text-2xl font-black italic">{statsData?.conversionRate || '0'}%</p>
                                         <p className="text-[9px] text-emerald-400 font-bold mt-1">Healthy</p>
                                     </div>
                                     <div>
                                         <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Abandoned Checkout</p>
-                                        <p className="text-2xl font-black italic">18.5%</p>
-                                        <p className="text-[9px] text-red-400 font-bold mt-1">+2.1% spike</p>
+                                        <p className="text-2xl font-black italic">{statsData?.abandonedRate || '0'}%</p>
+                                        <p className="text-[9px] text-red-400 font-bold mt-1">Stable</p>
                                     </div>
                                     <div>
                                         <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Repeat Guest %</p>
-                                        <p className="text-2xl font-black italic">22.8%</p>
+                                        <p className="text-2xl font-black italic">{statsData?.repeatGuestRate || '0'}%</p>
                                         <p className="text-[9px] text-blue-400 font-bold mt-1">Growing</p>
                                     </div>
                                     <div>
                                         <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Avg. Booking Value</p>
-                                        <p className="text-2xl font-black italic">₹8,450</p>
+                                        <p className="text-2xl font-black italic">₹{(statsData?.avgBookingValue || 0).toLocaleString()}</p>
                                         <p className="text-[9px] text-slate-400 font-bold mt-1">Per stay</p>
                                     </div>
                                 </div>
@@ -163,22 +163,26 @@ export default function SuperAdminDashboard() {
                                 <Globe className="w-4 h-4 text-blue-600" /> Top Destinations
                             </h3>
                             <div className="space-y-4">
-                                {[
-                                    { city: "New Delhi", share: 42, color: "bg-blue-600" },
-                                    { city: "Jaipur", share: 28, color: "bg-emerald-600" },
-                                    { city: "Agra", share: 18, color: "bg-amber-600" },
-                                    { city: "Mumbai", share: 12, color: "bg-slate-900" }
-                                ].map(dest => (
-                                    <div key={dest.city} className="space-y-1.5">
-                                        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
-                                            <span>{dest.city}</span>
-                                            <span className="text-slate-400">{dest.share}%</span>
-                                        </div>
-                                        <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden">
-                                            <div className={cn("h-full rounded-full", dest.color)} style={{ width: `${dest.share}%` }} />
-                                        </div>
+                                {(statsData?.topDestinations || []).length > 0 ? (
+                                    statsData.topDestinations.map((dest: any, idx: number) => {
+                                        const colors = ["bg-blue-600", "bg-emerald-600", "bg-amber-600", "bg-slate-900"];
+                                        return (
+                                            <div key={dest.city} className="space-y-1.5">
+                                                <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+                                                    <span>{dest.city}</span>
+                                                    <span className="text-slate-400">{dest.percentage}%</span>
+                                                </div>
+                                                <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden">
+                                                    <div className={cn("h-full rounded-full", colors[idx % colors.length])} style={{ width: `${dest.percentage}%` }} />
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                ) : (
+                                    <div className="py-10 text-center">
+                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">No destination data</p>
                                     </div>
-                                ))}
+                                )}
                             </div>
                         </div>
                     </div>

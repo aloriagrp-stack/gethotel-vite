@@ -8,7 +8,7 @@ interface Props {
 
 async function fetchHotel(id: string) {
     try {
-        const res = await fetch(`http://192.168.43.117:5000/api/hotels/${id}`, { 
+        const res = await fetch(`https://gethotelstays.com/api/hotels/${id}`, { 
             cache: 'no-store',
             next: { revalidate: 0 } 
         });
