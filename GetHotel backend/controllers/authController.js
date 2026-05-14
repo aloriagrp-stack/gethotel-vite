@@ -72,6 +72,21 @@ exports.login = async (req, res, next) => {
             return res.status(401).json({ success: false, message: 'Invalid credentials' });
         }
 
+        // 3. Check for Rejected Partner Request
+        const rejectedRequest = await prisma.partnerrequest.findFirst({
+            where: {
+                userEmail: email,
+                status: 'rejected'
+            }
+        });
+
+        if (rejectedRequest) {
+            return res.status(403).json({ 
+                success: false, 
+                message: 'Your partner application was rejected. This account is permanently disabled.' 
+            });
+        }
+
         sendTokenResponse(user, 200, res);
     } catch (err) {
         res.status(400).json({ success: false, message: err.message });
@@ -131,16 +146,6 @@ exports.googleLogin = async (req, res, next) => {
             });
             console.log(`[SECURITY] New user created via Google: ${email}`);
         } else {
-            // ROLE SECURITY CHECK
-            // If the user exists, check if they are trying to access customer dashboard with an Admin/Partner role
-            // The user explicitly requested to prevent Admin/Partner dashboards from opening here
-            if (user.role === 'admin' || user.role === 'partner') {
-                console.warn(`[SECURITY ALERT] Admin/Partner attempt to login via customer route: ${email}`);
-                return res.status(403).json({ 
-                    success: false, 
-                    message: 'Access Denied: This portal is for customers only. Please use the Admin Portal.' 
-                });
-            }
             console.log(`[SECURITY] Existing user logged in via Google: ${email}`);
         }
 
@@ -163,13 +168,23 @@ exports.getMe = async (req, res, next) => {
                 name: true,
                 email: true,
                 role: true,
-                createdAt: true
+                createdAt: true,
+                hotel: true
             }
+        });
+
+        // Also fetch the latest partner request status
+        const partnerRequest = await prisma.partnerrequest.findFirst({
+            where: { userEmail: user.email },
+            orderBy: { createdAt: 'desc' }
         });
 
         res.status(200).json({
             success: true,
-            data: user,
+            data: {
+                ...user,
+                partnerRequestStatus: partnerRequest?.status || null
+            },
         });
     } catch (err) {
         res.status(400).json({ success: false, message: err.message });

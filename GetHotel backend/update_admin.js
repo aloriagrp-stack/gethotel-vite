@@ -8,9 +8,9 @@ async function main() {
   const password = 'shriyanshking';
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  // Try to find any user with SUPER_ADMIN role
+  // Try to find any user with super_admin role
   const admin = await prisma.user.findFirst({
-    where: { role: 'SUPER_ADMIN' }
+    where: { role: 'super_admin' }
   });
 
   if (admin) {
@@ -32,7 +32,7 @@ async function main() {
         email: email,
         password: hashedPassword,
         name: 'Super Admin',
-        role: 'SUPER_ADMIN'
+        role: 'super_admin'
       }
     });
     console.log('SUCCESS: Super Admin created!');

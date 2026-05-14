@@ -7,12 +7,9 @@ exports.getCoupons = async (req, res, next) => {
     try {
         const hotelId = parseInt(req.params.hotelId);
 
-        // Authorization check
+        // Check if hotel exists
         const hotel = await prisma.hotel.findUnique({ where: { id: hotelId } });
         if (!hotel) return res.status(404).json({ success: false, message: 'Hotel not found' });
-        if (hotel.userId !== req.user.id && req.user.role !== 'super_admin') {
-            return res.status(403).json({ success: false, message: 'Not authorized' });
-        }
 
         const coupons = await prisma.coupon.findMany({
             where: { hotelId },

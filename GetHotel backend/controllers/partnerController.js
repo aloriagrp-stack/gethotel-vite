@@ -13,30 +13,52 @@ exports.submitPartnerRequest = async (req, res, next) => {
             pricePerNight, userName, userEmail, userPhone, partnerPassword 
         } = req.body;
 
-        // 1. Check if email already exists in User table
+        // 1. Check if email already exists in User table AND is already a partner
         const existingUser = await prisma.user.findUnique({
             where: { email: userEmail }
         });
 
-        if (existingUser) {
+        if (existingUser && existingUser.role === 'hotel_admin') {
             return res.status(400).json({ 
                 success: false, 
-                error: 'This email is already registered as a customer/partner. Please use a different email or login.' 
+                error: 'This Email is already in use by a Partner.' 
             });
         }
 
-        // 2. Check if there's already a pending/approved request with this email
+        // 2. Check if there's already a pending/approved request with this email OR phone
         const existingRequest = await prisma.partnerrequest.findFirst({
-            where: { userEmail: userEmail }
+            where: {
+                OR: [
+                    { userEmail: userEmail },
+                    { userPhone: userPhone }
+                ]
+            }
         });
 
         if (existingRequest) {
+            const isEmailMatch = existingRequest.userEmail === userEmail;
             return res.status(400).json({ 
                 success: false, 
-                error: 'A partner request with this email already exists (Pending or Approved).' 
+                error: isEmailMatch 
+                    ? 'This Email is already in use.' 
+                    : 'This Phone Number is already in use.'
             });
         }
 
+        // 3. Create User Account Immediately (to allow dashboard login in pending state)
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(partnerPassword, salt);
+
+        const newUser = await prisma.user.create({
+            data: {
+                name: userName || "Partner",
+                email: userEmail,
+                password: hashedPassword,
+                role: 'hotel_admin'
+            }
+        });
+
+        // 4. Create Partner Request linked to User
         const partnerRequest = await prisma.partnerrequest.create({
             data: {
                 hotelName: hotelName || "Unnamed Hotel",
@@ -49,7 +71,7 @@ exports.submitPartnerRequest = async (req, res, next) => {
                 userName: userName || "Partner",
                 userEmail: userEmail || "",
                 userPhone: userPhone || "",
-                partnerPassword: partnerPassword || "",
+                partnerPassword: partnerPassword || "", // Still keep for reference if needed
                 status: 'pending',
                 updatedAt: new Date()
             }
@@ -58,7 +80,7 @@ exports.submitPartnerRequest = async (req, res, next) => {
         res.status(201).json({
             success: true,
             data: partnerRequest,
-            message: 'Your request has been submitted. Please wait for admin approval.'
+            message: 'Your account has been created and is pending for approval.'
         });
     } catch (err) {
         res.status(400).json({ success: false, error: err.message });
@@ -73,8 +95,10 @@ exports.getPartnerRequests = async (req, res, next) => {
         const requests = await prisma.partnerrequest.findMany({
             orderBy: { createdAt: 'desc' }
         });
+        console.log('Admin requested partner requests. Found:', requests.length);
         res.status(200).json({ success: true, data: requests });
     } catch (err) {
+        console.error('Error fetching partner requests:', err);
         res.status(400).json({ success: false, error: err.message });
     }
 };
@@ -97,37 +121,15 @@ exports.approvePartnerRequest = async (req, res, next) => {
             return res.status(400).json({ success: false, error: 'Request already approved' });
         }
 
-        // Use the partnerPassword set by the partner during registration
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(partnerRequest.partnerPassword, salt);
-
-        // Use Prisma transaction to ensure both user and hotel are created
+        // Use Prisma transaction to ensure hotel is created and status updated
         const result = await prisma.$transaction(async (tx) => {
-            // 1. Check if user already exists
-            let user = await tx.user.findUnique({
+            // 1. Get existing user
+            const user = await tx.user.findUnique({
                 where: { email: partnerRequest.userEmail }
             });
 
             if (!user) {
-                // Create new user if doesn't exist
-                user = await tx.user.create({
-                    data: {
-                        name: partnerRequest.userName || "Partner",
-                        email: partnerRequest.userEmail,
-                        password: hashedPassword,
-                        role: 'hotel_admin'
-                    }
-                });
-            } else {
-                // Update existing user to hotel_admin
-                user = await tx.user.update({
-                    where: { id: user.id },
-                    data: { 
-                        role: 'hotel_admin',
-                        // Also update password if they are becoming a partner
-                        password: hashedPassword 
-                    }
-                });
+                throw new Error("User associated with this request not found.");
             }
 
             // 2. Create the Hotel associated with this user
@@ -195,6 +197,82 @@ exports.approvePartnerRequest = async (req, res, next) => {
             message: 'Partner request approved and account created successfully.' 
         });
 
+    } catch (err) {
+        res.status(400).json({ success: false, error: err.message });
+    }
+};
+
+// @desc    Decline partner request
+// @route   PUT /api/partner/requests/:id/decline
+// @access  Private (Super Admin)
+exports.declinePartnerRequest = async (req, res) => {
+    try {
+        const requestId = parseInt(req.params.id);
+        
+        const partnerRequest = await prisma.partnerrequest.findUnique({
+            where: { id: requestId }
+        });
+
+        if (!partnerRequest) {
+            return res.status(404).json({ success: false, error: 'Request not found' });
+        }
+
+        if (partnerRequest.status !== 'pending') {
+            return res.status(400).json({ success: false, error: `Request already ${partnerRequest.status}` });
+        }
+
+        const result = await prisma.partnerrequest.update({
+            where: { id: requestId },
+            data: { status: 'rejected' }
+        });
+
+        res.json({
+            success: true,
+            data: result,
+            message: 'Partner request declined successfully'
+        });
+    } catch (err) {
+        res.status(400).json({ success: false, error: err.message });
+    }
+};
+
+// @desc    Bulk Approve partner requests
+// @route   PUT /api/partner/requests/bulk-approve
+// @access  Private (Super Admin)
+exports.bulkApprovePartnerRequests = async (req, res) => {
+    try {
+        const { ids } = req.body;
+        if (!ids || !Array.isArray(ids)) {
+            return res.status(400).json({ success: false, error: 'Please provide an array of IDs' });
+        }
+
+        const result = await prisma.partnerrequest.updateMany({
+            where: { id: { in: ids } },
+            data: { status: 'approved' }
+        });
+
+        res.json({ success: true, message: `${result.count} requests approved successfully` });
+    } catch (err) {
+        res.status(400).json({ success: false, error: err.message });
+    }
+};
+
+// @desc    Bulk Decline partner requests
+// @route   PUT /api/partner/requests/bulk-decline
+// @access  Private (Super Admin)
+exports.bulkDeclinePartnerRequests = async (req, res) => {
+    try {
+        const { ids } = req.body;
+        if (!ids || !Array.isArray(ids)) {
+            return res.status(400).json({ success: false, error: 'Please provide an array of IDs' });
+        }
+
+        const result = await prisma.partnerrequest.updateMany({
+            where: { id: { in: ids } },
+            data: { status: 'rejected' }
+        });
+
+        res.json({ success: true, message: `${result.count} requests declined successfully` });
     } catch (err) {
         res.status(400).json({ success: false, error: err.message });
     }

@@ -16,7 +16,7 @@ async function main() {
       email: 'partner@example.com',
       password: hashedPassword,
       name: 'Rajesh Kumar',
-      role: 'PARTNER'
+      role: 'hotel_admin'
     }
   });
 

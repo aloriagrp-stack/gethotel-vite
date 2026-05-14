@@ -52,7 +52,21 @@ exports.createBooking = async (req, res) => {
             const dbRoom = hotel.room.find(r => r.id === parseInt(selectedRoom.id));
             if (!dbRoom) return res.status(400).json({ success: false, message: `Room ID ${selectedRoom.id} doesn't exist.` });
             
-            calculatedSubtotal += dbRoom.pricePerNight * selectedRoom.quantity * nights;
+            // Support for variant-specific pricing
+            let roomPrice = dbRoom.pricePerNight;
+            if (selectedRoom.variantIdx !== undefined) {
+                try {
+                    const variants = typeof dbRoom.variants === 'string' ? JSON.parse(dbRoom.variants) : (dbRoom.variants || []);
+                    const selectedVariant = variants[parseInt(selectedRoom.variantIdx)];
+                    if (selectedVariant && selectedVariant.price) {
+                        roomPrice = selectedVariant.price;
+                    }
+                } catch (e) {
+                    console.error("Error parsing room variants:", e);
+                }
+            }
+
+            calculatedSubtotal += roomPrice * selectedRoom.quantity * nights;
             totalMaxOccupancy += dbRoom.maxOccupancy * selectedRoom.quantity;
         }
 
@@ -60,7 +74,7 @@ exports.createBooking = async (req, res) => {
             return res.status(400).json({ success: false, message: "Guest count exceeds the maximum occupancy for the selected rooms." });
         }
 
-        const calculatedTaxes = Math.round(calculatedSubtotal * 0.12);
+        const calculatedTaxes = Math.round(calculatedSubtotal * 0.05); // Sync with 5% Tax
         const calculatedTotal = calculatedSubtotal + calculatedTaxes;
         const platformFee = Math.round(calculatedTotal * 0.18); // 18% Booking Fee
         const remainingAtHotel = calculatedTotal - platformFee;

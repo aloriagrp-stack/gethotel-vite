@@ -117,6 +117,7 @@ model hotel {
   faqs                  String?        @db.LongText
   safety                String?        @db.LongText
   policies              String?        @db.LongText
+  mainAmenities         String?        @db.LongText
   userId                Int
   createdAt             DateTime       @default(now())
   updatedAt             DateTime       @updatedAt
@@ -204,13 +205,23 @@ model room {
   pricePerNight    Float
   amenities        String?     @db.LongText
   images           String?     @db.LongText
+  highlights       String?     @db.LongText
+  trustPoints      String?     @db.LongText
   hotelId          Int
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
   description      String?     @db.Text
+  roomPolicies    String?     @db.Text
+  minPrice        Float       @default(0)
+  maxPrice        Float       @default(0)
+  weeklyDiscount  Int         @default(0)
+  monthlyDiscount Int         @default(0)
+  variants        String?     @db.LongText
+  isHourlyEnabled Boolean     @default(false)
+  hourlyRates     String?     @db.LongText
   booking          booking[]
   dailyrate        dailyrate[]
-  hotel            hotel       @relation(fields: [hotelId], references: [id], onDelete: Cascade, map: "Room_hotelId_fkey")
+  hotel           hotel       @relation(fields: [hotelId], references: [id], onDelete: Cascade, map: "Room_hotelId_fkey")
 
   @@index([hotelId], map: "Room_hotelId_fkey")
 }

@@ -1,5 +1,21 @@
 const prisma = require('../config/db');
 
+// Bulletproof JSON Normalizer
+const normalizeJsonField = (data) => {
+    if (!data) return "[]";
+    if (typeof data === 'string') {
+        try {
+            const parsed = JSON.parse(data);
+            return Array.isArray(parsed) ? JSON.stringify(parsed) : JSON.stringify([parsed]);
+        } catch (e) {
+            if (data.includes(',')) return JSON.stringify(data.split(',').map(s => s.trim()).filter(Boolean));
+            return JSON.stringify([data]);
+        }
+    }
+    if (Array.isArray(data)) return JSON.stringify(data);
+    return JSON.stringify([data]);
+};
+
 // @desc    Get rooms for a hotel
 // @route   GET /api/hotels/:hotelId/rooms
 // @access  Public
@@ -88,21 +104,35 @@ exports.addRoom = async (req, res, next) => {
             return res.status(403).json({ success: false, message: 'Not authorized to add a room to this hotel' });
         }
 
-        const roomData = { ...req.body };
+        const { 
+            name, description, pricePerNight, maxOccupancy, 
+            bedConfiguration, sizeM2, amenities, images, 
+            highlights, trustPoints, roomPolicies, 
+            minPrice, maxPrice, weeklyDiscount, monthlyDiscount, variants,
+            isHourlyEnabled, hourlyRates 
+        } = req.body;
         
-        // Ensure numeric fields are correctly typed
-        roomData.hotelId = hotelId;
-        roomData.pricePerNight = parseFloat(req.body.pricePerNight) || 0;
-        roomData.maxOccupancy = parseInt(req.body.maxOccupancy) || 2;
-        roomData.sizeM2 = parseInt(req.body.sizeM2) || 0;
-
-        // Ensure JSON fields are stringified if sent as objects
-        if (roomData.images && typeof roomData.images !== 'string') {
-            roomData.images = JSON.stringify(roomData.images);
-        }
-        if (roomData.amenities && typeof roomData.amenities !== 'string') {
-            roomData.amenities = JSON.stringify(roomData.amenities);
-        }
+        const roomData = {
+            hotelId,
+            name,
+            description,
+            pricePerNight: parseFloat(pricePerNight) || 0,
+            maxOccupancy: parseInt(maxOccupancy) || 2,
+            bedConfiguration: bedConfiguration || "1 King Bed",
+            sizeM2: parseInt(sizeM2) || 0,
+            amenities: normalizeJsonField(amenities),
+            images: normalizeJsonField(images),
+            highlights: normalizeJsonField(highlights),
+            trustPoints: normalizeJsonField(trustPoints),
+            roomPolicies: normalizeJsonField(roomPolicies),
+            minPrice: parseFloat(minPrice) || 0,
+            maxPrice: parseFloat(maxPrice) || 0,
+            weeklyDiscount: parseInt(weeklyDiscount) || 0,
+            monthlyDiscount: parseInt(monthlyDiscount) || 0,
+            variants: normalizeJsonField(variants),
+            isHourlyEnabled: isHourlyEnabled === true || isHourlyEnabled === 'true',
+            hourlyRates: typeof hourlyRates === 'string' ? hourlyRates : JSON.stringify(hourlyRates || {})
+        };
 
         const room = await prisma.room.create({
             data: roomData
@@ -136,29 +166,48 @@ exports.updateRoom = async (req, res, next) => {
 
         // SECURITY: Ensure room belongs to the hotel
         const roomToUpdate = await prisma.room.findUnique({ where: { id: roomId } });
+        
+        if (isNaN(roomId)) {
+            return res.status(400).json({ success: false, message: 'Invalid Room ID' });
+        }
+
         if (!roomToUpdate || roomToUpdate.hotelId !== hotelId) {
             return res.status(404).json({ success: false, message: 'Room not found in this hotel' });
         }
 
-        const updateData = { ...req.body };
+        const { 
+            name, description, pricePerNight, maxOccupancy, 
+            bedConfiguration, sizeM2, amenities, images, 
+            highlights, trustPoints, roomPolicies,
+            minPrice, maxPrice, weeklyDiscount, monthlyDiscount, variants,
+            isHourlyEnabled, hourlyRates
+        } = req.body;
+        
+        const updateData = {};
+        if (name !== undefined) updateData.name = name;
+        if (description !== undefined) updateData.description = description;
+        if (pricePerNight !== undefined) updateData.pricePerNight = parseFloat(pricePerNight);
+        if (maxOccupancy !== undefined) updateData.maxOccupancy = parseInt(maxOccupancy);
+        if (bedConfiguration !== undefined) updateData.bedConfiguration = bedConfiguration;
+        if (sizeM2 !== undefined) updateData.sizeM2 = parseInt(sizeM2);
+        
+        if (amenities !== undefined) updateData.amenities = normalizeJsonField(amenities);
+        if (images !== undefined) updateData.images = normalizeJsonField(images);
+        if (highlights !== undefined) updateData.highlights = normalizeJsonField(highlights);
+        if (trustPoints !== undefined) updateData.trustPoints = normalizeJsonField(trustPoints);
+        if (roomPolicies !== undefined) updateData.roomPolicies = normalizeJsonField(roomPolicies);
+        
+        if (minPrice !== undefined) updateData.minPrice = parseFloat(minPrice);
+        if (maxPrice !== undefined) updateData.maxPrice = parseFloat(maxPrice);
+        if (weeklyDiscount !== undefined) updateData.weeklyDiscount = parseInt(weeklyDiscount);
+        if (monthlyDiscount !== undefined) updateData.monthlyDiscount = parseInt(monthlyDiscount);
+        if (variants !== undefined) updateData.variants = normalizeJsonField(variants);
+        
+        if (isHourlyEnabled !== undefined) updateData.isHourlyEnabled = isHourlyEnabled === true || isHourlyEnabled === 'true';
+        if (hourlyRates !== undefined) updateData.hourlyRates = typeof hourlyRates === 'string' ? hourlyRates : JSON.stringify(hourlyRates || {});
 
-        if (updateData.pricePerNight !== undefined) {
-            updateData.pricePerNight = parseFloat(updateData.pricePerNight) || roomToUpdate.pricePerNight;
-        }
-        if (updateData.maxOccupancy !== undefined) {
-            updateData.maxOccupancy = parseInt(updateData.maxOccupancy) || roomToUpdate.maxOccupancy;
-        }
-        if (updateData.sizeM2 !== undefined) {
-            updateData.sizeM2 = parseInt(updateData.sizeM2) || roomToUpdate.sizeM2;
-        }
-
-        // Ensure JSON fields are stringified if sent as objects
-        if (updateData.images && typeof updateData.images !== 'string') {
-            updateData.images = JSON.stringify(updateData.images);
-        }
-        if (updateData.amenities && typeof updateData.amenities !== 'string') {
-            updateData.amenities = JSON.stringify(updateData.amenities);
-        }
+        console.log(">>> UPDATING ROOM:", roomId);
+        console.log(">>> DATA:", JSON.stringify(updateData, null, 2).slice(0, 500) + "...");
 
         const room = await prisma.room.update({
             where: { id: roomId },

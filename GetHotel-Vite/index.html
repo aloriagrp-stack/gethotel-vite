@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GetHotel — Book Premium Hotels in India</title>
+    <meta name="description" content="Discover and book the best hotels, resorts, and boutique stays across India. Compare prices, read reviews, and secure your perfect stay with GetHotel." />
+    
+    <!-- DM Sans Font -->
+    <!-- Performance Preconnects -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Primary Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+    
+    <!-- Razorpay Checkout (Async) -->
+    <script async src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    
+    <style>
+      :root {
+        --font-dm-sans: 'DM Sans', sans-serif;
+        --font-luxury: 'Playfair Display', serif;
+      }
+      body {
+        font-family: var(--font-dm-sans);
+        background: #ffffff;
+      }
+      /* Prevent CLS */
+      #root { min-height: 100vh; }
+    </style>
+  </head>
+  <body class="font-sans bg-white text-slate-900 antialiased overflow-x-hidden">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

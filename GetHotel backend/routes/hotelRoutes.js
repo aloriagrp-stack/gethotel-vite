@@ -2,6 +2,7 @@ const express = require('express');
 const {
     getHotels,
     getHotel,
+    searchHotels,
     createHotel,
     updateHotel,
     deleteHotel,
@@ -18,9 +19,12 @@ const router = express.Router();
 
 const { protect, authorize } = require('../middleware/auth');
 
+// Advanced Search
+router.get('/search', searchHotels);
+
 // Nested routes for coupons
 router.route('/:hotelId/coupons')
-    .get(protect, authorize('hotel_admin', 'super_admin'), getCoupons)
+    .get(getCoupons)
     .post(protect, authorize('hotel_admin', 'super_admin'), createCoupon);
 
 router.route('/:hotelId/coupons/:id')

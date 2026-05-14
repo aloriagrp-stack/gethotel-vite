@@ -1,0 +1,142 @@
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import { BookingProvider } from "./context/BookingContext";
+import { WishlistProvider } from "./context/WishlistContext";
+import ConditionalLayout from "./components/layout/ConditionalLayout";
+import GlobalTranslator from "./components/layout/GlobalTranslator";
+
+// Main Pages
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Hotels from "./pages/Hotels";
+import HotelDetails from "./pages/HotelDetails";
+import Profile from "./pages/Profile";
+import Wishlist from "./pages/Wishlist";
+import MyBookings from "./pages/MyBookings";
+import ListProperty from "./pages/ListProperty";
+import Booking from "./pages/Booking";
+import AdminLogin from "./pages/AdminLogin";
+import PartnerLanding from "./pages/PartnerLanding";
+import ListPropertyRegister from "./pages/ListPropertyRegister";
+
+// ID based pages
+import BookingInvoice from "./pages/BookingInvoice";
+import WriteReview from "./pages/WriteReview";
+import ReviewBooking from "./pages/ReviewBooking";
+import ReportBooking from "./pages/ReportBooking";
+import BookingInvoiceDetails from "./pages/BookingInvoiceDetails";
+import DisputeBooking from "./pages/DisputeBooking";
+import BookingDetails from "./pages/BookingDetails";
+import BookingIDPage from "./pages/BookingIDPage";
+
+// Admin & Partner Layouts
+import AdminLayout from "./components/layout/AdminLayout";
+import PartnerLayout from "./components/layout/PartnerLayout";
+
+// Partner Pages
+import PartnerDashboard from "./pages/partner-dashboard/Dashboard";
+import PartnerBookings from "./pages/partner-dashboard/Bookings";
+import PartnerHotel from "./pages/partner-dashboard/Hotel";
+import PartnerRooms from "./pages/partner-dashboard/Rooms";
+import PartnerPayments from "./pages/partner-dashboard/Payments";
+import PartnerCoupons from "./pages/partner-dashboard/Coupons";
+import PartnerMessages from "./pages/partner-dashboard/Messages";
+import PartnerReviews from "./pages/partner-dashboard/Reviews";
+import PartnerSettings from "./pages/partner-dashboard/Settings";
+import PartnerAnalytics from "./pages/partner-dashboard/Analytics";
+import PartnerFrontDesk from "./pages/partner-dashboard/FrontDesk";
+import PartnerInventory from "./pages/partner-dashboard/Inventory";
+import PartnerNotifications from "./pages/partner-dashboard/Notifications";
+import PartnerPricing from "./pages/partner-dashboard/Pricing";
+import PartnerStaff from "./pages/partner-dashboard/Staff";
+
+// Admin Pages (Commented out until migrated)
+/*
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminRequests from "./pages/admin/AdminRequests";
+import AdminBookings from "./pages/admin/AdminBookings";
+import AdminFinance from "./pages/admin/AdminFinance";
+import AdminDisputes from "./pages/admin/AdminDisputes";
+import AdminHotelDetails from "./pages/admin/AdminHotelDetails";
+import AdminNotifications from "./pages/admin/AdminNotifications";
+import AdminStats from "./pages/admin/AdminStats";
+*/
+
+function App() {
+  return (
+    <Router>
+      <GlobalTranslator />
+      <AuthProvider>
+        <BookingProvider>
+          <WishlistProvider>
+            <ConditionalLayout>
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<Home />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Login />} />
+                <Route path="/hotels" element={<Hotels />} />
+                <Route path="/hotel/:id" element={<HotelDetails />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/wishlist" element={<Wishlist />} />
+                <Route path="/my-bookings" element={<MyBookings />} />
+                <Route path="/list-property" element={<ListProperty />} />
+                <Route path="/list-property/register" element={<ListPropertyRegister />} />
+                <Route path="/booking" element={<Booking />} />
+                <Route path="/booking/:id" element={<BookingIDPage />} />
+                <Route path="/partner" element={<PartnerLanding />} />
+                <Route path="/.controlhub" element={<AdminLogin />} />
+                
+                {/* ID-based Routes */}
+                <Route path="/booking/invoice/:id" element={<BookingInvoice />} />
+                <Route path="/hotel/:id/write-review" element={<WriteReview />} />
+                <Route path="/bookings/review/:id" element={<ReviewBooking />} />
+                <Route path="/bookings/report/:id" element={<ReportBooking />} />
+                <Route path="/bookings/invoice/:id" element={<BookingInvoiceDetails />} />
+                <Route path="/bookings/dispute/:id" element={<DisputeBooking />} />
+                <Route path="/bookings/details/:id" element={<BookingDetails />} />
+                
+                {/* Partner Dashboard Routes */}
+                <Route path="/partner-dashboard" element={<PartnerLayout />}>
+                  <Route index element={<PartnerDashboard />} />
+                  <Route path="bookings" element={<PartnerBookings />} />
+                  <Route path="hotel" element={<PartnerHotel />} />
+                  <Route path="rooms" element={<PartnerRooms />} />
+                  <Route path="payments" element={<PartnerPayments />} />
+                  <Route path="coupons" element={<PartnerCoupons />} />
+                  <Route path="messages" element={<PartnerMessages />} />
+                  <Route path="reviews" element={<PartnerReviews />} />
+                  <Route path="settings" element={<PartnerSettings />} />
+                  <Route path="analytics" element={<PartnerAnalytics />} />
+                  <Route path="frontdesk" element={<PartnerFrontDesk />} />
+                  <Route path="inventory" element={<PartnerInventory />} />
+                  <Route path="notifications" element={<PartnerNotifications />} />
+                  <Route path="pricing" element={<PartnerPricing />} />
+                  <Route path="staff" element={<PartnerStaff />} />
+                </Route>
+
+                {/* Admin Routes (Commented out until migrated)
+                <Route path="/admin/super" element={<AdminLayout />}>
+                  <Route index element={<AdminDashboard />} />
+                  <Route path="requests" element={<AdminRequests />} />
+                  <Route path="bookings" element={<AdminBookings />} />
+                  <Route path="finance" element={<AdminFinance />} />
+                  <Route path="disputes" element={<AdminDisputes />} />
+                  <Route path="hotels/:id" element={<AdminHotelDetails />} />
+                  <Route path="notifications" element={<AdminNotifications />} />
+                  <Route path="stats" element={<AdminStats />} />
+                </Route>
+                */}
+
+                {/* Fallback */}
+                <Route path="*" element={<div>Page Not Found</div>} />
+              </Routes>
+            </ConditionalLayout>
+          </WishlistProvider>
+        </BookingProvider>
+      </AuthProvider>
+    </Router>
+  );
+}
+
+export default App;

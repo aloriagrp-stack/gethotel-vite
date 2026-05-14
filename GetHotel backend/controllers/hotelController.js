@@ -5,19 +5,101 @@ const prisma = require('../config/db');
 // @access  Public
 exports.getHotels = async (req, res, next) => {
     try {
+        console.log("Fetching hotels from database...");
         const hotels = await prisma.hotel.findMany({
             include: {
-                room: {
-                    select: {
-                        id: true, name: true, bedConfiguration: true,
-                        sizeM2: true, maxOccupancy: true, pricePerNight: true,
-                        amenities: true, description: true, hotelId: true,
-                        createdAt: true, updatedAt: true
+                room: true
+            }
+        });
+        console.log(`Found ${hotels.length} hotels.`);
+        res.status(200).json({ success: true, count: hotels.length, data: hotels });
+    } catch (err) {
+        console.error("DATABASE_ERROR:", err);
+        res.status(500).json({ success: false, message: "Database Connection Error", error: err.message });
+    }
+};
+
+// @desc    Advanced search for hotels with strong algorithm
+// @route   GET /api/hotels/search
+// @access  Public
+exports.searchHotels = async (req, res, next) => {
+    try {
+        const { city, checkIn, checkOut, adults, children, rooms, stayType } = req.query;
+        const totalGuests = parseInt(adults || 2) + parseInt(children || 0);
+        const requiredRooms = parseInt(rooms || 1);
+
+        // 1. Initial Filtering by City and Room Capacity
+        let whereClause = {};
+        if (city && city !== "All" && city !== "India") {
+            whereClause.OR = [
+                { city: { contains: city } },
+                { address: { contains: city } },
+                { name: { contains: city } }
+            ];
+        }
+
+        // Must have rooms that can fit the guests
+        whereClause.room = {
+            some: {
+                maxOccupancy: { gte: Math.ceil(totalGuests / requiredRooms) }
+            }
+        };
+
+        const hotels = await prisma.hotel.findMany({
+            where: whereClause,
+            include: {
+                room: true,
+                booking: {
+                    where: {
+                        status: { in: ['confirmed', 'checked-in'] },
+                        OR: [
+                            {
+                                AND: [
+                                    { checkIn: { lte: new Date(checkIn || new Date()) } },
+                                    { checkOut: { gte: new Date(checkIn || new Date()) } }
+                                ]
+                            },
+                            {
+                                AND: [
+                                    { checkIn: { lte: new Date(checkOut || new Date()) } },
+                                    { checkOut: { gte: new Date(checkOut || new Date()) } }
+                                ]
+                            }
+                        ]
                     }
                 }
             }
         });
-        res.status(200).json({ success: true, count: hotels.length, data: hotels });
+
+        // 2. Strong Availability Algorithm (Check overlaps)
+        const availableHotels = hotels.filter(hotel => {
+            // Group bookings by room type
+            const activeBookings = hotel.booking.length;
+            const totalRoomsCount = hotel.room.length; // Simplified: usually we have inventory counts
+            
+            // If the hotel has many rooms and few bookings, it's likely available
+            // For a production system, we'd check inventory per room type
+            return activeBookings < totalRoomsCount * 5; // Assuming each room type has at least 5 units
+        });
+
+        // 3. Strong Ranking Algorithm (The 'Secret Sauce')
+        // Score = (QualityScore * 0.5) + (Featured * 30) + (Rating * 20)
+        const rankedHotels = availableHotels.map(hotel => {
+            let rankScore = (hotel.qualityScore || 85) * 0.5;
+            if (hotel.isFeatured) rankScore += 30;
+            rankScore += (hotel.guestRating || 0) * 4; // 5 stars * 4 = 20 points
+            
+            // Bonus for trending
+            if (hotel.isTrending) rankScore += 10;
+            
+            return { ...hotel, rankScore };
+        }).sort((a, b) => b.rankScore - a.rankScore);
+
+        res.status(200).json({ 
+            success: true, 
+            count: rankedHotels.length, 
+            data: rankedHotels 
+        });
     } catch (err) {
         res.status(400).json({ success: false, message: err.message });
     }
@@ -35,8 +117,12 @@ exports.getHotel = async (req, res, next) => {
                     select: {
                         id: true, name: true, bedConfiguration: true,
                         sizeM2: true, maxOccupancy: true, pricePerNight: true,
-                        amenities: true, description: true, hotelId: true,
-                        createdAt: true, updatedAt: true
+                        minPrice: true, maxPrice: true, variants: true, roomPolicies: true,
+                        weeklyDiscount: true, monthlyDiscount: true,
+                        amenities: true, images: true, highlights: true, trustPoints: true,
+                        description: true, hotelId: true,
+                        createdAt: true, updatedAt: true,
+                        isHourlyEnabled: true, hourlyRates: true
                     }
                 },
                 review: {
@@ -74,7 +160,7 @@ exports.createHotel = async (req, res, next) => {
         const { 
             name, tagline, description, city, address, pricePerNight, 
             starRating, thumbnail, images, amenities,
-            dining, wellness, faqs, safety, policies
+            dining, wellness, faqs, safety, policies, mainAmenities
         } = req.body;
 
         const hotel = await prisma.hotel.create({
@@ -94,6 +180,7 @@ exports.createHotel = async (req, res, next) => {
                 faqs: typeof faqs !== 'string' ? JSON.stringify(faqs) : faqs,
                 safety: typeof safety !== 'string' ? JSON.stringify(safety) : safety,
                 policies: typeof policies !== 'string' ? JSON.stringify(policies) : policies,
+                mainAmenities: typeof mainAmenities !== 'string' ? JSON.stringify(mainAmenities) : mainAmenities,
                 userId: req.user.id
             },
         });
@@ -128,7 +215,9 @@ exports.updateHotel = async (req, res, next) => {
             'name', 'tagline', 'description', 'city', 'address', 
             'pricePerNight', 'starRating', 'thumbnail', 'images', 
             'amenities', 'isFeatured', 'isTrending', 'dining', 
-            'wellness', 'faqs', 'safety', 'policies', 'hotelUsername'
+            'wellness', 'faqs', 'safety', 'policies', 'hotelUsername',
+            'mainAmenities', 'badges', 'bookingAcceptanceRate', 'cancellationRate',
+            'complaintsCount', 'noShowRate', 'qualityScore', 'responseSpeed'
         ];
 
         const updateData = {};
@@ -147,7 +236,7 @@ exports.updateHotel = async (req, res, next) => {
         }
 
         // Ensure JSON fields are stringified if sent as objects
-        const jsonFields = ['images', 'amenities', 'dining', 'wellness', 'faqs', 'safety', 'policies'];
+        const jsonFields = ['images', 'amenities', 'dining', 'wellness', 'faqs', 'safety', 'policies', 'mainAmenities', 'badges'];
         jsonFields.forEach(field => {
             if (updateData[field] && typeof updateData[field] !== 'string') {
                 updateData[field] = JSON.stringify(updateData[field]);
@@ -206,7 +295,10 @@ exports.getMyHotels = async (req, res, next) => {
                     select: {
                         id: true, name: true, bedConfiguration: true,
                         sizeM2: true, maxOccupancy: true, pricePerNight: true,
-                        amenities: true, description: true, hotelId: true,
+                        amenities: true, images: true, highlights: true, trustPoints: true,
+                        description: true, hotelId: true,
+                        variants: true, roomPolicies: true, minPrice: true, maxPrice: true,
+                        weeklyDiscount: true, monthlyDiscount: true,
                         createdAt: true, updatedAt: true
                     }
                 },

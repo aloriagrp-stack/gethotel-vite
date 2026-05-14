@@ -24,8 +24,9 @@ const hpp = require('hpp');
 const app = express();
 
 // Enable CORS - Must be before other middleware
+// Enable CORS - Must be before other middleware
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: true,
     credentials: true
 }));
 
@@ -41,13 +42,16 @@ app.use(helmet({
             scriptSrc: ["'self'", "'unsafe-inline'"],
             styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
             imgSrc: ["'self'", "data:", "https:", "http:"],
-            connectSrc: ["'self'", "https://api.razorpay.com"],
+            connectSrc: ["'self'", "https://api.razorpay.com", "http://localhost:5000"],
             fontSrc: ["'self'", "https://fonts.gstatic.com"],
             objectSrc: ["'none'"],
             mediaSrc: ["'self'"],
-            frameSrc: ["'self'", "https://api.razorpay.com", "https://checkout.razorpay.com"]
+            frameSrc: ["'self'", "https://api.razorpay.com", "https://checkout.razorpay.com"],
+            baseUri: ["'self'"],
+            formAction: ["'self'"]
         },
-    }
+    },
+    crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
 // Rate limiting
