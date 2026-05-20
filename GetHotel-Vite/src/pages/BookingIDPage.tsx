@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense, Fragment } from "react";
 import { useParams, useSearchParams, useNavigate as useRouter } from "react-router-dom";
+import Loader from "@/components/common/Loader";
 import Image from "@/components/common/Image";
 import { Link } from "react-router-dom";
 import { 
@@ -29,6 +30,8 @@ import { hotelApi, bookingApi, couponApi, paymentApi, messageApi } from "@/lib/a
 import { formatPrice, formatDate, cn, safeParse } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { countries } from "@/lib/countries";
+import { InvoiceTemplate } from "@/components/booking/InvoiceTemplate";
+import { useRef } from "react";
 
 function BookingContent() {
     const params = useParams();
@@ -62,6 +65,8 @@ function BookingContent() {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
     const [createdBookingId, setCreatedBookingId] = useState<string | null>(null);
+    const [currentBooking, setCurrentBooking] = useState<any>(null);
+    const invoiceRef = useRef<HTMLDivElement>(null);
     
     // Interactive Booking State
     const [checkIn, setCheckIn] = useState(searchParams.get("checkIn") || "");
@@ -91,14 +96,19 @@ function BookingContent() {
                 const hotelData = hotelRes.data || hotelRes; // Handle both wrapped and direct response
                 setHotel(hotelData);
                 
-                // Load specific room details
+                // Load specific room details with dates to fetch dynamic pricing overrides
+                const paramsObj: any = {};
+                if (checkIn) paramsObj.checkIn = checkIn;
+                if (checkOut) paramsObj.checkOut = checkOut;
+                const roomsRes = await hotelApi.getRooms(hotelId, paramsObj);
+                const allRooms = roomsRes.data || hotelData?.room || hotelData?.rooms || [];
+
                 if (selectedRoomsInfo.length > 0) {
                     const roomIds = selectedRoomsInfo.map(r => r.id);
-                    const allRooms = hotelData?.room || hotelData?.rooms || [];
                     const filtered = allRooms.filter((r: any) => roomIds.includes(r?.id?.toString()));
                     setSelectedRoomsData(filtered);
                 } else {
-                    const firstRoom = hotelData?.room?.[0] || hotelData?.rooms?.[0];
+                    const firstRoom = allRooms?.[0];
                     setSelectedRoomsData(firstRoom ? [firstRoom] : []);
                 }
 
@@ -135,7 +145,7 @@ function BookingContent() {
              // If no hotel ID, go to home
              router("/");
         }
-    }, [hotelId, checkInStr, checkOutStr]);
+    }, [hotelId, checkIn, checkOut]);
 
     // Save guest data to session storage on change
     useEffect(() => {
@@ -203,7 +213,10 @@ function BookingContent() {
             bPrice = rates[duration] || rates[String(duration)] || (room.pricePerNight / 2);
         }
 
-        const stayInfo = calculateStayPrice(bPrice, room, coupons);
+        const priceDiff = room.dynamicPricePerNight ? (room.dynamicPricePerNight - room.pricePerNight) : 0;
+        const basePriceWithOffset = parseFloat(bPrice) + priceDiff;
+
+        const stayInfo = calculateStayPrice(basePriceWithOffset, room, coupons);
         return stayInfo.finalPrice;
     };
 
@@ -293,6 +306,15 @@ function BookingContent() {
                             razorpay_signature: response.razorpay_signature
                         });
                         setCreatedBookingId(booking.id.toString());
+                        setCurrentBooking({
+                            ...booking,
+                            hotel,
+                            room: selectedRoomsData[0], // Simplified for receipt
+                            guestFirstName: guestData.firstName,
+                            guestLastName: guestData.lastName,
+                            guestEmail: guestData.email,
+                            guestPhone: `${guestData.countryCode} ${guestData.phone}`
+                        });
                         sessionStorage.removeItem(`booking_guest_data_${hotelId}`);
                         setSuccess(true);
                     } catch (err: any) {
@@ -327,14 +349,7 @@ function BookingContent() {
         }
     };
 
-    if (loading) return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50">
-            <div className="flex flex-col items-center gap-4">
-                <Loader2 className="w-10 h-10 text-brand-600 animate-spin" />
-                <p className="text-slate-500 font-bold italic">Preparing your luxury stay...</p>
-            </div>
-        </div>
-    );
+    if (loading) return <Loader variant="fullscreen" text="Preparing stay..." />;
 
     if (isVerifying) return (
         <div className="min-h-screen flex items-center justify-center bg-slate-900 px-4">
@@ -562,12 +577,27 @@ function BookingContent() {
 
                                 <div className="space-y-4">
                                     <button 
-                                        onClick={() => window.print()}
+                                        onClick={() => {
+                                            const printContent = document.getElementById('invoice-capture');
+                                            const originalContent = document.body.innerHTML;
+                                            if (printContent) {
+                                                document.body.innerHTML = printContent.innerHTML;
+                                                window.print();
+                                                window.location.reload(); // Refresh to restore state
+                                            }
+                                        }}
                                         className="w-full py-5 bg-slate-900 text-white font-black rounded-xl hover:bg-black transition-all shadow-xl shadow-slate-200 text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3"
                                     >
                                         <Download className="w-4 h-4" />
                                         Download Receipt
                                     </button>
+                                    
+                                    {/* Hidden Invoice Template for Printing */}
+                                    <div className="hidden">
+                                        <div id="invoice-capture">
+                                            <InvoiceTemplate booking={currentBooking} />
+                                        </div>
+                                    </div>
                                     
                                     {/* Quick Message to Property */}
                                     <div className="pt-4 border-t border-slate-100">
@@ -981,11 +1011,7 @@ function BookingContent() {
 
 export default function BookingIDPage() {
     return (
-        <Suspense fallback={
-            <div className="min-h-screen flex items-center justify-center bg-slate-50">
-                <Loader2 className="w-10 h-10 animate-spin text-slate-900" />
-            </div>
-        }>
+        <Suspense fallback={<Loader variant="fullscreen" text="Loading..." />}>
             <BookingContent />
         </Suspense>
     );

@@ -4,41 +4,271 @@ import { useState, useEffect } from "react";
 import { useNavigate as useRouter } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { 
-    Settings, User, Hotel, Shield, 
-    Lock, HelpCircle, Save, Loader2,
-    MapPin, Globe, Phone, Mail,
-    Clock, Info, LogOut, Trash2,
-    CheckCircle2, AlertCircle, Camera, Users, ChevronRight
+    Save, Loader2, Shield, Settings, User, Hotel, Lock, HelpCircle,
+    MapPin, Globe, Phone, Mail, LogOut, Trash2,
+    CheckCircle2, AlertCircle, Camera, Users, ChevronRight,
+    Clock, BedDouble, Info, Zap, ShieldCheck, Edit3
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { hotelApi } from "@/lib/api";
+import { cn, safeParse } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
+import { hotelApi, authApi } from "@/lib/api";
 
 export default function PartnerSettingsPage() {
     const { user: authUser, loading: authLoading } = useAuth();
     const router = useRouter();
     const [hotel, setHotel] = useState<any>(null);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'profile' | 'policies' | 'account' | 'support'>('profile');
+    const [activeTab, setActiveTab] = useState<'policies' | 'account' | 'support' | 'faqs'>('policies');
     const [isSaving, setIsSaving] = useState(false);
     const [successMessage, setSuccessMessage] = useState("");
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | null }>({ message: "", type: null });
+
+    const showToast = (message: string, type: 'success' | 'error') => {
+        setToast({ message, type });
+        setTimeout(() => setToast({ message: "", type: null }), 3000);
+    };
+
+    const [currentUser, setCurrentUser] = useState<any>(null);
+    const [showHistoryModal, setShowHistoryModal] = useState(false);
+
+    useEffect(() => {
+        if (authUser) {
+            setCurrentUser(authUser);
+        }
+    }, [authUser]);
+
+    // Account Security States
+    const [accountForm, setAccountForm] = useState({
+        newPassword: "",
+        confirmPassword: ""
+    });
+    const [otpCode, setOtpCode] = useState("");
+    const [isOtpSent, setIsOtpSent] = useState(false);
+    const [accountLoading, setAccountLoading] = useState(false);
+
+    // Send OTP for Changing Password
+    const handleSendChangePasswordOTP = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!accountForm.newPassword || !accountForm.confirmPassword) {
+            showToast("New password and confirm password are required.", 'error');
+            return;
+        }
+        if (accountForm.newPassword.length < 6) {
+            showToast("Password must be at least 6 characters long.", 'error');
+            return;
+        }
+        if (accountForm.newPassword !== accountForm.confirmPassword) {
+            showToast("Passwords do not match.", 'error');
+            return;
+        }
+
+        setAccountLoading(true);
+        try {
+            const res = await authApi.sendChangePasswordOTP({
+                newPassword: accountForm.newPassword,
+                confirmPassword: accountForm.confirmPassword
+            });
+            if (res.success) {
+                setIsOtpSent(true);
+                showToast("OTP sent to your registered email!", 'success');
+            }
+        } catch (err: any) {
+            showToast(err.message || "Failed to send OTP", 'error');
+        } finally {
+            setAccountLoading(false);
+        }
+    };
+
+    // Verify OTP and Save Password
+    const handleVerifyChangePasswordOTP = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!otpCode) {
+            showToast("Please enter the 6-digit OTP code.", 'error');
+            return;
+        }
+
+        setAccountLoading(true);
+        try {
+            const res = await authApi.verifyChangePasswordOTP(otpCode);
+            if (res.success) {
+                showToast("Password updated successfully!", 'success');
+                if (res.data) {
+                    setCurrentUser((prev: any) => ({
+                        ...prev,
+                        passwordLastChangedAt: res.data.passwordLastChangedAt,
+                        passwordChangeHistory: res.data.passwordChangeHistory
+                    }));
+                }
+                // Reset form states
+                setAccountForm({ newPassword: "", confirmPassword: "" });
+                setOtpCode("");
+                setIsOtpSent(false);
+            }
+        } catch (err: any) {
+            showToast(err.message || "Invalid OTP code", 'error');
+            setAccountLoading(false);
+        }
+    };
+
+    // Email Change States
+    const [newEmail, setNewEmail] = useState("");
+    const [emailOtpCode, setEmailOtpCode] = useState("");
+    const [isEmailOtpSent, setIsEmailOtpSent] = useState(false);
+    const [isChangingEmail, setIsChangingEmail] = useState(false);
+
+    // Get number of remaining changes this year
+    const getEmailChangesLeft = () => {
+        if (!currentUser?.emailChangeHistory) return 2;
+        try {
+            const history = JSON.parse(currentUser.emailChangeHistory);
+            if (!Array.isArray(history)) return 2;
+            const currentYear = new Date().getFullYear();
+            const changesThisYear = history.filter((dateStr: string) => new Date(dateStr).getFullYear() === currentYear);
+            return Math.max(0, 2 - changesThisYear.length);
+        } catch (e) {
+            return 2;
+        }
+    };
+
+    // Send OTP for Changing Email
+    const handleSendChangeEmailOTP = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newEmail) {
+            showToast("New email address is required.", 'error');
+            return;
+        }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(newEmail)) {
+            showToast("Please enter a valid email address.", 'error');
+            return;
+        }
+
+        setAccountLoading(true);
+        try {
+            const res = await authApi.sendChangeEmailOTP({ newEmail });
+            if (res.success) {
+                setIsEmailOtpSent(true);
+                showToast("OTP sent to your new email address!", 'success');
+            }
+        } catch (err: any) {
+            showToast(err.message || "Failed to send OTP", 'error');
+        } finally {
+            setAccountLoading(false);
+        }
+    };
+
+    // Verify OTP and Save New Email
+    const handleVerifyChangeEmailOTP = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!emailOtpCode) {
+            showToast("Please enter the 6-digit OTP code.", 'error');
+            return;
+        }
+
+        setAccountLoading(true);
+        try {
+            const res = await authApi.verifyChangeEmailOTP(emailOtpCode);
+            if (res.success) {
+                showToast("Email address updated successfully!", 'success');
+                if (res.data) {
+                    setCurrentUser((prev: any) => ({
+                        ...prev,
+                        email: res.data.email,
+                        emailChangeHistory: res.data.emailChangeHistory
+                    }));
+                }
+                setNewEmail("");
+                setEmailOtpCode("");
+                setIsEmailOtpSent(false);
+                setIsChangingEmail(false);
+            }
+        } catch (err: any) {
+            showToast(err.message || "Email verification failed", 'error');
+        } finally {
+            setAccountLoading(false);
+        }
+    };
+    const handleDeactivateProperty = async () => {
+        const confirmFirst = window.confirm(
+            "⚠️ DANGER ZONE: Are you absolutely sure you want to deactivate your property?\n\nThis will permanently delete your hotel profile, all rooms, staff records, coupons, and historical settings from the GetHotel platform. This action is irreversible!"
+        );
+        if (!confirmFirst) return;
+
+        const confirmSecond = window.confirm(
+            "Final verification: Do you really want to permanently deactivate and delete this property? You will be logged out immediately after deletion."
+        );
+        if (!confirmSecond) return;
+
+        setAccountLoading(true);
+        try {
+            const res = await hotelApi.deleteHotel(hotel.id);
+            if (res.success) {
+                showToast("Property deactivated and deleted successfully!", 'success');
+                // Logout the user and redirect
+                setTimeout(() => {
+                    localStorage.removeItem('token');
+                    sessionStorage.removeItem('activeHotelId');
+                    window.location.href = '/partner';
+                }, 2000);
+            }
+        } catch (err: any) {
+            showToast(err.message || "Failed to deactivate property", 'error');
+            setAccountLoading(false);
+        }
+    };
 
     // Form States
-    const [profileForm, setProfileForm] = useState({
-        name: "",
-        tagline: "",
-        description: "",
-        address: "",
-        city: "",
-        pricePerNight: "",
-        starRating: "3"
-    });
-
     const [policyForm, setPolicyForm] = useState({
+        // 1. Check-In & Check-Out
         checkIn: "12:00 PM",
         checkOut: "11:00 AM",
+        earlyCheckIn: "Subject to availability",
+        lateCheckOut: "Subject to availability, charges may apply",
+
+        // 2. Cancellation & Refunds
         cancellation: "Free cancellation up to 24 hours before check-in",
-        children: "Children below 5 years stay for free"
+        cancellationDeadline: "24 hours",
+        nonRefundableConditions: "No refund for same-day cancellations",
+        refundPercentage: "100% refund before deadline",
+
+        // 3. Guest & Identification
+        localId: "Accepted",
+        couplesAllowed: "Yes",
+        guestRestrictions: "None",
+        visitorPolicy: "Visitors allowed in lobby only after 8 PM",
+        requiredId: "Aadhar, Passport or Driving License",
+
+        // 4. Children & Extra Beds
+        childrenPolicy: "Children below 5 years stay for free",
+        extraBedCharges: "₹1000 per night",
+
+        // 5. Property Rules & Safety
+        smoking: "Not allowed inside rooms",
+        parties: "Not allowed",
+        outsideFood: "Allowed",
+        quietHours: "10:00 PM to 07:00 AM",
+        safetyFeatures: "CCTV, 24/7 Security, Fire Safety",
+
+        // 6. Payment & Deposits
+        advancePayment: "No advance payment required",
+        securityDeposit: "No deposit required",
+        paymentMethods: "Cash, UPI, Credit/Debit Cards",
+
+        // 7. Pet Policy
+        pets: "Not allowed",
+
+        // 8. Facilities (Parking, WiFi, Pool, Gym)
+        parking: "Free private parking available",
+        wifi: "Free high-speed WiFi",
+        poolGymRules: "Pool timings: 7 AM - 8 PM. Proper swimwear required.",
+
+        // 9. Others
+        damagePolicy: "Guest is responsible for any damage to property",
+        emergencySupport: "Reception: +91 XXXXX XXXXX",
+        additionalNotes: ""
     });
+
+    const [faqForm, setFaqForm] = useState<{question: string, answer: string}[]>([]);
 
     const fetchHotelData = async () => {
         try {
@@ -46,17 +276,12 @@ export default function PartnerSettingsPage() {
             if (res.success && res.data && res.data.length > 0) {
                 const myHotel = res.data[0];
                 setHotel(myHotel);
-                setProfileForm({
-                    name: myHotel.name || "",
-                    tagline: myHotel.tagline || "",
-                    description: myHotel.description || "",
-                    address: myHotel.address || "",
-                    city: myHotel.city || "",
-                    pricePerNight: myHotel.pricePerNight?.toString() || "",
-                    starRating: myHotel.starRating?.toString() || "3"
-                });
                 if (myHotel.policies) {
-                    setPolicyForm({ ...policyForm, ...myHotel.policies });
+                    const parsedPolicies = safeParse(myHotel.policies, {});
+                    setPolicyForm(prev => ({ ...prev, ...parsedPolicies }));
+                }
+                if (myHotel.faqs) {
+                    setFaqForm(safeParse(myHotel.faqs, []));
                 }
             }
         } catch (err) {
@@ -74,39 +299,22 @@ export default function PartnerSettingsPage() {
         }
     }, [authUser, authLoading, router]);
 
-    const handleUpdateProfile = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsSaving(true);
-        try {
-            const res = await hotelApi.updateHotel(hotel.id, {
-                ...profileForm,
-                pricePerNight: parseFloat(profileForm.pricePerNight),
-                starRating: parseInt(profileForm.starRating)
-            });
-            if (res.success) {
-                setSuccessMessage("Profile updated successfully!");
-                setTimeout(() => setSuccessMessage(""), 3000);
-            }
-        } catch (err) {
-            alert("Failed to update profile");
-        } finally {
-            setIsSaving(false);
-        }
-    };
+
 
     const handleUpdatePolicies = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!hotel?.id) return;
         setIsSaving(true);
         try {
             const res = await hotelApi.updateHotel(hotel.id, {
-                policies: policyForm
+                policies: JSON.stringify(policyForm),
+                faqs: JSON.stringify(faqForm)
             });
             if (res.success) {
-                setSuccessMessage("Policies updated successfully!");
-                setTimeout(() => setSuccessMessage(""), 3000);
+                showToast("Property information updated successfully!", 'success');
             }
-        } catch (err) {
-            alert("Failed to update policies");
+        } catch (err: any) {
+            showToast(err.message || "Failed to update information", 'error');
         } finally {
             setIsSaving(false);
         }
@@ -131,247 +339,597 @@ export default function PartnerSettingsPage() {
     }
 
     const tabs = [
-        { id: 'profile', label: 'Property Profile', icon: Hotel },
         { id: 'policies', label: 'Hotel Policies', icon: Shield },
+        { id: 'faqs', label: 'Manage FAQs', icon: HelpCircle },
         { id: 'account', label: 'Account Security', icon: Lock },
-        { id: 'support', label: 'Support & Help', icon: HelpCircle },
+        { id: 'support', label: 'Support & Help', icon: Phone },
     ];
 
     return (
-        <div className="space-y-10 animate-fade-in pb-20">
+        <div className="max-w-5xl mx-auto space-y-10 animate-fade-in pb-20">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
                     <h1 className="text-3xl font-black text-slate-900 tracking-tight">Property Settings</h1>
-                    <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-1">Configure your property profile, policies and account preferences</p>
+                    <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-1">Manage your property profile, policies and account preferences</p>
                 </div>
-                {successMessage && (
-                    <div className="px-6 py-3 bg-emerald-50 text-emerald-600 text-xs font-bold rounded-2xl border border-emerald-100 flex items-center gap-2 animate-bounce">
-                        <CheckCircle2 className="w-4 h-4" /> {successMessage}
-                    </div>
-                )}
-            </div>
-
-            <div className="flex flex-col lg:flex-row gap-10">
-                {/* Sidebar Navigation */}
-                <div className="lg:w-80 shrink-0 space-y-2">
-                    {tabs.map((tab) => {
-                        const Icon = tab.icon;
-                        return (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id as any)}
-                                className={cn(
-                                    "w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-sm font-bold transition-all border",
-                                    activeTab === tab.id 
-                                        ? "bg-slate-900 text-white border-slate-900 shadow-xl shadow-slate-200" 
-                                        : "bg-white text-slate-500 border-transparent hover:bg-slate-50"
-                                )}
-                            >
-                                <Icon className={cn("w-5 h-5", activeTab === tab.id ? "text-blue-400" : "text-slate-400")} />
-                                {tab.label}
-                            </button>
-                        );
-                    })}
-                    
-                    <div className="pt-10">
-                        <button className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-sm font-bold text-red-500 hover:bg-red-50 transition-all border border-transparent hover:border-red-100">
-                            <LogOut className="w-5 h-5" /> Sign Out
-                        </button>
-                    </div>
-                </div>
-
-                {/* Main Content Area */}
-                <div className="flex-1 bg-white rounded-[40px] border border-slate-200 shadow-sm overflow-hidden">
-                    {/* Profile Tab */}
-                    {activeTab === 'profile' && (
-                        <form onSubmit={handleUpdateProfile}>
-                            <div className="p-10 border-b border-slate-100 bg-slate-50/30">
-                                <h3 className="text-xl font-black text-slate-900 tracking-tight">Property Profile</h3>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">This information is visible to guests on the platform</p>
+                {/* Toast Notification */}
+                <AnimatePresence>
+                    {toast.type && (
+                        <motion.div 
+                            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+                            className={cn(
+                                "fixed bottom-10 right-10 z-[100] px-8 py-4 rounded-none shadow-2xl border flex items-center gap-4 min-w-[300px]",
+                                toast.type === 'success' ? "bg-emerald-600 border-emerald-500 text-white" : "bg-red-600 border-red-500 text-white"
+                            )}
+                        >
+                            <div className="w-8 h-8 bg-white/20 rounded-none flex items-center justify-center">
+                                {toast.type === 'success' ? <CheckCircle2 className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
                             </div>
-                            <div className="p-10 space-y-8">
-                                <div className="flex flex-col md:flex-row gap-8 items-start">
-                                    <div className="w-32 h-32 bg-slate-100 rounded-[32px] flex flex-col items-center justify-center relative group cursor-pointer border-2 border-dashed border-slate-200 hover:border-blue-600 transition-all">
-                                        {hotel?.thumbnail ? (
-                                            <img src={hotel.thumbnail} alt="" className="w-full h-full object-cover rounded-[30px]" />
-                                        ) : (
-                                            <Camera className="w-8 h-8 text-slate-300" />
-                                        )}
-                                        <div className="absolute inset-0 bg-slate-900/60 rounded-[30px] opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                                            <span className="text-[8px] font-black text-white uppercase">Change Logo</span>
-                                        </div>
+                            <div>
+                                <p className="text-[10px] font-black uppercase tracking-widest opacity-70">System Message</p>
+                                <p className="text-sm font-bold tracking-tight">{toast.message}</p>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+            <div className="flex flex-col gap-10">
+                <div className="bg-white border border-slate-200 rounded-none shadow-sm">
+                    <div className="flex items-center overflow-x-auto w-full scroll-smooth flex-nowrap border-b border-slate-100 custom-scrollbar">
+                        {tabs.map((tab) => {
+                            const Icon = tab.icon;
+                            const isActive = activeTab === tab.id;
+                            return (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id as any)}
+                                    className={cn(
+                                        "flex-shrink-0 min-w-[160px] flex items-center justify-center gap-3 px-8 py-5 text-xs font-black uppercase tracking-widest transition-all relative group whitespace-nowrap",
+                                        isActive ? "text-blue-600 bg-blue-50/30" : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"
+                                    )}
+                                >
+                                    <Icon className={cn("w-4 h-4", isActive ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600")} />
+                                    {tab.label}
+                                    {isActive && (
+                                        <motion.div 
+                                            layoutId="activeTab"
+                                            className="absolute bottom-0 left-0 right-0 h-1 bg-blue-600"
+                                        />
+                                    )}
+                                </button>
+                            );
+                        })}
+                        <div className="border-l border-slate-100 px-4">
+                            <button className="flex items-center gap-2 px-6 py-3 rounded-none text-[10px] font-black uppercase tracking-widest text-red-500 hover:bg-red-50 transition-all whitespace-nowrap">
+                                <LogOut className="w-4 h-4" /> Sign Out
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Main Content Area - Full Width */}
+                <div className="w-full bg-white rounded-none border border-slate-200 shadow-sm overflow-hidden">
+                    {/* Policies Tab */}
+                    {activeTab === 'policies' && (
+                        <form onSubmit={handleUpdatePolicies}>
+                            <div className="p-10 border-b border-slate-100 bg-slate-50/30">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h3 className="text-xl font-black text-slate-900 tracking-tight">Property Policies & Rules</h3>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Set up global rules that apply to your entire property</p>
                                     </div>
-                                    <div className="flex-1 space-y-6 w-full">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Hotel Name</label>
-                                                <input 
-                                                    type="text" required value={profileForm.name}
-                                                    onChange={(e) => setProfileForm({...profileForm, name: e.target.value})}
-                                                    className="w-full px-6 py-4 bg-slate-50 border-transparent rounded-2xl text-sm font-bold focus:bg-white focus:border-blue-600 outline-none transition-all"
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tagline</label>
-                                                <input 
-                                                    type="text" value={profileForm.tagline}
-                                                    onChange={(e) => setProfileForm({...profileForm, tagline: e.target.value})}
-                                                    className="w-full px-6 py-4 bg-slate-50 border-transparent rounded-2xl text-sm font-bold focus:bg-white focus:border-blue-600 outline-none transition-all"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Description</label>
-                                            <textarea 
-                                                required rows={4} value={profileForm.description}
-                                                onChange={(e) => setProfileForm({...profileForm, description: e.target.value})}
-                                                className="w-full px-6 py-4 bg-slate-50 border-transparent rounded-2xl text-sm font-bold focus:bg-white focus:border-blue-600 outline-none transition-all resize-none"
-                                            />
-                                        </div>
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">City</label>
-                                                <input 
-                                                    type="text" required value={profileForm.city}
-                                                    onChange={(e) => setProfileForm({...profileForm, city: e.target.value})}
-                                                    className="w-full px-6 py-4 bg-slate-50 border-transparent rounded-2xl text-sm font-bold focus:bg-white focus:border-blue-600 outline-none transition-all"
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Star Rating</label>
-                                                <select 
-                                                    value={profileForm.starRating}
-                                                    onChange={(e) => setProfileForm({...profileForm, starRating: e.target.value})}
-                                                    className="w-full px-6 py-4 bg-slate-50 border-transparent rounded-2xl text-sm font-bold focus:bg-white focus:border-blue-600 outline-none transition-all appearance-none"
-                                                >
-                                                    {[1,2,3,4,5].map(n => <option key={n} value={n}>{n} Star</option>)}
-                                                </select>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Base Price (Per Night)</label>
-                                                <div className="relative">
-                                                    <span className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
-                                                    <input 
-                                                        type="number" required value={profileForm.pricePerNight}
-                                                        onChange={(e) => setProfileForm({...profileForm, pricePerNight: e.target.value})}
-                                                        className="w-full pl-10 pr-6 py-4 bg-slate-50 border-transparent rounded-2xl text-sm font-bold focus:bg-white focus:border-blue-600 outline-none transition-all"
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Address</label>
-                                            <div className="relative">
-                                                <MapPin className="absolute left-6 top-5 w-4 h-4 text-slate-400" />
-                                                <textarea 
-                                                    required rows={2} value={profileForm.address}
-                                                    onChange={(e) => setProfileForm({...profileForm, address: e.target.value})}
-                                                    className="w-full pl-14 pr-6 py-4 bg-slate-50 border-transparent rounded-2xl text-sm font-bold focus:bg-white focus:border-blue-600 outline-none transition-all resize-none"
-                                                />
-                                            </div>
-                                        </div>
+                                    <div className="bg-blue-50 px-4 py-2 rounded-none border border-blue-100 flex items-center gap-2">
+                                        <Shield className="w-4 h-4 text-blue-600" />
+                                        <span className="text-[10px] font-black text-blue-600 uppercase">Global Inheritance Active</span>
                                     </div>
                                 </div>
                             </div>
+                            
+                            <div className="p-10 space-y-6">
+                                {/* Policy Categories - Grid based layout for better UX */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    
+                                    {/* 1. Check-in & Out */}
+                                    <div className="p-8 bg-slate-50 rounded-none border border-slate-100 space-y-6">
+                                        <div className="flex items-center gap-3 mb-2">
+                                            <div className="w-10 h-10 bg-white rounded-none flex items-center justify-center text-blue-600 shadow-sm">
+                                                <Clock className="w-5 h-5" />
+                                            </div>
+                                            <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest">Timing & Access</h4>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-1">
+                                                <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Check-In</label>
+                                                <input type="text" value={policyForm.checkIn} onChange={(e) => setPolicyForm({...policyForm, checkIn: e.target.value})} className="w-full px-4 py-3 bg-white border-transparent rounded-none text-xs font-bold focus:border-blue-600 outline-none transition-all" />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Check-Out</label>
+                                                <input type="text" value={policyForm.checkOut} onChange={(e) => setPolicyForm({...policyForm, checkOut: e.target.value})} className="w-full px-4 py-3 bg-white border-transparent rounded-none text-xs font-bold focus:border-blue-600 outline-none transition-all" />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Early Check-In / Late Check-Out</label>
+                                            <input type="text" value={policyForm.earlyCheckIn} onChange={(e) => setPolicyForm({...policyForm, earlyCheckIn: e.target.value})} className="w-full px-4 py-3 bg-white border-transparent rounded-none text-xs font-bold focus:border-blue-600 outline-none transition-all" />
+                                        </div>
+                                    </div>
+
+                                    {/* 2. Cancellation */}
+                                    <div className="p-8 bg-slate-50 rounded-none border border-slate-100 space-y-6">
+                                        <div className="flex items-center gap-3 mb-2">
+                                            <div className="w-10 h-10 bg-white rounded-none flex items-center justify-center text-red-600 shadow-sm">
+                                                <AlertCircle className="w-5 h-5" />
+                                            </div>
+                                            <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest">Cancellation & Refunds</h4>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Primary Policy</label>
+                                            <textarea rows={2} value={policyForm.cancellation} onChange={(e) => setPolicyForm({...policyForm, cancellation: e.target.value})} className="w-full px-4 py-3 bg-white border-transparent rounded-none text-xs font-bold focus:border-blue-600 outline-none transition-all resize-none" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase ml-1">No-Show / Refund Percentage</label>
+                                            <input type="text" value={policyForm.refundPercentage} onChange={(e) => setPolicyForm({...policyForm, refundPercentage: e.target.value})} className="w-full px-4 py-3 bg-white border-transparent rounded-none text-xs font-bold focus:border-blue-600 outline-none transition-all" />
+                                        </div>
+                                    </div>
+
+                                    {/* 3. Guest Rules */}
+                                    <div className="p-8 bg-slate-50 rounded-none border border-slate-100 space-y-6">
+                                        <div className="flex items-center gap-3 mb-2">
+                                            <div className="w-10 h-10 bg-white rounded-none flex items-center justify-center text-emerald-600 shadow-sm">
+                                                <Users className="w-5 h-5" />
+                                            </div>
+                                            <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest">Guest Policies</h4>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-1">
+                                                <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Local ID Accepted?</label>
+                                                <select value={policyForm.localId} onChange={(e) => setPolicyForm({...policyForm, localId: e.target.value})} className="w-full px-4 py-3 bg-white border-transparent rounded-none text-xs font-bold focus:border-blue-600 outline-none transition-all appearance-none">
+                                                    <option value="Accepted">Accepted</option>
+                                                    <option value="Not Accepted">Not Accepted</option>
+                                                </select>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Couples Allowed?</label>
+                                                <select value={policyForm.couplesAllowed} onChange={(e) => setPolicyForm({...policyForm, couplesAllowed: e.target.value})} className="w-full px-4 py-3 bg-white border-transparent rounded-none text-xs font-bold focus:border-blue-600 outline-none transition-all appearance-none">
+                                                    <option value="Yes">Yes</option>
+                                                    <option value="No">No</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Identification Requirements</label>
+                                            <input type="text" value={policyForm.requiredId} onChange={(e) => setPolicyForm({...policyForm, requiredId: e.target.value})} className="w-full px-4 py-3 bg-white border-transparent rounded-none text-xs font-bold focus:border-blue-600 outline-none transition-all" />
+                                        </div>
+                                    </div>
+
+                                    {/* 4. Children & Beds */}
+                                    <div className="p-8 bg-slate-50 rounded-none border border-slate-100 space-y-6">
+                                        <div className="flex items-center gap-3 mb-2">
+                                            <div className="w-10 h-10 bg-white rounded-none flex items-center justify-center text-purple-600 shadow-sm">
+                                                <BedDouble className="w-5 h-5" />
+                                            </div>
+                                            <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest">Children & Extra Beds</h4>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Children Policy</label>
+                                            <input type="text" value={policyForm.childrenPolicy} onChange={(e) => setPolicyForm({...policyForm, childrenPolicy: e.target.value})} className="w-full px-4 py-3 bg-white border-transparent rounded-none text-xs font-bold focus:border-blue-600 outline-none transition-all" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Extra Bed Charges (Optional)</label>
+                                            <input type="text" value={policyForm.extraBedCharges} onChange={(e) => setPolicyForm({...policyForm, extraBedCharges: e.target.value})} className="w-full px-4 py-3 bg-white border-transparent rounded-none text-xs font-bold focus:border-blue-600 outline-none transition-all" />
+                                        </div>
+                                    </div>
+
+                                    {/* 5. Property Rules */}
+                                    <div className="p-8 bg-slate-50 rounded-none border border-slate-100 space-y-6">
+                                        <div className="flex items-center gap-3 mb-2">
+                                            <div className="w-10 h-10 bg-white rounded-none flex items-center justify-center text-amber-600 shadow-sm">
+                                                <Info className="w-5 h-5" />
+                                            </div>
+                                            <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest">House Rules & Restrictions</h4>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-1">
+                                                <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Smoking Allowed?</label>
+                                                <select value={policyForm.smoking} onChange={(e) => setPolicyForm({...policyForm, smoking: e.target.value})} className="w-full px-4 py-3 bg-white border-transparent rounded-none text-xs font-bold focus:border-blue-600 outline-none transition-all appearance-none">
+                                                    <option value="Not allowed">No</option>
+                                                    <option value="Allowed in smoking areas">Smoking Areas Only</option>
+                                                    <option value="Allowed">Yes</option>
+                                                </select>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Parties/Events?</label>
+                                                <select value={policyForm.parties} onChange={(e) => setPolicyForm({...policyForm, parties: e.target.value})} className="w-full px-4 py-3 bg-white border-transparent rounded-none text-xs font-bold focus:border-blue-600 outline-none transition-all appearance-none">
+                                                    <option value="Not allowed">No</option>
+                                                    <option value="Allowed with permission">With Permission</option>
+                                                    <option value="Allowed">Yes</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Quiet Hours Policy</label>
+                                            <input type="text" value={policyForm.quietHours} onChange={(e) => setPolicyForm({...policyForm, quietHours: e.target.value})} className="w-full px-4 py-3 bg-white border-transparent rounded-none text-xs font-bold focus:border-blue-600 outline-none transition-all" />
+                                        </div>
+                                    </div>
+
+                                    {/* 6. Facilities & Parking */}
+                                    <div className="p-8 bg-slate-50 rounded-none border border-slate-100 space-y-6">
+                                        <div className="flex items-center gap-3 mb-2">
+                                            <div className="w-10 h-10 bg-white rounded-none flex items-center justify-center text-sky-600 shadow-sm">
+                                                <Zap className="w-5 h-5" />
+                                            </div>
+                                            <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest">Facilities & Parking</h4>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Parking Policy</label>
+                                            <input type="text" value={policyForm.parking} onChange={(e) => setPolicyForm({...policyForm, parking: e.target.value})} className="w-full px-4 py-3 bg-white border-transparent rounded-none text-xs font-bold focus:border-blue-600 outline-none transition-all" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase ml-1">WiFi & Internet Speed</label>
+                                            <input type="text" value={policyForm.wifi} onChange={(e) => setPolicyForm({...policyForm, wifi: e.target.value})} className="w-full px-4 py-3 bg-white border-transparent rounded-none text-xs font-bold focus:border-blue-600 outline-none transition-all" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Full width sections for safety and notes */}
+                                <div className="space-y-6">
+                                    <div className="p-8 bg-blue-50/30 rounded-none border border-blue-100 space-y-4">
+                                        <h4 className="text-xs font-black text-blue-900 uppercase tracking-[0.2em] flex items-center gap-2">
+                                            <ShieldCheck className="w-4 h-4" /> Safety & Emergency Contact Info
+                                        </h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-1">
+                                                <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Safety Features Available</label>
+                                                <input type="text" value={policyForm.safetyFeatures} onChange={(e) => setPolicyForm({...policyForm, safetyFeatures: e.target.value})} placeholder="CCTV, Fire extinguishers, Security etc." className="w-full px-4 py-3 bg-white border-transparent rounded-none text-xs font-bold focus:border-blue-600 outline-none transition-all" />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Emergency Support Details</label>
+                                                <input type="text" value={policyForm.emergencySupport} onChange={(e) => setPolicyForm({...policyForm, emergencySupport: e.target.value})} placeholder="Police, Hospital, Front desk numbers..." className="w-full px-4 py-3 bg-white border-transparent rounded-none text-xs font-bold focus:border-blue-600 outline-none transition-all" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="p-8 bg-slate-900 rounded-none shadow-xl shadow-slate-200 space-y-4">
+                                        <h4 className="text-xs font-black text-white uppercase tracking-[0.2em] flex items-center gap-2">
+                                            <Edit3 className="w-4 h-4 text-blue-400" /> Additional Property Notes
+                                        </h4>
+                                        <textarea rows={3} value={policyForm.additionalNotes} onChange={(e) => setPolicyForm({...policyForm, additionalNotes: e.target.value})} placeholder="Any other specific instructions for guests..." className="w-full px-6 py-4 bg-white/10 border-white/10 rounded-none text-xs font-bold text-white placeholder:text-white/30 focus:bg-white/20 outline-none transition-all resize-none" />
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <div className="p-10 bg-slate-50 border-t border-slate-100 flex justify-end">
                                 <button 
                                     type="submit" 
                                     disabled={isSaving}
-                                    className="px-10 py-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-100 flex items-center gap-2 hover:bg-blue-700 transition-all"
+                                    className="px-12 py-5 bg-blue-600 text-white rounded-none font-black text-xs uppercase tracking-widest shadow-2xl shadow-blue-200 flex items-center gap-3 hover:bg-blue-700 active:scale-95 transition-all"
                                 >
                                     {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
-                                    Save Changes
+                                    Update All Policies
                                 </button>
                             </div>
                         </form>
                     )}
 
-                    {/* Policies Tab */}
-                    {activeTab === 'policies' && (
-                        <form onSubmit={handleUpdatePolicies}>
-                            <div className="p-10 border-b border-slate-100 bg-slate-50/30">
-                                <h3 className="text-xl font-black text-slate-900 tracking-tight">Hotel Policies</h3>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Define check-in rules and cancellation terms</p>
-                            </div>
-                            <div className="p-10 space-y-10">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
-                                            <Clock className="w-3 h-3" /> Standard Check-In
-                                        </label>
-                                        <input 
-                                            type="text" value={policyForm.checkIn}
-                                            onChange={(e) => setPolicyForm({...policyForm, checkIn: e.target.value})}
-                                            className="w-full px-6 py-4 bg-slate-50 border-transparent rounded-2xl text-sm font-bold focus:bg-white focus:border-blue-600 outline-none transition-all"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
-                                            <Clock className="w-3 h-3" /> Standard Check-Out
-                                        </label>
-                                        <input 
-                                            type="text" value={policyForm.checkOut}
-                                            onChange={(e) => setPolicyForm({...policyForm, checkOut: e.target.value})}
-                                            className="w-full px-6 py-4 bg-slate-50 border-transparent rounded-2xl text-sm font-bold focus:bg-white focus:border-blue-600 outline-none transition-all"
-                                        />
-                                    </div>
+                    {/* FAQ Tab */}
+                    {activeTab === 'faqs' && (
+                        <div className="p-10 space-y-10 animate-fade-in pb-20">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                <div>
+                                    <h3 className="text-xl font-black text-slate-900 tracking-tight">Property FAQs</h3>
+                                    <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1">Manage common guest queries</p>
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
-                                        <Shield className="w-3 h-3" /> Cancellation Policy
-                                    </label>
-                                    <textarea 
-                                        rows={3} value={policyForm.cancellation}
-                                        onChange={(e) => setPolicyForm({...policyForm, cancellation: e.target.value})}
-                                        className="w-full px-6 py-4 bg-slate-50 border-transparent rounded-2xl text-sm font-bold focus:bg-white focus:border-blue-600 outline-none transition-all resize-none"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
-                                        <Users className="w-3 h-3" /> Children & Extra Bed Policy
-                                    </label>
-                                    <textarea 
-                                        rows={3} value={policyForm.children}
-                                        onChange={(e) => setPolicyForm({...policyForm, children: e.target.value})}
-                                        className="w-full px-6 py-4 bg-slate-50 border-transparent rounded-2xl text-sm font-bold focus:bg-white focus:border-blue-600 outline-none transition-all resize-none"
-                                    />
-                                </div>
-                            </div>
-                            <div className="p-10 bg-slate-50 border-t border-slate-100 flex justify-end">
                                 <button 
-                                    type="submit" 
-                                    disabled={isSaving}
-                                    className="px-10 py-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-100 flex items-center gap-2"
+                                    onClick={() => setFaqForm([...faqForm, { question: "", answer: "" }])}
+                                    className="px-6 py-4 bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-none shadow-xl shadow-blue-100 flex items-center gap-2 hover:bg-blue-700 transition-all"
                                 >
-                                    {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
-                                    Update Policies
+                                    <HelpCircle className="w-4 h-4" /> Add New FAQ
                                 </button>
                             </div>
-                        </form>
+
+                            <div className="space-y-6">
+                                {faqForm.length === 0 ? (
+                                    <div className="py-24 border-2 border-dashed border-slate-100 rounded-none flex flex-col items-center justify-center text-center space-y-4 bg-slate-50/50">
+                                        <div className="w-20 h-20 bg-white rounded-none flex items-center justify-center text-slate-200 shadow-sm">
+                                            <HelpCircle className="w-10 h-10" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-slate-900 font-black text-sm uppercase tracking-widest">No FAQs Configured</p>
+                                            <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest">Click the button above to add your first question</p>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    faqForm.map((faq, index) => (
+                                        <div key={index} className="bg-white border border-slate-200 rounded-none p-10 space-y-8 shadow-sm relative group animate-slide-up">
+                                            <button 
+                                                onClick={() => setFaqForm(faqForm.filter((_, i) => i !== index))}
+                                                className="absolute top-8 right-8 p-3 text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all rounded-none border border-transparent hover:border-red-100"
+                                            >
+                                                <Trash2 className="w-5 h-5" />
+                                            </button>
+                                            
+                                            <div className="flex items-center gap-3 mb-2">
+                                                <div className="w-1.5 h-6 bg-blue-600 rounded-none" />
+                                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Question Segment #{index + 1}</h4>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 gap-8">
+                                                <div className="space-y-3">
+                                                    <label className="text-[10px] font-black text-slate-900 uppercase tracking-widest ml-1">Question Text</label>
+                                                    <input 
+                                                        type="text" 
+                                                        placeholder="e.g. Is parking free at your property?"
+                                                        value={faq.question}
+                                                        onChange={(e) => {
+                                                            const newFaqs = [...faqForm];
+                                                            newFaqs[index].question = e.target.value;
+                                                            setFaqForm(newFaqs);
+                                                        }}
+                                                        className="w-full px-6 py-5 bg-slate-50 border-transparent rounded-none text-sm font-bold focus:bg-white focus:border-blue-600 outline-none transition-all shadow-inner"
+                                                    />
+                                                </div>
+                                                <div className="space-y-3">
+                                                    <label className="text-[10px] font-black text-slate-900 uppercase tracking-widest ml-1">Answer / Response</label>
+                                                    <textarea 
+                                                        placeholder="e.g. Yes, we provide complimentary private parking for all our guests..."
+                                                        value={faq.answer}
+                                                        onChange={(e) => {
+                                                            const newFaqs = [...faqForm];
+                                                            newFaqs[index].answer = e.target.value;
+                                                            setFaqForm(newFaqs);
+                                                        }}
+                                                        className="w-full px-6 py-5 bg-slate-50 border-transparent rounded-none text-sm font-bold focus:bg-white focus:border-blue-600 outline-none transition-all min-h-[120px] resize-none shadow-inner"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+
+                            <div className="pt-10 border-t border-slate-100 flex justify-end">
+                                <button 
+                                    onClick={handleUpdatePolicies}
+                                    disabled={isSaving}
+                                    className="px-16 py-6 bg-slate-900 text-white rounded-none font-black text-xs uppercase tracking-[0.2em] shadow-2xl flex items-center gap-4 hover:bg-black transition-all active:scale-95"
+                                >
+                                    {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+                                    Deploy FAQ Configuration
+                                </button>
+                            </div>
+                        </div>
                     )}
 
                     {/* Account Tab */}
                     {activeTab === 'account' && (
                         <div className="p-10 space-y-10 animate-fade-in">
-                            <div className="bg-slate-50 p-8 rounded-[32px] border border-slate-100">
-                                <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-4">Change Password</h3>
-                                <div className="space-y-6 max-w-md">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">New Password</label>
-                                        <input type="password" placeholder="••••••••" className="w-full px-6 py-4 bg-white border-slate-200 rounded-2xl text-sm font-bold outline-none focus:border-blue-600 transition-all" />
+                            {isOtpSent ? (
+                                <div className="bg-slate-50 p-8 rounded-none border border-slate-100 space-y-6">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 bg-blue-100 rounded-none flex items-center justify-center text-blue-600">
+                                            <Mail className="w-5 h-5 animate-bounce" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Verify Registered Email</h3>
+                                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">An OTP has been sent to {authUser?.email}</p>
+                                        </div>
                                     </div>
-                                    <button className="px-8 py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all">
-                                        Update Password
-                                    </button>
+                                    
+                                    <form onSubmit={handleVerifyChangePasswordOTP} className="space-y-6 max-w-md">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">6-Digit OTP Code</label>
+                                            <input 
+                                                type="text" 
+                                                placeholder="Enter 6-digit OTP" 
+                                                value={otpCode}
+                                                onChange={(e) => setOtpCode(e.target.value)}
+                                                maxLength={6}
+                                                className="w-full px-6 py-4 bg-white border border-slate-200 rounded-none text-center font-black tracking-[0.3em] text-lg outline-none focus:border-blue-600 transition-all placeholder:tracking-normal placeholder:font-bold" 
+                                            />
+                                        </div>
+                                        
+                                        <div className="flex items-center gap-4">
+                                            <button 
+                                                type="submit" 
+                                                disabled={accountLoading}
+                                                className="flex-1 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-none font-black text-[10px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 active:scale-95"
+                                            >
+                                                {accountLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+                                                Verify & Save
+                                            </button>
+                                            <button 
+                                                type="button"
+                                                onClick={() => setIsOtpSent(false)}
+                                                className="px-6 py-4 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-none font-black text-[10px] uppercase tracking-widest transition-all"
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </form>
                                 </div>
+                            ) : (
+                                <div className="bg-slate-50 p-8 rounded-none border border-slate-100">
+                                    <div className="flex items-center justify-between mb-8">
+                                        <div>
+                                            <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Change Password</h3>
+                                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">
+                                                Last changed: {currentUser?.passwordLastChangedAt ? new Date(currentUser.passwordLastChangedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : "Initial Setup"}
+                                            </p>
+                                        </div>
+                                        <button 
+                                            type="button"
+                                            onClick={() => setShowHistoryModal(true)}
+                                            className="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-none text-[10px] font-black uppercase tracking-widest hover:bg-slate-100 transition-all flex items-center gap-2 shadow-sm active:scale-95"
+                                        >
+                                            <Clock className="w-3 h-3" /> History
+                                        </button>
+                                    </div>
+                                    <form onSubmit={handleSendChangePasswordOTP} className="space-y-6 max-w-md">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">New Password</label>
+                                            <input 
+                                                type="password" 
+                                                placeholder="••••••••" 
+                                                value={accountForm.newPassword}
+                                                onChange={(e) => setAccountForm({ ...accountForm, newPassword: e.target.value })}
+                                                className="w-full px-6 py-4 bg-white border border-slate-200 rounded-none text-sm font-bold outline-none focus:border-blue-600 transition-all" 
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Confirm New Password</label>
+                                            <input 
+                                                type="password" 
+                                                placeholder="••••••••" 
+                                                value={accountForm.confirmPassword}
+                                                onChange={(e) => setAccountForm({ ...accountForm, confirmPassword: e.target.value })}
+                                                className="w-full px-6 py-4 bg-white border-slate-200 rounded-none text-sm font-bold outline-none focus:border-blue-600 transition-all" 
+                                            />
+                                        </div>
+                                        <button 
+                                            type="submit"
+                                            disabled={accountLoading}
+                                            className="px-8 py-4 bg-slate-900 text-white rounded-none font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all flex items-center justify-center gap-2 active:scale-95"
+                                        >
+                                            {accountLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                                            Request OTP & Change
+                                        </button>
+                                    </form>
+                                </div>
+                            )}
+
+                            {/* Email Address Section */}
+                            <div className="bg-slate-50 p-8 rounded-none border border-slate-100 space-y-6">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Registered Email Address</h3>
+                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">This email is used for partner portal login and communication</p>
+                                    </div>
+                                    <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-1.5 border border-emerald-100">
+                                        <CheckCircle2 className="w-4 h-4" />
+                                        <span className="text-[9px] font-black uppercase tracking-widest">Verified via OTP</span>
+                                    </div>
+                                </div>
+
+                                {isEmailOtpSent ? (
+                                    <div className="bg-white p-6 border border-slate-200/60 space-y-6">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 bg-blue-100 rounded-none flex items-center justify-center text-blue-600">
+                                                <Mail className="w-5 h-5 animate-bounce" />
+                                            </div>
+                                            <div>
+                                                <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest">Verify New Email</h4>
+                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Enter the 6-digit OTP sent to {newEmail}</p>
+                                            </div>
+                                        </div>
+
+                                        <form onSubmit={handleVerifyChangeEmailOTP} className="space-y-6 max-w-md">
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">6-Digit OTP Code</label>
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="Enter 6-digit OTP" 
+                                                    value={emailOtpCode}
+                                                    onChange={(e) => setEmailOtpCode(e.target.value)}
+                                                    maxLength={6}
+                                                    className="w-full px-6 py-4 bg-white border border-slate-200 rounded-none text-center font-black tracking-[0.3em] text-lg outline-none focus:border-blue-600 transition-all placeholder:tracking-normal placeholder:font-bold" 
+                                                />
+                                            </div>
+                                            
+                                            <div className="flex items-center gap-4">
+                                                <button 
+                                                    type="submit" 
+                                                    disabled={accountLoading}
+                                                    className="flex-1 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-none font-black text-[10px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 active:scale-95"
+                                                >
+                                                    {accountLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+                                                    Verify & Update Email
+                                                </button>
+                                                <button 
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setIsEmailOtpSent(false);
+                                                        setNewEmail("");
+                                                    }}
+                                                    className="px-6 py-4 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-none font-black text-[10px] uppercase tracking-widest transition-all"
+                                                >
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                ) : isChangingEmail ? (
+                                    <div className="bg-white p-6 border border-slate-200/60 space-y-6">
+                                        <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest">Change Email Address</h4>
+                                        
+                                        <form onSubmit={handleSendChangeEmailOTP} className="space-y-6 max-w-md">
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">New Email Address</label>
+                                                <input 
+                                                    type="email" 
+                                                    placeholder="new-email@example.com" 
+                                                    value={newEmail}
+                                                    onChange={(e) => setNewEmail(e.target.value)}
+                                                    className="w-full px-6 py-4 bg-white border border-slate-200 rounded-none text-sm font-bold outline-none focus:border-blue-600 transition-all" 
+                                                />
+                                                <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">
+                                                    Remaining changes this year: {getEmailChangesLeft()} / 2
+                                                </p>
+                                            </div>
+
+                                            <div className="flex items-center gap-4">
+                                                <button 
+                                                    type="submit" 
+                                                    disabled={accountLoading || getEmailChangesLeft() === 0}
+                                                    className="px-8 py-4 bg-slate-900 text-white rounded-none font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
+                                                >
+                                                    {accountLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                                                    Send Verification OTP
+                                                </button>
+                                                <button 
+                                                    type="button"
+                                                    onClick={() => setIsChangingEmail(false)}
+                                                    className="px-6 py-4 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-none font-black text-[10px] uppercase tracking-widest transition-all"
+                                                >
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center justify-between border-t border-slate-200/60 pt-6">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 bg-slate-100 flex items-center justify-center text-slate-600">
+                                                <Mail className="w-4 h-4" />
+                                            </div>
+                                            <div>
+                                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Current Registered Email</p>
+                                                <p className="text-sm font-bold text-slate-900 mt-1">{currentUser?.email || authUser?.email}</p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsChangingEmail(true)}
+                                            className="px-6 py-3 bg-white border border-slate-200 text-slate-700 rounded-none font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm active:scale-95"
+                                        >
+                                            Change Email
+                                        </button>
+                                    </div>
+                                )}
                             </div>
 
-                            <div className="bg-red-50 p-8 rounded-[32px] border border-red-100">
+                            <div className="bg-red-50 p-8 rounded-none border border-red-100">
                                 <h3 className="text-sm font-black text-red-600 uppercase tracking-widest mb-4">Danger Zone</h3>
                                 <p className="text-xs text-red-500 font-medium mb-6">Permanently remove your property from the GetHotel platform. This action cannot be undone.</p>
-                                <button className="px-8 py-4 bg-red-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-red-700 transition-all flex items-center gap-2">
-                                    <Trash2 className="w-4 h-4" /> Deactivate Property
+                                <button 
+                                    type="button"
+                                    onClick={handleDeactivateProperty}
+                                    disabled={accountLoading}
+                                    className="px-8 py-4 bg-red-600 text-white rounded-none font-black text-[10px] uppercase tracking-widest hover:bg-red-700 transition-all flex items-center gap-2 active:scale-95"
+                                >
+                                    {accountLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                                    Deactivate Property
                                 </button>
                             </div>
                         </div>
@@ -381,16 +939,16 @@ export default function PartnerSettingsPage() {
                     {activeTab === 'support' && (
                         <div className="p-10 space-y-10 animate-fade-in">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div className="p-8 bg-blue-50 rounded-[32px] border border-blue-100 text-center flex flex-col items-center">
-                                    <div className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center text-blue-600 mb-6 shadow-sm">
+                                <div className="p-8 bg-blue-50 rounded-none border border-blue-100 text-center flex flex-col items-center">
+                                    <div className="w-16 h-16 bg-white rounded-none flex items-center justify-center text-blue-600 mb-6 shadow-sm">
                                         <Mail className="w-8 h-8" />
                                     </div>
                                     <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-2">Email Support</h4>
                                     <p className="text-xs text-slate-500 font-medium mb-6">Response within 24 hours</p>
-                                    <a href="mailto:support@gethotel.com" className="text-blue-600 font-black text-sm hover:underline">support@gethotel.com</a>
+                                    <a href="mailto:support@gethotelstays.com" className="text-blue-600 font-black text-sm hover:underline">support@gethotelstays.com</a>
                                 </div>
-                                <div className="p-8 bg-purple-50 rounded-[32px] border border-purple-100 text-center flex flex-col items-center">
-                                    <div className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center text-purple-600 mb-6 shadow-sm">
+                                <div className="p-8 bg-purple-50 rounded-none border border-purple-100 text-center flex flex-col items-center">
+                                    <div className="w-16 h-16 bg-white rounded-none flex items-center justify-center text-purple-600 mb-6 shadow-sm">
                                         <Phone className="w-8 h-8" />
                                     </div>
                                     <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-2">Phone Support</h4>
@@ -399,7 +957,7 @@ export default function PartnerSettingsPage() {
                                 </div>
                             </div>
 
-                            <div className="bg-slate-50 p-10 rounded-[40px] border border-slate-100">
+                            <div className="bg-slate-50 p-10 rounded-none border border-slate-100">
                                 <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-8">Frequently Asked Questions</h3>
                                 <div className="space-y-6">
                                     {[
@@ -408,7 +966,7 @@ export default function PartnerSettingsPage() {
                                         "How is the 10% commission calculated?",
                                         "What documents are needed for verification?"
                                     ].map((q, i) => (
-                                        <div key={i} className="flex items-center justify-between p-4 hover:bg-white rounded-2xl transition-all group cursor-pointer border border-transparent hover:border-slate-100">
+                                        <div key={i} className="flex items-center justify-between p-4 hover:bg-white rounded-none transition-all group cursor-pointer border border-transparent hover:border-slate-100">
                                             <span className="text-xs font-bold text-slate-600 group-hover:text-slate-900">{q}</span>
                                             <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-blue-600" />
                                         </div>
@@ -419,6 +977,75 @@ export default function PartnerSettingsPage() {
                     )}
                 </div>
             </div>
+
+            {/* Password History Modal */}
+            <AnimatePresence>
+                {showHistoryModal && (
+                    <motion.div 
+                        initial={{ opacity: 0 }} 
+                        animate={{ opacity: 1 }} 
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[200] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4"
+                        onClick={() => setShowHistoryModal(false)}
+                    >
+                        <motion.div 
+                            initial={{ y: 50, scale: 0.95 }}
+                            animate={{ y: 0, scale: 1 }}
+                            exit={{ y: 20, scale: 0.95 }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-white max-w-md w-full shadow-2xl rounded-none border border-slate-200 flex flex-col max-h-[80vh]"
+                        >
+                            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 bg-blue-100 rounded-none flex items-center justify-center text-blue-600">
+                                        <Clock className="w-4 h-4" />
+                                    </div>
+                                    <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest">Password History</h3>
+                                </div>
+                                <button onClick={() => setShowHistoryModal(false)} className="text-slate-400 hover:text-slate-900 p-2 border border-transparent hover:border-slate-200 hover:bg-white rounded-none transition-all">
+                                    <span className="text-[10px] font-black uppercase tracking-widest">Close</span>
+                                </button>
+                            </div>
+                            <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
+                                {(() => {
+                                    const historyList = currentUser?.passwordChangeHistory ? safeParse(currentUser.passwordChangeHistory, []) : [];
+                                    if (!historyList || historyList.length === 0) {
+                                        return (
+                                            <div className="text-center py-10 space-y-3">
+                                                <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-2">
+                                                    <Shield className="w-8 h-8 text-slate-300" />
+                                                </div>
+                                                <p className="text-xs font-black text-slate-900 uppercase tracking-widest">No History Found</p>
+                                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Password hasn't been changed yet.</p>
+                                            </div>
+                                        );
+                                    }
+                                    return (
+                                        <div className="space-y-6">
+                                            {historyList.slice().reverse().map((timestamp: string, idx: number) => (
+                                                <div key={idx} className="flex gap-4 relative">
+                                                    {idx !== historyList.length - 1 && (
+                                                        <div className="absolute top-8 bottom-[-24px] left-[15px] w-px bg-slate-200"></div>
+                                                    )}
+                                                    <div className="w-8 h-8 rounded-full bg-emerald-50 border border-emerald-100 flex-shrink-0 flex items-center justify-center z-10">
+                                                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                                                    </div>
+                                                    <div className="pt-1">
+                                                        <p className="text-xs font-black text-slate-900 uppercase tracking-widest">Password Changed</p>
+                                                        <p className="text-[10px] font-bold text-slate-500 mt-1 tracking-wider uppercase">
+                                                            {new Date(timestamp).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    );
+                                })()}
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

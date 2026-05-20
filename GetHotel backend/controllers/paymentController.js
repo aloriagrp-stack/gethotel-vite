@@ -1,6 +1,7 @@
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const prisma = require('../config/db');
+const { sendBookingEmails } = require('../utils/emailService');
 
 // Initialize Razorpay lazily or handle missing keys
 let razorpay;
@@ -109,7 +110,7 @@ exports.verifyPayment = async (req, res) => {
                     where: { id: booking.id },
                     data: {
                         paymentStatus: 'paid',
-                        amountPaid: booking.totalPrice * 0.18,
+                        amountPaid: Math.round(booking.totalPrice * 0.18),
                         razorpayPaymentId: razorpay_payment_id,
                         razorpaySignature: razorpay_signature,
                         status: 'confirmed'
@@ -120,7 +121,7 @@ exports.verifyPayment = async (req, res) => {
                 await tx.transaction.create({
                     data: {
                         bookingId: booking.id,
-                        amount: booking.totalPrice * 0.18,
+                        amount: Math.round(booking.totalPrice * 0.18),
                         status: 'success',
                         gatewayOrderId: razorpay_order_id,
                         gatewayPaymentId: razorpay_payment_id,
@@ -131,6 +132,36 @@ exports.verifyPayment = async (req, res) => {
             });
 
             res.status(200).json({ success: true, message: 'Payment verified successfully. Booking Fee collected.' });
+
+            // Async Email Notification (Don't block response)
+            try {
+                const fullBooking = await prisma.booking.findUnique({
+                    where: { id: booking.id },
+                    include: { 
+                        hotel: {
+                            include: { user: true }
+                        }, 
+                        room: true 
+                    }
+                });
+                
+                if (fullBooking) {
+                    sendBookingEmails({
+                        id: fullBooking.id,
+                        guestName: `${fullBooking.guestFirstName} ${fullBooking.guestLastName}`,
+                        guestEmail: fullBooking.guestEmail,
+                        guestPhone: fullBooking.guestPhone,
+                        hotel: fullBooking.hotel,
+                        room: fullBooking.room,
+                        checkIn: fullBooking.checkIn,
+                        checkOut: fullBooking.checkOut,
+                        totalPrice: fullBooking.totalPrice,
+                        amountPaid: fullBooking.amountPaid
+                    });
+                }
+            } catch (emailErr) {
+                console.error('Async booking email notification failed:', emailErr);
+            }
         } else {
             // FAILED FLOW
             await prisma.transaction.create({

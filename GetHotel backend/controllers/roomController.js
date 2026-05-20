@@ -6,14 +6,13 @@ const normalizeJsonField = (data) => {
     if (typeof data === 'string') {
         try {
             const parsed = JSON.parse(data);
-            return Array.isArray(parsed) ? JSON.stringify(parsed) : JSON.stringify([parsed]);
+            return JSON.stringify(parsed);
         } catch (e) {
             if (data.includes(',')) return JSON.stringify(data.split(',').map(s => s.trim()).filter(Boolean));
             return JSON.stringify([data]);
         }
     }
-    if (Array.isArray(data)) return JSON.stringify(data);
-    return JSON.stringify([data]);
+    return JSON.stringify(data);
 };
 
 // @desc    Get rooms for a hotel
@@ -22,6 +21,8 @@ const normalizeJsonField = (data) => {
 exports.getRooms = async (req, res, next) => {
     try {
         const hotelId = parseInt(req.params.hotelId);
+        const { checkIn, checkOut } = req.query;
+
         const rooms = await prisma.room.findMany({
             where: { hotelId: hotelId }
         });
@@ -29,54 +30,144 @@ exports.getRooms = async (req, res, next) => {
         // 10 minute hold window for pending bookings
         const holdThreshold = new Date(Date.now() - 10 * 60 * 1000);
 
-        // Fetch all bookings that could affect availability
-        const activeBookings = await prisma.booking.findMany({
-            where: {
-                hotelId: hotelId,
-                status: { in: ['confirmed', 'checked-in', 'pending'] },
-                OR: [
-                    { status: 'confirmed' },
-                    { status: 'checked-in' },
-                    { 
-                        AND: [
-                            { status: 'pending' },
-                            { createdAt: { gte: holdThreshold } }
+        let isStaySearch = false;
+        let checkInDate, checkOutDate, nights;
+        if (checkIn && checkOut && checkIn !== 'Dates' && checkOut !== 'Dates') {
+            checkInDate = new Date(checkIn);
+            checkOutDate = new Date(checkOut);
+            if (!isNaN(checkInDate.getTime()) && !isNaN(checkOutDate.getTime()) && checkOutDate > checkInDate) {
+                isStaySearch = true;
+                nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+            }
+        }
+
+        const roomsWithAvailability = [];
+
+        for (const room of rooms) {
+            let availableUnits = room.totalInventory || 1;
+            let dynamicPricePerNight = null;
+
+            if (isStaySearch) {
+                // Fetch daily rates overrides for this room
+                const rates = await prisma.dailyrate.findMany({
+                    where: {
+                        roomId: room.id,
+                        date: {
+                            gte: checkInDate,
+                            lt: checkOutDate
+                        }
+                    }
+                });
+
+                const rateMap = {};
+                rates.forEach(r => {
+                    const dStr = r.date.toISOString().split('T')[0];
+                    rateMap[dStr] = r;
+                });
+
+                let totalStayPrice = 0;
+                let minAvailable = room.totalInventory || 1;
+
+                // Day-by-day check
+                for (let i = 0; i < nights; i++) {
+                    const currentDay = new Date(checkInDate);
+                    currentDay.setDate(currentDay.getDate() + i);
+                    
+                    const nextDay = new Date(currentDay);
+                    nextDay.setDate(nextDay.getDate() + 1);
+
+                    const dStr = currentDay.toISOString().split('T')[0];
+                    const rateOverride = rateMap[dStr];
+
+                    // Base limit for this night
+                    const dayLimit = rateOverride !== undefined ? rateOverride.available : room.totalInventory;
+
+                    // Query bookings overlapping this specific night
+                    const activeBookingsOnNight = await prisma.booking.findMany({
+                        where: {
+                            roomId: room.id,
+                            status: { in: ['confirmed', 'checked-in', 'paid', 'held'] },
+                            checkIn: { lt: nextDay },
+                            checkOut: { gt: currentDay },
+                            OR: [
+                                { status: 'confirmed' },
+                                { status: 'checked-in' },
+                                { status: 'paid' },
+                                { 
+                                    AND: [
+                                        { status: 'held' },
+                                        { createdAt: { gte: holdThreshold } }
+                                    ]
+                                }
+                            ]
+                        }
+                    });
+
+                    // Sum quantities
+                    const bookedCount = activeBookingsOnNight.reduce((count, b) => {
+                        if (b.roomId === room.id) return count + 1;
+                        try {
+                            if (b.roomDetails) {
+                                const details = JSON.parse(b.roomDetails);
+                                const rInfo = details.find((ri) => ri.id === room.id.toString());
+                                if (rInfo) return count + rInfo.quantity;
+                            }
+                        } catch (e) {}
+                        return count;
+                    }, 0);
+
+                    const availableOnNight = Math.max(0, dayLimit - bookedCount);
+                    minAvailable = Math.min(minAvailable, availableOnNight);
+
+                    // Add price
+                    totalStayPrice += rateOverride !== undefined ? rateOverride.price : room.pricePerNight;
+                }
+
+                availableUnits = minAvailable;
+                dynamicPricePerNight = totalStayPrice / nights;
+
+            } else {
+                // FALLBACK TO STATIC SEARCH
+                const activeBookings = await prisma.booking.findMany({
+                    where: {
+                        roomId: room.id,
+                        status: { in: ['confirmed', 'checked-in', 'paid', 'held'] },
+                        OR: [
+                            { status: 'confirmed' },
+                            { status: 'checked-in' },
+                            { status: 'paid' },
+                            { 
+                                AND: [
+                                    { status: 'held' },
+                                    { createdAt: { gte: holdThreshold } }
+                                ]
+                            }
                         ]
                     }
-                ]
+                });
+
+                const bookedCount = activeBookings.reduce((count, b) => {
+                    if (b.roomId === room.id) return count + 1;
+                    try {
+                        if (b.roomDetails) {
+                            const details = JSON.parse(b.roomDetails);
+                            const rInfo = details.find((ri) => ri.id === room.id.toString());
+                            if (rInfo) return count + rInfo.quantity;
+                        }
+                    } catch (e) {}
+                    return count;
+                }, 0);
+
+                availableUnits = Math.max(0, (room.totalInventory || 1) - bookedCount);
             }
-        });
 
-        // Map availability to each room
-        const roomsWithAvailability = rooms.map(room => {
-            // Count how many of this room type are booked/held
-            const bookedCount = activeBookings.reduce((count, b) => {
-                // If it's the primary room ID
-                if (b.roomId === room.id) return count + 1;
-                
-                // Also check roomDetails JSON for multi-room bookings
-                try {
-                    if (b.roomDetails) {
-                        const details = JSON.parse(b.roomDetails);
-                        const rInfo = details.find((ri) => ri.id === room.id.toString());
-                        if (rInfo) return count + rInfo.quantity;
-                    }
-                } catch (e) {}
-                
-                return count;
-            }, 0);
-
-            // Simple logic: If we have room inventory tracking in DB, we'd use that.
-            // For now, let's assume each room type has a default 'totalUnits' of 5 if not specified
-            const totalUnits = 5; 
-            const availableUnits = Math.max(0, totalUnits - bookedCount);
-
-            return {
+            roomsWithAvailability.push({
                 ...room,
                 availableUnits,
-                isAvailable: availableUnits > 0
-            };
-        });
+                isAvailable: availableUnits > 0,
+                dynamicPricePerNight
+            });
+        }
 
         res.status(200).json({ success: true, count: roomsWithAvailability.length, data: roomsWithAvailability });
     } catch (err) {
@@ -107,9 +198,18 @@ exports.addRoom = async (req, res, next) => {
         const { 
             name, description, pricePerNight, maxOccupancy, 
             bedConfiguration, sizeM2, amenities, images, 
-            highlights, trustPoints, roomPolicies, 
+            highlights, trustPoints, 
             minPrice, maxPrice, weeklyDiscount, monthlyDiscount, variants,
-            isHourlyEnabled, hourlyRates 
+            isHourlyEnabled, hourlyRates,
+            // New Fields
+            status, totalInventory, viewType, floorNumber, isCornerRoom,
+            capacityAdults, capacityChildren, capacityInfants, extraMattress, extraBedCharge,
+            tags, isFeatured, displayPriority, videoUrl, media360Url,
+            minStay, maxStay, isInstantBooking, advanceBookingDays,
+            advancePayment, securityDeposit, isRefundable, isTaxIncluded,
+            weekendPricing, seasonalPricing, addOns,
+            petsAllowed, smokingAllowed, alcoholAllowed, partyAllowed,
+            seoTitle, seoDescription, slug
         } = req.body;
         
         const roomData = {
@@ -124,14 +224,48 @@ exports.addRoom = async (req, res, next) => {
             images: normalizeJsonField(images),
             highlights: normalizeJsonField(highlights),
             trustPoints: normalizeJsonField(trustPoints),
-            roomPolicies: normalizeJsonField(roomPolicies),
             minPrice: parseFloat(minPrice) || 0,
             maxPrice: parseFloat(maxPrice) || 0,
             weeklyDiscount: parseInt(weeklyDiscount) || 0,
             monthlyDiscount: parseInt(monthlyDiscount) || 0,
             variants: normalizeJsonField(variants),
             isHourlyEnabled: isHourlyEnabled === true || isHourlyEnabled === 'true',
-            hourlyRates: typeof hourlyRates === 'string' ? hourlyRates : JSON.stringify(hourlyRates || {})
+            hourlyRates: typeof hourlyRates === 'string' ? hourlyRates : JSON.stringify(hourlyRates || {}),
+
+            // New Mappings
+            status: status || 'active',
+            totalInventory: parseInt(totalInventory) || 1,
+            viewType: viewType || null,
+            floorNumber: parseInt(floorNumber) || null,
+            isCornerRoom: isCornerRoom === true || isCornerRoom === 'true',
+            capacityAdults: parseInt(capacityAdults) || 2,
+            capacityChildren: parseInt(capacityChildren) || 0,
+            capacityInfants: parseInt(capacityInfants) || 0,
+            extraMattress: extraMattress === true || extraMattress === 'true',
+            extraBedCharge: parseFloat(extraBedCharge) || 0,
+            tags: normalizeJsonField(tags),
+            isFeatured: isFeatured === true || isFeatured === 'true',
+            displayPriority: parseInt(displayPriority) || 0,
+            videoUrl: videoUrl || null,
+            media360Url: media360Url || null,
+            minStay: parseInt(minStay) || 1,
+            maxStay: parseInt(maxStay) || 90,
+            isInstantBooking: isInstantBooking !== false && isInstantBooking !== 'false',
+            advanceBookingDays: parseInt(advanceBookingDays) || 0,
+            advancePayment: parseInt(advancePayment) || 0,
+            securityDeposit: parseFloat(securityDeposit) || 0,
+            isRefundable: isRefundable !== false && isRefundable !== 'false',
+            isTaxIncluded: isTaxIncluded === true || isTaxIncluded === 'true',
+            weekendPricing: normalizeJsonField(weekendPricing),
+            seasonalPricing: normalizeJsonField(seasonalPricing),
+            addOns: normalizeJsonField(addOns),
+            petsAllowed: petsAllowed === true || petsAllowed === 'true',
+            smokingAllowed: smokingAllowed === true || smokingAllowed === 'true',
+            alcoholAllowed: alcoholAllowed !== false && alcoholAllowed !== 'false',
+            partyAllowed: partyAllowed === true || partyAllowed === 'true',
+            seoTitle: seoTitle || null,
+            seoDescription: seoDescription || null,
+            slug: slug || null
         };
 
         const room = await prisma.room.create({
@@ -178,9 +312,18 @@ exports.updateRoom = async (req, res, next) => {
         const { 
             name, description, pricePerNight, maxOccupancy, 
             bedConfiguration, sizeM2, amenities, images, 
-            highlights, trustPoints, roomPolicies,
+            highlights, trustPoints,
             minPrice, maxPrice, weeklyDiscount, monthlyDiscount, variants,
-            isHourlyEnabled, hourlyRates
+            isHourlyEnabled, hourlyRates,
+            // New Fields
+            status, totalInventory, viewType, floorNumber, isCornerRoom,
+            capacityAdults, capacityChildren, capacityInfants, extraMattress, extraBedCharge,
+            tags, isFeatured, displayPriority, videoUrl, media360Url,
+            minStay, maxStay, isInstantBooking, advanceBookingDays,
+            advancePayment, securityDeposit, isRefundable, isTaxIncluded,
+            weekendPricing, seasonalPricing, addOns,
+            petsAllowed, smokingAllowed, alcoholAllowed, partyAllowed,
+            seoTitle, seoDescription, slug
         } = req.body;
         
         const updateData = {};
@@ -195,7 +338,6 @@ exports.updateRoom = async (req, res, next) => {
         if (images !== undefined) updateData.images = normalizeJsonField(images);
         if (highlights !== undefined) updateData.highlights = normalizeJsonField(highlights);
         if (trustPoints !== undefined) updateData.trustPoints = normalizeJsonField(trustPoints);
-        if (roomPolicies !== undefined) updateData.roomPolicies = normalizeJsonField(roomPolicies);
         
         if (minPrice !== undefined) updateData.minPrice = parseFloat(minPrice);
         if (maxPrice !== undefined) updateData.maxPrice = parseFloat(maxPrice);
@@ -205,6 +347,49 @@ exports.updateRoom = async (req, res, next) => {
         
         if (isHourlyEnabled !== undefined) updateData.isHourlyEnabled = isHourlyEnabled === true || isHourlyEnabled === 'true';
         if (hourlyRates !== undefined) updateData.hourlyRates = typeof hourlyRates === 'string' ? hourlyRates : JSON.stringify(hourlyRates || {});
+
+        // New Fields Updates
+        if (status !== undefined) updateData.status = status;
+        if (totalInventory !== undefined) updateData.totalInventory = parseInt(totalInventory);
+        if (viewType !== undefined) updateData.viewType = viewType;
+        if (floorNumber !== undefined) updateData.floorNumber = parseInt(floorNumber);
+        if (isCornerRoom !== undefined) updateData.isCornerRoom = isCornerRoom === true || isCornerRoom === 'true';
+        
+        if (capacityAdults !== undefined) updateData.capacityAdults = parseInt(capacityAdults);
+        if (capacityChildren !== undefined) updateData.capacityChildren = parseInt(capacityChildren);
+        if (capacityInfants !== undefined) updateData.capacityInfants = parseInt(capacityInfants);
+        if (extraMattress !== undefined) updateData.extraMattress = extraMattress === true || extraMattress === 'true';
+        if (extraBedCharge !== undefined) updateData.extraBedCharge = parseFloat(extraBedCharge);
+        
+        if (tags !== undefined) updateData.tags = normalizeJsonField(tags);
+        if (isFeatured !== undefined) updateData.isFeatured = isFeatured === true || isFeatured === 'true';
+        if (displayPriority !== undefined) updateData.displayPriority = parseInt(displayPriority);
+        
+        if (videoUrl !== undefined) updateData.videoUrl = videoUrl;
+        if (media360Url !== undefined) updateData.media360Url = media360Url;
+        
+        if (minStay !== undefined) updateData.minStay = parseInt(minStay);
+        if (maxStay !== undefined) updateData.maxStay = parseInt(maxStay);
+        if (isInstantBooking !== undefined) updateData.isInstantBooking = isInstantBooking === true || isInstantBooking === 'true';
+        if (advanceBookingDays !== undefined) updateData.advanceBookingDays = parseInt(advanceBookingDays);
+        
+        if (advancePayment !== undefined) updateData.advancePayment = parseInt(advancePayment);
+        if (securityDeposit !== undefined) updateData.securityDeposit = parseFloat(securityDeposit);
+        if (isRefundable !== undefined) updateData.isRefundable = isRefundable === true || isRefundable === 'true';
+        if (isTaxIncluded !== undefined) updateData.isTaxIncluded = isTaxIncluded === true || isTaxIncluded === 'true';
+        
+        if (weekendPricing !== undefined) updateData.weekendPricing = normalizeJsonField(weekendPricing);
+        if (seasonalPricing !== undefined) updateData.seasonalPricing = normalizeJsonField(seasonalPricing);
+        if (addOns !== undefined) updateData.addOns = normalizeJsonField(addOns);
+        
+        if (petsAllowed !== undefined) updateData.petsAllowed = petsAllowed === true || petsAllowed === 'true';
+        if (smokingAllowed !== undefined) updateData.smokingAllowed = smokingAllowed === true || smokingAllowed === 'true';
+        if (alcoholAllowed !== undefined) updateData.alcoholAllowed = alcoholAllowed === true || alcoholAllowed === 'true';
+        if (partyAllowed !== undefined) updateData.partyAllowed = partyAllowed === true || partyAllowed === 'true';
+        
+        if (seoTitle !== undefined) updateData.seoTitle = seoTitle;
+        if (seoDescription !== undefined) updateData.seoDescription = seoDescription;
+        if (slug !== undefined) updateData.slug = slug;
 
         console.log(">>> UPDATING ROOM:", roomId);
         console.log(">>> DATA:", JSON.stringify(updateData, null, 2).slice(0, 500) + "...");

@@ -11,7 +11,7 @@ export default function ConditionalLayout({
     children: React.ReactNode;
 }) {
     const pathname = useLocation().pathname;
-    const isNoLayoutPage = pathname?.startsWith("/admin") || pathname?.startsWith("/partner-dashboard") || pathname === "/.controlhub" || pathname === "/list-property/register" || pathname === "/partner";
+    const isNoLayoutPage = pathname?.startsWith("/admin") || pathname?.startsWith("/partner-dashboard") || pathname === "/.controlhub" || pathname === "/list-property/register" || pathname === "/partner" || pathname === "/partner-select";
     const isNoFooterPage = pathname === "/login" || pathname === "/register";
 
     if (isNoLayoutPage) {

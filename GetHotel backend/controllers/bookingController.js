@@ -1,14 +1,14 @@
 const prisma = require('../config/db');
+const { sendBookingEmails } = require('../utils/emailService');
 
 // @desc    Create booking
 // @route   POST /api/bookings
 // @access  Private
 exports.createBooking = async (req, res) => {
-    const { hotelId, rooms, checkIn, checkOut, totalGuests, guestInfo } = req.body;
+    const { hotelId, rooms, checkIn, checkOut, totalGuests, guestInfo, couponCode } = req.body;
     const userId = req.user.id;
 
     try {
-        // 1. DATA VALIDATION
         const checkInDate = new Date(checkIn);
         const checkOutDate = new Date(checkOut);
         const today = new Date();
@@ -52,21 +52,54 @@ exports.createBooking = async (req, res) => {
             const dbRoom = hotel.room.find(r => r.id === parseInt(selectedRoom.id));
             if (!dbRoom) return res.status(400).json({ success: false, message: `Room ID ${selectedRoom.id} doesn't exist.` });
             
-            // Support for variant-specific pricing
-            let roomPrice = dbRoom.pricePerNight;
+            // Query daily rates overrides for this room
+            const rates = await prisma.dailyrate.findMany({
+                where: {
+                    roomId: dbRoom.id,
+                    date: {
+                        gte: checkInDate,
+                        lt: checkOutDate
+                    }
+                }
+            });
+
+            const rateMap = {};
+            rates.forEach(r => {
+                const dStr = r.date.toISOString().split('T')[0];
+                rateMap[dStr] = r;
+            });
+
+            let roomTotalStayPrice = 0;
+
+            for (let i = 0; i < nights; i++) {
+                const currentDay = new Date(checkInDate);
+                currentDay.setDate(currentDay.getDate() + i);
+                const dStr = currentDay.toISOString().split('T')[0];
+                
+                const rateOverride = rateMap[dStr];
+                if (rateOverride) {
+                    roomTotalStayPrice += rateOverride.price;
+                } else {
+                    roomTotalStayPrice += dbRoom.pricePerNight;
+                }
+            }
+
+            // Support for variant-specific pricing markup
+            let variantMarkup = 0;
             if (selectedRoom.variantIdx !== undefined) {
                 try {
                     const variants = typeof dbRoom.variants === 'string' ? JSON.parse(dbRoom.variants) : (dbRoom.variants || []);
                     const selectedVariant = variants[parseInt(selectedRoom.variantIdx)];
                     if (selectedVariant && selectedVariant.price) {
-                        roomPrice = selectedVariant.price;
+                        variantMarkup = selectedVariant.price - dbRoom.pricePerNight;
                     }
                 } catch (e) {
                     console.error("Error parsing room variants:", e);
                 }
             }
 
-            calculatedSubtotal += roomPrice * selectedRoom.quantity * nights;
+            const roomStayPriceWithMarkup = roomTotalStayPrice + (variantMarkup * nights);
+            calculatedSubtotal += roomStayPriceWithMarkup * selectedRoom.quantity;
             totalMaxOccupancy += dbRoom.maxOccupancy * selectedRoom.quantity;
         }
 
@@ -74,31 +107,91 @@ exports.createBooking = async (req, res) => {
             return res.status(400).json({ success: false, message: "Guest count exceeds the maximum occupancy for the selected rooms." });
         }
 
-        const calculatedTaxes = Math.round(calculatedSubtotal * 0.05); // Sync with 5% Tax
-        const calculatedTotal = calculatedSubtotal + calculatedTaxes;
+        // Apply coupon code discount if provided
+        let discountAmount = 0;
+        if (couponCode) {
+            try {
+                const activeCoupon = await prisma.coupon.findFirst({
+                    where: {
+                        hotelId: parseInt(hotelId),
+                        code: { equals: couponCode.trim(), mode: 'insensitive' },
+                        isActive: true
+                    }
+                });
+                if (activeCoupon) {
+                    discountAmount = Math.round(calculatedSubtotal * (activeCoupon.discountValue / 100));
+                }
+            } catch (e) {
+                console.error("Error applying backend coupon:", e);
+            }
+        }
+
+        const discountedSubtotal = Math.max(0, calculatedSubtotal - discountAmount);
+        const calculatedTaxes = Math.round(discountedSubtotal * 0.05); // Sync with 5% Tax
+        const calculatedTotal = discountedSubtotal + calculatedTaxes;
         const platformFee = Math.round(calculatedTotal * 0.18); // 18% Booking Fee
         const remainingAtHotel = calculatedTotal - platformFee;
 
         // 3. ATOMIC TRANSACTION: HOLD INVENTORY + CREATE BOOKING
         const booking = await prisma.$transaction(async (tx) => {
-            // Re-verify availability within transaction
+            // Re-verify availability within transaction day-by-day
             for (const selectedRoom of activeRooms) {
-                const overlappingBookings = await tx.booking.count({
+                const dbRoom = await tx.room.findUnique({ where: { id: parseInt(selectedRoom.id) } });
+                if (!dbRoom) throw new Error(`Room ID ${selectedRoom.id} doesn't exist.`);
+
+                const rates = await tx.dailyrate.findMany({
                     where: {
-                        roomId: parseInt(selectedRoom.id),
-                        status: { in: ['paid', 'confirmed', 'checked-in', 'held'] },
-                        NOT: {
-                            OR: [
-                                { checkIn: { gte: checkOutDate } },
-                                { checkOut: { lte: checkInDate } }
-                            ]
+                        roomId: dbRoom.id,
+                        date: {
+                            gte: checkInDate,
+                            lt: checkOutDate
                         }
                     }
                 });
 
-                const dbRoom = await tx.room.findUnique({ where: { id: parseInt(selectedRoom.id) } });
-                if (dbRoom.totalUnits - overlappingBookings < selectedRoom.quantity) {
-                    throw new Error(`Sorry, the ${dbRoom.name} is no longer available for these dates.`);
+                const rateMap = {};
+                rates.forEach(r => {
+                    const dStr = r.date.toISOString().split('T')[0];
+                    rateMap[dStr] = r;
+                });
+
+                for (let i = 0; i < nights; i++) {
+                    const currentDay = new Date(checkInDate);
+                    currentDay.setDate(currentDay.getDate() + i);
+                    
+                    const nextDay = new Date(currentDay);
+                    nextDay.setDate(nextDay.getDate() + 1);
+
+                    const dStr = currentDay.toISOString().split('T')[0];
+                    const rateOverride = rateMap[dStr];
+                    
+                    // If explicitly blocked or available count is overridden
+                    const dayLimit = rateOverride !== undefined ? rateOverride.available : dbRoom.totalInventory;
+
+                    // Query bookings overlapping this specific night
+                    const activeOnNight = await tx.booking.count({
+                        where: {
+                            roomId: dbRoom.id,
+                            status: { in: ['paid', 'confirmed', 'checked-in', 'held'] },
+                            checkIn: { lt: nextDay },
+                            checkOut: { gt: currentDay },
+                            OR: [
+                                { status: 'confirmed' },
+                                { status: 'checked-in' },
+                                { status: 'paid' },
+                                {
+                                    AND: [
+                                        { status: 'held' },
+                                        { holdExpiresAt: { gt: new Date() } }
+                                    ]
+                                }
+                            ]
+                        }
+                    });
+
+                    if (dayLimit - activeOnNight < selectedRoom.quantity) {
+                        throw new Error(`Sorry, the ${dbRoom.name} is no longer available on ${dStr}.`);
+                    }
                 }
             }
 
@@ -114,7 +207,7 @@ exports.createBooking = async (req, res) => {
                     totalGuests: parseInt(totalGuests),
                     status: req.body.status || 'held',
                     paymentStatus: req.body.paymentStatus || 'pending',
-                    amountPaid: req.body.paymentStatus === 'paid' ? calculatedTotal : 0,
+                    amountPaid: req.body.paymentStatus === 'paid' ? platformFee : 0,
                     holdExpiresAt: new Date(Date.now() + 10 * 60 * 1000),
                     guestFirstName: guestInfo.firstName,
                     guestLastName: guestInfo.lastName,
@@ -125,10 +218,42 @@ exports.createBooking = async (req, res) => {
                     gstNumber: guestInfo.gstNumber || "",
                     companyName: guestInfo.companyName || "",
                     roomDetails: JSON.stringify(activeRooms),
-                    internalNotes: `PARTIAL_PAYMENT_MODEL: Platform Fee ₹${platformFee} | Pay at Hotel ₹${remainingAtHotel}`
+                    internalNotes: `PARTIAL_PAYMENT_MODEL: Platform Fee ₹${platformFee} | Pay at Hotel ₹${remainingAtHotel} | Coupon Applied: ${couponCode || 'None'} | Discount: ₹${discountAmount}`
                 }
             });
         });
+
+        // Trigger emails if the booking is directly created as 'confirmed' or 'paid'
+        if (booking && (booking.status === 'confirmed' || booking.status === 'paid')) {
+            try {
+                const fullBooking = await prisma.booking.findUnique({
+                    where: { id: booking.id },
+                    include: {
+                        hotel: {
+                            include: { user: true }
+                        },
+                        room: true
+                    }
+                });
+
+                if (fullBooking) {
+                    sendBookingEmails({
+                        id: fullBooking.id,
+                        guestName: `${fullBooking.guestFirstName} ${fullBooking.guestLastName}`,
+                        guestEmail: fullBooking.guestEmail,
+                        guestPhone: fullBooking.guestPhone,
+                        hotel: fullBooking.hotel,
+                        room: fullBooking.room,
+                        checkIn: fullBooking.checkIn,
+                        checkOut: fullBooking.checkOut,
+                        totalPrice: fullBooking.totalPrice,
+                        amountPaid: fullBooking.amountPaid
+                    });
+                }
+            } catch (emailErr) {
+                console.error("Async booking creation email trigger failed:", emailErr);
+            }
+        }
 
         res.status(201).json({ success: true, data: booking });
     } catch (error) {
@@ -200,14 +325,43 @@ exports.updateBooking = async (req, res, next) => {
         }
 
         const { status, paymentStatus, internalNotes } = req.body;
+        
+        const statusChangedToConfirmed = (status === 'confirmed' && booking.status !== 'confirmed');
+
         const updatedBooking = await prisma.booking.update({
             where: { id: bookingId },
             data: { 
                 status: status || booking.status,
                 paymentStatus: paymentStatus || booking.paymentStatus,
                 internalNotes: internalNotes !== undefined ? internalNotes : booking.internalNotes
+            },
+            include: {
+                hotel: {
+                    include: { user: true }
+                },
+                room: true
             }
         });
+
+        // Trigger emails if the booking was changed to 'confirmed'
+        if (statusChangedToConfirmed) {
+            try {
+                sendBookingEmails({
+                    id: updatedBooking.id,
+                    guestName: `${updatedBooking.guestFirstName} ${updatedBooking.guestLastName}`,
+                    guestEmail: updatedBooking.guestEmail,
+                    guestPhone: updatedBooking.guestPhone,
+                    hotel: updatedBooking.hotel,
+                    room: updatedBooking.room,
+                    checkIn: updatedBooking.checkIn,
+                    checkOut: updatedBooking.checkOut,
+                    totalPrice: updatedBooking.totalPrice,
+                    amountPaid: updatedBooking.amountPaid
+                });
+            } catch (emailErr) {
+                console.error("Async booking update email trigger failed:", emailErr);
+            }
+        }
 
         res.status(200).json({ success: true, data: updatedBooking });
     } catch (err) {

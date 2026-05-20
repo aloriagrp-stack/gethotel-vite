@@ -2,6 +2,7 @@ const prisma = require('../config/db');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 // @desc    Submit a partner registration request
 // @route   POST /api/partner/request
@@ -77,8 +78,14 @@ exports.submitPartnerRequest = async (req, res, next) => {
             }
         });
 
+        // 5. Generate Token for immediate access
+        const token = jwt.sign({ id: newUser.id }, process.env.JWT_SECRET, {
+            expiresIn: '30d',
+        });
+
         res.status(201).json({
             success: true,
+            token,
             data: partnerRequest,
             message: 'Your account has been created and is pending for approval.'
         });

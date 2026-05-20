@@ -347,3 +347,33 @@ exports.recalculateHotelMetrics = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
+
+exports.suspendHotel = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const hotel = await prisma.hotel.findUnique({ where: { id: parseInt(id) } });
+        if (!hotel) return res.status(404).json({ success: false, message: 'Hotel not found' });
+        const updated = await prisma.hotel.update({
+            where: { id: parseInt(id) },
+            data: { isActive: !hotel.isActive }
+        });
+        res.status(200).json({ success: true, message: updated.isActive ? 'Property activated' : 'Property suspended', data: updated });
+    } catch (err) {
+        console.error('Suspend hotel error:', err);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+exports.deleteHotel = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const hotel = await prisma.hotel.findUnique({ where: { id: parseInt(id) } });
+        if (!hotel) return res.status(404).json({ success: false, message: 'Hotel not found' });
+        await prisma.hotel.delete({ where: { id: parseInt(id) } });
+        res.status(200).json({ success: true, message: 'Hotel permanently deleted' });
+    } catch (err) {
+        console.error('Delete hotel error:', err);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+

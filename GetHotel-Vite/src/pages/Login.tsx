@@ -84,24 +84,25 @@ function LoginContent() {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const { login, googleLogin, register: registerUser } = useAuth();
+    const [otpStep, setOtpStep] = useState(false);
+    const [otp, setOtp] = useState("");
+    const [otpSuccess, setOtpSuccess] = useState("");
+    const [verified, setVerified] = useState(false);
+    const { login, googleLogin } = useAuth();
     const router = useRouter();
 
     const handleGoogleLogin = async () => {
         setLoading(true);
         setError("");
         try {
-            setError("");
             const result = await signInWithPopup(auth, googleProvider);
             const idToken = await result.user.getIdToken();
-            await googleLogin(idToken); 
-            
+            await googleLogin(idToken);
             const redirectPath = searchParams.get("redirect") || "/profile";
             router(redirectPath);
         } catch (err: any) {
-            console.error("Login error:", err);
             if (err.code === 'auth/unauthorized-domain') {
-                setError("IP not authorized! Please add 192.168.43.117 to Firebase Console -> Auth -> Settings -> Authorized Domains.");
+                setError("This domain is not authorized. Please contact support.");
             } else {
                 setError(err.message || "Failed to login with Google");
             }
@@ -116,24 +117,82 @@ function LoginContent() {
         setError("");
         try {
             if (isRegister) {
-                await registerUser({ name: name || email.split('@')[0], email, password, role: 'user' });
+                // Step 1: send OTP
+                await authApi.sendOTP({ name: name || email.split('@')[0], email, password, role: 'user' });
+                setOtpStep(true);
+                setOtpSuccess(`A 6-digit OTP has been sent to ${email}. Please check your inbox.`);
             } else {
-                await login({ 
-                    email, 
-                    password: password, 
-                    pass: password,
+                await login({
+                    email,
+                    password,
                     userpassword: password,
                     partnerpassword: password,
-                    partnerPassword: password
                 });
+                const redirectPath = searchParams.get("redirect") || "/";
+                router(redirectPath);
             }
-            router("/");
         } catch (err: any) {
             setError(err.message || "Authentication failed.");
         } finally {
             setLoading(false);
         }
     };
+
+    const handleVerifyOtp = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        setError("");
+        try {
+            const res = await authApi.verifyOTP({ email, otp });
+            localStorage.setItem('token', res.token);
+            // Show success screen for 2 seconds then redirect
+            setVerified(true);
+            setTimeout(() => {
+                const redirectPath = searchParams.get("redirect") || "/";
+                router(redirectPath);
+            }, 2000);
+        } catch (err: any) {
+            setError(err.message || "Invalid OTP. Please try again.");
+            setLoading(false);
+        }
+    };
+
+    // ── Full-screen success overlay (shown for 2s after OTP verified) ──
+    if (verified) {
+        return (
+            <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white">
+                <motion.div
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: "spring", stiffness: 200, damping: 18 }}
+                    className="flex flex-col items-center gap-5"
+                >
+                    <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center shadow-xl shadow-emerald-100">
+                        <ShieldCheck className="w-10 h-10 text-emerald-500" />
+                    </div>
+                    <div className="text-center">
+                        <h2 className="text-2xl font-black text-slate-900 tracking-tight">Account Created!</h2>
+                        <p className="text-sm text-slate-400 font-medium mt-1">Taking you home...</p>
+                    </div>
+                    {/* Dotted loader reused */}
+                    <div className="relative w-10 h-10 mt-2">
+                        {[...Array(8)].map((_, i) => {
+                            const angle = (i * 2 * Math.PI) / 8;
+                            const top = 50 + 38 * Math.sin(angle);
+                            const left = 50 + 38 * Math.cos(angle);
+                            return (
+                                <div
+                                    key={i}
+                                    className="absolute w-2 h-2 bg-emerald-400 rounded-full animate-dotted"
+                                    style={{ top: `${top}%`, left: `${left}%`, animationDelay: `${i * 0.12}s` }}
+                                />
+                            );
+                        })}
+                    </div>
+                </motion.div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-sky-50/50 flex flex-col md:flex-row overflow-hidden relative">
@@ -151,7 +210,7 @@ function LoginContent() {
             </div>
 
             {/* Right Panel: Form Area */}
-            <div className="flex-1 h-screen flex items-center justify-center p-6 md:p-8 bg-transparent overflow-hidden">
+            <div className="flex-1 min-h-[calc(100vh-80px)] md:h-screen flex items-start md:items-center justify-center p-6 md:p-8 pt-8 md:pt-8 bg-transparent overflow-hidden">
                 <motion.div 
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -166,7 +225,7 @@ function LoginContent() {
                                 exit={{ opacity: 0 }}
                                 className="text-2xl font-black text-slate-900 mb-1 tracking-tight"
                             >
-                                {isRegister ? t('create') : "Customer Login"}
+                                {isRegister ? t('create') : "Login"}
                             </motion.h1>
                         </AnimatePresence>
                         <p className="text-slate-500 text-[10px] font-medium uppercase tracking-widest">
@@ -182,6 +241,43 @@ function LoginContent() {
                         </div>
                     )}
 
+                    {otpStep ? (
+                        /* ── OTP Verification Step ── */
+                        <form onSubmit={handleVerifyOtp} className="space-y-4">
+                            <div className="text-center mb-2">
+                                <div className="w-12 h-12 bg-sky-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <ShieldCheck className="w-6 h-6 text-sky-500" />
+                                </div>
+                                <p className="text-[10px] font-bold text-slate-500 leading-relaxed">{otpSuccess}</p>
+                            </div>
+                            <div className="space-y-0.5">
+                                <label className="text-[9px] font-black text-slate-400 ml-1 uppercase tracking-widest">Enter OTP</label>
+                                <input
+                                    type="text"
+                                    required
+                                    maxLength={6}
+                                    placeholder="6-digit code"
+                                    value={otp}
+                                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                                    className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-xl font-black text-center text-slate-900 tracking-[0.5em] focus:bg-white focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all outline-none"
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                disabled={loading || otp.length < 6}
+                                className="w-full py-3.5 bg-sky-500 text-white font-black rounded-xl shadow-lg shadow-sky-100 hover:bg-sky-600 transition-all flex items-center justify-center gap-2 text-[10px] uppercase tracking-widest disabled:opacity-50"
+                            >
+                                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Verify & Create Account"}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => { setOtpStep(false); setOtp(""); setError(""); setOtpSuccess(""); }}
+                                className="w-full text-[9px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-600 transition-colors"
+                            >
+                                ← Go back
+                            </button>
+                        </form>
+                    ) : (
                     <form onSubmit={handleSubmit} className="space-y-3">
                         {isRegister && (
                             <motion.div 
@@ -251,7 +347,10 @@ function LoginContent() {
                             )}
                         </button>
                     </form>
+                    )} {/* end of otpStep ternary */}
 
+                    {!otpStep && (
+                    <>
                     <div className="relative my-5">
                         <div className="absolute inset-0 flex items-center">
                             <div className="w-full border-t border-slate-100"></div>
@@ -261,7 +360,7 @@ function LoginContent() {
                         </div>
                     </div>
 
-                    <button 
+                    <button
                         type="button"
                         onClick={handleGoogleLogin}
                         disabled={loading}
@@ -277,15 +376,17 @@ function LoginContent() {
                     </button>
 
                     <div className="text-center">
-                        <button 
+                        <button
                             onClick={() => setIsRegister(!isRegister)}
                             className="text-[9px] font-black text-slate-400 uppercase tracking-widest hover:text-indigo-600 transition-colors"
                         >
-                            {isRegister 
-                                ? <>Already have an account? <span className="text-indigo-600 underline">Sign in</span></>
-                                : <>New to GetHotel? <span className="text-indigo-600 underline">Create account</span></>}
+                            {isRegister
+                                ? <><span>Already have an account? </span><span className="text-indigo-600 underline">Sign in</span></>
+                                : <><span>New to GetHotel? </span><span className="text-indigo-600 underline">Create account</span></>}
                         </button>
                     </div>
+                    </>
+                    )}
                 </motion.div>
             </div>
         </div>

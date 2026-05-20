@@ -109,7 +109,7 @@ export default function PartnerStaffPage() {
                 <div className="flex items-center gap-3">
                     <button 
                         onClick={() => setIsModalOpen(true)}
-                        className="px-6 py-3.5 bg-blue-600 text-white text-xs font-bold rounded-2xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 flex items-center gap-2"
+                        className="px-6 py-3.5 bg-blue-600 text-white text-xs font-bold rounded-none hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 flex items-center gap-2"
                     >
                         <UserPlus className="w-4 h-4" /> Add Team Member
                     </button>
@@ -121,8 +121,8 @@ export default function PartnerStaffPage() {
                 {roles.map(role => {
                     const Icon = role.icon;
                     return (
-                        <div key={role.id} className="bg-white p-6 rounded-[32px] border border-slate-200 shadow-sm flex items-start gap-4">
-                            <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shrink-0", role.bg, role.color)}>
+                        <div key={role.id} className="bg-white p-6 rounded-none border border-slate-200 shadow-sm flex items-start gap-4">
+                            <div className={cn("w-12 h-12 rounded-none flex items-center justify-center shrink-0", role.bg, role.color)}>
                                 <Icon className="w-6 h-6" />
                             </div>
                             <div>
@@ -135,7 +135,7 @@ export default function PartnerStaffPage() {
             </div>
 
             {/* Staff Directory */}
-            <div className="bg-white rounded-[40px] border border-slate-200 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-none border border-slate-200 shadow-sm overflow-hidden">
                 <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/30">
                     <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
                         <Users className="w-5 h-5 text-blue-600" /> Internal Team Directory
@@ -158,9 +158,9 @@ export default function PartnerStaffPage() {
                                 <tr key={member.id} className="hover:bg-slate-50/50 transition-colors group">
                                     <td className="px-8 py-6">
                                         <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center shrink-0">
+                                            <div className="w-12 h-12 rounded-none bg-slate-100 flex items-center justify-center shrink-0">
                                                 {member.user.profileImage ? (
-                                                    <img src={member.user.profileImage} alt="" className="w-full h-full object-cover rounded-2xl" />
+                                                    <img src={member.user.profileImage} alt="" className="w-full h-full object-cover rounded-none" />
                                                 ) : (
                                                     <User className="w-6 h-6 text-slate-400" />
                                                 )}
@@ -173,7 +173,7 @@ export default function PartnerStaffPage() {
                                     </td>
                                     <td className="px-8 py-6">
                                         <span className={cn(
-                                            "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border",
+                                            "px-3 py-1 rounded-none text-[9px] font-black uppercase tracking-widest border",
                                             member.role === 'manager' ? "bg-blue-50 text-blue-600 border-blue-100" :
                                             member.role === 'receptionist' ? "bg-purple-50 text-purple-600 border-purple-100" :
                                             "bg-amber-50 text-amber-600 border-amber-100"
@@ -189,7 +189,7 @@ export default function PartnerStaffPage() {
                                     <td className="px-8 py-6 text-right">
                                         <button 
                                             onClick={() => handleRemoveStaff(member.id)}
-                                            className="p-2.5 bg-slate-50 text-slate-400 hover:text-red-600 rounded-xl border border-slate-100 transition-all"
+                                            className="p-2.5 bg-slate-50 text-slate-400 hover:text-red-600 rounded-none border border-slate-100 transition-all"
                                         >
                                             <Trash2 className="w-4 h-4" />
                                         </button>
@@ -212,14 +212,14 @@ export default function PartnerStaffPage() {
             {/* Add Staff Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-                    <div className="bg-white w-full max-w-xl rounded-[40px] shadow-2xl overflow-hidden animate-slide-up">
+                    <div className="bg-white w-full max-w-xl rounded-none shadow-2xl overflow-hidden animate-slide-up">
                         <form onSubmit={handleAddStaff}>
                             <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                                 <div>
                                     <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Internal Team</span>
                                     <h2 className="text-2xl font-black text-slate-900 tracking-tight mt-1">Add Team Member</h2>
                                 </div>
-                                <button type="button" onClick={() => setIsModalOpen(false)} className="w-10 h-10 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-400">
+                                <button type="button" onClick={() => setIsModalOpen(false)} className="w-10 h-10 bg-white border border-slate-200 rounded-none flex items-center justify-center text-slate-400">
                                     <X className="w-5 h-5" />
                                 </button>
                             </div>
@@ -233,7 +233,7 @@ export default function PartnerStaffPage() {
                                             type="text" required placeholder="Full Name"
                                             value={formData.name}
                                             onChange={(e) => setFormData({...formData, name: e.target.value})}
-                                            className="w-full pl-12 pr-5 py-4 bg-slate-50 border-transparent rounded-[24px] text-sm font-bold focus:bg-white focus:border-blue-600 outline-none transition-all"
+                                            className="w-full pl-12 pr-5 py-4 bg-slate-50 border-transparent rounded-none text-sm font-bold focus:bg-white focus:border-blue-600 outline-none transition-all"
                                         />
                                     </div>
                                 </div>
@@ -246,7 +246,7 @@ export default function PartnerStaffPage() {
                                             type="email" required placeholder="email@hotel.com"
                                             value={formData.email}
                                             onChange={(e) => setFormData({...formData, email: e.target.value})}
-                                            className="w-full pl-12 pr-5 py-4 bg-slate-50 border-transparent rounded-[24px] text-sm font-bold focus:bg-white focus:border-blue-600 outline-none transition-all"
+                                            className="w-full pl-12 pr-5 py-4 bg-slate-50 border-transparent rounded-none text-sm font-bold focus:bg-white focus:border-blue-600 outline-none transition-all"
                                         />
                                     </div>
                                 </div>
@@ -259,7 +259,7 @@ export default function PartnerStaffPage() {
                                             type="password" required placeholder="Staff@123"
                                             value={formData.password}
                                             onChange={(e) => setFormData({...formData, password: e.target.value})}
-                                            className="w-full pl-12 pr-5 py-4 bg-slate-50 border-transparent rounded-[24px] text-sm font-bold focus:bg-white focus:border-blue-600 outline-none transition-all"
+                                            className="w-full pl-12 pr-5 py-4 bg-slate-50 border-transparent rounded-none text-sm font-bold focus:bg-white focus:border-blue-600 outline-none transition-all"
                                         />
                                     </div>
                                 </div>
@@ -272,7 +272,7 @@ export default function PartnerStaffPage() {
                                                 key={r} type="button"
                                                 onClick={() => setFormData({...formData, role: r})}
                                                 className={cn(
-                                                    "py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest border transition-all",
+                                                    "py-3 rounded-none text-[9px] font-black uppercase tracking-widest border transition-all",
                                                     formData.role === r ? "bg-blue-600 text-white border-blue-600" : "bg-white text-slate-500 border-slate-200"
                                                 )}
                                             >
@@ -287,7 +287,7 @@ export default function PartnerStaffPage() {
                                 <button 
                                     type="submit" 
                                     disabled={isSaving}
-                                    className="w-full py-5 bg-blue-600 text-white rounded-[24px] font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-100 flex items-center justify-center gap-2"
+                                    className="w-full py-5 bg-blue-600 text-white rounded-none font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-100 flex items-center justify-center gap-2"
                                 >
                                     {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
                                     Create Staff Account

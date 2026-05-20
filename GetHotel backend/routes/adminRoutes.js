@@ -1,5 +1,5 @@
 const express = require('express');
-const { getStats, getHotelDetail, getPartners, resetPartnerPassword, getAllHotels, getAllBookings, getAdminHotelDetail, updateHotelMetrics, recalculateHotelMetrics } = require('../controllers/adminController');
+const { getStats, getHotelDetail, getPartners, resetPartnerPassword, getAllHotels, getAllBookings, getAdminHotelDetail, updateHotelMetrics, recalculateHotelMetrics, suspendHotel, deleteHotel } = require('../controllers/adminController');
 const { protect, authorize } = require('../middleware/auth');
 
 const router = express.Router();
@@ -13,6 +13,8 @@ router.get('/hotels', getAllHotels);
 router.get('/hotels/:id', getAdminHotelDetail);
 router.patch('/hotels/:id/metrics', updateHotelMetrics);
 router.post('/hotels/:id/recalculate', recalculateHotelMetrics);
+router.put('/hotels/:id/suspend', suspendHotel);
+router.delete('/hotels/:id', deleteHotel);
 router.get('/bookings', getAllBookings);
 router.get('/partners', getPartners);
 router.post('/partners/:id/reset-password', resetPartnerPassword);

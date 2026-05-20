@@ -25,8 +25,13 @@ export default function PartnerLayout() {
 
     // Auth Protection
     useEffect(() => {
-        if (!authLoading && (!user || user.role !== 'hotel_admin')) {
-            router('/partner');
+        if (!authLoading) {
+            if (!user || user.role !== 'hotel_admin') {
+                router('/partner');
+            } else if (!sessionStorage.getItem('activeHotelId')) {
+                // No hotel selected yet — force selector screen
+                router('/partner-select');
+            }
         }
     }, [user, authLoading, router]);
 
@@ -35,11 +40,13 @@ export default function PartnerLayout() {
         { id: "bookings", label: "Bookings", icon: Calendar, href: "/partner-dashboard/bookings" },
         { id: "hotel", label: "Property Info", icon: Hotel, href: "/partner-dashboard/hotel" },
         { id: "rooms", label: "Manage Rooms", icon: Bed, href: "/partner-dashboard/rooms" },
+        { id: "inventory", label: "Rates & Inventory", icon: Layers, href: "/partner-dashboard/inventory" },
         { id: "payments", label: "Earnings", icon: CreditCard, href: "/partner-dashboard/payments" },
         { id: "coupons", label: "Promotions", icon: Ticket, href: "/partner-dashboard/coupons" },
         { id: "messages", label: "Messages", icon: MessageSquare, href: "/partner-dashboard/messages" },
         { id: "reviews", label: "Guest Reviews", icon: Star, href: "/partner-dashboard/reviews" },
         { id: "settings", label: "Settings", icon: Settings, href: "/partner-dashboard/settings" },
+        { id: "switch", label: "Switch Property", icon: ChevronRight, href: "/partner-select" },
     ];
 
     const handleLogout = () => {
@@ -51,7 +58,7 @@ export default function PartnerLayout() {
     if (authLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-slate-50">
-                <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-none animate-spin"></div>
             </div>
         );
     }
@@ -81,7 +88,7 @@ export default function PartnerLayout() {
                     <button 
                         onClick={() => setIsCollapsed(!isCollapsed)}
                         className={cn(
-                            "absolute w-7 h-7 bg-slate-50 border border-slate-100 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-white transition-all shadow-sm z-[60]",
+                            "absolute w-7 h-7 bg-slate-50 border border-slate-100 rounded-none flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-white transition-all shadow-sm z-[60]",
                             isCollapsed ? "left-1/2 -translate-x-1/2 top-6" : "right-6 top-8"
                         )}
                     >
@@ -102,7 +109,7 @@ export default function PartnerLayout() {
                                 key={item.id}
                                 to={isDisabled ? "#" : item.href}
                                 className={cn(
-                                    "w-full flex items-center justify-between px-4 py-3.5 rounded-lg text-sm font-bold group transition-all",
+                                    "w-full flex items-center justify-between px-4 py-3.5 rounded-none text-sm font-bold group transition-all",
                                     isActive 
                                         ? "bg-blue-600 text-white shadow-xl shadow-blue-100" 
                                         : "text-slate-500 hover:text-slate-900",
@@ -119,7 +126,7 @@ export default function PartnerLayout() {
                                     {!isCollapsed && <span>{item.label}</span>}
                                 </div>
                                 {isDisabled && !isCollapsed && <Lock className="w-3 h-3 text-slate-300" />}
-                                {(isActive && !isCollapsed) && <div className="w-1.5 h-1.5 rounded-full bg-white shadow-glow" />}
+                                {(isActive && !isCollapsed) && <div className="w-1.5 h-1.5 rounded-none bg-white shadow-glow" />}
                             </Link>
                         );
                     })}
@@ -128,20 +135,20 @@ export default function PartnerLayout() {
 
             {/* Main Content Container */}
             <div className={cn(
-                "flex-1 flex flex-col min-h-screen transition-all duration-300",
+                "flex-1 flex flex-col min-h-screen transition-all duration-300 min-w-0",
                 isCollapsed ? "lg:ml-24" : "lg:ml-72"
             )}>
                 {/* Top Mobile Header */}
                 <header className="lg:hidden h-20 bg-white border-b border-slate-200 px-6 flex items-center justify-between sticky top-0 z-40">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white">
+                        <div className="w-10 h-10 bg-blue-600 rounded-none flex items-center justify-center text-white">
                             <Hotel className="w-6 h-6" />
                         </div>
                         <h1 className="text-3xl font-black tracking-tight text-slate-900 mb-2">Financial Management</h1>
                     </div>
                     <button 
                         onClick={() => setIsMobileMenuOpen(true)}
-                        className="p-2.5 bg-slate-50 rounded-lg text-slate-600 border border-slate-100"
+                        className="p-2.5 bg-slate-50 rounded-none text-slate-600 border border-slate-100"
                     >
                         <Menu className="w-6 h-6" />
                     </button>
@@ -153,7 +160,7 @@ export default function PartnerLayout() {
                         <div className="w-80 h-full bg-white flex flex-col animate-slide-right">
                             <div className="p-6 border-b border-slate-100 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white">
+                                    <div className="w-8 h-8 bg-blue-600 rounded-none flex items-center justify-center text-white">
                                         <Hotel className="w-5 h-5" />
                                     </div>
                                     <span className="font-black text-slate-900 uppercase tracking-tight">Menu</span>
@@ -172,7 +179,7 @@ export default function PartnerLayout() {
                                             to={item.href}
                                             onClick={() => setIsMobileMenuOpen(false)}
                                             className={cn(
-                                                "flex items-center gap-3 px-4 py-4 rounded-lg text-sm font-bold transition-all",
+                                                "flex items-center gap-3 px-4 py-4 rounded-none text-sm font-bold transition-all",
                                                 isActive ? "bg-blue-600 text-white" : "text-slate-500"
                                             )}
                                         >
@@ -192,14 +199,14 @@ export default function PartnerLayout() {
                 )}
 
                 {/* Main Content Area */}
-                <main className="flex-1 p-6 lg:p-10">
+                <main className="flex-1 p-6 lg:p-10 min-w-0 overflow-x-hidden">
                     {/* Pending Approval Overlay/View */}
                     {user?.partnerRequestStatus === 'rejected' ? (
                         <div className="flex flex-col items-center justify-center min-h-[80vh] text-center space-y-8 -mt-20 px-8">
                             <motion.div 
                                 initial={{ opacity: 0, scale: 0.5 }}
                                 animate={{ opacity: 1, scale: 1 }}
-                                className="w-24 h-24 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6"
+                                className="w-24 h-24 bg-red-50 text-red-600 rounded-none flex items-center justify-center mx-auto mb-6"
                             >
                                 <XCircle className="w-12 h-12" />
                             </motion.div>
@@ -213,7 +220,7 @@ export default function PartnerLayout() {
                                 </p>
                             </div>
 
-                            <div className="p-6 bg-red-50/50 border border-red-100 rounded-2xl max-w-md w-full">
+                            <div className="p-6 bg-red-50/50 border border-red-100 rounded-none max-w-md w-full">
                                 <p className="text-[13px] text-red-700 font-black uppercase tracking-widest leading-relaxed">
                                     This account has been permanently disabled. You will no longer be able to access the partner portal.
                                 </p>
@@ -221,7 +228,7 @@ export default function PartnerLayout() {
 
                             <button 
                                 onClick={handleLogout}
-                                className="max-w-md w-full py-5 bg-slate-900 text-white rounded-xl font-black text-sm uppercase tracking-widest hover:bg-black transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-3 group"
+                                className="max-w-md w-full py-5 bg-slate-900 text-white rounded-none font-black text-sm uppercase tracking-widest hover:bg-black transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-3 group"
                             >
                                 <LogOut className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
                                 Exit Portal Permanently
@@ -256,8 +263,8 @@ export default function PartnerLayout() {
                                     transition={{ duration: 0.4, delay: 0.4 }}
                                     className="pt-10 flex flex-col items-center gap-6"
                                 >
-                                    <div className="px-8 py-4 bg-emerald-50 text-emerald-600 rounded-3xl text-sm font-black uppercase tracking-[0.2em] flex items-center gap-4 border border-emerald-100/50 shadow-sm shadow-emerald-50">
-                                        <div className="w-3 h-3 bg-emerald-500 rounded-full animate-ping" />
+                                    <div className="px-8 py-4 bg-emerald-50 text-emerald-600 rounded-none text-sm font-black uppercase tracking-[0.2em] flex items-center gap-4 border border-emerald-100/50 shadow-sm shadow-emerald-50">
+                                        <div className="w-3 h-3 bg-emerald-500 rounded-none animate-ping" />
                                         Review in Progress
                                     </div>
                                     <p className="text-[13px] text-slate-400 font-bold uppercase tracking-widest">
@@ -273,7 +280,7 @@ export default function PartnerLayout() {
 
                 {/* Mobile Sticky Action (Optional - useful for mobile-first) */}
                 <div className="lg:hidden fixed bottom-6 right-6 z-40">
-                    <button className="w-14 h-14 bg-blue-600 rounded-full text-white shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all">
+                    <button className="w-14 h-14 bg-blue-600 rounded-none text-white shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all">
                         <Plus className="w-8 h-8" />
                     </button>
                 </div>
@@ -294,15 +301,15 @@ export default function PartnerLayout() {
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-white rounded-2xl z-[210] overflow-hidden shadow-2xl border border-slate-100"
+                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-white rounded-none z-[210] overflow-hidden shadow-2xl border border-slate-100"
                         >
                             <div className="p-10 text-center">
-                                <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 relative">
+                                <div className="w-20 h-20 bg-red-50 rounded-none flex items-center justify-center mx-auto mb-6 relative">
                                     <LogOut className="w-8 h-8 text-red-600" />
                                     <motion.div 
                                         animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.4, 0.2] }}
                                         transition={{ duration: 2, repeat: Infinity }}
-                                        className="absolute inset-0 bg-red-500/10 rounded-full blur-xl"
+                                        className="absolute inset-0 bg-red-500/10 rounded-none blur-xl"
                                     />
                                 </div>
                                 <h3 className="text-2xl font-black text-slate-950 mb-3 tracking-tight">
@@ -314,13 +321,13 @@ export default function PartnerLayout() {
                                 <div className="flex flex-col sm:flex-row gap-3">
                                     <button
                                         onClick={handleLogout}
-                                        className="flex-1 py-4 bg-red-600 text-white rounded-lg font-black shadow-xl shadow-red-600/20 hover:bg-red-700 transition-all hover:scale-105 active:scale-95"
+                                        className="flex-1 py-4 bg-red-600 text-white rounded-none font-black shadow-xl shadow-red-600/20 hover:bg-red-700 transition-all hover:scale-105 active:scale-95"
                                     >
                                         Yes, Logout
                                     </button>
                                     <button
                                         onClick={() => setShowLogoutConfirm(false)}
-                                        className="flex-1 py-4 bg-slate-100 text-slate-900 rounded-lg font-black hover:bg-slate-200 transition-all active:scale-95"
+                                        className="flex-1 py-4 bg-slate-100 text-slate-900 rounded-none font-black hover:bg-slate-200 transition-all active:scale-95"
                                     >
                                         No, Stay
                                     </button>
@@ -334,13 +341,14 @@ export default function PartnerLayout() {
             <style>{`
                 .custom-scrollbar::-webkit-scrollbar {
                     width: 4px;
+                    height: 4px;
                 }
                 .custom-scrollbar::-webkit-scrollbar-track {
                     background: transparent;
                 }
                 .custom-scrollbar::-webkit-scrollbar-thumb {
                     background: #E2E8F0;
-                    border-radius: 10px;
+                    border-radius: 0px;
                 }
                 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
                     background: #CBD5E1;

@@ -53,12 +53,12 @@ export default function FilterPanel({ filters, onChange }: FilterPanelProps) {
             {/* Header */}
             <div className="flex items-center justify-between pb-3 border-b border-white/20">
                 <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-xl glass-interactive flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-full glass-interactive flex items-center justify-center">
                         <SlidersHorizontal className="w-4 h-4 text-brand-600" />
                     </div>
                     <span className="font-black text-black text-sm">Filters</span>
                     {hasActive && (
-                        <span className="text-xs bg-brand-600 text-white px-2 py-0.5 rounded-full font-bold">
+                        <span className="text-[10px] bg-brand-600 text-white px-2 py-0.5 rounded-full font-black">
                             {filters.starRatings.length + filters.amenities.length + (filters.guestRatingMin ? 1 : 0) + (filters.priceRange[1] < 50000 ? 1 : 0)}
                         </span>
                     )}
@@ -99,7 +99,7 @@ export default function FilterPanel({ filters, onChange }: FilterPanelProps) {
             <FilterSection title="Hotel Class" open={ratingOpen} onToggle={() => setRatingOpen(!ratingOpen)}>
                 <div className="space-y-2.5 pt-1">
                     {[5, 4, 3].map((star) => (
-                        <label key={star} className="flex items-center gap-3 cursor-pointer group p-2 rounded-xl hover:glass-interactive border border-transparent hover:border-white/40 transition-all">
+                        <label key={star} className="flex items-center gap-3 cursor-pointer group p-2 rounded-2xl hover:glass-interactive border border-transparent hover:border-white/40 transition-all">
                             <div className="relative flex items-center justify-center">
                                 <input
                                     type="checkbox"
@@ -128,7 +128,7 @@ export default function FilterPanel({ filters, onChange }: FilterPanelProps) {
             <FilterSection title="Guest Rating" open={guestOpen} onToggle={() => setGuestOpen(!guestOpen)}>
                 <div className="space-y-2.5 pt-1">
                     {[9, 8, 7].map((min) => (
-                        <label key={min} className="flex items-center gap-3 cursor-pointer group p-2 rounded-xl hover:glass-interactive border border-transparent hover:border-white/40 transition-all">
+                        <label key={min} className="flex items-center gap-3 cursor-pointer group p-2 rounded-2xl hover:glass-interactive border border-transparent hover:border-white/40 transition-all">
                             <input
                                 type="radio"
                                 name="guestRating"
@@ -149,7 +149,7 @@ export default function FilterPanel({ filters, onChange }: FilterPanelProps) {
             <FilterSection title="Amenities" open={amenOpen} onToggle={() => setAmenOpen(!amenOpen)}>
                 <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1 pt-1 custom-scrollbar">
                     {ALL_AMENITIES.map((amenity) => (
-                        <label key={amenity} className="flex items-center gap-3 cursor-pointer group p-2 rounded-xl hover:glass-interactive border border-transparent hover:border-white/40 transition-all">
+                        <label key={amenity} className="flex items-center gap-3 cursor-pointer group p-2 rounded-2xl hover:glass-interactive border border-transparent hover:border-white/40 transition-all">
                             <input
                                 type="checkbox"
                                 checked={filters.amenities.includes(amenity)}

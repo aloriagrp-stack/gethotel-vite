@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, ChevronLeft, ChevronRight, Zap } from "lucide-react";
 import { priceHeatmap, getDatePreset } from "@/data/searchMockData";
 import type { DateRange } from "@/types/search";
-import { cn } from "@/lib/utils";
+import { cn, formatDateLocal } from "@/lib/utils";
 
 interface DateRangePickerProps {
     value: DateRange;
@@ -271,7 +271,7 @@ function MonthCalendar({
             <div className="grid grid-cols-7 gap-y-0.5">
                 {cells.map((d, i) => {
                     if (!d) return <div key={`e-${i}`} />;
-                    const key = d.toISOString().split("T")[0];
+                    const key = formatDateLocal(d);
                     const heatScore = priceHeatmap[key] ?? 0.5;
                     const isPast = d < today;
                     const isCI = checkIn && isSameDay(d, checkIn);

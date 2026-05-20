@@ -9,6 +9,12 @@ const getDailyRates = async (req, res) => {
             return res.status(400).json({ message: "roomId, startDate, and endDate are required" });
         }
 
+        const room = await prisma.room.findUnique({
+            where: { id: parseInt(roomId) },
+            select: { totalInventory: true, pricePerNight: true }
+        });
+        if (!room) return res.status(404).json({ message: "Room not found" });
+
         const rates = await prisma.dailyrate.findMany({
             where: {
                 roomId: parseInt(roomId),
@@ -19,7 +25,61 @@ const getDailyRates = async (req, res) => {
             }
         });
 
-        res.json({ data: rates });
+        const bookings = await prisma.booking.findMany({
+            where: {
+                roomId: parseInt(roomId),
+                status: { in: ['paid', 'confirmed', 'checked-in', 'held'] },
+                checkIn: { lte: new Date(endDate) },
+                checkOut: { gt: new Date(startDate) }
+            }
+        });
+
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        const resultRates = [];
+
+        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+            const dateStr = d.toISOString().split('T')[0];
+            const override = rates.find(r => r.date.toISOString().split('T')[0] === dateStr);
+            const limit = override ? override.available : (room.totalInventory || 1);
+            const price = override ? override.price : room.pricePerNight;
+
+            let bookedCount = 0;
+            const dDate = new Date(d);
+            dDate.setHours(0,0,0,0);
+
+            bookings.forEach(b => {
+                const bCheckIn = new Date(b.checkIn);
+                const bCheckOut = new Date(b.checkOut);
+                bCheckIn.setHours(0,0,0,0);
+                bCheckOut.setHours(0,0,0,0);
+
+                if (bCheckIn <= dDate && bCheckOut > dDate) {
+                    let qty = 1;
+                    if (b.roomDetails) {
+                        try {
+                            const details = JSON.parse(b.roomDetails);
+                            const roomDetail = details.find(rd => parseInt(rd.id) === parseInt(roomId));
+                            if (roomDetail && roomDetail.quantity) qty = parseInt(roomDetail.quantity);
+                        } catch (e) {}
+                    }
+                    bookedCount += qty;
+                }
+            });
+
+            resultRates.push({
+                id: override ? override.id : undefined,
+                roomId: parseInt(roomId),
+                date: new Date(dateStr),
+                price: price,
+                available: limit, // The limit/override
+                remainingAvailable: Math.max(0, limit - bookedCount), // Actual available
+                bookedCount: bookedCount,
+                isOverride: !!override
+            });
+        }
+
+        res.json({ data: resultRates });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Server error" });
@@ -109,8 +169,8 @@ const updateDailyRate = async (req, res) => {
             create: {
                 roomId: parseInt(roomId),
                 date: new Date(date),
-                price: parseFloat(price),
-                available: parseInt(available)
+                price: price !== undefined ? parseFloat(price) : room.pricePerNight,
+                available: available !== undefined ? parseInt(available) : 1
             }
         });
 

@@ -1,99 +1,340 @@
-
-
-import { useNavigate as useRouter, useParams } from 'react-router-dom';;
-import { hotels } from "@/data/hotels";
+import { useState, useEffect } from 'react';
+import { useNavigate as useRouter, useParams } from 'react-router-dom';
 import { 
     ChevronLeft, MapPin, Calendar, 
     ShieldCheck, QrCode, MessageSquare, 
-    ArrowRight, Info, CreditCard, Clock
+    ArrowRight, Info, CreditCard, Clock, Loader2,
+    X, Phone, Mail, CheckCircle2
 } from "lucide-react";
 import Image from "@/components/common/Image";
 import { Link } from "react-router-dom";
+import { bookingApi } from "@/lib/api";
+import { formatDate, formatPrice } from "@/lib/utils";
 
 export default function BookingDetailsPage() {
     const params = useParams();
     const router = useRouter();
-    const hotel = hotels.find(h => h.id === params.id) || hotels[0];
+    const [booking, setBooking] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+    const [showContactModal, setShowContactModal] = useState(false);
+    const [showKeyModal, setShowKeyModal] = useState(false);
+    const [scanning, setScanning] = useState(false);
+    const [scanSuccess, setScanSuccess] = useState(false);
+    const [messageSent, setMessageSent] = useState(false);
+    const [messageText, setMessageText] = useState("");
+
+    const handleGetMobileKey = () => {
+        setShowKeyModal(true);
+        setScanning(true);
+        setScanSuccess(false);
+        setTimeout(() => {
+            setScanning(false);
+            setScanSuccess(true);
+        }, 3000);
+    };
+
+    const handleSendMessage = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!messageText.trim()) return;
+        setMessageSent(true);
+        setMessageText("");
+        setTimeout(() => {
+            setMessageSent(false);
+            setShowContactModal(false);
+        }, 2200);
+    };
+
+    useEffect(() => {
+        const fetchBookingDetails = async () => {
+            try {
+                const res = await bookingApi.getMyBookings();
+                const bookingsList = res.data || [];
+                const found = bookingsList.find((b: any) => String(b.id) === String(params.id));
+                if (found) {
+                    setBooking(found);
+                }
+            } catch (err) {
+                console.error("Failed to load booking details:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchBookingDetails();
+    }, [params.id]);
+
+    const hotelName = booking?.hotel?.name || "Cottage Yes Please";
+    const hotelCity = booking?.hotel?.city || "New Delhi";
+    const hotelAddress = booking?.hotel?.address || "1843, Laxmi Narain Street, Rajguru Marg, Chuna Mandi, Pahar Ganj";
+    const hotelThumbnail = booking?.hotel?.thumbnail || "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&w=800&q=75";
+    const checkInDate = booking ? formatDate(booking.checkIn) : "16 May 2026";
+    const checkOutDate = booking ? formatDate(booking.checkOut) : "17 May 2026";
+    const totalPrice = booking ? formatPrice(booking.totalPrice) : "₹2,940";
+    const bookingId = booking ? `#GH-${booking.id + 10000}` : `#GH-10011`;
+    const roomName = booking?.room?.name || "Double Deluxe Room";
+    const status = booking?.status || "confirmed";
+    const totalPriceVal = booking?.totalPrice || 2940;
+    const amountPaidVal = booking?.amountPaid || Math.round(totalPriceVal * 0.18);
+    const payAtHotelVal = Math.max(0, totalPriceVal - amountPaidVal);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-[#F4F9FF]">
+                <div className="flex flex-col items-center gap-4">
+                    <Loader2 className="w-10 h-10 text-brand-600 animate-spin" />
+                    <p className="text-slate-500 font-bold italic">Loading stay details...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <div className="min-h-screen bg-[#F4F9FF] pt-32 pb-20 px-4 md:px-8">
-            <div className="max-w-4xl mx-auto">
+        <div className="min-h-screen bg-white py-12 px-4 md:px-8">
+            <div className="max-w-4xl mx-auto animate-fade-in">
                 <button 
-                    onClick={() => router(-1)}
+                    onClick={() => router("/my-bookings")}
                     className="flex items-center gap-2 text-slate-500 hover:text-brand-600 font-bold mb-8 transition-colors group"
                 >
                     <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" /> Back to Journeys
                 </button>
 
-                <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 overflow-hidden">
-                    <div className="flex flex-col md:flex-row gap-10">
-                        <div className="w-full md:w-1/3 aspect-[4/5] rounded-2xl overflow-hidden shadow-lg shrink-0 relative h-full">
-                            <Image src={hotel.thumbnail} alt={hotel.name} fill className="object-cover" />
+                {/* Stay Header Card */}
+                <div className="flex flex-col sm:flex-row gap-6 items-start pb-8 border-b border-slate-100 mb-8">
+                    {/* Small Image Box */}
+                    <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl overflow-hidden shrink-0 relative bg-slate-100 shadow-sm border border-slate-100">
+                        <img src={hotelThumbnail} alt={hotelName} className="w-full h-full object-cover" />
+                    </div>
+
+                    {/* Stay Info Column */}
+                    <div className="flex-1 space-y-2">
+                        <div className="flex flex-wrap items-center gap-3">
+                            <span className="px-2.5 py-0.5 bg-brand-50 text-brand-600 text-[9px] font-black uppercase tracking-widest rounded border border-brand-100">
+                                Reservation {status}
+                            </span>
+                            <span className="text-slate-400 text-[10px] font-bold font-mono">ID: {bookingId}</span>
+                        </div>
+                        
+                        <h1 className="text-2xl sm:text-3xl font-display font-black text-slate-900 tracking-tight uppercase leading-tight italic">
+                            {hotelName}
+                        </h1>
+                        
+                        <p className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                            {roomName}
+                        </p>
+
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-1">
+                            <p className="text-xs text-slate-500 font-bold flex items-start gap-1 max-w-xl">
+                                <MapPin className="w-4 h-4 text-brand-500 shrink-0 mt-0.5" />
+                                <span>{hotelAddress}</span>
+                            </p>
+                            <button 
+                                onClick={() => {
+                                    window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(hotelName + ", " + hotelAddress)}`, '_blank');
+                                }}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 rounded-lg text-[9px] font-black uppercase tracking-wider transition-colors shrink-0"
+                            >
+                                <MapPin className="w-3 h-3 text-slate-500" />
+                                Show on Map
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Stay Configuration Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    {/* Dates & Quick Actions block */}
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-2 gap-6 p-6 bg-slate-50/50 border border-slate-100 rounded-2xl">
+                            <div className="space-y-1">
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Entry Date</p>
+                                <p className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                                    <Calendar className="w-4 h-4 text-brand-600" /> {checkInDate}
+                                </p>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Exit Date</p>
+                                <p className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                                    <Calendar className="w-4 h-4 text-brand-600" /> {checkOutDate}
+                                </p>
+                            </div>
                         </div>
 
-                        <div className="flex-1">
-                            <div className="flex flex-wrap items-center gap-3 mb-4">
-                                <span className="px-3 py-1 bg-brand-50 text-brand-600 text-[10px] font-black uppercase tracking-widest rounded-lg border border-brand-100">
-                                    Reservation Confirmed
+                        {/* Actions block */}
+                        <div className="flex gap-4">
+                            <button 
+                                onClick={handleGetMobileKey}
+                                className="flex-1 py-4 bg-slate-950 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:shadow-lg hover:bg-slate-900 active:scale-[0.98] transition-all"
+                            >
+                                Get Mobile Key
+                            </button>
+                            <button 
+                                onClick={() => setShowContactModal(true)}
+                                className="flex-1 py-4 border border-slate-200 text-slate-600 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-50 active:scale-[0.98] transition-all"
+                            >
+                                Contact Host
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Payment Details block */}
+                    <div className="bg-slate-50/50 border border-slate-100 rounded-2xl p-6 space-y-4">
+                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Payment Summary</h4>
+                        <div className="space-y-3">
+                            <div className="flex justify-between items-center text-xs">
+                                <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Total Amount</span>
+                                <span className="font-black text-slate-900">{formatPrice(totalPriceVal)}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-xs">
+                                <span className="text-emerald-600 font-black uppercase tracking-wider text-[9px] flex items-center gap-1.5">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                    Paid Online (18% Deposit)
                                 </span>
-                                <span className="text-slate-400 text-xs font-bold font-mono">ID: #ELT-2918402X</span>
+                                <span className="font-black text-emerald-600">{formatPrice(amountPaidVal)}</span>
                             </div>
-                            
-                            <h1 className="text-4xl font-display font-black text-slate-900 tracking-tighter italic mb-2">
-                                {hotel.name}
-                            </h1>
-                            <p className="text-slate-500 flex items-center gap-2 font-bold mb-8">
-                                <MapPin className="w-4 h-4" /> {hotel.city}, India
-                            </p>
-
-                            <div className="grid grid-cols-2 gap-8 py-8 border-y border-slate-50">
-                                <div className="space-y-1">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Entry Date</p>
-                                    <p className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                                        <Calendar className="w-4 h-4 text-brand-600" /> May 15, 2026
-                                    </p>
-                                </div>
-                                <div className="space-y-1">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Exit Date</p>
-                                    <p className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                                        <Calendar className="w-4 h-4 text-brand-600" /> May 18, 2026
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="mt-8 space-y-6">
-                                <div className="flex items-start gap-4">
-                                    <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center shrink-0">
-                                        <Info className="w-5 h-5 text-slate-400" />
-                                    </div>
-                                    <div>
-                                        <h4 className="font-bold text-slate-900">Room Assignment</h4>
-                                        <p className="text-sm text-slate-500">Executive Suite • High Floor • City View</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-start gap-4">
-                                    <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center shrink-0">
-                                        <CreditCard className="w-5 h-5 text-slate-400" />
-                                    </div>
-                                    <div>
-                                        <h4 className="font-bold text-slate-900">Payment Status</h4>
-                                        <p className="text-sm text-slate-500 font-bold uppercase tracking-widest text-emerald-600">Fully Paid • ₹42,500.00</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="mt-12 flex gap-4 pt-10 border-t border-slate-50">
-                                <button className="px-8 py-4 bg-slate-950 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:shadow-xl transition-all">
-                                    Get Mobile Key
-                                </button>
-                                <button className="px-8 py-4 border border-slate-200 text-slate-600 text-xs font-black uppercase tracking-widest rounded-xl hover:bg-slate-50 transition-all">
-                                    Contact Host
-                                </button>
+                            <div className="flex justify-between items-center text-xs pt-3 border-t border-slate-200">
+                                <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Remaining (Pay at Hotel)</span>
+                                <span className="font-black text-slate-900">{formatPrice(payAtHotelVal)}</span>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+
+            {/* Mobile Key NFC Modal */}
+            {showKeyModal && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade-in">
+                    <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl relative border border-slate-100 overflow-hidden">
+                        <button 
+                            onClick={() => setShowKeyModal(false)}
+                            className="absolute top-6 right-6 w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                        
+                        <h3 className="text-xl font-black text-slate-900 mb-2 uppercase tracking-tight italic">Digital Keyring</h3>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-6">Smart NFC Access Card</p>
+
+                        {scanning ? (
+                            <div className="flex flex-col items-center justify-center py-10 space-y-6">
+                                <div className="relative w-32 h-32 flex items-center justify-center">
+                                    <span className="absolute inline-flex h-full w-full rounded-full bg-blue-100 opacity-75 animate-ping"></span>
+                                    <span className="absolute inline-flex h-24 w-24 rounded-full bg-blue-200 opacity-50 animate-ping"></span>
+                                    <div className="relative w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center text-white shadow-lg">
+                                        <Clock className="w-7 h-7 animate-spin" />
+                                    </div>
+                                </div>
+                                <div className="text-center space-y-1">
+                                    <h4 className="text-sm font-black uppercase tracking-widest text-slate-800 animate-pulse">Syncing Lock...</h4>
+                                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Stand close to {roomName}</p>
+                                </div>
+                            </div>
+                        ) : scanSuccess ? (
+                            <div className="flex flex-col items-center justify-center py-4 space-y-6">
+                                <div className="w-64 h-96 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 p-6 flex flex-col justify-between text-white shadow-2xl relative overflow-hidden border border-slate-700/50 animate-scale-up">
+                                    <div className="flex justify-between items-start">
+                                        <div className="w-10 h-7 rounded bg-gradient-to-r from-amber-400 to-yellow-200 opacity-80 border border-amber-300"></div>
+                                        <QrCode className="w-5 h-5 text-slate-400" />
+                                    </div>
+                                    
+                                    <div className="flex flex-col items-center my-6 space-y-3">
+                                        <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.25)] animate-pulse">
+                                            <ShieldCheck className="w-8 h-8" />
+                                        </div>
+                                        <span className="text-[9px] font-black uppercase tracking-[0.25em] text-emerald-400">NFC Active • Tap Door</span>
+                                    </div>
+
+                                    <div className="space-y-3 pt-6 border-t border-slate-800">
+                                        <div>
+                                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-wider">Hotel Room</span>
+                                            <p className="text-xs font-bold tracking-wide">{roomName}</p>
+                                        </div>
+                                        <div className="flex justify-between items-end">
+                                            <div>
+                                                <span className="text-[8px] font-black text-slate-500 uppercase tracking-wider">Guest Key</span>
+                                                <p className="text-[10px] font-bold tracking-wide uppercase">{booking?.guestFirstName || "Shriyansh"} {booking?.guestLastName || ""}</p>
+                                            </div>
+                                            <span className="text-[9px] font-mono text-slate-400">{bookingId}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <button 
+                                    onClick={() => setShowKeyModal(false)}
+                                    className="w-full py-4 bg-slate-950 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-900 active:scale-[0.98] transition-all"
+                                >
+                                    Close Wallet
+                                </button>
+                            </div>
+                        ) : null}
+                    </div>
+                </div>
+            )}
+
+            {/* Contact Host Modal */}
+            {showContactModal && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade-in">
+                    <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl relative border border-slate-100">
+                        <button 
+                            onClick={() => setShowContactModal(false)}
+                            className="absolute top-6 right-6 w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                        
+                        <h3 className="text-xl font-black text-slate-900 mb-2 uppercase tracking-tight italic">Contact Stay Host</h3>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-6">Reach out to hotel management directly</p>
+
+                        <div className="grid grid-cols-2 gap-4 mb-6">
+                            <a 
+                                href={`tel:${booking?.hotel?.phone || "9000000000"}`}
+                                className="flex flex-col items-center gap-3 p-4 bg-slate-50 hover:bg-slate-100 border border-slate-100 rounded-2xl transition-all text-center group active:scale-[0.98]"
+                            >
+                                <div className="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 shrink-0 group-hover:scale-110 transition-transform">
+                                    <Phone className="w-5 h-5" />
+                                </div>
+                                <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Call Helpline</span>
+                            </a>
+                            <a 
+                                href={`mailto:reservations@gethotelstays.com?subject=Booking ${bookingId} inquiry`}
+                                className="flex flex-col items-center gap-3 p-4 bg-slate-50 hover:bg-slate-100 border border-slate-100 rounded-2xl transition-all text-center group active:scale-[0.98]"
+                            >
+                                <div className="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 shrink-0 group-hover:scale-110 transition-transform">
+                                    <Mail className="w-5 h-5" />
+                                </div>
+                                <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Email Support</span>
+                            </a>
+                        </div>
+
+                        <div className="border-t border-slate-100 pt-6">
+                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Send a Direct Message</h4>
+                            
+                            {messageSent ? (
+                                <div className="flex flex-col items-center justify-center py-6 space-y-3 bg-emerald-50 rounded-2xl border border-emerald-100 animate-scale-up">
+                                    <CheckCircle2 className="w-10 h-10 text-emerald-500 animate-bounce" />
+                                    <p className="text-xs font-black text-emerald-700 uppercase tracking-widest">Message Sent Successfully!</p>
+                                    <p className="text-[9px] text-emerald-600 font-bold">The host will reply within 5 minutes.</p>
+                                </div>
+                            ) : (
+                                <form onSubmit={handleSendMessage} className="space-y-4">
+                                    <textarea 
+                                        rows={3}
+                                        placeholder="Write your request or question here..."
+                                        value={messageText}
+                                        onChange={(e) => setMessageText(e.target.value)}
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:bg-white focus:border-blue-600 outline-none transition-all text-xs font-bold"
+                                    />
+                                    <button 
+                                        type="submit"
+                                        className="w-full py-4 bg-slate-950 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl hover:bg-slate-900 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                                    >
+                                        <MessageSquare className="w-4.5 h-4.5" />
+                                        Send Instantly
+                                    </button>
+                                </form>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
+    </div>
     );
 }

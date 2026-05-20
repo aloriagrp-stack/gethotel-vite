@@ -11,8 +11,15 @@ export default function PartnerLoginPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const { login } = useAuth();
+    const { login, user, loading: authLoading } = useAuth();
     const router = useRouter();
+
+    // If already logged in as hotel_admin, skip login and go to selector
+    useEffect(() => {
+        if (!authLoading && user?.role === 'hotel_admin') {
+            router('/partner-select');
+        }
+    }, [user, authLoading, router]);
 
     // Auto-hide error notification
     useEffect(() => {
@@ -37,7 +44,7 @@ export default function PartnerLoginPage() {
                 partnerPassword: password 
             });
             if (user.role === 'hotel_admin') {
-                router("/partner-dashboard");
+                router("/partner-select");
             } else {
                 setError("This account is not authorized for Partner Central.");
             }

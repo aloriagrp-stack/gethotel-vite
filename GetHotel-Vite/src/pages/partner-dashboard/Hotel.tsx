@@ -115,7 +115,7 @@ export default function PartnerHotelPage() {
                 <Hotel className="w-16 h-16 text-slate-200 mb-6" />
                 <h1 className="text-2xl font-black text-slate-900 mb-2">No Hotel Found</h1>
                 <p className="text-slate-500 mb-8">You haven't added a hotel yet or it's still being processed.</p>
-                <Link to="/partner-dashboard" className="px-8 py-4 bg-slate-950 text-white rounded-xl font-bold">
+                <Link to="/partner-dashboard" className="px-8 py-4 bg-slate-950 text-white rounded-none font-bold">
                     Back to Dashboard
                 </Link>
             </div>
@@ -128,7 +128,7 @@ export default function PartnerHotelPage() {
             <div className="bg-white border-b border-slate-200 sticky top-0 z-30">
                 <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                        <Link to="/partner-dashboard" className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-50 transition-colors">
+                        <Link to="/partner-dashboard" className="w-10 h-10 flex items-center justify-center rounded-none hover:bg-slate-50 transition-colors">
                             <ArrowLeft className="w-5 h-5 text-slate-600" />
                         </Link>
                         <div>
@@ -141,13 +141,13 @@ export default function PartnerHotelPage() {
                     <div className="flex items-center gap-3">
                         {editing ? (
                             <>
-                                <button onClick={() => setEditing(false)} className="px-6 py-2.5 text-slate-600 font-bold text-sm hover:bg-slate-50 rounded-lg">Cancel</button>
-                                <button onClick={handleUpdateHotel} disabled={saving} className="px-6 py-2.5 bg-blue-600 text-white font-black text-sm rounded-lg shadow-lg shadow-blue-100 flex items-center gap-2">
+                                <button onClick={() => setEditing(false)} className="px-6 py-2.5 text-slate-600 font-bold text-sm hover:bg-slate-50 rounded-none">Cancel</button>
+                                <button onClick={handleUpdateHotel} disabled={saving} className="px-6 py-2.5 bg-blue-600 text-white font-black text-sm rounded-none shadow-lg shadow-blue-100 flex items-center gap-2">
                                     {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save Changes
                                 </button>
                             </>
                         ) : (
-                            <button onClick={() => setEditing(true)} className="px-6 py-2.5 bg-slate-950 text-white font-black text-sm rounded-lg flex items-center gap-2">
+                            <button onClick={() => setEditing(true)} className="px-6 py-2.5 bg-slate-950 text-white font-black text-sm rounded-none flex items-center gap-2">
                                 <Edit3 className="w-4 h-4" /> Edit Property
                             </button>
                         )}
@@ -159,43 +159,43 @@ export default function PartnerHotelPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                     <div className="lg:col-span-2 space-y-8">
                         {/* Basic Information */}
-                        <div className="bg-white rounded-xl p-8 border border-slate-200 shadow-sm">
+                        <div className="bg-white rounded-none p-8 border border-slate-200 shadow-sm">
                             <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-8 flex items-center gap-2">
                                 <Info className="w-5 h-5 text-blue-600" /> Basic Information
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-slate-400 uppercase">Hotel Name</label>
-                                    <input type="text" readOnly={!editing} value={editing ? editData.name : hotel.name} onChange={(e) => setEditData({ ...editData, name: e.target.value })} className={cn("w-full px-4 py-3 bg-slate-50 rounded-lg text-sm font-bold border", editing ? "border-blue-100 focus:bg-white focus:border-blue-600" : "border-transparent cursor-default")} />
+                                    <input type="text" readOnly={!editing} value={editing ? editData.name : hotel.name} onChange={(e) => setEditData({ ...editData, name: e.target.value })} className={cn("w-full px-4 py-3 bg-slate-50 rounded-none text-sm font-bold border", editing ? "border-blue-100 focus:bg-white focus:border-blue-600" : "border-transparent cursor-default")} />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-slate-400 uppercase">Tagline</label>
-                                    <input type="text" readOnly={!editing} value={editing ? editData.tagline : hotel.tagline} onChange={(e) => setEditData({ ...editData, tagline: e.target.value })} className={cn("w-full px-4 py-3 bg-slate-50 rounded-lg text-sm font-bold border", editing ? "border-blue-100 focus:bg-white focus:border-blue-600" : "border-transparent cursor-default")} />
+                                    <input type="text" readOnly={!editing} value={editing ? editData.tagline : hotel.tagline} onChange={(e) => setEditData({ ...editData, tagline: e.target.value })} className={cn("w-full px-4 py-3 bg-slate-50 rounded-none text-sm font-bold border", editing ? "border-blue-100 focus:bg-white focus:border-blue-600" : "border-transparent cursor-default")} />
                                 </div>
                                 <div className="md:col-span-2 space-y-2">
                                     <label className="text-[10px] font-black text-slate-400 uppercase">Description</label>
-                                    <textarea readOnly={!editing} value={editing ? editData.description : hotel.description} onChange={(e) => setEditData({ ...editData, description: e.target.value })} className={cn("w-full px-4 py-3 bg-slate-50 rounded-lg text-sm font-bold border min-h-[100px]", editing ? "border-blue-100 focus:bg-white focus:border-blue-600" : "border-transparent cursor-default")} />
+                                    <textarea readOnly={!editing} value={editing ? editData.description : hotel.description} onChange={(e) => setEditData({ ...editData, description: e.target.value })} className={cn("w-full px-4 py-3 bg-slate-50 rounded-none text-sm font-bold border min-h-[100px]", editing ? "border-blue-100 focus:bg-white focus:border-blue-600" : "border-transparent cursor-default")} />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-slate-400 uppercase">City</label>
-                                    <input type="text" readOnly={!editing} value={editing ? editData.city : hotel.city} onChange={(e) => setEditData({ ...editData, city: e.target.value })} className={cn("w-full px-4 py-3 bg-slate-50 rounded-lg text-sm font-bold border", editing ? "border-blue-100 focus:bg-white focus:border-blue-600" : "border-transparent cursor-default")} />
+                                    <input type="text" readOnly={!editing} value={editing ? editData.city : hotel.city} onChange={(e) => setEditData({ ...editData, city: e.target.value })} className={cn("w-full px-4 py-3 bg-slate-50 rounded-none text-sm font-bold border", editing ? "border-blue-100 focus:bg-white focus:border-blue-600" : "border-transparent cursor-default")} />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-slate-400 uppercase">Address</label>
-                                    <input type="text" readOnly={!editing} value={editing ? editData.address : hotel.address} onChange={(e) => setEditData({ ...editData, address: e.target.value })} className={cn("w-full px-4 py-3 bg-slate-50 rounded-lg text-sm font-bold border", editing ? "border-blue-100 focus:bg-white focus:border-blue-600" : "border-transparent cursor-default")} />
+                                    <input type="text" readOnly={!editing} value={editing ? editData.address : hotel.address} onChange={(e) => setEditData({ ...editData, address: e.target.value })} className={cn("w-full px-4 py-3 bg-slate-50 rounded-none text-sm font-bold border", editing ? "border-blue-100 focus:bg-white focus:border-blue-600" : "border-transparent cursor-default")} />
                                 </div>
                             </div>
                         </div>
 
                         {/* Main Amenities (Top 6) */}
-                        <div className="bg-white rounded-xl p-8 border border-slate-200 shadow-sm relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/5 rounded-full blur-3xl -mr-16 -mt-16" />
+                        <div className="bg-white rounded-none p-8 border border-slate-200 shadow-sm relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/5 rounded-none blur-3xl -mr-16 -mt-16" />
                             <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-50">
                                 <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
                                     <Zap className="w-5 h-5 text-blue-600" /> Main Amenities (Top 6)
                                 </h3>
                                 <span className={cn(
-                                    "text-[10px] font-black uppercase px-3 py-1 rounded-full",
+                                    "text-[10px] font-black uppercase px-3 py-1 rounded-none",
                                     (safeParse(editing ? editData.mainAmenities : (hotel.mainAmenities || hotel.main_amenities), [])).length >= 6 ? "bg-amber-50 text-amber-600" : "bg-emerald-50 text-emerald-600"
                                 )}>
                                     {(safeParse(editing ? editData.mainAmenities : (hotel.mainAmenities || hotel.main_amenities), [])).length}/6 Selected
@@ -211,7 +211,7 @@ export default function PartnerHotelPage() {
                                             if (isSelected) updated = updated.filter((m: any) => m.id !== preset.id);
                                             else if (updated.length < 6) updated.push(preset);
                                             setEditData({ ...editData, mainAmenities: JSON.stringify(updated) });
-                                        }} className={cn("flex items-center gap-3 p-4 rounded-xl border text-left transition-all", isSelected ? "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-100" : "bg-slate-50 border-transparent text-slate-600", editing && "hover:border-slate-200")}>
+                                        }} className={cn("flex items-center gap-3 p-4 rounded-none border text-left transition-all", isSelected ? "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-100" : "bg-slate-50 border-transparent text-slate-600", editing && "hover:border-slate-200")}>
                                             <span className="text-xl">{preset.icon}</span>
                                             <span className="text-[10px] font-black uppercase tracking-tight">{preset.label}</span>
                                         </button>
@@ -222,18 +222,18 @@ export default function PartnerHotelPage() {
                                 <div className="space-y-4 pt-6 border-t border-slate-50">
                                     <label className="text-[10px] font-black text-slate-400 uppercase">Custom Amenity</label>
                                     <div className="flex gap-2">
-                                        <input type="text" placeholder="e.g. Private Pool" value={customAmenity} onChange={(e) => setCustomAmenity(e.target.value)} className="flex-1 px-4 py-3 bg-slate-50 rounded-lg text-sm font-bold border border-transparent focus:bg-white focus:border-blue-600 outline-none" />
+                                        <input type="text" placeholder="e.g. Private Pool" value={customAmenity} onChange={(e) => setCustomAmenity(e.target.value)} className="flex-1 px-4 py-3 bg-slate-50 rounded-none text-sm font-bold border border-transparent focus:bg-white focus:border-blue-600 outline-none" />
                                         <button onClick={() => {
                                             if (!customAmenity) return;
                                             const currentMain = safeParse(editData.mainAmenities, []);
                                             if (currentMain.length >= 6) return alert("Bhai, sirf 6 allowed hain!");
                                             setEditData({ ...editData, mainAmenities: JSON.stringify([...currentMain, { id: `custom_${Date.now()}`, label: customAmenity, icon: '✨' }]) });
                                             setCustomAmenity("");
-                                        }} className="px-6 py-3 bg-slate-900 text-white rounded-lg text-[10px] font-black uppercase tracking-widest">Add</button>
+                                        }} className="px-6 py-3 bg-slate-900 text-white rounded-none text-[10px] font-black uppercase tracking-widest">Add</button>
                                     </div>
                                     <div className="flex flex-wrap gap-2">
                                         {safeParse(editData.mainAmenities, []).filter((m: any) => m.id.startsWith('custom_')).map((m: any) => (
-                                            <div key={m.id} className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-full border border-blue-100 text-[9px] font-black uppercase">
+                                            <div key={m.id} className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-none border border-blue-100 text-[9px] font-black uppercase">
                                                 {m.label}
                                                 <button onClick={() => setEditData({ ...editData, mainAmenities: JSON.stringify(safeParse(editData.mainAmenities, []).filter((item: any) => item.id !== m.id)) })}><XCircle className="w-3 h-3 hover:text-red-500" /></button>
                                             </div>
@@ -244,7 +244,7 @@ export default function PartnerHotelPage() {
                         </div>
 
                         {/* All Facilities */}
-                        <div className="bg-white rounded-xl p-8 border border-slate-200 shadow-sm">
+                        <div className="bg-white rounded-none p-8 border border-slate-200 shadow-sm">
                             <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-8 flex items-center gap-2">
                                 <ShieldCheck className="w-5 h-5 text-blue-600" /> All Facilities
                             </h3>
@@ -256,7 +256,7 @@ export default function PartnerHotelPage() {
                                         <button key={a} disabled={!editing} onClick={() => {
                                             const updated = isSelected ? currentList.filter((item: string) => item !== a) : [...currentList, a];
                                             setEditData({ ...editData, amenities: updated });
-                                        }} className={cn("flex items-center gap-3 p-4 rounded-xl border text-left transition-all", isSelected ? "bg-blue-50 border-blue-200 text-blue-600" : "bg-slate-50 border-transparent text-slate-600", editing && "hover:border-blue-400 cursor-pointer")}>
+                                        }} className={cn("flex items-center gap-3 p-4 rounded-none border text-left transition-all", isSelected ? "bg-blue-50 border-blue-200 text-blue-600" : "bg-slate-50 border-transparent text-slate-600", editing && "hover:border-blue-400 cursor-pointer")}>
                                             <span className="text-xl">{amenityIcon(a)}</span>
                                             <span className="text-[10px] font-black uppercase tracking-tight">{amenityLabel(a)}</span>
                                         </button>
@@ -266,24 +266,24 @@ export default function PartnerHotelPage() {
                         </div>
 
                         {/* Gallery */}
-                        <div className="bg-white rounded-xl p-8 border border-slate-200 shadow-sm">
+                        <div className="bg-white rounded-none p-8 border border-slate-200 shadow-sm">
                             <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-8 flex items-center gap-2">
                                 <ImageIcon className="w-5 h-5 text-blue-600" /> Property Gallery
                             </h3>
                             <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-4">
                                 {(safeParse(editing ? editData.images : hotel.images, [])).map((img: string, i: number) => (
-                                    <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-slate-100 group">
+                                    <div key={i} className="relative aspect-square rounded-none overflow-hidden border border-slate-100 group">
                                         <img src={img} className="w-full h-full object-cover" />
                                         {editing && (
                                             <button onClick={() => {
                                                 const current = safeParse(editData.images, []);
                                                 setEditData({ ...editData, images: JSON.stringify(current.filter((_: any, idx: number) => idx !== i)) });
-                                            }} className="absolute top-2 right-2 w-6 h-6 bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100"><Trash2 className="w-3.5 h-3.5" /></button>
+                                            }} className="absolute top-2 right-2 w-6 h-6 bg-red-600 text-white rounded-none flex items-center justify-center opacity-0 group-hover:opacity-100"><Trash2 className="w-3.5 h-3.5" /></button>
                                         )}
                                     </div>
                                 ))}
                                 {editing && (
-                                    <label className="relative aspect-square rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 flex items-center justify-center cursor-pointer hover:border-blue-300">
+                                    <label className="relative aspect-square rounded-none border-2 border-dashed border-slate-200 bg-slate-50 flex items-center justify-center cursor-pointer hover:border-blue-300">
                                         <input type="file" multiple accept="image/*" onChange={(e) => {
                                             const files = Array.from(e.target.files || []);
                                             files.forEach(file => {
@@ -304,7 +304,7 @@ export default function PartnerHotelPage() {
 
                     {/* Sidebar */}
                     <div className="space-y-8">
-                        <div className="bg-slate-900 rounded-xl p-8 text-white shadow-xl shadow-slate-200">
+                        <div className="bg-slate-900 rounded-none p-8 text-white shadow-xl shadow-slate-200">
                             <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-8 pb-4 border-b border-slate-800 flex items-center gap-2"><TrendingUp className="w-4 h-4" /> Insights</h3>
                             <div className="space-y-6">
                                 <div className="flex justify-between items-center">
@@ -321,7 +321,7 @@ export default function PartnerHotelPage() {
                                 </div>
                             </div>
                         </div>
-                        <div className="bg-white rounded-xl p-8 border border-slate-200 shadow-sm">
+                        <div className="bg-white rounded-none p-8 border border-slate-200 shadow-sm">
                             <h3 className="text-sm font-black text-slate-900 uppercase mb-6 flex items-center gap-2"><Shield className="w-5 h-5 text-blue-600" /> Policies</h3>
                             <div className="space-y-4">
                                 {Object.entries(safeParse(hotel.policies || hotel.hotel_policies || hotel.policies, {})).map(([key, value]: any) => (

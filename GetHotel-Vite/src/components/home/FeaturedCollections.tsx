@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowUpRight, Crown, Wallet, Heart, Users } from "lucide-react";
+import Image from "@/components/common/Image";
 
 const COLLECTIONS = [
     {
@@ -46,28 +47,30 @@ const COLLECTIONS = [
 export default function FeaturedCollections() {
     return (
         <section className="pt-0 pb-0 bg-transparent">
-            <div className="max-w-7xl mx-auto px-6">
+            <div className="w-full max-w-none mx-auto px-3 md:px-8">
                 <div className="mb-4">
-                    <motion.h2
-                        className="text-4xl md:text-5xl font-display font-black text-slate-900 tracking-tight"
+                    <h2
+                        className="text-4xl md:text-5xl font-bold text-slate-900 tracking-tight"
                     >
                         Featured <span className="text-brand-600">Collections</span>
-                    </motion.h2>
+                    </h2>
                 </div>
 
-                <div className="flex gap-4 pb-4 overflow-x-auto snap-x snap-mandatory no-scrollbar lg:-mx-0">
+                <div className="flex gap-4 pb-4 overflow-x-auto snap-x snap-mandatory no-scrollbar -mx-3 md:-mx-8 px-3 md:px-8 lg:-mx-0">
+                    <div className="w-2 shrink-0 snap-start md:hidden" />
                     {COLLECTIONS.map((item, i) => (
                         <div key={item.title} className="min-w-[210px] md:min-w-[320px] snap-start flex">
-                            <motion.div
+                            <div
                                 className="flex flex-col flex-1 h-full bg-white/70 backdrop-blur-xl rounded-[2rem] overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 border border-white/40 group cursor-pointer"
                             >
                                 <Link to={`/hotels?collection=${item.query}`} className="block h-full w-full flex flex-col">
                                     {/* Image Section */}
                                     <div className="relative aspect-[4/5] md:aspect-[4/3] w-full overflow-hidden bg-slate-100">
-                                        <img
+                                        <Image
                                             src={item.image}
                                             alt={item.title}
-                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                            fill
+                                            className="transition-transform duration-700 group-hover:scale-110"
                                         />
 
                                         {/* Dynamic Label Tag */}
@@ -80,7 +83,7 @@ export default function FeaturedCollections() {
 
                                     {/* Content Section below image */}
                                     <div className="p-5 flex flex-col flex-1 gap-2">
-                                        <h3 className="text-xl md:text-2xl font-black text-slate-900 leading-tight tracking-tight">{item.title}</h3>
+                                        <h3 className="text-xl md:text-2xl font-bold text-slate-900 leading-tight tracking-tight">{item.title}</h3>
                                         <p className="text-slate-500 text-xs font-semibold">{item.subtitle}</p>
                                         <div className="mt-auto pt-3 flex items-center justify-between">
                                             <div className="flex items-center gap-2 text-brand-600 font-bold text-xs uppercase tracking-widest">
@@ -90,7 +93,7 @@ export default function FeaturedCollections() {
                                         </div>
                                     </div>
                                 </Link>
-                            </motion.div>
+                            </div>
                         </div>
                     ))}
                 </div>

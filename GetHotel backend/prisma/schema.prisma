@@ -36,9 +36,9 @@ model booking {
   razorpaySignature  String?       @db.Text
   cancellationReason String?       @db.Text
   internalNotes      String?       @db.Text
-  hotel              hotel         @relation(fields: [hotelId], references: [id], map: "Booking_hotelId_fkey")
-  room               room          @relation(fields: [roomId], references: [id], map: "Booking_roomId_fkey")
-  user               user          @relation(fields: [userId], references: [id], map: "Booking_userId_fkey")
+  hotel              hotel         @relation(fields: [hotelId], references: [id], onDelete: Cascade, map: "Booking_hotelId_fkey")
+  room               room          @relation(fields: [roomId], references: [id], onDelete: Cascade, map: "Booking_roomId_fkey")
+  user               user          @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Booking_userId_fkey")
   transactions       transaction[]
 
   @@index([hotelId], map: "Booking_hotelId_fkey")
@@ -64,21 +64,28 @@ model transaction {
 }
 
 model coupon {
-  id            Int      @id @default(autoincrement())
-  code          String   @unique(map: "Coupon_code_key")
-  discountType  String   @default("percentage")
-  discountValue Float
-  minBookingAmt Float    @default(0)
-  maxDiscount   Float?
-  startDate     DateTime
-  endDate       DateTime
-  usageLimit    Int?
-  usedCount     Int      @default(0)
-  isActive      Boolean  @default(true)
-  hotelId       Int?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  hotel         hotel?   @relation(fields: [hotelId], references: [id], onDelete: Cascade, map: "Coupon_hotelId_fkey")
+  id             Int      @id @default(autoincrement())
+  code           String   @unique(map: "Coupon_code_key")
+  discountType   String   @default("percentage")
+  discountValue  Float
+  minBookingAmt  Float    @default(0)
+  maxDiscount    Float?
+  startDate      DateTime
+  endDate        DateTime
+  usageLimit     Int?
+  usedCount      Int      @default(0)
+  isActive       Boolean  @default(true)
+  hotelId        Int?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  // Advanced coupon fields
+  promoType      String   @default("standard")
+  minStay        Int      @default(1)
+  targetAudience String   @default("all")
+  applyToRooms   String   @default("all") @db.Text
+
+  hotel          hotel?   @relation(fields: [hotelId], references: [id], onDelete: Cascade, map: "Coupon_hotelId_fkey")
 
   @@index([hotelId], map: "Coupon_hotelId_fkey")
 }
@@ -129,9 +136,10 @@ model hotel {
   noShowRate            Float          @default(0)
   qualityScore          Float          @default(85)
   responseSpeed         String?        @default("Fast")
+  isActive              Boolean        @default(true)
   booking               booking[]
   coupon                coupon[]
-  user                  user           @relation(fields: [userId], references: [id], map: "Hotel_userId_fkey")
+  user                  user           @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Hotel_userId_fkey")
   hotelwallet           hotelwallet?
   notification          notification[]
   payouts               payout[]
@@ -151,8 +159,8 @@ model notification {
   type      String   @default("info")
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
-  hotel     hotel?   @relation(fields: [hotelId], references: [id], map: "Notification_hotelId_fkey")
-  user      user     @relation(fields: [userId], references: [id], map: "Notification_userId_fkey")
+  hotel     hotel?   @relation(fields: [hotelId], references: [id], onDelete: Cascade, map: "Notification_hotelId_fkey")
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Notification_userId_fkey")
 
   @@index([hotelId], map: "Notification_hotelId_fkey")
   @@index([userId], map: "Notification_userId_fkey")
@@ -189,8 +197,8 @@ model review {
   partnerReply  String?  @db.Text
   staff         Int      @default(5)
   valueForMoney Int      @default(5)
-  hotel         hotel    @relation(fields: [hotelId], references: [id], map: "Review_hotelId_fkey")
-  user          user     @relation(fields: [userId], references: [id], map: "Review_userId_fkey")
+  hotel         hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade, map: "Review_hotelId_fkey")
+  user          user     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Review_userId_fkey")
 
   @@unique([userId, hotelId], map: "Review_userId_hotelId_key")
   @@index([hotelId], map: "Review_hotelId_fkey")
@@ -211,6 +219,65 @@ model room {
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
   description      String?     @db.Text
+  
+  // 1. Status & Visibility
+  status           String      @default("active") // active, inactive, draft, maintenance
+  
+  // 2. Inventory Management
+  totalInventory   Int         @default(1)
+  
+  // 3. View & Location
+  viewType         String?     // City, Sea, Mountain, Garden
+  floorNumber      Int?
+  isCornerRoom     Boolean     @default(false)
+  
+  // 4. Advanced Occupancy
+  capacityAdults   Int         @default(2)
+  capacityChildren Int         @default(0)
+  capacityInfants  Int         @default(0)
+  extraMattress    Boolean     @default(false)
+  extraBedCharge   Float       @default(0)
+  
+  // 5. Tags & Badges
+  tags             String?     @db.Text // JSON string for badges: Couple Friendly, Best Seller, etc.
+  
+  // 6. Priority
+  isFeatured       Boolean     @default(false)
+  displayPriority  Int         @default(0)
+  
+  // 7. Advanced Media
+  videoUrl         String?     @db.Text
+  media360Url      String?     @db.Text
+  
+  // 8. Availability Rules
+  minStay          Int         @default(1)
+  maxStay          Int         @default(90)
+  isInstantBooking Boolean     @default(true)
+  advanceBookingDays Int       @default(0)
+  
+  // 9. Payment & Pricing
+  advancePayment   Int         @default(0)
+  securityDeposit  Float       @default(0)
+  isRefundable     Boolean     @default(true)
+  isTaxIncluded    Boolean     @default(false)
+  weekendPricing   String?     @db.Text // JSON
+  seasonalPricing  String?     @db.Text // JSON
+  
+  // 10. Add-ons
+  addOns           String?     @db.Text // JSON: Breakfast, Airport Pickup, etc.
+  
+  // 11. Restrictions
+  petsAllowed      Boolean     @default(false)
+  smokingAllowed   Boolean     @default(false)
+  alcoholAllowed   Boolean     @default(true)
+  partyAllowed     Boolean     @default(false)
+  
+  // 15. SEO
+  seoTitle         String?
+  seoDescription   String?     @db.Text
+  slug             String?     @unique
+  
+  // Legacy / Existing fields
   roomPolicies    String?     @db.Text
   minPrice        Float       @default(0)
   maxPrice        Float       @default(0)
@@ -219,6 +286,7 @@ model room {
   variants        String?     @db.LongText
   isHourlyEnabled Boolean     @default(false)
   hourlyRates     String?     @db.LongText
+  
   booking          booking[]
   dailyrate        dailyrate[]
   hotel           hotel       @relation(fields: [hotelId], references: [id], onDelete: Cascade, map: "Room_hotelId_fkey")
@@ -233,28 +301,36 @@ model staff {
   role      String   @default("receptionist")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  hotel     hotel    @relation(fields: [hotelId], references: [id], map: "Staff_hotelId_fkey")
-  user      user     @relation(fields: [userId], references: [id], map: "Staff_userId_fkey")
+  hotel     hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade, map: "Staff_hotelId_fkey")
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Staff_userId_fkey")
 
   @@unique([userId, hotelId], map: "Staff_userId_hotelId_key")
   @@index([hotelId], map: "Staff_hotelId_fkey")
 }
 
 model user {
-  id                Int            @id @default(autoincrement())
-  name              String
-  email             String         @unique(map: "User_email_key")
-  password          String
-  role              String         @default("user")
-  nameLastChangedAt DateTime?
-  profileImage      String?        @db.LongText
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
-  booking           booking[]
-  hotel             hotel[]
-  notification      notification[]
-  review            review[]
-  staff             staff[]
+  id                    Int            @id @default(autoincrement())
+  name                  String
+  email                 String         @unique(map: "User_email_key")
+  password              String
+  role                  String         @default("user")
+  nameLastChangedAt     DateTime?
+  profileImage          String?        @db.LongText
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  
+  // Password tracking columns
+  passwordLastChangedAt DateTime?
+  passwordChangeHistory String?        @db.Text
+
+  // Email tracking columns
+  emailChangeHistory    String?        @db.Text
+
+  booking               booking[]
+  hotel                 hotel[]
+  notification          notification[]
+  review                review[]
+  staff                 staff[]
 }
 
 model payout {

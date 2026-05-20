@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import HotelDetailContent from "./HotelDetailContent";
 import { hotelApi } from "@/lib/api";
+import SEO from "@/components/common/SEO";
 
 export default function HotelDetailPage() {
     const { id } = useParams<{ id: string }>();
@@ -59,6 +60,11 @@ export default function HotelDetailPage() {
 
     return (
         <>
+            <SEO 
+                title={`${hotel.name} — Book Hotel in ${hotel.city} | GetHotel`}
+                description={`Book your stay at ${hotel.name} in ${hotel.city}. Best prices guaranteed for premium rooms and amenities. ${hotel.description?.substring(0, 150)}...`}
+                keywords={`${hotel.name}, hotels in ${hotel.city}, budget hotels ${hotel.city}, premium stays india`}
+            />
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

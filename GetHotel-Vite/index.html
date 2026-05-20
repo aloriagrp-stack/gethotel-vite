@@ -4,16 +4,36 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GetHotel — Book Premium Hotels in India</title>
-    <meta name="description" content="Discover and book the best hotels, resorts, and boutique stays across India. Compare prices, read reviews, and secure your perfect stay with GetHotel." />
     
-    <!-- DM Sans Font -->
-    <!-- Performance Preconnects -->
+    <!-- SEO Meta Tags -->
+    <title>GetHotel — Book Premium Hotels, Resorts & Boutique Stays in India</title>
+    <meta name="description" content="Discover and book the best hotels, resorts, and boutique stays across India. Compare prices, read reviews, and secure your perfect stay with GetHotel. Guaranteed best rates and premium service." />
+    <meta name="keywords" content="hotel booking india, premium hotels, resort booking, boutique stays, budget hotels india, luxury hotels india, GetHotelStays" />
+    <meta name="author" content="GetHotelStays" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Open Graph / Facebook / WhatsApp -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://gethotelstays.com/" />
+    <meta property="og:title" content="GetHotel — Book Premium Hotels in India" />
+    <meta property="og:description" content="Discover and book the best hotels, resorts, and boutique stays across India. Premium stays at the best prices." />
+    <meta property="og:image" content="https://gethotelstays.com/og-image.jpg" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://gethotelstays.com/" />
+    <meta property="twitter:title" content="GetHotel — Book Premium Hotels in India" />
+    <meta property="twitter:description" content="Discover and book the best hotels, resorts, and boutique stays across India." />
+    <meta property="twitter:image" content="https://gethotelstays.com/og-image.jpg" />
+
+    <!-- Performance Optimization: Preconnect & Preload -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://checkout.razorpay.com">
+    <link rel="dns-prefetch" href="https://firebasestorage.googleapis.com">
     
     <!-- Primary Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
     
     <!-- Razorpay Checkout (Async) -->
     <script async src="https://checkout.razorpay.com/v1/checkout.js"></script>
@@ -21,10 +41,11 @@
     <style>
       :root {
         --font-dm-sans: 'DM Sans', sans-serif;
+        --font-outfit: 'Outfit', sans-serif;
         --font-luxury: 'Playfair Display', serif;
       }
       body {
-        font-family: var(--font-dm-sans);
+        font-family: var(--font-outfit), var(--font-dm-sans);
         background: #ffffff;
       }
       /* Prevent CLS */

@@ -21,6 +21,16 @@ export function formatDate(dateStr: string): string {
     });
 }
 
+export function formatDateLocal(date: Date | null | string): string {
+    if (!date) return "";
+    const d = typeof date === 'string' ? new Date(date) : date;
+    if (isNaN(d.getTime())) return "";
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
 export function ratingLabel(rating: number): string {
     if (rating >= 9.5) return "Exceptional";
     if (rating >= 9) return "Superb";

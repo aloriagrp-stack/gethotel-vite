@@ -61,8 +61,8 @@ const PartnerAnalytics = lazy(() => import("./pages/partner-dashboard/Analytics"
 const PartnerFrontDesk = lazy(() => import("./pages/partner-dashboard/FrontDesk"));
 const PartnerInventory = lazy(() => import("./pages/partner-dashboard/Inventory"));
 const PartnerNotifications = lazy(() => import("./pages/partner-dashboard/Notifications"));
-const PartnerPricing = lazy(() => import("./pages/partner-dashboard/Pricing"));
 const PartnerStaff = lazy(() => import("./pages/partner-dashboard/Staff"));
+const PartnerHotelSelect = lazy(() => import("./pages/PartnerHotelSelect"));
 
 export default function App() {
   return (
@@ -90,6 +90,7 @@ export default function App() {
                       <Route path="/booking" element={<Booking />} />
                       <Route path="/booking/:id" element={<BookingIDPage />} />
                       <Route path="/partner" element={<PartnerLanding />} />
+                      <Route path="/partner-select" element={<PartnerHotelSelect />} />
                       <Route path="/.controlhub" element={<AdminLogin />} />
                       
                       {/* ID-based Routes */}
@@ -99,7 +100,6 @@ export default function App() {
                       <Route path="/bookings/report/:id" element={<ReportBooking />} />
                       <Route path="/bookings/invoice/:id" element={<BookingInvoiceDetails />} />
                       <Route path="/bookings/dispute/:id" element={<DisputeBooking />} />
-                      <Route path="/bookings/details/:id" element={<BookingDetails />} />
                       <Route path="/bookings/details/:id" element={<BookingDetails />} />
                       <Route path="/booking/details/:id" element={<BookingDetails />} />
                       <Route path="/booking/:id" element={<BookingIDPage />} />
@@ -119,7 +119,6 @@ export default function App() {
                         <Route path="frontdesk" element={<PartnerFrontDesk />} />
                         <Route path="inventory" element={<PartnerInventory />} />
                         <Route path="notifications" element={<PartnerNotifications />} />
-                        <Route path="pricing" element={<PartnerPricing />} />
                         <Route path="staff" element={<PartnerStaff />} />
                       </Route>
                       {/* Admin Dashboard Routes */}

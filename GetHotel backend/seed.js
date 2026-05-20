@@ -20,12 +20,16 @@ async function main() {
     }
   });
 
-  // 2. Create Hotels
+  // 2. Create Hotels (Only "Hotel Cottage Yes Please")
   const hotelsData = [
-    { name: 'The Taj Palace', city: 'New Delhi', address: 'Sardar Patel Marg', pricePerNight: 15000, description: 'Luxury at its best', tagline: 'The pride of India' },
-    { name: 'Oberoi Amarvilas', city: 'Agra', address: 'Taj East Gate Road', pricePerNight: 25000, description: 'View of the Taj Mahal', tagline: 'A monument to love' },
-    { name: 'Rambagh Palace', city: 'Jaipur', address: 'Bhawani Singh Road', pricePerNight: 20000, description: 'Royal heritage', tagline: 'Live like a King' },
-    { name: 'The Leela Mumbai', city: 'Mumbai', address: 'Sahar', pricePerNight: 12000, description: 'Business and luxury', tagline: 'Mumbai Essence' }
+    { 
+        name: 'Hotel Cottage Yes Please', 
+        city: 'New Delhi', 
+        address: 'Paharganj, Near New Delhi Railway Station', 
+        pricePerNight: 2500, 
+        description: 'Hotel Cottage Yes Please @ New Delhi Railway Station with 36 Well furnished room with free Wifi . and 0.6 mi from Connaught Place. To assist guests, it operates a 24-hour front desk. Free WiFi access is available.', 
+        tagline: 'Comfort at Railway Station' 
+    }
   ];
 
   for (const h of hotelsData) {

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "react-router-dom";
-import { ArrowUpDown, MapPin, Hotel, X, Search, ChevronDown } from "lucide-react";
+import { ArrowUpDown, MapPin, Hotel, X, Search, ChevronDown, SlidersHorizontal } from "lucide-react";
 import type { FilterState, SortOption } from "@/types";
 
 import HotelCard from "@/components/hotels/HotelCard";
@@ -36,7 +36,7 @@ function HotelListingContent() {
     const isMobile = useIsMobile();
     const [searchParams] = useSearchParams();
     const cityParam = searchParams.get("city") || "All";
-    const guests = searchParams.get("guests") || "2";
+    const guests = searchParams.get("adults") || searchParams.get("guests") || "2";
 
     const [allHotels, setAllHotels] = useState<HotelType[]>([]);
     const [filters, setFilters] = useState<FilterState>(defaultFilters);
@@ -53,7 +53,7 @@ function HotelListingContent() {
         const fetchHotels = async () => {
             try {
                 setLoading(true);
-                
+
                 const params: any = {};
                 searchParams.forEach((value, key) => {
                     params[key] = value;
@@ -84,23 +84,33 @@ function HotelListingContent() {
     const filtered = allHotels.filter((h) => {
         // City Filter
         if (cityParam !== "All" && h.city.toLowerCase() !== cityParam.toLowerCase()) return false;
-        
+
         // Name Search Filter
         if (searchQuery && !h.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-        
+
         // Price Filter
         const maxPrice = filters.priceRange[1] === 50000 ? Infinity : filters.priceRange[1];
         if (h.pricePerNight < filters.priceRange[0] || h.pricePerNight > maxPrice) return false;
-        
+
         // Star Rating Filter
         if (filters.starRatings.length > 0 && !filters.starRatings.includes(h.starRating)) return false;
-        
+
         // Guest Rating Filter
         if (h.guestRating < filters.guestRatingMin) return false;
-        
+
         // Amenities Filter
         if (filters.amenities.length > 0 && !filters.amenities.every((a) => h.amenities.includes(a))) return false;
-        
+
+        // Guest Capacity Filter: Only show hotels that have rooms that can accommodate the guest count
+        const rooms = (h as any).room || (h as any).rooms || [];
+        if (rooms.length > 0) {
+            const hasEligibleRoom = rooms.some((r: any) => {
+                const maxOcc = r.maxOccupancy || r.max_occupancy || r.capacityAdults || 2;
+                return maxOcc >= Number(guests);
+            });
+            if (!hasEligibleRoom) return false;
+        }
+
         return true;
     });
 
@@ -109,7 +119,7 @@ function HotelListingContent() {
         if (sort === "price_asc") return a.pricePerNight - b.pricePerNight;
         if (sort === "price_desc") return b.pricePerNight - a.pricePerNight;
         if (sort === "rating") return b.guestRating - a.guestRating;
-        
+
         // Default Recommended Sort: use rankScore from backend
         const scoreA = (a as any).rankScore || (a.isFeatured ? 100 : 0);
         const scoreB = (b as any).rankScore || (b.isFeatured ? 100 : 0);
@@ -129,130 +139,36 @@ function HotelListingContent() {
     };
 
     return (
-        <div className="min-h-screen pt-8 bg-transparent px-0">
+        <div className="min-h-screen pt-2 bg-transparent px-0">
             {/* Search Modal Overlay */}
-            <AnimatePresence>
-                {showSearchModal && (
-                    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center px-4">
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
-                            onClick={() => setShowSearchModal(false)}
-                        />
-                        <motion.div
-                            initial={{ opacity: 0, y: 30, scale: 0.95 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                            className="relative w-full max-w-2xl z-10"
-                        >
-                            <div className="bg-white rounded-[40px] p-6 md:p-10 border border-slate-200 shadow-[0_40px_100px_rgba(0,0,0,0.3)] relative overflow-visible">
-                                <div className="flex justify-between items-start mb-6 px-1">
-                                    <div className="flex flex-col items-start gap-1">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-xl bg-brand-600 flex items-center justify-center shadow-lg shadow-brand-600/30">
-                                                <Search className="w-4 h-4 text-white" />
-                                            </div>
-                                            <h2 className="text-slate-900 text-lg font-black tracking-widest uppercase">Edit Stay</h2>
-                                        </div>
-                                        <p className="text-[9px] font-black uppercase tracking-[0.2em] text-brand-600 ml-11">Refine search</p>
-                                    </div>
-                                    <button
-                                        onClick={() => setShowSearchModal(false)}
-                                        className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 border border-slate-200 hover:bg-slate-200 active:scale-95 transition-all shadow-sm"
-                                    >
-                                        <X className="w-5 h-5" />
-                                    </button>
-                                </div>
-                                <div className="px-2">
-                                    <SmartSearchBar
-                                        hideStories
-                                        initialState={{
-                                            destination: cityParam !== "All" ? { label: cityParam, id: cityParam.toLowerCase(), category: "trending" } : null,
-                                            dates: {
-                                                checkIn: searchParams.get("checkIn") ? new Date(searchParams.get("checkIn") as string) : null,
-                                                checkOut: searchParams.get("checkOut") ? new Date(searchParams.get("checkOut") as string) : null
-                                            },
-                                            guests: { adults: Number(guests), children: 0, rooms: 1, childAges: [] }
-                                        }}
-                                        onSearch={() => setShowSearchModal(false)}
-                                    />
-                                </div>
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
+            {/* Page Header Area - Side-by-Side Layout */}
+            <div className="w-full flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-6 px-4 md:px-10">
+                <div className="shrink-0">
+                    <h1 className="text-3xl md:text-4xl font-bold text-slate-950 tracking-tight leading-tight">
+                        Trending <span className="text-brand-600">Hotels</span>
+                    </h1>
 
-            {/* Page Header Area */}
-            <div className="w-full mb-2 px-4 md:px-10">
-                <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.2em] text-brand-500/60 mb-4">
-                    <a href="/" className="hover:text-brand-600 transition-colors">Home</a>
-                    <span className="opacity-30">/</span>
-                    <span className="text-slate-900">Hotels</span>
-                    {cityParam !== "All" && (
-                        <>
-                            <span className="opacity-30">/</span>
-                            <span className="text-brand-600 font-bold">{cityParam.charAt(0).toUpperCase() + cityParam.slice(1)}</span>
-                        </>
-                    )}
                 </div>
 
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-                    <div className="relative z-10">
-                        <h1 className="text-3xl md:text-5xl font-display font-black text-slate-900 tracking-tighter leading-tight">
-                            {cityParam === "All" ? "Find Your " : "Stays in "}
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-brand-400 italic">
-                                {cityParam === "All" ? "Perfect Experience" : cityParam.charAt(0).toUpperCase() + cityParam.slice(1)}
-                            </span>
-                        </h1>
-                        <div className="flex items-center gap-3 mt-4">
-                            <div className="w-2 h-2 rounded-full bg-brand-500 animate-pulse" />
-                            <p className="text-xs font-black uppercase tracking-widest text-brand-600/80">
-                                {filtered.length} property matches
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Search Summary Pill - Mobile & Desktop */}
-                    <div className="w-full md:w-auto flex flex-col gap-4">
-                        <button
-                            onClick={() => setShowSearchModal(true)}
-                            className="w-full md:w-[450px] flex items-center justify-between p-1 md:p-1.5 bg-white border border-slate-200 rounded-full shadow-[0_12px_32px_rgba(0,0,0,0.08)] active:scale-[0.98] transition-all hover:bg-slate-50 group/pill"
-                        >
-                            <div className="flex items-center gap-2 md:gap-3 pl-3 md:pl-4 py-1.5 md:py-2">
-                                <div className="flex flex-col items-start min-w-0">
-                                    <span className="text-[7px] md:text-[10px] font-black uppercase text-brand-600 tracking-wider">Where to?</span>
-                                    <span className="text-[10px] md:text-sm font-bold text-slate-900 truncate max-w-[80px] md:max-w-[120px]">{cityParam.charAt(0).toUpperCase() + cityParam.slice(1)}</span>
-                                </div>
-                                <div className="w-px h-5 md:h-6 bg-slate-200 mx-0.5 md:mx-1" />
-                                <div className="flex flex-col items-start min-w-0">
-                                    <span className="text-[7px] md:text-[10px] font-black uppercase text-slate-400 tracking-wider">When & Who</span>
-                                    <span className="text-[8px] md:text-[11px] font-bold text-slate-700 truncate max-w-[100px] md:max-w-none">
-                                        {searchParams.get("checkIn") ? "Selected" : "Dates"} • {guests}G
-                                    </span>
-                                </div>
-                            </div>
-                            <div className="w-8 h-8 md:w-12 md:h-12 rounded-full bg-brand-600 flex items-center justify-center text-white shadow-lg shrink-0 group-hover/pill:scale-105 transition-transform">
-                                <Search className="w-3 h-3 md:w-5 md:h-5" />
-                            </div>
-                        </button>
-
-                        {/* Mobile-only Filter Trigger */}
-                        <button
-                            onClick={() => setShowMobileFilter(true)}
-                            className="lg:hidden w-full py-4 bg-white border border-slate-200 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] text-slate-600 shadow-sm flex items-center justify-center gap-2"
-                        >
-                            <ArrowUpDown className="w-4 h-4 text-brand-600" />
-                            Adjust Filters
-                        </button>
-                    </div>
+                <div className="w-full lg:max-w-4xl">
+                    <SmartSearchBar
+                        layoutMode="hotels"
+                        hideStories
+                        className=""
+                        initialState={{
+                            destination: cityParam !== "All" ? { label: cityParam, id: cityParam.toLowerCase(), category: "trending" } : null,
+                            dates: {
+                                checkIn: searchParams.get("checkIn") ? new Date(searchParams.get("checkIn") as string) : null,
+                                checkOut: searchParams.get("checkOut") ? new Date(searchParams.get("checkOut") as string) : null
+                            },
+                            guests: { adults: Number(guests), children: 0, rooms: 1, childAges: [] }
+                        }}
+                    />
                 </div>
             </div>
 
             {/* Main Content Area */}
-            <div className="w-full px-2 md:px-10 py-4">
+            <div className="w-full px-4 md:px-10 py-0">
                 <div className="flex gap-10">
                     {/* Sidebar Filter — Desktop */}
                     <aside className="hidden lg:block w-72 shrink-0">
@@ -265,13 +181,10 @@ function HotelListingContent() {
                     {showMobileFilter && (
                         <div className="fixed inset-0 z-[100] lg:hidden">
                             <div className="absolute inset-0 bg-black/20 backdrop-blur-md transition-all duration-500" onClick={() => setShowMobileFilter(false)} />
-                            <div className="absolute right-0 top-0 bottom-0 w-[85%] max-w-[400px] bg-white/70 backdrop-blur-3xl saturate-[180%] overflow-y-auto p-6 md:p-10 border-l border-white/40 shadow-[-20px_0_50px_rgba(0,0,0,0.1)] animate-slide-up">
+                            <div className="absolute right-0 top-0 bottom-0 w-[85%] max-w-[400px] bg-white/70 backdrop-blur-3xl saturate-[180%] overflow-y-auto p-6 md:p-10 border-l border-white/40 shadow-[-20px_0_50px_rgba(0,0,0,0.1)]">
                                 <div className="flex items-center justify-between mb-8 pb-4 border-b border-black/10">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-2xl bg-brand-600 flex items-center justify-center shadow-lg shadow-brand-200">
-                                            <ArrowUpDown className="w-5 h-5 text-white" />
-                                        </div>
-                                        <h2 className="text-xl font-black text-slate-900 tracking-tight">Refine Results</h2>
+                                        <h2 className="text-xl font-black text-slate-900 tracking-tight">Filters</h2>
                                     </div>
                                     <button
                                         onClick={() => setShowMobileFilter(false)}
@@ -290,29 +203,22 @@ function HotelListingContent() {
                     {/* Results Column */}
                     <div className="flex-1 flex flex-col gap-8 px-0">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-4 md:px-0">
-                            <div className="relative flex-1 max-w-md group">
-                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-brand-600 transition-colors" />
-                                <input
-                                    type="text"
-                                    placeholder="Search by hotel name..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl pl-11 pr-4 py-3 text-sm font-bold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:bg-white/60 transition-all shadow-sm"
-                                />
-                                {searchQuery && (
-                                    <button 
-                                        onClick={() => setSearchQuery("")}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400"
-                                    >
-                                        <X className="w-3 h-3" />
-                                    </button>
-                                )}
-                            </div>
+                            <div className="flex-1" />
 
                             <div className="flex items-center gap-4">
                                 <p className="hidden sm:block text-xs text-slate-500 font-bold">
                                     <span className="text-slate-900">{sorted.length}</span> properties found
                                 </p>
+
+                                {/* Mobile Filter Button */}
+                                <button
+                                    onClick={() => setShowMobileFilter(true)}
+                                    className="lg:hidden flex items-center gap-2 bg-slate-950 hover:bg-black text-white rounded-xl px-4 py-2 text-xs font-bold transition-all active:scale-95 shadow-md shadow-slate-950/10 cursor-pointer"
+                                >
+                                    <SlidersHorizontal className="w-3.5 h-3.5" />
+                                    <span>Filters</span>
+                                </button>
+
                                 <div className="flex items-center gap-2">
                                     <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Sort By</span>
                                     <select
@@ -338,7 +244,7 @@ function HotelListingContent() {
                             </div>
                         ) : visibleHotels.length > 0 ? (
                             <>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 md:gap-8">
                                     {visibleHotels.map((hotel, index) => (
                                         <React.Fragment key={hotel.id}>
                                             <HotelCard hotel={hotel} />

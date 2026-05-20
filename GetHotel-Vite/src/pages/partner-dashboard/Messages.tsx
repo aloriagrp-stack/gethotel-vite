@@ -112,14 +112,14 @@ export default function PartnerMessagesPage() {
                     <select 
                         value={selectedHotelId || ""} 
                         onChange={(e) => setSelectedHotelId(parseInt(e.target.value))}
-                        className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-600"
+                        className="px-4 py-2 bg-white border border-slate-200 rounded-none text-sm font-bold outline-none focus:border-blue-600"
                     >
                         {hotels.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
                     </select>
                 )}
             </div>
 
-            <div className="flex-1 bg-white rounded-[40px] border border-slate-200 shadow-sm overflow-hidden flex">
+            <div className="flex-1 bg-white rounded-none border border-slate-200 shadow-sm overflow-hidden flex">
                 {/* Conversations Sidebar */}
                 <div className="w-80 border-r border-slate-100 flex flex-col">
                     <div className="p-6 border-b border-slate-50">
@@ -130,19 +130,19 @@ export default function PartnerMessagesPage() {
                                 placeholder="Search guests..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-11 pr-4 py-3 bg-slate-50 border-transparent rounded-2xl text-xs font-bold focus:bg-white focus:border-blue-600 outline-none transition-all"
+                                className="w-full pl-11 pr-4 py-3 bg-slate-50 border-transparent rounded-none text-xs font-bold focus:bg-white focus:border-blue-600 outline-none transition-all"
                             />
                         </div>
                     </div>
                     
-                    <div className="flex-1 overflow-y-auto no-scrollbar">
+                    <div className="flex-1 overflow-y-auto custom-scrollbar">
                         {conversationList.length > 0 ? (
                             conversationList.map((conv: any) => (
                                 <button 
                                     key={conv.user.id}
                                     className="w-full p-6 flex gap-4 hover:bg-slate-50 transition-all text-left border-b border-slate-50 relative group"
                                 >
-                                    <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center shrink-0">
+                                    <div className="w-12 h-12 bg-blue-50 rounded-none flex items-center justify-center shrink-0">
                                         <User className="w-6 h-6 text-blue-600" />
                                     </div>
                                     <div className="flex-1 min-w-0">
@@ -155,7 +155,7 @@ export default function PartnerMessagesPage() {
                                         </p>
                                     </div>
                                     {conv.unreadCount > 0 && (
-                                        <div className="absolute right-6 bottom-6 w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center text-[10px] font-black text-white">
+                                        <div className="absolute right-6 bottom-6 w-5 h-5 bg-blue-600 rounded-none flex items-center justify-center text-[10px] font-black text-white">
                                             {conv.unreadCount}
                                         </div>
                                     )}
@@ -174,7 +174,7 @@ export default function PartnerMessagesPage() {
                 <div className="flex-1 flex flex-col bg-slate-50/30">
                     <div className="p-6 border-b border-slate-100 bg-white flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center text-white">
+                            <div className="w-10 h-10 bg-slate-900 rounded-none flex items-center justify-center text-white">
                                 <MessageSquare className="w-5 h-5" />
                             </div>
                             <div>
@@ -184,7 +184,7 @@ export default function PartnerMessagesPage() {
                         </div>
                     </div>
 
-                    <div className="flex-1 p-8 overflow-y-auto no-scrollbar space-y-6 flex flex-col-reverse">
+                    <div className="flex-1 p-8 overflow-y-auto custom-scrollbar space-y-6 flex flex-col-reverse">
                         {messages.map((msg: any) => (
                             <div 
                                 key={msg.id} 
@@ -194,7 +194,7 @@ export default function PartnerMessagesPage() {
                                 )}
                             >
                                 <div className={cn(
-                                    "p-4 rounded-[28px] shadow-sm",
+                                    "p-4 rounded-none shadow-sm",
                                     msg.sender === 'hotel' 
                                         ? "bg-blue-600 text-white rounded-tr-none" 
                                         : "bg-white text-slate-900 rounded-tl-none border border-slate-100"
@@ -217,12 +217,12 @@ export default function PartnerMessagesPage() {
                                 placeholder="Type your response here..."
                                 value={newMessage}
                                 onChange={(e) => setNewMessage(e.target.value)}
-                                className="w-full pl-6 pr-20 py-4 bg-slate-50 border border-slate-100 rounded-3xl text-sm font-bold focus:bg-white focus:border-blue-600 outline-none transition-all shadow-inner"
+                                className="w-full pl-6 pr-20 py-4 bg-slate-50 border border-slate-100 rounded-none text-sm font-bold focus:bg-white focus:border-blue-600 outline-none transition-all shadow-inner"
                             />
                             <button 
                                 type="submit"
                                 disabled={!newMessage.trim() || sending}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 p-3 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 disabled:opacity-50"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 p-3 bg-blue-600 text-white rounded-none hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 disabled:opacity-50"
                             >
                                 {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
                             </button>

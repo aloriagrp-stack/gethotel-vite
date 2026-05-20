@@ -14,7 +14,7 @@ export default function WishlistPage() {
     const wishlistedHotels = hotels.filter(hotel => wishlist.includes(hotel.id));
 
     return (
-        <div className="min-h-screen bg-slate-50 pt-32 pb-20 px-4 md:px-8">
+        <div className="min-h-screen bg-slate-50 pt-6 pb-20 px-4 md:px-8">
             {/* Background elements */}
             <div className="fixed inset-0 pointer-events-none overflow-hidden opacity-30">
                 <div className="absolute top-[10%] left-[5%] w-[40%] h-[40%] bg-gradient-to-br from-brand-200/30 to-transparent blur-[120px] rounded-full" />
@@ -24,15 +24,10 @@ export default function WishlistPage() {
             <div className="max-w-7xl mx-auto relative z-10">
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
                     <div>
-                        <div className="flex items-center gap-2 mb-2">
-                            <span className="px-3 py-1 bg-brand-50 text-brand-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-brand-100">
-                                Personal Collection
-                            </span>
-                        </div>
-                        <h1 className="text-4xl md:text-5xl font-display font-black text-slate-900 tracking-tight italic">
+                        <h1 className="text-4xl md:text-5xl font-display font-black text-slate-900 tracking-tight">
                             Your <span className="text-brand-600">Wishlist</span>
                         </h1>
-                        <p className="text-slate-500 font-bold mt-2">
+                        <p className="text-slate-500 font-medium mt-2">
                             {wishlistedHotels.length} luxurious getaways saved for your next experience.
                         </p>
                     </div>

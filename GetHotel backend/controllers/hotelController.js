@@ -8,7 +8,8 @@ exports.getHotels = async (req, res, next) => {
         console.log("Fetching hotels from database...");
         const hotels = await prisma.hotel.findMany({
             include: {
-                room: true
+                room: true,
+                coupon: true
             }
         });
         console.log(`Found ${hotels.length} hotels.`);
@@ -49,6 +50,7 @@ exports.searchHotels = async (req, res, next) => {
             where: whereClause,
             include: {
                 room: true,
+                coupon: true,
                 booking: {
                     where: {
                         status: { in: ['confirmed', 'checked-in'] },
@@ -228,12 +230,13 @@ exports.updateHotel = async (req, res, next) => {
         });
 
         // Ensure numeric fields are correctly typed
-        if (updateData.pricePerNight !== undefined) {
-            updateData.pricePerNight = parseFloat(updateData.pricePerNight) || hotel.pricePerNight;
-        }
-        if (updateData.starRating !== undefined) {
-            updateData.starRating = parseInt(updateData.starRating) || hotel.starRating;
-        }
+        if (updateData.pricePerNight !== undefined) updateData.pricePerNight = parseFloat(updateData.pricePerNight);
+        if (updateData.starRating !== undefined) updateData.starRating = parseInt(updateData.starRating);
+        if (updateData.qualityScore !== undefined) updateData.qualityScore = parseFloat(updateData.qualityScore);
+        if (updateData.complaintsCount !== undefined) updateData.complaintsCount = parseInt(updateData.complaintsCount);
+        if (updateData.bookingAcceptanceRate !== undefined) updateData.bookingAcceptanceRate = parseFloat(updateData.bookingAcceptanceRate);
+        if (updateData.cancellationRate !== undefined) updateData.cancellationRate = parseFloat(updateData.cancellationRate);
+        if (updateData.noShowRate !== undefined) updateData.noShowRate = parseFloat(updateData.noShowRate);
 
         // Ensure JSON fields are stringified if sent as objects
         const jsonFields = ['images', 'amenities', 'dining', 'wellness', 'faqs', 'safety', 'policies', 'mainAmenities', 'badges'];
@@ -243,6 +246,8 @@ exports.updateHotel = async (req, res, next) => {
             }
         });
 
+        console.log("Updating hotel with data:", updateData);
+
         hotel = await prisma.hotel.update({
             where: { id: hotelId },
             data: updateData
@@ -250,7 +255,13 @@ exports.updateHotel = async (req, res, next) => {
 
         res.status(200).json({ success: true, data: hotel });
     } catch (err) {
-        res.status(400).json({ success: false, message: err.message });
+        console.error("UPDATE_HOTEL_ERROR:", err);
+        res.status(500).json({ 
+            success: false, 
+            message: "Failed to update hotel", 
+            error: err.message,
+            stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+        });
     }
 };
 

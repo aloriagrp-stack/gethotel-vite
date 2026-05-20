@@ -1,12 +1,12 @@
 
 
-import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Star, ArrowRight, Heart, MapPin, Wifi, Waves, Coffee, Check } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn, safeParse } from "@/lib/utils";
 import { useWishlist } from "@/context/WishlistContext";
 import { useStayMode } from "@/context/StayModeContext";
+import Image from "@/components/common/Image";
 
 interface Hotel {
     id: string | number;
@@ -88,18 +88,15 @@ function TrendingHotelCard({ hotel }: { hotel: Hotel }) {
         : basePrice;
 
     return (
-        <motion.div
-            layout
-            whileHover={{ y: -8 }}
-            className="group relative w-full h-full rounded-[2rem] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 bg-slate-100"
-        >
+        <div className="group relative w-full h-full rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 bg-slate-100">
             <Link to={`/hotel/${hotel.id}?stayType=${mode}`} className="absolute inset-0 z-10" />
             
             {/* 📸 FULL BACKGROUND IMAGE */}
-            <img
+            <Image
                 src={hotel.thumbnail}
                 alt={hotel.name}
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                fill
+                className="transition-transform duration-700 group-hover:scale-110"
             />
             
             {/* Gradient Overlay */}
@@ -126,7 +123,7 @@ function TrendingHotelCard({ hotel }: { hotel: Hotel }) {
             {/* Content Overlaid at Bottom */}
             <div className="absolute bottom-5 left-5 right-5 z-20 space-y-3">
                 <div className="space-y-0.5">
-                    <h3 className="text-lg font-black text-white leading-tight line-clamp-1 italic tracking-tight">
+                    <h3 className="text-lg font-bold text-white leading-tight line-clamp-1 tracking-tight">
                         {hotel.name}
                     </h3>
                     <div className="flex items-center gap-1 text-[10px] font-bold text-white/70">
@@ -140,33 +137,59 @@ function TrendingHotelCard({ hotel }: { hotel: Hotel }) {
                         <p className="text-[9px] font-bold text-white/50 line-through leading-none mb-1">
                             ₹{displayOriginalPrice.toLocaleString()}
                         </p>
-                        <p className="text-xl font-black text-white leading-none tracking-tighter italic">
+                        <p className="text-xl font-bold text-white leading-none tracking-tight">
                             ₹{displayPrice.toLocaleString()}
-                            <span className="text-[9px] text-white/40 not-italic ml-1">{priceLabel}</span>
+                            <span className="text-[9px] text-white/40 ml-1">{priceLabel}</span>
                         </p>
                     </div>
                     
                     <button className={cn(
-                        "px-4 py-2 text-white text-[9px] font-black uppercase tracking-widest rounded-xl shadow-lg transition-all active:scale-95",
+                        "px-4 py-2 text-white text-[9px] font-black uppercase tracking-widest rounded-full shadow-lg transition-all active:scale-95",
                         mode === 'hourly' ? "bg-blue-600 hover:bg-blue-700 shadow-blue-500/20" : "bg-slate-950 hover:bg-black"
                     )}>
                         Book
                     </button>
                 </div>
             </div>
-        </motion.div>
+        </div>
     );
 }
 
-export default function TrendingHotels({ hotels }: { hotels: Hotel[] }) {
+function TrendingHotelSkeleton() {
+    return (
+        <div className="w-full h-full rounded-[2.25rem] overflow-hidden bg-slate-200 animate-pulse relative p-5 flex flex-col justify-end gap-3 border border-slate-100/50 shadow-sm aspect-[4/5] shrink-0">
+            {/* Wishlist Button Skeleton */}
+            <div className="absolute top-4 right-4 w-9 h-9 bg-slate-300 rounded-full" />
+            
+            {/* Text skeleton lines at bottom */}
+            <div className="space-y-2.5">
+                {/* Title Line */}
+                <div className="h-5 bg-slate-300 rounded-lg w-4/5" />
+                {/* Location Line */}
+                <div className="h-3 bg-slate-300 rounded-lg w-1/2" />
+            </div>
+
+            {/* Price & Book Button Skeleton */}
+            <div className="flex items-center justify-between border-t border-slate-300/40 pt-3 mt-1">
+                <div className="space-y-1.5">
+                    <div className="h-2.5 bg-slate-300 rounded-md w-12" />
+                    <div className="h-5 bg-slate-300 rounded-md w-20" />
+                </div>
+                <div className="h-8 bg-slate-300 rounded-full w-16" />
+            </div>
+        </div>
+    );
+}
+
+export default function TrendingHotels({ hotels, loading = false }: { hotels: Hotel[]; loading?: boolean }) {
     const displayHotels = hotels || [];
 
     return (
         <section className="pt-0 pb-12 bg-transparent overflow-hidden">
-            <div className="max-w-7xl mx-auto px-6">
+            <div className="w-full max-w-none mx-auto px-3 md:px-8">
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4">
                     <div>
-                        <h2 className="text-4xl md:text-5xl font-display font-black text-slate-950 tracking-tight">
+                        <h2 className="text-4xl md:text-5xl font-bold text-slate-950 tracking-tight">
                             Trending <span className="text-blue-600">Hotels</span>
                         </h2>
                     </div>
@@ -179,13 +202,22 @@ export default function TrendingHotels({ hotels }: { hotels: Hotel[] }) {
                     </Link>
                 </div>
 
-                <div className="flex gap-6 pb-6 overflow-x-auto snap-x snap-mandatory no-scrollbar -mx-6 px-6">
-                    {displayHotels.length > 0 ? displayHotels.map((hotel) => (
-                        <div key={hotel.id} className="w-[240px] md:w-[300px] aspect-[4/5] shrink-0 snap-start">
-                            <TrendingHotelCard hotel={hotel} />
-                        </div>
-                    )) : (
-                        <div className="text-slate-400 font-bold italic py-10">Searching for trending experiences...</div>
+                <div className="flex gap-4 pb-6 overflow-x-auto snap-x snap-mandatory no-scrollbar -mx-3 md:-mx-8 px-3 md:px-8">
+                    <div className="w-1 shrink-0 snap-start md:hidden" />
+                    {loading ? (
+                        Array.from({ length: 4 }).map((_, idx) => (
+                            <div key={`skeleton-${idx}`} className="w-[240px] md:w-[300px] aspect-[4/5] shrink-0 snap-start">
+                                <TrendingHotelSkeleton />
+                            </div>
+                        ))
+                    ) : displayHotels.length > 0 ? (
+                        displayHotels.map((hotel) => (
+                            <div key={hotel.id} className="w-[240px] md:w-[300px] aspect-[4/5] shrink-0 snap-start">
+                                <TrendingHotelCard hotel={hotel} />
+                            </div>
+                        ))
+                    ) : (
+                        <div className="text-slate-400 font-bold italic py-10">No trending properties found.</div>
                     )}
                 </div>
             </div>

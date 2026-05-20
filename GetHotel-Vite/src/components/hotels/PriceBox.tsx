@@ -15,7 +15,7 @@ import {
     Lock,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { formatPrice, cn } from "@/lib/utils";
+import { formatPrice, cn, formatDateLocal } from "@/lib/utils";
 
 interface PriceBoxProps {
     hotelId: string;
@@ -39,18 +39,18 @@ export default function PriceBox({
     selectedRooms = {},
 }: PriceBoxProps) {
     const router = useRouter();
-    const today = new Date().toISOString().split("T")[0];
+    const today = formatDateLocal(new Date());
 
     // Default check-in = tomorrow, check-out = day after tomorrow
     const defaultCheckIn = (() => {
         const d = new Date();
         d.setDate(d.getDate() + 1);
-        return d.toISOString().split("T")[0];
+        return formatDateLocal(d);
     })();
     const defaultCheckOut = (() => {
         const d = new Date();
         d.setDate(d.getDate() + 3);
-        return d.toISOString().split("T")[0];
+        return formatDateLocal(d);
     })();
 
     const [checkIn, setCheckIn] = useState(initialCheckIn || defaultCheckIn);
@@ -80,7 +80,7 @@ export default function PriceBox({
         if (checkIn && checkOut && checkOut <= checkIn) {
             const d = new Date(checkIn);
             d.setDate(d.getDate() + 2);
-            setCheckOut(d.toISOString().split("T")[0]);
+            setCheckOut(formatDateLocal(d));
         }
     }, [checkIn, checkOut]);
 

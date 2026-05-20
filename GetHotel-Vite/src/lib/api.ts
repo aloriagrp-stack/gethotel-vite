@@ -36,22 +36,40 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
 export const authApi = {
     login: (credentials: any) => apiFetch('/auth/login', { method: 'POST', body: JSON.stringify(credentials) }),
     register: (userData: any) => apiFetch('/auth/register', { method: 'POST', body: JSON.stringify(userData) }),
+    sendOTP: (userData: any) => apiFetch('/auth/send-otp', { method: 'POST', body: JSON.stringify(userData) }),
+    verifyOTP: (data: { email: string; otp: string }) => apiFetch('/auth/verify-otp', { method: 'POST', body: JSON.stringify(data) }),
     googleLogin: (idToken: string) => apiFetch('/auth/google', { method: 'POST', body: JSON.stringify({ idToken }) }),
     getMe: () => apiFetch('/auth/me'),
     impersonate: (userId: number) => apiFetch(`/auth/impersonate/${userId}`, { method: 'POST' }),
+    sendChangePasswordOTP: (data: { newPassword: string; confirmPassword: string }) => apiFetch('/auth/change-password/send-otp', { method: 'POST', body: JSON.stringify(data) }),
+    verifyChangePasswordOTP: (otp: string) => apiFetch('/auth/change-password/verify-otp', { method: 'POST', body: JSON.stringify({ otp }) }),
+    sendChangeEmailOTP: (data: { newEmail: string }) => apiFetch('/auth/change-email/send-otp', { method: 'POST', body: JSON.stringify(data) }),
+    verifyChangeEmailOTP: (otp: string) => apiFetch('/auth/change-email/verify-otp', { method: 'POST', body: JSON.stringify({ otp }) }),
 };
 
 export const hotelApi = {
     getHotels: () => apiFetch('/hotels'),
     getHotel: (id: string) => apiFetch(`/hotels/${id}`),
     searchHotels: (params: any) => apiFetch(`/hotels/search?${new URLSearchParams(params).toString()}`),
-    getMyHotels: () => apiFetch('/hotels/my-hotels'),
+    getMyHotels: async () => {
+        const res = await apiFetch('/hotels/my-hotels');
+        const activeHotelId = typeof window !== 'undefined' ? sessionStorage.getItem('activeHotelId') : null;
+        if (activeHotelId && res.success && Array.isArray(res.data)) {
+            const selectedId = parseInt(activeHotelId);
+            const index = res.data.findIndex((h: any) => h.id === selectedId);
+            if (index !== -1) {
+                const [selectedHotel] = res.data.splice(index, 1);
+                res.data.unshift(selectedHotel);
+            }
+        }
+        return res;
+    },
     createHotel: (hotelData: any) => apiFetch('/hotels', { method: 'POST', body: JSON.stringify(hotelData) }),
     updateHotel: (id: string, hotelData: any) => apiFetch(`/hotels/${id}`, { method: 'PUT', body: JSON.stringify(hotelData) }),
     deleteHotel: (id: string) => apiFetch(`/hotels/${id}`, { method: 'DELETE' }),
     createReview: (hotelId: number, reviewData: any) => apiFetch(`/hotels/${hotelId}/reviews`, { method: 'POST', body: JSON.stringify(reviewData) }),
     replyToReview: (hotelId: number, reviewId: number, reply: string) => apiFetch(`/hotels/${hotelId}/reviews/${reviewId}/reply`, { method: 'POST', body: JSON.stringify({ reply }) }),
-    getRooms: (id: string) => apiFetch(`/hotels/${id}/rooms`),
+    getRooms: (id: string, params?: any) => apiFetch(`/hotels/${id}/rooms${params ? '?' + new URLSearchParams(params).toString() : ''}`),
     addRoom: (hotelId: number, roomData: any) => apiFetch(`/hotels/${hotelId}/rooms`, { method: 'POST', body: JSON.stringify(roomData) }),
     updateRoom: (hotelId: number, roomId: number, roomData: any) => apiFetch(`/hotels/${hotelId}/rooms/${roomId}`, { method: 'PUT', body: JSON.stringify(roomData) }),
     deleteRoom: (hotelId: number, roomId: number) => apiFetch(`/hotels/${hotelId}/rooms/${roomId}`, { method: 'DELETE' }),
@@ -115,6 +133,8 @@ export const adminApi = {
     getHotelDetails: (id: string) => apiFetch(`/admin/hotels/${id}`),
     updateHotelMetrics: (id: string, data: any) => apiFetch(`/admin/hotels/${id}/metrics`, { method: 'PATCH', body: JSON.stringify(data) }),
     recalculateHotelMetrics: (id: string) => apiFetch(`/admin/hotels/${id}/recalculate`, { method: 'POST' }),
+    suspendHotel: (id: string) => apiFetch(`/admin/hotels/${id}/suspend`, { method: 'PUT' }),
+    deleteHotel: (id: string) => apiFetch(`/admin/hotels/${id}`, { method: 'DELETE' }),
 };
 
 export const messageApi = {

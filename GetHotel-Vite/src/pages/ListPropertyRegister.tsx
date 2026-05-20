@@ -71,24 +71,17 @@ export default function PartnerRegisterPage() {
 
             const response = await partnerApi.submitRequest(finalData);
             
-            // Note: apiFetch throws if response is not ok, so we handle success here
-            // Clear stale session (Very important for security!)
-            logout();
-                
-                // 3. Attempt Auto-Login with new credentials
-                try {
-                    await login({ 
-                        email: formData.userEmail, 
-                        password: formData.partnerPassword 
-                    });
-                    
-                    // 4. Redirect to dashboard with fresh session
-                    router("/partner-dashboard?status=pending");
-                } catch (loginErr) {
-                    console.error("Auto-login failed:", loginErr);
-                    // Fallback: If auto-login fails, go to login page
-                    router("/partner");
-                }
+            if (response.success && response.token) {
+                // 3. Set the token and user state immediately
+                localStorage.setItem('token', response.token);
+                // Trigger a re-fetch of user data or update context if possible
+                // Since we have the token, we can just redirect
+                router("/partner-dashboard?status=pending");
+                // Optional: Force reload to ensure context is fresh
+                window.location.reload();
+            } else {
+                router("/partner");
+            }
             // Auto-redirect or success handling happens in the try block above
         } catch (error: any) {
             console.error("Submission error:", error);

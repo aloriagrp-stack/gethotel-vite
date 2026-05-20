@@ -1,8 +1,112 @@
 const express = require('express');
 const dotenv = require('dotenv');
-dotenv.config();
 const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
 const errorHandler = require('./middleware/error');
+
+dotenv.config();
+
+const app = express();
+
+app.use(cors({ origin: true, credentials: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(morgan('dev'));
+
+// Diagnostic test routes (Matching both with and without /api)
+const testHandler = async (req, res) => {
+    let dbStatus = 'Checking...';
+    try {
+        const prisma = require('./config/db');
+        await prisma.$connect();
+        dbStatus = 'Connected! ✅';
+    } catch (err) {
+        dbStatus = `Failed: ${err.message} ❌`;
+    }
+    
+    // Find all registered GET routes to see what is loaded in memory
+    const routes = [];
+    try {
+        app._router.stack.forEach(middleware => {
+            if (middleware.route) { // routes registered directly on the app
+                routes.push(Object.keys(middleware.route.methods).join(', ').toUpperCase() + ' ' + middleware.route.path);
+            }
+        });
+    } catch (e) {
+        routes.push('Error loading routes: ' + e.message);
+    }
+
+    res.json({ 
+        message: 'Backend is ALIVE',
+        version: 'v1.4-diagnostic-active-test-email',
+        server_directory: __dirname,
+        server_filename: __filename,
+        database: dbStatus,
+        path_received: req.path,
+        original_url: req.originalUrl,
+        loaded_routes: routes
+    });
+};
+
+app.get('/api/test', testHandler);
+app.get('/test', testHandler);
+app.get('/', (req, res) => res.json({ message: 'API Root' }));
+
+// =========================================================
+// DIAGNOSTIC: Test Email Endpoint (Safe to remove later)
+// =========================================================
+app.get('/api/test-email', async (req, res) => {
+    try {
+        const nodemailer = require('nodemailer');
+
+        const SMTP_HOST = process.env.EMAIL_HOST || 'mail.gethotelstays.com';
+        const SMTP_PORT = parseInt(process.env.EMAIL_PORT || '465');
+        const SMTP_USER = process.env.EMAIL_USER || 'reservation@gethotelstays.com';
+        const SMTP_PASS = process.env.EMAIL_PASS || 'shriyanshking';
+
+        const transporter = nodemailer.createTransport({
+            host: SMTP_HOST,
+            port: SMTP_PORT,
+            secure: true,
+            auth: { user: SMTP_USER, pass: SMTP_PASS },
+            tls: { rejectUnauthorized: false }
+        });
+
+        // Verify SMTP connection first
+        await transporter.verify();
+
+        // Send a test email
+        const info = await transporter.sendMail({
+            from: `"GetHotelStays Test" <${SMTP_USER}>`,
+            to: req.query.to || SMTP_USER,
+            subject: '✅ Live Server Email Test',
+            text: 'This email confirms the live server SMTP is working correctly!'
+        });
+
+        res.json({ 
+            success: true, 
+            message: 'Email sent successfully!',
+            smtp_host: SMTP_HOST,
+            smtp_port: SMTP_PORT,
+            smtp_user: SMTP_USER,
+            env_email_host: process.env.EMAIL_HOST || 'NOT SET (using hardcoded)',
+            env_email_user: process.env.EMAIL_USER || 'NOT SET (using hardcoded)',
+            messageId: info.messageId
+        });
+    } catch (err) {
+        res.status(500).json({ 
+            success: false, 
+            error: err.message,
+            smtp_host: process.env.EMAIL_HOST || 'mail.gethotelstays.com',
+            smtp_port: process.env.EMAIL_PORT || '465',
+            smtp_user: process.env.EMAIL_USER || 'reservation@gethotelstays.com',
+            env_email_host: process.env.EMAIL_HOST || 'NOT SET',
+            env_email_user: process.env.EMAIL_USER || 'NOT SET',
+            stack: err.stack
+        });
+    }
+});
 
 // Route files
 const auth = require('./routes/authRoutes');
@@ -15,109 +119,33 @@ const admin = require('./routes/adminRoutes');
 const notifications = require('./routes/notificationRoutes');
 const messages = require('./routes/messageRoutes');
 
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
-const hpp = require('hpp');
+// Mount routes (Matching both for flexibility)
+const mount = (prefix) => {
+    app.use(`${prefix}/auth`, auth);
+    app.use(`${prefix}/hotels`, hotels);
+    app.use(`${prefix}/bookings`, bookings);
+    app.use(`${prefix}/daily-rates`, dailyRates);
+    app.use(`${prefix}/payments`, payments);
+    app.use(`${prefix}/partner`, partner);
+    app.use(`${prefix}/admin`, admin);
+    app.use(`${prefix}/notifications`, notifications);
+    app.use(`${prefix}/messages`, messages);
+};
 
-
-
-const app = express();
-
-// Enable CORS - Must be before other middleware
-// Enable CORS - Must be before other middleware
-app.use(cors({
-    origin: true,
-    credentials: true
-}));
-
-// Body parser
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
-
-// Set security headers
-app.use(helmet({
-    contentSecurityPolicy: {
-        directives: {
-            defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'"],
-            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-            imgSrc: ["'self'", "data:", "https:", "http:"],
-            connectSrc: ["'self'", "https://api.razorpay.com", "http://localhost:5000"],
-            fontSrc: ["'self'", "https://fonts.gstatic.com"],
-            objectSrc: ["'none'"],
-            mediaSrc: ["'self'"],
-            frameSrc: ["'self'", "https://api.razorpay.com", "https://checkout.razorpay.com"],
-            baseUri: ["'self'"],
-            formAction: ["'self'"]
-        },
-    },
-    crossOriginResourcePolicy: { policy: "cross-origin" }
-}));
-
-// Rate limiting
-const limiter = rateLimit({
-    windowMs: 10 * 60 * 1000, // 10 mins
-    max: 100 // limit each IP to 100 requests per windowMs
-});
-app.use('/api', limiter);
-
-// Stricter rate limiting for auth routes
-const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 mins
-    max: 20, // limit each IP to 20 requests per windowMs
-    message: 'Too many login attempts, please try again after 15 minutes'
-});
-app.use('/api/auth', authLimiter);
-
-// Prevent http param pollution
-app.use(hpp());
-
-// Mount routers
-app.use('/api/auth', auth);
-
-// DIAGNOSTIC: Test route before all other routes to check Prisma
-const _prismaTest = require('./config/db');
-app.get('/api/test-db', async (req, res) => {
-    try {
-        const hotels = await _prismaTest.hotel.findMany({ take: 1, select: { id: true, name: true } });
-        res.json({ success: true, hotels });
-    } catch(e) {
-        res.status(500).json({ success: false, error: e.message });
-    }
-});
-
-app.use('/api/hotels', hotels);
-app.use('/api/bookings', bookings);
-app.use('/api/daily-rates', dailyRates);
-app.use('/api/payments', payments);
-app.use('/api/partner', partner);
-app.use('/api/admin', admin);
-app.use('/api/notifications', notifications);
-app.use('/api/messages', messages);
+mount('/api');
+mount(''); // Also mount at root as fallback
 
 // Error handler
-app.use(errorHandler);
+app.use((err, req, res, next) => {
+    console.error(`[ERROR] ${req.method} ${req.originalUrl}:`, err);
+    res.status(err.status || 500).json({
+        success: false,
+        error: err.message || 'Server Error',
+        path: req.originalUrl
+    });
+});
 
 const PORT = process.env.PORT || 5000;
-
-const server = app.listen(PORT, async () => {
-    console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
-    
-    // Test DB Connection
-    try {
-        const prisma = require('./config/db');
-        await prisma.$connect();
-        console.log('Database connected successfully');
-    } catch (err) {
-        console.error('Database connection failed:', err.message);
-    }
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
-
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (err, promise) => {
-    console.log(`Error: ${err.message}`);
-    // Close server & exit process
-    server.close(() => process.exit(1));
-});
-// Keep process alive
-setInterval(() => {}, 1000);

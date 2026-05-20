@@ -24,6 +24,10 @@ export default function HotelDetailPage() {
     const [updating, setUpdating] = useState(false);
     const [qualityScore, setQualityScore] = useState(85);
     const [badges, setBadges] = useState<string[]>([]);
+    
+    // Danger Zone States
+    const [deleteStep, setDeleteStep] = useState(0);
+    const [confirmHotelName, setConfirmHotelName] = useState("");
 
     // Calculate total revenue from bookings if backend field is missing
     const calculatedRevenue = hotel?.booking?.reduce((sum: number, b: any) =>
@@ -111,6 +115,40 @@ export default function HotelDetailPage() {
         );
     };
 
+    const handleSuspend = async () => {
+        if (!confirm(`Are you sure you want to ${hotel.isActive !== false ? 'suspend' : 'activate'} this property?`)) return;
+        setUpdating(true);
+        try {
+            const res = await adminApi.suspendHotel(id!);
+            if (res.success) {
+                setHotel({ ...hotel, isActive: hotel.isActive === false ? true : false });
+                alert(res.message);
+            }
+        } catch (err) {
+            alert("Failed to update property status");
+        } finally {
+            setUpdating(false);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (confirmHotelName !== hotel.name) {
+            alert("Hotel name does not match!");
+            return;
+        }
+        setUpdating(true);
+        try {
+            const res = await adminApi.deleteHotel(id!);
+            if (res.success) {
+                alert("Hotel permanently deleted.");
+                router('/admin/super');
+            }
+        } catch (err) {
+            alert("Failed to delete property");
+            setUpdating(false);
+        }
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -143,8 +181,11 @@ export default function HotelDetailPage() {
                         <span className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border ${hotel.isFeatured ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
                             {hotel.isFeatured ? 'Featured Property' : 'Standard Property'}
                         </span>
-                        <span className="px-4 py-2 bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-full text-[10px] font-black uppercase tracking-widest">
-                            Active Property
+                        <span className={cn(
+                            "px-4 py-2 border rounded-full text-[10px] font-black uppercase tracking-widest",
+                            hotel.isActive !== false ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-red-100 text-red-700 border-red-200"
+                        )}>
+                            {hotel.isActive !== false ? 'Active Property' : 'Suspended'}
                         </span>
                     </div>
                 </div>
@@ -438,10 +479,17 @@ export default function HotelDetailPage() {
                         <div className="bg-white border border-red-100 p-8 shadow-sm">
                             <h3 className="text-xs font-black text-red-600 uppercase tracking-widest mb-6">Danger Zone</h3>
                             <div className="space-y-3">
-                                <button className="w-full py-4 bg-white text-red-600 border border-red-200 font-black text-[10px] uppercase tracking-widest hover:bg-red-50 transition-all flex items-center justify-center gap-2">
-                                    <XCircle className="w-4 h-4" /> Suspend Property
+                                <button 
+                                    onClick={handleSuspend}
+                                    disabled={updating}
+                                    className="w-full py-4 bg-white text-red-600 border border-red-200 font-black text-[10px] uppercase tracking-widest hover:bg-red-50 transition-all flex items-center justify-center gap-2"
+                                >
+                                    {hotel.isActive !== false ? <><XCircle className="w-4 h-4" /> Suspend Property</> : <><CheckCircle2 className="w-4 h-4 text-emerald-600" /> <span className="text-emerald-600">Reactivate Property</span></>}
                                 </button>
-                                <button className="w-full py-4 bg-red-600 text-white font-black text-[10px] uppercase tracking-widest hover:bg-red-700 transition-all flex items-center justify-center gap-2">
+                                <button 
+                                    onClick={() => setDeleteStep(1)}
+                                    className="w-full py-4 bg-red-600 text-white font-black text-[10px] uppercase tracking-widest hover:bg-red-700 transition-all flex items-center justify-center gap-2"
+                                >
                                     <TrendingUp className="w-4 h-4" /> Delete Permanently
                                 </button>
                             </div>
@@ -449,6 +497,63 @@ export default function HotelDetailPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Delete Confirmation Modals */}
+            {deleteStep > 0 && (
+                <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+                    <div className="bg-white max-w-md w-full rounded-none shadow-2xl p-8 text-center animate-in fade-in zoom-in-95 duration-200">
+                        <div className="w-20 h-20 bg-red-50 text-red-600 flex items-center justify-center rounded-full mx-auto mb-6">
+                            <XCircle className="w-10 h-10" />
+                        </div>
+                        
+                        {deleteStep === 1 && (
+                            <>
+                                <h2 className="text-2xl font-black text-slate-900 mb-4">Warning: Irreversible Action</h2>
+                                <p className="text-slate-600 mb-8 font-medium">Are you sure you want to delete <strong className="text-slate-900">{hotel.name}</strong>? This action is completely irreversible and cannot be undone.</p>
+                                <div className="flex gap-4">
+                                    <button onClick={() => setDeleteStep(0)} className="flex-1 py-4 bg-slate-100 text-slate-900 font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all">Cancel</button>
+                                    <button onClick={() => setDeleteStep(2)} className="flex-1 py-4 bg-red-600 text-white font-black text-[10px] uppercase tracking-widest hover:bg-red-700 transition-all">Yes, Proceed</button>
+                                </div>
+                            </>
+                        )}
+
+                        {deleteStep === 2 && (
+                            <>
+                                <h2 className="text-2xl font-black text-slate-900 mb-4">Are you absolutely sure?</h2>
+                                <p className="text-slate-600 mb-8 font-medium">Please confirm again. All rooms, daily rates, active bookings, coupons, and earnings data will be wiped out completely!</p>
+                                <div className="flex gap-4">
+                                    <button onClick={() => setDeleteStep(0)} className="flex-1 py-4 bg-slate-100 text-slate-900 font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all">Go Back</button>
+                                    <button onClick={() => setDeleteStep(3)} className="flex-1 py-4 bg-red-600 text-white font-black text-[10px] uppercase tracking-widest hover:bg-red-700 transition-all">I Understand, Continue</button>
+                                </div>
+                            </>
+                        )}
+
+                        {deleteStep === 3 && (
+                            <>
+                                <h2 className="text-2xl font-black text-slate-900 mb-4">Final Confirmation</h2>
+                                <p className="text-slate-600 mb-6 font-medium">To finalize deletion, please type <strong className="text-slate-900 select-all">{hotel.name}</strong> below.</p>
+                                <input 
+                                    type="text"
+                                    value={confirmHotelName}
+                                    onChange={(e) => setConfirmHotelName(e.target.value)}
+                                    placeholder="Type hotel name here..."
+                                    className="w-full px-4 py-4 bg-slate-50 border-transparent text-center font-bold text-slate-900 focus:bg-white focus:border-red-600 outline-none mb-8 transition-all"
+                                />
+                                <div className="flex gap-4">
+                                    <button onClick={() => { setDeleteStep(0); setConfirmHotelName(""); }} className="flex-1 py-4 bg-slate-100 text-slate-900 font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all">Cancel</button>
+                                    <button 
+                                        onClick={handleDelete} 
+                                        disabled={confirmHotelName !== hotel.name || updating}
+                                        className="flex-1 py-4 bg-red-600 text-white font-black text-[10px] uppercase tracking-widest hover:bg-red-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                    >
+                                        {updating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Delete Hotel"}
+                                    </button>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

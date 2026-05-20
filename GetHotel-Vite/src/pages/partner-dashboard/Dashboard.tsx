@@ -49,7 +49,7 @@ export default function PartnerDashboardHome() {
                 <Hotel className="w-16 h-16 text-slate-200 mb-4" />
                 <h2 className="text-2xl font-black text-slate-900 mb-2">No Property Found</h2>
                 <p className="text-slate-500 mb-8 max-w-sm">Your property is currently being verified or you haven't added one yet.</p>
-                <Link to="/list-property/register" className="px-8 py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-100">
+                <Link to="/list-property/register" className="px-8 py-4 bg-blue-600 text-white rounded-none font-bold shadow-lg shadow-blue-100">
                     Register My Property
                 </Link>
             </div>
@@ -123,8 +123,8 @@ export default function PartnerDashboardHome() {
                 {quickStats.map((stat) => {
                     const Icon = stat.icon;
                     return (
-                        <div key={stat.label} className="bg-white p-8 rounded-xl border border-slate-100 shadow-premium group cursor-default">
-                            <div className={cn("w-14 h-14 rounded-xl flex items-center justify-center mb-6", stat.bg)}>
+                        <div key={stat.label} className="bg-white p-8 rounded-none border border-slate-100 shadow-premium group cursor-default">
+                            <div className={cn("w-14 h-14 rounded-none flex items-center justify-center mb-6", stat.bg)}>
                                 <Icon className={cn("w-7 h-7", stat.color)} />
                             </div>
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
@@ -138,7 +138,7 @@ export default function PartnerDashboardHome() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                 <div className="lg:col-span-2 flex flex-col">
-                    <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm flex-1 flex flex-col relative">
+                    <div className="bg-white rounded-none p-8 border border-slate-200 shadow-sm flex-1 flex flex-col relative">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
                             <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
                                 <History className="w-5 h-5 text-blue-600" /> Recent Activity
@@ -147,7 +147,7 @@ export default function PartnerDashboardHome() {
                                 <button 
                                     onClick={() => setShowFilters(!showFilters)}
                                     className={cn(
-                                        "flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border",
+                                        "flex items-center gap-2 px-4 py-2 rounded-none text-[10px] font-black uppercase tracking-widest border",
                                         showFilters || dateRange.start || dateRange.end 
                                             ? "bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-100" 
                                             : "bg-slate-50 text-slate-500 border-slate-100 hover:bg-slate-100"
@@ -161,7 +161,7 @@ export default function PartnerDashboardHome() {
                         </div>
 
                         {showFilters && (
-                            <div className="absolute top-24 right-8 z-30 bg-white border border-slate-100 shadow-2xl rounded-2xl p-6 w-72 space-y-4">
+                            <div className="absolute top-24 right-8 z-30 bg-white border border-slate-100 shadow-2xl rounded-none p-6 w-72 space-y-4">
                                 <div className="flex items-center justify-between mb-2">
                                     <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Select Range</h4>
                                     {(dateRange.start || dateRange.end) && (
@@ -180,7 +180,7 @@ export default function PartnerDashboardHome() {
                                             type="date" 
                                             value={dateRange.start}
                                             onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
-                                            className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-lg text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                                            className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-none text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                                         />
                                     </div>
                                     <div className="space-y-1">
@@ -189,13 +189,13 @@ export default function PartnerDashboardHome() {
                                             type="date" 
                                             value={dateRange.end}
                                             onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
-                                            className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-lg text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                                            className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-none text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                                         />
                                     </div>
                                 </div>
                                 <button 
                                     onClick={() => setShowFilters(false)}
-                                    className="w-full py-2 bg-slate-900 text-white rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-slate-800 mt-2"
+                                    className="w-full py-2 bg-slate-900 text-white rounded-none text-[9px] font-black uppercase tracking-widest hover:bg-slate-800 mt-2"
                                 >
                                     Apply Filter
                                 </button>
@@ -204,8 +204,8 @@ export default function PartnerDashboardHome() {
 
                         <div className="space-y-6 flex-1">
                             {filteredActivity.slice(0, 10).map((booking: any, idx: number) => (
-                                <div key={booking.id || idx} className="flex items-start gap-4 p-4 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 group">
-                                    <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                                <div key={booking.id || idx} className="flex items-start gap-4 p-4 rounded-none hover:bg-slate-50 border border-transparent hover:border-slate-100 group">
+                                    <div className="w-12 h-12 rounded-none bg-blue-50 flex items-center justify-center shrink-0">
                                         <LogIn className="w-5 h-5 text-blue-600" />
                                     </div>
                                     <div className="flex-1">
@@ -216,7 +216,7 @@ export default function PartnerDashboardHome() {
                                                     <a 
                                                         href={`https://wa.me/${booking.guestPhone.replace(/\D/g, '')}`} 
                                                         target="_blank"
-                                                        className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100"
+                                                        className="p-1.5 bg-emerald-50 text-emerald-600 rounded-none hover:bg-emerald-100"
                                                     >
                                                         <Phone className="w-3.5 h-3.5" />
                                                     </a>
@@ -238,7 +238,7 @@ export default function PartnerDashboardHome() {
                             ))}
                             {filteredActivity.length === 0 && (
                                 <div className="flex-1 flex flex-col items-center justify-center py-20 opacity-40">
-                                    <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+                                    <div className="w-20 h-20 bg-slate-50 rounded-none flex items-center justify-center mb-4">
                                         <History className="w-10 h-10 text-slate-200" />
                                     </div>
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">No activity found</p>
@@ -249,25 +249,25 @@ export default function PartnerDashboardHome() {
                 </div>
 
                 <div className="space-y-10">
-                    <div className="bg-white rounded-xl p-8 border border-slate-200 shadow-sm">
+                    <div className="bg-white rounded-none p-8 border border-slate-200 shadow-sm">
                         <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-8 flex items-center gap-2">
                             <Clock className="w-5 h-5 text-blue-600" /> Today's Focus
                         </h3>
                         
                         <div className="space-y-4">
-                            <div className="p-5 bg-blue-50 rounded-xl border border-blue-100">
+                            <div className="p-5 bg-blue-50 rounded-none border border-blue-100">
                                 <div className="flex items-center justify-between mb-4">
                                     <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Pending Arrivals</span>
-                                    <span className="px-2 py-1 bg-blue-600 text-white text-[10px] font-black rounded-lg">{pendingArrivalsCount}</span>
+                                    <span className="px-2 py-1 bg-blue-600 text-white text-[10px] font-black rounded-none">{pendingArrivalsCount}</span>
                                 </div>
                                 <div className="flex -space-x-3 mb-2">
                                     {allBookings.filter((b: any) => b && b.checkIn && new Date(b.checkIn).toDateString() === today).slice(0, 3).map((b: any, i: number) => (
-                                        <div key={b.id || i} className="w-8 h-8 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center text-[8px] font-black uppercase overflow-hidden" title={b.user?.name || "Guest"}>
+                                        <div key={b.id || i} className="w-8 h-8 rounded-none border-2 border-white bg-slate-200 flex items-center justify-center text-[8px] font-black uppercase overflow-hidden" title={b.user?.name || "Guest"}>
                                             {b.user?.name?.charAt(0) || "G"}
                                         </div>
                                     ))}
                                     {pendingArrivalsCount > 3 && (
-                                        <div className="w-8 h-8 rounded-full border-2 border-white bg-blue-100 flex items-center justify-center text-[10px] font-black text-blue-600">+{pendingArrivalsCount - 3}</div>
+                                        <div className="w-8 h-8 rounded-none border-2 border-white bg-blue-100 flex items-center justify-center text-[10px] font-black text-blue-600">+{pendingArrivalsCount - 3}</div>
                                     )}
                                     {pendingArrivalsCount === 0 && <div className="text-[8px] font-bold text-slate-400 uppercase tracking-widest italic">No arrivals today</div>}
                                 </div>

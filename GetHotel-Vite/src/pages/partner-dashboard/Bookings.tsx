@@ -95,7 +95,7 @@ export default function PartnerBookingsPage() {
                         </div>
                     </div>
 
-                    <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center gap-4">
+                    <div className="bg-white p-4 rounded-none border border-slate-200 shadow-sm flex flex-col md:flex-row items-center gap-4">
                         <div className="relative flex-1 w-full">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                             <input 
@@ -103,16 +103,16 @@ export default function PartnerBookingsPage() {
                                 placeholder="Search Guest, ID, or Room..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-11 pr-4 py-3 bg-slate-50 border-transparent rounded-xl text-sm font-bold focus:bg-white focus:border-blue-600 outline-none transition-all"
+                                className="w-full pl-11 pr-4 py-3 bg-slate-50 border-transparent rounded-none text-sm font-bold focus:bg-white focus:border-blue-600 outline-none transition-all"
                             />
                         </div>
-                        <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto no-scrollbar">
+                        <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto custom-scrollbar">
                             {['all', 'pending', 'confirmed', 'checked-in', 'checked-out', 'cancelled'].map((status) => (
                                 <button
                                     key={status}
                                     onClick={() => setStatusFilter(status)}
                                     className={cn(
-                                        "px-4 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest border transition-all whitespace-nowrap",
+                                        "px-4 py-2.5 rounded-none text-[10px] font-black uppercase tracking-widest border transition-all whitespace-nowrap",
                                         statusFilter === status 
                                             ? "bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-100" 
                                             : "bg-white text-slate-500 border-slate-100 hover:border-slate-300"
@@ -124,7 +124,7 @@ export default function PartnerBookingsPage() {
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="bg-white rounded-none border border-slate-200 shadow-sm overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead className="bg-slate-50 border-b border-slate-200">
@@ -145,12 +145,12 @@ export default function PartnerBookingsPage() {
                                                     <span className="text-[10px] font-black text-blue-600 mb-1">#{booking.id}</span>
                                                     <span className="text-sm font-black text-slate-900">{booking.room?.name || 'Standard Room'}</span>
                                                     <div className={cn(
-                                                        "mt-2 px-2.5 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border w-fit flex items-center gap-1.5",
+                                                        "mt-2 px-2.5 py-1 rounded-none text-[8px] font-black uppercase tracking-widest border w-fit flex items-center gap-1.5",
                                                         booking.status?.toLowerCase() === 'confirmed' ? "bg-emerald-50 text-emerald-600 border-emerald-100" : 
                                                         (booking.status?.toLowerCase() === 'pending' || booking.status?.toLowerCase() === 'held') ? "bg-amber-50 text-amber-600 border-amber-100" : 
                                                         booking.status?.toLowerCase() === 'checked-in' ? "bg-blue-50 text-blue-600 border-blue-100" : "bg-slate-50 text-slate-500 border-slate-200"
                                                     )}>
-                                                        <div className={cn("w-1 h-1 rounded-full", 
+                                                        <div className={cn("w-1 h-1 rounded-none", 
                                                             booking.status?.toLowerCase() === 'confirmed' ? "bg-emerald-600" : 
                                                             (booking.status?.toLowerCase() === 'pending' || booking.status?.toLowerCase() === 'held') ? "bg-amber-600" : 
                                                             booking.status?.toLowerCase() === 'checked-in' ? "bg-blue-600" : "bg-slate-400"
@@ -161,7 +161,7 @@ export default function PartnerBookingsPage() {
                                             </td>
                                             <td className="px-8 py-6">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+                                                    <div className="w-10 h-10 rounded-none bg-slate-100 flex items-center justify-center shrink-0">
                                                         <User className="w-5 h-5 text-slate-400" />
                                                     </div>
                                                     <div>
@@ -195,7 +195,7 @@ export default function PartnerBookingsPage() {
                                                             {(booking.status?.toLowerCase() === 'pending' || booking.status?.toLowerCase() === 'held') && (
                                                                 <button 
                                                                     onClick={() => handleUpdateStatus(booking.id, 'confirmed')}
-                                                                    className="p-2 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100 hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
+                                                                    className="p-2 bg-emerald-50 text-emerald-600 rounded-none border border-emerald-100 hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
                                                                     title="Confirm Booking"
                                                                 >
                                                                     <Check className="w-4 h-4" />
@@ -204,7 +204,7 @@ export default function PartnerBookingsPage() {
                                                             {booking.status?.toLowerCase() === 'confirmed' && (
                                                                 <button 
                                                                     onClick={() => handleUpdateStatus(booking.id, 'checked-in')}
-                                                                    className="p-2 bg-blue-50 text-blue-600 rounded-xl border border-blue-100 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                                                                    className="p-2 bg-blue-50 text-blue-600 rounded-none border border-blue-100 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
                                                                     title="Mark Check-In"
                                                                 >
                                                                     <LogIn className="w-4 h-4" />
@@ -213,7 +213,7 @@ export default function PartnerBookingsPage() {
                                                             {booking.status?.toLowerCase() === 'checked-in' && (
                                                                 <button 
                                                                     onClick={() => handleUpdateStatus(booking.id, 'checked-out')}
-                                                                    className="p-2 bg-purple-50 text-purple-600 rounded-xl border border-purple-100 hover:bg-purple-600 hover:text-white transition-all shadow-sm"
+                                                                    className="p-2 bg-purple-50 text-purple-600 rounded-none border border-purple-100 hover:bg-purple-600 hover:text-white transition-all shadow-sm"
                                                                     title="Mark Check-Out"
                                                                 >
                                                                     <LogOut className="w-4 h-4" />
@@ -226,7 +226,7 @@ export default function PartnerBookingsPage() {
                                                                             handleUpdateStatus(booking.id, 'cancelled');
                                                                         }
                                                                     }}
-                                                                    className="p-2 bg-red-50 text-red-400 rounded-xl border border-red-50/50 hover:bg-red-500 hover:text-white transition-all"
+                                                                    className="p-2 bg-red-50 text-red-400 rounded-none border border-red-50/50 hover:bg-red-500 hover:text-white transition-all"
                                                                     title="Cancel"
                                                                 >
                                                                     <Ban className="w-4 h-4" />
@@ -239,7 +239,7 @@ export default function PartnerBookingsPage() {
                                             <td className="px-8 py-6 text-right">
                                                 <button 
                                                     onClick={() => setSelectedBooking(booking)}
-                                                    className="p-2.5 bg-slate-50 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl border border-slate-100 transition-all"
+                                                    className="p-2.5 bg-slate-50 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-none border border-slate-100 transition-all"
                                                 >
                                                     <Eye className="w-4 h-4" />
                                                 </button>
@@ -252,13 +252,13 @@ export default function PartnerBookingsPage() {
                     </div>
                 </>
             ) : (
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden min-h-[80vh] flex flex-col">
+                <div className="bg-white rounded-none border border-slate-200 shadow-2xl overflow-hidden min-h-[80vh] flex flex-col">
                     {/* Header */}
                     <div className="p-8 border-b border-slate-100 flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <button 
                                 onClick={() => setSelectedBooking(null)}
-                                className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-50 border border-slate-200 transition-all"
+                                className="w-10 h-10 flex items-center justify-center rounded-none hover:bg-slate-50 border border-slate-200 transition-all"
                             >
                                 <ChevronRight className="w-5 h-5 rotate-180" />
                             </button>
@@ -268,7 +268,7 @@ export default function PartnerBookingsPage() {
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
-                            <button className="px-6 py-2.5 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all flex items-center gap-2">
+                            <button className="px-6 py-2.5 bg-slate-900 text-white rounded-none font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all flex items-center gap-2">
                                 <Printer className="w-4 h-4" /> Print Invoice
                             </button>
                         </div>
@@ -279,9 +279,9 @@ export default function PartnerBookingsPage() {
                             {/* Guest Section */}
                             <div className="space-y-6">
                                 <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest border-l-4 border-blue-600 pl-4">Guest Information</h4>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8 bg-slate-50 rounded-2xl border border-slate-100">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8 bg-slate-50 rounded-none border border-slate-100">
                                     <div className="flex items-start gap-4">
-                                        <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm border border-slate-200">
+                                        <div className="w-12 h-12 bg-white rounded-none flex items-center justify-center shadow-sm border border-slate-200">
                                             <User className="w-6 h-6 text-slate-400" />
                                         </div>
                                         <div>
@@ -290,7 +290,7 @@ export default function PartnerBookingsPage() {
                                         </div>
                                     </div>
                                     <div className="flex items-start gap-4">
-                                        <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm border border-slate-200">
+                                        <div className="w-12 h-12 bg-white rounded-none flex items-center justify-center shadow-sm border border-slate-200">
                                             <Phone className="w-6 h-6 text-slate-400" />
                                         </div>
                                         <div>
@@ -299,7 +299,7 @@ export default function PartnerBookingsPage() {
                                         </div>
                                     </div>
                                     <div className="flex items-start gap-4">
-                                        <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm border border-slate-200">
+                                        <div className="w-12 h-12 bg-white rounded-none flex items-center justify-center shadow-sm border border-slate-200">
                                             <Mail className="w-6 h-6 text-slate-400" />
                                         </div>
                                         <div>
@@ -308,7 +308,7 @@ export default function PartnerBookingsPage() {
                                         </div>
                                     </div>
                                     <div className="flex items-start gap-4">
-                                        <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm border border-slate-200">
+                                        <div className="w-12 h-12 bg-white rounded-none flex items-center justify-center shadow-sm border border-slate-200">
                                             <Users className="w-6 h-6 text-slate-400" />
                                         </div>
                                         <div>
@@ -322,7 +322,7 @@ export default function PartnerBookingsPage() {
                             {/* Stay Details */}
                             <div className="space-y-6">
                                 <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest border-l-4 border-emerald-600 pl-4">Stay & Room Details</h4>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8 bg-white border border-slate-200 rounded-2xl shadow-sm">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8 bg-white border border-slate-200 rounded-none shadow-sm">
                                     <div className="space-y-4">
                                         <div className="flex items-center gap-3">
                                             <Bed className="w-5 h-5 text-blue-600" />
@@ -346,7 +346,7 @@ export default function PartnerBookingsPage() {
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="flex flex-col justify-center items-center bg-slate-50 rounded-xl p-6 border border-slate-100">
+                                    <div className="flex flex-col justify-center items-center bg-slate-50 rounded-none p-6 border border-slate-100">
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Total Duration</p>
                                         <h3 className="text-4xl font-black text-slate-900 italic">
                                             {Math.ceil((new Date(selectedBooking.checkOut).getTime() - new Date(selectedBooking.checkIn).getTime()) / (1000 * 60 * 60 * 24))}
@@ -361,8 +361,8 @@ export default function PartnerBookingsPage() {
                             {/* Payment Summary - Clean Style */}
                             <div className="space-y-6">
                                 <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest border-l-4 border-amber-500 pl-4">Payment Summary</h4>
-                                <div className="bg-slate-900 rounded-3xl p-8 text-white shadow-2xl relative overflow-hidden">
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/20 rounded-full blur-3xl -mr-16 -mt-16" />
+                                <div className="bg-slate-900 rounded-none p-8 text-white shadow-2xl relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/20 rounded-none blur-3xl -mr-16 -mt-16" />
                                     <div className="relative z-10 space-y-6">
                                         <div>
                                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Total Booking Price</p>
@@ -372,21 +372,21 @@ export default function PartnerBookingsPage() {
                                         <div className="space-y-4">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-2">
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                                                    <div className="w-1.5 h-1.5 rounded-none bg-emerald-400" />
                                                     <span className="text-[10px] font-black text-slate-400 uppercase">Paid Online (18%)</span>
                                                 </div>
                                                 <span className="text-sm font-black text-emerald-400">₹{Math.round(selectedBooking.totalPrice * 0.18).toLocaleString()}</span>
                                             </div>
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-2">
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                                                    <div className="w-1.5 h-1.5 rounded-none bg-amber-400" />
                                                     <span className="text-[10px] font-black text-slate-400 uppercase">At Hotel (82%)</span>
                                                 </div>
                                                 <span className="text-sm font-black text-amber-400">₹{Math.round(selectedBooking.totalPrice * 0.82).toLocaleString()}</span>
                                             </div>
                                         </div>
                                         <div className="pt-4">
-                                            <div className="px-4 py-3 bg-white/5 rounded-xl border border-white/10 text-center">
+                                            <div className="px-4 py-3 bg-white/5 rounded-none border border-white/10 text-center">
                                                 <p className="text-[9px] font-black text-blue-400 uppercase tracking-widest">Platform Status</p>
                                                 <p className="text-xs font-black uppercase mt-1 italic">{selectedBooking.paymentStatus || 'Partially Paid'}</p>
                                             </div>
@@ -399,11 +399,11 @@ export default function PartnerBookingsPage() {
                             <div className="space-y-4">
                                 <button 
                                     onClick={() => router('/partner-dashboard/messages')}
-                                    className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 shadow-xl shadow-blue-900/20 hover:scale-[1.02] transition-all"
+                                    className="w-full py-4 bg-blue-600 text-white rounded-none font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 shadow-xl shadow-blue-900/20 hover:scale-[1.02] transition-all"
                                 >
                                     <MessageSquare className="w-5 h-5" /> Chat with Guest
                                 </button>
-                                <button className="w-full py-4 bg-slate-100 text-slate-900 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-slate-200 transition-all">
+                                <button className="w-full py-4 bg-slate-100 text-slate-900 rounded-none font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-slate-200 transition-all">
                                     <Phone className="w-5 h-5" /> Call Guest
                                 </button>
                                 <button 
@@ -412,7 +412,7 @@ export default function PartnerBookingsPage() {
                                             alert("Request submitted.");
                                         }
                                     }}
-                                    className="w-full py-4 text-red-500 font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-2 hover:bg-red-50 rounded-2xl transition-all"
+                                    className="w-full py-4 text-red-500 font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-2 hover:bg-red-50 rounded-none transition-all"
                                 >
                                     <ShieldAlert className="w-4 h-4" /> Report Issue
                                 </button>

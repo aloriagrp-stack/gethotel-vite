@@ -1,10 +1,10 @@
-
 import { useState, useCallback, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate as useRouter } from "react-router-dom";
-import { Search, X, ChevronDown, Calendar as CalendarIcon, Users, MapPin, Plus, Minus, ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, X, ChevronDown, Calendar as CalendarIcon, Users, MapPin, Plus, Minus, ArrowLeft, ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react";
 import type { SmartSearchState } from "@/types/search";
-import { cn } from "@/lib/utils";
+import { cn, formatDateLocal } from "@/lib/utils";
 import DestinationStoryViewer from "@/components/home/DestinationStoryViewer";
 import { destinationStories, DestinationStory } from "@/data/stories";
 import { useIsMobile } from "@/hooks/useIsMobile";
@@ -44,7 +44,7 @@ const DESTINATION_STORIES = [
 const getDaysInMonth = (month: number, year: number) => new Date(year, month + 1, 0).getDate();
 const getFirstDayOfMonth = (month: number, year: number) => new Date(year, month, 1).getDay();
 
-export default function SmartSearchBar({ className, hideStories, initialState, onSearch, navigationPath }: any) {
+export default function SmartSearchBar({ className, hideStories, initialState, onSearch, navigationPath, layoutMode = "home" }: any) {
     const { mode } = useStayMode();
     const isMobile = useIsMobile();
     const router = useRouter();
@@ -54,7 +54,7 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
     const [activeStory, setActiveStory] = useState<DestinationStory | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const [activeSection, setActiveSection] = useState<"where" | "dates" | "guests" | "time" | "duration" | null>(null);
-    
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -63,11 +63,56 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
 
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
+            if (isMobile) return;
             if (containerRef.current && !containerRef.current.contains(e.target as Node)) setActiveSection(null);
         };
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
+    }, [isMobile]);
+
+    // Adjust checkout date when switching between stay modes
+    useEffect(() => {
+        if (mode === 'nightly') {
+            setState(prev => {
+                if (prev.dates.checkIn && !prev.dates.checkOut) {
+                    const nextDay = new Date(prev.dates.checkIn);
+                    nextDay.setDate(nextDay.getDate() + 1);
+                    return {
+                        ...prev,
+                        dates: { ...prev.dates, checkOut: nextDay }
+                    };
+                }
+                return prev;
+            });
+        } else if (mode === 'hourly') {
+            setState(prev => {
+                if (prev.dates.checkOut) {
+                    return {
+                        ...prev,
+                        dates: { ...prev.dates, checkOut: null }
+                    };
+                }
+                return prev;
+            });
+        }
+    }, [mode]);
+
+    // Heal checkout date to checkIn + 1 day when the dates picker dropdown is closed with only checkIn selected
+    useEffect(() => {
+        if (activeSection === null && mode === 'nightly') {
+            setState(prev => {
+                if (prev.dates.checkIn && !prev.dates.checkOut) {
+                    const nextDay = new Date(prev.dates.checkIn);
+                    nextDay.setDate(nextDay.getDate() + 1);
+                    return {
+                        ...prev,
+                        dates: { ...prev.dates, checkOut: nextDay }
+                    };
+                }
+                return prev;
+            });
+        }
+    }, [activeSection, mode]);
 
     const handleDateClick = (day: number) => {
         const date = new Date(currentYear, currentMonth, day);
@@ -75,7 +120,6 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
 
         if (mode === 'hourly') {
             setState(prev => ({ ...prev, dates: { checkIn: date, checkOut: null } }));
-            if (!isMobile) setTimeout(() => setActiveSection("time"), 300);
             return;
         }
 
@@ -83,7 +127,7 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
             setState(prev => ({ ...prev, dates: { checkIn: date, checkOut: null } }));
         } else if (date > state.dates.checkIn) {
             setState(prev => ({ ...prev, dates: { ...prev.dates, checkOut: date } }));
-            if (!isMobile) setTimeout(() => setActiveSection("guests"), 300);
+            // Dropdown stays open; user closes it manually or clicks another tab.
         } else {
             setState(prev => ({ ...prev, dates: { checkIn: date, checkOut: null } }));
         }
@@ -92,10 +136,30 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
     const handleSearch = async (e?: React.FormEvent, directQuery?: string) => {
         if (e) e.preventDefault();
         setIsSearching(true);
+        let finalCheckIn = state.dates.checkIn;
+        let finalCheckOut = state.dates.checkOut;
+
+        if (mode === 'nightly') {
+            if (!finalCheckIn) {
+                finalCheckIn = new Date();
+                finalCheckIn.setHours(0, 0, 0, 0);
+            }
+            if (!finalCheckOut) {
+                finalCheckOut = new Date(finalCheckIn);
+                finalCheckOut.setDate(finalCheckOut.getDate() + 1);
+            }
+        } else {
+            if (!finalCheckIn) {
+                finalCheckIn = new Date();
+                finalCheckIn.setHours(0, 0, 0, 0);
+            }
+            finalCheckOut = null;
+        }
+
         const params = new URLSearchParams({
             city: state.destination?.label || query || "All",
-            checkIn: state.dates.checkIn?.toISOString().split("T")[0] || "",
-            checkOut: mode === 'nightly' ? (state.dates.checkOut?.toISOString().split("T")[0] || "") : "",
+            checkIn: formatDateLocal(finalCheckIn),
+            checkOut: mode === 'nightly' ? formatDateLocal(finalCheckOut) : "",
             adults: String(state.guests.adults),
             children: String(state.guests.children),
             rooms: String(state.guests.rooms),
@@ -121,220 +185,478 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
     return (
         <div ref={containerRef} className={cn("relative w-full", className)}>
             <div className="w-full relative z-50">
-                <div className={cn("w-full flex flex-col md:flex-row md:items-center relative transition-all duration-700", !hideStories && "bg-white/60 backdrop-blur-[40px] rounded-[40px] md:rounded-full shadow-premium border border-white/40")}>
-                    
-                    {/* Destination */}
-                    <div onClick={() => setActiveSection("where")} className={cn("flex flex-[1.3] items-center gap-3 pl-8 pr-3 py-6 md:py-5 md:border-r border-white/30 cursor-pointer transition-all", activeSection === "where" && "bg-white/80 rounded-t-[40px] md:rounded-l-full shadow-inner")}>
-                        <MapPin className="w-5 h-5 text-brand-600" />
-                        <div className="flex-1 text-left">
-                            <p className="text-[10px] font-black text-brand-500 uppercase tracking-widest">Where</p>
-                            <input type="text" value={query} readOnly={isMobile} onChange={e => setQuery(e.target.value)} placeholder="Enter destination..." className="w-full bg-transparent outline-none text-[16px] font-black text-slate-950 italic" />
-                        </div>
-                        {!isMobile && activeSection === "where" && (
-                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="absolute top-[110%] left-0 w-[450px] bg-white rounded-[24px] p-6 shadow-2xl border border-slate-50 z-[100]">
-                                {TOP_DESTINATIONS.filter(d => d.label.toLowerCase().includes(query.toLowerCase())).map(dest => (
-                                    <button key={dest.label} onClick={e => { e.stopPropagation(); setQuery(dest.label); setState(p => ({ ...p, destination: { id: dest.label.toLowerCase(), label: dest.label, category: "trending" } })); setActiveSection("dates"); }} className="w-full flex items-center gap-4 p-3 hover:bg-slate-50 rounded-xl transition-all">
-                                        <MapPin className="w-4 h-4 text-brand-600" />
-                                        <div className="text-left"><p className="font-bold text-slate-900">{dest.label}</p><p className="text-xs text-slate-400">{dest.region}</p></div>
-                                    </button>
-                                ))}
-                            </motion.div>
-                        )}
-                    </div>
+                <div className={cn(
+                    "w-full flex flex-col lg:flex-row lg:items-center relative transition-all duration-700 gap-3 lg:gap-0",
+                    !hideStories
+                        ? "lg:bg-white/40 lg:backdrop-blur-3xl lg:rounded-full lg:shadow-premium lg:border lg:border-white/40 lg:p-2"
+                        : "lg:rounded-full lg:p-0"
+                )}>
 
-                    {/* Dates / Check-in */}
-                    <div onClick={() => setActiveSection("dates")} className={cn("flex flex-1 items-center gap-3 pl-5 pr-3 py-6 md:py-5 md:border-r border-white/30 cursor-pointer transition-all", activeSection === "dates" && "bg-white/80 shadow-inner")}>
-                        <CalendarIcon className="w-5 h-5 text-brand-600" />
-                        <div className="flex-1 text-left">
-                            <p className="text-[10px] font-black text-brand-500 uppercase tracking-widest">{mode === 'hourly' ? "Check-in Date" : "Dates"}</p>
-                            <p className="text-[14px] font-black italic text-slate-950 truncate">
-                                {state.dates.checkIn ? (
-                                    mode === 'hourly' 
-                                        ? state.dates.checkIn.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-                                        : `${state.dates.checkIn.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${state.dates.checkOut?.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) || 'Select Out'}`
-                                ) : "Select Stay"}
-                            </p>
-                        </div>
-                        {!isMobile && activeSection === "dates" && (
-                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="absolute top-[110%] left-0 w-[380px] bg-white rounded-[32px] p-6 shadow-2xl border border-slate-50 z-[100]" onClick={e => e.stopPropagation()}>
-                                <div className="flex justify-between items-center mb-6">
-                                    <button onClick={() => setCurrentMonth(m => m === 0 ? 11 : m - 1)} className="p-2 hover:bg-slate-50 rounded-full"><ChevronLeft className="w-4 h-4" /></button>
-                                    <p className="font-black italic text-slate-900">{monthName} {currentYear}</p>
-                                    <button onClick={() => setCurrentMonth(m => m === 11 ? 0 : m + 1)} className="p-2 hover:bg-slate-50 rounded-full"><ChevronRight className="w-4 h-4" /></button>
+                    {/* Mobile View (Unified Pill Container) */}
+                    {layoutMode === "hotels" ? (
+                        /* Hotels Page Mobile View: 2-Row Split Layout */
+                        <div className="flex lg:hidden flex-col gap-0.5 bg-white/40 backdrop-blur-xl rounded-[40px] shadow-sm p-1 overflow-hidden mx-1 w-full">
+                            {/* Row 1: Destination (Where) */}
+                            <div 
+                                className="w-full bg-white/40 p-4 flex items-center gap-3 cursor-pointer active:scale-[0.98] transition-transform rounded-t-[36px]"
+                                onClick={() => setActiveSection("where")}
+                            >
+                                <div className="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 shrink-0 shadow-sm">
+                                    <MapPin className="w-4.5 h-4.5" />
                                 </div>
-                                <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-black text-slate-300 mb-2">{['Su','Mo','Tu','We','Th','Fr','Sa'].map(d => <div key={d}>{d}</div>)}</div>
-                                <div className="grid grid-cols-7 gap-1">
-                                    {Array.from({ length: firstDay }).map((_, i) => <div key={`b-${i}`} />)}
-                                    {Array.from({ length: daysInMonth }).map((_, i) => {
-                                        const d = i + 1;
-                                        const date = new Date(currentYear, currentMonth, d);
-                                        const isPast = date < today;
-                                        const isSelected = state.dates.checkIn?.getTime() === date.getTime() || state.dates.checkOut?.getTime() === date.getTime();
-                                        const isInRange = state.dates.checkIn && state.dates.checkOut && date > state.dates.checkIn && date < state.dates.checkOut;
-                                        return (
-                                            <button key={d} disabled={isPast} onClick={() => handleDateClick(d)} className={cn("h-10 rounded-xl text-sm font-bold transition-all", isPast ? "text-slate-100 cursor-not-allowed" : isSelected ? "bg-brand-600 text-white shadow-lg shadow-brand-100" : isInRange ? "bg-brand-50 text-brand-600" : "hover:bg-slate-50 text-slate-700")}>{d}</button>
-                                        );
-                                    })}
+                                <div className="flex-1">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Destination</p>
+                                    <p className="text-sm font-black text-slate-900 truncate italic">
+                                        {query || "Where to?"}
+                                    </p>
                                 </div>
-                            </motion.div>
-                        )}
-                    </div>
-
-                    {/* Hourly Specific: Time & Duration */}
-                    {mode === 'hourly' && (
-                        <>
-                            {/* Check-in Time */}
-                            <div onClick={() => setActiveSection("time")} className={cn("flex flex-[0.8] items-center gap-3 pl-5 pr-3 py-6 md:py-5 md:border-r border-white/30 cursor-pointer transition-all", activeSection === "time" && "bg-white/80 shadow-inner")}>
-                                <Users className="w-5 h-5 text-brand-600" />
-                                <div className="flex-1 text-left">
-                                    <p className="text-[10px] font-black text-brand-500 uppercase tracking-widest">Arrival</p>
-                                    <p className="text-[14px] font-black italic text-slate-950">{state.checkInTime || "Pick Time"}</p>
-                                </div>
-                                {!isMobile && activeSection === "time" && (
-                                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="absolute top-[110%] left-0 w-[200px] bg-white rounded-[24px] p-4 shadow-2xl border border-slate-50 z-[100]" onClick={e => e.stopPropagation()}>
-                                        <div className="grid grid-cols-1 gap-1 max-h-[300px] overflow-y-auto no-scrollbar">
-                                            {TIME_SLOTS.map(t => (
-                                                <button key={t} onClick={() => { setState(s => ({ ...s, checkInTime: t })); setActiveSection("duration"); }} className={cn("w-full p-3 text-left rounded-xl font-bold transition-all", state.checkInTime === t ? "bg-brand-600 text-white" : "hover:bg-slate-50 text-slate-900")}>
-                                                    {t}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </motion.div>
-                                )}
+                                <Search className="w-5 h-5 text-slate-300 mr-2" />
                             </div>
 
-                            {/* Duration */}
-                            <div onClick={() => setActiveSection("duration")} className={cn("flex flex-[0.8] items-center gap-3 pl-5 pr-3 py-6 md:py-5 md:border-r border-white/30 cursor-pointer transition-all", activeSection === "duration" && "bg-white/80 shadow-inner")}>
-                                <ChevronDown className="w-5 h-5 text-brand-600" />
-                                <div className="flex-1 text-left">
-                                    <p className="text-[10px] font-black text-brand-500 uppercase tracking-widest">Stay</p>
-                                    <p className="text-[14px] font-black italic text-slate-950">{state.duration} Hours</p>
+                            {/* Row 2: Dates & Guests side-by-side */}
+                            <div className="flex gap-0.5 w-full">
+                                {/* Dates */}
+                                <div 
+                                    className="flex-1 bg-white/40 p-4 flex items-center gap-3 cursor-pointer active:scale-[0.98] transition-transform rounded-bl-[36px]"
+                                    onClick={() => setActiveSection("dates")}
+                                >
+                                    <div className="w-9 h-9 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 shrink-0 shadow-sm">
+                                        <CalendarIcon className="w-3.5 h-3.5" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{mode === 'hourly' ? "Arrival" : "Dates"}</p>
+                                        <p className="text-[11px] font-black text-slate-900 truncate">
+                                            {state.dates.checkIn ? (
+                                                mode === 'hourly'
+                                                    ? `${state.dates.checkIn.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} @ ${state.checkInTime || "10:00 AM"}`
+                                                    : state.dates.checkIn.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                                            ) : "Add Dates"}
+                                        </p>
+                                    </div>
                                 </div>
-                                {!isMobile && activeSection === "duration" && (
-                                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="absolute top-[110%] left-0 w-[200px] bg-white rounded-[24px] p-4 shadow-2xl border border-slate-50 z-[100]" onClick={e => e.stopPropagation()}>
-                                        <div className="space-y-1">
-                                            {DURATIONS.map(d => (
-                                                <button key={d} onClick={() => { setState(s => ({ ...s, duration: d })); setActiveSection("guests"); }} className={cn("w-full p-4 text-center rounded-xl font-black italic transition-all", state.duration === d ? "bg-brand-600 text-white" : "hover:bg-slate-50 text-slate-900")}>
-                                                    {d} Hours
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </motion.div>
-                                )}
+
+                                {/* Guests */}
+                                <div 
+                                    className="flex-1 bg-white/40 p-4 flex items-center gap-3 cursor-pointer active:scale-[0.98] transition-transform rounded-br-[36px]"
+                                    onClick={() => setActiveSection("guests")}
+                                >
+                                    <div className="w-9 h-9 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 shrink-0 shadow-sm">
+                                        <Users className="w-3.5 h-3.5" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Guests</p>
+                                        <p className="text-[11px] font-black text-slate-900 truncate">
+                                            {state.guests.adults + state.guests.children} Guests
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
-                        </>
+                        </div>
+                    ) : (
+                        /* Home Page Mobile View: 3 stacked sections (Destination, Dates, Guests) */
+                        <div className="flex lg:hidden flex-col gap-3 w-full px-1">
+                            {/* Section 1: Destination */}
+                            <div 
+                                onClick={() => setActiveSection("where")}
+                                className="w-full bg-white/40 backdrop-blur-xl border border-white/30 rounded-[2rem] p-4 flex items-center gap-3 cursor-pointer active:scale-[0.98] transition-all shadow-md hover:bg-white/60"
+                            >
+                                <div className="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 shrink-0 shadow-sm">
+                                    <MapPin className="w-4.5 h-4.5" />
+                                </div>
+                                <div className="flex-1 text-left">
+                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Destination</p>
+                                    <p className="text-sm font-black text-slate-900 truncate">
+                                        {query || "Where to?"}
+                                    </p>
+                                </div>
+                                <Search className="w-5 h-5 text-slate-300 mr-1" />
+                            </div>
+
+                            {/* Section 2: Dates */}
+                            <div 
+                                onClick={() => setActiveSection("dates")}
+                                className="w-full bg-white/40 backdrop-blur-xl border border-white/30 rounded-[2rem] p-4 flex items-center gap-3 cursor-pointer active:scale-[0.98] transition-all shadow-md hover:bg-white/60"
+                            >
+                                <div className="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 shrink-0 shadow-sm">
+                                    <CalendarIcon className="w-4.5 h-4.5" />
+                                </div>
+                                <div className="flex-1 text-left">
+                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{mode === 'hourly' ? "Arrival Date & Time" : "Dates"}</p>
+                                    <p className="text-sm font-black text-slate-900 truncate">
+                                        {state.dates.checkIn ? (
+                                            mode === 'hourly'
+                                                ? `${state.dates.checkIn.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} @ ${state.checkInTime || "10:00 AM"} (${state.duration}h)`
+                                                : `${state.dates.checkIn.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}${state.dates.checkOut ? ` - ${state.dates.checkOut.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : ''}`
+                                        ) : "Add dates"}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Section 3: Guests */}
+                            <div 
+                                onClick={() => setActiveSection("guests")}
+                                className="w-full bg-white/40 backdrop-blur-xl border border-white/30 rounded-[2rem] p-4 flex items-center gap-3 cursor-pointer active:scale-[0.98] transition-all shadow-md hover:bg-white/60"
+                            >
+                                <div className="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 shrink-0 shadow-sm">
+                                    <Users className="w-4.5 h-4.5" />
+                                </div>
+                                <div className="flex-1 text-left">
+                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Guests</p>
+                                    <p className="text-sm font-black text-slate-900 truncate">
+                                        {state.guests.adults + state.guests.children} Guests
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     )}
 
-                    {/* Guests */}
-                    <div onClick={() => setActiveSection("guests")} className={cn("flex flex-1 items-center gap-3 pl-5 pr-3 py-6 md:py-5 cursor-pointer transition-all", activeSection === "guests" && "bg-white/80 shadow-inner md:rounded-r-full")}>
-                        <Users className="w-5 h-5 text-brand-600" />
-                        <div className="flex-1 text-left">
-                            <p className="text-[10px] font-black text-brand-500 uppercase tracking-widest">Guests</p>
-                            <p className="text-[14px] font-black italic text-slate-950 truncate">{state.guests.adults + state.guests.children} Guests · {state.guests.rooms} Room</p>
+                    {/* Desktop View (Horizontal Layout) */}
+                    <div className="hidden lg:flex flex-1 items-center">
+                        {/* Destination */}
+                        <div className="flex-[1.4] relative">
+                            <div onClick={(e) => { e.stopPropagation(); setActiveSection("where"); }} className={cn("flex items-center gap-3 pl-7 pr-3 py-4 md:py-2.5 cursor-pointer transition-all hover:bg-white/80 rounded-l-full", activeSection === "where" && "bg-white shadow-sm")}>
+                                <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center shadow-sm">
+                                    <MapPin className="w-3.5 h-3.5 text-brand-600" />
+                                </div>
+                                <div className="flex-1 text-left min-w-0">
+                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Where</p>
+                                    <input
+                                        type="text"
+                                        value={query}
+                                        onChange={e => setQuery(e.target.value)}
+                                        onFocus={(e) => { e.stopPropagation(); setActiveSection("where"); }}
+                                        placeholder="Destination..."
+                                        className="w-full bg-transparent outline-none text-[13px] font-black text-slate-950 italic truncate"
+                                    />
+                                </div>
+                            </div>
+                            {activeSection === "where" && (
+                                <div className="absolute top-[115%] left-0 w-[400px] bg-white rounded-[40px] p-8 shadow-premium z-[500]" onClick={e => e.stopPropagation()}>
+                                    {query.trim().length > 0 ? (
+                                        <div className="space-y-1">
+                                            {TOP_DESTINATIONS.filter(d => d.label.toLowerCase().includes(query.toLowerCase())).map(dest => (
+                                                <button key={dest.label} onClick={e => { e.stopPropagation(); setQuery(dest.label); setState(p => ({ ...p, destination: { id: dest.label.toLowerCase(), label: dest.label, category: "trending" } })); setActiveSection("dates"); }} className="w-full flex items-center gap-4 p-4 hover:bg-slate-50/50 rounded-3xl transition-all group text-left">
+                                                    <div className="w-10 h-10 rounded-full bg-slate-50/50 flex items-center justify-center group-hover:bg-brand-50 transition-colors">
+                                                        <MapPin className="w-4 h-4 text-brand-600" />
+                                                    </div>
+                                                    <div><p className="font-bold text-slate-900">{dest.label}</p><p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{dest.region}</p></div>
+                                                </button>
+                                            ))}
+                                            {TOP_DESTINATIONS.filter(d => d.label.toLowerCase().includes(query.toLowerCase())).length === 0 && (
+                                                <div className="py-10 text-center">
+                                                    <p className="text-sm font-bold text-slate-400 italic">No destinations found matching &quot;{query}&quot;</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="py-12 text-center">
+                                            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 opacity-50">
+                                                <Search className="w-6 h-6 text-slate-300" />
+                                            </div>
+                                            <p className="text-xs font-black uppercase tracking-widest text-slate-300">Start typing to explore...</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
-                        {!isMobile && activeSection === "guests" && (
-                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="absolute top-[110%] right-0 w-[320px] bg-white rounded-[32px] p-6 shadow-2xl border border-slate-50 z-[100]" onClick={e => e.stopPropagation()}>
-                                <div className="space-y-6">
-                                    {[{label:"Adults",k:"adults"},{label:"Children",k:"children"},{label:"Rooms",k:"rooms"}].map(i => (
-                                        <div key={i.k} className="flex justify-between items-center">
-                                            <p className="font-bold text-slate-900">{i.label}</p>
-                                            <div className="flex items-center gap-4">
-                                                <button onClick={() => setState(s => ({ ...s, guests: { ...s.guests, [i.k]: Math.max(i.k==='children'?0:1, (s.guests as any)[i.k]-1) } }))} className="w-8 h-8 rounded-full border border-slate-100 flex items-center justify-center hover:bg-slate-50"><Minus className="w-3 h-3" /></button>
-                                                <span className="font-black w-4 text-center">{(state.guests as any)[i.k]}</span>
-                                                <button onClick={() => setState(s => ({ ...s, guests: { ...s.guests, [i.k]: (s.guests as any)[i.k]+1 } }))} className="w-8 h-8 rounded-full border border-slate-100 flex items-center justify-center hover:bg-slate-50"><Plus className="w-3 h-3" /></button>
+
+                        {/* Dates */}
+                        <div className="flex-1 relative">
+                            <div onClick={(e) => { e.stopPropagation(); setActiveSection("dates"); }} className={cn("flex items-center gap-3 pl-5 pr-3 py-4 md:py-2.5 cursor-pointer transition-all hover:bg-white/80", activeSection === "dates" && "bg-white shadow-sm")}>
+                                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm">
+                                    <CalendarIcon className="w-3.5 h-3.5 text-brand-600" />
+                                </div>
+                                <div className="flex-1 text-left min-w-0">
+                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{mode === 'hourly' ? "Arrival" : "Stay Dates"}</p>
+                                    <p className="text-[13px] font-black italic text-slate-950 truncate">
+                                        {state.dates.checkIn ? (
+                                            mode === 'hourly'
+                                                ? `${state.dates.checkIn.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} @ ${state.checkInTime || "10:00 AM"}`
+                                                : `${state.dates.checkIn.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${state.dates.checkOut?.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) || '...'}`
+                                        ) : "Select Dates"}
+                                    </p>
+                                </div>
+                            </div>
+                            {activeSection === "dates" && (
+                                <div className="absolute top-[115%] left-1/2 -translate-x-1/2 w-[380px] bg-white rounded-[40px] p-8 shadow-premium z-[500]" onClick={e => e.stopPropagation()}>
+                                    <div className="flex justify-between items-center mb-6">
+                                        <button onClick={() => setCurrentMonth(m => m === 0 ? 11 : m - 1)} className="p-2 hover:bg-slate-50/50 rounded-full"><ChevronLeft className="w-4 h-4" /></button>
+                                        <p className="font-black italic text-slate-900">{monthName} {currentYear}</p>
+                                        <button onClick={() => setCurrentMonth(m => m === 11 ? 0 : m + 1)} className="p-2 hover:bg-slate-50/50 rounded-full"><ChevronRight className="w-4 h-4" /></button>
+                                    </div>
+                                    <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-black text-slate-300 mb-2">{['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => <div key={d}>{d}</div>)}</div>
+                                    <div className="grid grid-cols-7 gap-1">
+                                        {Array.from({ length: firstDay }).map((_, i) => <div key={`b-${i}`} />)}
+                                        {Array.from({ length: daysInMonth }).map((_, i) => {
+                                            const d = i + 1;
+                                            const date = new Date(currentYear, currentMonth, d);
+                                            const isPast = date < today;
+                                            const isSelected = state.dates.checkIn?.getTime() === date.getTime() || state.dates.checkOut?.getTime() === date.getTime();
+                                            const isInRange = state.dates.checkIn && state.dates.checkOut && date > state.dates.checkIn && date < state.dates.checkOut;
+                                            return (
+                                                <button key={d} disabled={isPast} onClick={() => handleDateClick(d)} className={cn("h-11 rounded-full text-sm font-bold transition-all", isPast ? "text-slate-100 cursor-not-allowed" : isSelected ? "bg-brand-600 text-white shadow-lg shadow-brand-100" : isInRange ? "bg-brand-50 text-brand-600" : "hover:bg-slate-50 text-slate-700")}>{d}</button>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {mode === 'hourly' && (
+                                        <div className="space-y-3 pt-4 border-t border-slate-100/50 mt-4">
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Arrival Time</p>
+                                            <div className="grid grid-cols-4 gap-1.5 max-h-32 overflow-y-auto pr-1">
+                                                {TIME_SLOTS.map(t => (
+                                                    <button
+                                                        key={t}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setState(prev => ({ ...prev, checkInTime: t }));
+                                                            if (!isMobile) {
+                                                                setTimeout(() => setActiveSection("duration"), 300);
+                                                            }
+                                                        }}
+                                                        className={cn(
+                                                            "py-1.5 rounded-lg text-[9px] font-black tracking-wider transition-all",
+                                                            state.checkInTime === t ? "bg-brand-600 text-white shadow-md shadow-brand-100" : "bg-slate-50 text-slate-500 hover:bg-slate-100"
+                                                        )}
+                                                    >
+                                                        {t}
+                                                    </button>
+                                                ))}
                                             </div>
                                         </div>
-                                    ))}
+                                    )}
                                 </div>
-                            </motion.div>
-                        )}
-                    </div>
+                            )}
+                        </div>
 
-                    {/* Search Btn */}
-                    <div className="px-5 pb-8 pt-2 md:p-3 shrink-0">
-                        <button onClick={() => handleSearch()} disabled={isSearching} className="w-full md:px-8 lg:px-12 py-5 md:py-4 bg-slate-950 hover:bg-brand-600 text-white font-black rounded-[28px] md:rounded-full transition-all flex items-center justify-center gap-4 shadow-2xl group">
-                            {isSearching ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <>Explore <Search className="w-4 h-4" /></>}
-                        </button>
+                        {/* Duration (Hourly only) */}
+                        {mode === 'hourly' && (
+                            <div className="flex-1 relative">
+                                <div onClick={(e) => { e.stopPropagation(); setActiveSection("duration"); }} className={cn("flex items-center gap-3 pl-5 pr-3 py-4 md:py-2.5 cursor-pointer transition-all hover:bg-white/80", activeSection === "duration" && "bg-white shadow-sm")}>
+                                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm">
+                                        <ArrowUpDown className="w-3.5 h-3.5 text-brand-600" />
+                                    </div>
+                                    <div className="flex-1 text-left min-w-0">
+                                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Duration</p>
+                                        <p className="text-[13px] font-black italic text-slate-950 truncate">
+                                            {state.duration ? `${state.duration} Hours` : "Select Hours"}
+                                        </p>
+                                    </div>
+                                </div>
+                                {activeSection === "duration" && (
+                                    <div className="absolute top-[115%] left-1/2 -translate-x-1/2 w-[280px] bg-white rounded-[40px] p-6 shadow-premium z-[500]" onClick={e => e.stopPropagation()}>
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-brand-600 mb-4 px-1">Stay Duration</h4>
+                                        <div className="flex gap-2">
+                                            {DURATIONS.map(hours => (
+                                                <button
+                                                    key={hours}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setState(s => ({ ...s, duration: hours }));
+                                                        setActiveSection("guests");
+                                                    }}
+                                                    className={cn(
+                                                        "flex-1 py-3 rounded-2xl text-xs font-black tracking-wider transition-all",
+                                                        state.duration === hours ? "bg-brand-600 text-white shadow-lg shadow-brand-100" : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-100"
+                                                    )}
+                                                >
+                                                    {hours}h
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Guests */}
+                        <div className="flex-1 relative">
+                            <div onClick={(e) => { e.stopPropagation(); setActiveSection("guests"); }} className={cn("flex items-center gap-3 pl-5 pr-3 py-4 md:py-2.5 cursor-pointer transition-all hover:bg-white/80 rounded-r-full", activeSection === "guests" && "bg-white shadow-sm")}>
+                                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm">
+                                    <Users className="w-3.5 h-3.5 text-brand-600" />
+                                </div>
+                                <div className="flex-1 text-left min-w-0">
+                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Guests</p>
+                                    <p className="text-[13px] font-black italic text-slate-950 truncate">{state.guests.adults + state.guests.children} Guests · {state.guests.rooms} Room</p>
+                                </div>
+                            </div>
+                            {activeSection === "guests" && (
+                                <div className="absolute top-[115%] right-0 w-[320px] bg-white rounded-[40px] p-8 shadow-premium z-[500]" onClick={e => e.stopPropagation()}>
+                                    <h4 className="text-[10px] font-black uppercase tracking-widest text-brand-600 mb-6 px-1">Guests & Rooms</h4>
+                                    <div className="space-y-6">
+                                        {[{ label: "Adults", k: "adults" }, { label: "Children", k: "children" }, { label: "Rooms", k: "rooms" }].map(i => (
+                                            <div key={i.k} className="flex justify-between items-center">
+                                                <p className="font-bold text-slate-900">{i.label}</p>
+                                                <div className="flex items-center gap-4">
+                                                    <button onClick={() => setState(s => ({ ...s, guests: { ...s.guests, [i.k]: Math.max(i.k === 'children' ? 0 : 1, (s.guests as any)[i.k] - 1) } }))} className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center hover:bg-slate-50 transition-colors"><Minus className="w-3.5 h-3.5" /></button>
+                                                    <span className="font-black w-5 text-center text-sm">{(state.guests as any)[i.k]}</span>
+                                                    <button onClick={() => setState(s => ({ ...s, guests: { ...s.guests, [i.k]: (s.guests as any)[i.k] + 1 } }))} className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center hover:bg-slate-50 transition-colors"><Plus className="w-3.5 h-3.5" /></button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Search Btn */}
+                        <div className="p-1.5 shrink-0">
+                            <button onClick={() => handleSearch()} disabled={isSearching} className="w-full px-11 py-3.5 bg-slate-950 hover:bg-brand-600 text-white font-black rounded-full transition-all flex items-center justify-center gap-2 shadow-xl group active:scale-95">
+                                {isSearching ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <> <span className="text-[11px] uppercase tracking-widest italic">Explore</span> <Search className="w-3.5 h-3.5 transition-transform group-hover:scale-110" strokeWidth={3} /></>}
+                            </button>
+                        </div>
                     </div>
 
                 </div>
             </div>
 
             {/* Mobile Drawer (Where) */}
-            <AnimatePresence>
-                {isMobile && activeSection === "where" && (
-                    <>
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setActiveSection(null)} className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-[200]" />
-                        <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} className="fixed bottom-0 left-0 right-0 h-[85vh] bg-white rounded-t-[24px] z-[210] flex flex-col shadow-2xl">
-                            <div className="p-6 space-y-6">
-                                <div className="flex justify-between items-center"><button onClick={() => setActiveSection(null)}><ArrowLeft className="w-5 h-5" /></button><span className="text-sm font-black uppercase tracking-widest">Where to?</span><div className="w-5" /></div>
-                                <div className="relative"><Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" /><input autoFocus type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search destinations" className="w-full pl-12 pr-4 py-4 bg-slate-50 rounded-xl font-bold outline-none border-2 border-transparent focus:border-brand-600" /></div>
-                            </div>
-                            <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-1">
-                                {TOP_DESTINATIONS.filter(d => d.label.toLowerCase().includes(query.toLowerCase())).map(dest => (
-                                    <button key={dest.label} onClick={() => { setQuery(dest.label); setState(p => ({ ...p, destination: { id: dest.label.toLowerCase(), label: dest.label, category: "trending" } })); setActiveSection(null); }} className="w-full flex items-center gap-4 py-4 border-b border-slate-50 text-left">
-                                        <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-brand-600"><MapPin className="w-5 h-5" /></div>
-                                        <div><p className="font-bold text-slate-900">{dest.label}</p><p className="text-xs text-slate-400">{dest.region}</p></div>
-                                    </button>
-                                ))}
-                            </div>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
+            {isMobile && typeof window !== "undefined" && typeof document !== "undefined" && createPortal(
+                <AnimatePresence>
+                    {activeSection === "where" && (
+                        <>
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setActiveSection(null)} className="fixed inset-0 bg-slate-950/60 backdrop-blur-md z-[500]" />
+                            <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 25, stiffness: 220 }} className="fixed bottom-0 left-0 right-0 h-[90vh] bg-white rounded-t-3xl z-[510] flex flex-col shadow-2xl overflow-hidden">
+                                <div className="p-6 pb-2 space-y-6">
+                                    <div className="flex justify-between items-center">
+                                        <button onClick={() => setActiveSection(null)} className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center"><ArrowLeft className="w-5 h-5 text-slate-900" /></button>
+                                        <span className="text-sm font-black uppercase tracking-widest text-slate-950">Where to?</span>
+                                        <div className="w-10" />
+                                    </div>
+                                    <div className="relative">
+                                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-600" />
+                                        <input autoFocus type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search destinations..." className="w-full pl-12 pr-4 py-4 bg-slate-50 rounded-full font-bold outline-none transition-all text-slate-900" />
+                                    </div>
+                                </div>
+                                <div className="flex-1 overflow-y-auto px-6 pb-6 mt-4 space-y-1">
+                                    {query.trim().length > 0 ? (
+                                        TOP_DESTINATIONS.filter(d => d.label.toLowerCase().includes(query.toLowerCase())).map(dest => (
+                                            <button key={dest.label} onClick={() => { setQuery(dest.label); setState(p => ({ ...p, destination: { id: dest.label.toLowerCase(), label: dest.label, category: "trending" } })); setActiveSection("dates"); }} className="w-full flex items-center gap-4 py-4 text-left active:bg-slate-50 transition-colors">
+                                                <div className="w-12 h-12 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 shadow-sm"><MapPin className="w-5 h-5" /></div>
+                                                <div><p className="font-black text-slate-950">{dest.label}</p><p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{dest.region}</p></div>
+                                            </button>
+                                        ))
+                                    ) : (
+                                        <div className="py-20 text-center">
+                                            <Search className="w-10 h-10 text-slate-200 mx-auto mb-4" />
+                                            <p className="text-xs font-black uppercase tracking-widest text-slate-300">Type destination name</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </motion.div>
+                        </>
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
 
             {/* Mobile Drawer (Dates/Guests) */}
-            <AnimatePresence>
-                {isMobile && (activeSection === "dates" || activeSection === "guests") && (
-                    <>
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setActiveSection(null)} className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-[200]" />
-                        <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} className="fixed bottom-0 left-0 right-0 bg-white rounded-t-[24px] z-[210] p-6 pb-10 shadow-2xl">
-                            {activeSection === "dates" ? (
-                                <div className="space-y-8">
-                                    <p className="text-center font-black uppercase tracking-widest text-sm">Select Stay</p>
-                                    <div className="bg-slate-50 p-6 rounded-2xl">
-                                        <div className="flex justify-between items-center mb-6">
-                                            <button onClick={() => setCurrentMonth(m => m === 0 ? 11 : m - 1)}><ChevronLeft className="w-5 h-5 text-slate-300" /></button>
-                                            <p className="font-black italic">{monthName} {currentYear}</p>
-                                            <button onClick={() => setCurrentMonth(m => m === 11 ? 0 : m + 1)}><ChevronRight className="w-5 h-5 text-slate-300" /></button>
+            {isMobile && typeof window !== "undefined" && typeof document !== "undefined" && createPortal(
+                <AnimatePresence>
+                    {(activeSection === "dates" || activeSection === "guests") && (
+                        <>
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setActiveSection(null)} className="fixed inset-0 bg-slate-950/60 backdrop-blur-md z-[500]" />
+                            <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 25, stiffness: 220 }} className="fixed bottom-0 left-0 right-0 max-h-[90vh] overflow-y-auto bg-white rounded-t-3xl z-[510] p-6 pb-10 shadow-2xl">
+                                {activeSection === "dates" ? (
+                            <div className="space-y-8">
+                                        <div className="flex justify-between items-center">
+                                            <button onClick={() => setActiveSection("where")} className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center"><ArrowLeft className="w-5 h-5 text-slate-900" /></button>
+                                            <p className="text-center font-black uppercase tracking-widest text-sm text-slate-950">Select Dates</p>
+                                            <div className="w-10" />
                                         </div>
-                                        <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-black text-slate-200 mb-2">{['Su','Mo','Tu','We','Th','Fr','Sa'].map(d => <div key={d}>{d}</div>)}</div>
-                                        <div className="grid grid-cols-7 gap-1">
-                                            {Array.from({ length: firstDay }).map((_, i) => <div key={`mb-${i}`} />)}
-                                            {Array.from({ length: daysInMonth }).map((_, i) => {
-                                                const d = i + 1;
-                                                const date = new Date(currentYear, currentMonth, d);
-                                                const isPast = date < today;
-                                                const isSel = state.dates.checkIn?.getTime() === date.getTime() || state.dates.checkOut?.getTime() === date.getTime();
-                                                const isRange = state.dates.checkIn && state.dates.checkOut && date > state.dates.checkIn && date < state.dates.checkOut;
-                                                return <button key={d} disabled={isPast} onClick={() => handleDateClick(d)} className={cn("h-10 rounded-lg text-sm font-bold", isPast ? "text-slate-100" : isSel ? "bg-brand-600 text-white" : isRange ? "bg-brand-50 text-brand-600" : "text-slate-700")}>{d}</button>
-                                            })}
+                                        <div className="space-y-6">
+                                            <div className="flex justify-between items-center mb-4">
+                                                <button onClick={() => setCurrentMonth(m => m === 0 ? 11 : m - 1)} className="p-2 hover:bg-slate-50 rounded-full transition-colors"><ChevronLeft className="w-5 h-5 text-slate-400" /></button>
+                                                <p className="font-black italic text-slate-900">{monthName} {currentYear}</p>
+                                                <button onClick={() => setCurrentMonth(m => m === 11 ? 0 : m + 1)} className="p-2 hover:bg-slate-50 rounded-full transition-colors"><ChevronRight className="w-5 h-5 text-slate-400" /></button>
+                                            </div>
+                                            <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-black text-slate-400 mb-2">{['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => <div key={d}>{d}</div>)}</div>
+                                            <div className="grid grid-cols-7 gap-1">
+                                                {Array.from({ length: firstDay }).map((_, i) => <div key={`mb-${i}`} />)}
+                                                {Array.from({ length: daysInMonth }).map((_, i) => {
+                                                    const d = i + 1;
+                                                    const date = new Date(currentYear, currentMonth, d);
+                                                    const isPast = date < today;
+                                                    const isSel = state.dates.checkIn?.getTime() === date.getTime() || state.dates.checkOut?.getTime() === date.getTime();
+                                                    const isRange = state.dates.checkIn && state.dates.checkOut && date > state.dates.checkIn && date < state.dates.checkOut;
+                                                    return <button key={d} disabled={isPast} onClick={() => handleDateClick(d)} className={cn("w-9 h-9 mx-auto rounded-full text-xs font-bold transition-all flex items-center justify-center", isPast ? "text-slate-100" : isSel ? "bg-brand-600 text-white shadow-md" : isRange ? "bg-brand-50 text-brand-600" : "text-slate-700 active:bg-slate-200")}>{d}</button>
+                                                })}
+                                            </div>
                                         </div>
-                                    </div>
-                                    <button onClick={() => setActiveSection(null)} className="w-full py-5 bg-slate-950 text-white rounded-2xl font-black shadow-xl">Apply Dates</button>
-                                </div>
-                            ) : (
-                                <div className="space-y-8">
-                                    <p className="text-center font-black uppercase tracking-widest text-sm">Guests & Rooms</p>
-                                    <div className="space-y-4">
-                                        {[{l:"Adults",k:"adults"},{l:"Children",k:"children"},{l:"Rooms",k:"rooms"}].map(i => (
-                                            <div key={i.k} className="flex justify-between items-center p-4 bg-slate-50 rounded-2xl">
-                                                <p className="font-bold">{i.l}</p>
-                                                <div className="flex items-center gap-6">
-                                                    <button onClick={() => setState(s => ({ ...s, guests: { ...s.guests, [i.k]: Math.max(i.k==='children'?0:1, (s.guests as any)[i.k]-1) } }))} className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center"><Minus className="w-4 h-4" /></button>
-                                                    <span className="text-xl font-black">{(state.guests as any)[i.k]}</span>
-                                                    <button onClick={() => setState(s => ({ ...s, guests: { ...s.guests, [i.k]: (s.guests as any)[i.k]+1 } }))} className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center"><Plus className="w-4 h-4" /></button>
+
+                                        {mode === 'hourly' && (
+                                            <div className="space-y-4 pt-4 border-t border-slate-100 mt-4">
+                                                <div>
+                                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Arrival Time</p>
+                                                    <div className="grid grid-cols-4 gap-1.5 max-h-32 overflow-y-auto pr-1">
+                                                        {TIME_SLOTS.map(t => (
+                                                            <button
+                                                                key={t}
+                                                                type="button"
+                                                                onClick={() => setState(prev => ({ ...prev, checkInTime: t }))}
+                                                                className={cn(
+                                                                    "py-2 rounded-xl text-[10px] font-black tracking-wider transition-all",
+                                                                    state.checkInTime === t ? "bg-brand-600 text-white shadow-md shadow-brand-100" : "bg-slate-50 text-slate-500 hover:bg-slate-100"
+                                                                )}
+                                                            >
+                                                                {t}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <div className="pt-2">
+                                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Stay Duration</p>
+                                                    <div className="flex gap-2">
+                                                        {DURATIONS.map(hours => (
+                                                            <button
+                                                                key={hours}
+                                                                type="button"
+                                                                onClick={() => setState(prev => ({ ...prev, duration: hours }))}
+                                                                className={cn(
+                                                                    "flex-1 py-3 rounded-2xl text-xs font-black tracking-wider transition-all",
+                                                                    state.duration === hours ? "bg-brand-600 text-white shadow-lg shadow-brand-200" : "bg-slate-50 text-slate-700 hover:bg-slate-100"
+                                                                )}
+                                                            >
+                                                                {hours} Hours
+                                                            </button>
+                                                        ))}
+                                                    </div>
                                                 </div>
                                             </div>
-                                        ))}
+                                        )}
+
+                                        <div className="grid grid-cols-2 gap-4 mt-6">
+                                            <button onClick={() => setActiveSection(null)} className="w-full py-5 bg-slate-100 text-slate-600 rounded-full font-black transition-all active:scale-95">Skip</button>
+                                            <button onClick={() => setActiveSection("guests")} className="w-full py-5 bg-slate-950 text-white rounded-full font-black shadow-xl active:scale-95">Next</button>
+                                        </div>
                                     </div>
-                                    <button onClick={() => setActiveSection(null)} className="w-full py-5 bg-brand-600 text-white rounded-2xl font-black shadow-xl shadow-brand-100">Confirm Selection</button>
-                                </div>
-                            )}
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
+                                ) : (
+                                    <div className="space-y-8">
+                                        <div className="flex justify-between items-center">
+                                            <button onClick={() => setActiveSection("dates")} className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center"><ArrowLeft className="w-5 h-5 text-slate-900" /></button>
+                                            <p className="text-center font-black uppercase tracking-widest text-sm text-slate-950">Guests & Rooms</p>
+                                            <div className="w-10" />
+                                        </div>
+                                        <div className="space-y-4">
+                                            {[{ l: "Adults", k: "adults" }, { l: "Children", k: "children" }, { l: "Rooms", k: "rooms" }].map(i => (
+                                                <div key={i.k} className="flex justify-between items-center p-5 bg-slate-50 rounded-[2rem] border border-slate-100">
+                                                    <p className="font-black text-slate-900">{i.l}</p>
+                                                    <div className="flex items-center gap-6">
+                                                        <button onClick={() => setState(s => ({ ...s, guests: { ...s.guests, [i.k]: Math.max(i.k === 'children' ? 0 : 1, (s.guests as any)[i.k] - 1) } }))} className="w-11 h-11 rounded-full bg-white shadow-sm flex items-center justify-center border border-slate-100 active:scale-90 transition-transform"><Minus className="w-4 h-4" /></button>
+                                                        <span className="text-xl font-black w-6 text-center">{(state.guests as any)[i.k]}</span>
+                                                        <button onClick={() => setState(s => ({ ...s, guests: { ...s.guests, [i.k]: (s.guests as any)[i.k] + 1 } }))} className="w-11 h-11 rounded-full bg-white shadow-sm flex items-center justify-center border border-slate-100 active:scale-90 transition-transform"><Plus className="w-4 h-4" /></button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <button onClick={() => { setActiveSection(null); handleSearch(); }} className="w-full py-5 bg-brand-600 text-white rounded-[1.5rem] font-black shadow-xl shadow-brand-100 active:scale-95 transition-all">Search Properties</button>
+                                    </div>
+                                )}
+                            </motion.div>
+                        </>
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
 
             {!hideStories && (
                 <div className="mt-16 flex items-center justify-start md:justify-center gap-10 overflow-x-auto pb-6 no-scrollbar px-6 md:px-0 w-full max-w-[1400px] mx-auto relative z-10">

@@ -83,10 +83,10 @@ export default function PartnerAnalyticsPage() {
                     <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-1">Deep dive into your property's performance metrics</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <button className="px-6 py-3.5 bg-white border border-slate-200 text-slate-900 text-xs font-bold rounded-2xl hover:bg-slate-50 transition-all flex items-center gap-2">
+                    <button className="px-6 py-3.5 bg-white border border-slate-200 text-slate-900 text-xs font-bold rounded-none hover:bg-slate-50 transition-all flex items-center gap-2">
                         <FileText className="w-4 h-4" /> Export PDF
                     </button>
-                    <button className="px-6 py-3.5 bg-slate-900 text-white text-xs font-bold rounded-2xl hover:bg-black transition-all shadow-lg flex items-center gap-2">
+                    <button className="px-6 py-3.5 bg-slate-900 text-white text-xs font-bold rounded-none hover:bg-black transition-all shadow-lg flex items-center gap-2">
                         <Download className="w-4 h-4" /> Download CSV
                     </button>
                 </div>
@@ -94,9 +94,9 @@ export default function PartnerAnalyticsPage() {
 
             {/* KPI Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="bg-white p-6 rounded-[32px] border border-slate-200 shadow-sm">
+                <div className="bg-white p-6 rounded-none border border-slate-200 shadow-sm">
                     <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
+                        <div className="w-10 h-10 bg-blue-50 rounded-none flex items-center justify-center text-blue-600">
                             <TrendingUp className="w-5 h-5" />
                         </div>
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Avg. Daily Rate</span>
@@ -107,9 +107,9 @@ export default function PartnerAnalyticsPage() {
                     </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-[32px] border border-slate-200 shadow-sm">
+                <div className="bg-white p-6 rounded-none border border-slate-200 shadow-sm">
                     <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600">
+                        <div className="w-10 h-10 bg-emerald-50 rounded-none flex items-center justify-center text-emerald-600">
                             <Hotel className="w-5 h-5" />
                         </div>
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Occupancy</span>
@@ -120,9 +120,9 @@ export default function PartnerAnalyticsPage() {
                     </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-[32px] border border-slate-200 shadow-sm">
+                <div className="bg-white p-6 rounded-none border border-slate-200 shadow-sm">
                     <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center text-purple-600">
+                        <div className="w-10 h-10 bg-purple-50 rounded-none flex items-center justify-center text-purple-600">
                             <DollarSign className="w-5 h-5" />
                         </div>
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Revenue</span>
@@ -133,9 +133,9 @@ export default function PartnerAnalyticsPage() {
                     </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-[32px] border border-slate-200 shadow-sm">
+                <div className="bg-white p-6 rounded-none border border-slate-200 shadow-sm">
                     <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center text-red-600">
+                        <div className="w-10 h-10 bg-red-50 rounded-none flex items-center justify-center text-red-600">
                             <XCircle className="w-5 h-5" />
                         </div>
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Cancellations</span>
@@ -150,8 +150,8 @@ export default function PartnerAnalyticsPage() {
             {/* Visual Analytics */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                 {/* Revenue Bar Chart */}
-                <div className="bg-white p-10 rounded-[40px] border border-slate-200 shadow-sm relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full blur-3xl -mr-32 -mt-32" />
+                <div className="bg-white p-10 rounded-none border border-slate-200 shadow-sm relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-none blur-3xl -mr-32 -mt-32" />
                     <div className="flex items-center justify-between mb-12 relative z-10">
                         <div>
                             <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Revenue Trends</h3>
@@ -170,7 +170,7 @@ export default function PartnerAnalyticsPage() {
                                             initial={{ height: 0 }}
                                             animate={{ height: `${height}%` }}
                                             transition={{ duration: 1, delay: index * 0.1, ease: "easeOut" }}
-                                            className="w-full bg-slate-900 rounded-2xl group-hover:bg-blue-600 transition-colors relative"
+                                            className="w-full bg-slate-900 rounded-none group-hover:bg-blue-600 transition-colors relative"
                                         >
                                             <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] font-black px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
                                                 ₹{data.revenue.toLocaleString()}
@@ -186,8 +186,8 @@ export default function PartnerAnalyticsPage() {
 
                 {/* Booking Source & Room Performance */}
                 <div className="space-y-10">
-                    <div className="bg-slate-900 p-10 rounded-[40px] text-white shadow-2xl relative overflow-hidden">
-                        <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl -ml-32 -mb-32" />
+                    <div className="bg-slate-900 p-10 rounded-none text-white shadow-2xl relative overflow-hidden">
+                        <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-600/10 rounded-none blur-3xl -ml-32 -mb-32" />
                         <h3 className="text-sm font-black uppercase tracking-widest mb-8 flex items-center gap-2">
                             <PieChart className="w-5 h-5 text-blue-400" /> Room Type Performance
                         </h3>
@@ -202,12 +202,12 @@ export default function PartnerAnalyticsPage() {
                                         <span>{room.name}</span>
                                         <span className="text-blue-400">{room.revenue}</span>
                                     </div>
-                                    <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                    <div className="w-full h-1.5 bg-white/5 rounded-none overflow-hidden">
                                         <motion.div 
                                             initial={{ width: 0 }}
                                             animate={{ width: `${room.percentage}%` }}
                                             transition={{ duration: 1.5 }}
-                                            className={cn("h-full rounded-full", room.color)} 
+                                            className={cn("h-full rounded-none", room.color)} 
                                         />
                                     </div>
                                 </div>
@@ -215,14 +215,14 @@ export default function PartnerAnalyticsPage() {
                         </div>
                     </div>
 
-                    <div className="bg-white p-8 rounded-[40px] border border-slate-200 shadow-sm">
+                    <div className="bg-white p-8 rounded-none border border-slate-200 shadow-sm">
                         <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-6">Booking Insights</h3>
                         <div className="grid grid-cols-2 gap-6">
-                            <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100">
+                            <div className="p-5 bg-slate-50 rounded-none border border-slate-100">
                                 <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Direct Bookings</p>
                                 <p className="text-xl font-black text-slate-900">82%</p>
                             </div>
-                            <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100">
+                            <div className="p-5 bg-slate-50 rounded-none border border-slate-100">
                                 <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Returning Guests</p>
                                 <p className="text-xl font-black text-slate-900">18%</p>
                             </div>
