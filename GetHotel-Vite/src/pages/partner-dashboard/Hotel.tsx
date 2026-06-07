@@ -208,7 +208,7 @@ export default function PartnerHotelPage() {
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
                                 {MAIN_AMENITY_PRESETS.map((preset) => {
                                     const currentMain = safeParse(editing ? editData.mainAmenities : (hotel.mainAmenities || hotel.main_amenities), []);
-                                    const isSelected = currentMain.some((m: any) => m.id === preset.id);
+                                    const isSelected = currentMain.some((m: any) => m?.id === preset.id);
                                     return (
                                         <button key={preset.id} disabled={!editing} onClick={() => {
                                             let updated = [...currentMain];
@@ -236,7 +236,7 @@ export default function PartnerHotelPage() {
                                         }} className="px-6 py-3 bg-slate-900 text-white rounded-none text-[10px] font-black uppercase tracking-widest">Add</button>
                                     </div>
                                     <div className="flex flex-wrap gap-2">
-                                        {safeParse(editData.mainAmenities, []).filter((m: any) => m.id.startsWith('custom_')).map((m: any) => (
+                                        {safeParse(editData.mainAmenities, []).filter((m: any) => m?.id?.startsWith('custom_')).map((m: any) => (
                                             <div key={m.id} className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-none border border-blue-100 text-[9px] font-black uppercase">
                                                 {m.label}
                                                 <button onClick={() => setEditData({ ...editData, mainAmenities: JSON.stringify(safeParse(editData.mainAmenities, []).filter((item: any) => item.id !== m.id)) })}><XCircle className="w-3 h-3 hover:text-red-500" /></button>

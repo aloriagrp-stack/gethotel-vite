@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "./context/AuthContext";
@@ -86,6 +86,14 @@ const PartnerChannelSync = lazy(() => import("./pages/partner-dashboard/ChannelS
 const PartnerHotelSelect = lazy(() => import("./pages/PartnerHotelSelect"));
 
 export default function App() {
+  useEffect(() => {
+    try {
+      sessionStorage.removeItem("chunk_reload_attempted");
+    } catch (e) {
+      // Ignore storage block errors
+    }
+  }, []);
+
   return (
     <HelmetProvider>
     <ErrorBoundary>

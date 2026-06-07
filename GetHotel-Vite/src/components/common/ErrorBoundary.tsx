@@ -23,6 +23,27 @@ export default class ErrorBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error(">>> MYTHOS ERROR BOUNDARY CAUGHT AN ERROR:", error, errorInfo);
+    
+    // Auto-reload on Chunk/Module loading error to grab the latest build assets
+    const errorMsg = error?.message || "";
+    const errorName = error?.name || "";
+    const isChunkError = 
+      errorMsg.includes("Failed to fetch dynamically imported module") ||
+      errorMsg.includes("ChunkLoadError") ||
+      errorMsg.includes("loading dynamically imported module") ||
+      errorName === "ChunkLoadError";
+
+    if (isChunkError) {
+      try {
+        const reloadKey = "chunk_reload_attempted";
+        if (!sessionStorage.getItem(reloadKey)) {
+          sessionStorage.setItem(reloadKey, "true");
+          window.location.reload();
+        }
+      } catch (e) {
+        window.location.reload();
+      }
+    }
   }
 
   public render() {
