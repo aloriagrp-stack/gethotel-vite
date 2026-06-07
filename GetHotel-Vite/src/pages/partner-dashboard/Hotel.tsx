@@ -174,11 +174,11 @@ export default function PartnerHotelPage() {
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-slate-400 uppercase">Tagline</label>
-                                    <input type="text" readOnly={!editing} value={editing ? editData.tagline : hotel.tagline} onChange={(e) => setEditData({ ...editData, tagline: e.target.value })} className={cn("w-full px-4 py-3 bg-slate-50 rounded-none text-sm font-bold border", editing ? "border-blue-100 focus:bg-white focus:border-blue-600" : "border-transparent cursor-default")} />
+                                    <input type="text" readOnly={!editing} value={editing ? (editData.tagline ?? '') : (hotel.tagline ?? '')} onChange={(e) => setEditData({ ...editData, tagline: e.target.value })} className={cn("w-full px-4 py-3 bg-slate-50 rounded-none text-sm font-bold border", editing ? "border-blue-100 focus:bg-white focus:border-blue-600" : "border-transparent cursor-default")} />
                                 </div>
                                 <div className="md:col-span-2 space-y-2">
                                     <label className="text-[10px] font-black text-slate-400 uppercase">Description</label>
-                                    <textarea readOnly={!editing} value={editing ? editData.description : hotel.description} onChange={(e) => setEditData({ ...editData, description: e.target.value })} className={cn("w-full px-4 py-3 bg-slate-50 rounded-none text-sm font-bold border min-h-[100px]", editing ? "border-blue-100 focus:bg-white focus:border-blue-600" : "border-transparent cursor-default")} />
+                                    <textarea readOnly={!editing} value={editing ? (editData.description ?? '') : (hotel.description ?? '')} onChange={(e) => setEditData({ ...editData, description: e.target.value })} className={cn("w-full px-4 py-3 bg-slate-50 rounded-none text-sm font-bold border min-h-[100px]", editing ? "border-blue-100 focus:bg-white focus:border-blue-600" : "border-transparent cursor-default")} />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-slate-400 uppercase">City</label>
@@ -186,7 +186,7 @@ export default function PartnerHotelPage() {
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-slate-400 uppercase">Address</label>
-                                    <input type="text" readOnly={!editing} value={editing ? editData.address : hotel.address} onChange={(e) => setEditData({ ...editData, address: e.target.value })} className={cn("w-full px-4 py-3 bg-slate-50 rounded-none text-sm font-bold border", editing ? "border-blue-100 focus:bg-white focus:border-blue-600" : "border-transparent cursor-default")} />
+                                    <input type="text" readOnly={!editing} value={editing ? (editData.address ?? '') : (hotel.address ?? '')} onChange={(e) => setEditData({ ...editData, address: e.target.value })} className={cn("w-full px-4 py-3 bg-slate-50 rounded-none text-sm font-bold border", editing ? "border-blue-100 focus:bg-white focus:border-blue-600" : "border-transparent cursor-default")} />
                                 </div>
                             </div>
                         </div>
@@ -377,7 +377,7 @@ export default function PartnerHotelPage() {
                         <div className="bg-white rounded-none p-8 border border-slate-200 shadow-sm">
                             <h3 className="text-sm font-black text-slate-900 uppercase mb-6 flex items-center gap-2"><Shield className="w-5 h-5 text-blue-600" /> Policies</h3>
                             <div className="space-y-4">
-                                {Object.entries(safeParse(hotel.policies || hotel.hotel_policies || hotel.policies, {})).map(([key, value]: any) => (
+                                {Object.entries((() => { const p = safeParse(hotel.policies ?? hotel.hotel_policies ?? '{}', {}); return (p && typeof p === 'object' && !Array.isArray(p)) ? p : {}; })()).map(([key, value]: any) => (
                                     <div key={key}>
                                         <p className="text-[9px] font-black text-slate-400 uppercase mb-1">{key.replace(/([A-Z])/g, ' $1')}</p>
                                         <p className="text-xs font-bold text-slate-600 italic">"{value || 'Not defined'}"</p>
