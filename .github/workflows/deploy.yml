@@ -28,46 +28,49 @@ jobs:
           npm install
           npm run build
 
-      - name: Deploy Backend & Frontend via lftp
+      - name: Deploy Backend via lftp
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
           FTP_USER: ${{ secrets.FTP_USERNAME }}
           FTP_PASS: ${{ secrets.FTP_PASSWORD }}
         run: |
-          # 1. Deploy Changed Backend Files
           CHANGED=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || git diff --name-only HEAD 2>/dev/null || echo "server.js")
           echo "Changed files: $CHANGED"
-          
+
           for FILE in $CHANGED; do
-            # Skip excluded patterns
             if echo "$FILE" | grep -qE '(\.git|\.github|node_modules|\.env$|\.zip$|\.log$|scratch)'; then
               echo "Skipping excluded: $FILE"
               continue
             fi
-            
-            # Process backend files
+
             if [[ "$FILE" =~ ^"GetHotel backend/" ]]; then
               if [ -f "$FILE" ]; then
                 REL_PATH=${FILE#"GetHotel backend/"}
                 DIR_NAME=$(dirname "$REL_PATH")
                 BASE_NAME=$(basename "$REL_PATH")
-                
+
                 if [ "$DIR_NAME" = "." ]; then
                   REMOTE_DIR="./gethotel_backend"
                 else
                   REMOTE_DIR="./gethotel_backend/$DIR_NAME"
                 fi
-                
-                echo "Uploading backend file: $FILE -> $REMOTE_DIR/$BASE_NAME"
-                lftp -u "$FTP_USER","$FTP_PASS" "$FTP_SERVER" -e "set ftp:ssl-allow no; set ftp:passive-mode yes; set net:timeout 30; set net:max-retries 3; mkdir -p $REMOTE_DIR; put $FILE -o $REMOTE_DIR/$BASE_NAME; bye"
+
+                echo "Uploading: $FILE -> $REMOTE_DIR/$BASE_NAME"
+                lftp -u "$FTP_USER","$FTP_PASS" "$FTP_SERVER" -e "set ftp:ssl-allow no; set ftp:passive-mode yes; set net:timeout 60; set net:max-retries 2; put $FILE -o $REMOTE_DIR/$BASE_NAME; bye"
               fi
             fi
           done
 
-          # 2. Deploy Frontend Built Files (Sync dist to public_html)
-          if [ -d "GetHotel-Vite/dist" ]; then
-            echo "Syncing frontend dist files to ./public_html..."
-            lftp -u "$FTP_USER","$FTP_PASS" "$FTP_SERVER" -e "set ftp:ssl-allow no; set ftp:passive-mode yes; set net:timeout 30; set net:max-retries 3; mkdir -p ./public_html; mirror -R GetHotel-Vite/dist ./public_html; bye"
-          fi
+      - name: Deploy Frontend to cPanel via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./GetHotel-Vite/dist/
+          server-dir: ./public_html/
+          port: 21
+          dangerous-clean-slate: false
 
-          echo "Deployment completed successfully!"
+      - name: Finalize
+        run: echo "Deployment completed successfully!"
