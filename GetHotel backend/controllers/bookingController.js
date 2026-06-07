@@ -179,7 +179,7 @@ exports.createBooking = async (req, res) => {
         const booking = await prisma.$transaction(async (tx) => {
             // Concurrency Control: Lock the Room rows to prevent concurrent double-booking checks (pessimistic lock)
             for (const selectedRoom of activeRooms) {
-                await tx.$queryRaw`SELECT id FROM Room WHERE id = ${selectedRoom.id} FOR UPDATE`;
+                await tx.$queryRaw`SELECT id FROM room WHERE id = ${selectedRoom.id} FOR UPDATE`;
             }
 
             // Re-verify availability within transaction day-by-day

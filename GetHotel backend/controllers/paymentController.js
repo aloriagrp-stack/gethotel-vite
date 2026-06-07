@@ -124,7 +124,7 @@ exports.verifyPayment = async (req, res) => {
             // SUCCESS FLOW
             await prisma.$transaction(async (tx) => {
                 // Concurrency Control: Lock the Booking row to prevent concurrent race conditions (pessimistic lock)
-                const lockedBookings = await tx.$queryRaw`SELECT id, paymentStatus FROM Booking WHERE id = ${booking.id} FOR UPDATE`;
+                const lockedBookings = await tx.$queryRaw`SELECT id, paymentStatus FROM booking WHERE id = ${booking.id} FOR UPDATE`;
                 const lockedBooking = lockedBookings[0];
                 
                 if (lockedBooking && lockedBooking.paymentStatus === 'paid') {
