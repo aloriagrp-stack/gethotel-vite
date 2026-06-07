@@ -4,6 +4,7 @@ import { useLocation } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import BlueWavesBackground from "@/components/home/BlueWavesBackground";
+import CookieConsent from "@/components/common/CookieConsent";
 
 export default function ConditionalLayout({
     children,
@@ -26,9 +27,11 @@ export default function ConditionalLayout({
                 <main className="relative">{children}</main>
             </div>
             {!isNoFooterPage && <Footer />}
+            <CookieConsent />
         </>
     );
 }
+
 
 
 

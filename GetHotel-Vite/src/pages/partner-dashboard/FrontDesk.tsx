@@ -25,7 +25,7 @@ export default function PartnerFrontDeskPage() {
 
     const fetchBookings = async () => {
         try {
-            const res = await hotelApi.getMyHotels();
+            const res = await hotelApi.getMyHotels({ includeBookings: true });
             if (res.success && res.data && res.data.length > 0) {
                 const allBookings = res.data.flatMap((hotel: any) => hotel.booking || hotel.bookings || []);
                 setBookings(allBookings);
@@ -297,7 +297,7 @@ export default function PartnerFrontDeskPage() {
                                                 </button>
                                                 <button 
                                                     onClick={() => {
-                                                        if(confirm("Bhai, kya aap is guest ko 'No-Show' report karke dispute raise karna chahte ho? 🛡️")) {
+                                                        if(confirm("Bhai, kya aap is guest ko 'No-Show' report karke dispute raise karna chahte ho? ðŸ›¡ï¸")) {
                                                             handleUpdateStatus(booking.id, 'cancelled');
                                                             alert("No-Show reported. Dispute raised in Super Admin Hub.");
                                                         }
@@ -398,6 +398,3 @@ export default function PartnerFrontDeskPage() {
         </div>
     );
 }
-
-
-

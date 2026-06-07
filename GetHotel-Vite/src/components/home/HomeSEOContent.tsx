@@ -1,0 +1,312 @@
+import { useState } from "react";
+import { MapPin, ShieldCheck, Clock, Wallet, HelpCircle, Compass } from "lucide-react";
+import { Link } from "react-router-dom";
+
+export default function HomeSEOContent() {
+    const [isExpanded, setIsExpanded] = useState(false);
+
+    return (
+        <section className="pt-0 pb-16 md:pt-4 md:pb-24 bg-transparent border-t border-white/20">
+            <div className="w-full max-w-none mx-auto px-4 sm:px-6 lg:px-8 space-y-10 md:space-y-16">
+                
+                {/* ── Section 1: Brand & Platform Overview ── */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+                    <div className="lg:col-span-7 space-y-6">
+                        <h2 className="text-3xl md:text-5xl font-bold text-slate-900 tracking-tight leading-tight">
+                            About <span className="text-brand-600">GetHotelStays</span> — India's Premier Booking Platform
+                        </h2>
+                        <p className="text-slate-600 text-sm md:text-base leading-relaxed font-medium">
+                            Welcome to GetHotelStays, the ultimate destination for seamless, flexible, and affordable <Link to="/hotels" className="text-brand-600 hover:underline">hotel booking in India</Link>. 
+                            Designed to cater to modern travelers, corporate professionals, and tourists alike, GetHotelStays is redefining the 
+                            hospitality landscape across the country.
+                            {!isExpanded ? "..." : (
+                                <>
+                                    {" "}Whether you are searching for a <Link to="/hotels?starRating=5" className="text-brand-600 hover:underline">luxurious resort</Link> for a weekend getaway, a 
+                                    budget-friendly hotel for business travel, or a convenient <Link to="/hotels?stayType=hourly" className="text-brand-600 hover:underline">hourly stay</Link> near transit hubs, our platform has you covered. 
+                                    We feature a massive directory of verified hotels and properties in India's top cities and scenic hotspots. 
+                                    By combining state-of-the-art technology with customer-centric policies, we ensure that booking hotels online is fast, 
+                                    secure, and completely transparent. At GetHotelStays, we believe that travel should be flexible, which is why we offer 
+                                    both full-day stays and hourly stay options at unbeatable prices. Experience the next generation of lodging services 
+                                    with our signature 'Pay 12% Now' model, where you secure your room online with a minimal deposit and settle the 
+                                    balance directly at the property upon check-in. Join millions of satisfied travelers who trust us as their go-to 
+                                    hotel booking platform in India.
+                                </>
+                            )}
+                            <button
+                                onClick={() => setIsExpanded(!isExpanded)}
+                                className="text-brand-600 hover:text-brand-500 font-bold ml-1.5 focus:outline-none inline-flex items-center gap-0.5 hover:underline cursor-pointer"
+                            >
+                                {isExpanded ? "Read Less" : "Read More"}
+                            </button>
+                        </p>
+                    </div>
+                    <div className="lg:col-span-5 flex justify-center">
+                        <div className="relative w-full max-w-[380px] md:max-w-[450px] aspect-square rounded-[2rem] overflow-hidden bg-slate-50 border border-white/40 shadow-xl group">
+                            <img 
+                                src="/seo_about_illustration.png" 
+                                alt="GetHotelStays Illustration" 
+                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            />
+                            {/* Ambient overlay matching visual guidelines */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-brand-600/10 via-transparent to-transparent pointer-events-none" />
+                        </div>
+                    </div>
+                </div>
+
+                {/* ── Section 2: Stay Categories Grid ── */}
+                <div className="space-y-6">
+                    <h2 className="text-2xl md:text-4xl font-bold text-slate-900 tracking-tight">
+                        Flexible Stays for Every Type of Traveler
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        
+                        <div className="bg-white/60 backdrop-blur-xl border border-white/40 p-6 rounded-[2rem] hover:shadow-xl transition-all duration-300 space-y-3">
+                            <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-600">
+                                <Compass className="w-5 h-5" />
+                            </div>
+                            <h3 className="text-lg font-bold text-slate-950">
+                                <Link to="/hotels?starRating=5" className="hover:text-brand-600 hover:underline transition-colors">Luxury Resorts & Boutique Hotels</Link>
+                            </h3>
+                            <p className="text-slate-500 text-xs font-semibold leading-relaxed">
+                                Indulge in the finest hospitality India has to offer. Our luxury category features world-class hotels, 
+                                heritage palaces, and boutique resorts that offer premium amenities, infinity pools, fine dining restaurants, 
+                                and top-tier spa services. Perfect for family holidays, honeymoons, or premium leisure stays.
+                            </p>
+                        </div>
+
+                        <div className="bg-white/60 backdrop-blur-xl border border-white/40 p-6 rounded-[2rem] hover:shadow-xl transition-all duration-300 space-y-3">
+                            <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-600">
+                                <Wallet className="w-5 h-5" />
+                            </div>
+                            <h3 className="text-lg font-bold text-slate-950">
+                                <Link to="/hotels?priceRange=budget" className="hover:text-brand-600 hover:underline transition-colors">Budget-Friendly Hotels</Link>
+                            </h3>
+                            <p className="text-slate-500 text-xs font-semibold leading-relaxed">
+                                Travel smart without compromising on comfort. Our budget category includes highly rated, clean, and safe 
+                                rooms equipped with all essential amenities like free Wi-Fi, air conditioning, clean linen, and breakfast 
+                                options. Ideal for solo travelers, backpackers, and business executives looking for value-for-money stays.
+                            </p>
+                        </div>
+
+                        <div className="bg-white/60 backdrop-blur-xl border border-white/40 p-6 rounded-[2rem] hover:shadow-xl transition-all duration-300 space-y-3">
+                            <div className="w-10 h-10 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-600">
+                                <ShieldCheck className="w-5 h-5" />
+                            </div>
+                            <h3 className="text-lg font-bold text-slate-950">
+                                <Link to="/hotels" className="hover:text-brand-600 hover:underline transition-colors">Couple-Friendly Retreats</Link>
+                            </h3>
+                            <p className="text-slate-500 text-xs font-semibold leading-relaxed">
+                                We prioritize your privacy and peace of mind. Our curated couple-friendly hotels guarantee a welcoming 
+                                atmosphere for consenting adults, complete with secure surroundings, hassle-free check-ins using local ID cards, 
+                                and exceptional service.
+                            </p>
+                        </div>
+
+                        <div className="bg-white/60 backdrop-blur-xl border border-white/40 p-6 rounded-[2rem] hover:shadow-xl transition-all duration-300 space-y-3">
+                            <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-600">
+                                <Clock className="w-5 h-5" />
+                            </div>
+                            <h3 className="text-lg font-bold text-slate-950">
+                                <Link to="/hotels?stayType=hourly" className="hover:text-brand-600 hover:underline transition-colors">Hourly Stays & Transit Rooms</Link>
+                            </h3>
+                            <p className="text-slate-500 text-xs font-semibold leading-relaxed">
+                                Why pay for a full day when you only need a room for a few hours? Our pioneering hourly stay booking 
+                                service allows you to book micro-stays for 3, 6, or 12 hours. It is the perfect solution for travelers with 
+                                long layovers, quick freshen-ups, business meetings, or short transits near major airports.
+                            </p>
+                        </div>
+
+                    </div>
+                </div>
+
+                {/* ── Section 3: The 3-Step Process ── */}
+                <div className="space-y-6">
+                    <h2 className="text-2xl md:text-4xl font-bold text-slate-900 tracking-tight">
+                        How It Works — Simple & Transparent Bookings
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        
+                        <div className="space-y-3">
+                            <span className="text-5xl font-black text-slate-300">01</span>
+                            <h3 className="text-lg font-bold text-slate-950">Search and Filter</h3>
+                            <p className="text-slate-600 text-xs font-medium leading-relaxed">
+                                Enter your destination city or search for a specific hotel name. Pick your check-in dates and select 
+                                whether you want a 'Full Day Stay' or an 'Hourly Stay'. Use our advanced smart filters to narrow down 
+                                options by price range, star rating, verified amenities, or hourly durations.
+                            </p>
+                        </div>
+
+                        <div className="space-y-3">
+                            <span className="text-5xl font-black text-slate-300">02</span>
+                            <h3 className="text-lg font-bold text-slate-950">Select Room & Review</h3>
+                            <p className="text-slate-600 text-xs font-medium leading-relaxed">
+                                Explore detailed property listings complete with verified high-resolution photo galleries, room 
+                                inventories, check-in policies, and authentic guest reviews. Compare room rates, check what amenities 
+                                are included, and choose the deal that best fits your itinerary.
+                            </p>
+                        </div>
+
+                        <div className="space-y-3">
+                            <span className="text-5xl font-black text-slate-300">03</span>
+                            <h3 className="text-lg font-bold text-slate-950">Pay 12% Deposit & Confirm</h3>
+                            <p className="text-slate-600 text-xs font-medium leading-relaxed">
+                                Confirm your reservation by paying a secure 12% booking deposit online using credit/debit cards, UPI, 
+                                net banking, or international payment systems. The remaining 88% is paid directly at the hotel front 
+                                desk when you check in. Receive instant email confirmation and your booking ID within seconds!
+                            </p>
+                        </div>
+
+                    </div>
+                </div>
+
+                {/* ── Section 4: Destinations & Local Presence ── */}
+                <div className="space-y-6">
+                    <h2 className="text-2xl md:text-4xl font-bold text-slate-900 tracking-tight">
+                        Top Indian Destinations to Book Stays
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        
+                        <div className="bg-white/40 backdrop-blur-md border border-white/30 p-6 rounded-3xl space-y-2">
+                            <div className="flex items-center gap-2 text-slate-950">
+                                <MapPin className="w-4 h-4 text-blue-500" />
+                                <h3 className="font-bold">
+                                    <Link to="/hotels?city=Mumbai" className="hover:text-brand-600 hover:underline transition-colors">Mumbai</Link> & <Link to="/hotels?city=Pune" className="hover:text-brand-600 hover:underline transition-colors">Pune</Link>
+                                </h3>
+                            </div>
+                            <p className="text-slate-500 text-xs font-semibold leading-relaxed">
+                                The bustling financial capital of India and its IT neighbor. Book business hotels in South Mumbai, 
+                                corporate stays near BKC, or luxury stays near Juhu beach and Lonavala.
+                            </p>
+                        </div>
+
+                        <div className="bg-white/40 backdrop-blur-md border border-white/30 p-6 rounded-3xl space-y-2">
+                            <div className="flex items-center gap-2 text-slate-950">
+                                <MapPin className="w-4 h-4 text-blue-500" />
+                                <h3 className="font-bold">
+                                    <Link to="/hotels?city=Delhi" className="hover:text-brand-600 hover:underline transition-colors">Delhi NCR</Link> & <Link to="/hotels?city=Agra" className="hover:text-brand-600 hover:underline transition-colors">Agra</Link>
+                                </h3>
+                            </div>
+                            <p className="text-slate-500 text-xs font-semibold leading-relaxed">
+                                Explore the rich cultural heritage of the national capital. Find budget hotels near New Delhi Railway 
+                                Station, premium business stays in Gurgaon, or heritage views near the Taj Mahal.
+                            </p>
+                        </div>
+
+                        <div className="bg-white/40 backdrop-blur-md border border-white/30 p-6 rounded-3xl space-y-2">
+                            <div className="flex items-center gap-2 text-slate-950">
+                                <MapPin className="w-4 h-4 text-blue-500" />
+                                <h3 className="font-bold">
+                                    <Link to="/goa-hotels" className="hover:text-brand-600 hover:underline transition-colors">Goa Beach Resorts</Link>
+                                </h3>
+                            </div>
+                            <p className="text-slate-500 text-xs font-semibold leading-relaxed">
+                                The ultimate beach holiday destination. Choose from serene beach resorts in <Link to="/goa-hotels" className="text-brand-600 hover:underline">Goa</Link>, luxury stays 
+                                in Munnar, or houseboats and backwaters in Kumarakom and Alleppey.
+                            </p>
+                        </div>
+
+                        <div className="bg-white/40 backdrop-blur-md border border-white/30 p-6 rounded-3xl space-y-2">
+                            <div className="flex items-center gap-2 text-slate-950">
+                                <MapPin className="w-4 h-4 text-blue-500" />
+                                <h3 className="font-bold">
+                                    <Link to="/hotels?city=Bangalore" className="hover:text-brand-600 hover:underline transition-colors">Bangalore</Link> & <Link to="/hotels?city=Hyderabad" className="hover:text-brand-600 hover:underline transition-colors">Hyderabad</Link>
+                                </h3>
+                            </div>
+                            <p className="text-slate-500 text-xs font-semibold leading-relaxed">
+                                India's prominent tech cities. Find convenient hourly stays near major business parks, premium hotels 
+                                in the city center, and cozy couple retreats in quiet residential zones.
+                            </p>
+                        </div>
+
+                        <div className="bg-white/40 backdrop-blur-md border border-white/30 p-6 rounded-3xl space-y-2">
+                            <div className="flex items-center gap-2 text-slate-950">
+                                <MapPin className="w-4 h-4 text-blue-500" />
+                                <h3 className="font-bold">
+                                    <Link to="/jaipur-hotels" className="hover:text-brand-600 hover:underline transition-colors">Jaipur</Link> & <Link to="/udaipur-hotels" className="hover:text-brand-600 hover:underline transition-colors">Udaipur</Link>
+                                </h3>
+                            </div>
+                            <p className="text-slate-500 text-xs font-semibold leading-relaxed">
+                                Immerse yourself in the rich royalty of Rajasthan. Book heritage properties, royal palace stays in <Link to="/udaipur-hotels" className="text-brand-600 hover:underline">Udaipur</Link>, and 
+                                boutique hotels in the Pink City of <Link to="/jaipur-hotels" className="text-brand-600 hover:underline">Jaipur</Link>.
+                            </p>
+                        </div>
+
+                        <div className="bg-white/40 backdrop-blur-md border border-white/30 p-6 rounded-3xl space-y-2">
+                            <div className="flex items-center gap-2 text-slate-950">
+                                <MapPin className="w-4 h-4 text-blue-500" />
+                                <h3 className="font-bold">
+                                    <Link to="/shimla-hotels" className="hover:text-brand-600 hover:underline transition-colors">Shimla</Link> & <Link to="/manali-hotels" className="hover:text-brand-600 hover:underline transition-colors">Manali</Link>
+                                </h3>
+                            </div>
+                            <p className="text-slate-500 text-xs font-semibold leading-relaxed">
+                                Majestic Himalayan getaways. Discover forest lodges near Shimla's Mall Road or book luxury mountain resorts and cozy wooden cottages in <Link to="/manali-hotels" className="text-brand-600 hover:underline">Manali</Link>.
+                            </p>
+                        </div>
+
+                    </div>
+                </div>
+
+                {/* ── Section 5: Trust Signals & Value Propositions ── */}
+                <div className="bg-white/70 backdrop-blur-xl border border-white/40 rounded-[2.5rem] p-8 md:p-12 space-y-8">
+                    <div className="max-w-3xl">
+                        <h2 className="text-2xl md:text-4xl font-bold text-slate-900 tracking-tight mb-4">
+                            Why Travelers Trust GetHotelStays
+                        </h2>
+                        <p className="text-slate-600 text-xs md:text-sm font-semibold leading-relaxed">
+                            When you choose GetHotelStays for your next hotel booking in India, you are choosing a partner dedicated 
+                            to your comfort and security. We maintain absolute transparency to guarantee peace of mind.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-2">
+                            <h3 className="font-bold text-slate-950 flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                Zero Hidden Booking Charges
+                            </h3>
+                            <p className="text-slate-500 text-xs leading-relaxed font-semibold">
+                                What you see is what you pay. We do not add surprise booking fees, service taxes, or processing charges 
+                                at checkout. All taxes are clearly detailed upfront so you can stay within your budget.
+                            </p>
+                        </div>
+
+                        <div className="space-y-2">
+                            <h3 className="font-bold text-slate-950 flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                Rigorous 50-Point Quality Audit
+                            </h3>
+                            <p className="text-slate-500 text-xs leading-relaxed font-semibold">
+                                Every single hotel listed on our platform undergoes strict quality audits. We inspect clean bathrooms, 
+                                functioning air conditioning, high-speed Wi-Fi, property safety measures, and staff hospitality to ensure 
+                                consistency.
+                            </p>
+                        </div>
+
+                        <div className="space-y-2">
+                            <h3 className="font-bold text-slate-950 flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                Zero Risk Booking (Pay 12% Now)
+                            </h3>
+                            <p className="text-slate-500 text-xs leading-relaxed font-semibold">
+                                Protect your finances by avoiding massive advance payments. Our unique booking model keeps you in control, 
+                                allowing you to pay the majority of the room rate only after verifying the property in person during check-in.
+                            </p>
+                        </div>
+
+                        <div className="space-y-2">
+                            <h3 className="font-bold text-slate-950 flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                Flexible Cancellation & Refund Policies
+                            </h3>
+                            <p className="text-slate-500 text-xs leading-relaxed font-semibold">
+                                Plans can change unexpectedly. That is why most of our partner hotels offer free cancellation and modification 
+                                options up to 24 hours prior to check-in, giving you absolute freedom to adapt.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    );
+}

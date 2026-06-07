@@ -1,4 +1,4 @@
-name: Deploy GetHotel (Natural Automation)
+name: Deploy GetHotelStays to cPanel
 
 on:
   push:
@@ -11,57 +11,63 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: 20
 
-      - name: Install & Build Frontend
-        working-directory: "./GetHotel frontend"
-        env:
-          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
-          NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
-          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
-          NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
-          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
-          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
-          NEXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+      - name: Install lftp
+        run: sudo apt-get install -y lftp
+
+      - name: Build Frontend
         run: |
+          cd GetHotel-Vite
           npm install
           npm run build
 
-      - name: ZIP Build Artifacts
+      - name: Deploy Backend & Frontend via lftp
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USER: ${{ secrets.FTP_USERNAME }}
+          FTP_PASS: ${{ secrets.FTP_PASSWORD }}
         run: |
-          cd "GetHotel frontend"
-          zip -r ../frontend_build.zip .next public package.json next.config.js server.js
-          cd ..
+          # 1. Deploy Changed Backend Files
+          CHANGED=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || git diff --name-only HEAD 2>/dev/null || echo "server.js")
+          echo "Changed files: $CHANGED"
+          
+          for FILE in $CHANGED; do
+            # Skip excluded patterns
+            if echo "$FILE" | grep -qE '(\.git|\.github|node_modules|\.env$|\.zip$|\.log$|scratch)'; then
+              echo "Skipping excluded: $FILE"
+              continue
+            fi
+            
+            # Process backend files
+            if [[ "$FILE" =~ ^"GetHotel backend/" ]]; then
+              if [ -f "$FILE" ]; then
+                REL_PATH=${FILE#"GetHotel backend/"}
+                DIR_NAME=$(dirname "$REL_PATH")
+                BASE_NAME=$(basename "$REL_PATH")
+                
+                if [ "$DIR_NAME" = "." ]; then
+                  REMOTE_DIR="./gethotel_backend"
+                else
+                  REMOTE_DIR="./gethotel_backend/$DIR_NAME"
+                fi
+                
+                echo "Uploading backend file: $FILE -> $REMOTE_DIR/$BASE_NAME"
+                lftp -u "$FTP_USER","$FTP_PASS" "$FTP_SERVER" -e "set ftp:ssl-allow no; set ftp:passive-mode yes; set net:timeout 30; set net:max-retries 3; mkdir -p $REMOTE_DIR; put $FILE -o $REMOTE_DIR/$BASE_NAME; bye"
+              fi
+            fi
+          done
 
-      - name: Upload Build via FTP
-        run: |
-          curl -T frontend_build.zip "ftp://${{ secrets.FTP_SERVER }}/frontend_build.zip" \
-            --user "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
-            --ftp-create-dirs --ftp-ssl-control || \
-          curl -T frontend_build.zip "ftp://${{ secrets.FTP_SERVER }}/frontend_build.zip" \
-            --user "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
-            --ftp-create-dirs
+          # 2. Deploy Frontend Built Files (Sync dist to public_html)
+          if [ -d "GetHotel-Vite/dist" ]; then
+            echo "Syncing frontend dist files to ./public_html..."
+            lftp -u "$FTP_USER","$FTP_PASS" "$FTP_SERVER" -e "set ftp:ssl-allow no; set ftp:passive-mode yes; set net:timeout 30; set net:max-retries 3; mkdir -p ./public_html; mirror -R GetHotel-Vite/dist ./public_html; bye"
+          fi
 
-      - name: SSH and Extract Build
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          port: ${{ secrets.SSH_PORT || 22 }}
-          script: |
-            cd ~/gethotel_frontend
-            # Backup old build
-            mv .next .next_old || true
-            unzip -o ~/frontend_build.zip -d ./
-            npm install --production
-            rm -rf .next_old
-            rm ~/frontend_build.zip
-            # Restart the Node.js application
-            touch tmp/restart.txt || true
-            echo "Deployment Successful! Site is now live."
+          echo "Deployment completed successfully!"

@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+
+  <!-- ═══════════════════════ CORE PAGES ═══════════════════════ -->
+
+  <url>
+    <loc>https://gethotelstays.com/</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <!-- Hreflang for NRI markets -->
+    <xhtml:link rel="alternate" hreflang="en-IN" href="https://gethotelstays.com/"/>
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://gethotelstays.com/"/>
+    <xhtml:link rel="alternate" hreflang="en-GB" href="https://gethotelstays.com/"/>
+    <xhtml:link rel="alternate" hreflang="en-AE" href="https://gethotelstays.com/"/>
+    <xhtml:link rel="alternate" hreflang="en-CA" href="https://gethotelstays.com/"/>
+    <xhtml:link rel="alternate" hreflang="en-AU" href="https://gethotelstays.com/"/>
+    <xhtml:link rel="alternate" hreflang="en-SG" href="https://gethotelstays.com/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://gethotelstays.com/"/>
+  </url>
+
+  <url>
+    <loc>https://gethotelstays.com/hotels</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.95</priority>
+  </url>
+
+  <url>
+    <loc>https://gethotelstays.com/login</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://gethotelstays.com/register</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://gethotelstays.com/list-property</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <url>
+    <loc>https://gethotelstays.com/partner</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+  </url>
+
+  <!-- ═════════════════ CITY-SPECIFIC HOTEL PAGES ═════════════════ -->
+  <!-- High-volume city searches — each gets its own indexed URL -->
+
+  <url>
+    <loc>https://gethotelstays.com/hotels?city=Mumbai</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+
+  <url>
+    <loc>https://gethotelstays.com/hotels?city=Delhi</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+
+  <url>
+    <loc>https://gethotelstays.com/hotels?city=Bangalore</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+
+  <url>
+    <loc>https://gethotelstays.com/hotels?city=Goa</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+
+  <url>
+    <loc>https://gethotelstays.com/hotels?city=Jaipur</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.88</priority>
+  </url>
+
+  <url>
+    <loc>https://gethotelstays.com/hotels?city=Hyderabad</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.88</priority>
+  </url>
+
+  <url>
+    <loc>https://gethotelstays.com/hotels?city=Chennai</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.88</priority>
+  </url>
+
+  <url>
+    <loc>https://gethotelstays.com/hotels?city=Kolkata</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.88</priority>
+  </url>
+
+  <url>
+    <loc>https://gethotelstays.com/hotels?city=Agra</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <url>
+    <loc>https://gethotelstays.com/hotels?city=Varanasi</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <url>
+    <loc>https://gethotelstays.com/hotels?city=Kerala</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <url>
+    <loc>https://gethotelstays.com/hotels?city=Shimla</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.83</priority>
+  </url>
+
+  <url>
+    <loc>https://gethotelstays.com/hotels?city=Manali</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.83</priority>
+  </url>
+
+  <url>
+    <loc>https://gethotelstays.com/hotels?city=Udaipur</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.83</priority>
+  </url>
+
+  <url>
+    <loc>https://gethotelstays.com/hotels?city=Rishikesh</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.82</priority>
+  </url>
+
+  <url>
+    <loc>https://gethotelstays.com/hotels?city=Pune</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.82</priority>
+  </url>
+
+  <url>
+    <loc>https://gethotelstays.com/hotels?city=Ahmedabad</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.80</priority>
+  </url>
+
+  <url>
+    <loc>https://gethotelstays.com/hotels?city=Amritsar</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.80</priority>
+  </url>
+
+  <url>
+    <loc>https://gethotelstays.com/hotels?city=Coorg</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.78</priority>
+  </url>
+
+  <url>
+    <loc>https://gethotelstays.com/hotels?city=Darjeeling</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.78</priority>
+  </url>
+
+</urlset>

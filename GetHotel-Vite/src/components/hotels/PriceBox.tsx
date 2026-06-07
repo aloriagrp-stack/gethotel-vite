@@ -255,12 +255,12 @@ export default function PriceBox({
                     {/* Deposit Breakdown */}
                     <div className="bg-brand-50/50 rounded-2xl p-4 border border-brand-100 space-y-2">
                         <div className="flex justify-between items-center">
-                            <span className="text-[10px] font-black text-brand-600 uppercase tracking-widest">Pay Now (18%)</span>
-                            <span className="text-lg font-black text-brand-600 italic">{formatPrice(Math.round(total * 0.18))}</span>
+                            <span className="text-[10px] font-black text-brand-600 uppercase tracking-widest">Pay Now (12%)</span>
+                            <span className="text-lg font-black text-brand-600 italic">{formatPrice(Math.round(total * 0.12))}</span>
                         </div>
                         <div className="flex justify-between items-center opacity-60">
-                            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Pay at Hotel (82%)</span>
-                            <span className="text-sm font-black text-slate-700 italic">{formatPrice(total - Math.round(total * 0.18))}</span>
+                            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Pay at Hotel (88%)</span>
+                            <span className="text-sm font-black text-slate-700 italic">{formatPrice(total - Math.round(total * 0.12))}</span>
                         </div>
                     </div>
                 </motion.div>

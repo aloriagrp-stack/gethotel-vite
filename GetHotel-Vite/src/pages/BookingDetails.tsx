@@ -46,15 +46,25 @@ export default function BookingDetailsPage() {
 
     useEffect(() => {
         const fetchBookingDetails = async () => {
+            if (!params.id) return;
             try {
-                const res = await bookingApi.getMyBookings();
-                const bookingsList = res.data || [];
-                const found = bookingsList.find((b: any) => String(b.id) === String(params.id));
-                if (found) {
-                    setBooking(found);
+                const res = await bookingApi.getBooking(params.id);
+                const bookingData = res.data || res;
+                if (bookingData) {
+                    setBooking(bookingData);
                 }
             } catch (err) {
-                console.error("Failed to load booking details:", err);
+                console.error("Failed to load booking details via getBooking, trying list fallback:", err);
+                try {
+                    const listRes = await bookingApi.getMyBookings();
+                    const bookingsList = listRes.data || [];
+                    const found = bookingsList.find((b: any) => String(b.id) === String(params.id));
+                    if (found) {
+                        setBooking(found);
+                    }
+                } catch (fallbackErr) {
+                    console.error("Fallback lookup failed:", fallbackErr);
+                }
             } finally {
                 setLoading(false);
             }
@@ -73,8 +83,9 @@ export default function BookingDetailsPage() {
     const roomName = booking?.room?.name || "Double Deluxe Room";
     const status = booking?.status || "confirmed";
     const totalPriceVal = booking?.totalPrice || 2940;
-    const amountPaidVal = booking?.amountPaid || Math.round(totalPriceVal * 0.18);
+    const amountPaidVal = booking ? (booking.amountPaid ?? 0) : Math.round(totalPriceVal * 0.12);
     const payAtHotelVal = Math.max(0, totalPriceVal - amountPaidVal);
+    const paymentStatus = booking?.paymentStatus || (booking ? (amountPaidVal === 0 ? 'pending' : (amountPaidVal >= totalPriceVal ? 'paid' : 'partial')) : 'partial');
 
     if (loading) {
         return (
@@ -109,6 +120,15 @@ export default function BookingDetailsPage() {
                         <div className="flex flex-wrap items-center gap-3">
                             <span className="px-2.5 py-0.5 bg-brand-50 text-brand-600 text-[9px] font-black uppercase tracking-widest rounded border border-brand-100">
                                 Reservation {status}
+                            </span>
+                            <span className={`px-2.5 py-0.5 text-[9px] font-black uppercase tracking-widest rounded border ${
+                                paymentStatus === 'paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
+                                paymentStatus === 'partial' ? 'bg-blue-50 text-blue-700 border-blue-100' :
+                                'bg-amber-50 text-amber-700 border-amber-100'
+                            }`}>
+                                {paymentStatus === 'paid' ? 'Fully Paid' :
+                                 paymentStatus === 'partial' ? '12% Deposit Paid' :
+                                 'Pay At Hotel'}
                             </span>
                             <span className="text-slate-400 text-[10px] font-bold font-mono">ID: {bookingId}</span>
                         </div>
@@ -158,20 +178,19 @@ export default function BookingDetailsPage() {
                             </div>
                         </div>
 
-                        {/* Actions block */}
-                        <div className="flex gap-4">
-                            <button 
-                                onClick={handleGetMobileKey}
-                                className="flex-1 py-4 bg-slate-950 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:shadow-lg hover:bg-slate-900 active:scale-[0.98] transition-all"
-                            >
-                                Get Mobile Key
-                            </button>
-                            <button 
-                                onClick={() => setShowContactModal(true)}
-                                className="flex-1 py-4 border border-slate-200 text-slate-600 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-50 active:scale-[0.98] transition-all"
-                            >
-                                Contact Host
-                            </button>
+                        {/* Room and Guests Info */}
+                        <div className="p-6 bg-slate-50/50 border border-slate-100 rounded-2xl space-y-4">
+                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Stay Info</h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Room Type</p>
+                                    <p className="text-sm font-bold text-slate-900">{roomName}</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Guests</p>
+                                    <p className="text-sm font-bold text-slate-900">{booking?.totalGuests || 2} Guest(s)</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -183,17 +202,88 @@ export default function BookingDetailsPage() {
                                 <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Total Amount</span>
                                 <span className="font-black text-slate-900">{formatPrice(totalPriceVal)}</span>
                             </div>
-                            <div className="flex justify-between items-center text-xs">
-                                <span className="text-emerald-600 font-black uppercase tracking-wider text-[9px] flex items-center gap-1.5">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                    Paid Online (18% Deposit)
-                                </span>
-                                <span className="font-black text-emerald-600">{formatPrice(amountPaidVal)}</span>
+
+                            {paymentStatus === 'paid' && (
+                                <>
+                                    <div className="flex justify-between items-center text-xs pt-3 border-t border-slate-200">
+                                        <span className="text-emerald-600 font-black uppercase tracking-wider text-[9px] flex items-center gap-1.5">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                            Paid Fully Online
+                                        </span>
+                                        <span className="font-black text-emerald-600">{formatPrice(totalPriceVal)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-xs pt-2">
+                                        <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Remaining (Pay at Hotel)</span>
+                                        <span className="font-black text-slate-900">₹0</span>
+                                    </div>
+                                </>
+                            )}
+
+                            {paymentStatus === 'partial' && (
+                                <>
+                                    <div className="flex justify-between items-center text-xs pt-3 border-t border-slate-200">
+                                        <span className="text-emerald-600 font-black uppercase tracking-wider text-[9px] flex items-center gap-1.5">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                            Paid Online (12% Deposit)
+                                        </span>
+                                        <span className="font-black text-emerald-600">{formatPrice(amountPaidVal)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-xs pt-2">
+                                        <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Remaining (Pay at Hotel)</span>
+                                        <span className="font-black text-slate-900">{formatPrice(payAtHotelVal)}</span>
+                                    </div>
+                                </>
+                            )}
+
+                            {paymentStatus === 'pending' && (
+                                <>
+                                    <div className="flex justify-between items-center text-xs pt-3 border-t border-slate-200">
+                                        <span className="text-amber-600 font-black uppercase tracking-wider text-[9px] flex items-center gap-1.5">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                            Pay Full Amount at Hotel
+                                        </span>
+                                        <span className="font-black text-amber-600">{formatPrice(totalPriceVal)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-xs pt-2">
+                                        <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Paid Online</span>
+                                        <span className="font-black text-slate-900">₹0</span>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Guest Contact & Special Requests Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    {/* Guest Contact Info */}
+                    <div className="bg-slate-50/50 border border-slate-100 rounded-2xl p-6 space-y-4">
+                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Guest Contact Info</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Guest Name</p>
+                                <p className="text-sm font-bold text-slate-900 uppercase">
+                                    {booking?.guestFirstName || "Not Provided"} {booking?.guestLastName || ""}
+                                </p>
                             </div>
-                            <div className="flex justify-between items-center text-xs pt-3 border-t border-slate-200">
-                                <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Remaining (Pay at Hotel)</span>
-                                <span className="font-black text-slate-900">{formatPrice(payAtHotelVal)}</span>
+                            <div className="space-y-1">
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Phone Number</p>
+                                <p className="text-sm font-bold text-slate-900">{booking?.guestPhone || "Not Provided"}</p>
                             </div>
+                            <div className="col-span-1 sm:col-span-2 space-y-1">
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Email Address</p>
+                                <p className="text-sm font-bold text-slate-900">{booking?.guestEmail || "Not Provided"}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Special Requests */}
+                    <div className="bg-slate-50/50 border border-slate-100 rounded-2xl p-6 space-y-4">
+                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Special Requests</h4>
+                        <div className="p-4 bg-white/60 border border-slate-100 rounded-xl min-h-[90px]">
+                            <p className="text-xs text-slate-600 font-bold leading-relaxed italic">
+                                {booking?.specialRequests ? `"${booking.specialRequests}"` : "No special requests provided for this stay."}
+                            </p>
                         </div>
                     </div>
                 </div>

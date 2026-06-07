@@ -85,7 +85,13 @@ export default function PartnerRegisterPage() {
             // Auto-redirect or success handling happens in the try block above
         } catch (error: any) {
             console.error("Submission error:", error);
-            setError(error.message || "Something went wrong. Please check your connection.");
+            if (error.errors && Array.isArray(error.errors)) {
+                setError(error.errors.map((e: any) => e.message).join(" | "));
+            } else if (error.error) {
+                setError(error.error);
+            } else {
+                setError(error.message || "Something went wrong. Please check your connection.");
+            }
         } finally {
             setLoading(false);
         }
@@ -195,12 +201,33 @@ export default function PartnerRegisterPage() {
                                             </div>
                                         </div>
 
-                                        <div className="space-y-2 pb-4">
+                                        <div className="space-y-2">
                                             <label className="text-xs font-black uppercase tracking-widest text-slate-400">Address</label>
                                             <textarea 
                                                 name="address" required value={formData.address} onChange={handleChange}
                                                 placeholder="Complete physical address"
                                                 className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold focus:bg-white focus:border-blue-600 outline-none transition-all h-20 resize-none"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-black uppercase tracking-widest text-slate-400">Base Price per Night (₹)</label>
+                                            <div className="relative">
+                                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">₹</div>
+                                                <input 
+                                                    type="number" name="pricePerNight" min="0" required value={formData.pricePerNight} onChange={handleChange}
+                                                    placeholder="e.g. 2500"
+                                                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold focus:bg-white focus:border-blue-600 outline-none transition-all"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2 pb-4">
+                                            <label className="text-xs font-black uppercase tracking-widest text-slate-400">Property Description</label>
+                                            <textarea 
+                                                name="description" required value={formData.description} onChange={handleChange}
+                                                placeholder="Describe your property (e.g. amenities, vibe, policy)..."
+                                                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold focus:bg-white focus:border-blue-600 outline-none transition-all h-24 resize-none"
                                             />
                                         </div>
 
@@ -348,7 +375,7 @@ export default function PartnerRegisterPage() {
                 </div>
                 
                 <div className="mt-12 text-center">
-                    <p className="text-slate-400 text-sm font-medium">By registering, you agree to our <Link to="/terms" className="text-blue-600 hover:underline">Terms of Service</Link>.</p>
+                    <p className="text-slate-400 text-sm font-medium">By registering, you agree to our <Link to="/terms-&-conditions" className="text-blue-600 hover:underline">Terms & Conditions</Link>.</p>
                 </div>
             </div>
         </div>

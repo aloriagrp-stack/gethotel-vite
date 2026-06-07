@@ -5,7 +5,7 @@ import {
     LayoutDashboard, Hotel, Users,
     BarChart3, Settings, LogOut,
     Bell, Search, Plus, Clock,
-    CreditCard, Loader2, Calendar, AlertCircle
+    CreditCard, Loader2, Calendar, AlertCircle, LayoutTemplate, SlidersHorizontal, Star, RefreshCw
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -27,11 +27,16 @@ export default function AdminLayout() {
     const navItems = [
         { id: "overview", label: "Dashboard", icon: LayoutDashboard, href: "/admin/super" },
         { id: "requests", label: "Partner Requests", icon: Clock, href: "/admin/super/requests" },
+        { id: "controlhub", label: "Manager", icon: SlidersHorizontal, href: "/admin/super/controlhub" },
         { id: "hotels", label: "Hotels", icon: Hotel, href: "/admin/super?tab=hotels" },
+        { id: "otasync", label: "OTA Room Sync", icon: RefreshCw, href: "/admin/super/otasync" },
         { id: "bookings", label: "All Bookings", icon: Calendar, href: "/admin/super/bookings" },
+        { id: "reviews", label: "Global Reviews", icon: Star, href: "/admin/super/reviews" },
         { id: "users", label: "Users", icon: Users, href: "/admin/super?tab=users" },
+        { id: "addPartner", label: "Add Partner", icon: Plus, href: "/admin/super?tab=addPartner" },
         { id: "analytics", label: "Stats", icon: BarChart3, href: "/admin/super/stats" },
         { id: "finance", label: "Financial Hub", icon: CreditCard, href: "/admin/super/finance" },
+        { id: "homepage", label: "Homepage Editor", icon: LayoutTemplate, href: "/admin/super/homepage" },
         { id: "disputes", label: "Disputes", icon: AlertCircle, href: "/admin/super/disputes" },
         { id: "notifications", label: "Notifications", icon: Bell, href: "/admin/super/notifications" },
         { id: "settings", label: "Settings", icon: Settings, href: "/admin/super/settings" },
@@ -52,7 +57,7 @@ export default function AdminLayout() {
     }
 
     return (
-        <div className="flex min-h-screen bg-slate-50 font-sans">
+        <div className="flex min-h-screen bg-slate-50 font-sans admin-portal-wrapper">
 
             {/* Sidebar - Sharp Edges */}
             <aside className="w-64 bg-slate-900 text-white flex flex-col fixed inset-y-0 left-0 z-50 border-r border-slate-800">
@@ -65,7 +70,17 @@ export default function AdminLayout() {
                 <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
                     {navItems.map((item) => {
                         const Icon = item.icon;
-                        const isActive = pathname === item.href || (item.id === 'overview' && pathname === '/admin/super');
+                        const searchParams = new URLSearchParams(location.search);
+                        const currentTab = searchParams.get("tab");
+                        let isActive = false;
+                        if (item.href.includes("?tab=")) {
+                            const itemTab = new URLSearchParams(item.href.split("?")[1]).get("tab");
+                            isActive = pathname === "/admin/super" && currentTab === itemTab;
+                        } else if (item.href === "/admin/super") {
+                            isActive = pathname === "/admin/super" && (!currentTab || currentTab === "overview");
+                        } else {
+                            isActive = pathname === item.href;
+                        }
 
                         return (
                             <button

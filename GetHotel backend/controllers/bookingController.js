@@ -1,6 +1,17 @@
 const prisma = require('../config/db');
 const { sendBookingEmails } = require('../utils/emailService');
 
+const toValidDate = (value) => {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
+};
+
+const normalizeDateOnly = (date) => {
+    const normalized = new Date(date);
+    normalized.setHours(0, 0, 0, 0);
+    return normalized;
+};
+
 // @desc    Create booking
 // @route   POST /api/bookings
 // @access  Private
@@ -9,21 +20,32 @@ exports.createBooking = async (req, res) => {
     const userId = req.user.id;
 
     try {
-        const checkInDate = new Date(checkIn);
-        const checkOutDate = new Date(checkOut);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        const checkInDate = toValidDate(checkIn);
+        const checkOutDate = toValidDate(checkOut);
 
-        if (checkInDate < today) {
+        if (!hotelId || !checkInDate || !checkOutDate) {
+            return res.status(400).json({ success: false, message: "Valid hotel, check-in, and check-out dates are required." });
+        }
+
+        const today = normalizeDateOnly(new Date());
+        const checkInDay = normalizeDateOnly(checkInDate);
+        const checkOutDay = normalizeDateOnly(checkOutDate);
+
+        const todayLimit = new Date(today);
+        todayLimit.setDate(todayLimit.getDate() - 1); // timezone offset buffer
+        if (checkInDay < todayLimit) {
             return res.status(400).json({ success: false, message: "Check-in date cannot be in the past." });
         }
-        if (checkOutDate <= checkInDate) {
+        if (checkOutDay <= checkInDay) {
             return res.status(400).json({ success: false, message: "Check-out date must be after the check-in date." });
         }
 
-        const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+        const nights = Math.ceil((checkOutDay - checkInDay) / (1000 * 60 * 60 * 24));
         if (nights < 1) {
             return res.status(400).json({ success: false, message: "Stay duration must be at least one night." });
+        }
+        if (nights > 90) {
+            return res.status(400).json({ success: false, message: "Stay duration cannot exceed 90 nights." });
         }
 
         // 2. FETCH HOTEL & ROOMS TO VERIFY PRICING & AVAILABILITY
@@ -34,22 +56,29 @@ exports.createBooking = async (req, res) => {
 
         if (!hotel) return res.status(404).json({ success: false, message: "Hotel not found" });
 
-        // Fallback: If no specific rooms provided, use the first available room
-        let activeRooms = rooms;
+        let activeRooms = Array.isArray(rooms) ? rooms.map(room => ({
+            ...room,
+            id: parseInt(room.id),
+            quantity: Math.max(1, parseInt(room.quantity) || 1)
+        })) : rooms;
         if (!activeRooms || activeRooms.length === 0) {
             if (hotel.room && hotel.room.length > 0) {
                 // Use the first room as default if none selected
-                activeRooms = [{ id: hotel.room[0].id.toString(), quantity: 1 }];
+                activeRooms = [{ id: hotel.room[0].id, quantity: 1 }];
             } else {
                 return res.status(400).json({ success: false, message: "This hotel currently has no rooms available for booking." });
             }
+        }
+
+        if (!guestInfo?.firstName || !guestInfo?.lastName || !guestInfo?.email || !guestInfo?.phone) {
+            return res.status(400).json({ success: false, message: "Guest name, email, and phone are required." });
         }
 
         let calculatedSubtotal = 0;
         let totalMaxOccupancy = 0;
 
         for (const selectedRoom of activeRooms) {
-            const dbRoom = hotel.room.find(r => r.id === parseInt(selectedRoom.id));
+            const dbRoom = hotel.room.find(r => r.id === selectedRoom.id);
             if (!dbRoom) return res.status(400).json({ success: false, message: `Room ID ${selectedRoom.id} doesn't exist.` });
             
             // Query daily rates overrides for this room
@@ -57,8 +86,8 @@ exports.createBooking = async (req, res) => {
                 where: {
                     roomId: dbRoom.id,
                     date: {
-                        gte: checkInDate,
-                        lt: checkOutDate
+                        gte: checkInDay,
+                        lt: checkOutDay
                     }
                 }
             });
@@ -72,7 +101,7 @@ exports.createBooking = async (req, res) => {
             let roomTotalStayPrice = 0;
 
             for (let i = 0; i < nights; i++) {
-                const currentDay = new Date(checkInDate);
+                const currentDay = new Date(checkInDay);
                 currentDay.setDate(currentDay.getDate() + i);
                 const dStr = currentDay.toISOString().split('T')[0];
                 
@@ -114,7 +143,7 @@ exports.createBooking = async (req, res) => {
                 const activeCoupon = await prisma.coupon.findFirst({
                     where: {
                         hotelId: parseInt(hotelId),
-                        code: { equals: couponCode.trim(), mode: 'insensitive' },
+                        code: { equals: couponCode.trim() },
                         isActive: true
                     }
                 });
@@ -127,24 +156,43 @@ exports.createBooking = async (req, res) => {
         }
 
         const discountedSubtotal = Math.max(0, calculatedSubtotal - discountAmount);
-        const calculatedTaxes = Math.round(discountedSubtotal * 0.05); // Sync with 5% Tax
+        
+        const totalRoomNights = activeRooms.reduce((sum, r) => sum + (r.quantity * nights), 0);
+        const divisor = totalRoomNights > 0 ? totalRoomNights : (nights || 1);
+        const averagePricePerRoomNight = discountedSubtotal / divisor;
+        
+        let gstRate = 0.05;
+        if (averagePricePerRoomNight <= 1000) {
+            gstRate = 0;
+        } else if (averagePricePerRoomNight <= 7500) {
+            gstRate = 0.05;
+        } else {
+            gstRate = 0.18;
+        }
+
+        const calculatedTaxes = Math.round(discountedSubtotal * gstRate);
         const calculatedTotal = discountedSubtotal + calculatedTaxes;
-        const platformFee = Math.round(calculatedTotal * 0.18); // 18% Booking Fee
+        const platformFee = Math.round(calculatedTotal * 0.12); // 12% Booking Fee
         const remainingAtHotel = calculatedTotal - platformFee;
 
         // 3. ATOMIC TRANSACTION: HOLD INVENTORY + CREATE BOOKING
         const booking = await prisma.$transaction(async (tx) => {
+            // Concurrency Control: Lock the Room rows to prevent concurrent double-booking checks (pessimistic lock)
+            for (const selectedRoom of activeRooms) {
+                await tx.$queryRaw`SELECT id FROM Room WHERE id = ${selectedRoom.id} FOR UPDATE`;
+            }
+
             // Re-verify availability within transaction day-by-day
             for (const selectedRoom of activeRooms) {
-                const dbRoom = await tx.room.findUnique({ where: { id: parseInt(selectedRoom.id) } });
+                const dbRoom = await tx.room.findUnique({ where: { id: selectedRoom.id } });
                 if (!dbRoom) throw new Error(`Room ID ${selectedRoom.id} doesn't exist.`);
 
                 const rates = await tx.dailyrate.findMany({
                     where: {
                         roomId: dbRoom.id,
                         date: {
-                            gte: checkInDate,
-                            lt: checkOutDate
+                            gte: checkInDay,
+                            lt: checkOutDay
                         }
                     }
                 });
@@ -156,7 +204,7 @@ exports.createBooking = async (req, res) => {
                 });
 
                 for (let i = 0; i < nights; i++) {
-                    const currentDay = new Date(checkInDate);
+                    const currentDay = new Date(checkInDay);
                     currentDay.setDate(currentDay.getDate() + i);
                     
                     const nextDay = new Date(currentDay);
@@ -200,14 +248,19 @@ exports.createBooking = async (req, res) => {
                 data: {
                     userId,
                     hotelId: parseInt(hotelId),
-                    roomId: parseInt(activeRooms[0].id),
-                    checkIn: checkInDate,
-                    checkOut: checkOutDate,
+                    roomId: activeRooms[0].id,
+                    checkIn: checkInDay,
+                    checkOut: checkOutDay,
                     totalPrice: calculatedTotal,
                     totalGuests: parseInt(totalGuests),
                     status: req.body.status || 'held',
                     paymentStatus: req.body.paymentStatus || 'pending',
-                    amountPaid: req.body.paymentStatus === 'paid' ? platformFee : 0,
+                    amountPaid: (() => {
+                        const ps = req.body.paymentStatus;
+                        if (ps === 'paid') return req.body.amountPaid || calculatedTotal; // Full online
+                        if (ps === 'partial') return req.body.amountPaid || platformFee;  // 12% now
+                        return 0; // pending = pay at hotel
+                    })(),
                     holdExpiresAt: new Date(Date.now() + 10 * 60 * 1000),
                     guestFirstName: guestInfo.firstName,
                     guestLastName: guestInfo.lastName,
@@ -218,7 +271,12 @@ exports.createBooking = async (req, res) => {
                     gstNumber: guestInfo.gstNumber || "",
                     companyName: guestInfo.companyName || "",
                     roomDetails: JSON.stringify(activeRooms),
-                    internalNotes: `PARTIAL_PAYMENT_MODEL: Platform Fee ₹${platformFee} | Pay at Hotel ₹${remainingAtHotel} | Coupon Applied: ${couponCode || 'None'} | Discount: ₹${discountAmount}`
+                    internalNotes: (() => {
+                        const ps = req.body.paymentStatus;
+                        if (ps === 'paid') return `FULL_ONLINE_PAYMENT: Paid ₹${req.body.amountPaid || calculatedTotal} online | Coupon: ${couponCode || 'None'} | Discount: ₹${discountAmount}`;
+                        if (ps === 'partial') return `PARTIAL_PAYMENT: Paid ₹${req.body.amountPaid || platformFee} online (12%) | Balance ₹${remainingAtHotel} at hotel | Coupon: ${couponCode || 'None'} | Discount: ₹${discountAmount}`;
+                        return `PAY_AT_HOTEL: Full ₹${calculatedTotal} due at check-in | Coupon: ${couponCode || 'None'} | Discount: ₹${discountAmount}`;
+                    })()
                 }
             });
         });
@@ -278,7 +336,19 @@ exports.getMyBookings = async (req, res, next) => {
             }
         });
 
-        res.status(200).json({ success: true, count: bookings.length, data: bookings });
+        // Get all hotel IDs reviewed by this user
+        const reviews = await prisma.review.findMany({
+            where: { userId: req.user.id },
+            select: { hotelId: true }
+        });
+        const reviewedHotelIds = new Set(reviews.map(r => r.hotelId));
+
+        const data = bookings.map(b => ({
+            ...b,
+            isReviewed: reviewedHotelIds.has(b.hotelId)
+        }));
+
+        res.status(200).json({ success: true, count: data.length, data });
     } catch (err) {
         res.status(400).json({ success: false, message: err.message });
     }
@@ -294,6 +364,46 @@ exports.getBookings = async (req, res, next) => {
         });
 
         res.status(200).json({ success: true, count: bookings.length, data: bookings });
+    } catch (err) {
+        res.status(400).json({ success: false, message: err.message });
+    }
+};
+
+// @desc    Get a single booking
+// @route   GET /api/bookings/:id
+// @access  Private
+exports.getBooking = async (req, res) => {
+    try {
+        const bookingId = parseInt(req.params.id);
+        if (Number.isNaN(bookingId)) {
+            return res.status(400).json({ success: false, message: 'Invalid booking ID' });
+        }
+
+        const booking = await prisma.booking.findUnique({
+            where: { id: bookingId },
+            include: {
+                hotel: true,
+                room: true,
+                user: {
+                    select: { id: true, name: true, email: true, role: true }
+                },
+                transactions: true
+            }
+        });
+
+        if (!booking) {
+            return res.status(404).json({ success: false, message: 'Booking not found' });
+        }
+
+        const isOwner = booking.userId === req.user.id;
+        const isHotelOwner = req.user.role === 'hotel_admin' && booking.hotel.userId === req.user.id;
+        const isSuperAdmin = req.user.role === 'super_admin';
+
+        if (!isOwner && !isHotelOwner && !isSuperAdmin) {
+            return res.status(403).json({ success: false, message: 'Not authorized to view this booking' });
+        }
+
+        res.status(200).json({ success: true, data: booking });
     } catch (err) {
         res.status(400).json({ success: false, message: err.message });
     }
@@ -378,16 +488,24 @@ exports.cancelBooking = async (req, res, next) => {
         const { reason } = req.body;
 
         const booking = await prisma.booking.findUnique({
-            where: { id: bookingId }
+            where: { id: bookingId },
+            include: { hotel: true }
         });
 
         if (!booking) {
             return res.status(404).json({ success: false, message: 'Booking not found' });
         }
 
-        // Authorization: Only the user who booked or an admin
-        if (booking.userId !== req.user.id && req.user.role === 'user') {
+        const isOwner = booking.userId === req.user.id;
+        const isHotelOwner = req.user.role === 'hotel_admin' && booking.hotel.userId === req.user.id;
+        const isSuperAdmin = req.user.role === 'super_admin';
+
+        if (!isOwner && !isHotelOwner && !isSuperAdmin) {
             return res.status(403).json({ success: false, message: 'Not authorized to cancel this booking' });
+        }
+
+        if (['cancelled', 'refunded'].includes(booking.status)) {
+            return res.status(400).json({ success: false, message: 'Booking is already cancelled.' });
         }
 
         // Policy Check: Free cancellation if check-in is > 24 hours away
@@ -436,3 +554,23 @@ exports.cancelBooking = async (req, res, next) => {
         res.status(400).json({ success: false, message: err.message });
     }
 };
+
+// Concurrency & Expired Bookings Protection: Clean up expired held bookings every 5 minutes in background
+setInterval(async () => {
+    try {
+        const expiredCount = await prisma.booking.updateMany({
+            where: {
+                status: 'held',
+                holdExpiresAt: { lt: new Date() }
+            },
+            data: {
+                status: 'expired'
+            }
+        });
+        if (expiredCount.count > 0) {
+            console.log(`[SECURITY] Auto-expired ${expiredCount.count} stale bookings whose hold expired.`);
+        }
+    } catch (err) {
+        console.error('[SECURITY ERROR] Failed to clean up expired bookings:', err);
+    }
+}, 5 * 60 * 1000).unref();

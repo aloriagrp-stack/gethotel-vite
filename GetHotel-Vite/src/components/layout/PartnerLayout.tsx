@@ -9,7 +9,7 @@ import {
     Settings, LogOut, Menu, X,
     ChevronRight, Hotel, Search,
     TrendingUp, Plus, MessageSquare,
-    Clock, Lock, XCircle, CheckCircle2
+    Clock, Lock, XCircle, CheckCircle2, Globe
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
@@ -26,9 +26,19 @@ export default function PartnerLayout() {
     // Auth Protection
     useEffect(() => {
         if (!authLoading) {
+            // Retrieve activeHotelId from URL search params if present
+            const params = new URLSearchParams(window.location.search);
+            const queryHotelId = params.get('activeHotelId');
+            if (queryHotelId) {
+                sessionStorage.setItem('activeHotelId', queryHotelId);
+                localStorage.setItem('activeHotelId', queryHotelId);
+            }
+
+            const activeHotelId = sessionStorage.getItem('activeHotelId') || localStorage.getItem('activeHotelId');
+
             if (!user || user.role !== 'hotel_admin') {
                 router('/partner');
-            } else if (!sessionStorage.getItem('activeHotelId')) {
+            } else if (!activeHotelId) {
                 // No hotel selected yet — force selector screen
                 router('/partner-select');
             }
@@ -45,6 +55,7 @@ export default function PartnerLayout() {
         { id: "coupons", label: "Promotions", icon: Ticket, href: "/partner-dashboard/coupons" },
         { id: "messages", label: "Messages", icon: MessageSquare, href: "/partner-dashboard/messages" },
         { id: "reviews", label: "Guest Reviews", icon: Star, href: "/partner-dashboard/reviews" },
+        { id: "channel", label: "Channel Sync", icon: Globe, href: "/partner-dashboard/channel" },
         { id: "settings", label: "Settings", icon: Settings, href: "/partner-dashboard/settings" },
         { id: "switch", label: "Switch Property", icon: ChevronRight, href: "/partner-select" },
     ];
@@ -64,7 +75,7 @@ export default function PartnerLayout() {
     }
 
     return (
-        <div className="flex min-h-screen bg-[#F8FAFC]">
+        <div className="flex min-h-screen bg-[#F8FAFC] partner-portal-wrapper">
             {/* Sidebar for Desktop */}
             <aside className={cn(
                 "hidden lg:flex bg-white border-r border-slate-200 flex-col fixed inset-y-0 left-0 z-50 transition-all duration-300",

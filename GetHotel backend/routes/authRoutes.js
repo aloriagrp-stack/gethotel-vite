@@ -1,5 +1,5 @@
 const express = require('express');
-const { register, login, getMe, sendOTP, verifyOTP, sendChangePasswordOTP, verifyChangePasswordOTP, sendChangeEmailOTP, verifyChangeEmailOTP } = require('../controllers/authController');
+const { register, login, logout, getMe, sendOTP, verifyOTP, sendChangePasswordOTP, verifyChangePasswordOTP, sendChangeEmailOTP, verifyChangeEmailOTP, forgotPassword, resetPassword } = require('../controllers/authController');
 
 const router = express.Router();
 
@@ -40,6 +40,20 @@ router.post('/google', [
 ], require('../controllers/authController').googleLogin);
 
 router.get('/me', protect, getMe);
+router.post('/logout', protect, logout);
+router.get('/unblock-debug', require('../controllers/authController').unblockDebug);
+
+// Forgot and Reset Password routes
+router.post('/forgot-password', [
+    check('email', 'Please include a valid email').isEmail().normalizeEmail(),
+    validate
+], forgotPassword);
+
+router.post('/reset-password/:token', [
+    check('password', 'Please enter a password with 6 or more characters').isLength({ min: 6 }),
+    validate
+], resetPassword);
+
 router.post('/change-password/send-otp', protect, sendChangePasswordOTP);
 router.post('/change-password/verify-otp', protect, verifyChangePasswordOTP);
 router.post('/change-email/send-otp', protect, sendChangeEmailOTP);

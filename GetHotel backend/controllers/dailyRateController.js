@@ -70,7 +70,7 @@ const getDailyRates = async (req, res) => {
             resultRates.push({
                 id: override ? override.id : undefined,
                 roomId: parseInt(roomId),
-                date: new Date(dateStr),
+                date: dateStr,
                 price: price,
                 available: limit, // The limit/override
                 remainingAvailable: Math.max(0, limit - bookedCount), // Actual available
@@ -130,7 +130,10 @@ const bulkUpdateDailyRates = async (req, res) => {
                     available: isBlocked ? 0 : (available !== undefined ? parseInt(available) : 1)
                 }
             });
-            results.push(updated);
+            results.push({
+                ...updated,
+                date: updated.date.toISOString().split('T')[0]
+            });
         }
 
         res.json({ success: true, message: `Updated ${results.length} dates`, data: results });
@@ -174,7 +177,13 @@ const updateDailyRate = async (req, res) => {
             }
         });
 
-        res.json({ success: true, data: updated });
+        res.json({ 
+            success: true, 
+            data: {
+                ...updated,
+                date: updated.date.toISOString().split('T')[0]
+            } 
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

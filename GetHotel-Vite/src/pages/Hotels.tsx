@@ -12,9 +12,10 @@ import SmartSearchBar from "@/components/search/SmartSearchBar";
 import { motion, AnimatePresence } from "framer-motion";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { cn } from "@/lib/utils";
-
 import { hotelApi } from "@/lib/api";
 import { Hotel as HotelType } from "@/types";
+import SEOHead from "@/components/common/SEOHead";
+import { PAGE_SEO, buildBreadcrumbSchema, SITE } from "@/lib/seo";
 
 // Remove HOTELS_PER_PAGE as we use dynamic visibleCount
 
@@ -37,6 +38,7 @@ function HotelListingContent() {
     const [searchParams] = useSearchParams();
     const cityParam = searchParams.get("city") || "All";
     const guests = searchParams.get("adults") || searchParams.get("guests") || "2";
+    const stayType = searchParams.get("stayType") || "nightly";
 
     const [allHotels, setAllHotels] = useState<HotelType[]>([]);
     const [filters, setFilters] = useState<FilterState>(defaultFilters);
@@ -82,8 +84,19 @@ function HotelListingContent() {
 
     // Filter logic using allHotels instead of static hotels
     const filtered = allHotels.filter((h) => {
-        // City Filter
-        if (cityParam !== "All" && h.city.toLowerCase() !== cityParam.toLowerCase()) return false;
+        // City Filter - Skip client-side city filtering if a specific destination_index or collection_index is present, or if it is a fuzzy query match
+        const hasSpecificIndex = searchParams.get("destination_index") !== null || searchParams.get("collection_index") !== null;
+        if (!hasSpecificIndex && cityParam !== "All") {
+            const cleanCityParam = cityParam.toLowerCase();
+            const cleanHotelCity = h.city.toLowerCase();
+            const cleanHotelName = h.name.toLowerCase();
+            const cleanHotelAddress = h.address.toLowerCase();
+            const isMatch = cleanHotelCity.includes(cleanCityParam) || 
+                            cleanCityParam.includes(cleanHotelCity) || 
+                            cleanHotelName.includes(cleanCityParam) || 
+                            cleanHotelAddress.includes(cleanCityParam);
+            if (!isMatch) return false;
+        }
 
         // Name Search Filter
         if (searchQuery && !h.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
@@ -106,9 +119,14 @@ function HotelListingContent() {
         if (rooms.length > 0) {
             const hasEligibleRoom = rooms.some((r: any) => {
                 const maxOcc = r.maxOccupancy || r.max_occupancy || r.capacityAdults || 2;
-                return maxOcc >= Number(guests);
+                const isModeOk = stayType === "hourly"
+                    ? (r.isHourlyEnabled || r.is_hourly_enabled)
+                    : (!r.isHourlyEnabled && !r.is_hourly_enabled);
+                return maxOcc >= Number(guests) && isModeOk;
             });
             if (!hasEligibleRoom) return false;
+        } else if (stayType === "hourly") {
+            return false;
         }
 
         return true;
@@ -138,14 +156,47 @@ function HotelListingContent() {
         setVisibleCount(12); // Reset scroll on filter change
     };
 
+    const cityDisplay = cityParam !== "All" ? cityParam : "India";
+    const pageTitle = cityParam !== "All"
+        ? `Hotels in ${cityParam} — Book Online | GetHotelStays`
+        : PAGE_SEO.hotels.title;
+    const pageDesc = cityParam !== "All"
+        ? `Find & book the best hotels in ${cityParam}. Compare prices, read reviews, and get instant confirmation. Pay 12% now, rest at hotel. Free cancellation available on GetHotelStays.`
+        : PAGE_SEO.hotels.description;
+    const pageKeywords = cityParam !== "All"
+        ? [`hotels in ${cityParam.toLowerCase()}`, `${cityParam.toLowerCase()} hotels`, `book hotel ${cityParam.toLowerCase()}`, `cheap hotels ${cityParam.toLowerCase()}`, `luxury hotels ${cityParam.toLowerCase()}`, "hotel booking india", "gethotelstays"]
+        : PAGE_SEO.hotels.keywords;
+
     return (
         <div className="min-h-screen pt-2 bg-transparent px-0">
+            <SEOHead
+                title={pageTitle}
+                description={pageDesc}
+                keywords={pageKeywords}
+                ogUrl={`${SITE.url}/hotels${cityParam !== "All" ? `?city=${encodeURIComponent(cityParam)}` : ""}`}
+                canonicalUrl={`${SITE.url}/hotels`}
+                schemas={[
+                    buildBreadcrumbSchema([
+                        { name: "Home", url: "/" },
+                        { name: "Hotels", url: "/hotels" },
+                        ...(cityParam !== "All" ? [{ name: cityParam, url: `/hotels?city=${encodeURIComponent(cityParam)}` }] : []),
+                    ]),
+                ]}
+            />
             {/* Search Modal Overlay */}
             {/* Page Header Area - Side-by-Side Layout */}
             <div className="w-full flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-6 px-4 md:px-10">
                 <div className="shrink-0">
                     <h1 className="text-3xl md:text-4xl font-bold text-slate-950 tracking-tight leading-tight">
-                        Trending <span className="text-brand-600">Hotels</span>
+                        {cityParam !== "All" ? (
+                            <>
+                                Hotels in <span className="text-brand-600">{cityParam}</span>
+                            </>
+                        ) : (
+                            <>
+                                Trending <span className="text-brand-600">Hotels</span>
+                            </>
+                        )}
                     </h1>
 
                 </div>
@@ -237,7 +288,7 @@ function HotelListingContent() {
                         </div>
 
                         {loading ? (
-                            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-8">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 md:gap-8">
                                 {Array.from({ length: 6 }).map((_, i) => (
                                     <HotelCardSkeleton key={i} />
                                 ))}

@@ -23,7 +23,7 @@ export default function PartnerMessagesPage() {
     useEffect(() => {
         const fetchHotels = async () => {
             try {
-                const res = await hotelApi.getMyHotels();
+                const res = await hotelApi.getMyHotels({ light: true });
                 if (res.success && res.data.length > 0) {
                     setHotels(res.data);
                     setSelectedHotelId(res.data[0].id);
@@ -234,6 +234,3 @@ export default function PartnerMessagesPage() {
         </div>
     );
 }
-
-
-

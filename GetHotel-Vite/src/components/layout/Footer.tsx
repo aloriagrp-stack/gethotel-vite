@@ -17,23 +17,19 @@ import {
 
 const footerLinks = {
     Destinations: [
-        { label: "Goa Hotels", href: "/hotels?city=Goa" },
+        { label: "Goa Hotels", href: "/goa-hotels" },
         { label: "Mumbai Hotels", href: "/hotels?city=Mumbai" },
-        { label: "Jaipur Hotels", href: "/hotels?city=Jaipur" },
-        { label: "Kerala Hotels", href: "/hotels?city=Kerala" },
-        { label: "Shimla Hotels", href: "/hotels?city=Shimla" },
-    ],
-    Company: [
-        { label: "About Us", href: "#" },
-        { label: "Careers", href: "#" },
-        { label: "Blog", href: "#" },
-        { label: "Press", href: "#" },
+        { label: "Jaipur Hotels", href: "/jaipur-hotels" },
+        { label: "Shimla Hotels", href: "/shimla-hotels" },
+        { label: "Manali Hotels", href: "/manali-hotels" },
+        { label: "Udaipur Hotels", href: "/udaipur-hotels" },
     ],
     Support: [
-        { label: "Help Center", href: "#" },
-        { label: "Safety Info", href: "#" },
-        { label: "Cancellation Policy", href: "#" },
-        { label: "Report Issue", href: "#" },
+        { label: "Privacy Policy", href: "/privacy" },
+        { label: "Terms & Conditions", href: "/terms-&-conditions" },
+        { label: "Refund & Cancellation", href: "/cancellation-policy" },
+        { label: "Pricing Policy", href: "/pricing-policy" },
+        { label: "Contact Us", href: "/contact" },
     ],
     Partners: [
         { label: "List Your Property", href: "/list-property" },
@@ -143,7 +139,7 @@ export default function Footer() {
             {/* ── Bottom Bar ── */}
             <div className="border-t border-black/5 py-8">
                 <div className="w-full max-w-none mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] font-bold text-slate-400">
-                    <p>© 2026 GetHotel Technologies Pvt. Ltd.</p>
+                    <p>© 2026 GetHotelStays. Owned & operated by Aloria Group, Dwarka Mor, Vipin Garden, New Delhi - 110059.</p>
                     <div className="flex items-center gap-6">
                         <div className="flex items-center gap-1.5 grayscale opacity-60">
                             <span>Made with</span>
@@ -152,9 +148,11 @@ export default function Footer() {
                         </div>
                         <div className="h-4 w-px bg-black/5 hidden md:block" />
                         <div className="flex items-center gap-4 uppercase tracking-widest">
-                            <a href="#" className="hover:text-black transition-colors">Privacy</a>
-                            <a href="#" className="hover:text-black transition-colors">Terms</a>
-                            <a href="#" className="hover:text-black transition-colors">Cookies</a>
+                            <Link to="/privacy" className="hover:text-black transition-colors">Privacy Policy</Link>
+                            <Link to="/terms-&-conditions" className="hover:text-black transition-colors">Terms & Conditions</Link>
+                            <Link to="/cancellation-policy" className="hover:text-black transition-colors">Refund & Cancellation</Link>
+                            <Link to="/pricing-policy" className="hover:text-black transition-colors">Pricing Policy</Link>
+                            <Link to="/cookies" className="hover:text-black transition-colors">Cookie Policy</Link>
                         </div>
                     </div>
                 </div>

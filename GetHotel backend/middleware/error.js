@@ -1,26 +1,68 @@
+const fs = require('fs');
+const path = require('path');
+
 const errorHandler = (err, req, res, next) => {
-    let error = { ...err };
+    let statusCode = err.status || err.statusCode || 500;
+    let message = 'An unexpected server error occurred.';
 
-    error.message = err.message;
-
-    // Log to console for dev
-    console.log(err.stack);
-
-    // Prisma Unique Constraint Violation
-    if (err.code === 'P2002') {
-        const message = `Duplicate field value entered: ${err.meta?.target || 'field'}`;
-        error = { message, statusCode: 400 };
+    // 1. JWT Errors
+    if (err.name === 'TokenExpiredError') {
+        statusCode = 401;
+        message = 'Your session has expired. Please login again.';
+    } else if (err.name === 'JsonWebTokenError') {
+        statusCode = 401;
+        message = 'Invalid authentication token. Please login again.';
+    }
+    
+    // 2. Prisma Database Errors (Obfuscate query traces)
+    else if (err.code && err.code.startsWith('P')) {
+        statusCode = 400;
+        if (err.code === 'P2002') {
+            const field = err.meta?.target || 'field';
+            message = `Constraint Violation: A record with this ${field} already exists.`;
+        } else if (err.code === 'P2025') {
+            statusCode = 404;
+            message = 'The requested resource could not be found.';
+        } else {
+            message = 'A database integrity violation occurred.';
+        }
+    } else if (err.message && !err.message.includes('Prisma') && statusCode !== 500) {
+        // Safe validation or business logic error messages can be returned directly
+        message = err.message;
     }
 
-    // Prisma Not Found
-    if (err.code === 'P2025') {
-        const message = 'Resource not found';
-        error = { message, statusCode: 404 };
+    // 3. Structured Logging to logs/errors.log
+    try {
+        const logDir = path.join(__dirname, '../logs');
+        if (!fs.existsSync(logDir)) {
+            fs.mkdirSync(logDir, { recursive: true });
+        }
+
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || req.ip || '';
+        const errorLog = {
+            timestamp: new Date().toISOString(),
+            method: req.method,
+            url: req.originalUrl,
+            ip: ip.replace(/^::ffff:/, ''),
+            headers: req.headers,
+            error: {
+                name: err.name,
+                message: err.message,
+                code: err.code,
+                stack: err.stack
+            }
+        };
+
+        fs.appendFileSync(path.join(logDir, 'errors.log'), JSON.stringify(errorLog) + '\n');
+        console.error(`[SERVER ERROR] ${req.method} ${req.originalUrl} | Error: ${err.message}`);
+    } catch (logErr) {
+        console.error('[CRITICAL] Failed to write error log file:', logErr);
     }
 
-    res.status(error.statusCode || 500).json({
+    // 4. Return sanitized client response
+    res.status(statusCode).json({
         success: false,
-        error: error.message || 'Server Error',
+        message
     });
 };
 

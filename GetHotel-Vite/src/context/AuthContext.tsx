@@ -30,7 +30,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     useEffect(() => {
         const loadUser = async () => {
-            const token = localStorage.getItem('token');
+            // Check for impersonation token in URL query parameter
+            const params = new URLSearchParams(window.location.search);
+            const impToken = params.get('impersonateToken');
+            if (impToken) {
+                sessionStorage.setItem('token', impToken);
+                localStorage.setItem('token', impToken);
+                // Clean URL to keep it pretty and avoid leakage
+                params.delete('impersonateToken');
+                const newSearch = params.toString();
+                const newPath = window.location.pathname + (newSearch ? `?${newSearch}` : '') + window.location.hash;
+                window.history.replaceState(null, '', newPath);
+            }
+
+            const token = sessionStorage.getItem('token') || localStorage.getItem('token');
             if (token) {
                 // Safeguard: If we are reloading the user from a token, we are not "just logging in"
                 // This prevents the login success popup from appearing on every refresh
@@ -39,10 +52,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 try {
                     const res = await authApi.getMe();
                     setUser(res.data);
-                } catch (err) {
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('just_logged_in');
-                    setUser(null);
+                } catch (err: any) {
+                    console.error("Failed to load user profile:", err);
+                    if (err.status === 401 || err.status === 403) {
+                        localStorage.removeItem('token');
+                        sessionStorage.removeItem('token');
+                        localStorage.removeItem('just_logged_in');
+                        setUser(null);
+                    }
                 }
             }
             setLoading(false);
@@ -52,6 +69,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const login = async (credentials: any) => {
         const res = await authApi.login(credentials);
+        sessionStorage.removeItem('token');
         localStorage.setItem('token', res.token);
         localStorage.setItem('just_logged_in', 'true');
         const userRes = await authApi.getMe();
@@ -61,6 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const googleLogin = async (idToken: string) => {
         const res = await authApi.googleLogin(idToken);
+        sessionStorage.removeItem('token');
         localStorage.setItem('token', res.token);
         localStorage.setItem('just_logged_in', 'true');
         const userRes = await authApi.getMe();
@@ -70,6 +89,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const register = async (userData: any) => {
         const res = await authApi.register(userData);
+        sessionStorage.removeItem('token');
         localStorage.setItem('token', res.token);
         localStorage.setItem('just_logged_in', 'true');
         const userRes = await authApi.getMe();
@@ -79,6 +99,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const logout = () => {
         localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
         setUser(null);
     };
 

@@ -23,7 +23,7 @@ export default function ReviewModal({ isOpen, onClose, hotelId, hotelName, onRev
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const token = localStorage.getItem('token');
+        const token = sessionStorage.getItem('token') || localStorage.getItem('token');
         if (!token) {
             setError("Please login to write a review.");
             return;

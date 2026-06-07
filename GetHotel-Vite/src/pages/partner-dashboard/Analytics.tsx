@@ -23,11 +23,11 @@ export default function PartnerAnalyticsPage() {
 
     const fetchAnalytics = async () => {
         try {
-            const res = await hotelApi.getMyHotels();
+            const res = await hotelApi.getMyHotels({ includeBookings: true });
             if (res.success && res.data && res.data.length > 0) {
                 const myHotel = res.data[0];
                 setHotel(myHotel);
-                setBookings(myHotel.bookings || []);
+                setBookings(myHotel.booking || []);
             }
         } catch (err) {
             console.error("Failed to fetch analytics", err);
@@ -220,11 +220,11 @@ export default function PartnerAnalyticsPage() {
                         <div className="grid grid-cols-2 gap-6">
                             <div className="p-5 bg-slate-50 rounded-none border border-slate-100">
                                 <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Direct Bookings</p>
-                                <p className="text-xl font-black text-slate-900">82%</p>
+                                <p className="text-xl font-black text-slate-900">88%</p>
                             </div>
                             <div className="p-5 bg-slate-50 rounded-none border border-slate-100">
                                 <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Returning Guests</p>
-                                <p className="text-xl font-black text-slate-900">18%</p>
+                                <p className="text-xl font-black text-slate-900">12%</p>
                             </div>
                         </div>
                     </div>

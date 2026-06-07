@@ -73,7 +73,13 @@ export default function HotelCard({ hotel, className }: HotelCardProps) {
             let minFinalPrice = Infinity;
             
             targetRooms.forEach((r: any) => {
-                const variants = safeParse(r.variants || r.room_variants || r.roomVariants, []);
+                const variants = safeParse(r.variants || r.room_variants || r.roomVariants, []).map((v: any) => {
+                    const nameLower = (v.mealPlan || "").toLowerCase();
+                    if (nameLower.includes("room only") || nameLower === "ep" || nameLower === "ep (room only)") {
+                        return { ...v, price: Number(r.pricePerNight || r.price_per_night || 0) };
+                    }
+                    return v;
+                });
                 const rawRoomPrice = Number(r.pricePerNight || r.price_per_night || 0);
                 let pricesToEvaluate = [rawRoomPrice];
                 
@@ -118,7 +124,7 @@ export default function HotelCard({ hotel, className }: HotelCardProps) {
         }
     }
 
-    const payNowAmount = Math.round(basePrice * 0.18);
+    const payNowAmount = Math.round(basePrice * 0.12);
 
     const parsedImages = safeParse(hotel.images);
     const images = (Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages : [hotel.thumbnail]).filter(img => img && typeof img === 'string' && img.trim() !== "");
@@ -186,7 +192,7 @@ export default function HotelCard({ hotel, className }: HotelCardProps) {
                     <div className="bg-brand-600 text-white text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded shadow-lg flex items-center gap-1">
                         <Zap className="w-2.5 h-2.5 fill-white" /> {discountPercent}% OFF
                     </div>
-                    {mode === 'hourly' && (
+                    {mode === 'hourly' && rooms.some((r: any) => r.isHourlyEnabled || r.is_hourly_enabled) && (
                         <div className="bg-purple-600 text-white text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded shadow-lg flex items-center gap-1">
                             <Clock className="w-2.5 h-2.5" /> HOURLY
                         </div>
@@ -245,7 +251,7 @@ export default function HotelCard({ hotel, className }: HotelCardProps) {
                     <div className="mt-4 flex items-end justify-between">
                         <div className="flex flex-col">
                             <div className="flex items-baseline gap-2">
-                                <span className="text-[10px] font-black text-brand-600 uppercase tracking-widest leading-none">Pay 18% Now</span>
+                                <span className="text-[10px] font-black text-brand-600 uppercase tracking-widest leading-none">Pay 12% Now</span>
                                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">per night before taxes</span>
                             </div>
                             <div className="flex flex-col mt-1">

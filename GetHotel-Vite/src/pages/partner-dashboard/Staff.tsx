@@ -31,7 +31,7 @@ export default function PartnerStaffPage() {
 
     const fetchStaff = async () => {
         try {
-            const res = await hotelApi.getMyHotels();
+            const res = await hotelApi.getMyHotels({ light: true });
             if (res.success && res.data && res.data.length > 0) {
                 const myHotel = res.data[0];
                 setHotel(myHotel);
@@ -300,6 +300,3 @@ export default function PartnerStaffPage() {
         </div>
     );
 }
-
-
-

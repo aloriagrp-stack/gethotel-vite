@@ -1,43 +1,204 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-IN" prefix="og: https://ogp.me/ns#">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    
-    <!-- SEO Meta Tags -->
-    <title>GetHotel — Book Premium Hotels, Resorts & Boutique Stays in India</title>
-    <meta name="description" content="Discover and book the best hotels, resorts, and boutique stays across India. Compare prices, read reviews, and secure your perfect stay with GetHotel. Guaranteed best rates and premium service." />
-    <meta name="keywords" content="hotel booking india, premium hotels, resort booking, boutique stays, budget hotels india, luxury hotels india, GetHotelStays" />
-    <meta name="author" content="GetHotelStays" />
-    <meta name="robots" content="index, follow" />
 
-    <!-- Open Graph / Facebook / WhatsApp -->
+    <!-- ═══════════════════════════════════════════════
+         PRIMARY SEO — Static Fallback (React Helmet overrides per page)
+    ════════════════════════════════════════════════ -->
+    <title>GetHotelStays — Book Best Hotels in India | Luxury, Budget & Boutique Stays</title>
+    <meta name="description" content="Book hotels across India at unbeatable prices. Compare luxury resorts, boutique stays & budget hotels. Trusted by travelers from India, USA, UK & UAE. Pay only 12% now, rest at hotel. Best price guarantee & instant confirmation!" />
+    <meta name="keywords" content="hotel booking india, best hotels india, luxury hotels india, budget hotels india, boutique hotels india, book hotels online india, india hotels best price, hotels india nri, india travel accommodation, book india hotel from usa, book india hotel from uk, book india hotel from uae, hotels for nri india, gethotelstays, gethotel, hotel deals india, cheap hotels india, hotels mumbai, hotels delhi, hotels goa, hotels bangalore, hotels jaipur, pay at hotel india, last minute hotel deals india" />
+    <meta name="author" content="GetHotelStays" />
+    <meta name="copyright" content="GetHotelStays" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="bingbot" content="index, follow" />
+    <meta name="language" content="English" />
+    <meta name="revisit-after" content="3 days" />
+    <meta name="rating" content="General" />
+    <meta name="category" content="Travel, Hotels, Accommodation" />
+
+    <!-- Google Search Console Verification -->
+    <meta name="google-site-verification" content="M-yaXU14rnDoh4-JXkMQrwiSlWOqoo3ei2PTnrNSAFs" />
+
+    <!-- Geo Targeting: India + NRI markets -->
+    <meta name="geo.region" content="IN" />
+    <meta name="geo.placename" content="India" />
+    <meta name="geo.position" content="20.5937;78.9629" />
+    <meta name="ICBM" content="20.5937, 78.9629" />
+
+    <!-- Canonical -->
+    <link rel="canonical" href="https://gethotelstays.com/" />
+
+    <!-- ═══════════════════════════════════════════════
+         HREFLANG — International SEO (India + NRI markets)
+    ════════════════════════════════════════════════ -->
+    <link rel="alternate" hreflang="en-IN" href="https://gethotelstays.com/" />
+    <link rel="alternate" hreflang="en-US" href="https://gethotelstays.com/" />
+    <link rel="alternate" hreflang="en-GB" href="https://gethotelstays.com/" />
+    <link rel="alternate" hreflang="en-AE" href="https://gethotelstays.com/" />
+    <link rel="alternate" hreflang="en-CA" href="https://gethotelstays.com/" />
+    <link rel="alternate" hreflang="en-AU" href="https://gethotelstays.com/" />
+    <link rel="alternate" hreflang="en-SG" href="https://gethotelstays.com/" />
+    <link rel="alternate" hreflang="x-default" href="https://gethotelstays.com/" />
+
+    <!-- ═══════════════════════════════════════════════
+         OPEN GRAPH — Social Sharing (Facebook, WhatsApp, LinkedIn)
+    ════════════════════════════════════════════════ -->
+    <meta property="og:site_name" content="GetHotelStays" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://gethotelstays.com/" />
-    <meta property="og:title" content="GetHotel — Book Premium Hotels in India" />
-    <meta property="og:description" content="Discover and book the best hotels, resorts, and boutique stays across India. Premium stays at the best prices." />
+    <meta property="og:title" content="GetHotelStays — Book Best Hotels in India | Pay 12% Now, Rest at Hotel" />
+    <meta property="og:description" content="Discover & book 10,000+ verified hotels across India. Luxury, boutique & budget stays. Best price guaranteed. Trusted by NRIs from USA, UK, UAE & worldwide." />
     <meta property="og:image" content="https://gethotelstays.com/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="GetHotelStays — Book Hotels in India" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:locale" content="en_IN" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta property="og:locale:alternate" content="en_GB" />
+    <meta property="og:locale:alternate" content="en_AE" />
 
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://gethotelstays.com/" />
-    <meta property="twitter:title" content="GetHotel — Book Premium Hotels in India" />
-    <meta property="twitter:description" content="Discover and book the best hotels, resorts, and boutique stays across India." />
-    <meta property="twitter:image" content="https://gethotelstays.com/og-image.jpg" />
+    <!-- ═══════════════════════════════════════════════
+         TWITTER / X CARD
+    ════════════════════════════════════════════════ -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@GetHotelStays" />
+    <meta name="twitter:creator" content="@GetHotelStays" />
+    <meta name="twitter:title" content="GetHotelStays — Book Best Hotels in India" />
+    <meta name="twitter:description" content="10,000+ verified hotels across India. Luxury, boutique & budget stays. Pay only 12% online, rest at hotel. Trusted by NRIs worldwide." />
+    <meta name="twitter:image" content="https://gethotelstays.com/og-image.jpg" />
+    <meta name="twitter:image:alt" content="GetHotelStays — Hotel Booking India" />
 
-    <!-- Performance Optimization: Preconnect & Preload -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="dns-prefetch" href="https://checkout.razorpay.com">
-    <link rel="dns-prefetch" href="https://firebasestorage.googleapis.com">
-    
+    <!-- ═══════════════════════════════════════════════
+         FAVICON & APP ICONS
+    ════════════════════════════════════════════════ -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon.svg" />
+    <link rel="mask-icon" href="/favicon.svg" color="#0052FF" />
+
+    <!-- ═══════════════════════════════════════════════
+         PWA / MOBILE OPTIMIZATION
+    ════════════════════════════════════════════════ -->
+    <meta name="theme-color" content="#0052FF" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="GetHotelStays" />
+    <meta name="application-name" content="GetHotelStays" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-TileColor" content="#0052FF" />
+
+    <!-- ═══════════════════════════════════════════════
+         PERFORMANCE: Preconnect, Preload, DNS-Prefetch
+    ════════════════════════════════════════════════ -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://api.gethotelstays.com" />
+    <link rel="dns-prefetch" href="https://checkout.razorpay.com" />
+    <link rel="dns-prefetch" href="https://firebasestorage.googleapis.com" />
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+
     <!-- Primary Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
-    
-    <!-- Razorpay Checkout (Async) -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet" />
+
+    <!-- Razorpay Checkout (Async — non-blocking) -->
     <script async src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    
+
+    <!-- ═══════════════════════════════════════════════
+         STATIC JSON-LD — Organization + WebSite Schema
+         (React Helmet will add per-page schemas dynamically)
+    ════════════════════════════════════════════════ -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://gethotelstays.com/#organization",
+          "name": "GetHotelStays",
+          "alternateName": ["GetHotel", "GetHotel Stays", "GetHotelStays.com"],
+          "url": "https://gethotelstays.com",
+          "logo": {
+            "@type": "ImageObject",
+            "@id": "https://gethotelstays.com/#logo",
+            "url": "https://gethotelstays.com/og-image.jpg",
+            "contentUrl": "https://gethotelstays.com/og-image.jpg",
+            "width": 1200,
+            "height": 630,
+            "caption": "GetHotelStays"
+          },
+          "image": { "@id": "https://gethotelstays.com/#logo" },
+          "description": "GetHotelStays is India's premier online hotel booking platform. Book luxury, boutique and budget hotels across 500+ Indian cities. Trusted by travelers from India, USA, UK, UAE, Canada, Australia and Singapore.",
+          "foundingDate": "2024",
+          "areaServed": ["IN", "US", "GB", "AE", "CA", "AU", "SG"],
+          "slogan": "Pay 12% Now, Rest at Hotel",
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "customer support",
+            "availableLanguage": ["English", "Hindi"],
+            "areaServed": ["IN", "US", "GB", "AE", "CA", "AU", "SG"]
+          },
+          "address": {
+            "@type": "PostalAddress",
+            "addressCountry": "IN",
+            "addressLocality": "Mumbai",
+            "addressRegion": "Maharashtra"
+          },
+          "sameAs": [
+            "https://www.facebook.com/gethotelstays",
+            "https://www.instagram.com/gethotelstays",
+            "https://twitter.com/gethotelstays",
+            "https://www.linkedin.com/company/gethotelstays",
+            "https://www.youtube.com/@gethotelstays"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://gethotelstays.com/#website",
+          "url": "https://gethotelstays.com",
+          "name": "GetHotelStays",
+          "alternateName": "GetHotel — Hotel Booking India",
+          "description": "Book the best hotels in India. Luxury, boutique & budget stays at unbeatable prices.",
+          "publisher": { "@id": "https://gethotelstays.com/#organization" },
+          "inLanguage": ["en-IN", "en"],
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://gethotelstays.com/hotels?city={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "TravelAgency",
+          "@id": "https://gethotelstays.com/#travelagency",
+          "name": "GetHotelStays",
+          "url": "https://gethotelstays.com",
+          "description": "India's best online hotel booking platform with 10,000+ verified properties across 500+ cities.",
+          "priceRange": "₹₹-₹₹₹₹",
+          "areaServed": { "@type": "Country", "name": "India" },
+          "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": "Hotel Stays India",
+            "itemListElement": [
+              { "@type": "Offer", "itemOffered": { "@type": "LodgingBusiness", "name": "Luxury Hotels India" } },
+              { "@type": "Offer", "itemOffered": { "@type": "LodgingBusiness", "name": "Budget Hotels India" } },
+              { "@type": "Offer", "itemOffered": { "@type": "LodgingBusiness", "name": "Boutique Hotels India" } },
+              { "@type": "Offer", "itemOffered": { "@type": "Resort", "name": "Beach Resorts India" } },
+              { "@type": "Offer", "itemOffered": { "@type": "Resort", "name": "Hill Station Resorts India" } }
+            ]
+          }
+        }
+      ]
+    }
+    </script>
+
     <style>
       :root {
         --font-dm-sans: 'DM Sans', sans-serif;
@@ -48,7 +209,7 @@
         font-family: var(--font-outfit), var(--font-dm-sans);
         background: #ffffff;
       }
-      /* Prevent CLS */
+      /* Prevent CLS (Cumulative Layout Shift) */
       #root { min-height: 100vh; }
     </style>
   </head>

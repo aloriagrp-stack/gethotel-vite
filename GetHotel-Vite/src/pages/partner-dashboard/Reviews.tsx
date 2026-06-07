@@ -1,5 +1,3 @@
-
-
 import { useState, useEffect } from "react";
 import { useNavigate as useRouter } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -13,6 +11,24 @@ import {
 import { cn } from "@/lib/utils";
 import { hotelApi } from "@/lib/api";
 
+const parseComment = (commentStr: string) => {
+    if (!commentStr) return { likes: "", dislikes: "", overall: "" };
+    
+    const likesMatch = commentStr.match(/Likes:\s*(.*?)(?=\nDislikes:|$)/is);
+    const dislikesMatch = commentStr.match(/Dislikes:\s*(.*?)(?=\nOverall:|$)/is);
+    const overallMatch = commentStr.match(/Overall:\s*(.*?)$/is);
+    
+    if (likesMatch || dislikesMatch || overallMatch) {
+        return {
+            likes: likesMatch ? likesMatch[1].trim() : "",
+            dislikes: dislikesMatch ? dislikesMatch[1].trim() : "",
+            overall: overallMatch ? overallMatch[1].trim() : (likesMatch || dislikesMatch ? "" : commentStr.trim())
+        };
+    }
+    
+    return { likes: "", dislikes: "", overall: commentStr };
+};
+
 export default function PartnerReviewsPage() {
     const { user: authUser, loading: authLoading } = useAuth();
     const router = useRouter();
@@ -25,7 +41,7 @@ export default function PartnerReviewsPage() {
 
     const fetchReviews = async () => {
         try {
-            const res = await hotelApi.getMyHotels();
+            const res = await hotelApi.getMyHotels({ light: true });
             if (res.success && res.data && res.data.length > 0) {
                 const myHotel = res.data[0];
                 setHotel(myHotel);
@@ -158,7 +174,7 @@ export default function PartnerReviewsPage() {
                                             <User className="w-6 h-6 text-slate-400" />
                                         </div>
                                         <div>
-                                            <h4 className="text-lg font-black text-slate-900">{review.user.name}</h4>
+                                            <h4 className="text-lg font-black text-slate-900">{review.user?.name || "Guest"}</h4>
                                             <div className="flex items-center gap-4 mt-1">
                                                 <div className="flex items-center gap-1">
                                                     {[1, 2, 3, 4, 5].map((star) => (
@@ -171,9 +187,59 @@ export default function PartnerReviewsPage() {
                                             </div>
                                         </div>
                                     </div>
-                                    <p className="text-slate-600 font-medium leading-relaxed mb-8 italic">
-                                        "{review.comment}"
-                                    </p>
+                                    
+                                    {/* Parsed Comment */}
+                                    {(() => {
+                                        const parsed = parseComment(review.comment);
+                                        return (
+                                            <div className="space-y-4 mb-6">
+                                                {parsed.likes && (
+                                                    <div className="flex items-start gap-2.5">
+                                                        <span className="text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded text-[9px] font-black uppercase tracking-wider shrink-0 mt-0.5">Likes</span>
+                                                        <p className="text-sm font-bold text-slate-700 leading-relaxed">{parsed.likes}</p>
+                                                    </div>
+                                                )}
+                                                {parsed.dislikes && (
+                                                    <div className="flex items-start gap-2.5">
+                                                        <span className="text-rose-600 bg-rose-50 px-2.5 py-1 rounded text-[9px] font-black uppercase tracking-wider shrink-0 mt-0.5">Dislikes</span>
+                                                        <p className="text-sm font-bold text-slate-700 leading-relaxed">{parsed.dislikes}</p>
+                                                    </div>
+                                                )}
+                                                {parsed.overall && (
+                                                    <div className="flex items-start gap-2.5">
+                                                        <span className="text-slate-600 bg-slate-100 px-2.5 py-1 rounded text-[9px] font-black uppercase tracking-wider shrink-0 mt-0.5">Comment</span>
+                                                        <p className="text-sm font-medium text-slate-600 italic leading-relaxed">"{parsed.overall}"</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })()}
+
+                                    {/* Sub-ratings Grid */}
+                                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 bg-slate-50/50 p-5 rounded-2xl mb-8 border border-slate-100 max-w-2xl">
+                                        {[
+                                            { label: "Cleanliness", val: review.cleanliness },
+                                            { label: "Comfort", val: review.comfort },
+                                            { label: "Location", val: review.location },
+                                            { label: "Staff", val: review.staff },
+                                            { label: "Value", val: review.valueForMoney },
+                                        ].map((sub, idx) => (
+                                            <div key={idx} className="flex flex-col">
+                                                <span className="text-[9px] font-black uppercase text-slate-400 tracking-wider mb-1.5">{sub.label}</span>
+                                                <div className="flex gap-0.5">
+                                                    {[1, 2, 3, 4, 5].map((s) => (
+                                                        <Star 
+                                                            key={s} 
+                                                            className={cn(
+                                                                "w-3 h-3", 
+                                                                (sub.val ?? 5) >= s ? "fill-amber-400 text-amber-400" : "text-slate-200"
+                                                            )} 
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
 
                                     {/* Partner Reply Display */}
                                     {review.reply ? (
@@ -253,6 +319,3 @@ export default function PartnerReviewsPage() {
         </div>
     );
 }
-
-
-

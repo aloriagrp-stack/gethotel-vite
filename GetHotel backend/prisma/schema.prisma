@@ -137,6 +137,8 @@ model hotel {
   qualityScore          Float          @default(85)
   responseSpeed         String?        @default("Fast")
   isActive              Boolean        @default(true)
+  otaApiKey             String?        @unique(map: "Hotel_otaApiKey_key")
+  otaEnabled            Boolean        @default(false)
   booking               booking[]
   coupon                coupon[]
   user                  user           @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Hotel_userId_fkey")
@@ -356,4 +358,24 @@ model hotelwallet {
   lastPayoutDate   DateTime?
   updatedAt        DateTime
   hotel            hotel     @relation(fields: [hotelId], references: [id], onDelete: Cascade, map: "hotelWallet_hotelId_fkey")
+}
+
+model visitor_log {
+  id        Int      @id @default(autoincrement())
+  ip        String   @db.VarChar(64)
+  country   String?  @db.VarChar(100)
+  region    String?  @db.VarChar(100)
+  city      String?  @db.VarChar(100)
+  page      String?  @db.VarChar(255)
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([country])
+}
+
+model homepage_config {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  value     String   @db.LongText
+  updatedAt DateTime @updatedAt
 }

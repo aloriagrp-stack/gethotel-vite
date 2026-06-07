@@ -19,7 +19,7 @@ export default function PartnerDashboardHome() {
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const res = await hotelApi.getMyHotels();
+                const res = await hotelApi.getMyHotels({ includeBookings: true });
                 if (res.success && res.data && res.data.length > 0) {
                     setHotel(res.data[0]);
                 }
@@ -83,7 +83,7 @@ export default function PartnerDashboardHome() {
         b && ['confirmed', 'checked-in', 'checked-out', 'held', 'pending'].includes(b.status?.toLowerCase())
     ).reduce((sum: number, b: any) => sum + (Number(b.totalPrice) || 0), 0);
 
-    const netEarnings = totalRevenue * 0.82; 
+    const netEarnings = totalRevenue * 0.88; 
 
     // Activity Filtering
     const filteredActivity = allBookings.filter((b: any) => {

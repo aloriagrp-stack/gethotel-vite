@@ -1,22 +1,20 @@
 
-
 import { useState, useEffect } from "react";
-import { Star, ArrowRight, Heart, MapPin, Wifi, Waves, Coffee, Check } from "lucide-react";
+import { Star, ArrowRight, Heart, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn, safeParse } from "@/lib/utils";
 import { useWishlist } from "@/context/WishlistContext";
 import { useStayMode } from "@/context/StayModeContext";
 import Image from "@/components/common/Image";
 
+
 interface Hotel {
     id: string | number;
     name: string;
     city: string;
     address?: string;
-    country?: string;
     starRating: number;
     pricePerNight: number;
-    originalPrice?: number;
     thumbnail: string;
     room?: any[];
 }
@@ -30,48 +28,41 @@ function TrendingHotelCard({ hotel }: { hotel: Hotel }) {
     useEffect(() => {
         const fetchDeal = async () => {
             try {
-                // Dynamically fetch actual deals applied from backend
                 const { couponApi } = await import('@/lib/api');
                 const res = await couponApi.getCoupons(Number(hotel.id));
                 const rawData = res.data?.coupons || res.data || res;
                 const couponList = Array.isArray(rawData) ? rawData : [];
                 setCoupons(couponList.filter((c: any) => c.isActive !== false && c.is_active !== false));
-            } catch (err) {
-                // Ignore errors to not break card UI
-            }
+            } catch (_) { }
         };
         fetchDeal();
     }, [hotel.id]);
 
     const rooms = hotel.room || [];
-    let basePrice = 0; // The true lowest price set by admin
-    const duration = "3"; // Default duration for home page cards
-    let priceLabel = mode === 'hourly' ? `/ ${duration} hours` : "/ night";
+    const isHourly = mode === 'hourly';
+    let basePrice = 0;
+    const duration = "3";
+    const priceLabel = isHourly ? `/ ${duration} hours` : "/ night";
 
     if (rooms.length > 0) {
-        // Filter rooms that support hourly stay if in hourly mode
-        const eligibleRooms = mode === 'hourly' 
+        const eligibleRooms = isHourly
             ? rooms.filter(r => r.isHourlyEnabled || r.is_hourly_enabled)
-            : rooms;
-
+            : rooms.filter(r => !r.isHourlyEnabled && !r.is_hourly_enabled);
         const targetRooms = eligibleRooms.length > 0 ? eligibleRooms : rooms;
-
         const minRoom = targetRooms.reduce((prev, curr) => {
             const getPrice = (r: any) => {
-                if (mode !== 'hourly') return r.pricePerNight;
+                if (!isHourly) return r.pricePerNight;
                 const rates = typeof r.hourlyRates === 'string' ? safeParse(r.hourlyRates, {}) : (r.hourlyRates || safeParse(r.hourly_rates, {}));
                 return Number(rates[duration] || rates[String(duration)] || r.pricePerNight * 0.3);
             };
             return getPrice(prev) < getPrice(curr) ? prev : curr;
         });
-
         const rates = typeof minRoom.hourlyRates === 'string' ? safeParse(minRoom.hourlyRates, {}) : (minRoom.hourlyRates || safeParse(minRoom.hourly_rates, {}));
-        basePrice = mode === 'hourly' ? Number(rates[duration] || rates[String(duration)] || minRoom.pricePerNight * 0.3) : minRoom.pricePerNight;
+        basePrice = isHourly ? Number(rates[duration] || rates[String(duration)] || minRoom.pricePerNight * 0.3) : minRoom.pricePerNight;
     } else {
-        basePrice = mode === 'hourly' ? (hotel.pricePerNight * 0.3) : hotel.pricePerNight;
+        basePrice = isHourly ? hotel.pricePerNight * 0.3 : hotel.pricePerNight;
     }
 
-    // Determine max percentage discount from active coupons
     let maxDiscountPercent = 0;
     coupons.forEach(c => {
         if (c.discountType === 'percentage' || c.discount_type === 'percentage') {
@@ -80,31 +71,30 @@ function TrendingHotelCard({ hotel }: { hotel: Hotel }) {
         }
     });
 
-    // If no dynamic coupon, fallback to no discount (or you can set a default like 5 if basic deal is guaranteed)
-    // The user requested NO hardcoding, so it purely relies on fetched coupons.
     const displayOriginalPrice = basePrice;
-    const displayPrice = maxDiscountPercent > 0 
-        ? Math.round(basePrice * (1 - maxDiscountPercent / 100)) 
+    const displayPrice = maxDiscountPercent > 0
+        ? Math.round(basePrice * (1 - maxDiscountPercent / 100))
         : basePrice;
+    const payNowPrice = Math.round(displayPrice * 0.12);
 
     return (
         <div className="group relative w-full h-full rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 bg-slate-100">
-            <Link to={`/hotel/${hotel.id}?stayType=${mode}`} className="absolute inset-0 z-10" />
-            
-            {/* 📸 FULL BACKGROUND IMAGE */}
+            <Link to={`/hotel/${hotel.id}?stayType=${isHourly ? 'hourly' : 'nightly'}`} className="absolute inset-0 z-10" />
+
+            {/* Background Image */}
             <Image
                 src={hotel.thumbnail}
                 alt={hotel.name}
                 fill
                 className="transition-transform duration-700 group-hover:scale-110"
             />
-            
+
             {/* Gradient Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
 
             {/* Badges */}
             <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
-                {mode === 'hourly' && (
+                {isHourly && (
                     <div className="px-3 py-1 bg-blue-600 text-white text-[9px] font-black rounded-full shadow-lg flex items-center gap-1.5 animate-pulse">
                         <div className="w-1.5 h-1.5 bg-white rounded-full" />
                         HOURLY STAY
@@ -120,7 +110,7 @@ function TrendingHotelCard({ hotel }: { hotel: Hotel }) {
                 <Heart className={cn("w-4 h-4 transition-all duration-300", wishlisted ? "fill-red-500 text-red-500 scale-110" : "text-white")} />
             </button>
 
-            {/* Content Overlaid at Bottom */}
+            {/* Content */}
             <div className="absolute bottom-5 left-5 right-5 z-20 space-y-3">
                 <div className="space-y-0.5">
                     <h3 className="text-lg font-bold text-white leading-tight line-clamp-1 tracking-tight">
@@ -134,21 +124,38 @@ function TrendingHotelCard({ hotel }: { hotel: Hotel }) {
 
                 <div className="flex items-end justify-between gap-2 border-t border-white/10 pt-3">
                     <div className="flex flex-col">
-                        <p className="text-[9px] font-bold text-white/50 line-through leading-none mb-1">
-                            ₹{displayOriginalPrice.toLocaleString()}
-                        </p>
-                        <p className="text-xl font-bold text-white leading-none tracking-tight">
-                            ₹{displayPrice.toLocaleString()}
-                            <span className="text-[9px] text-white/40 ml-1">{priceLabel}</span>
-                        </p>
+                        <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
+                            <span className="text-[9px] font-bold text-white/40 line-through decoration-red-500 decoration-1">
+                                ₹{displayOriginalPrice.toLocaleString()}
+                            </span>
+                            {maxDiscountPercent > 0 && (
+                                <span className="text-[9px] font-bold text-white/50 line-through">
+                                    ₹{displayPrice.toLocaleString()}
+                                </span>
+                            )}
+                        </div>
+
+                        <div className="space-y-1">
+                            <p className="text-xl font-black text-white leading-none tracking-tight">
+                                ₹{payNowPrice.toLocaleString()}
+                                <span className="text-[9px] text-white/40 ml-1 font-medium">{priceLabel}</span>
+                            </p>
+                            <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-500/20 border border-emerald-500/30 text-[8px] font-bold text-emerald-400 uppercase tracking-wider">
+                                <div className="w-1 h-1 bg-emerald-400 rounded-full animate-pulse" />
+                                You have to only pay now 12%
+                            </div>
+                        </div>
                     </div>
-                    
-                    <button className={cn(
-                        "px-4 py-2 text-white text-[9px] font-black uppercase tracking-widest rounded-full shadow-lg transition-all active:scale-95",
-                        mode === 'hourly' ? "bg-blue-600 hover:bg-blue-700 shadow-blue-500/20" : "bg-slate-950 hover:bg-black"
-                    )}>
+
+                    <Link
+                        to={`/hotel/${hotel.id}?stayType=${isHourly ? 'hourly' : 'nightly'}`}
+                        className={cn(
+                            "px-4 py-2.5 text-white text-[9px] font-black uppercase tracking-widest rounded-full shadow-lg transition-all active:scale-95 shrink-0 text-center flex items-center justify-center",
+                            isHourly ? "bg-blue-600 hover:bg-blue-700 shadow-blue-500/20" : "bg-white text-slate-950 hover:bg-slate-100"
+                        )}
+                    >
                         Book
-                    </button>
+                    </Link>
                 </div>
             </div>
         </div>
@@ -157,19 +164,12 @@ function TrendingHotelCard({ hotel }: { hotel: Hotel }) {
 
 function TrendingHotelSkeleton() {
     return (
-        <div className="w-full h-full rounded-[2.25rem] overflow-hidden bg-slate-200 animate-pulse relative p-5 flex flex-col justify-end gap-3 border border-slate-100/50 shadow-sm aspect-[4/5] shrink-0">
-            {/* Wishlist Button Skeleton */}
+        <div className="w-full h-full rounded-3xl overflow-hidden bg-slate-200 animate-pulse relative p-5 flex flex-col justify-end gap-3 border border-slate-100/50 shadow-sm aspect-[4/5] shrink-0">
             <div className="absolute top-4 right-4 w-9 h-9 bg-slate-300 rounded-full" />
-            
-            {/* Text skeleton lines at bottom */}
             <div className="space-y-2.5">
-                {/* Title Line */}
                 <div className="h-5 bg-slate-300 rounded-lg w-4/5" />
-                {/* Location Line */}
                 <div className="h-3 bg-slate-300 rounded-lg w-1/2" />
             </div>
-
-            {/* Price & Book Button Skeleton */}
             <div className="flex items-center justify-between border-t border-slate-300/40 pt-3 mt-1">
                 <div className="space-y-1.5">
                     <div className="h-2.5 bg-slate-300 rounded-md w-12" />
@@ -181,28 +181,54 @@ function TrendingHotelSkeleton() {
     );
 }
 
-export default function TrendingHotels({ hotels, loading = false }: { hotels: Hotel[]; loading?: boolean }) {
-    const displayHotels = hotels || [];
+interface TrendingHotelsProps {
+    hotels: Hotel[];
+    loading?: boolean;
+}
+
+export default function TrendingHotels({
+    hotels,
+    loading = false
+}: TrendingHotelsProps) {
+    const { mode } = useStayMode();
+    const displayHotels = (hotels || []).filter(hotel => {
+        const rooms = hotel.room || [];
+        if (mode === 'hourly') {
+            return rooms.some((r: any) => r.isHourlyEnabled || r.is_hourly_enabled);
+        } else {
+            return rooms.length === 0 || rooms.some((r: any) => !r.isHourlyEnabled && !r.is_hourly_enabled);
+        }
+    });
 
     return (
         <section className="pt-0 pb-12 bg-transparent overflow-hidden">
             <div className="w-full max-w-none mx-auto px-3 md:px-8">
-                <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4">
-                    <div>
-                        <h2 className="text-4xl md:text-5xl font-bold text-slate-950 tracking-tight">
-                            Trending <span className="text-blue-600">Hotels</span>
-                        </h2>
+
+                {/* ── Header Row ── */}
+                <div className="flex items-center justify-between mb-6 gap-4">
+                    <div className="flex flex-col gap-2">
+
+                        {/* Title */}
+                        <div className="flex flex-wrap items-center gap-3">
+                            <h2 className="text-3xl md:text-5xl font-bold text-slate-950 tracking-tight leading-none">
+                                Trending <span className="text-blue-600">Hotels</span>
+                            </h2>
+                        </div>
                     </div>
+
                     <Link
                         to="/hotels"
-                        className="flex items-center gap-2 text-blue-600 text-xs font-black uppercase tracking-widest hover:gap-3 transition-all group shrink-0 italic"
+                        className="flex items-center justify-center w-10 h-10 rounded-full border border-slate-250 bg-white text-slate-700 hover:text-blue-600 hover:border-blue-500 hover:shadow-sm transition-all duration-200 shrink-0"
+                        title="View all properties"
                     >
-                        View all properties
                         <ArrowRight className="w-5 h-5" />
                     </Link>
                 </div>
 
-                <div className="flex gap-4 pb-6 overflow-x-auto snap-x snap-mandatory no-scrollbar -mx-3 md:-mx-8 px-3 md:px-8">
+                {/* ── Cards Carousel ── */}
+                <div
+                    className="flex gap-4 pb-6 overflow-x-auto snap-x snap-mandatory no-scrollbar -mx-3 md:-mx-8 px-3 md:px-8 transition-opacity duration-300"
+                >
                     <div className="w-1 shrink-0 snap-start md:hidden" />
                     {loading ? (
                         Array.from({ length: 4 }).map((_, idx) => (
@@ -211,19 +237,19 @@ export default function TrendingHotels({ hotels, loading = false }: { hotels: Ho
                             </div>
                         ))
                     ) : displayHotels.length > 0 ? (
-                        displayHotels.map((hotel) => (
+                        displayHotels.map(hotel => (
                             <div key={hotel.id} className="w-[240px] md:w-[300px] aspect-[4/5] shrink-0 snap-start">
                                 <TrendingHotelCard hotel={hotel} />
                             </div>
                         ))
                     ) : (
-                        <div className="text-slate-400 font-bold italic py-10">No trending properties found.</div>
+                        <div className="w-full py-16 flex flex-col items-center gap-3 text-center">
+                            <MapPin className="w-8 h-8 text-slate-300" />
+                            <p className="text-slate-400 font-bold">No properties found.</p>
+                        </div>
                     )}
                 </div>
             </div>
         </section>
     );
 }
-
-
-

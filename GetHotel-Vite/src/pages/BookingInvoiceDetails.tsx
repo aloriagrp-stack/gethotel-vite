@@ -63,8 +63,8 @@ export default function InvoicePage() {
                                 <span className="font-mono font-bold text-slate-900">₹36,000.00</span>
                             </div>
                             <div className="flex justify-between items-center">
-                                <span className="font-black text-slate-900 italic">Luxury Tax (GST 18%)</span>
-                                <span className="font-mono font-bold text-slate-900">₹6,480.00</span>
+                                <span className="font-black text-slate-900 italic">Taxes & Fees (GST)</span>
+                                <span className="font-mono font-bold text-slate-900">₹1,800.00</span>
                             </div>
                             <div className="flex justify-between items-center">
                                 <span className="font-black text-slate-900 italic">Elite Membership Discount</span>

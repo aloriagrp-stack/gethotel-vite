@@ -3,7 +3,9 @@ const {
     createBooking,
     getMyBookings,
     getBookings,
-    updateBooking
+    getBooking,
+    updateBooking,
+    cancelBooking
 } = require('../controllers/bookingController');
 
 const router = express.Router();
@@ -20,6 +22,11 @@ router.route('/my-bookings')
     .get(getMyBookings);
 
 router.route('/:id')
+    .get(getBooking)
     .put(authorize('hotel_admin', 'super_admin'), updateBooking);
+
+router.route('/:id/cancel')
+    .post(cancelBooking)
+    .put(cancelBooking);
 
 module.exports = router;

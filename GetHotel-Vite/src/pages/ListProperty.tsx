@@ -1,12 +1,41 @@
 
-
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { CheckCircle2, TrendingUp, ShieldCheck, Globe, ArrowRight, Sparkles, Hotel } from "lucide-react";
+import SEOHead from "@/components/common/SEOHead";
+import { PAGE_SEO, buildBreadcrumbSchema, SITE } from "@/lib/seo";
 
 export default function ListPropertyLandingPage() {
+    const howToSchema = {
+        "@context": "https://schema.org",
+        "@type": "HowTo",
+        name: "How to List Your Hotel on GetHotelStays",
+        description: "List your hotel property on GetHotelStays and reach millions of travelers in India and worldwide. Simple 3-step process.",
+        totalTime: "PT10M",
+        estimatedCost: { "@type": "MonetaryAmount", currency: "INR", value: "0" },
+        step: [
+            { "@type": "HowToStep", position: 1, name: "Create Your Account", text: "Sign up and verify your basic details on GetHotelStays partner portal." },
+            { "@type": "HowToStep", position: 2, name: "Add Property Details", text: "Upload high-quality photos, set your prices, define room types and amenities." },
+            { "@type": "HowToStep", position: 3, name: "Go Live and Get Bookings", text: "Your property becomes instantly visible to millions of travelers from India and worldwide." },
+        ],
+    };
+
     return (
         <div className="font-sans text-slate-900">
+            <SEOHead
+                title={PAGE_SEO.listProperty.title}
+                description={PAGE_SEO.listProperty.description}
+                keywords={PAGE_SEO.listProperty.keywords}
+                ogUrl={`${SITE.url}/list-property`}
+                canonicalUrl={`${SITE.url}/list-property`}
+                schemas={[
+                    howToSchema,
+                    buildBreadcrumbSchema([
+                        { name: "Home", url: "/" },
+                        { name: "List Your Property", url: "/list-property" },
+                    ]),
+                ]}
+            />
             <main className="pb-20">
                 {/* Hero Section with Waves */}
                 <section className="relative px-6 pt-16 pb-40 md:pt-24 md:pb-56 overflow-hidden bg-transparent text-slate-900">

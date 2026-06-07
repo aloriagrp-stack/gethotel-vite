@@ -1,11 +1,8 @@
-
-
 import { useState } from "react";
 import { useNavigate as useRouter } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { ShieldCheck, Lock, Mail, Loader2, ArrowRight, Zap, Eye, EyeOff, AlertCircle, X } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
 
 export default function AdminLoginPage() {
     const [email, setEmail] = useState("");
@@ -42,175 +39,106 @@ export default function AdminLoginPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center p-6 relative overflow-hidden font-mono selection:bg-[#00FF41] selection:text-black">
-            {/* Matrix Digital Rain Effect */}
-            <div className="absolute inset-0 pointer-events-none opacity-[0.07] z-0 overflow-hidden">
-                <div className="matrix-rain"></div>
-            </div>
-
-            {/* Scanline Effect */}
-            <div className="absolute inset-0 pointer-events-none z-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%]"></div>
-
-            <div className="max-w-md w-full relative z-20">
-                {/* Branding & Header */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-center mb-16"
-                >
-                    <div className="inline-flex items-center gap-3 px-4 py-1.5 bg-[#00FF41]/5 rounded-sm border border-[#00FF41]/20 mb-8 backdrop-blur-md">
-                        <div className="w-2 h-2 bg-[#00FF41] rounded-full animate-pulse shadow-[0_0_10px_#00FF41]" />
-                        <span className="text-[10px] font-black text-[#00FF41] uppercase tracking-[0.4em]">Global Node 0x7A2</span>
+        <div className="min-h-screen bg-[#012456] text-[#eeeee0] p-6 md:p-12 font-mono selection:bg-[#ffeb3b] selection:text-black flex flex-col justify-between select-text text-sm md:text-base leading-relaxed">
+            <div className="max-w-4xl w-full">
+                {/* GetHotel PowerShell Header */}
+                <div className="space-y-4 mb-8">
+                    <div>
+                        <div>GetHotelStays Administrative PowerShell</div>
+                        <div>Copyright (C) 2026 GetHotelStays Corp. All rights reserved.</div>
                     </div>
+                    <div>Authorized terminal connection. Monitoring active (session: tty1).</div>
+                </div>
 
-                    <div className="relative inline-block">
-                        <h1 className="text-6xl font-black text-white mb-2 tracking-tighter uppercase italic leading-none hacker-glitch" data-text="CONTROLHUB">
-                            Control<span className="text-[#00FF41] drop-shadow-[0_0_15px_#00FF41]">Hub</span>
-                        </h1>
-                        <div className="absolute -right-12 top-0 text-[10px] text-[#00FF41] font-black animate-bounce">v4.0.2</div>
-                    </div>
-                    <p className="text-[#00FF41]/40 font-bold text-[9px] uppercase tracking-[0.8em] mt-6 flex items-center justify-center gap-2">
-                        <span className="w-8 h-[1px] bg-[#00FF41]/20" />
-                        System Overlord Authentication
-                        <span className="w-8 h-[1px] bg-[#00FF41]/20" />
-                    </p>
-                </motion.div>
+                {/* Session Start Prompt */}
+                <div className="mb-6">
+                    <span className="text-[#eeeeee]">PS C:\Users\DELL\GetHotelStays&gt;</span> <span className="text-white">.\Start-AdminLogin.ps1</span>
+                </div>
 
+                {/* Error log styled exactly like PowerShell Error */}
                 {error && (
-                    <motion.div
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="mb-8 p-4 bg-red-500/10 border-l-4 border-red-500 text-red-400 text-[11px] font-bold uppercase tracking-widest backdrop-blur-md flex items-center gap-3"
-                    >
-                        <AlertCircle className="w-4 h-4 shrink-0" />
-                        <span>[SECURITY ALERT]: {error}</span>
-                    </motion.div>
+                    <div className="text-[#ff5555] bg-[#012456] mb-6 whitespace-pre-wrap font-mono">
+                        <div>.\Start-AdminLogin.ps1 : {error}</div>
+                        <div>    + CategoryInfo          : SecurityError: (:) [Start-AdminLogin], UnauthorizedAccessException</div>
+                        <div>    + FullyQualifiedErrorId : AccessDenied,GetHotelStays.Admin.Login</div>
+                    </div>
                 )}
 
-                <motion.form
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2 }}
-                    onSubmit={handleSubmit}
-                    className="space-y-10"
-                >
+                {/* The Authentication Input Prompts */}
+                <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-4">
-                        <div className="flex justify-between items-center px-1">
-                            <label className="text-[11px] font-black text-[#00FF41]/60 uppercase tracking-widest">_Identity_</label>
-                            <span className="text-[9px] text-[#00FF41]/30">00101101</span>
+                        {/* Email Input Prompt */}
+                        <div className="flex flex-col md:flex-row md:items-center gap-2">
+                            <span className="text-zinc-300 shrink-0 font-bold">Identity (EmailAddress):</span>
+                            <div className="flex-1 flex items-center relative">
+                                <input
+                                    type="email"
+                                    required
+                                    autoFocus
+                                    placeholder="root@gethotelstays.com"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="w-full md:w-96 bg-transparent border-b border-[#eeeee0]/20 focus:border-white text-white focus:outline-none py-1 font-mono tracking-wider placeholder:text-[#eeeee0]/15"
+                                />
+                            </div>
                         </div>
-                        <div className="relative group">
-                            <div className="absolute inset-0 bg-[#00FF41]/5 blur-xl group-focus-within:bg-[#00FF41]/10 transition-all rounded-full pointer-events-none" />
-                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#00FF41]/30 group-focus-within:text-[#00FF41] transition-colors" />
-                            <input
-                                type="email" required placeholder="ROOT@GETHOTEL.SYS"
-                                value={email} onChange={(e) => setEmail(e.target.value)}
-                                className="w-full bg-black/40 border-2 border-[#00FF41]/10 hover:border-[#00FF41]/30 rounded-none pl-12 pr-4 py-5 text-sm font-black text-white focus:border-[#00FF41] outline-none transition-all placeholder:text-[#00FF41]/20 uppercase tracking-widest shadow-[inset_0_0_20px_rgba(0,255,65,0.02)]"
-                            />
+
+                        {/* Password Input Prompt */}
+                        <div className="flex flex-col md:flex-row md:items-center gap-2">
+                            <span className="text-zinc-300 shrink-0 font-bold">AccessKey (Password)  :</span>
+                            <div className="flex-grow-0 flex items-center relative w-full md:w-96">
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    required
+                                    placeholder="enter password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full bg-transparent border-b border-[#eeeee0]/20 focus:border-white text-white focus:outline-none py-1 font-mono tracking-[0.2em] placeholder:tracking-normal placeholder:text-[#eeeee0]/15"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-2 text-[#eeeee0]/40 hover:text-white transition-colors"
+                                >
+                                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </button>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center px-1">
-                            <label className="text-[11px] font-black text-[#00FF41]/60 uppercase tracking-widest">_Master_Key_</label>
-                            <span className="text-[9px] text-[#00FF41]/30">ENCRYPTED_AES256</span>
+                    {/* Action trigger button designed like command execution */}
+                    <div className="pt-6 space-y-4">
+                        <div className="flex items-center gap-2 text-zinc-300">
+                            <span>PS C:\Users\DELL\GetHotelStays&gt;</span>
+                            <span className="text-white">Submit-Session -Confirm:$true</span>
                         </div>
-                        <div className="relative group">
-                            <div className="absolute inset-0 bg-[#00FF41]/5 blur-xl group-focus-within:bg-[#00FF41]/10 transition-all rounded-full pointer-events-none" />
-                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#00FF41]/30 group-focus-within:text-[#00FF41] transition-colors" />
-                            <input
-                                type={showPassword ? "text" : "password"} required placeholder="********"
-                                value={password} onChange={(e) => setPassword(e.target.value)}
-                                className="w-full bg-black/40 border-2 border-[#00FF41]/10 hover:border-[#00FF41]/30 rounded-none pl-12 pr-14 py-5 text-sm font-black text-white focus:border-[#00FF41] outline-none transition-all placeholder:text-[#00FF41]/20 tracking-[0.5em] shadow-[inset_0_0_20px_rgba(0,255,65,0.02)]"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-4 top-1/2 -translate-y-1/2 text-[#00FF41]/30 hover:text-[#00FF41] transition-colors"
-                            >
-                                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                            </button>
-                        </div>
-                    </div>
 
-                    <div className="pt-6 relative group">
-                        <div className="absolute -inset-1 bg-[#00FF41] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200" />
                         <button
-                            type="submit" disabled={loading}
-                            className="relative w-full py-6 bg-[#00FF41] text-black font-black rounded-none shadow-[0_0_20px_rgba(0,255,65,0.4)] hover:bg-[#00FF41] transition-all flex items-center justify-center gap-4 text-[11px] uppercase tracking-[0.6em]"
+                            type="submit"
+                            disabled={loading}
+                            className="bg-[#002b5c] hover:bg-[#003875] border border-[#eeeee0]/30 hover:border-white px-8 py-3 text-white font-mono transition-all duration-150 flex items-center gap-3 disabled:opacity-50 cursor-pointer text-sm"
                         >
                             {loading ? (
-                                <div className="flex items-center gap-3">
+                                <>
                                     <Loader2 className="w-4 h-4 animate-spin" />
-                                    <span>Bypassing Firewall...</span>
-                                </div>
+                                    <span>Executing login pipeline...</span>
+                                </>
                             ) : (
-                                <>Access Terminal <ArrowRight className="w-5 h-5" /></>
+                                <>
+                                    <span>[Press Enter or Click to Authenticate]</span>
+                                </>
                             )}
                         </button>
                     </div>
-                </motion.form>
-
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.4 }}
-                    className="mt-20 text-center flex items-center justify-center gap-6"
-                >
-                    <div className="w-12 h-[1px] bg-[#00FF41]/10" />
-                    <Link to="/" className="text-[#00FF41]/40 font-black text-[10px] uppercase tracking-[0.4em] hover:text-[#00FF41] transition-colors flex items-center gap-2">
-                        <X className="w-3 h-3" /> Terminate Session
-                    </Link>
-                    <div className="w-12 h-[1px] bg-[#00FF41]/10" />
-                </motion.div>
+                </form>
             </div>
 
-            {/* Matrix Styling */}
-            <style>{`
-                .matrix-rain {
-                    background: linear-gradient(0deg, rgba(0, 255, 65, 0) 0%, #00FF41 100%);
-                    width: 2px;
-                    height: 100px;
-                    position: absolute;
-                    top: -100px;
-                    animation: rain 2s linear infinite;
-                }
-                @keyframes rain {
-                    0% { transform: translateY(0); opacity: 1; }
-                    100% { transform: translateY(100vh); opacity: 0; }
-                }
-                .hacker-glitch {
-                    position: relative;
-                }
-                .hacker-glitch::before, .hacker-glitch::after {
-                    content: attr(data-text);
-                    position: absolute;
-                    top: 0; left: 0; width: 100%; height: 100%;
-                }
-                .hacker-glitch::before {
-                    left: 2px;
-                    text-shadow: -2px 0 #ff00c1;
-                    clip: rect(44px, 450px, 56px, 0);
-                    animation: glitch-anim 5s infinite linear alternate-reverse;
-                }
-                .hacker-glitch::after {
-                    left: -2px;
-                    text-shadow: -2px 0 #00fff9, 2px 2px #ff00c1;
-                    animation: glitch-anim2 1s infinite linear alternate-reverse;
-                }
-                @keyframes glitch-anim {
-                    0% { clip: rect(31px, 9999px, 94px, 0); }
-                    100% { clip: rect(70px, 9999px, 71px, 0); }
-                }
-            `}</style>
-
-            {/* Bottom Status Mark */}
-            <div className="absolute bottom-12 w-full text-center">
-                <div className="flex items-center justify-center gap-8 opacity-30">
-                    <span className="text-[9px] font-black text-[#00FF41] uppercase tracking-[0.5em]">CPU_LOAD: 12%</span>
-                    <span className="text-[9px] font-black text-[#00FF41] uppercase tracking-[0.5em]">ENCRYPTION: ACTIVE</span>
-                    <span className="text-[9px] font-black text-[#00FF41] uppercase tracking-[0.5em]">IP: UNTRACEABLE</span>
-                </div>
+            {/* Footer containing navigation back home */}
+            <div className="mt-12 pt-6 border-t border-[#eeeee0]/10 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-[#eeeee0]/50 select-none">
+                <div>Active Host: localhost:5173 | Terminal Session: tty1</div>
+                <Link to="/" className="hover:text-white transition-colors flex items-center gap-1 font-mono text-zinc-300">
+                    PS C:\&gt; exit
+                </Link>
             </div>
         </div>
     );

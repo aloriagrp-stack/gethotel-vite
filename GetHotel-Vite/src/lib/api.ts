@@ -4,7 +4,9 @@ const API_URL = import.meta.env.MODE === 'production'
     : (import.meta.env.VITE_API_URL || 'http://localhost:5000/api');
 
 export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const token = typeof window !== 'undefined' ? (sessionStorage.getItem('token') || localStorage.getItem('token')) : null;
+    const controller = options.signal ? null : new AbortController();
+    const timeoutId = controller ? setTimeout(() => controller.abort(), 45000) : null;
 
     const headers = {
         'Content-Type': 'application/json',
@@ -12,10 +14,21 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
         ...options.headers,
     };
 
-    const response = await fetch(`${API_URL}${endpoint}`, {
-        ...options,
-        headers,
-    });
+    let response: Response;
+    try {
+        response = await fetch(`${API_URL}${endpoint}`, {
+            ...options,
+            headers,
+            signal: options.signal || controller?.signal,
+        });
+    } catch (err: any) {
+        if (err?.name === 'AbortError') {
+            throw new Error('Request timed out. Please try again.');
+        }
+        throw err;
+    } finally {
+        if (timeoutId) clearTimeout(timeoutId);
+    }
 
     const contentType = response.headers.get('content-type');
     let data;
@@ -27,7 +40,11 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
     }
 
     if (!response.ok) {
-        throw new Error(data.message || 'Something went wrong');
+        const err = new Error(data.message || data.error || 'Something went wrong') as any;
+        err.status = response.status;
+        err.errors = data.errors;
+        err.error = data.error;
+        throw err;
     }
 
     return data;
@@ -51,8 +68,15 @@ export const hotelApi = {
     getHotels: () => apiFetch('/hotels'),
     getHotel: (id: string) => apiFetch(`/hotels/${id}`),
     searchHotels: (params: any) => apiFetch(`/hotels/search?${new URLSearchParams(params).toString()}`),
-    getMyHotels: async () => {
-        const res = await apiFetch('/hotels/my-hotels');
+    getSearchSuggestions: (query: string) => apiFetch(`/hotels/search-suggestions?query=${encodeURIComponent(query)}`),
+    getMyHotels: async (params?: { light?: boolean; includeBookings?: boolean }) => {
+        const query = params ? `?${new URLSearchParams(
+            Object.entries(params).reduce((acc, [key, value]) => {
+                if (value !== undefined) acc[key] = String(value);
+                return acc;
+            }, {} as Record<string, string>)
+        ).toString()}` : '';
+        const res = await apiFetch(`/hotels/my-hotels${query}`);
         const activeHotelId = typeof window !== 'undefined' ? sessionStorage.getItem('activeHotelId') : null;
         if (activeHotelId && res.success && Array.isArray(res.data)) {
             const selectedId = parseInt(activeHotelId);
@@ -121,6 +145,7 @@ export const partnerApi = {
 
 export const adminApi = {
     getPartners: () => apiFetch('/admin/partners'),
+    getUsers: () => apiFetch('/admin/users'),
     getPartnerRequests: () => apiFetch('/partner/requests'),
     approvePartnerRequest: (id: number) => apiFetch(`/partner/requests/${id}/approve`, { method: 'PUT' }),
     declinePartnerRequest: (id: number) => apiFetch(`/partner/requests/${id}/decline`, { method: 'PUT' }),
@@ -130,11 +155,56 @@ export const adminApi = {
     getAllHotels: () => apiFetch('/admin/hotels'),
     getAllBookings: () => apiFetch('/admin/bookings'),
     getStats: () => apiFetch('/admin/stats'),
+    getAnalytics: () => apiFetch('/admin/analytics'),
     getHotelDetails: (id: string) => apiFetch(`/admin/hotels/${id}`),
     updateHotelMetrics: (id: string, data: any) => apiFetch(`/admin/hotels/${id}/metrics`, { method: 'PATCH', body: JSON.stringify(data) }),
     recalculateHotelMetrics: (id: string) => apiFetch(`/admin/hotels/${id}/recalculate`, { method: 'POST' }),
     suspendHotel: (id: string) => apiFetch(`/admin/hotels/${id}/suspend`, { method: 'PUT' }),
     deleteHotel: (id: string) => apiFetch(`/admin/hotels/${id}`, { method: 'DELETE' }),
+    toggleTrending: (id: string) => apiFetch(`/admin/hotels/${id}/trending`, { method: 'PUT' }),
+    toggleFeatured: (id: string) => apiFetch(`/admin/hotels/${id}/featured`, { method: 'PUT' }),
+    updateHomepageConfig: (data: any) => apiFetch('/admin/homepage/config', { method: 'PUT', body: JSON.stringify(data) }),
+    createQuickPartner: (data: any) => apiFetch('/admin/partners/quick', { method: 'POST', body: JSON.stringify(data) }),
+    assignHotelsToPartner: (partnerId: number, hotelIds: number[]) => apiFetch(`/admin/partners/${partnerId}/assign-hotels`, { method: 'PUT', body: JSON.stringify({ hotelIds }) }),
+    createBulkHotels: (data: any) => apiFetch('/admin/hotels/bulk', { method: 'POST', body: JSON.stringify(data) }),
+    getGlobalReviews: () => apiFetch('/admin/reviews'),
+    deleteReview: (id: number) => apiFetch(`/admin/reviews/${id}`, { method: 'DELETE' }),
+    getRoomsOverview: () => apiFetch('/admin/rooms-overview'),
+    importOtaRooms: (data: { hotelId: number; otaUrl?: string; otaUrls?: string[]; syncMode?: "full" | "rooms"; syncGroup?: boolean }) => apiFetch('/admin/rooms/import-ota', { method: 'POST', body: JSON.stringify(data) })
+};
+
+export const otaApi = {
+    getSettings: (hotelId: number) => apiFetch(`/ota/key/${hotelId}`),
+    generateKey: (hotelId: number, data: any) => apiFetch(`/ota/key/${hotelId}`, { method: 'POST', body: JSON.stringify(data) }),
+};
+
+export const analyticsApi = {
+    ping: (page: string) => apiFetch('/analytics/ping', { method: 'POST', body: JSON.stringify({ page }) })
+};
+
+export const homepageApi = {
+    getConfig: async () => {
+        try {
+            return await apiFetch('/homepage/config');
+        } catch (error) {
+            return { success: true, data: {} };
+        }
+    },
+    getTrendingHotels: async (city?: string) => {
+        try {
+            return await apiFetch(`/hotels/trending${city ? `?city=${encodeURIComponent(city)}` : ''}`);
+        } catch (error) {
+            const fallback = city
+                ? await apiFetch(`/hotels/search?city=${encodeURIComponent(city)}`)
+                : await apiFetch('/hotels');
+
+            return {
+                ...fallback,
+                detectedCity: null,
+                isLocalized: false
+            };
+        }
+    }
 };
 
 export const messageApi = {

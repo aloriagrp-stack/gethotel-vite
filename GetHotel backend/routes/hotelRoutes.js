@@ -8,7 +8,8 @@ const {
     deleteHotel,
     getMyHotels,
     createReview,
-    replyToReview
+    replyToReview,
+    getSearchSuggestions
 } = require('../controllers/hotelController');
 
 const { getRooms, addRoom, updateRoom, deleteRoom } = require('../controllers/roomController');
@@ -25,12 +26,19 @@ const hotelValidation = [
     check('name', 'Hotel name is required').notEmpty().trim(),
     check('city', 'City is required').notEmpty().trim(),
     check('address', 'Address is required').notEmpty().trim(),
-    check('pricePerNight', 'Valid price per night is required').isFloat({ min: 0 }),
+    check('pricePerNight', 'Valid price per night is required')
+        .if((value, { req }) => !req.body.isDraft)
+        .isFloat({ min: 0 }),
     validate
 ];
 
 // Advanced Search
 router.get('/search', searchHotels);
+router.get('/search-suggestions', getSearchSuggestions);
+
+// Trending Hotels (defined before wildcard /:id)
+const { getTrendingHotels } = require('../controllers/homepageController');
+router.get('/trending', getTrendingHotels);
 
 // Nested routes for coupons
 router.route('/:hotelId/coupons')

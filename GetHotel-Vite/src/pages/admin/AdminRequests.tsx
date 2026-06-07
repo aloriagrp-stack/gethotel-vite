@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate as useRouter } from "react-router-dom";
-import { adminApi } from "@/lib/api";
+import { adminApi, authApi } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function PartnerRequestsPage() {
@@ -75,12 +75,23 @@ export default function PartnerRequestsPage() {
     };
 
     const handleDirectLogin = async (email: string, pass: string) => {
+        const newTab = window.open("about:blank", "_blank");
         try {
             setActionIsLoading(`login-${email}`);
-            await login({ email, partnerpassword: pass });
-            navigation("/partner-dashboard");
-        } catch (err) {
-            alert("Auto-login failed. Please use credentials manually.");
+            const res = await authApi.login({ email, partnerpassword: pass });
+            if (res.success) {
+                if (newTab) {
+                    newTab.location.href = `/partner-dashboard?impersonateToken=${res.token}`;
+                } else {
+                    window.open(`/partner-dashboard?impersonateToken=${res.token}`, "_blank");
+                }
+            } else {
+                if (newTab) newTab.close();
+                alert("Auto-login failed: " + (res.message || "Invalid response"));
+            }
+        } catch (err: any) {
+            if (newTab) newTab.close();
+            alert("Auto-login failed: " + (err.message || err));
         } finally {
             setActionIsLoading(null);
         }

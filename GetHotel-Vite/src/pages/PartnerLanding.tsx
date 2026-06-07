@@ -4,6 +4,8 @@ import { useAuth } from "@/context/AuthContext";
 import { Mail, Lock, Loader2, ArrowRight, Hotel, Eye, EyeOff } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import SEOHead from "@/components/common/SEOHead";
+import { PAGE_SEO, buildBreadcrumbSchema, SITE } from "@/lib/seo";
 
 export default function PartnerLoginPage() {
     const [email, setEmail] = useState("");
@@ -57,6 +59,20 @@ export default function PartnerLoginPage() {
 
     return (
         <div className="min-h-screen bg-white flex flex-col relative overflow-hidden font-sans">
+            <SEOHead
+                title={PAGE_SEO.partner.title}
+                description={PAGE_SEO.partner.description}
+                keywords={PAGE_SEO.partner.keywords}
+                ogUrl={`${SITE.url}/partner`}
+                canonicalUrl={`${SITE.url}/partner`}
+                schemas={[
+                    buildBreadcrumbSchema([
+                        { name: "Home", url: "/" },
+                        { name: "Partner Login", url: "/partner" },
+                    ]),
+                ]}
+                noIndex={true}
+            />
             
             {/* Static Wave Background - Darker & Prominent */}
             <div className="absolute inset-0 z-0 opacity-100 pointer-events-none overflow-hidden">

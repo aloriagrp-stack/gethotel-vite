@@ -4,41 +4,31 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Map } from "lucide-react";
 import Image from "@/components/common/Image";
 
-const DESTINATIONS = [
-    {
-        name: "Goa",
-        image: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?q=80&w=800&auto=format&fit=crop",
-        properties: "1,240+ Hotels",
-    },
-    {
-        name: "Kerala",
-        image: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?q=80&w=800&auto=format&fit=crop",
-        properties: "850+ Hotels",
-    },
-    {
-        name: "Shimla",
-        image: "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?q=80&w=800&auto=format&fit=crop",
-        properties: "420+ Hotels",
-    },
-    {
-        name: "Udaipur",
-        image: "https://images.unsplash.com/photo-1603262110263-fb0112e7cc33?q=80&w=800&auto=format&fit=crop",
-        properties: "310+ Hotels",
-    },
-    {
-        name: "Jaipur",
-        image: "https://images.unsplash.com/photo-1477587458883-47145ed94245?q=80&w=800&auto=format&fit=crop",
-        properties: "540+ Hotels",
-    }
+const DEFAULT_DESTINATIONS = [
+    { name: "Goa", image: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?q=80&w=800&auto=format&fit=crop", properties: "1,240+ Hotels" },
+    { name: "Kerala", image: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?q=80&w=800&auto=format&fit=crop", properties: "850+ Hotels" },
+    { name: "Shimla", image: "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?q=80&w=800&auto=format&fit=crop", properties: "420+ Hotels" },
+    { name: "Udaipur", image: "https://images.unsplash.com/photo-1603262110263-fb0112e7cc33?q=80&w=800&auto=format&fit=crop", properties: "310+ Hotels" },
+    { name: "Jaipur", image: "https://images.unsplash.com/photo-1477587458883-47145ed94245?q=80&w=800&auto=format&fit=crop", properties: "540+ Hotels" }
 ];
 
-export default function ExploreByDestinations() {
+export default function ExploreByDestinations({ destinations }: { destinations?: any[] }) {
+    const displayDestinations = destinations && destinations.length > 0 ? destinations : DEFAULT_DESTINATIONS;
+
+    const getDestinationUrl = (name: string, index: number) => {
+        const n = name.toLowerCase().trim();
+        if (["goa", "jaipur", "manali", "shimla", "udaipur"].includes(n)) {
+            return `/${n}-hotels`;
+        }
+        return `/hotels?city=${encodeURIComponent(name)}&destination_index=${index}`;
+    };
+
     return (
         <section className="pt-0 pb-6 bg-transparent overflow-hidden">
             <div className="w-full max-w-none mx-auto px-3 md:px-8">
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-4 gap-4">
                     <div>
-                        <h2 className="text-4xl md:text-5xl font-bold text-slate-950 tracking-tight">
+                        <h2 className="text-3xl md:text-5xl font-bold text-slate-950 tracking-tight">
                             Explore <span className="text-brand-600">Destinations</span>
                         </h2>
                     </div>
@@ -46,9 +36,9 @@ export default function ExploreByDestinations() {
 
                 <div className="flex gap-4 pb-12 overflow-x-auto snap-x snap-mandatory no-scrollbar -mx-3 md:-mx-8 px-3 md:px-8">
                     <div className="w-2 shrink-0 snap-start" />
-                    {DESTINATIONS.map((dest, i) => (
+                    {displayDestinations.map((dest, i) => (
                         <div key={dest.name} className="w-[240px] md:w-[300px] aspect-[4/5] shrink-0 snap-start">
-                            <Link to={`/hotels?city=${dest.name}`} className="group block relative w-full h-full rounded-[2rem] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500">
+                            <Link to={getDestinationUrl(dest.name, i)} className="group block relative w-full h-full rounded-[2rem] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500">
                                 <Image
                                     src={dest.image}
                                     alt={dest.name}

@@ -27,9 +27,6 @@ exports.getRooms = async (req, res, next) => {
             where: { hotelId: hotelId }
         });
 
-        // 10 minute hold window for pending bookings
-        const holdThreshold = new Date(Date.now() - 10 * 60 * 1000);
-
         let isStaySearch = false;
         let checkInDate, checkOutDate, nights;
         if (checkIn && checkOut && checkIn !== 'Dates' && checkOut !== 'Dates') {
@@ -96,7 +93,7 @@ exports.getRooms = async (req, res, next) => {
                                 { 
                                     AND: [
                                         { status: 'held' },
-                                        { createdAt: { gte: holdThreshold } }
+                                        { holdExpiresAt: { gt: new Date() } }
                                     ]
                                 }
                             ]
@@ -105,14 +102,14 @@ exports.getRooms = async (req, res, next) => {
 
                     // Sum quantities
                     const bookedCount = activeBookingsOnNight.reduce((count, b) => {
-                        if (b.roomId === room.id) return count + 1;
                         try {
                             if (b.roomDetails) {
                                 const details = JSON.parse(b.roomDetails);
-                                const rInfo = details.find((ri) => ri.id === room.id.toString());
-                                if (rInfo) return count + rInfo.quantity;
+                                const rInfo = details.find((ri) => parseInt(ri.id) === room.id);
+                                if (rInfo) return count + (parseInt(rInfo.quantity) || 1);
                             }
                         } catch (e) {}
+                        if (b.roomId === room.id) return count + 1;
                         return count;
                     }, 0);
 
@@ -125,7 +122,15 @@ exports.getRooms = async (req, res, next) => {
 
                 availableUnits = minAvailable;
                 dynamicPricePerNight = totalStayPrice / nights;
+                const hasPromotion = rates.length > 0;
 
+                roomsWithAvailability.push({
+                    ...room,
+                    availableUnits,
+                    isAvailable: availableUnits > 0,
+                    dynamicPricePerNight,
+                    hasPromotion
+                });
             } else {
                 // FALLBACK TO STATIC SEARCH
                 const activeBookings = await prisma.booking.findMany({
@@ -139,7 +144,7 @@ exports.getRooms = async (req, res, next) => {
                             { 
                                 AND: [
                                     { status: 'held' },
-                                    { createdAt: { gte: holdThreshold } }
+                                    { holdExpiresAt: { gt: new Date() } }
                                 ]
                             }
                         ]
@@ -147,26 +152,27 @@ exports.getRooms = async (req, res, next) => {
                 });
 
                 const bookedCount = activeBookings.reduce((count, b) => {
-                    if (b.roomId === room.id) return count + 1;
                     try {
                         if (b.roomDetails) {
                             const details = JSON.parse(b.roomDetails);
-                            const rInfo = details.find((ri) => ri.id === room.id.toString());
-                            if (rInfo) return count + rInfo.quantity;
+                            const rInfo = details.find((ri) => parseInt(ri.id) === room.id);
+                            if (rInfo) return count + (parseInt(rInfo.quantity) || 1);
                         }
                     } catch (e) {}
+                    if (b.roomId === room.id) return count + 1;
                     return count;
                 }, 0);
 
                 availableUnits = Math.max(0, (room.totalInventory || 1) - bookedCount);
-            }
 
-            roomsWithAvailability.push({
-                ...room,
-                availableUnits,
-                isAvailable: availableUnits > 0,
-                dynamicPricePerNight
-            });
+                roomsWithAvailability.push({
+                    ...room,
+                    availableUnits,
+                    isAvailable: availableUnits > 0,
+                    dynamicPricePerNight,
+                    hasPromotion: false
+                });
+            }
         }
 
         res.status(200).json({ success: true, count: roomsWithAvailability.length, data: roomsWithAvailability });

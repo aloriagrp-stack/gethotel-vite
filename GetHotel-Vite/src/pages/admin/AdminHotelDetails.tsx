@@ -63,15 +63,22 @@ export default function HotelDetailPage() {
     }, [id, authUser, authLoading]);
 
     const handleImpersonate = async () => {
+        const newTab = window.open("about:blank", "_blank");
         try {
             const res = await authApi.impersonate(hotel.user.id);
             if (res.success) {
-                localStorage.setItem("token", res.token);
-                // Redirect to partner dashboard
-                window.location.href = "/partner-dashboard";
+                if (newTab) {
+                    newTab.location.href = `/partner-dashboard?activeHotelId=${hotel.id}&impersonateToken=${res.token}`;
+                } else {
+                    window.open(`/partner-dashboard?activeHotelId=${hotel.id}&impersonateToken=${res.token}`, "_blank");
+                }
+            } else {
+                if (newTab) newTab.close();
+                alert("Failed to login as partner: " + (res.message || "Invalid response"));
             }
-        } catch (err) {
-            alert("Failed to login as partner");
+        } catch (err: any) {
+            if (newTab) newTab.close();
+            alert("Failed to login as partner: " + (err.message || err));
         }
     };
 
@@ -116,7 +123,7 @@ export default function HotelDetailPage() {
     };
 
     const handleSuspend = async () => {
-        if (!confirm(`Are you sure you want to ${hotel.isActive !== false ? 'suspend' : 'activate'} this property?`)) return;
+        if (!confirm(`Are you sure you want to ${hotel.isActive !== false ? 'hide' : 'show'} this hotel from/on the search results?`)) return;
         setUpdating(true);
         try {
             const res = await adminApi.suspendHotel(id!);
@@ -185,7 +192,7 @@ export default function HotelDetailPage() {
                             "px-4 py-2 border rounded-full text-[10px] font-black uppercase tracking-widest",
                             hotel.isActive !== false ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-red-100 text-red-700 border-red-200"
                         )}>
-                            {hotel.isActive !== false ? 'Active Property' : 'Suspended'}
+                            {hotel.isActive !== false ? 'Visible on Site' : 'Hidden from Site'}
                         </span>
                     </div>
                 </div>
@@ -402,6 +409,10 @@ export default function HotelDetailPage() {
                                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Partner Since</p>
                                     <p className="text-sm font-bold text-slate-300">{new Date(hotel.user.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
                                 </div>
+                                <div>
+                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Hotel Joining Date</p>
+                                    <p className="text-sm font-bold text-slate-300">{new Date(hotel.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                                </div>
                             </div>
 
                             <div className="mt-10 pt-8 border-t border-slate-800 space-y-3">
@@ -461,16 +472,16 @@ export default function HotelDetailPage() {
                                     <span className="text-sm font-black text-slate-900">₹{displayRevenue.toLocaleString()}</span>
                                 </div>
                                 <div className="flex justify-between items-center">
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Platform Earnings (18%)</span>
-                                    <span className="text-sm font-black text-brand-600">₹{(displayRevenue * 0.18).toLocaleString()}</span>
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Platform Earnings (12%)</span>
+                                    <span className="text-sm font-black text-brand-600">₹{(displayRevenue * 0.12).toLocaleString()}</span>
                                 </div>
                                 <div className="flex justify-between items-center">
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Partner Collection (82%)</span>
-                                    <span className="text-sm font-black text-slate-900">₹{(displayRevenue * 0.82).toLocaleString()}</span>
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Partner Collection (88%)</span>
+                                    <span className="text-sm font-black text-slate-900">₹{(displayRevenue * 0.88).toLocaleString()}</span>
                                 </div>
                                 <div className="pt-4 border-t border-slate-100 flex justify-between items-center">
                                     <span className="text-xs font-black text-slate-900 uppercase tracking-widest">Est. Hotel Revenue</span>
-                                    <span className="text-lg font-black text-emerald-600">₹{(displayRevenue * 0.82).toLocaleString()}</span>
+                                    <span className="text-lg font-black text-emerald-600">₹{(displayRevenue * 0.88).toLocaleString()}</span>
                                 </div>
                             </div>
                         </div>
@@ -482,9 +493,9 @@ export default function HotelDetailPage() {
                                 <button 
                                     onClick={handleSuspend}
                                     disabled={updating}
-                                    className="w-full py-4 bg-white text-red-600 border border-red-200 font-black text-[10px] uppercase tracking-widest hover:bg-red-50 transition-all flex items-center justify-center gap-2"
+                                    className="w-full py-4 bg-white text-slate-700 border border-slate-200 font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
                                 >
-                                    {hotel.isActive !== false ? <><XCircle className="w-4 h-4" /> Suspend Property</> : <><CheckCircle2 className="w-4 h-4 text-emerald-600" /> <span className="text-emerald-600">Reactivate Property</span></>}
+                                    {hotel.isActive !== false ? <><XCircle className="w-4 h-4 text-red-500" /> <span className="text-red-600">Hide Hotel from Search</span></> : <><CheckCircle2 className="w-4 h-4 text-emerald-600" /> <span className="text-emerald-600">Show Hotel to Search</span></>}
                                 </button>
                                 <button 
                                     onClick={() => setDeleteStep(1)}

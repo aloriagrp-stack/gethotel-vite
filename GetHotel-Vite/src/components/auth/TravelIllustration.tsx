@@ -23,7 +23,7 @@ export const TravelIllustration = () => {
                         <span className="text-indigo-600 underline decoration-indigo-200">Pay Less,</span> Stay More!
                     </h2>
                     <p className="text-slate-500 text-sm font-medium max-w-xs">
-                        Pay only 18% online to confirm your booking. The rest, pay at the hotel during your stay.
+                        Pay only 12% online to confirm your booking. The rest, pay at the hotel during your stay.
                     </p>
                 </motion.div>
 
@@ -40,7 +40,7 @@ export const TravelIllustration = () => {
                         </div>
                         <div>
                             <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Pay Online</p>
-                            <p className="text-xl font-black text-slate-900">18%</p>
+                            <p className="text-xl font-black text-slate-900">12%</p>
                         </div>
                     </div>
 
@@ -49,7 +49,7 @@ export const TravelIllustration = () => {
                     <div className="flex items-center gap-4 text-right">
                         <div>
                             <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Pay at Hotel</p>
-                            <p className="text-xl font-black text-slate-900">82%</p>
+                            <p className="text-xl font-black text-slate-900">88%</p>
                         </div>
                         <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center">
                             <Hotel className="w-6 h-6 text-white" />

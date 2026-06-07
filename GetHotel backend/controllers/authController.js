@@ -1,12 +1,49 @@
 const prisma = require('../config/db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { sendOtpEmail } = require('../utils/emailService');
+const { sendOtpEmail, sendResetEmail } = require('../utils/emailService');
 
 // OTP Memory Cache
 global.otpCache = global.otpCache || new Map();
 global.changePasswordCache = global.changePasswordCache || new Map();
 global.changeEmailCache = global.changeEmailCache || new Map();
+global.loginAttempts = global.loginAttempts || new Map();
+global.blockedLogins = global.blockedLogins || new Map();
+global.passwordResetCache = global.passwordResetCache || new Map();
+
+const trackFailedAttempt = (ip, email, req) => {
+    const now = Date.now();
+    
+    // IP tracking
+    const ipAttempts = (global.loginAttempts.get(ip) || 0) + 1;
+    global.loginAttempts.set(ip, ipAttempts);
+    if (ipAttempts >= 5) {
+        global.blockedLogins.set(ip, now + 15 * 60 * 1000); // 15 mins
+        global.loginAttempts.delete(ip);
+        const { logAdminActivity } = require('../utils/auditLogger');
+        logAdminActivity({ email: 'anonymous', role: 'guest' }, 'SUSPICIOUS_LOGIN_ATTEMPT', {
+            reason: `Brute force threshold reached: 5 failures. IP locked out.`,
+            ip,
+            emailTarget: email
+        }, req);
+    }
+    
+    // Email tracking
+    if (email) {
+        const emailAttempts = (global.loginAttempts.get(email) || 0) + 1;
+        global.loginAttempts.set(email, emailAttempts);
+        if (emailAttempts >= 5) {
+            global.blockedLogins.set(email, now + 15 * 60 * 1000); // 15 mins
+            global.loginAttempts.delete(email);
+            const { logAdminActivity } = require('../utils/auditLogger');
+            logAdminActivity({ email, role: 'suspect' }, 'SUSPICIOUS_LOGIN_ATTEMPT', {
+                reason: `Brute force threshold reached: 5 failures for email. Account locked out.`,
+                ip,
+                email
+            }, req);
+        }
+    }
+};
 
 // @desc    Register user
 // @route   POST /api/auth/register
@@ -154,25 +191,51 @@ exports.login = async (req, res, next) => {
     
     // Support multiple naming conventions for different portals
     const actualPassword = password || userpassword || partnerpassword || controlpassword;
+    const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : email;
+    const normalizedPassword = typeof actualPassword === 'string' ? actualPassword.trim() : actualPassword;
 
-    if (!email || !actualPassword) {
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || req.ip;
+
+    if (!normalizedEmail || !normalizedPassword) {
         return res.status(400).json({ success: false, message: 'Please provide an email and password' });
+    }
+
+    // Check brute-force lockout status
+    const now = Date.now();
+    const blockedUntilIP = global.blockedLogins.get(ip);
+    const blockedUntilEmail = global.blockedLogins.get(normalizedEmail);
+
+    if (blockedUntilIP && blockedUntilIP > now) {
+        const minLeft = Math.ceil((blockedUntilIP - now) / (60 * 1000));
+        return res.status(429).json({ success: false, message: `Too many failed attempts from this device. Try again in ${minLeft} minutes.` });
+    }
+    if (blockedUntilEmail && blockedUntilEmail > now) {
+        const minLeft = Math.ceil((blockedUntilEmail - now) / (60 * 1000));
+        return res.status(429).json({ success: false, message: `Too many failed attempts for this account. Try again in ${minLeft} minutes.` });
     }
 
     try {
         // Check for user
         const user = await prisma.user.findUnique({
-            where: { email }
+            where: { email: normalizedEmail }
         });
 
         if (!user) {
+            trackFailedAttempt(ip, normalizedEmail, req);
             return res.status(401).json({ success: false, message: 'Invalid credentials' });
         }
 
         // Check if password matches
-        const isMatch = await bcrypt.compare(actualPassword, user.password);
+        let isMatch = await bcrypt.compare(normalizedPassword, user.password);
+
+        // ControlHub often displays credentials in uppercase. Keep normal users strict,
+        // but allow the super admin master key regardless of accidental casing.
+        if (!isMatch && user.role === 'super_admin' && typeof normalizedPassword === 'string') {
+            isMatch = await bcrypt.compare(normalizedPassword.toLowerCase(), user.password);
+        }
 
         if (!isMatch) {
+            trackFailedAttempt(ip, normalizedEmail, req);
             return res.status(401).json({ success: false, message: 'Invalid credentials' });
         }
 
@@ -185,11 +248,16 @@ exports.login = async (req, res, next) => {
         });
 
         if (rejectedRequest) {
+            trackFailedAttempt(ip, normalizedEmail, req);
             return res.status(403).json({ 
                 success: false, 
                 message: 'Your partner application was rejected. This account is permanently disabled.' 
             });
         }
+
+        // Clear brute force tracking on successful login
+        global.loginAttempts.delete(ip);
+        global.loginAttempts.delete(normalizedEmail);
 
         sendTokenResponse(user, 200, res);
     } catch (err) {
@@ -197,16 +265,30 @@ exports.login = async (req, res, next) => {
     }
 };
 
-// Create token and send response
+// Create token and send response with role-based session limits
 const sendTokenResponse = (user, statusCode, res) => {
+    const isAdmin = user.role === 'super_admin' || user.role === 'hotel_admin';
+    const expiresIn = isAdmin ? '12h' : '30d';
+    const cookieAgeMs = isAdmin ? 12 * 60 * 60 * 1000 : 30 * 24 * 60 * 60 * 1000;
+
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-        expiresIn: '30d',
+        expiresIn,
     });
 
-    res.status(statusCode).json({
-        success: true,
-        token,
-    });
+    const cookieOptions = {
+        expires: new Date(Date.now() + cookieAgeMs),
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        path: '/'
+    };
+
+    res.status(statusCode)
+        .cookie('token', token, cookieOptions)
+        .json({
+            success: true,
+            token,
+        });
 };
 
 const admin = require('../config/firebase');
@@ -588,5 +670,205 @@ exports.verifyChangeEmailOTP = async (req, res, next) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, message: 'Email update failed. Please try again.' });
+    }
+};
+
+// @desc    Logout user & blacklist token
+// @route   POST /api/auth/logout
+// @access  Private
+exports.logout = async (req, res, next) => {
+    try {
+        const token = req.token || req.headers.authorization?.split(' ')[1] || req.cookies?.token;
+
+        if (token) {
+            const { blacklistToken } = require('../middleware/auth');
+            blacklistToken(token);
+        }
+
+        // Clear client cookie
+        res.cookie('token', 'none', {
+            expires: new Date(Date.now() + 10 * 1000), // expire in 10 seconds
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            path: '/'
+        });
+
+        res.status(200).json({
+            success: true,
+            message: 'Logged out successfully'
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Logout failed: ' + err.message });
+    }
+};
+
+// @desc    Forgot Password - Request reset link
+// @route   POST /api/auth/forgot-password
+// @access  Public
+exports.forgotPassword = async (req, res, next) => {
+    const { email } = req.body;
+    const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : email;
+
+    if (!normalizedEmail) {
+        return res.status(400).json({ success: false, message: 'Please provide an email address' });
+    }
+
+    try {
+        const user = await prisma.user.findUnique({
+            where: { email: normalizedEmail }
+        });
+
+        // For security reasons, do not explicitly leak that the email doesn't exist.
+        // Respond with success message but don't do anything else.
+        if (!user) {
+            return res.status(200).json({ success: true, message: 'If that email is registered, a password reset link has been sent.' });
+        }
+
+        // Generate 32-byte secure random reset token
+        const crypto = require('crypto');
+        const token = crypto.randomBytes(32).toString('hex');
+        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+        // Store reset token hash in cache with 15-minute expiration
+        global.passwordResetCache.set(tokenHash, {
+            userId: user.id,
+            expiresAt: Date.now() + 15 * 60 * 1000 // 15 mins
+        });
+
+        // Create reset URL
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        const resetUrl = `${frontendUrl}/reset-password/${token}`;
+
+        // Send email
+        await sendResetEmail(user.email, user.name, resetUrl);
+
+        res.status(200).json({
+            success: true,
+            message: 'If that email is registered, a password reset link has been sent.'
+        });
+    } catch (err) {
+        console.error('Forgot password error:', err);
+        res.status(500).json({ success: false, message: 'Failed to send password reset link. Please try again.' });
+    }
+};
+
+// @desc    Reset Password using token
+// @route   POST /api/auth/reset-password/:token
+// @access  Public
+exports.resetPassword = async (req, res, next) => {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    if (!password || password.length < 6) {
+        return res.status(400).json({ success: false, message: 'Password must be at least 6 characters long' });
+    }
+
+    try {
+        const crypto = require('crypto');
+        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+        const cachedReset = global.passwordResetCache.get(tokenHash);
+
+        if (!cachedReset) {
+            return res.status(400).json({ success: false, message: 'Invalid or expired password reset token' });
+        }
+
+        if (cachedReset.expiresAt < Date.now()) {
+            global.passwordResetCache.delete(tokenHash);
+            return res.status(400).json({ success: false, message: 'Password reset token has expired' });
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { id: cachedReset.userId }
+        });
+
+        if (!user) {
+            global.passwordResetCache.delete(tokenHash);
+            return res.status(400).json({ success: false, message: 'User not found' });
+        }
+
+        // Hash new password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        // Update password history
+        let history = [];
+        if (user.passwordChangeHistory) {
+            try {
+                history = JSON.parse(user.passwordChangeHistory);
+                if (!Array.isArray(history)) history = [];
+            } catch (e) {
+                history = [];
+            }
+        }
+        history.push(new Date().toISOString());
+
+        // Save new password and update history to invalidate old session tokens
+        await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                password: hashedPassword,
+                passwordLastChangedAt: new Date(),
+                passwordChangeHistory: JSON.stringify(history),
+                updatedAt: new Date()
+            }
+        });
+
+        // Invalidate token from cache
+        global.passwordResetCache.delete(tokenHash);
+
+        // Log security audit activity
+        const { logAdminActivity } = require('../utils/auditLogger');
+        logAdminActivity(user, 'PASSWORD_RESET_VIA_TOKEN', {
+            userId: user.id,
+            email: user.email
+        }, req);
+
+        res.status(200).json({
+            success: true,
+            message: 'Password reset successfully. You can now login with your new password.'
+        });
+    } catch (err) {
+        console.error('Reset password error:', err);
+        res.status(500).json({ success: false, message: 'Failed to reset password. Please try again.' });
+    }
+};
+
+exports.unblockDebug = async (req, res) => {
+    try {
+        const fs = require('fs');
+        const path = require('path');
+        const blockedIpsFile = path.join(__dirname, '../config/blocked_ips.json');
+        
+        // 1. Clear blocked IPs file on disk
+        fs.writeFileSync(blockedIpsFile, JSON.stringify({ blocked: [] }, null, 4), 'utf8');
+
+        // 2. Load and repair .env database URL and environment type
+        const envPath = path.join(__dirname, '../.env');
+        let envContent = '';
+        if (fs.existsSync(envPath)) {
+            envContent = fs.readFileSync(envPath, 'utf8');
+            // Replace DATABASE_URL with the correct backup one
+            envContent = envContent.replace(/DATABASE_URL\s*=\s*["']?mysql:\/\/[^"'\s\n]+["']?/g, 'DATABASE_URL="mysql://vgyuvmpi_gethotel_db:shriyanshking@localhost:3306/vgyuvmpi_gethotel_db"');
+            // Set NODE_ENV to production
+            envContent = envContent.replace(/NODE_ENV\s*=\s*development/g, 'NODE_ENV=production');
+            
+            // Save repaired .env
+            fs.writeFileSync(envPath, envContent, 'utf8');
+        }
+
+        res.json({
+            success: true,
+            message: 'Database configuration successfully repaired and saved! Restarting process to apply...'
+        });
+
+        // 3. Force exit node process to let Passenger reload with the new env
+        setTimeout(() => {
+            console.log('[DEBUG] Force exiting Node process to reload config.');
+            process.exit(0);
+        }, 500);
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
     }
 };

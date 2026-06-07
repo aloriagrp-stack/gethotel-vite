@@ -31,10 +31,10 @@ const REASONS = [
 
 export default function WhyGetHotel() {
     return (
-        <section className="pt-12 pb-24 bg-transparent">
+        <section className="pt-12 pb-6 md:pb-12 bg-transparent">
             <div className="w-full max-w-none mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="mb-6 text-left">
-                    <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-0 tracking-tight">
+                    <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-0 tracking-tight">
                         Why <span className="text-brand-600">GetHotel?</span>
                     </h2>
                 </div>

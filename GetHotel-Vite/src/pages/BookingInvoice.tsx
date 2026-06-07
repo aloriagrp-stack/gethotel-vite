@@ -55,7 +55,30 @@ export default function BookingInvoicePage() {
     );
 
     const roomDetails = booking.roomDetails ? JSON.parse(booking.roomDetails) : [];
-    const subtotal = booking.totalPrice / 1.18; // Reverse engineer subtotal (assuming 18% tax)
+    const stayNights = (() => {
+        try {
+            const d1 = new Date(booking.checkIn);
+            const d2 = new Date(booking.checkOut);
+            const diff = (d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24);
+            return Math.max(1, Math.round(diff));
+        } catch (e) {
+            return 1;
+        }
+    })();
+    const totalRoomNights = roomDetails.reduce((sum: number, r: any) => sum + (r.quantity * stayNights), 0) || 1;
+    const subtotal18 = booking.totalPrice / 1.18;
+    const averagePricePerNight18 = subtotal18 / totalRoomNights;
+    
+    let subtotal = booking.totalPrice / 1.05;
+    let gstRate = 0.05;
+    
+    if (averagePricePerNight18 > 7500) {
+        subtotal = subtotal18;
+        gstRate = 0.18;
+    } else if (booking.totalPrice / totalRoomNights <= 1000) {
+        subtotal = booking.totalPrice;
+        gstRate = 0;
+    }
     const tax = booking.totalPrice - subtotal;
 
     return (
@@ -192,23 +215,29 @@ export default function BookingInvoicePage() {
                     {/* Summary */}
                     <div className="mt-12 ml-auto max-w-sm space-y-4">
                         <div className="flex justify-between items-center text-slate-500 font-bold text-sm">
-                            <span>Base Stay Amount</span>
-                            <span>₹{booking.totalPrice.toLocaleString()}</span>
+                            <span>{booking.couponCode ? "Promo Stay Amount" : "Room Charges"}</span>
+                            <span>{formatPrice(subtotal)}</span>
                         </div>
+                        {gstRate > 0 && (
+                            <div className="flex justify-between items-center text-slate-500 font-bold text-sm">
+                                <span>GST ({Math.round(gstRate * 100)}%)</span>
+                                <span>+{formatPrice(tax)}</span>
+                            </div>
+                        )}
                         <div className="pt-4 border-t border-slate-100 space-y-3">
                             <div className="flex justify-between items-center">
                                 <div className="flex items-center gap-2">
                                     <div className="w-2 h-2 bg-emerald-500 rounded-full" />
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Paid Online (18%)</span>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Paid Online (12%)</span>
                                 </div>
-                                <span className="text-sm font-black text-emerald-600 italic">{formatPrice(Math.round(booking.totalPrice * 0.18))}</span>
+                                <span className="text-sm font-black text-emerald-600 italic">{formatPrice(Math.round(booking.totalPrice * 0.12))}</span>
                             </div>
                             <div className="flex justify-between items-center">
                                 <div className="flex items-center gap-2">
                                     <div className="w-2 h-2 bg-brand-500 rounded-full animate-pulse" />
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Payable at Hotel (82%)</span>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Payable at Hotel (88%)</span>
                                 </div>
-                                <span className="text-base font-black text-slate-900 italic">{formatPrice(booking.totalPrice - Math.round(booking.totalPrice * 0.18))}</span>
+                                <span className="text-base font-black text-slate-900 italic">{formatPrice(booking.totalPrice - Math.round(booking.totalPrice * 0.12))}</span>
                             </div>
                         </div>
                         <div className="pt-6 border-t border-slate-200 flex justify-between items-center">

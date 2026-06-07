@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "./context/AuthContext";
 import { BookingProvider } from "./context/BookingContext";
 import { WishlistProvider } from "./context/WishlistContext";
@@ -7,11 +8,14 @@ import { StayModeProvider } from "./context/StayModeContext";
 import ConditionalLayout from "./components/layout/ConditionalLayout";
 import GlobalTranslator from "./components/layout/GlobalTranslator";
 import ErrorBoundary from "./components/common/ErrorBoundary";
+import ScrollToTop from "./components/common/ScrollToTop";
+
+import Loader from "./components/common/Loader";
 
 // Loading Component
 const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center bg-white">
-    <div className="w-12 h-12 border-4 border-brand-100 border-t-brand-600 rounded-full animate-spin"></div>
+  <div className="min-h-[60vh] flex items-center justify-center bg-transparent">
+    <Loader variant="inline" />
   </div>
 );
 
@@ -29,6 +33,13 @@ const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 const PartnerLanding = lazy(() => import("./pages/PartnerLanding"));
 const ListPropertyRegister = lazy(() => import("./pages/ListPropertyRegister"));
 
+// Destination Landing Pages
+const GoaHotels = lazy(() => import("./pages/destinations/GoaHotels"));
+const JaipurHotels = lazy(() => import("./pages/destinations/JaipurHotels"));
+const ManaliHotels = lazy(() => import("./pages/destinations/ManaliHotels"));
+const ShimlaHotels = lazy(() => import("./pages/destinations/ShimlaHotels"));
+const UdaipurHotels = lazy(() => import("./pages/destinations/UdaipurHotels"));
+
 // ID based pages
 const BookingInvoice = lazy(() => import("./pages/BookingInvoice"));
 const WriteReview = lazy(() => import("./pages/WriteReview"));
@@ -38,6 +49,15 @@ const BookingInvoiceDetails = lazy(() => import("./pages/BookingInvoiceDetails")
 const DisputeBooking = lazy(() => import("./pages/DisputeBooking"));
 const BookingDetails = lazy(() => import("./pages/BookingDetails"));
 const BookingIDPage = lazy(() => import("./pages/BookingIDPage"));
+
+// Legal Pages
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("./pages/TermsOfService"));
+const CookiePolicy = lazy(() => import("./pages/CookiePolicy"));
+const CancellationPolicy = lazy(() => import("./pages/CancellationPolicy"));
+const PricingPolicy = lazy(() => import("./pages/PricingPolicy"));
+const ContactUs = lazy(() => import("./pages/ContactUs"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Admin & Partner Layouts
 const AdminLayout = lazy(() => import("./components/layout/AdminLayout"));
@@ -62,12 +82,15 @@ const PartnerFrontDesk = lazy(() => import("./pages/partner-dashboard/FrontDesk"
 const PartnerInventory = lazy(() => import("./pages/partner-dashboard/Inventory"));
 const PartnerNotifications = lazy(() => import("./pages/partner-dashboard/Notifications"));
 const PartnerStaff = lazy(() => import("./pages/partner-dashboard/Staff"));
+const PartnerChannelSync = lazy(() => import("./pages/partner-dashboard/ChannelSync"));
 const PartnerHotelSelect = lazy(() => import("./pages/PartnerHotelSelect"));
 
 export default function App() {
   return (
+    <HelmetProvider>
     <ErrorBoundary>
       <Router>
+        <ScrollToTop />
         <GlobalTranslator />
         <AuthProvider>
           <StayModeProvider>
@@ -92,6 +115,19 @@ export default function App() {
                       <Route path="/partner" element={<PartnerLanding />} />
                       <Route path="/partner-select" element={<PartnerHotelSelect />} />
                       <Route path="/.controlhub" element={<AdminLogin />} />
+                      <Route path="/privacy" element={<PrivacyPolicy />} />
+                      <Route path="/terms-&-conditions" element={<TermsOfService />} />
+                      <Route path="/cookies" element={<CookiePolicy />} />
+                      <Route path="/cancellation-policy" element={<CancellationPolicy />} />
+                      <Route path="/pricing-policy" element={<PricingPolicy />} />
+                      <Route path="/contact" element={<ContactUs />} />
+
+                      {/* Destination Landing Pages */}
+                      <Route path="/goa-hotels" element={<GoaHotels />} />
+                      <Route path="/jaipur-hotels" element={<JaipurHotels />} />
+                      <Route path="/manali-hotels" element={<ManaliHotels />} />
+                      <Route path="/shimla-hotels" element={<ShimlaHotels />} />
+                      <Route path="/udaipur-hotels" element={<UdaipurHotels />} />
                       
                       {/* ID-based Routes */}
                       <Route path="/booking/invoice/:id" element={<BookingInvoice />} />
@@ -120,24 +156,28 @@ export default function App() {
                         <Route path="inventory" element={<PartnerInventory />} />
                         <Route path="notifications" element={<PartnerNotifications />} />
                         <Route path="staff" element={<PartnerStaff />} />
+                        <Route path="channel" element={<PartnerChannelSync />} />
                       </Route>
-                      {/* Admin Dashboard Routes */}
                       <Route path="/admin/super" element={<AdminLayout />}>
                         <Route index element={<SuperAdminDashboard />} />
                         <Route path="requests" element={<SuperAdminDashboard />} />
+                        <Route path="controlhub" element={<SuperAdminDashboard />} />
                         <Route path="hotels" element={<SuperAdminDashboard />} />
+                        <Route path="otasync" element={<SuperAdminDashboard />} />
                         <Route path="hotels/:id" element={<AdminHotelDetails />} />
                         <Route path="bookings" element={<SuperAdminDashboard />} />
+                        <Route path="reviews" element={<SuperAdminDashboard />} />
                         <Route path="users" element={<SuperAdminDashboard />} />
                         <Route path="stats" element={<SuperAdminDashboard />} />
                         <Route path="finance" element={<SuperAdminDashboard />} />
                         <Route path="disputes" element={<SuperAdminDashboard />} />
                         <Route path="notifications" element={<SuperAdminDashboard />} />
                         <Route path="settings" element={<SuperAdminDashboard />} />
+                        <Route path="homepage" element={<SuperAdminDashboard />} />
                       </Route>
 
                       {/* Fallback */}
-                      <Route path="*" element={<div>Page Not Found</div>} />
+                      <Route path="*" element={<NotFound />} />
                     </Routes>
                   </Suspense>
                 </ConditionalLayout>
@@ -147,5 +187,6 @@ export default function App() {
         </AuthProvider>
       </Router>
     </ErrorBoundary>
+    </HelmetProvider>
   );
 }

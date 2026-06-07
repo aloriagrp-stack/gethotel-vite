@@ -1,5 +1,14 @@
 const prisma = require('../config/db');
 
+const toValidDate = (value) => {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
+};
+
+const nightsBetween = (checkIn, checkOut) => {
+    return Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+};
+
 // @desc    Get all hotels
 // @route   GET /api/hotels
 // @access  Public
@@ -28,61 +37,223 @@ exports.searchHotels = async (req, res, next) => {
         const { city, checkIn, checkOut, adults, children, rooms, stayType } = req.query;
         const totalGuests = parseInt(adults || 2) + parseInt(children || 0);
         const requiredRooms = parseInt(rooms || 1);
+        const checkInDate = toValidDate(checkIn);
+        const checkOutDate = toValidDate(checkOut);
+        const hasStayDates = checkInDate && checkOutDate && checkOutDate > checkInDate;
+        const nights = hasStayDates ? nightsBetween(checkInDate, checkOutDate) : 1;
 
         // 1. Initial Filtering by City and Room Capacity
-        let whereClause = {};
-        if (city && city !== "All" && city !== "India") {
-            whereClause.OR = [
-                { city: { contains: city } },
-                { address: { contains: city } },
-                { name: { contains: city } }
-            ];
+        const whereClause = {};
+
+        let linkedHotelIds = null;
+        if (req.query.destination_index !== undefined || req.query.collection_index !== undefined) {
+            try {
+                const configRows = await prisma.homepage_config.findMany();
+                const config = {};
+                configRows.forEach(row => {
+                    try {
+                        config[row.key] = JSON.parse(row.value);
+                    } catch (_) {
+                        config[row.key] = row.value;
+                    }
+                });
+
+                if (req.query.destination_index !== undefined) {
+                    const destIndex = parseInt(req.query.destination_index);
+                    if (config.destinations && config.destinations[destIndex] && config.destinations[destIndex].linkedHotelIds) {
+                        linkedHotelIds = config.destinations[destIndex].linkedHotelIds.map(id => parseInt(id));
+                    }
+                } else if (req.query.collection_index !== undefined) {
+                    const collIndex = parseInt(req.query.collection_index);
+                    if (config.collections && config.collections[collIndex] && config.collections[collIndex].linkedHotelIds) {
+                        linkedHotelIds = config.collections[collIndex].linkedHotelIds.map(id => parseInt(id));
+                    }
+                }
+            } catch (err) {
+                console.error("Error reading homepage config for search filtering:", err);
+            }
         }
 
-        // Must have rooms that can fit the guests
-        whereClause.room = {
-            some: {
-                maxOccupancy: { gte: Math.ceil(totalGuests / requiredRooms) }
+        if (linkedHotelIds !== null) {
+            whereClause.id = { in: linkedHotelIds };
+        } else {
+            if (city && city !== "All" && city !== "India") {
+                const searchTerms = city.trim().split(/\s+/).filter(Boolean);
+                if (searchTerms.length > 1) {
+                    whereClause.AND = searchTerms.map(term => ({
+                        OR: [
+                            { name: { contains: term } },
+                            { city: { contains: term } },
+                            { address: { contains: term } }
+                        ]
+                    }));
+                } else if (searchTerms.length === 1) {
+                    const singleTerm = searchTerms[0];
+                    whereClause.OR = [
+                        { city: { contains: singleTerm } },
+                        { address: { contains: singleTerm } },
+                        { name: { contains: singleTerm } }
+                    ];
+                }
             }
-        };
+        }
+
+        // Must have rooms that can fit the guests AND match stay type
+        const perRoomCap = Math.ceil(totalGuests / requiredRooms);
+        const roomFilter = { maxOccupancy: { gte: perRoomCap } };
+        if (stayType === 'hourly') {
+            roomFilter.isHourlyEnabled = true;
+        } else if (stayType === 'nightly') {
+            roomFilter.isHourlyEnabled = false;
+        }
+        // stayType undefined/both => no extra filter (show all)
+        whereClause.room = { some: roomFilter };
 
         const hotels = await prisma.hotel.findMany({
             where: whereClause,
             include: {
                 room: true,
-                coupon: true,
-                booking: {
-                    where: {
-                        status: { in: ['confirmed', 'checked-in'] },
-                        OR: [
-                            {
-                                AND: [
-                                    { checkIn: { lte: new Date(checkIn || new Date()) } },
-                                    { checkOut: { gte: new Date(checkIn || new Date()) } }
-                                ]
-                            },
-                            {
-                                AND: [
-                                    { checkIn: { lte: new Date(checkOut || new Date()) } },
-                                    { checkOut: { gte: new Date(checkOut || new Date()) } }
-                                ]
-                            }
-                        ]
-                    }
-                }
+                coupon: true
             }
         });
 
-        // 2. Strong Availability Algorithm (Check overlaps)
-        const availableHotels = hotels.filter(hotel => {
-            // Group bookings by room type
-            const activeBookings = hotel.booking.length;
-            const totalRoomsCount = hotel.room.length; // Simplified: usually we have inventory counts
-            
-            // If the hotel has many rooms and few bookings, it's likely available
-            // For a production system, we'd check inventory per room type
-            return activeBookings < totalRoomsCount * 5; // Assuming each room type has at least 5 units
-        });
+        const availableHotels = [];
+
+        if (hasStayDates && hotels.length > 0) {
+            const roomIds = hotels.flatMap(h => h.room.map(r => r.id));
+
+            // Bulk fetch daily rates
+            const allRates = await prisma.dailyrate.findMany({
+                where: {
+                    roomId: { in: roomIds },
+                    date: {
+                        gte: checkInDate,
+                        lt: checkOutDate
+                    }
+                }
+            });
+
+            const rateMap = {};
+            allRates.forEach(rate => {
+                const dateKey = rate.date.toISOString().split('T')[0];
+                rateMap[`${rate.roomId}_${dateKey}`] = rate;
+            });
+
+            // Bulk fetch bookings
+            const allBookings = await prisma.booking.findMany({
+                where: {
+                    roomId: { in: roomIds },
+                    checkIn: { lt: checkOutDate },
+                    checkOut: { gt: checkInDate },
+                    OR: [
+                        { status: { in: ['confirmed', 'checked-in', 'paid'] } },
+                        {
+                            AND: [
+                                { status: 'held' },
+                                { holdExpiresAt: { gt: new Date() } }
+                            ]
+                        }
+                    ]
+                }
+            });
+
+            const bookingsByRoom = {};
+            roomIds.forEach(id => {
+                bookingsByRoom[id] = [];
+            });
+            allBookings.forEach(booking => {
+                if (bookingsByRoom[booking.roomId]) {
+                    bookingsByRoom[booking.roomId].push(booking);
+                }
+            });
+
+            for (const hotel of hotels) {
+                let availableRoomTypes = hotel.room.filter(room => {
+                    const perRoomCapacity = Math.ceil(totalGuests / requiredRooms);
+                    const capacityOk = room.status !== 'inactive' && room.status !== 'maintenance' && room.maxOccupancy >= perRoomCapacity;
+                    if (!capacityOk) return false;
+                    if (stayType === 'hourly') return room.isHourlyEnabled === true;
+                    if (stayType === 'nightly') return room.isHourlyEnabled !== true;
+                    return true; // both or undefined
+                });
+
+                const checkedRooms = [];
+
+                for (const room of availableRoomTypes) {
+                    let minAvailable = room.totalInventory || 1;
+                    let totalStayPrice = 0;
+
+                    for (let i = 0; i < nights; i++) {
+                        const currentDay = new Date(checkInDate);
+                        currentDay.setDate(currentDay.getDate() + i);
+                        currentDay.setHours(0, 0, 0, 0);
+
+                        const nextDay = new Date(currentDay);
+                        nextDay.setDate(nextDay.getDate() + 1);
+
+                        const dayKey = currentDay.toISOString().split('T')[0];
+                        const override = rateMap[`${room.id}_${dayKey}`];
+                        const dayLimit = override ? override.available : (room.totalInventory || 1);
+
+                        const bookings = (bookingsByRoom[room.id] || []).filter(b => {
+                            return b.checkIn < nextDay && b.checkOut > currentDay;
+                        });
+
+                        const bookedCount = bookings.reduce((count, booking) => {
+                            try {
+                                if (booking.roomDetails) {
+                                    const details = JSON.parse(booking.roomDetails);
+                                    const roomInfo = details.find(item => parseInt(item.id) === room.id);
+                                    if (roomInfo) return count + (parseInt(roomInfo.quantity) || 1);
+                                }
+                            } catch (err) {}
+                            return count + 1;
+                        }, 0);
+
+                        minAvailable = Math.min(minAvailable, Math.max(0, dayLimit - bookedCount));
+                        totalStayPrice += override ? override.price : room.pricePerNight;
+                    }
+
+                    if (minAvailable >= requiredRooms) {
+                        checkedRooms.push({
+                            ...room,
+                            availableUnits: minAvailable,
+                            dynamicPricePerNight: totalStayPrice / nights
+                        });
+                    }
+                }
+
+                availableRoomTypes = checkedRooms;
+
+                if (availableRoomTypes.length > 0) {
+                    availableHotels.push({
+                        ...hotel,
+                        room: availableRoomTypes,
+                        lowestAvailablePrice: Math.min(...availableRoomTypes.map(room => room.dynamicPricePerNight || room.pricePerNight))
+                    });
+                }
+            }
+        } else {
+            // No stay dates or no hotels
+            for (const hotel of hotels) {
+                let availableRoomTypes = hotel.room.filter(room => {
+                    const perRoomCapacity = Math.ceil(totalGuests / requiredRooms);
+                    const capacityOk = room.status !== 'inactive' && room.status !== 'maintenance' && room.maxOccupancy >= perRoomCapacity;
+                    if (!capacityOk) return false;
+                    if (stayType === 'hourly') return room.isHourlyEnabled === true;
+                    if (stayType === 'nightly') return room.isHourlyEnabled !== true;
+                    return true; // both or undefined
+                });
+
+                if (availableRoomTypes.length > 0) {
+                    availableHotels.push({
+                        ...hotel,
+                        room: availableRoomTypes,
+                        lowestAvailablePrice: Math.min(...availableRoomTypes.map(room => room.pricePerNight))
+                    });
+                }
+            }
+        }
 
         // 3. Strong Ranking Algorithm (The 'Secret Sauce')
         // Score = (QualityScore * 0.5) + (Featured * 30) + (Rating * 20)
@@ -143,7 +314,18 @@ exports.getHotel = async (req, res, next) => {
             return res.status(404).json({ success: false, message: 'Hotel not found' });
         }
 
-        res.status(200).json({ success: true, data: hotel });
+        const formattedReviews = (hotel.review || []).map(r => ({
+            ...r,
+            reply: r.partnerReply
+        }));
+
+        const hotelData = {
+            ...hotel,
+            review: formattedReviews,
+            reviews: formattedReviews
+        };
+
+        res.status(200).json({ success: true, data: hotelData });
     } catch (err) {
         res.status(400).json({ success: false, message: err.message });
     }
@@ -162,33 +344,55 @@ exports.createHotel = async (req, res, next) => {
         const { 
             name, tagline, description, city, address, pricePerNight, 
             starRating, thumbnail, images, amenities,
-            dining, wellness, faqs, safety, policies, mainAmenities
+            dining, wellness, faqs, safety, policies, mainAmenities,
+            isDraft
         } = req.body;
+
+        if (!name || !String(name).trim()) {
+            return res.status(400).json({ success: false, message: 'Property name is required' });
+        }
+
+        if (!city || !String(city).trim()) {
+            return res.status(400).json({ success: false, message: 'City is required' });
+        }
+
+        if (!address || !String(address).trim()) {
+            return res.status(400).json({ success: false, message: 'Address is required' });
+        }
+
+        const draftMode = isDraft === true || isDraft === 'true';
+        const safeJson = (value, fallback) => {
+            if (value === undefined || value === null || value === '') return fallback;
+            return typeof value === 'string' ? value : JSON.stringify(value);
+        };
 
         const hotel = await prisma.hotel.create({
             data: {
-                name,
-                tagline,
-                description,
-                city,
-                address,
+                name: String(name).trim(),
+                tagline: tagline || "New property setup in progress",
+                description: description || "This property is being set up by the partner.",
+                city: String(city).trim(),
+                address: String(address).trim(),
                 pricePerNight: parseFloat(pricePerNight) || 0,
                 starRating: parseInt(starRating) || 3,
-                thumbnail,
-                images: typeof images !== 'string' ? JSON.stringify(images) : images,
-                amenities: typeof amenities !== 'string' ? JSON.stringify(amenities) : amenities,
-                dining: typeof dining !== 'string' ? JSON.stringify(dining) : dining,
-                wellness: typeof wellness !== 'string' ? JSON.stringify(wellness) : wellness,
-                faqs: typeof faqs !== 'string' ? JSON.stringify(faqs) : faqs,
-                safety: typeof safety !== 'string' ? JSON.stringify(safety) : safety,
-                policies: typeof policies !== 'string' ? JSON.stringify(policies) : policies,
-                mainAmenities: typeof mainAmenities !== 'string' ? JSON.stringify(mainAmenities) : mainAmenities,
+                thumbnail: thumbnail || null,
+                images: safeJson(images, '[]'),
+                amenities: safeJson(amenities, '[]'),
+                dining: safeJson(dining, '[]'),
+                wellness: safeJson(wellness, '[]'),
+                faqs: safeJson(faqs, '[]'),
+                safety: safeJson(safety, '[]'),
+                policies: safeJson(policies, '[]'),
+                mainAmenities: safeJson(mainAmenities, '[]'),
+                isActive: draftMode ? false : true,
+                badges: draftMode ? JSON.stringify(['Draft']) : undefined,
                 userId: req.user.id
             },
         });
 
         res.status(201).json({ success: true, data: hotel });
     } catch (err) {
+        console.error("CREATE_HOTEL_ERROR:", err);
         res.status(400).json({ success: false, message: err.message });
     }
 };
@@ -299,6 +503,9 @@ exports.deleteHotel = async (req, res, next) => {
 // @access  Private (Hotel Admin, Super Admin)
 exports.getMyHotels = async (req, res, next) => {
     try {
+        const includeBookings = req.query.includeBookings === 'true';
+        const light = req.query.light === 'true';
+
         const hotels = await prisma.hotel.findMany({
             where: { userId: req.user.id },
             include: { 
@@ -310,25 +517,60 @@ exports.getMyHotels = async (req, res, next) => {
                         description: true, hotelId: true,
                         variants: true, roomPolicies: true, minPrice: true, maxPrice: true,
                         weeklyDiscount: true, monthlyDiscount: true,
+                        status: true, totalInventory: true, viewType: true, floorNumber: true,
+                        isCornerRoom: true, capacityAdults: true, capacityChildren: true,
+                        capacityInfants: true, extraMattress: true, extraBedCharge: true,
+                        tags: true, isFeatured: true, displayPriority: true, videoUrl: true,
+                        media360Url: true, minStay: true, maxStay: true, isInstantBooking: true,
+                        advanceBookingDays: true, advancePayment: true, securityDeposit: true,
+                        isRefundable: true, isTaxIncluded: true, weekendPricing: true,
+                        seasonalPricing: true, addOns: true, petsAllowed: true,
+                        smokingAllowed: true, alcoholAllowed: true, partyAllowed: true,
+                        seoTitle: true, seoDescription: true, slug: true, isHourlyEnabled: true,
+                        hourlyRates: true,
                         createdAt: true, updatedAt: true
                     }
                 },
-                booking: {
+                review: {
+                    include: {
+                        user: {
+                            select: { name: true }
+                        }
+                    }
+                },
+                ...(includeBookings ? { booking: {
                     include: {
                         user: { select: { name: true, email: true } },
                         room: { select: { name: true } }
                     },
                     orderBy: { createdAt: 'desc' }
-                }
+                } } : {})
             }
         });
 
-        const hotelsWithRevenue = hotels.map(hotel => {
-            const totalRevenue = hotel.booking
-                .filter(b => b.paymentStatus === 'paid')
-                .reduce((sum, b) => sum + b.totalPrice, 0);
-            return { ...hotel, totalRevenue };
-        });
+        const hotelsWithRevenue = await Promise.all(hotels.map(async (hotel) => {
+            const formattedReviews = (hotel.review || []).map(r => ({
+                ...r,
+                reply: r.partnerReply
+            }));
+
+            if (includeBookings) {
+                const totalRevenue = (hotel.booking || [])
+                    .filter(b => b.paymentStatus === 'paid')
+                    .reduce((sum, b) => sum + b.totalPrice, 0);
+                return { ...hotel, reviews: formattedReviews, totalRevenue };
+            }
+
+            if (light) {
+                return { ...hotel, reviews: formattedReviews, totalRevenue: 0 };
+            }
+
+            const revenue = await prisma.booking.aggregate({
+                where: { hotelId: hotel.id, paymentStatus: 'paid' },
+                _sum: { totalPrice: true }
+            });
+            return { ...hotel, reviews: formattedReviews, totalRevenue: revenue._sum.totalPrice || 0 };
+        }));
 
         res.status(200).json({
             success: true,
@@ -371,10 +613,21 @@ exports.createReview = async (req, res, next) => {
             return res.status(400).json({ success: false, message: 'You have already reviewed this hotel' });
         }
 
+        const cleanliness = req.body.cleanliness ? parseInt(req.body.cleanliness) : 5;
+        const comfort = req.body.comfort ? parseInt(req.body.comfort) : 5;
+        const location = req.body.location ? parseInt(req.body.location) : 5;
+        const staff = req.body.staff ? parseInt(req.body.staff) : 5;
+        const valueForMoney = req.body.valueForMoney ? parseInt(req.body.valueForMoney) : 5;
+
         const review = await prisma.review.create({
             data: {
                 rating: parseInt(rating),
                 comment,
+                cleanliness,
+                comfort,
+                location,
+                staff,
+                valueForMoney,
                 userId: req.user.id,
                 hotelId: hotelId
             },
@@ -427,11 +680,89 @@ exports.replyToReview = async (req, res, next) => {
 
         const updatedReview = await prisma.review.update({
             where: { id: reviewId },
-            data: { reply }
+            data: { partnerReply: reply }
         });
 
         res.status(200).json({ success: true, data: updatedReview });
     } catch (err) {
         res.status(400).json({ success: false, message: err.message });
+    }
+};
+
+// @desc    Get dynamic search suggestions for cities and hotels
+// @route   GET /api/hotels/search-suggestions
+// @access  Public
+exports.getSearchSuggestions = async (req, res, next) => {
+    try {
+        const { query } = req.query;
+        if (!query || !query.trim()) {
+            return res.status(200).json({ success: true, data: [] });
+        }
+
+        const cleanQuery = query.trim().toLowerCase();
+
+        // 1. Fetch matching hotels to extract distinct cities
+        const matchingHotelsForCities = await prisma.hotel.findMany({
+            where: {
+                OR: [
+                    { city: { contains: cleanQuery } },
+                    { address: { contains: cleanQuery } }
+                ],
+                isActive: true
+            },
+            select: {
+                city: true
+            },
+            take: 30
+        });
+
+        const citiesSet = new Set();
+        matchingHotelsForCities.forEach(h => {
+            if (h.city) {
+                citiesSet.add(h.city.trim());
+            }
+        });
+
+        const citySuggestions = Array.from(citiesSet).map(cityName => ({
+            id: `city-${cityName.toLowerCase().replace(/\s+/g, '-')}`,
+            label: cityName,
+            sublabel: "City",
+            category: "city",
+            emoji: "🏙️"
+        })).slice(0, 5);
+
+        // 2. Fetch matching hotels by name or city
+        const matchingHotels = await prisma.hotel.findMany({
+            where: {
+                OR: [
+                    { name: { contains: cleanQuery } },
+                    { city: { contains: cleanQuery } }
+                ],
+                isActive: true
+            },
+            select: {
+                id: true,
+                name: true,
+                city: true,
+                thumbnail: true
+            },
+            take: 5
+        });
+
+        const hotelSuggestions = matchingHotels.map(h => ({
+            id: String(h.id),
+            label: h.name,
+            sublabel: h.city || "India",
+            category: "hotel",
+            thumbnail: h.thumbnail || undefined,
+            emoji: "🏨"
+        }));
+
+        const suggestions = [...citySuggestions, ...hotelSuggestions];
+
+        res.status(200).json({ success: true, data: suggestions });
+    } catch (err) {
+        console.error("Error getting search suggestions:", err);
+        res.status(500).json({ success: false, message: "Error getting suggestions", error: err.message });
     }
 };

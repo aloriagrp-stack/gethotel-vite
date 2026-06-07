@@ -30,7 +30,7 @@ export default function MyBookingsPage() {
 
     useEffect(() => {
         const fetchBookings = async () => {
-            const token = localStorage.getItem('token');
+            const token = sessionStorage.getItem('token') || localStorage.getItem('token');
             if (!token) {
                 setError("Please login to view your bookings.");
                 setLoading(false);
@@ -311,9 +311,13 @@ export default function MyBookingsPage() {
                                                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Payment Status</p>
                                                     <div className={cn(
                                                         "px-3 py-1 rounded-lg inline-block text-[9px] font-black uppercase tracking-widest",
-                                                        booking.paymentStatus === 'paid' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
+                                                        booking.paymentStatus === 'paid' ? 'bg-emerald-50 text-emerald-600' :
+                                                        booking.paymentStatus === 'partial' ? 'bg-blue-50 text-blue-600' :
+                                                        'bg-amber-50 text-amber-600'
                                                     )}>
-                                                        {booking.paymentStatus === 'paid' ? 'Fully Paid' : 'Partial Paid'}
+                                                        {booking.paymentStatus === 'paid' ? 'Fully Paid' :
+                                                         booking.paymentStatus === 'partial' ? '12% Paid' :
+                                                         'Pay At Hotel'}
                                                     </div>
                                                 </div>
                                             </div>
@@ -352,12 +356,29 @@ export default function MyBookingsPage() {
                                             )}
  
                                             {activeTab === "completed" && (
-                                                <Link
-                                                    to={`/hotel/${booking.hotel?.id}`}
-                                                    className="px-5 sm:px-8 py-3.5 sm:py-4 bg-brand-600 text-white rounded-xl sm:rounded-[20px] font-black text-[10px] uppercase tracking-widest hover:bg-brand-700 transition-all shadow-xl shadow-brand-100 text-center w-full sm:w-auto"
-                                                >
-                                                    Book Again
-                                                </Link>
+                                                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                                                    {booking.isReviewed ? (
+                                                        <button
+                                                            disabled
+                                                            className="px-5 sm:px-8 py-3.5 sm:py-4 bg-slate-100 text-slate-400 rounded-xl sm:rounded-[20px] font-black text-[10px] uppercase tracking-widest text-center cursor-not-allowed w-full sm:w-auto"
+                                                        >
+                                                            Reviewed
+                                                        </button>
+                                                    ) : (
+                                                        <Link
+                                                            to={`/hotel/${booking.hotel?.id}/write-review`}
+                                                            className="px-5 sm:px-8 py-3.5 sm:py-4 bg-brand-600 text-white rounded-xl sm:rounded-[20px] font-black text-[10px] uppercase tracking-widest hover:bg-brand-700 transition-all shadow-xl shadow-brand-100 text-center w-full sm:w-auto"
+                                                        >
+                                                            Write Review
+                                                        </Link>
+                                                    )}
+                                                    <Link
+                                                        to={`/hotel/${booking.hotel?.id}`}
+                                                        className="px-5 sm:px-8 py-3.5 sm:py-4 bg-white border border-slate-200 text-slate-800 rounded-xl sm:rounded-[20px] font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all text-center w-full sm:w-auto"
+                                                    >
+                                                        Book Again
+                                                    </Link>
+                                                </div>
                                             )}
                                         </div>
                                     </div>

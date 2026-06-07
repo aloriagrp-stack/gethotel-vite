@@ -28,6 +28,19 @@ const formatDateLabel = (ci: string, co: string) => {
     return `${d1.toLocaleDateString('en-US', options)} - ${d2.toLocaleDateString('en-US', options)}`;
 };
 
+const parseComment = (commentStr: string) => {
+    if (!commentStr) return "";
+    const overallMatch = commentStr.match(/Overall:\s*(.*?)$/is);
+    if (overallMatch) {
+        return overallMatch[1].trim();
+    }
+    if (commentStr.includes("Likes:") || commentStr.includes("Dislikes:") || commentStr.includes("Overall:")) {
+        const clean = commentStr.replace(/Likes:.*?\n/gi, '').replace(/Dislikes:.*?\n/gi, '').replace(/Overall:/gi, '').trim();
+        return clean;
+    }
+    return commentStr;
+};
+
 // Animation variants
 const fadeInUp = {
     initial: { opacity: 0, y: 20 },
@@ -250,6 +263,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
         params.delete("variant");
         router(`/booking?${params.toString()}`);
     };
+    const [fetchingRooms, setFetchingRooms] = useState(false);
     const [showDescriptionModal, setShowDescriptionModal] = useState(false);
     const [showReviewsModal, setShowReviewsModal] = useState(false);
     const [showMoreCategories, setShowMoreCategories] = useState(false);
@@ -289,6 +303,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
     useEffect(() => {
         const fetchRooms = async () => {
             try {
+                setFetchingRooms(true);
                 const params: any = {};
                 const checkInParam = searchParams.get("checkIn");
                 const checkOutParam = searchParams.get("checkOut");
@@ -298,7 +313,10 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                 const res = await hotelApi.getRooms(id, params);
                 setRooms(res.data || []);
             } catch (err) { console.error(err); }
-            finally { setLoading(false); }
+            finally { 
+                setLoading(false);
+                setFetchingRooms(false);
+            }
         };
 
         const fetchCoupons = async () => {
@@ -308,9 +326,17 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                 const rawData = res.data?.coupons || res.data || res;
                 const couponList = Array.isArray(rawData) ? rawData : [];
                 
-                setCoupons(couponList.filter((c: any) => 
-                    c.isActive !== false && c.is_active !== false // Handle true or undefined as active
-                ));
+                const today = new Date();
+                const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+                setCoupons(couponList.filter((c: any) => {
+                    const isActive = c.isActive !== false && c.is_active !== false;
+                    if (!isActive) return false;
+                    const startStr = typeof c.startDate === 'string' ? c.startDate.split('T')[0] : '';
+                    const endStr = typeof c.endDate === 'string' ? c.endDate.split('T')[0] : '';
+                    if (startStr && endStr && (todayStr < startStr || todayStr > endStr)) return false;
+                    return true;
+                }));
             } catch (err) { console.error("Failed to fetch coupons", err); }
         };
 
@@ -549,7 +575,30 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
             </div>
 
             {/* 2. Top Property Info */}
-            <div className="max-w-7xl mx-auto px-5 pt-1 pb-6">
+            <div className="max-w-7xl mx-auto px-5 pt-4 pb-6">
+                {/* Visual Breadcrumbs */}
+                <nav className="flex flex-wrap items-center gap-1.5 md:gap-2 text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">
+                    <Link to="/" className="hover:text-brand-600 transition-colors">Home</Link>
+                    <ChevronRight className="w-3 h-3 text-slate-300" />
+                    <Link to="/hotels" className="hover:text-brand-600 transition-colors">Hotels</Link>
+                    {hotel.city && (
+                        <>
+                            <ChevronRight className="w-3 h-3 text-slate-300" />
+                            {["goa", "jaipur", "manali", "shimla", "udaipur"].includes(hotel.city.toLowerCase().trim()) ? (
+                                <Link to={`/${hotel.city.toLowerCase().trim()}-hotels`} className="hover:text-brand-600 transition-colors">
+                                    {hotel.city} Hotels
+                                </Link>
+                            ) : (
+                                <Link to={`/hotels?city=${encodeURIComponent(hotel.city)}`} className="hover:text-brand-600 transition-colors">
+                                    {hotel.city} Hotels
+                                </Link>
+                            )}
+                        </>
+                    )}
+                    <ChevronRight className="w-3 h-3 text-slate-300" />
+                    <span className="text-slate-600 truncate max-w-[150px] md:max-w-xs">{hotel.name}</span>
+                </nav>
+
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-4">
                     <div className="space-y-1.5 flex-1">
                         <div className="flex items-center gap-3">
@@ -1028,7 +1077,12 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                             </div>
                         </div>
                         <div className="space-y-8">
-                            {displayRooms.length === 0 ? (
+                            {fetchingRooms ? (
+                                <div className="py-20 flex flex-col items-center justify-center gap-4 bg-slate-50/50 rounded-[32px] border border-slate-150 animate-pulse">
+                                    <Loader2 className="w-10 h-10 text-brand-600 animate-spin" />
+                                    <p className="text-slate-500 font-black italic text-xs uppercase tracking-widest">Updating Room Rates...</p>
+                                </div>
+                            ) : displayRooms.length === 0 ? (
                                 <div className="py-20 px-10 bg-slate-50 rounded-[32px] border-2 border-dashed border-slate-200 text-center space-y-4">
                                     <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto shadow-sm">
                                         <AlertCircle className="w-10 h-10 text-slate-300" />
@@ -1060,7 +1114,13 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                                             isHourly: true,
                                             policy: rPol.cancellation || "Standard Policy"
                                           }]
-                                        : (variants.length > 0 ? variants : [
+                                        : (variants.length > 0 ? variants.map((v: any) => {
+                                            const nameLower = (v.mealPlan || "").toLowerCase();
+                                            if ((nameLower.includes("room only") || nameLower === "ep") && (!v.price || Number(v.price) === 0)) {
+                                                return { ...v, price: room.pricePerNight };
+                                            }
+                                            return v;
+                                          }) : [
                                             { mealPlan: "Room Only (EP)", price: room.pricePerNight, policy: rPol.cancellation || "Standard Policy" }
                                         ]);
 
@@ -1117,8 +1177,11 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                                                                 <div className="space-y-4">
                                                                     <div className="flex items-center justify-between">
                                                                         <div className="flex items-center gap-3">
-                                                                            <h4 className="text-xl font-bold text-slate-950 tracking-tight">
-                                                                                {room.name}
+                                                                            <h4 className="text-xl font-bold text-slate-950 tracking-tight flex flex-col sm:flex-row sm:items-baseline gap-2">
+                                                                                <span>{room.name}</span>
+                                                                                {variant.mealPlan && (
+                                                                                    <span className="text-xs font-semibold text-slate-500 normal-case">({variant.mealPlan})</span>
+                                                                                )}
                                                                             </h4>
                                                                             <button
                                                                                 onClick={(e) => {
@@ -1133,6 +1196,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                                                                         <div className="flex items-center gap-4 text-slate-400 text-[9px] font-black uppercase tracking-widest">
                                                                             <div className="flex items-center gap-1.5"><Maximize2 className="w-3.5 h-3.5 text-blue-500" /> {room.sizeM2 || 250} sq.ft</div>
                                                                             <div className="flex items-center gap-1.5"><BedDouble className="w-4 h-4 text-blue-500" /> {room.bedConfiguration || "Double Bed"}</div>
+                                                                            <div className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5 text-blue-500" /> {room.maxOccupancy || room.capacityAdults || 2} Max Guests</div>
                                                                         </div>
                                                                     </div>
 
@@ -1262,7 +1326,12 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                                                                 <div>
                                                                     <div className="flex items-start justify-between gap-2">
                                                                         <div className="flex flex-col">
-                                                                            <h4 className="text-lg font-bold text-slate-950 tracking-tight leading-tight">{room.name}</h4>
+                                                                            <h4 className="text-lg font-bold text-slate-950 tracking-tight leading-tight flex flex-col gap-0.5">
+                                                                                <span>{room.name}</span>
+                                                                                {variant.mealPlan && (
+                                                                                    <span className="text-[10px] font-semibold text-slate-500 normal-case">({variant.mealPlan})</span>
+                                                                                )}
+                                                                            </h4>
                                                                         </div>
                                                                         <button 
                                                                             onClick={(e) => {
@@ -1277,7 +1346,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                                                                     <div className="flex items-center gap-3 mt-1 text-slate-400 text-[8px] font-black uppercase tracking-widest">
                                                                         <span>{room.sizeM2 || 250} sq.ft</span>
                                                                         <span>•</span>
-                                                                        <span>{searchedGuests} {searchedGuests === 1 ? "Guest" : "Guests"}</span>
+                                                                        <span>{room.maxOccupancy || room.capacityAdults || 2} Max Guests</span>
                                                                     </div>
                                                                     {stayType !== 'hourly' && (
                                                                         isBreakfast ? (
@@ -1472,7 +1541,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                                                     {rev.rating || "5.0"}
                                                 </div>
                                             </div>
-                                            <p className="text-sm text-slate-600 leading-relaxed font-medium italic">"{rev.comment || "Exceptional stay, everything was perfect!"}"</p>
+                                            <p className="text-sm text-slate-600 leading-relaxed font-medium italic">"{parseComment(rev.comment) || "Exceptional stay, everything was perfect!"}"</p>
                                         </div>
                                     ))}
                                 </div>
@@ -1763,7 +1832,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                                     <div className="space-y-3">
                                         <h3 className="text-3xl font-black italic text-slate-950 tracking-tight leading-tight">{selectedRoomForDetails.name}</h3>
                                         <div className="flex items-center gap-4">
-                                            <div className="flex items-center gap-1.5 text-slate-500 text-[10px] font-black uppercase tracking-widest"><Users className="w-4 h-4 text-blue-600" /> {searchedGuests} {searchedGuests === 1 ? "Guest" : "Guests"}</div>
+                                            <div className="flex items-center gap-1.5 text-slate-500 text-[10px] font-black uppercase tracking-widest"><Users className="w-4 h-4 text-blue-600" /> {selectedRoomForDetails.maxOccupancy || selectedRoomForDetails.capacityAdults || 2} Max Guests</div>
                                             <div className="flex items-center gap-1.5 text-slate-500 text-[10px] font-black uppercase tracking-widest"><Bed className="w-4 h-4 text-blue-600" /> {selectedRoomForDetails.bedConfiguration || "1 Bed"}</div>
                                         </div>
                                         <p className="text-[11px] text-slate-500 leading-relaxed font-medium italic">
@@ -1788,7 +1857,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                                                 ? ["Instant booking confirmation", `Exclusive ${duration} hour pricing`, "Safe and secure check-in"]
                                                 : (safeParse(selectedRoomForDetails.trustPoints, []).length > 0 ? safeParse(selectedRoomForDetails.trustPoints, []) : [
                                                     "Secure booking with instant confirmation",
-                                                    "Pay remaining 82% at hotel"
+                                                    "Pay remaining 88% at hotel"
                                                 ])
                                             ).map((point: string, pIdx: number) => (
                                                 <div key={pIdx} className="flex items-start gap-3 py-1">
@@ -1805,36 +1874,51 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                             <div className="fixed bottom-0 left-0 right-0 p-6 bg-white/95 backdrop-blur-md border-t border-slate-100 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-[352]">
                                 <div className="max-w-md mx-auto space-y-4">
                                     <div className="flex items-center justify-between">
-                                        {(() => {
-                                             const rates = typeof selectedRoomForDetails.hourlyRates === 'string' ? safeParse(selectedRoomForDetails.hourlyRates, {}) : (selectedRoomForDetails.hourlyRates || safeParse(selectedRoomForDetails.hourly_rates, {}));
-                                             const bPrice = stayType === 'hourly' ? (rates[duration] || rates[String(duration)] || selectedRoomForDetails.pricePerNight / 2) : selectedRoomForDetails.selectedVariant?.price;
-                                             const sInfo = calculateStayPrice(bPrice, selectedRoomForDetails, coupons);
-                                             const advanceAmt = Math.round(sInfo.finalPrice * 0.18);
-                                             
-                                             return (
-                                                 <>
-                                                     <div className="flex flex-col">
-                                                         {sInfo.originalPrice && (
-                                                             <div className="flex items-center gap-1.5 mb-0.5">
-                                                                 <span className="text-[10px] font-bold text-slate-400 line-through">{formatPrice(sInfo.originalPrice)}</span>
-                                                                 <span className="text-[8px] font-black text-red-500 uppercase">{Math.round((1 - sInfo.finalPrice / sInfo.originalPrice) * 100)}% OFF</span>
-                                                             </div>
-                                                         )}
-                                                         <div className="flex items-baseline gap-1">
-                                                             <span className="text-2xl font-black text-slate-950 italic leading-none">{formatPrice(sInfo.finalPrice)}</span>
-                                                             <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Total</span>
-                                                         </div>
-                                                     </div>
-                                                     <div className="flex flex-col items-end">
-                                                         <div className="px-3 py-1.5 bg-blue-600 text-white rounded-lg shadow-lg shadow-blue-100 animate-pulse flex flex-col items-center">
-                                                             <span className="text-[7px] font-black uppercase tracking-[0.1em] leading-none mb-0.5">Pay Now (18%)</span>
-                                                             <span className="text-xs font-black italic">{formatPrice(advanceAmt)}</span>
-                                                         </div>
-                                                         <span className="text-[7px] font-bold text-slate-400 uppercase mt-1">Rest at hotel</span>
-                                                     </div>
-                                                 </>
-                                             );
-                                         })()}
+                                         {(() => {
+                                              const rates = typeof selectedRoomForDetails.hourlyRates === 'string' ? safeParse(selectedRoomForDetails.hourlyRates, {}) : (selectedRoomForDetails.hourlyRates || safeParse(selectedRoomForDetails.hourly_rates, {}));
+                                              const bPrice = stayType === 'hourly' ? (rates[duration] || rates[String(duration)] || selectedRoomForDetails.pricePerNight / 2) : selectedRoomForDetails.selectedVariant?.price;
+                                              const sInfo = calculateStayPrice(bPrice, selectedRoomForDetails, coupons);
+                                              const stayNights = (() => {
+                                                  if (stayType === 'hourly') return 1;
+                                                  if (!checkIn || !checkOut || checkIn === "Dates" || checkOut === "Dates") return 1;
+                                                  const start = new Date(checkIn);
+                                                  const end = new Date(checkOut);
+                                                  const diff = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+                                                  return diff > 0 ? diff : 1;
+                                              })();
+                                              const totalStayPrice = sInfo.finalPrice * stayNights;
+                                              const advanceAmt = Math.round(totalStayPrice * 0.12);
+                                              const restAmt = totalStayPrice - advanceAmt;
+                                              
+                                              return (
+                                                  <>
+                                                      <div className="flex flex-col">
+                                                          {sInfo.originalPrice && (
+                                                              <div className="flex items-center gap-1.5 mb-0.5">
+                                                                  <span className="text-[10px] font-bold text-slate-400 line-through">{formatPrice(sInfo.originalPrice * stayNights)}</span>
+                                                                  <span className="text-[8px] font-black text-red-500 uppercase">{Math.round((1 - sInfo.finalPrice / sInfo.originalPrice) * 100)}% OFF</span>
+                                                              </div>
+                                                          )}
+                                                          <div className="flex items-baseline gap-1">
+                                                              <span className="text-2xl font-black text-slate-950 italic leading-none">{formatPrice(sInfo.finalPrice)}</span>
+                                                              <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">{stayType === 'hourly' ? `/${duration}h` : '/night'}</span>
+                                                          </div>
+                                                          {stayNights > 1 && (
+                                                              <span className="text-[10px] font-bold text-slate-500 mt-1">
+                                                                  Total ({stayNights} nights): <span className="font-extrabold text-slate-800">{formatPrice(totalStayPrice)}</span>
+                                                              </span>
+                                                          )}
+                                                      </div>
+                                                      <div className="flex flex-col items-end">
+                                                          <div className="px-3 py-1.5 bg-blue-600 text-white rounded-lg shadow-lg shadow-blue-100 animate-pulse flex flex-col items-center">
+                                                              <span className="text-[7px] font-black uppercase tracking-[0.1em] leading-none mb-0.5">Pay 12% Now</span>
+                                                              <span className="text-xs font-black italic">{formatPrice(advanceAmt)}</span>
+                                                          </div>
+                                                          <span className="text-[7px] font-bold text-slate-400 uppercase mt-1">Rest at hotel ({formatPrice(restAmt)})</span>
+                                                      </div>
+                                                  </>
+                                              );
+                                          })()}
                                     </div>
                                     {(() => {
                                         const vIdx = hotel.room.findIndex((r: any) => r.id === selectedRoomForDetails.id); 
@@ -1970,7 +2054,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                                         <div className="flex items-center gap-3">
                                             <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 rounded-lg border border-blue-100/50">
                                                 <Users className="w-3.5 h-3.5 text-blue-600" />
-                                                <span className="text-[9px] font-black uppercase tracking-widest text-blue-700">{searchedGuests} {searchedGuests === 1 ? "Guest" : "Guests"} Selected</span>
+                                                <span className="text-[9px] font-black uppercase tracking-widest text-blue-700">{selectedRoomForDetails.maxOccupancy || selectedRoomForDetails.capacityAdults || 2} Max Guests</span>
                                             </div>
                                             <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-lg border border-slate-100">
                                                 <Bed className="w-3.5 h-3.5 text-slate-400" />
@@ -2017,8 +2101,8 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                                                 ? ["Instant booking confirmation", `Exclusive ${duration} hour pricing`, "Safe and secure check-in"]
                                                 : (safeParse(selectedRoomForDetails.trustPoints, []).length > 0 ? safeParse(selectedRoomForDetails.trustPoints, []) : [
                                                     "Secure booking with instant confirmation",
-                                                    "Pay 18% now to secure your stay",
-                                                    "Remaining 82% payable directly at property",
+                                                    "Pay 12% now to secure your stay",
+                                                    "Remaining 88% payable directly at property",
                                                     "Professional hospitality standards guaranteed"
                                                 ])
                                             ).map((point: string, pIdx: number) => (
@@ -2068,44 +2152,59 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                                 {/* Pricing Footer Content optimized for 70/30 split */}
                                 <div className="p-7 bg-slate-50/90 border-t border-slate-100 mt-auto">
                                     <div className="flex items-end justify-between gap-5">
-                                        <div className="space-y-3 flex-1">
-                                            {(() => {
-                                                const rates = typeof selectedRoomForDetails.hourlyRates === 'string' ? safeParse(selectedRoomForDetails.hourlyRates, {}) : (selectedRoomForDetails.hourlyRates || safeParse(selectedRoomForDetails.hourly_rates, {}));
-                                                const bPrice = stayType === 'hourly' ? (rates[duration] || rates[String(duration)] || selectedRoomForDetails.pricePerNight / 2) : selectedRoomForDetails.selectedVariant?.price;
-                                                const sInfo = calculateStayPrice(bPrice, selectedRoomForDetails, coupons);
-                                                const advanceAmt = Math.round(sInfo.finalPrice * 0.18);
-                                                
-                                                return (
-                                                    <>
-                                                        <div className="flex flex-col">
-                                                            {sInfo.originalPrice && (
-                                                                <div className="flex items-center gap-2 mb-0.5">
-                                                                    <span className="text-[10px] font-bold text-slate-400 line-through">{formatPrice(sInfo.originalPrice)}</span>
-                                                                    <span className="px-1.5 py-0.5 bg-red-50 text-red-600 text-[7px] font-black uppercase rounded-md border border-red-100">
-                                                                        -{Math.round((1 - sInfo.finalPrice / sInfo.originalPrice) * 100)}%
-                                                                    </span>
-                                                                </div>
-                                                            )}
-                                                            <div className="flex items-baseline gap-1.5">
-                                                                <span className="text-3xl font-bold text-slate-950 tracking-tighter">{formatPrice(sInfo.finalPrice)}</span>
-                                                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Total Stay</span>
-                                                            </div>
-                                                        </div>
-                                                        
-                                                        <div className="grid grid-cols-2 gap-2.5">
-                                                            <div className="px-3.5 py-2 bg-emerald-600 text-white rounded-xl shadow-lg shadow-emerald-100 flex flex-col justify-center min-h-[52px]">
-                                                                <p className="text-[7px] font-black uppercase tracking-widest opacity-80 leading-none mb-1">Pay 18% Now</p>
-                                                                <p className="text-sm font-bold">{formatPrice(advanceAmt)}</p>
-                                                            </div>
-                                                            <div className="px-3.5 py-2 bg-white border border-slate-200 rounded-xl flex flex-col justify-center min-h-[52px]">
-                                                                <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none mb-1">Rest at Hotel</p>
-                                                                <p className="text-[13px] font-bold text-slate-700">{formatPrice(sInfo.finalPrice - advanceAmt)}</p>
-                                                            </div>
-                                                        </div>
-                                                    </>
-                                                );
-                                            })()}
-                                        </div>
+                                         <div className="space-y-3 flex-1">
+                                             {(() => {
+                                                 const rates = typeof selectedRoomForDetails.hourlyRates === 'string' ? safeParse(selectedRoomForDetails.hourlyRates, {}) : (selectedRoomForDetails.hourlyRates || safeParse(selectedRoomForDetails.hourly_rates, {}));
+                                                 const bPrice = stayType === 'hourly' ? (rates[duration] || rates[String(duration)] || selectedRoomForDetails.pricePerNight / 2) : selectedRoomForDetails.selectedVariant?.price;
+                                                 const sInfo = calculateStayPrice(bPrice, selectedRoomForDetails, coupons);
+                                                 const stayNights = (() => {
+                                                     if (stayType === 'hourly') return 1;
+                                                     if (!checkIn || !checkOut || checkIn === "Dates" || checkOut === "Dates") return 1;
+                                                     const start = new Date(checkIn);
+                                                     const end = new Date(checkOut);
+                                                     const diff = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+                                                     return diff > 0 ? diff : 1;
+                                                 })();
+                                                 const totalStayPrice = sInfo.finalPrice * stayNights;
+                                                 const advanceAmt = Math.round(totalStayPrice * 0.12);
+                                                 const restAmt = totalStayPrice - advanceAmt;
+                                                 
+                                                 return (
+                                                     <>
+                                                         <div className="flex flex-col">
+                                                             {sInfo.originalPrice && (
+                                                                 <div className="flex items-center gap-2 mb-0.5">
+                                                                     <span className="text-[10px] font-bold text-slate-400 line-through">{formatPrice(sInfo.originalPrice * stayNights)}</span>
+                                                                     <span className="px-1.5 py-0.5 bg-red-50 text-red-600 text-[7px] font-black uppercase rounded-md border border-red-100">
+                                                                         -{Math.round((1 - sInfo.finalPrice / sInfo.originalPrice) * 100)}%
+                                                                     </span>
+                                                                 </div>
+                                                             )}
+                                                             <div className="flex items-baseline gap-1.5">
+                                                                 <span className="text-3xl font-bold text-slate-950 tracking-tighter">{formatPrice(sInfo.finalPrice)}</span>
+                                                                 <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{stayType === 'hourly' ? `/${duration}h` : '/night'}</span>
+                                                             </div>
+                                                             {stayNights > 1 && (
+                                                                 <span className="text-[10px] font-bold text-slate-500 mt-1">
+                                                                     Total ({stayNights} nights): <span className="font-extrabold text-slate-800">{formatPrice(totalStayPrice)}</span>
+                                                                 </span>
+                                                             )}
+                                                         </div>
+                                                         
+                                                         <div className="grid grid-cols-2 gap-2.5">
+                                                             <div className="px-3.5 py-2 bg-emerald-600 text-white rounded-xl shadow-lg shadow-emerald-100 flex flex-col justify-center min-h-[52px]">
+                                                                 <p className="text-[7px] font-black uppercase tracking-widest opacity-80 leading-none mb-1">Pay 12% Now</p>
+                                                                 <p className="text-sm font-bold">{formatPrice(advanceAmt)}</p>
+                                                             </div>
+                                                             <div className="px-3.5 py-2 bg-white border border-slate-200 rounded-xl flex flex-col justify-center min-h-[52px]">
+                                                                 <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none mb-1">Rest at Hotel</p>
+                                                                 <p className="text-[13px] font-bold text-slate-700">{formatPrice(restAmt)}</p>
+                                                             </div>
+                                                         </div>
+                                                     </>
+                                                 );
+                                             })()}
+                                         </div>
 
                                         <motion.button 
                                             animate={{ scale: [1, 1.03, 1] }}

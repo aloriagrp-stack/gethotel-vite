@@ -24,7 +24,7 @@ export default function PartnerBookingsPage() {
 
     const fetchBookings = async () => {
         try {
-            const res = await hotelApi.getMyHotels();
+            const res = await hotelApi.getMyHotels({ includeBookings: true });
             if (res.success && res.data && res.data.length > 0) {
                 const allBookings = res.data.flatMap((hotel: any) => hotel.booking || hotel.hotel_bookings || []);
                 setBookings(allBookings.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
@@ -132,7 +132,7 @@ export default function PartnerBookingsPage() {
                                         <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Booking Info</th>
                                         <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Guest</th>
                                         <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Dates</th>
-                                        <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Payment Split (18/82)</th>
+                                        <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Payment Split (12/88)</th>
                                         <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Status Control</th>
                                         <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">View</th>
                                     </tr>
@@ -181,8 +181,8 @@ export default function PartnerBookingsPage() {
                                                 <div className="space-y-1">
                                                     <p className="text-sm font-black text-slate-950">₹{booking.totalPrice.toLocaleString()}</p>
                                                     <div className="flex flex-col gap-0.5">
-                                                        <span className="text-[8px] font-black text-emerald-600 uppercase tracking-tighter">₹{Math.round(booking.totalPrice * 0.18).toLocaleString()} Paid Online</span>
-                                                        <span className="text-[8px] font-black text-amber-600 uppercase tracking-tighter">₹{Math.round(booking.totalPrice * 0.82).toLocaleString()} Pay at Hotel</span>
+                                                        <span className="text-[8px] font-black text-emerald-600 uppercase tracking-tighter">₹{Math.round(booking.totalPrice * 0.12).toLocaleString()} Paid Online</span>
+                                                        <span className="text-[8px] font-black text-amber-600 uppercase tracking-tighter">₹{Math.round(booking.totalPrice * 0.88).toLocaleString()} Pay at Hotel</span>
                                                     </div>
                                                 </div>
                                             </td>
@@ -373,16 +373,16 @@ export default function PartnerBookingsPage() {
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-2">
                                                     <div className="w-1.5 h-1.5 rounded-none bg-emerald-400" />
-                                                    <span className="text-[10px] font-black text-slate-400 uppercase">Paid Online (18%)</span>
+                                                    <span className="text-[10px] font-black text-slate-400 uppercase">Paid Online (12%)</span>
                                                 </div>
-                                                <span className="text-sm font-black text-emerald-400">₹{Math.round(selectedBooking.totalPrice * 0.18).toLocaleString()}</span>
+                                                <span className="text-sm font-black text-emerald-400">₹{Math.round(selectedBooking.totalPrice * 0.12).toLocaleString()}</span>
                                             </div>
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-2">
                                                     <div className="w-1.5 h-1.5 rounded-none bg-amber-400" />
-                                                    <span className="text-[10px] font-black text-slate-400 uppercase">At Hotel (82%)</span>
+                                                    <span className="text-[10px] font-black text-slate-400 uppercase">At Hotel (88%)</span>
                                                 </div>
-                                                <span className="text-sm font-black text-amber-400">₹{Math.round(selectedBooking.totalPrice * 0.82).toLocaleString()}</span>
+                                                <span className="text-sm font-black text-amber-400">₹{Math.round(selectedBooking.totalPrice * 0.88).toLocaleString()}</span>
                                             </div>
                                         </div>
                                         <div className="pt-4">

@@ -39,7 +39,7 @@ export default function PartnerInventoryPage() {
 
     const fetchInventory = async () => {
         try {
-            const res = await hotelApi.getMyHotels();
+            const res = await hotelApi.getMyHotels({ light: true });
             if (res.success && res.data && res.data.length > 0) {
                 const myHotel = res.data[0];
                 setHotel(myHotel);
@@ -51,12 +51,24 @@ export default function PartnerInventoryPage() {
                 const end = new Date(currentDate);
                 end.setDate(end.getDate() + 30);
 
+                const startDateStr = start.toISOString().split('T')[0];
+                const endDateStr = end.toISOString().split('T')[0];
+
                 const inventoryMap: any = {};
-                // Use the safe hotelRooms array for iteration
-                for (const room of hotelRooms) {
-                    const ratesRes = await dailyRateApi.getRates(room.id, start.toISOString().split('T')[0], end.toISOString().split('T')[0]);
-                    inventoryMap[room.id] = ratesRes.data || [];
-                }
+                
+                // Fetch daily rates for all room types in parallel
+                await Promise.all(
+                    hotelRooms.map(async (room: any) => {
+                        try {
+                            const ratesRes = await dailyRateApi.getRates(room.id, startDateStr, endDateStr);
+                            inventoryMap[room.id] = ratesRes.data || [];
+                        } catch (err) {
+                            console.error(`Failed to fetch rates for room ${room.id}`, err);
+                            inventoryMap[room.id] = [];
+                        }
+                    })
+                );
+                
                 setInventoryData(inventoryMap);
             }
         } catch (err) {
@@ -157,6 +169,8 @@ export default function PartnerInventoryPage() {
 
     const dates = getDates();
 
+    console.log(">>> Inventory Page rendering. Rooms:", rooms, "InventoryData:", inventoryData);
+
     return (
         <div className="space-y-10 animate-fade-in pb-20">
             {/* Header */}
@@ -246,7 +260,17 @@ export default function PartnerInventoryPage() {
                                     </td>
                                     {dates.map((date) => {
                                         const dateStr = date.toISOString().split('T')[0];
-                                        const rate = inventoryData[room.id]?.find((r: any) => r.date.split('T')[0] === dateStr);
+                                        const rate = inventoryData[room.id]?.find((r: any) => {
+                                            if (!r || !r.date) return false;
+                                            try {
+                                                const d = new Date(r.date);
+                                                if (isNaN(d.getTime())) return false;
+                                                return d.toISOString().split('T')[0] === dateStr;
+                                            } catch (err) {
+                                                console.error("Error parsing date in rate object:", r, err);
+                                                return false;
+                                            }
+                                        });
                                         const isAvailable = rate ? rate.remainingAvailable > 0 : true;
                                         const displayCount = rate ? rate.remainingAvailable : (room.totalInventory || 1);
                                         const displayPrice = rate ? rate.price : room.pricePerNight;
@@ -538,6 +562,3 @@ export default function PartnerInventoryPage() {
         </div>
     );
 }
-
-
-

@@ -18,7 +18,7 @@ export default function PartnerSettingsPage() {
     const router = useRouter();
     const [hotel, setHotel] = useState<any>(null);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'policies' | 'account' | 'support' | 'faqs'>('policies');
+    const [activeTab, setActiveTab] = useState<'policies' | 'support' | 'faqs'>('policies');
     const [isSaving, setIsSaving] = useState(false);
     const [successMessage, setSuccessMessage] = useState("");
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | null }>({ message: "", type: null });
@@ -28,166 +28,9 @@ export default function PartnerSettingsPage() {
         setTimeout(() => setToast({ message: "", type: null }), 3000);
     };
 
-    const [currentUser, setCurrentUser] = useState<any>(null);
-    const [showHistoryModal, setShowHistoryModal] = useState(false);
+    // Property Deactivation State
+    const [deactivateLoading, setDeactivateLoading] = useState(false);
 
-    useEffect(() => {
-        if (authUser) {
-            setCurrentUser(authUser);
-        }
-    }, [authUser]);
-
-    // Account Security States
-    const [accountForm, setAccountForm] = useState({
-        newPassword: "",
-        confirmPassword: ""
-    });
-    const [otpCode, setOtpCode] = useState("");
-    const [isOtpSent, setIsOtpSent] = useState(false);
-    const [accountLoading, setAccountLoading] = useState(false);
-
-    // Send OTP for Changing Password
-    const handleSendChangePasswordOTP = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!accountForm.newPassword || !accountForm.confirmPassword) {
-            showToast("New password and confirm password are required.", 'error');
-            return;
-        }
-        if (accountForm.newPassword.length < 6) {
-            showToast("Password must be at least 6 characters long.", 'error');
-            return;
-        }
-        if (accountForm.newPassword !== accountForm.confirmPassword) {
-            showToast("Passwords do not match.", 'error');
-            return;
-        }
-
-        setAccountLoading(true);
-        try {
-            const res = await authApi.sendChangePasswordOTP({
-                newPassword: accountForm.newPassword,
-                confirmPassword: accountForm.confirmPassword
-            });
-            if (res.success) {
-                setIsOtpSent(true);
-                showToast("OTP sent to your registered email!", 'success');
-            }
-        } catch (err: any) {
-            showToast(err.message || "Failed to send OTP", 'error');
-        } finally {
-            setAccountLoading(false);
-        }
-    };
-
-    // Verify OTP and Save Password
-    const handleVerifyChangePasswordOTP = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!otpCode) {
-            showToast("Please enter the 6-digit OTP code.", 'error');
-            return;
-        }
-
-        setAccountLoading(true);
-        try {
-            const res = await authApi.verifyChangePasswordOTP(otpCode);
-            if (res.success) {
-                showToast("Password updated successfully!", 'success');
-                if (res.data) {
-                    setCurrentUser((prev: any) => ({
-                        ...prev,
-                        passwordLastChangedAt: res.data.passwordLastChangedAt,
-                        passwordChangeHistory: res.data.passwordChangeHistory
-                    }));
-                }
-                // Reset form states
-                setAccountForm({ newPassword: "", confirmPassword: "" });
-                setOtpCode("");
-                setIsOtpSent(false);
-            }
-        } catch (err: any) {
-            showToast(err.message || "Invalid OTP code", 'error');
-            setAccountLoading(false);
-        }
-    };
-
-    // Email Change States
-    const [newEmail, setNewEmail] = useState("");
-    const [emailOtpCode, setEmailOtpCode] = useState("");
-    const [isEmailOtpSent, setIsEmailOtpSent] = useState(false);
-    const [isChangingEmail, setIsChangingEmail] = useState(false);
-
-    // Get number of remaining changes this year
-    const getEmailChangesLeft = () => {
-        if (!currentUser?.emailChangeHistory) return 2;
-        try {
-            const history = JSON.parse(currentUser.emailChangeHistory);
-            if (!Array.isArray(history)) return 2;
-            const currentYear = new Date().getFullYear();
-            const changesThisYear = history.filter((dateStr: string) => new Date(dateStr).getFullYear() === currentYear);
-            return Math.max(0, 2 - changesThisYear.length);
-        } catch (e) {
-            return 2;
-        }
-    };
-
-    // Send OTP for Changing Email
-    const handleSendChangeEmailOTP = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!newEmail) {
-            showToast("New email address is required.", 'error');
-            return;
-        }
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(newEmail)) {
-            showToast("Please enter a valid email address.", 'error');
-            return;
-        }
-
-        setAccountLoading(true);
-        try {
-            const res = await authApi.sendChangeEmailOTP({ newEmail });
-            if (res.success) {
-                setIsEmailOtpSent(true);
-                showToast("OTP sent to your new email address!", 'success');
-            }
-        } catch (err: any) {
-            showToast(err.message || "Failed to send OTP", 'error');
-        } finally {
-            setAccountLoading(false);
-        }
-    };
-
-    // Verify OTP and Save New Email
-    const handleVerifyChangeEmailOTP = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!emailOtpCode) {
-            showToast("Please enter the 6-digit OTP code.", 'error');
-            return;
-        }
-
-        setAccountLoading(true);
-        try {
-            const res = await authApi.verifyChangeEmailOTP(emailOtpCode);
-            if (res.success) {
-                showToast("Email address updated successfully!", 'success');
-                if (res.data) {
-                    setCurrentUser((prev: any) => ({
-                        ...prev,
-                        email: res.data.email,
-                        emailChangeHistory: res.data.emailChangeHistory
-                    }));
-                }
-                setNewEmail("");
-                setEmailOtpCode("");
-                setIsEmailOtpSent(false);
-                setIsChangingEmail(false);
-            }
-        } catch (err: any) {
-            showToast(err.message || "Email verification failed", 'error');
-        } finally {
-            setAccountLoading(false);
-        }
-    };
     const handleDeactivateProperty = async () => {
         const confirmFirst = window.confirm(
             "⚠️ DANGER ZONE: Are you absolutely sure you want to deactivate your property?\n\nThis will permanently delete your hotel profile, all rooms, staff records, coupons, and historical settings from the GetHotel platform. This action is irreversible!"
@@ -199,7 +42,7 @@ export default function PartnerSettingsPage() {
         );
         if (!confirmSecond) return;
 
-        setAccountLoading(true);
+        setDeactivateLoading(true);
         try {
             const res = await hotelApi.deleteHotel(hotel.id);
             if (res.success) {
@@ -207,13 +50,14 @@ export default function PartnerSettingsPage() {
                 // Logout the user and redirect
                 setTimeout(() => {
                     localStorage.removeItem('token');
+                    sessionStorage.removeItem('token');
                     sessionStorage.removeItem('activeHotelId');
                     window.location.href = '/partner';
                 }, 2000);
             }
         } catch (err: any) {
             showToast(err.message || "Failed to deactivate property", 'error');
-            setAccountLoading(false);
+            setDeactivateLoading(false);
         }
     };
 
@@ -272,7 +116,7 @@ export default function PartnerSettingsPage() {
 
     const fetchHotelData = async () => {
         try {
-            const res = await hotelApi.getMyHotels();
+            const res = await hotelApi.getMyHotels({ light: true });
             if (res.success && res.data && res.data.length > 0) {
                 const myHotel = res.data[0];
                 setHotel(myHotel);
@@ -341,7 +185,6 @@ export default function PartnerSettingsPage() {
     const tabs = [
         { id: 'policies', label: 'Hotel Policies', icon: Shield },
         { id: 'faqs', label: 'Manage FAQs', icon: HelpCircle },
-        { id: 'account', label: 'Account Security', icon: Lock },
         { id: 'support', label: 'Support & Help', icon: Phone },
     ];
 
@@ -414,7 +257,8 @@ export default function PartnerSettingsPage() {
                 <div className="w-full bg-white rounded-none border border-slate-200 shadow-sm overflow-hidden">
                     {/* Policies Tab */}
                     {activeTab === 'policies' && (
-                        <form onSubmit={handleUpdatePolicies}>
+                        <>
+                            <form onSubmit={handleUpdatePolicies}>
                             <div className="p-10 border-b border-slate-100 bg-slate-50/30">
                                 <div className="flex items-center justify-between">
                                     <div>
@@ -611,7 +455,26 @@ export default function PartnerSettingsPage() {
                                 </button>
                             </div>
                         </form>
-                    )}
+                        {/* Danger Zone Section relocated from Account settings */}
+                        <div className="p-10 border-t border-slate-100 bg-red-50/20">
+                            <div className="max-w-2xl">
+                                <h3 className="text-sm font-black text-red-600 uppercase tracking-widest mb-2 flex items-center gap-2">
+                                    <AlertCircle className="w-4 h-4" /> Danger Zone
+                                </h3>
+                                <p className="text-xs text-slate-500 font-medium mb-6">Permanently remove this property from the GetHotel platform. This action is irreversible and will delete all rooms, staff records, and settings associated with this specific property.</p>
+                                <button 
+                                    type="button"
+                                    onClick={handleDeactivateProperty}
+                                    disabled={deactivateLoading}
+                                    className="px-8 py-4 bg-red-600 text-white rounded-none font-black text-[10px] uppercase tracking-widest hover:bg-red-700 transition-all flex items-center gap-2 active:scale-95 shadow-lg shadow-red-200"
+                                >
+                                    {deactivateLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                                    Deactivate Property
+                                </button>
+                            </div>
+                        </div>
+                    </>
+                )}
 
                     {/* FAQ Tab */}
                     {activeTab === 'faqs' && (
@@ -702,239 +565,6 @@ export default function PartnerSettingsPage() {
                         </div>
                     )}
 
-                    {/* Account Tab */}
-                    {activeTab === 'account' && (
-                        <div className="p-10 space-y-10 animate-fade-in">
-                            {isOtpSent ? (
-                                <div className="bg-slate-50 p-8 rounded-none border border-slate-100 space-y-6">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-blue-100 rounded-none flex items-center justify-center text-blue-600">
-                                            <Mail className="w-5 h-5 animate-bounce" />
-                                        </div>
-                                        <div>
-                                            <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Verify Registered Email</h3>
-                                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">An OTP has been sent to {authUser?.email}</p>
-                                        </div>
-                                    </div>
-                                    
-                                    <form onSubmit={handleVerifyChangePasswordOTP} className="space-y-6 max-w-md">
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">6-Digit OTP Code</label>
-                                            <input 
-                                                type="text" 
-                                                placeholder="Enter 6-digit OTP" 
-                                                value={otpCode}
-                                                onChange={(e) => setOtpCode(e.target.value)}
-                                                maxLength={6}
-                                                className="w-full px-6 py-4 bg-white border border-slate-200 rounded-none text-center font-black tracking-[0.3em] text-lg outline-none focus:border-blue-600 transition-all placeholder:tracking-normal placeholder:font-bold" 
-                                            />
-                                        </div>
-                                        
-                                        <div className="flex items-center gap-4">
-                                            <button 
-                                                type="submit" 
-                                                disabled={accountLoading}
-                                                className="flex-1 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-none font-black text-[10px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 active:scale-95"
-                                            >
-                                                {accountLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
-                                                Verify & Save
-                                            </button>
-                                            <button 
-                                                type="button"
-                                                onClick={() => setIsOtpSent(false)}
-                                                className="px-6 py-4 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-none font-black text-[10px] uppercase tracking-widest transition-all"
-                                            >
-                                                Cancel
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                            ) : (
-                                <div className="bg-slate-50 p-8 rounded-none border border-slate-100">
-                                    <div className="flex items-center justify-between mb-8">
-                                        <div>
-                                            <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Change Password</h3>
-                                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">
-                                                Last changed: {currentUser?.passwordLastChangedAt ? new Date(currentUser.passwordLastChangedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : "Initial Setup"}
-                                            </p>
-                                        </div>
-                                        <button 
-                                            type="button"
-                                            onClick={() => setShowHistoryModal(true)}
-                                            className="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-none text-[10px] font-black uppercase tracking-widest hover:bg-slate-100 transition-all flex items-center gap-2 shadow-sm active:scale-95"
-                                        >
-                                            <Clock className="w-3 h-3" /> History
-                                        </button>
-                                    </div>
-                                    <form onSubmit={handleSendChangePasswordOTP} className="space-y-6 max-w-md">
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">New Password</label>
-                                            <input 
-                                                type="password" 
-                                                placeholder="••••••••" 
-                                                value={accountForm.newPassword}
-                                                onChange={(e) => setAccountForm({ ...accountForm, newPassword: e.target.value })}
-                                                className="w-full px-6 py-4 bg-white border border-slate-200 rounded-none text-sm font-bold outline-none focus:border-blue-600 transition-all" 
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Confirm New Password</label>
-                                            <input 
-                                                type="password" 
-                                                placeholder="••••••••" 
-                                                value={accountForm.confirmPassword}
-                                                onChange={(e) => setAccountForm({ ...accountForm, confirmPassword: e.target.value })}
-                                                className="w-full px-6 py-4 bg-white border-slate-200 rounded-none text-sm font-bold outline-none focus:border-blue-600 transition-all" 
-                                            />
-                                        </div>
-                                        <button 
-                                            type="submit"
-                                            disabled={accountLoading}
-                                            className="px-8 py-4 bg-slate-900 text-white rounded-none font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all flex items-center justify-center gap-2 active:scale-95"
-                                        >
-                                            {accountLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-                                            Request OTP & Change
-                                        </button>
-                                    </form>
-                                </div>
-                            )}
-
-                            {/* Email Address Section */}
-                            <div className="bg-slate-50 p-8 rounded-none border border-slate-100 space-y-6">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Registered Email Address</h3>
-                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">This email is used for partner portal login and communication</p>
-                                    </div>
-                                    <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-1.5 border border-emerald-100">
-                                        <CheckCircle2 className="w-4 h-4" />
-                                        <span className="text-[9px] font-black uppercase tracking-widest">Verified via OTP</span>
-                                    </div>
-                                </div>
-
-                                {isEmailOtpSent ? (
-                                    <div className="bg-white p-6 border border-slate-200/60 space-y-6">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-blue-100 rounded-none flex items-center justify-center text-blue-600">
-                                                <Mail className="w-5 h-5 animate-bounce" />
-                                            </div>
-                                            <div>
-                                                <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest">Verify New Email</h4>
-                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Enter the 6-digit OTP sent to {newEmail}</p>
-                                            </div>
-                                        </div>
-
-                                        <form onSubmit={handleVerifyChangeEmailOTP} className="space-y-6 max-w-md">
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">6-Digit OTP Code</label>
-                                                <input 
-                                                    type="text" 
-                                                    placeholder="Enter 6-digit OTP" 
-                                                    value={emailOtpCode}
-                                                    onChange={(e) => setEmailOtpCode(e.target.value)}
-                                                    maxLength={6}
-                                                    className="w-full px-6 py-4 bg-white border border-slate-200 rounded-none text-center font-black tracking-[0.3em] text-lg outline-none focus:border-blue-600 transition-all placeholder:tracking-normal placeholder:font-bold" 
-                                                />
-                                            </div>
-                                            
-                                            <div className="flex items-center gap-4">
-                                                <button 
-                                                    type="submit" 
-                                                    disabled={accountLoading}
-                                                    className="flex-1 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-none font-black text-[10px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 active:scale-95"
-                                                >
-                                                    {accountLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
-                                                    Verify & Update Email
-                                                </button>
-                                                <button 
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setIsEmailOtpSent(false);
-                                                        setNewEmail("");
-                                                    }}
-                                                    className="px-6 py-4 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-none font-black text-[10px] uppercase tracking-widest transition-all"
-                                                >
-                                                    Cancel
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                ) : isChangingEmail ? (
-                                    <div className="bg-white p-6 border border-slate-200/60 space-y-6">
-                                        <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest">Change Email Address</h4>
-                                        
-                                        <form onSubmit={handleSendChangeEmailOTP} className="space-y-6 max-w-md">
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">New Email Address</label>
-                                                <input 
-                                                    type="email" 
-                                                    placeholder="new-email@example.com" 
-                                                    value={newEmail}
-                                                    onChange={(e) => setNewEmail(e.target.value)}
-                                                    className="w-full px-6 py-4 bg-white border border-slate-200 rounded-none text-sm font-bold outline-none focus:border-blue-600 transition-all" 
-                                                />
-                                                <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">
-                                                    Remaining changes this year: {getEmailChangesLeft()} / 2
-                                                </p>
-                                            </div>
-
-                                            <div className="flex items-center gap-4">
-                                                <button 
-                                                    type="submit" 
-                                                    disabled={accountLoading || getEmailChangesLeft() === 0}
-                                                    className="px-8 py-4 bg-slate-900 text-white rounded-none font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
-                                                >
-                                                    {accountLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-                                                    Send Verification OTP
-                                                </button>
-                                                <button 
-                                                    type="button"
-                                                    onClick={() => setIsChangingEmail(false)}
-                                                    className="px-6 py-4 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-none font-black text-[10px] uppercase tracking-widest transition-all"
-                                                >
-                                                    Cancel
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                ) : (
-                                    <div className="flex items-center justify-between border-t border-slate-200/60 pt-6">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-slate-100 flex items-center justify-center text-slate-600">
-                                                <Mail className="w-4 h-4" />
-                                            </div>
-                                            <div>
-                                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Current Registered Email</p>
-                                                <p className="text-sm font-bold text-slate-900 mt-1">{currentUser?.email || authUser?.email}</p>
-                                            </div>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => setIsChangingEmail(true)}
-                                            className="px-6 py-3 bg-white border border-slate-200 text-slate-700 rounded-none font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm active:scale-95"
-                                        >
-                                            Change Email
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="bg-red-50 p-8 rounded-none border border-red-100">
-                                <h3 className="text-sm font-black text-red-600 uppercase tracking-widest mb-4">Danger Zone</h3>
-                                <p className="text-xs text-red-500 font-medium mb-6">Permanently remove your property from the GetHotel platform. This action cannot be undone.</p>
-                                <button 
-                                    type="button"
-                                    onClick={handleDeactivateProperty}
-                                    disabled={accountLoading}
-                                    className="px-8 py-4 bg-red-600 text-white rounded-none font-black text-[10px] uppercase tracking-widest hover:bg-red-700 transition-all flex items-center gap-2 active:scale-95"
-                                >
-                                    {accountLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                                    Deactivate Property
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
                     {/* Support Tab */}
                     {activeTab === 'support' && (
                         <div className="p-10 space-y-10 animate-fade-in">
@@ -978,77 +608,7 @@ export default function PartnerSettingsPage() {
                 </div>
             </div>
 
-            {/* Password History Modal */}
-            <AnimatePresence>
-                {showHistoryModal && (
-                    <motion.div 
-                        initial={{ opacity: 0 }} 
-                        animate={{ opacity: 1 }} 
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[200] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4"
-                        onClick={() => setShowHistoryModal(false)}
-                    >
-                        <motion.div 
-                            initial={{ y: 50, scale: 0.95 }}
-                            animate={{ y: 0, scale: 1 }}
-                            exit={{ y: 20, scale: 0.95 }}
-                            onClick={(e) => e.stopPropagation()}
-                            className="bg-white max-w-md w-full shadow-2xl rounded-none border border-slate-200 flex flex-col max-h-[80vh]"
-                        >
-                            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 bg-blue-100 rounded-none flex items-center justify-center text-blue-600">
-                                        <Clock className="w-4 h-4" />
-                                    </div>
-                                    <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest">Password History</h3>
-                                </div>
-                                <button onClick={() => setShowHistoryModal(false)} className="text-slate-400 hover:text-slate-900 p-2 border border-transparent hover:border-slate-200 hover:bg-white rounded-none transition-all">
-                                    <span className="text-[10px] font-black uppercase tracking-widest">Close</span>
-                                </button>
-                            </div>
-                            <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
-                                {(() => {
-                                    const historyList = currentUser?.passwordChangeHistory ? safeParse(currentUser.passwordChangeHistory, []) : [];
-                                    if (!historyList || historyList.length === 0) {
-                                        return (
-                                            <div className="text-center py-10 space-y-3">
-                                                <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-2">
-                                                    <Shield className="w-8 h-8 text-slate-300" />
-                                                </div>
-                                                <p className="text-xs font-black text-slate-900 uppercase tracking-widest">No History Found</p>
-                                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Password hasn't been changed yet.</p>
-                                            </div>
-                                        );
-                                    }
-                                    return (
-                                        <div className="space-y-6">
-                                            {historyList.slice().reverse().map((timestamp: string, idx: number) => (
-                                                <div key={idx} className="flex gap-4 relative">
-                                                    {idx !== historyList.length - 1 && (
-                                                        <div className="absolute top-8 bottom-[-24px] left-[15px] w-px bg-slate-200"></div>
-                                                    )}
-                                                    <div className="w-8 h-8 rounded-full bg-emerald-50 border border-emerald-100 flex-shrink-0 flex items-center justify-center z-10">
-                                                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                                                    </div>
-                                                    <div className="pt-1">
-                                                        <p className="text-xs font-black text-slate-900 uppercase tracking-widest">Password Changed</p>
-                                                        <p className="text-[10px] font-bold text-slate-500 mt-1 tracking-wider uppercase">
-                                                            {new Date(timestamp).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    );
-                                })()}
-                            </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+
         </div>
     );
 }
-
-
-

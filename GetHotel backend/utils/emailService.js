@@ -38,6 +38,108 @@ exports.sendBookingEmails = async (booking) => {
 
         const payAtHotel = totalPrice - amountPaid;
 
+        let customerPaymentDetailsHtml = "";
+        let hotelierActionHtml = "";
+
+        if (amountPaid === 0) {
+            // Pay Full at Hotel
+            customerPaymentDetailsHtml = `
+                                <tr style="border-top: 1px solid #f1f5f9;">
+                                    <td style="padding: 15px 0 10px 0; vertical-align: middle;">
+                                        <span style="font-size: 14px; color: #64748b; font-weight: 800; display: block;">Paid Online</span>
+                                    </td>
+                                    <td style="padding: 15px 0 10px 0; text-align: right; vertical-align: middle;">
+                                        <span style="background-color: #f1f5f9; color: #64748b; font-size: 14px; font-weight: 900; padding: 6px 12px; border-radius: 10px; display: inline-block;">₹0 (Paid)</span>
+                                    </td>
+                                </tr>
+                                <tr style="border-top: 1px solid #f1f5f9;">
+                                    <td style="padding: 15px 0 0 0; vertical-align: middle;">
+                                        <span style="font-size: 14px; color: #b45309; font-weight: 800; display: block;">Pay at Hotel</span>
+                                        <span style="font-size: 10px; color: #64748b; font-weight: 600;">100% Due at Check-in</span>
+                                    </td>
+                                    <td style="padding: 15px 0 0 0; text-align: right; vertical-align: middle;">
+                                        <span style="background-color: #fffbeb; color: #b45309; font-size: 14px; font-weight: 900; padding: 6px 12px; border-radius: 10px; display: inline-block;">₹${totalPrice.toLocaleString()} (Due)</span>
+                                    </td>
+                                </tr>
+            `;
+
+            hotelierActionHtml = `
+                        <!-- Action Alert for Pay at Hotel Collection -->
+                        <div style="background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: 16px; padding: 25px; margin-top: 30px;">
+                            <h4 style="margin: 0 0 8px 0; color: #b45309; font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">⚠️ Payment Collection Action</h4>
+                            <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #78350f; font-weight: 600;">
+                                The customer has selected the <strong>Pay Full at Hotel</strong> option. Nothing has been paid online. 
+                                Please collect the full 100% amount of <strong>₹${totalPrice.toLocaleString()}</strong> directly from the guest at the hotel during check-in.
+                            </p>
+                        </div>
+            `;
+        } else if (amountPaid >= totalPrice) {
+            // Paid Fully Online
+            customerPaymentDetailsHtml = `
+                                <tr style="border-top: 1px solid #f1f5f9;">
+                                    <td style="padding: 15px 0 10px 0; vertical-align: middle;">
+                                        <span style="font-size: 14px; color: #10b981; font-weight: 800; display: block;">Paid Fully Online</span>
+                                    </td>
+                                    <td style="padding: 15px 0 10px 0; text-align: right; vertical-align: middle;">
+                                        <span style="background-color: #ecfdf5; color: #059669; font-size: 14px; font-weight: 900; padding: 6px 12px; border-radius: 10px; display: inline-block;">₹${amountPaid.toLocaleString()} (Paid)</span>
+                                    </td>
+                                </tr>
+                                <tr style="border-top: 1px solid #f1f5f9;">
+                                    <td style="padding: 15px 0 0 0; vertical-align: middle;">
+                                        <span style="font-size: 14px; color: #3b82f6; font-weight: 800; display: block;">Pay at Hotel</span>
+                                        <span style="font-size: 10px; color: #64748b; font-weight: 600;">No balance due</span>
+                                    </td>
+                                    <td style="padding: 15px 0 0 0; text-align: right; vertical-align: middle;">
+                                        <span style="background-color: #eff6ff; color: #1d4ed8; font-size: 14px; font-weight: 900; padding: 6px 12px; border-radius: 10px; display: inline-block;">₹0 (Due)</span>
+                                    </td>
+                                </tr>
+            `;
+
+            hotelierActionHtml = `
+                        <!-- Action Alert for Pay at Hotel Collection -->
+                        <div style="background-color: #ecfdf5; border: 1px solid #d1fae5; border-radius: 16px; padding: 25px; margin-top: 30px;">
+                            <h4 style="margin: 0 0 8px 0; color: #065f46; font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">✅ Fully Paid Online</h4>
+                            <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #065f46; font-weight: 600;">
+                                The customer has paid the entire amount (<strong>₹${amountPaid.toLocaleString()}</strong>) online. 
+                                No payment needs to be collected from the guest at the hotel during check-in.
+                            </p>
+                        </div>
+            `;
+        } else {
+            // Paid 12% Deposit Online
+            customerPaymentDetailsHtml = `
+                                <tr style="border-top: 1px solid #f1f5f9;">
+                                    <td style="padding: 15px 0 10px 0; vertical-align: middle;">
+                                        <span style="font-size: 14px; color: #10b981; font-weight: 800; display: block;">Paid Online</span>
+                                        <span style="font-size: 10px; color: #64748b; font-weight: 600;">12% Booking Fee</span>
+                                    </td>
+                                    <td style="padding: 15px 0 10px 0; text-align: right; vertical-align: middle;">
+                                        <span style="background-color: #ecfdf5; color: #059669; font-size: 14px; font-weight: 900; padding: 6px 12px; border-radius: 10px; display: inline-block;">₹${amountPaid.toLocaleString()} (Paid)</span>
+                                    </td>
+                                </tr>
+                                <tr style="border-top: 1px solid #f1f5f9;">
+                                    <td style="padding: 15px 0 0 0; vertical-align: middle;">
+                                        <span style="font-size: 14px; color: #3b82f6; font-weight: 800; display: block;">Pay at Hotel</span>
+                                        <span style="font-size: 10px; color: #64748b; font-weight: 600;">88% Due at Check-in</span>
+                                    </td>
+                                    <td style="padding: 15px 0 0 0; text-align: right; vertical-align: middle;">
+                                        <span style="background-color: #eff6ff; color: #1d4ed8; font-size: 14px; font-weight: 900; padding: 6px 12px; border-radius: 10px; display: inline-block;">₹${payAtHotel.toLocaleString()} (Due)</span>
+                                    </td>
+                                </tr>
+            `;
+
+            hotelierActionHtml = `
+                        <!-- Action Alert for Pay at Hotel Collection -->
+                        <div style="background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: 16px; padding: 25px; margin-top: 30px;">
+                            <h4 style="margin: 0 0 8px 0; color: #b45309; font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">⚠️ Payment Collection Action</h4>
+                            <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #78350f; font-weight: 600;">
+                                The customer has successfully paid the 12% Booking Fee (<strong>₹${amountPaid.toLocaleString()}</strong>) online. 
+                                Please collect the remaining 88% <strong>₹${payAtHotel.toLocaleString()}</strong> directly from the guest at the hotel during check-in.
+                            </p>
+                        </div>
+            `;
+        }
+
         // 1. EMAIL TO CUSTOMER (Luxury Stay Ticket)
         const customerMailOptions = {
             from: `"GetHotelStays" <${SMTP_USER}>`,
@@ -90,24 +192,7 @@ exports.sendBookingEmails = async (booking) => {
                                     <td style="padding: 10px 0; font-size: 14px; color: #64748b; font-weight: 600;">Total Stay Charges</td>
                                     <td style="padding: 10px 0; font-size: 16px; font-weight: 800; color: #0f172a; text-align: right;">₹${totalPrice.toLocaleString()}</td>
                                 </tr>
-                                <tr style="border-top: 1px solid #f1f5f9;">
-                                    <td style="padding: 15px 0 10px 0; vertical-align: middle;">
-                                        <span style="font-size: 14px; color: #10b981; font-weight: 800; display: block;">Paid Online</span>
-                                        <span style="font-size: 10px; color: #64748b; font-weight: 600;">18% Booking Fee</span>
-                                    </td>
-                                    <td style="padding: 15px 0 10px 0; text-align: right; vertical-align: middle;">
-                                        <span style="background-color: #ecfdf5; color: #059669; font-size: 14px; font-weight: 900; padding: 6px 12px; border-radius: 10px; display: inline-block;">₹${amountPaid.toLocaleString()} (Paid)</span>
-                                    </td>
-                                </tr>
-                                <tr style="border-top: 1px solid #f1f5f9;">
-                                    <td style="padding: 15px 0 0 0; vertical-align: middle;">
-                                        <span style="font-size: 14px; color: #3b82f6; font-weight: 800; display: block;">Pay at Hotel</span>
-                                        <span style="font-size: 10px; color: #64748b; font-weight: 600;">82% Due at Check-in</span>
-                                    </td>
-                                    <td style="padding: 15px 0 0 0; text-align: right; vertical-align: middle;">
-                                        <span style="background-color: #eff6ff; color: #1d4ed8; font-size: 14px; font-weight: 900; padding: 6px 12px; border-radius: 10px; display: inline-block;">₹${payAtHotel.toLocaleString()} (Due)</span>
-                                    </td>
-                                </tr>
+                                ${customerPaymentDetailsHtml}
                             </table>
                         </div>
                         
@@ -174,14 +259,7 @@ exports.sendBookingEmails = async (booking) => {
                             </tr>
                         </table>
                         
-                        <!-- Action Alert for Pay at Hotel Collection -->
-                        <div style="background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: 16px; padding: 25px; margin-top: 30px;">
-                            <h4 style="margin: 0 0 8px 0; color: #b45309; font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">⚠️ Payment Collection Action</h4>
-                            <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #78350f; font-weight: 600;">
-                                The customer has successfully paid the 18% Booking Fee (<strong>₹${amountPaid.toLocaleString()}</strong>) online. 
-                                Please collect the remaining 82% <strong>₹${payAtHotel.toLocaleString()}</strong> directly from the guest at the hotel during check-in.
-                            </p>
-                        </div>
+                        ${hotelierActionHtml}
                     </div>
                     
                     <!-- Footer Section -->
@@ -191,6 +269,7 @@ exports.sendBookingEmails = async (booking) => {
                 </div>
             `
         };
+
 
         await transporter.sendMail(customerMailOptions);
         await transporter.sendMail(hotelierMailOptions);
@@ -226,6 +305,37 @@ exports.sendOtpEmail = async (email, name, otp) => {
         console.log(`OTP email sent to ${email}`);
     } catch (error) {
         console.error("Failed to send OTP email:", error);
+        throw error;
+    }
+};
+
+exports.sendResetEmail = async (email, name, resetUrl) => {
+    try {
+        const mailOptions = {
+            from: `"GetHotelStays Security" <${SMTP_USER}>`,
+            to: email,
+            subject: `Reset Your GetHotelStays Password`,
+            html: `
+                <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                    <div style="background-color: #0f172a; padding: 40px 30px; text-align: center;">
+                        <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px;">Reset Password</h1>
+                    </div>
+                    <div style="padding: 40px;">
+                        <p style="font-size: 16px; font-weight: 800; color: #0f172a;">Hi ${name},</p>
+                        <p style="font-size: 14px; color: #64748b; font-weight: 500; margin-bottom: 30px;">You are receiving this email because you (or someone else) requested a password reset for your account. Please click the button below to set a new password:</p>
+                        <div style="text-align: center; margin: 30px 0;">
+                            <a href="${resetUrl}" style="background-color: #3b82f6; color: #ffffff; padding: 15px 30px; text-decoration: none; border-radius: 12px; font-weight: 900; font-size: 14px; display: inline-block; box-shadow: 0 5px 15px rgba(59,130,246,0.3);">Reset Password</a>
+                        </div>
+                        <p style="font-size: 12px; font-weight: 600; color: #94a3b8; text-align: center;">This link is valid for 15 minutes. If you did not request this, please ignore this email.</p>
+                        <p style="font-size: 11px; font-weight: 500; color: #cbd5e1; text-align: center; word-break: break-all; margin-top: 20px;">If the button above does not work, copy and paste this link: ${resetUrl}</p>
+                    </div>
+                </div>
+            `
+        };
+        await transporter.sendMail(mailOptions);
+        console.log(`Password reset email sent to ${email}`);
+    } catch (error) {
+        console.error("Failed to send password reset email:", error);
         throw error;
     }
 };

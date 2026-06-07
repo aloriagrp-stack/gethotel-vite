@@ -45,7 +45,7 @@ export default function PartnerHotelPage() {
     useEffect(() => {
         const fetchHotel = async () => {
             try {
-                const res = await hotelApi.getMyHotels();
+                const res = await hotelApi.getMyHotels({ light: true });
                 if (res.success && res.data && res.data.length > 0) {
                     const myHotel = res.data[0];
                     setHotel(myHotel);
@@ -66,9 +66,13 @@ export default function PartnerHotelPage() {
     }, [authUser, authLoading, router]);
 
     const handleUpdateHotel = async () => {
+        const currentImages = editData.images ? (typeof editData.images === 'string' ? JSON.parse(editData.images) : editData.images) : [];
+        if (currentImages.length < 5) {
+            alert(`A minimum of 5 images is required for the hotel. You have uploaded ${currentImages.length} images.`);
+            return;
+        }
         setSaving(true);
         try {
-            const currentImages = editData.images ? (typeof editData.images === 'string' ? JSON.parse(editData.images) : editData.images) : [];
             const updatedData = { ...editData };
             
             if (currentImages.length > 0) {
@@ -132,7 +136,7 @@ export default function PartnerHotelPage() {
                             <ArrowLeft className="w-5 h-5 text-slate-600" />
                         </Link>
                         <div>
-                            <h1 className="text-xl font-black text-slate-900 tracking-tight">{hotel.name}</h1>
+                            <h1 className="text-xl font-black text-slate-900 tracking-tight truncate max-w-[150px] sm:max-w-[300px] md:max-w-none" title={hotel.name}>{hotel.name}</h1>
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
                                 <MapPin className="w-3 h-3" /> {hotel.city}
                             </p>
@@ -304,20 +308,69 @@ export default function PartnerHotelPage() {
 
                     {/* Sidebar */}
                     <div className="space-y-8">
-                        <div className="bg-slate-900 rounded-none p-8 text-white shadow-xl shadow-slate-200">
-                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-8 pb-4 border-b border-slate-800 flex items-center gap-2"><TrendingUp className="w-4 h-4" /> Insights</h3>
-                            <div className="space-y-6">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-[10px] font-bold text-slate-500 uppercase">Guest Rating</span>
-                                    <span className="text-xl font-black flex items-center gap-2">{hotel.guestRating} <Star className="w-4 h-4 fill-yellow-500 text-yellow-500" /></span>
+                        <div className="bg-white rounded-none p-8 border border-slate-200 shadow-sm space-y-6">
+                            <div>
+                                <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-1 flex items-center gap-2">
+                                    <Star className="w-5 h-5 text-blue-600 fill-blue-600" /> Property Rating
+                                </h3>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Select the official star rating of this hotel</p>
+                            </div>
+                            
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Star Rating</label>
+                                {editing ? (
+                                    <div className="grid grid-cols-5 gap-2">
+                                        {[1, 2, 3, 4, 5].map((star) => {
+                                            const isSelected = (editData?.starRating === star) || (!editData?.starRating && star === 5);
+                                            return (
+                                                <button
+                                                    key={star}
+                                                    type="button"
+                                                    onClick={() => setEditData({ ...editData, starRating: star })}
+                                                    className={cn(
+                                                        "py-3 border text-xs font-black uppercase tracking-widest transition-all rounded-none text-center flex flex-col items-center justify-center gap-1 cursor-pointer",
+                                                        isSelected 
+                                                            ? "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-100" 
+                                                            : "bg-slate-50 border-transparent text-slate-600 hover:border-slate-200"
+                                                    )}
+                                                >
+                                                    <span className="text-sm">{star}</span>
+                                                    <Star className={cn("w-3.5 h-3.5", isSelected ? "fill-amber-400 text-amber-400" : "text-slate-400")} />
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center gap-2.5 p-4 bg-slate-50 border border-slate-100 rounded-none">
+                                        <div className="flex items-center gap-0.5">
+                                            {[...Array(hotel.starRating || 5)].map((_, i) => (
+                                                <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                                            ))}
+                                        </div>
+                                        <span className="text-xs font-black text-slate-700 uppercase tracking-wider ml-1">
+                                            {hotel.starRating || 5} Star Property
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Divider */}
+                            <div className="h-px bg-slate-100" />
+
+                            {/* Property Stats */}
+                            <div className="space-y-4 pt-2">
+                                <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Performance Summary</h4>
+                                <div className="flex justify-between items-center text-xs">
+                                    <span className="font-bold text-slate-500 uppercase tracking-wider text-[10px]">Guest Rating</span>
+                                    <span className="font-black text-slate-900 flex items-center gap-1.5">{hotel.guestRating || '0'} <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" /></span>
                                 </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-[10px] font-bold text-slate-500 uppercase">Reviews</span>
-                                    <span className="text-sm font-black">{hotel.reviewCount} Reviews</span>
+                                <div className="flex justify-between items-center text-xs">
+                                    <span className="font-bold text-slate-500 uppercase tracking-wider text-[10px]">Reviews</span>
+                                    <span className="font-black text-slate-900">{hotel.reviewCount || '0'} Reviews</span>
                                 </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-[10px] font-bold text-slate-500 uppercase">Base Price</span>
-                                    <span className="text-sm font-black">₹{hotel.pricePerNight}</span>
+                                <div className="flex justify-between items-center text-xs">
+                                    <span className="font-bold text-slate-500 uppercase tracking-wider text-[10px]">Base Price</span>
+                                    <span className="font-black text-slate-900">₹{hotel.pricePerNight || '0'}</span>
                                 </div>
                             </div>
                         </div>

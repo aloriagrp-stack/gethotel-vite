@@ -8,7 +8,8 @@ import {
     FileText, Compass, 
     ChevronRight, Globe, 
     Bell, History, Sparkles,
-    Navigation, LocateFixed, LogOut
+    Navigation, LocateFixed, LogOut,
+    Lock, Heart, Cookie
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -87,7 +88,7 @@ export default function ProfilePage() {
             payment: "Payment Info", manage: "Manage Account", pref: "Preferences", activity: "Travel Activity", help: "Help & Support", legal: "Legal & Privacy",
             saved: "Saved Cards", billing: "Billing History", credits: "Travel Credits", profile: "Profile Details", login: "Login & Security", data: "Data & Privacy",
             lang: "Language", curr: "Currency: INR", notify: "Notifications", bookings: "My Bookings", wishlist: "Wishlist", rewards: "Reward Points",
-            support: "Contact Support", center: "Help Center", safety: "Safety Resources", terms: "Terms of Service", privacy: "Privacy Policy", cookie: "Cookie Policy",
+            support: "Contact Support", center: "Help Center", safety: "Safety Resources", terms: "Terms & Conditions", privacy: "Privacy Policy", cookie: "Cookie Policy",
             update: "Update Profile", logout: "Log Out", verified: "Verified", back: "Back", add_card: "Add New Card", no_cards: "No Saved Cards",
             card_holder: "Card Holder", expires: "Expires", billing_desc: "Manage your cards and billing history.", saved_methods: "Saved Payment Methods",
             no_transactions: "No Transactions Yet", booking_desc: "All your bookings will appear here.",
@@ -123,7 +124,7 @@ export default function ProfilePage() {
             payment: "Zahlungsinfo", manage: "Konto verwalten", pref: "Präferenzen", activity: "Reiseaktivität", help: "Hilfe & Support", legal: "Rechtliches",
             saved: "Gespeicherte Karten", billing: "Rechnungsverlauf", credits: "Reiseguthaben", profile: "Profil-Details", login: "Login & Sicherheit", data: "Daten & Privatsphäre",
             lang: "Sprache", curr: "Währung: INR", notify: "Benachrichtigungen", bookings: "Meine Buchungen", wishlist: "Wunschliste", rewards: "Bonuspunkte",
-            support: "Support kontaktieren", center: "Hilfezentrum", safety: "Sicherheitsressourcen", terms: "AGB", privacy: "Datenschutz", cookie: "Cookie-Richtlinie",
+            support: "Support kontaktieren", center: "Hilfezentrum", safety: "Sicherheitsressourcen", terms: "AGB", privacy: "Datenschutzerklärung", cookie: "Cookie-Richtlinie",
             update: "Profil aktualisieren", logout: "Abmelden", verified: "Verifiziert", back: "Zurück", add_card: "Karte hinzufügen", no_cards: "Keine Karten",
             card_holder: "Karteninhaber", expires: "Gültig bis", billing_desc: "Verwalten Sie Ihre Karten und Ihren Rechnungsverlauf.", saved_methods: "Gespeicherte Zahlungsmethoden",
             no_transactions: "Noch keine Transaktionen", booking_desc: "Alle Ihre Buchungen werden hier angezeigt.",
@@ -152,7 +153,7 @@ export default function ProfilePage() {
             payment: "Infos de paiement", manage: "Gérer le compte", pref: "Préférences", activity: "Activité de voyage", help: "Aide & Support", legal: "Légal & Confidentialité",
             saved: "Cartes enregistrées", billing: "Historique", credits: "Crédits voyage", profile: "Détails du profil", login: "Sécurité", data: "Données & Vie privée",
             lang: "Langue", curr: "Devise: INR", notify: "Notifications", bookings: "Mes réservations", wishlist: "Liste de souhaits", rewards: "Points de récompense",
-            support: "Contacter le support", center: "Centre d'aide", safety: "Ressources de sécurité", terms: "Conditions", privacy: "Confidentialité", cookie: "Cookies",
+            support: "Contacter le support", center: "Centre d'aide", safety: "Ressources de sécurité", terms: "Conditions", privacy: "Politique de Confidentialité", cookie: "Cookies",
             update: "Mettre à jour", logout: "Déconnexion", verified: "Vérifié", back: "Retour", add_card: "Ajouter une carte", no_cards: "Aucune carte",
             card_holder: "Titulaire de la carte", expires: "Expire le", billing_desc: "Gérez vos cartes et votre historique de facturation.", saved_methods: "Méthodes de paiement enregistrées",
             no_transactions: "Aucune transaction pour le moment", booking_desc: "Toutes vos réservations apparaîtront ici.",
@@ -167,7 +168,7 @@ export default function ProfilePage() {
             payment: "Información de pago", manage: "Gestionar cuenta", pref: "Preferencias", activity: "Actividad de viaje", help: "Ayuda y soporte", legal: "Legal y privacidad",
             saved: "Tarjetas guardadas", billing: "Historial de facturación", credits: "Créditos de viaje", profile: "Detalles del perfil", login: "Seguridad", data: "Datos y privacidad",
             lang: "Idioma", curr: "Moneda: INR", notify: "Notificaciones", bookings: "Mis reservas", wishlist: "Lista de deseos", rewards: "Puntos de recompensa",
-            support: "Contactar soporte", center: "Centro de ayuda", safety: "Recursos de seguridad", terms: "Términos", privacy: "Privacidad", cookie: "Cookies",
+            support: "Contactar soporte", center: "Centro de ayuda", safety: "Recursos de seguridad", terms: "Términos", privacy: "Política de Privacidad", cookie: "Cookies",
             update: "Actualizar perfil", logout: "Cerrar sesión", verified: "Verificado", back: "Volver", add_card: "Añadir tarjeta", no_cards: "Sin tarjetas",
             card_holder: "Titular de la tarjeta", expires: "Expira", billing_desc: "Gestiona tus tarjetas y el historial de facturación.", saved_methods: "Métodos de pago guardados",
             no_transactions: "Aún no hay transacciones", booking_desc: "Todas sus reservas aparecerán aquí.",
@@ -196,14 +197,14 @@ export default function ProfilePage() {
             payment: "Платежная информация", manage: "Управление аккаунтом", pref: "Настройки", activity: "История поездок", help: "Помощь и поддержка", legal: "Юридическая информация",
             saved: "Сохраненные карты", billing: "История платежей", credits: "Бонусы", profile: "Данные профиля", login: "Безопасность", data: "Конфиденциальность",
             lang: "Язык", curr: "Валюта: INR", notify: "Уведомления", bookings: "Мои бронирования", wishlist: "Список желаний", rewards: "Баллы",
-            support: "Связаться с поддержкой", center: "Справочный центр", safety: "Ресурсы безопасности", terms: "Условия", privacy: "Конфиденциальность", cookie: "Cookies",
+            support: "Связаться с поддержкой", center: "Справочный центр", safety: "Ресурсы безопасности", terms: "Условия", privacy: "Политика конфиденциальности", cookie: "Cookies",
             update: "Обновить профиль", logout: "Выйти", verified: "Подтвержден", back: "Назад", add_card: "Добавить карту", no_cards: "Нет карт"
         },
         pt: {
             payment: "Info de pagamento", manage: "Gerenciar conta", pref: "Preferências", activity: "Atividade de viagem", help: "Ajuda e suporte", legal: "Legal e privacidade",
             saved: "Cartões salvos", billing: "Histórico de fatura", credits: "Créditos de viagem", profile: "Detalhes do perfil", login: "Segurança", data: "Dados e privacidade",
             lang: "Idioma", curr: "Moeda: INR", notify: "Notificações", bookings: "Minhas reservas", wishlist: "Lista de desejos", rewards: "Pontos",
-            support: "Contatar suporte", center: "Centro de ajuda", safety: "Recursos de segurança", terms: "Termos", privacy: "Privacidade", cookie: "Cookies",
+            support: "Contatar suporte", center: "Centro de ajuda", safety: "Recursos de segurança", terms: "Termos", privacy: "Política de Privacidade", cookie: "Cookies",
             update: "Atualizar perfil", logout: "Sair", verified: "Verificado", back: "Voltar", add_card: "Adicionar cartão", no_cards: "Sem cartões"
         }
     };
@@ -387,63 +388,38 @@ export default function ProfilePage() {
 
     const sections = [
         {
-            id: "payment",
-            title: t('payment'),
-            icon: CreditCard,
-            items: [
-                { label: t('saved'), id: 'saved' },
-                { label: t('billing'), id: 'billing' },
-                { label: t('credits'), id: 'credits' }
-            ]
-        },
-        {
             id: "manage",
             title: t('manage'),
-            icon: Settings,
             items: [
-                { label: t('profile'), id: 'profile' },
-                { label: t('login'), id: 'login' },
-                { label: t('data'), id: 'data' }
+                { label: t('profile'), id: 'profile', desc: "Update your full name, location, and phone number", icon: User, iconBg: "bg-blue-500", iconColor: "text-white" },
+                { label: t('login'), id: 'login', desc: "Change password and configure 2FA", icon: Lock, iconBg: "bg-amber-500", iconColor: "text-white" }
             ]
         },
         {
             id: "preferences",
             title: t('pref'),
-            icon: Globe,
             items: [
-                { label: `${t('lang')}: ${currentLanguage.name} (${currentLanguage.flag})`, id: 'lang' },
-                { label: `${t('curr')}: ${currency.code} (${currency.symbol})`, id: 'curr' },
-                { label: t('notify'), id: 'notify' }
+                { label: t('lang'), id: 'lang', desc: "Change website language", status: currentLanguage.name, icon: Globe, iconBg: "bg-emerald-500", iconColor: "text-white" },
+                { label: t('curr').split(':')[0] || "Currency", id: 'curr', desc: "Select display currency", status: `${currency.code} (${currency.symbol})`, icon: CreditCard, iconBg: "bg-indigo-500", iconColor: "text-white" },
+                { label: t('notify'), id: 'notify', desc: "Configure email and push notification settings", icon: Bell, iconBg: "bg-rose-500", iconColor: "text-white" }
             ]
         },
         {
             id: "travel",
             title: t('activity'),
-            icon: History,
             items: [
-                { label: t('bookings'), id: 'bookings' },
-                { label: t('wishlist'), id: 'wishlist' },
-                { label: t('rewards'), id: 'rewards' }
-            ]
-        },
-        {
-            id: "help",
-            title: t('help'),
-            icon: HelpCircle,
-            items: [
-                { label: t('support'), id: 'support' },
-                { label: t('center'), id: 'center' },
-                { label: t('safety'), id: 'safety' }
+                { label: t('bookings'), id: 'bookings', desc: "Manage your active or past stay bookings", icon: History, iconBg: "bg-sky-500", iconColor: "text-white" },
+                { label: t('wishlist'), id: 'wishlist', desc: "View your saved luxury hotel listings", icon: Heart, iconBg: "bg-pink-500", iconColor: "text-white" }
             ]
         },
         {
             id: "legal",
-            title: t('legal'),
-            icon: FileText,
+            title: "Support & Legal",
             items: [
-                { label: t('terms'), id: 'terms' },
-                { label: t('privacy'), id: 'privacy' },
-                { label: t('cookie'), id: 'cookie' }
+                { label: t('support'), id: 'support', desc: "Get help regarding bookings or payments", icon: HelpCircle, iconBg: "bg-violet-500", iconColor: "text-white" },
+                { label: t('terms'), id: 'terms', desc: "Read platform rules & guidelines", icon: FileText, iconBg: "bg-slate-500", iconColor: "text-white" },
+                { label: t('privacy'), id: 'privacy', desc: "Understand how we protect your personal data", icon: ShieldCheck, iconBg: "bg-green-600", iconColor: "text-white" },
+                { label: t('cookie'), id: 'cookie', desc: "Review browser tracking configurations", icon: Cookie, iconBg: "bg-orange-500", iconColor: "text-white" }
             ]
         }
     ];
@@ -478,7 +454,7 @@ export default function ProfilePage() {
                             className="relative w-full max-w-md bg-white rounded-[40px] shadow-2xl overflow-hidden border border-slate-100"
                         >
                             <div className="p-8 border-b border-slate-50 bg-[#F0F7FF]/30">
-                                <h3 className="text-xl font-black italic uppercase tracking-tight text-slate-900">Select Language</h3>
+                                <h3 className="text-xl font-black uppercase tracking-tight text-slate-900">Select Language</h3>
                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Website will be translated automatically.</p>
                             </div>
                             <div className="max-height-[60vh] overflow-y-auto p-4 custom-scrollbar">
@@ -538,7 +514,7 @@ export default function ProfilePage() {
                             className="relative w-full max-w-md bg-white rounded-[40px] shadow-2xl overflow-hidden border border-slate-100"
                         >
                             <div className="p-8 border-b border-slate-50 bg-[#F0F7FF]/30">
-                                <h3 className="text-xl font-black italic uppercase tracking-tight text-slate-900">{t('select_currency')}</h3>
+                                <h3 className="text-xl font-black uppercase tracking-tight text-slate-900">{t('select_currency')}</h3>
                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{t('currency_desc')}</p>
                             </div>
                             <div className="max-height-[60vh] overflow-y-auto p-4 custom-scrollbar">
@@ -621,7 +597,7 @@ export default function ProfilePage() {
                         >
                             <div className="w-20 h-20 md:w-32 md:h-32 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 p-1 shadow-xl relative z-10">
                                 <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden relative border-4 border-white">
-                                    <span className="text-3xl md:text-5xl font-black text-brand-600 uppercase italic">
+                                    <span className="text-3xl md:text-5xl font-black text-brand-600 uppercase">
                                         {heroName.charAt(0)}
                                     </span>
                                 </div>
@@ -638,7 +614,7 @@ export default function ProfilePage() {
                                 animate={{ y: 0, opacity: 1 }}
                                 transition={{ delay: 0.1 }}
                             >
-                                <h1 className="text-2xl md:text-5xl font-black text-slate-900 tracking-tight italic leading-tight mb-1 md:mb-2 min-h-[1.2em]">
+                                <h1 className="text-2xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight mb-1 md:mb-2 min-h-[1.2em]">
                                     {heroName}
                                     <span className="animate-pulse ml-1 text-brand-400">|</span>
                                 </h1>
@@ -663,44 +639,62 @@ export default function ProfilePage() {
                 <AnimatePresence mode="wait">
                     {!activeTab ? (
                         <motion.div 
-                            key="main-grid"
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: 20 }}
-                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                            key="main-list"
+                            initial={{ opacity: 0, y: 15 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -15 }}
+                            className="max-w-2xl mx-auto space-y-10 text-left"
                         >
-                            {sections.map((section, idx) => (
-                                <div 
-                                    key={section.id} 
-                                    className={cn(
-                                        "bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:border-brand-200 hover:shadow-md transition-all group text-left"
-                                    )}
-                                >
-                                    <div className="flex items-center gap-3 mb-6">
-                                        <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center text-brand-600 shadow-sm">
-                                            <section.icon className="w-5 h-5" />
-                                        </div>
-                                        <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest">{section.title}</h4>
-                                    </div>
-                                    <div className="space-y-1">
-                                        {section.items.map((item: any) => (
-                                            <button 
-                                                key={item.id} 
-                                                onClick={() => {
-                                                    if (item.id === "saved") setActiveTab("payment");
-                                                    if (item.id === "profile") setActiveTab("profile-details");
-                                                    if (item.id === "login") setActiveTab("login-security");
-                                                    if (item.id === "data") setActiveTab("data-privacy");
-                                                    if (item.id === "lang") setShowLanguageModal(true);
-                                                    if (item.id === "curr") setShowCurrencyModal(true);
-                                                    if (item.id === "notify") setActiveTab("notifications");
-                                                }}
-                                                className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 group/item transition-all text-left"
-                                            >
-                                                <span className="text-[13px] font-bold text-slate-500 group-hover/item:text-slate-900">{item.label}</span>
-                                                <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover/item:text-brand-600 transition-transform group-hover/item:translate-x-1" />
-                                            </button>
-                                         ))}
+                            {sections.map((section) => (
+                                <div key={section.id} className="space-y-3">
+                                    <h4 className="text-[11px] font-black uppercase text-slate-400 tracking-widest px-4">
+                                        {section.title}
+                                    </h4>
+                                    <div className="bg-white rounded-3xl border border-slate-100/80 shadow-sm overflow-hidden divide-y divide-slate-100">
+                                        {section.items.map((item: any) => {
+                                            const ItemIcon = item.icon;
+                                            return (
+                                                <button 
+                                                    key={item.id} 
+                                                    onClick={() => {
+                                                        if (item.id === "profile") setActiveTab("profile-details");
+                                                        if (item.id === "login") setActiveTab("login-security");
+                                                        if (item.id === "lang") setShowLanguageModal(true);
+                                                        if (item.id === "curr") setShowCurrencyModal(true);
+                                                        if (item.id === "notify") setActiveTab("notifications");
+                                                        if (item.id === "bookings") router("/my-bookings");
+                                                        if (item.id === "wishlist") router("/wishlist");
+                                                        if (item.id === "terms") router("/terms-&-conditions");
+                                                        if (item.id === "privacy") router("/privacy");
+                                                        if (item.id === "cookie") router("/cookies");
+                                                        if (item.id === "support") router("/contact");
+                                                    }}
+                                                    className="w-full flex items-center justify-between px-6 py-4 hover:bg-slate-50/50 transition-colors text-left group cursor-pointer"
+                                                >
+                                                    <div className="flex items-center gap-4">
+                                                        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shadow-sm shrink-0", item.iconBg)}>
+                                                            <ItemIcon className={cn("w-5 h-5", item.iconColor)} />
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-[15px] font-semibold text-slate-800 group-hover:text-slate-950 transition-colors">
+                                                                {item.label}
+                                                            </span>
+                                                            <span className="text-xs text-slate-400 font-normal mt-0.5 block leading-tight">
+                                                                {item.desc}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 shrink-0">
+                                                        {item.status && (
+                                                            <span className="text-sm font-normal text-slate-400">
+                                                                {item.status}
+                                                            </span>
+                                                        )}
+                                                        <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-slate-400 group-hover:translate-x-0.5 transition-all" />
+                                                    </div>
+                                                </button>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             ))}
@@ -711,7 +705,7 @@ export default function ProfilePage() {
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -20 }}
-                            className="max-w-4xl mx-auto space-y-8"
+                            className="max-w-2xl mx-auto space-y-8"
                         >
                             {/* Back Header */}
                             <div className="flex items-center justify-between mb-8">
@@ -727,7 +721,7 @@ export default function ProfilePage() {
                                         <ChevronRight className="w-5 h-5 rotate-180" />
                                     </button>
                                     <div>
-                                        <h2 className="text-2xl font-black text-slate-900 italic uppercase">{t('payment')}</h2>
+                                        <h2 className="text-2xl font-black text-slate-900 uppercase">{t('payment')}</h2>
                                         <p className="text-xs font-bold text-slate-400">{t('billing_desc')}</p>
                                     </div>
                                 </div>
@@ -743,8 +737,8 @@ export default function ProfilePage() {
 
                             <div className="grid grid-cols-1 gap-8">
                                 {/* Saved Cards Section */}
-                                <div className="bg-white rounded-[40px] p-8 border border-slate-100 shadow-premium">
-                                    <h3 className="text-lg font-black italic uppercase tracking-tight mb-8">{t('saved')}</h3>
+                                <div className="py-2">
+                                    <h3 className="text-lg font-black uppercase tracking-tight mb-8">{t('saved')}</h3>
                                     
                                     <AnimatePresence mode="wait">
                                         {isAddingCard ? (
@@ -753,7 +747,7 @@ export default function ProfilePage() {
                                                 animate={{ opacity: 1, scale: 1 }}
                                                 exit={{ opacity: 0, scale: 0.95 }}
                                                 onSubmit={handleSaveCard}
-                                                className="space-y-6 bg-slate-50 p-8 rounded-[32px] border border-slate-100"
+                                                className="space-y-6 bg-slate-50/50 p-8 rounded-2xl border border-slate-100"
                                             >
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                     <div className="space-y-2">
@@ -869,11 +863,11 @@ export default function ProfilePage() {
                                                         </div>
                                                     ))
                                                 ) : (
-                                                    <div className="col-span-full py-16 border-2 border-dashed border-slate-100 rounded-[32px] flex flex-col items-center justify-center text-center">
+                                                    <div className="col-span-full py-16 border-2 border-dashed border-slate-100 rounded-2xl flex flex-col items-center justify-center text-center">
                                                         <div className="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mb-4">
                                                             <CreditCard className="w-8 h-8 text-brand-300" />
                                                         </div>
-                                                        <p className="text-slate-400 font-black italic text-lg mb-2">{t('no_cards')}</p>
+                                                        <p className="text-slate-400 font-black text-lg mb-2">{t('no_cards')}</p>
                                                         <p className="text-[10px] text-slate-300 font-black uppercase tracking-widest">Click "{t('add_card')}" to get started.</p>
                                                     </div>
                                                 )}
@@ -883,13 +877,13 @@ export default function ProfilePage() {
                                 </div>
 
                                 {/* Billing History Section */}
-                                <div className="bg-white rounded-[40px] p-8 border border-slate-100 shadow-premium">
-                                    <h3 className="text-lg font-black italic uppercase tracking-tight mb-8">{t('billing')}</h3>
-                                    <div className="py-20 flex flex-col items-center justify-center text-center bg-slate-50 rounded-[32px]">
+                                <div className="py-2">
+                                    <h3 className="text-lg font-black uppercase tracking-tight mb-8">{t('billing')}</h3>
+                                    <div className="py-20 flex flex-col items-center justify-center text-center bg-slate-50/50 border border-slate-100 rounded-2xl">
                                         <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-6 shadow-sm">
                                             <History className="w-10 h-10 text-slate-200" />
                                         </div>
-                                        <h4 className="text-3xl font-black text-slate-300 italic mb-2">{t('no_transactions')}</h4>
+                                        <h4 className="text-3xl font-black text-slate-300 mb-2">{t('no_transactions')}</h4>
                                         <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('booking_desc')}</p>
                                     </div>
                                 </div>
@@ -901,17 +895,17 @@ export default function ProfilePage() {
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -20 }}
-                            className="max-w-4xl mx-auto space-y-8"
+                            className="max-w-2xl mx-auto space-y-8"
                         >
                             <div className="flex items-center gap-4 mb-8">
                                 <button onClick={() => setActiveTab(null)} className="p-3 bg-slate-100 rounded-2xl hover:bg-slate-200"><ChevronRight className="w-5 h-5 rotate-180" /></button>
                                 <div>
-                                    <h2 className="text-2xl font-black text-slate-900 italic uppercase">{t('profile')}</h2>
+                                    <h2 className="text-2xl font-black text-slate-900 uppercase">{t('profile')}</h2>
                                     <p className="text-xs font-bold text-slate-400">{t('personal_info')}</p>
                                 </div>
                             </div>
 
-                            <div className="bg-white rounded-[40px] p-10 border border-slate-100 shadow-premium">
+                            <div className="py-2">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('full_name')}</label>
@@ -970,19 +964,19 @@ export default function ProfilePage() {
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -20 }}
-                            className="max-w-4xl mx-auto space-y-8"
+                            className="max-w-2xl mx-auto space-y-8"
                         >
                             <div className="flex items-center gap-4 mb-8">
                                 <button onClick={() => setActiveTab(null)} className="p-3 bg-slate-100 rounded-2xl hover:bg-slate-200"><ChevronRight className="w-5 h-5 rotate-180" /></button>
                                 <div>
-                                    <h2 className="text-2xl font-black text-slate-900 italic uppercase">{t('login')}</h2>
+                                    <h2 className="text-2xl font-black text-slate-900 uppercase">{t('login')}</h2>
                                     <p className="text-xs font-bold text-slate-400">{t('security_desc')}</p>
                                 </div>
                             </div>
 
                             <div className="space-y-6">
-                                <div className="bg-white rounded-[40px] p-10 border border-slate-100 shadow-premium">
-                                    <h3 className="text-lg font-black italic uppercase tracking-tight mb-8">{t('change_pass')}</h3>
+                                <div className="py-2">
+                                    <h3 className="text-lg font-black uppercase tracking-tight mb-8">{t('change_pass')}</h3>
                                     <div className="space-y-6 max-w-md">
                                         <input type="password" placeholder={t('current_pass')} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-brand-500 font-bold text-sm" />
                                         <input type="password" placeholder={t('new_pass')} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-brand-500 font-bold text-sm" />
@@ -990,9 +984,9 @@ export default function ProfilePage() {
                                     </div>
                                 </div>
 
-                                <div className="bg-white rounded-[40px] p-10 border border-slate-100 shadow-premium flex items-center justify-between">
+                                <div className="flex items-center justify-between p-6 bg-slate-50/40 border border-slate-100 rounded-2xl">
                                     <div>
-                                        <h3 className="text-lg font-black italic uppercase tracking-tight mb-2">{t('tfa')}</h3>
+                                        <h3 className="text-lg font-black uppercase tracking-tight mb-2">{t('tfa')}</h3>
                                         <p className="text-xs font-bold text-slate-400">{t('tfa_desc')}</p>
                                     </div>
                                     <div className="w-14 h-8 bg-slate-100 rounded-full relative cursor-pointer p-1">
@@ -1007,17 +1001,17 @@ export default function ProfilePage() {
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -20 }}
-                            className="max-w-4xl mx-auto space-y-8"
+                            className="max-w-2xl mx-auto space-y-8"
                         >
                             <div className="flex items-center gap-4 mb-8">
                                 <button onClick={() => setActiveTab(null)} className="p-3 bg-slate-100 rounded-2xl hover:bg-slate-200"><ChevronRight className="w-5 h-5 rotate-180" /></button>
                                 <div>
-                                    <h2 className="text-2xl font-black text-slate-900 italic uppercase">{t('notify')}</h2>
+                                    <h2 className="text-2xl font-black text-slate-900 uppercase">{t('notify')}</h2>
                                     <p className="text-xs font-bold text-slate-400">Manage how you want to be contacted.</p>
                                 </div>
                             </div>
 
-                            <div className="bg-white rounded-[40px] p-8 border border-slate-100 shadow-premium divide-y divide-slate-50">
+                            <div className="border border-slate-100 rounded-2xl divide-y divide-slate-100 overflow-hidden bg-white/50 px-6 py-2">
                                 {[
                                     { id: 'push', title: t('push_notify'), desc: t('push_desc'), icon: Bell },
                                     { id: 'email', title: t('email_notify'), desc: t('email_desc'), icon: Mail },
@@ -1056,28 +1050,28 @@ export default function ProfilePage() {
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -20 }}
-                            className="max-w-4xl mx-auto space-y-8"
+                            className="max-w-2xl mx-auto space-y-8"
                         >
                             <div className="flex items-center gap-4 mb-8">
                                 <button onClick={() => setActiveTab(null)} className="p-3 bg-slate-100 rounded-2xl hover:bg-slate-200"><ChevronRight className="w-5 h-5 rotate-180" /></button>
                                 <div>
-                                    <h2 className="text-2xl font-black text-slate-900 italic uppercase">{t('data')}</h2>
+                                    <h2 className="text-2xl font-black text-slate-900 uppercase">{t('data')}</h2>
                                     <p className="text-xs font-bold text-slate-400">{t('privacy_manage')}</p>
                                 </div>
                             </div>
 
                             <div className="space-y-6">
-                                <div className="bg-white rounded-[40px] p-10 border border-slate-100 shadow-premium space-y-8">
-                                    <div className="flex items-center justify-between p-6 bg-slate-50 rounded-[32px] border border-slate-100">
+                                <div className="space-y-8 py-2">
+                                    <div className="flex items-center justify-between p-6 bg-slate-50/50 border border-slate-100 rounded-2xl">
                                         <div>
-                                            <h4 className="font-black italic uppercase text-sm mb-1">{t('download_data')}</h4>
+                                            <h4 className="font-black uppercase text-sm mb-1">{t('download_data')}</h4>
                                             <p className="text-[10px] font-bold text-slate-400">{t('download_desc')}</p>
                                         </div>
                                         <button className="p-4 bg-white rounded-2xl shadow-sm text-brand-600 hover:bg-brand-50 transition-colors"><Compass className="w-5 h-5" /></button>
                                     </div>
 
                                     <div className="pt-8 border-t border-slate-100">
-                                        <h4 className="font-black italic uppercase text-red-500 text-sm mb-4">{t('danger_zone')}</h4>
+                                        <h4 className="font-black uppercase text-red-500 text-sm mb-4">{t('danger_zone')}</h4>
                                         <p className="text-xs font-bold text-slate-400 mb-6">{t('delete_desc')}</p>
                                         <button className="px-8 py-4 border-2 border-red-100 text-red-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-red-50 transition-colors">{t('delete_account')}</button>
                                     </div>
@@ -1126,7 +1120,7 @@ export default function ProfilePage() {
                                     />
                                 </div>
                                 <h3 className="text-2xl font-black text-slate-950 mb-3 tracking-tight">
-                                    Ready to <span className="text-red-600 italic">Leave?</span>
+                                    Ready to <span className="text-red-600">Leave?</span>
                                 </h3>
                                 <p className="text-slate-500 font-bold mb-10 leading-relaxed">
                                     Are you sure you want to logout? We'll miss you!

@@ -14,7 +14,8 @@ import {
     Layers, Globe, Settings, CreditCard, Calendar, 
     Activity, Copy, Hash, Map, Eye, EyeOff,
     Percent, DollarSign, CalendarDays, Lock, Unlock,
-    Smartphone, Search, Monitor, Star, Bookmark
+    Smartphone, Search, Monitor, Star, Bookmark,
+    ArrowLeft
 } from "lucide-react";
 import { cn, safeParse } from "@/lib/utils";
 import { hotelApi } from "@/lib/api";
@@ -135,7 +136,7 @@ export default function PartnerRoomsPage() {
 
     const predefinedTrustPoints = [
         "Free Cancellation until 24 hours before check-in",
-        "Pay remaining 82% at the hotel during check-in",
+        "Pay remaining 88% at the hotel during check-in",
         "Secure booking with instant confirmation",
         "Professionally sanitized & cleaned rooms",
         "Guaranteed best price for this property",
@@ -160,7 +161,7 @@ export default function PartnerRoomsPage() {
         ],
         trustPoints: [
             "Free Cancellation until 24 hours before check-in",
-            "Pay remaining 82% at the hotel during check-in",
+            "Pay remaining 88% at the hotel during check-in",
             "Secure booking with instant confirmation"
         ],
         minPrice: "",
@@ -210,10 +211,62 @@ export default function PartnerRoomsPage() {
     const [customTrustPoint, setCustomTrustPoint] = useState("");
 
     const commonAmenities = [
-        "WiFi", "TV", "Air Conditioning", "Coffee Maker", 
-        "Mini Bar", "Room Service", "Balcony", "Safe Box",
-        "Work Desk", "Bathtub", "Premium Toiletries", "Hair Dryer",
-        "Ironing Board", "Electric Kettle", "Soundproofing"
+        "Free High-Speed WiFi",
+        "Smart TV (Netflix/Prime)",
+        "Cable/Satellite Channels",
+        "Bluetooth Speaker",
+        "Direct-Dial Telephone",
+        "Air Conditioning",
+        "Heating System",
+        "Ceiling Fan",
+        "Premium Linens",
+        "Pillow Menu",
+        "Blackout Curtains",
+        "Soundproofing",
+        "Mini Bar",
+        "Espresso Machine",
+        "Coffee/Tea Maker",
+        "Electric Kettle",
+        "Mini Fridge",
+        "Microwave",
+        "Complimentary Bottled Water",
+        "Private Bathroom",
+        "Deep Soaking Bathtub",
+        "Rain Shower",
+        "Premium Toiletries",
+        "Hair Dryer",
+        "Plush Bathrobes",
+        "Slippers",
+        "Lighted Makeup Mirror",
+        "Executive Work Desk",
+        "Ergonomic Chair",
+        "Laptop-Friendly Safe",
+        "Iron & Ironing Board",
+        "Wardrobe & Hangers",
+        "Luggage Rack",
+        "Private Balcony",
+        "Private Terrace",
+        "Sea/Ocean View",
+        "Mountain/Hill View",
+        "City Skyline View",
+        "Garden/Pool View",
+        "Private Jacuzzi",
+        "Private Plunge Pool",
+        "Kitchenette",
+        "Fireplace",
+        "Washing Machine",
+        "24/7 Room Service",
+        "Daily Housekeeping",
+        "Turndown Service",
+        "Complimentary Breakfast",
+        "Wake-up Service",
+        "Baby Crib (On Request)",
+        "Universal Power Adapters",
+        "USB Charging Ports",
+        "Air Purifier",
+        "In-room Dining Table",
+        "Sofa Bed / Couches",
+        "Shoe Shine Kit"
     ];
 
     const bedOptions = ["1 Single Bed", "2 Single Beds", "1 Double Bed", "1 Queen Bed", "1 King Bed", "1 King + 1 Single", "2 Double Beds", "2 Queen Beds"];
@@ -221,7 +274,7 @@ export default function PartnerRoomsPage() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await hotelApi.getMyHotels();
+                const res = await hotelApi.getMyHotels({ light: true });
                 if (res.success && res.data && res.data.length > 0) {
                     const myHotel = res.data[0];
                     setHotel(myHotel);
@@ -268,7 +321,7 @@ export default function PartnerRoomsPage() {
                 })),
                 trustPoints: robustParse(room.trustPoints || room.trust_points || room.trustPoints, [
                     "Free Cancellation until 24 hours before check-in",
-                    "Pay remaining 82% at the hotel during check-in",
+                    "Pay remaining 88% at the hotel during check-in",
                     "Secure booking with instant confirmation"
                 ]),
                 minPrice: room.minPrice || room.min_price || "",
@@ -334,7 +387,7 @@ export default function PartnerRoomsPage() {
                 ],
                 trustPoints: [
                     "Free Cancellation until 24 hours before check-in",
-                    "Pay remaining 82% at the hotel during check-in",
+                    "Pay remaining 88% at the hotel during check-in",
                     "Secure booking with instant confirmation"
                 ],
                 minPrice: "",
@@ -388,13 +441,14 @@ export default function PartnerRoomsPage() {
     const handleSaveRoom = async (e: React.FormEvent) => {
         e.preventDefault();
         
-        // VALIDATION: Min 5, Max 15 images
-        if (formData.images.length < 5) {
-            alert("Please add at least 5 images of the room.");
+        // VALIDATION: Min 1 image
+        if (formData.images.length < 1) {
+            alert("Please add at least 1 image of the room.");
             return;
         }
-        if (formData.images.length > 15) {
-            alert("Maximum 15 images allowed.");
+
+        if (formData.amenities.length > 30) {
+            alert("Maximum 30 amenities allowed per room category.");
             return;
         }
 
@@ -423,6 +477,48 @@ export default function PartnerRoomsPage() {
         if (adultsVal < 1 || adultsVal > 10) {
             alert("Adults Capacity must be between 1 and 10.");
             return;
+        }
+
+        // Room and Variant Pricing Validation
+        const basePrice = parseFloat(formData.pricePerNight.toString()) || 0;
+        const variants = formData.variants || [];
+        
+        if (variants.length > 0) {
+            const epVariant = variants.find(v => {
+                const mp = (v.mealPlan || "").toLowerCase();
+                return mp.includes("room only") || mp === "ep" || mp === "ep (room only)";
+            });
+            const cpVariant = variants.find(v => {
+                const mp = (v.mealPlan || "").toLowerCase();
+                return (mp.includes("breakfast") || mp === "cp") && !mp.includes("meal") && !mp.includes("map");
+            });
+
+            const epPrice = epVariant ? (parseFloat(epVariant.price?.toString()) || 0) : null;
+            const cpPrice = cpVariant ? (parseFloat(cpVariant.price?.toString()) || 0) : null;
+
+            // 1. One of them must match the base price
+            let matchesBase = false;
+            if (epPrice !== null && Math.abs(epPrice - basePrice) < 0.01) {
+                matchesBase = true;
+            }
+            if (cpPrice !== null && Math.abs(cpPrice - basePrice) < 0.01) {
+                matchesBase = true;
+            }
+
+            if (epPrice !== null || cpPrice !== null) {
+                if (!matchesBase) {
+                    alert(`Validation Error: Either Room Only (EP) price or Breakfast Included (CP) price must match the Room Base Price (₹${basePrice}).`);
+                    return;
+                }
+            }
+
+            // 2. Pricing order logic: Breakfast Included (CP) cannot be cheaper than Room Only (EP)
+            if (epPrice !== null && cpPrice !== null) {
+                if (cpPrice < epPrice) {
+                    alert(`Validation Error: Breakfast Included (CP) price (₹${cpPrice}) cannot be cheaper than Room Only (EP) price (₹${epPrice}).`);
+                    return;
+                }
+            }
         }
 
         setIsSaving(true);
@@ -484,6 +580,9 @@ export default function PartnerRoomsPage() {
                 if (res.success) {
                     setRooms(prev => prev.map(r => r.id === editingRoom.id ? res.data : r));
                     showToast("Room updated successfully!", "success");
+                    setIsEditing(false);
+                } else {
+                    showToast(res.message || "Failed to update room. Please try again.", "error");
                 }
             } else {
                 const hotelIdToUse = Number(hotel.id);
@@ -491,9 +590,11 @@ export default function PartnerRoomsPage() {
                 if (res.success) {
                     setRooms(prev => [...prev, res.data]);
                     showToast("New room category created!", "success");
+                    setIsEditing(false);
+                } else {
+                    showToast(res.message || "Failed to create room. Please try again.", "error");
                 }
             }
-            setIsEditing(false);
         } catch (err: any) {
             console.error("Save Error:", err);
             showToast(err.response?.data?.message || err.message || "Failed to save room details", "error");
@@ -509,9 +610,6 @@ export default function PartnerRoomsPage() {
     };
 
     const processFiles = async (files: File[]) => {
-        const remainingSlots = 15 - formData.images.length;
-        const filesToProcess = files.slice(0, remainingSlots);
-
         setIsOptimizing(true);
         const optimizedImages: string[] = [];
 
@@ -569,9 +667,14 @@ export default function PartnerRoomsPage() {
     };
 
     const toggleAmenity = (amenity: string) => {
+        const isAlreadySelected = formData.amenities.includes(amenity);
+        if (!isAlreadySelected && formData.amenities.length >= 30) {
+            showToast("You can select a maximum of 30 amenities per room category.", "error");
+            return;
+        }
         setFormData(prev => ({
             ...prev,
-            amenities: prev.amenities.includes(amenity) 
+            amenities: isAlreadySelected 
                 ? prev.amenities.filter(a => a !== amenity)
                 : [...prev.amenities, amenity]
         }));
@@ -629,21 +732,22 @@ export default function PartnerRoomsPage() {
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-6">
                     <div>
-                        <button 
-                            onClick={() => setIsEditing(false)}
-                            className="flex items-center gap-2 text-slate-400 hover:text-slate-900 transition-colors text-[10px] font-black uppercase tracking-widest mb-3"
-                        >
-                            <X className="w-3.5 h-3.5" /> Back to Dashboard
-                        </button>
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-blue-600 rounded-none flex items-center justify-center text-white shadow-xl shadow-blue-100">
+                        <div className="flex items-center gap-3 md:gap-4">
+                            <button 
+                                onClick={() => setIsEditing(false)}
+                                className="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 hover:bg-slate-50 transition-colors rounded-none cursor-pointer"
+                                title="Back to Dashboard"
+                            >
+                                <ArrowLeft className="w-4 h-4 text-slate-600" />
+                            </button>
+                            <div className="w-12 h-12 bg-blue-600 rounded-none flex items-center justify-center text-white shadow-xl shadow-blue-100 hidden sm:flex shrink-0">
                                 <BedDouble className="w-6 h-6" />
                             </div>
                             <div>
-                                <h1 className="text-3xl font-black text-slate-900 tracking-tight">
+                                <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
                                     {editingRoom ? "Edit Room Category" : "New Room Category"}
                                 </h1>
-                                <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1">
+                                <p className="text-slate-500 text-[9px] md:text-[10px] font-bold uppercase tracking-widest mt-1">
                                     {formData.name || "Untitled Category"} • {formData.status.toUpperCase()}
                                 </p>
                             </div>
@@ -1019,7 +1123,7 @@ export default function PartnerRoomsPage() {
                                             <div className="w-1.5 h-6 bg-rose-500 rounded-none" />
                                             <h3 className="text-xl font-black text-slate-900 tracking-tight">Media & Gallery</h3>
                                         </div>
-                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-4 py-2 rounded-none border border-slate-100">{formData.images.length} / 15 Images</span>
+                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-4 py-2 rounded-none border border-slate-100">{formData.images.length} Images</span>
                                     </div>
                                     <div onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} className={cn("relative h-48 border-2 border-dashed rounded-none flex flex-col items-center justify-center transition-all group cursor-pointer text-center px-8", isDragging ? "border-blue-600 bg-blue-50/50" : "border-slate-100 bg-slate-50 hover:bg-white hover:border-blue-300", isOptimizing && "pointer-events-none")}>
                                         {isOptimizing && (
@@ -1033,7 +1137,7 @@ export default function PartnerRoomsPage() {
                                             <ImageIcon className="w-8 h-8 text-slate-300" />
                                         </div>
                                         <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Drop images here or click to browse</p>
-                                        <p className="text-[9px] font-bold text-slate-400 uppercase mt-2 tracking-widest">Recommended: 1200x800px • Max 15 Images</p>
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase mt-2 tracking-widest">Recommended: 1200x800px</p>
                                     </div>
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                         {formData.images.map((url, index) => (
@@ -1076,7 +1180,12 @@ export default function PartnerRoomsPage() {
                                         <h3 className="text-xl font-black text-slate-900 tracking-tight">Amenities & Rules</h3>
                                     </div>
                                     <div className="space-y-4">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Core Amenities</label>
+                                        <div className="flex justify-between items-center ml-1">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Core Amenities</label>
+                                            <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest bg-blue-50 px-3 py-1.5 border border-blue-100">
+                                                Selected: {formData.amenities.length} / 30 Max
+                                            </span>
+                                        </div>
                                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                             {commonAmenities.map((amenity) => (
                                                 <button key={amenity} type="button" onClick={() => toggleAmenity(amenity)} className={cn("px-4 py-3.5 rounded-none text-[10px] font-bold uppercase tracking-tight border transition-all text-center", formData.amenities.includes(amenity) ? "bg-slate-900 text-white border-slate-900 shadow-xl" : "bg-slate-50 text-slate-500 border-transparent hover:border-slate-200")}>{amenity}</button>

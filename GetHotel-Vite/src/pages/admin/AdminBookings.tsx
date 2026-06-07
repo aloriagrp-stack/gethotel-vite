@@ -150,7 +150,7 @@ export default function SuperAdminBookingsPage() {
                                     <td className="px-8 py-6">
                                         <div className="flex flex-col">
                                             <span className="text-sm font-black text-slate-900 italic">₹{b.totalPrice?.toLocaleString()}</span>
-                                            <span className="text-[8px] font-black text-emerald-600 uppercase tracking-widest">Commission: ₹{Math.round(b.totalPrice * 0.18).toLocaleString()}</span>
+                                            <span className="text-[8px] font-black text-emerald-600 uppercase tracking-widest">Commission: ₹{Math.round(b.totalPrice * 0.12).toLocaleString()}</span>
                                         </div>
                                     </td>
                                     <td className="px-8 py-6">

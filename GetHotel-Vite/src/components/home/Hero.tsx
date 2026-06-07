@@ -1,13 +1,16 @@
 
 
 import { motion } from "framer-motion";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Play, Calendar, MapPin, Users } from "lucide-react";
 import SmartSearchBar from "@/components/search/SmartSearchBar";
 import { useStayMode } from "@/context/StayModeContext";
 import { cn } from "@/lib/utils";
 
-export default function Hero() {
+export default function Hero({ title, highlight }: { title?: string, highlight?: string }) {
     const { mode, setMode } = useStayMode();
+    const displayTitle = title || "Where would you";
+    const displayHighlight = highlight || "like to stay?";
+
     return (
         <section className="relative z-20 min-h-[70vh] md:min-h-[90vh] flex flex-col items-center justify-center pt-16 md:pt-20 pb-12 md:pb-16 px-3 md:px-8">
             {/* Atmospheric Background Elements (Static for Performance) */}
@@ -24,12 +27,12 @@ export default function Hero() {
 
                 {/* Primary Headline */}
                 <div className="mb-8 md:mb-12">
-                    <h1 className="text-4xl md:text-[90px] text-slate-950 font-luxury font-bold tracking-[-0.01em] leading-[1.1] pb-2">
-                        Where would you <br />
+                    <h2 className="text-4xl md:text-[90px] text-slate-950 font-luxury font-bold tracking-[-0.01em] leading-[1.1] pb-2">
+                        {displayTitle} <br />
                         <span className="text-brand-600 italic font-bold">
-                            like to stay?
+                            {displayHighlight}
                         </span>
-                    </h1>
+                    </h2>
                 </div>
 
                 {/* Interactive Search Bar Component */}

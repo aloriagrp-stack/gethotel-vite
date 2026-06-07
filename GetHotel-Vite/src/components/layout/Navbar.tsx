@@ -6,7 +6,7 @@ import confetti from "canvas-confetti";
 import {
     Menu, X, MapPin, User, Heart, Bell, Hotel, Globe,
     LogOut, Settings, ClipboardList, ChevronDown, UserRound, CheckCircle2,
-    AlertCircle
+    AlertCircle, Shield, FileText, Mail
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useWishlist } from "@/context/WishlistContext";
@@ -151,7 +151,7 @@ export default function Navbar() {
                     to="/"
                     className="relative z-[110] flex items-center gap-2 outline-none border-none group"
                 >
-                    <span className="text-xl md:text-2xl font-black tracking-tighter text-slate-950 italic group-hover:text-brand-600 transition-colors">
+                    <span className="text-xl md:text-2xl font-black tracking-tighter text-slate-950 group-hover:text-brand-600 transition-colors">
                         GetHotelStays<span className="text-brand-600 not-italic">.</span>
                     </span>
                 </Link>
@@ -408,7 +408,7 @@ export default function Navbar() {
                             className="fixed top-0 right-0 bottom-0 w-[300px] max-w-[85vw] bg-white z-[120] shadow-2xl px-6 pt-12 pb-6 flex flex-col"
                         >
                             <div className="flex items-center justify-between mb-8">
-                                <span className="text-xl font-black italic">My Profile<span className="text-brand-600">.</span></span>
+                                <span className="text-xl font-black">My Profile<span className="text-brand-600">.</span></span>
                                 <button onClick={() => setProfileMobileOpen(false)} className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400">
                                     <X className="w-5 h-5" />
                                 </button>
@@ -423,6 +423,23 @@ export default function Navbar() {
                                         <Link to="/my-bookings" onClick={() => setProfileMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
                                             <ClipboardList className="w-5 h-5 text-brand-600" /> My Bookings
                                         </Link>
+                                        
+                                        <div className="h-px bg-slate-100 my-4" />
+                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-4 block mb-2">Support & Legal</span>
+                                        <Link to="/privacy" onClick={() => setProfileMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
+                                            <Shield className="w-5 h-5 text-slate-400" /> Privacy Policy
+                                        </Link>
+                                        <Link to="/terms-&-conditions" onClick={() => setProfileMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
+                                            <FileText className="w-5 h-5 text-slate-400" /> Terms & Conditions
+                                        </Link>
+                                        <Link to="/cancellation-policy" onClick={() => setProfileMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
+                                            <AlertCircle className="w-5 h-5 text-slate-400" /> Refund & Cancellation
+                                        </Link>
+                                        <Link to="/contact" onClick={() => setProfileMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
+                                            <Mail className="w-5 h-5 text-slate-400" /> Contact Us
+                                        </Link>
+
+                                        <div className="h-px bg-slate-100 my-4" />
                                         <button onClick={() => { setShowLogoutConfirm(true); setProfileMobileOpen(false); }} className="w-full flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-red-50 text-red-600 font-bold">
                                             <LogOut className="w-5 h-5" /> Log Out
                                         </button>

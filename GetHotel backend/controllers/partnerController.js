@@ -83,12 +83,22 @@ exports.submitPartnerRequest = async (req, res, next) => {
             expiresIn: '30d',
         });
 
-        res.status(201).json({
-            success: true,
-            token,
-            data: partnerRequest,
-            message: 'Your account has been created and is pending for approval.'
-        });
+        const cookieOptions = {
+            expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            path: '/'
+        };
+
+        res.status(201)
+            .cookie('token', token, cookieOptions)
+            .json({
+                success: true,
+                token,
+                data: partnerRequest,
+                message: 'Your account has been created and is pending for approval.'
+            });
     } catch (err) {
         res.status(400).json({ success: false, error: err.message });
     }
@@ -149,7 +159,8 @@ exports.approvePartnerRequest = async (req, res, next) => {
                     address: partnerRequest.address || "",
                     city: partnerRequest.city || "",
                     pricePerNight: partnerRequest.pricePerNight || 0,
-                    userId: user.id
+                    userId: user.id,
+                    isActive: true
                 }
             });
 
