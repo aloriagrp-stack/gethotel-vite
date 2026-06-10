@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import HotelDetailContent from "./HotelDetailContent";
 import { hotelApi } from "@/lib/api";
 import SEOHead from "@/components/common/SEOHead";
+import Loader from "@/components/common/Loader";
 import { buildHotelSEO, buildHotelSchema, buildBreadcrumbSchema, SITE } from "@/lib/seo";
 
 export default function HotelDetailPage() {
@@ -33,7 +34,7 @@ export default function HotelDetailPage() {
     }, [id]);
 
     if (loading) {
-        return <div className="min-h-screen flex items-center justify-center">Loading hotel details...</div>;
+        return <Loader variant="fullscreen" text="Loading hotel details..." />;
     }
 
     if (error || !hotel) {

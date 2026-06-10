@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { hotelApi } from "@/lib/api";
 import { Hotel as HotelType } from "@/types";
 import SEOHead from "@/components/common/SEOHead";
+import Loader from "@/components/common/Loader";
 import { PAGE_SEO, buildBreadcrumbSchema, SITE } from "@/lib/seo";
 
 // Remove HOTELS_PER_PAGE as we use dynamic visibleCount
@@ -380,7 +381,7 @@ function HotelListingContent() {
 
 export default function HotelsPage() {
     return (
-        <Suspense fallback={<div className="min-h-screen bg-slate-50 flex items-center justify-center font-black text-brand-600 animate-pulse italic">Curating Luxury Stays...</div>}>
+        <Suspense fallback={<Loader variant="fullscreen" text="Curating Luxury Stays..." />}>
             <HotelListingContent />
         </Suspense>
     );

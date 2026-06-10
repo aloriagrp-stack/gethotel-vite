@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Image from "@/components/common/Image";
+import Loader from "@/components/common/Loader";
 import { Link } from "react-router-dom";
 import {
     Shield,
@@ -355,9 +356,7 @@ function BookingContent() {
     };
 
     if (loadingData) return (
-        <div className="min-h-screen pt-28 flex items-center justify-center bg-slate-50">
-            <Loader2 className="w-10 h-10 animate-spin text-blue-600" />
-        </div>
+        <Loader variant="fullscreen" text="Loading booking details..." />
     );
 
     if (booked) return (

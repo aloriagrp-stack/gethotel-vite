@@ -7,6 +7,7 @@ import {
     X, Phone, Mail, CheckCircle2
 } from "lucide-react";
 import Image from "@/components/common/Image";
+import Loader from "@/components/common/Loader";
 import { Link } from "react-router-dom";
 import { bookingApi } from "@/lib/api";
 import { formatDate, formatPrice } from "@/lib/utils";
@@ -89,12 +90,7 @@ export default function BookingDetailsPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-[#F4F9FF]">
-                <div className="flex flex-col items-center gap-4">
-                    <Loader2 className="w-10 h-10 text-brand-600 animate-spin" />
-                    <p className="text-slate-500 font-bold italic">Loading stay details...</p>
-                </div>
-            </div>
+            <Loader variant="fullscreen" text="Loading stay details..." />
         );
     }
 
