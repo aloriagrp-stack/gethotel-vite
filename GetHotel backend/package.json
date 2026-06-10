@@ -8,7 +8,6 @@
     "dev": "nodemon server.js",
     "seed": "node seed.js",
     "prisma-generate": "npx prisma generate --schema=./prisma/schema.prisma",
-    "postinstall": "npx prisma generate --schema=./prisma/schema.prisma",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

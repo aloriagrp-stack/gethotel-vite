@@ -1069,6 +1069,65 @@ const downloadExternalImage = async (imageUrl) => {
     }
 };
 
+// Clean string for matching comparison
+const cleanStringForMatch = (str) => {
+    if (!str) return '';
+    return str.toLowerCase().replace(/[^a-z0-9\s]+/g, ' ').replace(/\s+/g, ' ').trim();
+};
+
+// Robust helper to match a scraped room name against a list of candidates
+const findBestRoomMatch = (scrapedName, candidates, getNameFunc = (c) => c) => {
+    if (!scrapedName || !candidates || candidates.length === 0) return null;
+    
+    const cleanScraped = cleanStringForMatch(scrapedName);
+    if (!cleanScraped) return null;
+    
+    // 1. Direct clean match
+    for (const candidate of candidates) {
+        const cleanCandidate = cleanStringForMatch(getNameFunc(candidate));
+        if (cleanCandidate === cleanScraped) {
+            return candidate;
+        }
+    }
+    
+    // 2. Substring matching (e.g. "deluxe double room" in "deluxe double room with balcony")
+    for (const candidate of candidates) {
+        const cleanCandidate = cleanStringForMatch(getNameFunc(candidate));
+        if (cleanCandidate.includes(cleanScraped) || cleanScraped.includes(cleanCandidate)) {
+            return candidate;
+        }
+    }
+    
+    // 3. Token-based overlap matching (ignoring short or common noise words)
+    let bestCandidate = null;
+    let maxOverlap = 0;
+    const noiseWords = new Set(['room', 'rooms', 'with', 'and', 'for', 'of', 'in', 'view', 'bed', 'beds']);
+    const scrapedTokens = new Set(cleanScraped.split(' ').filter(w => w.length > 1 && !noiseWords.has(w)));
+    
+    for (const candidate of candidates) {
+        const cleanCandidate = cleanStringForMatch(getNameFunc(candidate));
+        const candidateTokens = cleanCandidate.split(' ').filter(w => w.length > 1 && !noiseWords.has(w));
+        
+        let overlap = 0;
+        candidateTokens.forEach(t => {
+            if (scrapedTokens.has(t)) {
+                overlap++;
+            }
+        });
+        
+        if (overlap > maxOverlap) {
+            maxOverlap = overlap;
+            bestCandidate = candidate;
+        }
+    }
+    
+    if (bestCandidate && maxOverlap > 0) {
+        return bestCandidate;
+    }
+    
+    return null;
+};
+
 // Parser for Booking.com pages fetched via translate proxy
 const parseBookingComHtml = (html) => {
     const decodeUnicode = str => str.replace(/\\u([0-9a-fA-F]{4})/g, (match, grp) => String.fromCharCode(parseInt(grp, 16)));
@@ -1103,10 +1162,25 @@ const parseBookingComHtml = (html) => {
                             }
                             
                             let blockPrice = null;
-                            if (b.b_stay_prices && b.b_stay_prices.length > 0) {
-                                const oneNight = b.b_stay_prices.find(sp => sp.b_stays === 1);
-                                if (oneNight && oneNight.b_raw_price) {
-                                    blockPrice = parseFloat(oneNight.b_raw_price);
+                            
+                            // Check for original (strikethrough/prediscounted) price from Booking.com breakdown
+                            if (b.b_price_breakdown_simplified) {
+                                const bps = b.b_price_breakdown_simplified;
+                                const origPriceObj = (bps.b_original_price && bps.b_original_price[0]) ||
+                                                     (bps.b_prediscounted_price && bps.b_prediscounted_price[0]) ||
+                                                     (bps.b_prediscounted_price_average && bps.b_prediscounted_price_average[0]);
+                                if (origPriceObj && (origPriceObj.b_raw_value_user_currency || origPriceObj.b_raw_value_user_currency_rounded)) {
+                                    blockPrice = parseFloat(origPriceObj.b_raw_value_user_currency || origPriceObj.b_raw_value_user_currency_rounded);
+                                }
+                            }
+                            
+                            // Fallback to standard price parsing if no original price was found
+                            if (!blockPrice) {
+                                if (b.b_stay_prices && b.b_stay_prices.length > 0) {
+                                    const oneNight = b.b_stay_prices.find(sp => sp.b_stays === 1);
+                                    if (oneNight && oneNight.b_raw_price) {
+                                        blockPrice = parseFloat(oneNight.b_raw_price);
+                                    }
                                 }
                             }
                             
@@ -1258,15 +1332,10 @@ const parseBookingComHtml = (html) => {
             let price = null;
             let maxOccupancy = 2;
             
-            if (roomInfoByName[normName]) {
-                price = roomInfoByName[normName].price;
-                maxOccupancy = roomInfoByName[normName].maxOccupancy;
-            } else {
-                const matchKey = Object.keys(roomInfoByName).find(k => k.includes(normName) || normName.includes(k));
-                if (matchKey) {
-                    price = roomInfoByName[matchKey].price;
-                    maxOccupancy = roomInfoByName[matchKey].maxOccupancy;
-                }
+            const matchedKey = findBestRoomMatch(name, Object.keys(roomInfoByName));
+            if (matchedKey && roomInfoByName[matchedKey]) {
+                price = roomInfoByName[matchedKey].price;
+                maxOccupancy = roomInfoByName[matchedKey].maxOccupancy;
             }
             
             let sizeM2 = 24;
@@ -1357,7 +1426,8 @@ const parseBookingComHtml = (html) => {
         city: hotelCity,
         amenities: Object.values(facilityMap).slice(0, 15),
         images: hotelImages,
-        rooms
+        rooms,
+        roomInfoByName
     };
 };
 
@@ -1422,6 +1492,7 @@ const detectOtaDetails = async (url, fallbackHotelName, basePrice = 2500) => {
                             "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=1000&q=80"
                         ],
                         rooms: parsed.rooms,
+                        roomInfoByName: parsed.roomInfoByName || {},
                         policies: JSON.stringify({
                             checkIn: "Check-in from 02:00 PM.",
                             checkOut: "Check-out by 11:00 AM.",
@@ -1547,6 +1618,15 @@ const detectOtaDetails = async (url, fallbackHotelName, basePrice = 2500) => {
         { q: "Is breakfast included in the booking price?", a: "Breakfast options can be added during room selection or directly at check-in for a nominal charge." }
     ]);
 
+    // Generate roomInfoByName map for simulation mode
+    const roomInfoByName = {};
+    mockRooms.forEach(r => {
+        roomInfoByName[r.name.toLowerCase().trim()] = {
+            price: r.price,
+            maxOccupancy: r.maxOccupancy
+        };
+    });
+
     return {
         source: otaName,
         name: cleanName,
@@ -1559,6 +1639,7 @@ const detectOtaDetails = async (url, fallbackHotelName, basePrice = 2500) => {
         amenities: mockAmenities,
         images: mockHotelImages,
         rooms: mockRooms,
+        roomInfoByName,
         policies: mockPolicies,
         safety: mockSafety,
         faqs: mockFaqs
@@ -1585,7 +1666,7 @@ exports.importOtaRooms = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Hotel not found.' });
         }
 
-        const mode = syncMode || 'full'; // 'full' or 'rooms'
+        const mode = syncMode || 'full'; // 'full', 'rooms', or 'prices'
 
         // Determine which hotels we need to sync
         let targetHotels = [selectedHotel];
@@ -1706,13 +1787,15 @@ exports.importOtaRooms = async (req, res) => {
             });
 
             const downloadedImages = [];
-            const maxImagesToDownload = Math.min(rawImages.length, 60);
-            for (let i = 0; i < maxImagesToDownload; i++) {
-                const localPath = await downloadExternalImage(rawImages[i]);
-                downloadedImages.push(localPath);
+            if (mode === 'full') {
+                const maxImagesToDownload = Math.min(rawImages.length, 60);
+                for (let i = 0; i < maxImagesToDownload; i++) {
+                    const localPath = await downloadExternalImage(rawImages[i]);
+                    downloadedImages.push(localPath);
+                }
+                bestHotel.images = downloadedImages;
+                bestHotel.thumbnail = downloadedImages.length > 0 ? downloadedImages[0] : null;
             }
-            bestHotel.images = downloadedImages;
-            bestHotel.thumbnail = downloadedImages.length > 0 ? downloadedImages[0] : null;
 
             // Policies / Safety / FAQs
             const policiesList = scrapedHotels.map(h => h.policies).filter(Boolean);
@@ -1809,56 +1892,147 @@ exports.importOtaRooms = async (req, res) => {
                 });
             }
 
-            // 2. Process and create Room categories in DB
+            // 2. Process and create/update Room categories in DB
             const createdRooms = [];
-            for (const roomData of mergedRooms) {
-                // Check if room name already exists
-                const existingRoom = await prisma.room.findFirst({
-                    where: {
-                        hotelId: currentHotel.id,
-                        name: roomData.name
-                    }
+            const updatedRooms = [];
+            
+            if (mode === 'prices') {
+                const existingRooms = await prisma.room.findMany({
+                    where: { hotelId: currentHotel.id }
                 });
 
-                if (existingRoom) {
-                    console.log(`[Sync Engine] Skipping existing room: ${roomData.name}`);
-                    continue;
-                }
+                console.log(`[Price Sync] Existing DB rooms for hotel #${currentHotel.id}:`, existingRooms.map(r => ({ id: r.id, name: r.name, price: r.pricePerNight })));
+                console.log(`[Price Sync] Merged scraped rooms:`, mergedRooms.map(r => ({ name: r.name, price: r.price })));
 
-                // Download first 10 room images locally
-                const downloadedRoomImages = [];
-                if (Array.isArray(roomData.images)) {
-                    const roomImgsToDownload = roomData.images.slice(0, 10);
-                    for (const rimg of roomImgsToDownload) {
-                        const localPath = await downloadExternalImage(rimg);
-                        downloadedRoomImages.push(localPath);
-                    }
-                }
-
-                const slug = await getUniqueImportedRoomSlug(roomData.name);
-                const newRoom = await prisma.room.create({
-                    data: {
-                        name: roomData.name,
-                        description: roomData.description,
-                        sizeM2: roomData.sizeM2,
-                        capacityAdults: roomData.capacityAdults,
-                        capacityChildren: roomData.capacityChildren,
-                        maxOccupancy: roomData.maxOccupancy,
-                        amenities: JSON.stringify(roomData.amenities),
-                        pricePerNight: roomData.price || updatedHotel.pricePerNight,
-                        status: 'active',
-                        totalInventory: 5,
-                        hotelId: currentHotel.id,
-                        slug,
-                        images: JSON.stringify(downloadedRoomImages)
+                // Collect raw OTA price maps from all scraped sources for direct matching
+                const rawPriceMap = {};
+                scrapedHotels.forEach(h => {
+                    if (h.roomInfoByName) {
+                        Object.entries(h.roomInfoByName).forEach(([name, info]) => {
+                            if (info.price !== null && info.price !== undefined) {
+                                rawPriceMap[name] = info.price;
+                            }
+                        });
                     }
                 });
-                createdRooms.push(newRoom);
+                console.log(`[Price Sync] Raw OTA price map:`, rawPriceMap);
+
+                // Track which DB rooms have already been updated to avoid double-updates
+                const updatedRoomIds = new Set();
+
+                // Strategy 1: Match merged scraped rooms to DB rooms
+                for (const roomData of mergedRooms) {
+                    if (roomData.price === null || roomData.price === undefined) continue;
+                    
+                    const matchedRoom = findBestRoomMatch(roomData.name, existingRooms, (r) => r.name);
+                    if (matchedRoom && !updatedRoomIds.has(matchedRoom.id)) {
+                        console.log(`[Price Sync] Strategy 1 Match: "${roomData.name}" -> DB room "${matchedRoom.name}" (id:${matchedRoom.id}), price ${matchedRoom.pricePerNight} -> ${roomData.price}`);
+                        const updated = await prisma.room.update({
+                            where: { id: matchedRoom.id },
+                            data: { pricePerNight: roomData.price }
+                        });
+                        updatedRooms.push(updated);
+                        updatedRoomIds.add(matchedRoom.id);
+                    }
+                }
+
+                // Strategy 2: Directly match raw OTA price map names to DB rooms
+                // This catches cases where parseBookingComHtml's RoomData names differ from b_rooms_available names
+                const rawPriceNames = Object.keys(rawPriceMap);
+                if (rawPriceNames.length > 0) {
+                    for (const existingRoom of existingRooms) {
+                        if (updatedRoomIds.has(existingRoom.id)) continue;
+                        
+                        const matchedKey = findBestRoomMatch(existingRoom.name, rawPriceNames);
+                        if (matchedKey && rawPriceMap[matchedKey]) {
+                            console.log(`[Price Sync] Strategy 2 Match: DB room "${existingRoom.name}" (id:${existingRoom.id}) matched OTA name "${matchedKey}", price ${existingRoom.pricePerNight} -> ${rawPriceMap[matchedKey]}`);
+                            const updated = await prisma.room.update({
+                                where: { id: existingRoom.id },
+                                data: { pricePerNight: rawPriceMap[matchedKey] }
+                            });
+                            updatedRooms.push(updated);
+                            updatedRoomIds.add(existingRoom.id);
+                        }
+                    }
+                }
+
+                // Strategy 3: If still no matches, try assigning prices by room type keywords
+                if (updatedRoomIds.size === 0 && rawPriceNames.length > 0) {
+                    console.log(`[Price Sync] Strategy 3: Fallback keyword-based price assignment...`);
+                    
+                    // Sort raw prices ascending
+                    const sortedPrices = rawPriceNames
+                        .map(name => ({ name, price: rawPriceMap[name] }))
+                        .sort((a, b) => a.price - b.price);
+                    
+                    // Sort existing rooms by current price ascending
+                    const sortedExisting = [...existingRooms].sort((a, b) => a.pricePerNight - b.pricePerNight);
+                    
+                    // Assign prices in order (cheapest OTA price -> cheapest DB room, etc.)
+                    const matchCount = Math.min(sortedPrices.length, sortedExisting.length);
+                    for (let i = 0; i < matchCount; i++) {
+                        console.log(`[Price Sync] Strategy 3 Positional: DB room "${sortedExisting[i].name}" (id:${sortedExisting[i].id}), price ${sortedExisting[i].pricePerNight} -> ${sortedPrices[i].price} (from OTA "${sortedPrices[i].name}")`);
+                        const updated = await prisma.room.update({
+                            where: { id: sortedExisting[i].id },
+                            data: { pricePerNight: sortedPrices[i].price }
+                        });
+                        updatedRooms.push(updated);
+                        updatedRoomIds.add(sortedExisting[i].id);
+                    }
+                }
+
+                console.log(`[Price Sync] Total rooms updated: ${updatedRooms.length}`);
+            } else {
+                for (const roomData of mergedRooms) {
+                    // Check if room name already exists
+                    const existingRoom = await prisma.room.findFirst({
+                        where: {
+                            hotelId: currentHotel.id,
+                            name: roomData.name
+                        }
+                    });
+
+                    if (existingRoom) {
+                        console.log(`[Sync Engine] Skipping existing room: ${roomData.name}`);
+                        continue;
+                    }
+
+                    // Download first 10 room images locally
+                    const downloadedRoomImages = [];
+                    if (Array.isArray(roomData.images)) {
+                        const roomImgsToDownload = roomData.images.slice(0, 10);
+                        for (const rimg of roomImgsToDownload) {
+                            const localPath = await downloadExternalImage(rimg);
+                            downloadedRoomImages.push(localPath);
+                        }
+                    }
+
+                    const slug = await getUniqueImportedRoomSlug(roomData.name);
+                    const newRoom = await prisma.room.create({
+                        data: {
+                            name: roomData.name,
+                            description: roomData.description,
+                            sizeM2: roomData.sizeM2,
+                            capacityAdults: roomData.capacityAdults,
+                            capacityChildren: roomData.capacityChildren,
+                            maxOccupancy: roomData.maxOccupancy,
+                            amenities: JSON.stringify(roomData.amenities),
+                            pricePerNight: roomData.price || updatedHotel.pricePerNight,
+                            status: 'active',
+                            totalInventory: 5,
+                            hotelId: currentHotel.id,
+                            slug,
+                            images: JSON.stringify(downloadedRoomImages)
+                        }
+                    });
+                    createdRooms.push(newRoom);
+                }
             }
 
             results.push({
                 hotel: updatedHotel,
-                createdRooms
+                createdRooms,
+                updatedRooms
             });
         }
 
@@ -1873,9 +2047,14 @@ exports.importOtaRooms = async (req, res) => {
             syncedPropertyNames: targetHotels.map(h => h.name)
         }, req);
 
+        let message = `Successfully synced property structure! Merged and updated details for ${targetHotels.length} ${targetHotels.length === 1 ? 'property' : 'properties'} and created missing room categories.`;
+        if (mode === 'prices') {
+            message = `Successfully synced live prices! Updated room prices for ${targetHotels.length} ${targetHotels.length === 1 ? 'property' : 'properties'}.`;
+        }
+
         res.json({
             success: true,
-            message: `Successfully synced property structure! Merged and updated details for ${targetHotels.length} ${targetHotels.length === 1 ? 'property' : 'properties'} and created missing room categories.`,
+            message,
             data: results.length === 1 ? results[0] : { results }
         });
 

@@ -305,7 +305,12 @@ export default function PartnerRoomsPage() {
                 maxOccupancy: room.maxOccupancy.toString(),
                 bedConfiguration: room.bedConfiguration || "1 King Bed",
                 sizeM2: room.sizeM2?.toString() || "250",
-                amenities: robustParse(room.amenities || room.room_amenities),
+                amenities: Array.from(new Set(
+                    robustParse(room.amenities || room.room_amenities).map((am: any) => {
+                        const matched = commonAmenities.find(ca => ca.toLowerCase().trim() === String(am).toLowerCase().trim());
+                        return matched || am;
+                    })
+                )),
                 images: getImages(room.images),
                 highlights: (robustParse(room.highlights || room.room_highlights || room.highlights, []).length > 0 
                     ? robustParse(room.highlights || room.room_highlights || room.highlights, []) 

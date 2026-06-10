@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { hotelApi, couponApi, bookingApi } from "@/lib/api";
 import { formatPrice, formatDate, safeParse } from "@/lib/utils";
+import confetti from "canvas-confetti";
 
 const guestSchema = z.object({
     firstName: z.string().min(2, "First name is required"),
@@ -114,6 +115,30 @@ function BookingContent() {
         };
     }, [redirectUrl, router]);
 
+    useEffect(() => {
+        if (showConfirmAnimation) {
+            const duration = 4 * 1000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 25, spread: 360, ticks: 50, zIndex: 100000 };
+
+            const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+
+            const interval = setInterval(() => {
+                const timeLeft = animationEnd - Date.now();
+
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+
+                const particleCount = 45 * (timeLeft / duration);
+                confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+                confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+            }, 200);
+
+            return () => clearInterval(interval);
+        }
+    }, [showConfirmAnimation]);
+
     const handleApplyCoupon = () => {
         if (!couponCode.trim()) return;
         const found = coupons.find((c: any) => c.code.toLowerCase() === couponCode.trim().toLowerCase());
@@ -165,13 +190,7 @@ function BookingContent() {
                     const foundRoom = (roomsRes.data || []).find((r: any) => String(r.id) === String(targetRoomId));
                     
                     if (foundRoom) {
-                        const variants = safeParse(foundRoom.variants || foundRoom.room_variants, []).map((v: any) => {
-                            const nameLower = (v.mealPlan || "").toLowerCase();
-                            if (nameLower.includes("room only") || nameLower === "ep" || nameLower === "ep (room only)") {
-                                return { ...v, price: foundRoom.pricePerNight };
-                            }
-                            return v;
-                        });
+                        const variants = safeParse(foundRoom.variants || foundRoom.room_variants, []);
                         const vIndex = parseInt(targetVariantIndex || "0");
                         if (variants && variants[vIndex]) {
                             foundRoom.selectedVariant = variants[vIndex];
@@ -181,48 +200,15 @@ function BookingContent() {
                     }
                 }
 
-                // Auto-apply Best Available Coupon
-                try {
-                    const couponRes = await couponApi.getCoupons(parseInt(hotelId) || 0);
-                    console.log('[Booking] couponRes:', couponRes);
-
-                    // Handle both { data: [...] } and direct array responses
-                    const allCoupons: any[] = Array.isArray(couponRes) 
-                        ? couponRes 
-                        : (Array.isArray(couponRes?.data) ? couponRes.data : []);
-                    
-                    console.log('[Booking] allCoupons:', allCoupons);
-
-                    const today = new Date();
-                    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-
-                    const validCoupons = allCoupons.filter((c: any) => {
-                        const isActive = c.isActive || c.status === 'active';
-                        if (!isActive) return false;
-                        const startStr = c.startDate?.split('T')[0];
-                        const endStr = c.endDate?.split('T')[0];
-                        let valid = true;
-                        if (startStr && endStr) {
-                            valid = todayStr >= startStr && todayStr <= endStr;
-                        }
-                        console.log(`[Booking] Coupon ${c.code}: active=${isActive}, dateValid=${valid} (${startStr} to ${endStr})`);
-                        return valid;
-                    });
-
-                    setCoupons(validCoupons);
-                    console.log('[Booking] validCoupons:', validCoupons);
-
-                    if (validCoupons.length > 0) {
-                        const bestCoupon = validCoupons.reduce((best: any, c: any) =>
-                            (c.discountValue > (best?.discountValue || 0)) ? c : best
-                        , validCoupons[0]);
-                        console.log('[Booking] Auto-applying best coupon:', bestCoupon.code, bestCoupon.discountValue + '%');
-                        setAppliedCoupon(bestCoupon);
-                    } else {
-                        console.warn('[Booking] No valid coupons found for this hotel');
+                // Auto-apply Best Coupon
+                const couponRes = await couponApi.getCoupons(parseInt(hotelId) || 0);
+                if (couponRes && Array.isArray(couponRes.data)) {
+                    const activeCoupons = couponRes.data.filter((c: any) => c.isActive);
+                    setCoupons(activeCoupons);
+                    const welcome = activeCoupons.find((c: any) => c.code.toUpperCase() === "WELCOME");
+                    if (welcome) {
+                        setAppliedCoupon(welcome);
                     }
-                } catch (couponErr) {
-                    console.warn('[Booking] Coupon fetch failed:', couponErr);
                 }
             } catch (err) {
                 console.error("Failed to fetch booking data:", err);
@@ -678,31 +664,31 @@ function BookingContent() {
                             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-8">
                                 <h3 className="text-lg sm:text-xl font-black text-slate-900 mb-6 sm:mb-8 tracking-tight uppercase">Price Summary</h3>
                                 <div className="space-y-4">
-                                     {/* Original base price — only shown when promo is active */}
-                                     {(selectedRoom?.hasPromotion || appliedCoupon) && (
-                                         <div className="flex justify-between items-center text-sm">
-                                             <span className="text-slate-400 font-bold uppercase text-[9px] sm:text-[10px] tracking-wider">
-                                                 Room Price ({nights} nights)
-                                             </span>
-                                             <span className="font-bold text-slate-400 line-through decoration-red-400 decoration-2">
-                                                 {formatPrice(priceDetails.baseSubtotal)}
-                                             </span>
-                                         </div>
-                                     )}
-                                     {/* Promo / regular price line */}
-                                     <div className="flex justify-between items-center text-sm">
-                                         <span className="text-slate-555 font-bold uppercase text-[9px] sm:text-[10px] tracking-wider flex items-center gap-1.5">
-                                             {(selectedRoom?.hasPromotion || appliedCoupon) ? (
-                                                 <span className="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[8px] font-black uppercase tracking-wider rounded">Promo Price</span>
-                                             ) : (
-                                                 <span>Room price</span>
-                                             )}
-                                             <span>({nights} nights)</span>
-                                         </span>
-                                         <span className="font-black text-slate-900">
-                                             {formatPrice((selectedRoom?.hasPromotion || appliedCoupon) ? priceDetails.discountedSubtotal : priceDetails.baseSubtotal)}
-                                         </span>
-                                     </div>
+                                    {/* Original base price — only shown when promo is active */}
+                                    {(selectedRoom?.hasPromotion || appliedCoupon) && (
+                                        <div className="flex justify-between items-center text-sm">
+                                            <span className="text-slate-400 font-bold uppercase text-[9px] sm:text-[10px] tracking-wider">
+                                                Room Price ({nights} nights)
+                                            </span>
+                                            <span className="font-bold text-slate-400 line-through decoration-red-400 decoration-2">
+                                                {formatPrice(priceDetails.baseSubtotal)}
+                                            </span>
+                                        </div>
+                                    )}
+                                    {/* Promo / regular price line */}
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="text-slate-555 font-bold uppercase text-[9px] sm:text-[10px] tracking-wider flex items-center gap-1.5">
+                                            {(selectedRoom?.hasPromotion || appliedCoupon) ? (
+                                                <span className="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[8px] font-black uppercase tracking-wider rounded">Promo Price</span>
+                                            ) : (
+                                                <span>Room price</span>
+                                            )}
+                                            <span>({nights} nights)</span>
+                                        </span>
+                                        <span className="font-black text-slate-900">
+                                            {formatPrice((selectedRoom?.hasPromotion || appliedCoupon) ? priceDetails.discountedSubtotal : priceDetails.baseSubtotal)}
+                                        </span>
+                                    </div>
                                     {priceDetails.discount > 0 && !selectedRoom?.hasPromotion && !appliedCoupon && (
                                         <div className="flex justify-between items-center text-sm text-emerald-600">
                                             <span className="font-bold uppercase text-[9px] sm:text-[10px] tracking-wider">Discount ({appliedCoupon?.code})</span>
@@ -756,10 +742,6 @@ function BookingContent() {
                                     Secured by 256-bit SSL encryption · No hidden charges
                                 </p>
                             </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
             {showConfirmAnimation && (
                 <div className="booking-confirm-overlay">
                     <style>{`
@@ -910,6 +892,10 @@ function BookingContent() {
                     )}
                 </div>
             )}
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }

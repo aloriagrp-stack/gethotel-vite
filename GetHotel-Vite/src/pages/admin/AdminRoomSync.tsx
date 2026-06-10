@@ -42,7 +42,7 @@ export default function AdminRoomSync() {
     const [syncing, setSyncing] = useState(false);
     const [syncLog, setSyncLog] = useState<{ type: "success" | "error" | "info" | null; message: string }>({ type: null, message: "" });
     const [filterZeroRooms, setFilterZeroRooms] = useState(false);
-    const [syncMode, setSyncMode] = useState<"full" | "rooms">("full");
+    const [syncMode, setSyncMode] = useState<"full" | "rooms" | "prices">("full");
     const [syncGroup, setSyncGroup] = useState<boolean>(false);
 
     useEffect(() => {
@@ -87,11 +87,17 @@ export default function AdminRoomSync() {
         }
 
         setSyncing(true);
+        let initialLogMessage = syncGroup 
+            ? `Import starting... Syncing and comparing ${activeUrls.length} platform profiles across all linked group hotels...` 
+            : `Import starting... Syncing and comparing ${activeUrls.length} platform profiles...`;
+            
+        if (syncMode === 'prices') {
+            initialLogMessage = `Price Sync starting... Syncing live prices for rooms from ${activeUrls.length} platform profiles...`;
+        }
+
         setSyncLog({ 
             type: "info", 
-            message: syncGroup 
-                ? `Import starting... Syncing and comparing ${activeUrls.length} platform profiles across all linked group hotels...` 
-                : `Import starting... Syncing and comparing ${activeUrls.length} platform profiles...` 
+            message: initialLogMessage
         });
 
         try {
@@ -370,7 +376,7 @@ export default function AdminRoomSync() {
                                 {/* Sync Mode configuration */}
                                 <div className="space-y-2.5 pt-3 border-t border-slate-100">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Sync Configuration Mode</label>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                         <button
                                             type="button"
                                             onClick={() => setSyncMode("full")}
@@ -384,7 +390,7 @@ export default function AdminRoomSync() {
                                         >
                                             <span className="text-xs font-bold text-slate-900">Full Profile Autofill</span>
                                             <span className="text-[10px] text-slate-500 font-medium">
-                                                Autofills metadata, address, photos, policies, amenities, FAQs & rooms.
+                                                Autofills metadata, address, photos, policies, amenities & rooms.
                                             </span>
                                         </button>
                                         <button
@@ -400,7 +406,23 @@ export default function AdminRoomSync() {
                                         >
                                             <span className="text-xs font-bold text-slate-900">Rooms Only Sync</span>
                                             <span className="text-[10px] text-slate-500 font-medium">
-                                                Only syncs room categories and sizes. Existing profile information is untouched.
+                                                Syncs room categories/sizes. Profile remains untouched.
+                                            </span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setSyncMode("prices")}
+                                            disabled={syncing}
+                                            className={cn(
+                                                "p-3 border text-left rounded-sm transition-all flex flex-col gap-1 cursor-pointer disabled:opacity-60",
+                                                syncMode === "prices" 
+                                                    ? "border-brand-600 bg-brand-50/20 shadow-sm" 
+                                                    : "border-slate-200 bg-white hover:bg-slate-50"
+                                            )}
+                                        >
+                                            <span className="text-xs font-bold text-slate-900">Price Sync Only</span>
+                                            <span className="text-[10px] text-slate-500 font-medium">
+                                                Only updates prices for matching rooms. Profiles & rooms remain untouched.
                                             </span>
                                         </button>
                                     </div>

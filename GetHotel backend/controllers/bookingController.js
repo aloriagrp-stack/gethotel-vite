@@ -31,9 +31,7 @@ exports.createBooking = async (req, res) => {
         const checkInDay = normalizeDateOnly(checkInDate);
         const checkOutDay = normalizeDateOnly(checkOutDate);
 
-        const todayLimit = new Date(today);
-        todayLimit.setDate(todayLimit.getDate() - 1); // timezone offset buffer
-        if (checkInDay < todayLimit) {
+        if (checkInDay < today) {
             return res.status(400).json({ success: false, message: "Check-in date cannot be in the past." });
         }
         if (checkOutDay <= checkInDay) {
@@ -56,6 +54,7 @@ exports.createBooking = async (req, res) => {
 
         if (!hotel) return res.status(404).json({ success: false, message: "Hotel not found" });
 
+        // Fallback: If no specific rooms provided, use the first available room
         let activeRooms = Array.isArray(rooms) ? rooms.map(room => ({
             ...room,
             id: parseInt(room.id),
@@ -177,11 +176,6 @@ exports.createBooking = async (req, res) => {
 
         // 3. ATOMIC TRANSACTION: HOLD INVENTORY + CREATE BOOKING
         const booking = await prisma.$transaction(async (tx) => {
-            // Concurrency Control: Lock the Room rows to prevent concurrent double-booking checks (pessimistic lock)
-            for (const selectedRoom of activeRooms) {
-                await tx.$queryRaw`SELECT id FROM room WHERE id = ${selectedRoom.id} FOR UPDATE`;
-            }
-
             // Re-verify availability within transaction day-by-day
             for (const selectedRoom of activeRooms) {
                 const dbRoom = await tx.room.findUnique({ where: { id: selectedRoom.id } });
@@ -336,19 +330,7 @@ exports.getMyBookings = async (req, res, next) => {
             }
         });
 
-        // Get all hotel IDs reviewed by this user
-        const reviews = await prisma.review.findMany({
-            where: { userId: req.user.id },
-            select: { hotelId: true }
-        });
-        const reviewedHotelIds = new Set(reviews.map(r => r.hotelId));
-
-        const data = bookings.map(b => ({
-            ...b,
-            isReviewed: reviewedHotelIds.has(b.hotelId)
-        }));
-
-        res.status(200).json({ success: true, count: data.length, data });
+        res.status(200).json({ success: true, count: bookings.length, data: bookings });
     } catch (err) {
         res.status(400).json({ success: false, message: err.message });
     }
@@ -554,23 +536,3 @@ exports.cancelBooking = async (req, res, next) => {
         res.status(400).json({ success: false, message: err.message });
     }
 };
-
-// Concurrency & Expired Bookings Protection: Clean up expired held bookings every 5 minutes in background
-setInterval(async () => {
-    try {
-        const expiredCount = await prisma.booking.updateMany({
-            where: {
-                status: 'held',
-                holdExpiresAt: { lt: new Date() }
-            },
-            data: {
-                status: 'expired'
-            }
-        });
-        if (expiredCount.count > 0) {
-            console.log(`[SECURITY] Auto-expired ${expiredCount.count} stale bookings whose hold expired.`);
-        }
-    } catch (err) {
-        console.error('[SECURITY ERROR] Failed to clean up expired bookings:', err);
-    }
-}, 5 * 60 * 1000).unref();

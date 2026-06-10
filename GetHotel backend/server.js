@@ -284,11 +284,19 @@ app.get('/api/maintenance/fix-db', async (req, res) => {
                 env: { ...process.env, PRISMA_GENERATE_SKIP_AUTOINSTALL: 'true' }
             }).toString();
             results.push('✅ Prisma regenerated: ' + (out.includes('Generated') ? 'SUCCESS' : out.slice(0, 100)));
+            
+            // Trigger Passenger App Restart
+            const tmpDir = path.join(rootDir, 'tmp');
+            if (!fs.existsSync(tmpDir)) {
+                fs.mkdirSync(tmpDir, { recursive: true });
+            }
+            fs.writeFileSync(path.join(tmpDir, 'restart.txt'), Date.now().toString());
+            results.push('✅ Passenger application restart triggered via tmp/restart.txt');
         } catch (e) {
             results.push('⚠️ Prisma regen failed: ' + e.message.slice(0, 200));
         }
 
-        res.json({ success: true, results, message: 'Database sync and repair completed successfully!' });
+        res.json({ success: true, results, message: 'Database sync, Prisma regeneration, and restart triggered successfully!' });
     } catch (err) {
         res.status(500).json({ success: false, error: err.message, results });
     }

@@ -307,36 +307,81 @@ export default function AdminHomepageEditor() {
                 
                 <div className="space-y-4">
                     {destinations.map((dest, i) => (
-                        <div key={i} className="flex flex-col md:flex-row gap-4 items-start md:items-center bg-slate-50 p-4 rounded-sm border border-slate-200 relative group">
-                            <div className="w-full md:w-1/5">
-                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">City Name</label>
-                                <input 
-                                    type="text" 
-                                    value={dest.name}
-                                    onChange={(e) => handleUpdateDestination(i, 'name', e.target.value)}
-                                    placeholder="e.g. Goa"
-                                    className="w-full bg-white border border-slate-200 rounded-sm px-3 py-2 text-xs font-bold outline-none"
-                                />
+                        <div key={i} className="flex flex-col md:flex-row gap-4 items-start md:items-center bg-slate-50 p-4 rounded-sm border border-slate-200 relative group hover:border-slate-300 transition-colors">
+                            {/* Destination Thumbnail Preview */}
+                            <div className="w-16 h-16 rounded-lg bg-slate-200 border border-slate-300 overflow-hidden shrink-0 flex items-center justify-center relative shadow-sm">
+                                {dest.image ? (
+                                    <img src={dest.image} alt={dest.name || "Destination"} className="w-full h-full object-cover" />
+                                ) : (
+                                    <ImageIcon className="w-6 h-6 text-slate-400" />
+                                )}
                             </div>
-                            <div className="w-full md:w-2/5">
-                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Image URL</label>
-                                <input 
-                                    type="text" 
-                                    value={dest.image}
-                                    onChange={(e) => handleUpdateDestination(i, 'image', e.target.value)}
-                                    placeholder="https://..."
-                                    className="w-full bg-white border border-slate-200 rounded-sm px-3 py-2 text-xs font-bold outline-none"
-                                />
-                            </div>
-                            <div className="w-full md:w-1/5">
-                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Subtitle</label>
-                                <input 
-                                    type="text" 
-                                    value={dest.properties}
-                                    onChange={(e) => handleUpdateDestination(i, 'properties', e.target.value)}
-                                    placeholder="e.g. 1,240+ Hotels"
-                                    className="w-full bg-white border border-slate-200 rounded-sm px-3 py-2 text-xs font-bold outline-none"
-                                />
+
+                            <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+                                <div>
+                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">City Name</label>
+                                    <input 
+                                        type="text" 
+                                        value={dest.name}
+                                        onChange={(e) => handleUpdateDestination(i, 'name', e.target.value)}
+                                        placeholder="e.g. Goa"
+                                        className="w-full bg-white border border-slate-200 rounded-sm px-3 py-2 text-xs font-bold outline-none focus:border-brand-500 transition-colors"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Subtitle</label>
+                                    <input 
+                                        type="text" 
+                                        value={dest.properties}
+                                        onChange={(e) => handleUpdateDestination(i, 'properties', e.target.value)}
+                                        placeholder="e.g. 1,240+ Hotels"
+                                        className="w-full bg-white border border-slate-200 rounded-sm px-3 py-2 text-xs font-bold outline-none focus:border-brand-500 transition-colors"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Image Source</label>
+                                    <div className="flex gap-2">
+                                        <input 
+                                            type="text" 
+                                            value={dest.image && dest.image.startsWith('data:') ? 'Local Image Selected' : dest.image}
+                                            onChange={(e) => handleUpdateDestination(i, 'image', e.target.value)}
+                                            placeholder="Paste URL or choose file"
+                                            className="flex-1 bg-white border border-slate-200 rounded-sm px-3 py-2 text-xs font-bold outline-none focus:border-brand-500 transition-colors disabled:opacity-75 disabled:bg-slate-50"
+                                            disabled={dest.image && dest.image.startsWith('data:')}
+                                        />
+                                        
+                                        <label className="px-3 py-2 bg-slate-900 text-white hover:bg-black rounded-sm text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-1 cursor-pointer select-none transition-colors shrink-0">
+                                            <Plus className="w-3.5 h-3.5" />
+                                            <span>Upload</span>
+                                            <input 
+                                                type="file" 
+                                                accept="image/*"
+                                                className="hidden"
+                                                onChange={(e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (file) {
+                                                        const reader = new FileReader();
+                                                        reader.onloadend = () => {
+                                                            handleUpdateDestination(i, 'image', reader.result);
+                                                        };
+                                                        reader.readAsDataURL(file);
+                                                    }
+                                                }}
+                                            />
+                                        </label>
+
+                                        {dest.image && (
+                                            <button 
+                                                type="button"
+                                                onClick={() => handleUpdateDestination(i, 'image', '')}
+                                                className="p-2 text-red-500 hover:bg-red-50 border border-transparent hover:border-red-100 rounded-sm transition-all shrink-0 cursor-pointer"
+                                                title="Clear Image"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                             
                             {/* Link Hotels Control */}
@@ -380,46 +425,91 @@ export default function AdminHomepageEditor() {
                 
                 <div className="space-y-4">
                     {collections.map((coll, i) => (
-                        <div key={i} className="flex flex-col md:flex-row gap-4 items-start md:items-center bg-slate-50 p-4 rounded-sm border border-slate-200 relative group animate-in fade-in-50 duration-300">
-                            <div className="w-full md:w-1/5">
-                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Collection Title</label>
-                                <input 
-                                    type="text" 
-                                    value={coll.title}
-                                    onChange={(e) => handleUpdateCollection(i, 'title', e.target.value)}
-                                    placeholder="e.g. Luxury Stays"
-                                    className="w-full bg-white border border-slate-200 rounded-sm px-3 py-2 text-xs font-bold outline-none"
-                                />
+                        <div key={i} className="flex flex-col md:flex-row gap-4 items-start md:items-center bg-slate-50 p-4 rounded-sm border border-slate-200 relative group hover:border-slate-300 transition-colors animate-in fade-in-50 duration-300">
+                            {/* Collection Thumbnail Preview */}
+                            <div className="w-16 h-16 rounded-lg bg-slate-200 border border-slate-300 overflow-hidden shrink-0 flex items-center justify-center relative shadow-sm">
+                                {coll.image ? (
+                                    <img src={coll.image} alt={coll.title || "Collection"} className="w-full h-full object-cover" />
+                                ) : (
+                                    <ImageIcon className="w-6 h-6 text-slate-400" />
+                                )}
                             </div>
-                            <div className="w-full md:w-1/4">
-                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Subtitle</label>
-                                <input 
-                                    type="text" 
-                                    value={coll.subtitle}
-                                    onChange={(e) => handleUpdateCollection(i, 'subtitle', e.target.value)}
-                                    placeholder="e.g. Premium stays"
-                                    className="w-full bg-white border border-slate-200 rounded-sm px-3 py-2 text-xs font-bold outline-none"
-                                />
-                            </div>
-                            <div className="w-full md:w-1/4">
-                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Image URL</label>
-                                <input 
-                                    type="text" 
-                                    value={coll.image}
-                                    onChange={(e) => handleUpdateCollection(i, 'image', e.target.value)}
-                                    placeholder="https://..."
-                                    className="w-full bg-white border border-slate-200 rounded-sm px-3 py-2 text-xs font-bold outline-none"
-                                />
-                            </div>
-                            <div className="w-full md:w-1/6">
-                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Label Tag</label>
-                                <input 
-                                    type="text" 
-                                    value={coll.label}
-                                    onChange={(e) => handleUpdateCollection(i, 'label', e.target.value)}
-                                    placeholder="e.g. Premium"
-                                    className="w-full bg-white border border-slate-200 rounded-sm px-3 py-2 text-xs font-bold outline-none"
-                                />
+
+                            <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 w-full">
+                                <div>
+                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Collection Title</label>
+                                    <input 
+                                        type="text" 
+                                        value={coll.title}
+                                        onChange={(e) => handleUpdateCollection(i, 'title', e.target.value)}
+                                        placeholder="e.g. Luxury Stays"
+                                        className="w-full bg-white border border-slate-200 rounded-sm px-3 py-2 text-xs font-bold outline-none focus:border-brand-500 transition-colors"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Subtitle</label>
+                                    <input 
+                                        type="text" 
+                                        value={coll.subtitle}
+                                        onChange={(e) => handleUpdateCollection(i, 'subtitle', e.target.value)}
+                                        placeholder="e.g. Premium stays"
+                                        className="w-full bg-white border border-slate-200 rounded-sm px-3 py-2 text-xs font-bold outline-none focus:border-brand-500 transition-colors"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Label Tag</label>
+                                    <input 
+                                        type="text" 
+                                        value={coll.label}
+                                        onChange={(e) => handleUpdateCollection(i, 'label', e.target.value)}
+                                        placeholder="e.g. Premium"
+                                        className="w-full bg-white border border-slate-200 rounded-sm px-3 py-2 text-xs font-bold outline-none focus:border-brand-500 transition-colors"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Image Source</label>
+                                    <div className="flex gap-2">
+                                        <input 
+                                            type="text" 
+                                            value={coll.image && coll.image.startsWith('data:') ? 'Local Image Selected' : coll.image}
+                                            onChange={(e) => handleUpdateCollection(i, 'image', e.target.value)}
+                                            placeholder="Paste URL or choose file"
+                                            className="flex-1 bg-white border border-slate-200 rounded-sm px-3 py-2 text-xs font-bold outline-none focus:border-brand-500 transition-colors disabled:opacity-75 disabled:bg-slate-50"
+                                            disabled={coll.image && coll.image.startsWith('data:')}
+                                        />
+                                        
+                                        <label className="px-3 py-2 bg-slate-900 text-white hover:bg-black rounded-sm text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-1 cursor-pointer select-none transition-colors shrink-0">
+                                            <Plus className="w-3.5 h-3.5" />
+                                            <span>Upload</span>
+                                            <input 
+                                                type="file" 
+                                                accept="image/*"
+                                                className="hidden"
+                                                onChange={(e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (file) {
+                                                        const reader = new FileReader();
+                                                        reader.onloadend = () => {
+                                                            handleUpdateCollection(i, 'image', reader.result);
+                                                        };
+                                                        reader.readAsDataURL(file);
+                                                    }
+                                                }}
+                                            />
+                                        </label>
+
+                                        {coll.image && (
+                                            <button 
+                                                type="button"
+                                                onClick={() => handleUpdateCollection(i, 'image', '')}
+                                                className="p-2 text-red-500 hover:bg-red-50 border border-transparent hover:border-red-100 rounded-sm transition-all shrink-0 cursor-pointer"
+                                                title="Clear Image"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                             
                             {/* Link Hotels Control */}

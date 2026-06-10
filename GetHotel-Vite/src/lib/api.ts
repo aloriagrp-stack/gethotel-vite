@@ -170,7 +170,7 @@ export const adminApi = {
     getGlobalReviews: () => apiFetch('/admin/reviews'),
     deleteReview: (id: number) => apiFetch(`/admin/reviews/${id}`, { method: 'DELETE' }),
     getRoomsOverview: () => apiFetch('/admin/rooms-overview'),
-    importOtaRooms: (data: { hotelId: number; otaUrl?: string; otaUrls?: string[]; syncMode?: "full" | "rooms"; syncGroup?: boolean }) => apiFetch('/admin/rooms/import-ota', { method: 'POST', body: JSON.stringify(data) })
+    importOtaRooms: (data: { hotelId: number; otaUrl?: string; otaUrls?: string[]; syncMode?: "full" | "rooms" | "prices"; syncGroup?: boolean }) => apiFetch('/admin/rooms/import-ota', { method: 'POST', body: JSON.stringify(data) })
 };
 
 export const otaApi = {
