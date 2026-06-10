@@ -694,9 +694,32 @@ function BookingContent() {
                                             <span className="font-black">-{formatPrice(priceDetails.discount)}</span>
                                         </div>
                                     )}
-                                    <div className="flex justify-between items-center text-sm">
-                                        <span className="text-slate-555 font-bold uppercase text-[9px] sm:text-[10px] tracking-wider">Taxes (GST {Math.round(priceDetails.gstRate * 100)}%)</span>
-                                        <span className="font-black text-slate-900">+{formatPrice(priceDetails.taxes)}</span>
+                                    <div className="flex justify-between items-start text-sm">
+                                        <span className="text-slate-555 font-bold uppercase text-[9px] sm:text-[10px] tracking-wider">
+                                            <span>Taxes (GST {Math.round(priceDetails.gstRate * 100)}%)</span>
+                                            {(() => {
+                                                if (priceDetails.gstRate === 0) {
+                                                    return (
+                                                        <span className="text-[10px] text-slate-400 font-medium normal-case block mt-0.5 leading-tight">
+                                                            (GST exempt for budget friendly stay room rates up to {formatPrice(1000)}/night)
+                                                        </span>
+                                                    );
+                                                } else if (priceDetails.gstRate === 0.05) {
+                                                    return (
+                                                        <span className="text-[10px] text-slate-400 font-medium normal-case block mt-0.5 leading-tight">
+                                                            (5% GST applies for standard stay room rates between {formatPrice(1001)} and {formatPrice(7500)}/night)
+                                                        </span>
+                                                    );
+                                                } else {
+                                                    return (
+                                                        <span className="text-[10px] text-slate-400 font-medium normal-case block mt-0.5 leading-tight">
+                                                            (18% GST applies for luxury stay room rates above {formatPrice(7500)}/night)
+                                                        </span>
+                                                    );
+                                                }
+                                            })()}
+                                        </span>
+                                        <span className="font-black text-slate-900 mt-0.5">+{formatPrice(priceDetails.taxes)}</span>
                                     </div>
                                     <div className="pt-4 sm:pt-6 border-t border-slate-100 flex justify-between items-center">
                                         <span className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight uppercase">Total</span>
