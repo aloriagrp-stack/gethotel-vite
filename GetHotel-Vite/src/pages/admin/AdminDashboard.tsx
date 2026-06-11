@@ -12,7 +12,7 @@ import {
     CreditCard, TrendingUp, MoreVertical,
     ArrowUpRight, ArrowDownRight, Globe, ChevronRight, Loader2,
     Key, ShieldAlert, Eye, EyeOff, Star, MessageSquare, Trash2,
-    UserCheck, Mail, Phone, Calendar, LogIn, Shield, Copy, ExternalLink, RefreshCw
+    UserCheck, Mail, Phone, Calendar, LogIn, Shield, Copy, ExternalLink, RefreshCw, LayoutGrid
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "@/components/common/Image";
@@ -23,6 +23,7 @@ import AdminHomepageEditor from "./AdminHomepageEditor";
 import AdminControlHub from "./AdminControlHub";
 import AdminRoomSync from "./AdminRoomSync";
 import AdminAddPartner from "./AdminAddPartner";
+import AdminMultiRoomSetup from "./AdminMultiRoomSetup";
 
 // ─── Safe Date Formatter ────────────────────────────────────────────────────
 function formatDateSafe(rawDate: string | Date | null | undefined, opts?: Intl.DateTimeFormatOptions): string {
@@ -136,6 +137,7 @@ export default function SuperAdminDashboard() {
         if (normalizedTab === "users") return !!(loadedSections.partners && loadedSections.customers);
         if (normalizedTab === "hotels") return !!loadedSections.hotels;
         if (normalizedTab === "controlhub") return !!loadedSections.hotels;
+        if (normalizedTab === "multi-room") return !!loadedSections.hotels;
         if (normalizedTab === "addPartner") return !!(loadedSections.hotels && loadedSections.partners);
         if (normalizedTab === "bookings") return !!loadedSections.bookings;
         if (normalizedTab === "reviews") return !!loadedSections.reviews;
@@ -156,7 +158,7 @@ export default function SuperAdminDashboard() {
             const needsStats = (normalizedTab === "overview") && shouldLoad("stats");
             const needsRequests = ["overview", "requests"].includes(normalizedTab) && shouldLoad("requests");
             const needsPartners = ["users", "addPartner"].includes(normalizedTab) && shouldLoad("partners");
-            const needsHotels = ["hotels", "controlhub", "addPartner"].includes(normalizedTab) && shouldLoad("hotels");
+            const needsHotels = ["hotels", "controlhub", "addPartner", "multi-room"].includes(normalizedTab) && shouldLoad("hotels");
             const needsBookings = normalizedTab === "bookings" && shouldLoad("bookings");
             const needsReviews = normalizedTab === "reviews" && shouldLoad("reviews");
 
@@ -391,6 +393,7 @@ export default function SuperAdminDashboard() {
         { id: "finance", label: "Finance", icon: TrendingUp },
         { id: "homepage", label: "Homepage Editor", icon: Settings },
         { id: "otasync", label: "OTA Room Sync", icon: RefreshCw },
+        { id: "multi-room", label: "Multi Room Setup", icon: LayoutGrid },
     ];
 
     const stats = [
@@ -411,7 +414,7 @@ export default function SuperAdminDashboard() {
     }
 
     return (
-        <div className="p-8">
+        <div className="p-8 min-w-0">
             <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 border-b border-slate-200 pb-8">
                 <div>
                     <h2 className="text-2xl font-bold text-slate-900 uppercase tracking-tight">
@@ -447,6 +450,7 @@ export default function SuperAdminDashboard() {
                     {activeTab === "homepage" && <AdminHomepageEditor />}
                     {activeTab === "controlhub" && <AdminControlHub hotels={hotels} loading={loading} />}
                     {activeTab === "otasync" && <AdminRoomSync />}
+                    {activeTab === "multi-room" && <AdminMultiRoomSetup hotels={hotels} />}
                     {activeTab === "addPartner" && <AdminAddPartner hotels={hotels} partners={partners} setPartners={setPartners} />}
 
                     {activeTab === "overview" && (

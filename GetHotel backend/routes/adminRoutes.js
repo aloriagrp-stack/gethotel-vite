@@ -1,5 +1,10 @@
 const express = require('express');
-const { getStats, getHotelDetail, getPartners, resetPartnerPassword, assignHotelsToPartner, getAllHotels, getAllBookings, getAdminHotelDetail, updateHotelMetrics, recalculateHotelMetrics, suspendHotel, deleteHotel, getPayouts, approvePayout, createQuickPartner, createBulkHotels, getUsers, getGlobalReviews, deleteReview, getRoomsOverview, importOtaRooms } = require('../controllers/adminController');
+const { 
+    getStats, getHotelDetail, getPartners, resetPartnerPassword, assignHotelsToPartner, 
+    getAllHotels, getAllBookings, getAdminHotelDetail, updateHotelMetrics, recalculateHotelMetrics, 
+    suspendHotel, deleteHotel, getPayouts, approvePayout, createQuickPartner, createBulkHotels, 
+    getUsers, getGlobalReviews, deleteReview, getRoomsOverview, importOtaRooms
+} = require('../controllers/adminController');
 const { getAnalytics } = require('../controllers/analyticsController');
 const { updateHomepageConfig, toggleTrending, toggleFeatured } = require('../controllers/homepageController');
 const { protect, authorize } = require('../middleware/auth');
@@ -30,7 +35,6 @@ router.put('/partners/:id/assign-hotels', assignHotelsToPartner);
 router.put('/homepage/config', updateHomepageConfig);
 router.get('/rooms-overview', getRoomsOverview);
 router.post('/rooms/import-ota', importOtaRooms);
-
 // Payout administration routes
 router.get('/payouts', getPayouts);
 router.put('/payouts/:id/approve', approvePayout);

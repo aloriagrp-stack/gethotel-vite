@@ -12,7 +12,7 @@ const {
     getSearchSuggestions
 } = require('../controllers/hotelController');
 
-const { getRooms, addRoom, updateRoom, deleteRoom } = require('../controllers/roomController');
+const { getRooms, addRoom, updateRoom, deleteRoom, bulkUpdateRooms } = require('../controllers/roomController');
 const { getStaff, addStaff, removeStaff } = require('../controllers/staffController');
 const { getCoupons, createCoupon, updateCoupon, toggleCouponStatus, deleteCoupon } = require('../controllers/couponController');
 
@@ -62,6 +62,9 @@ router.route('/:hotelId/staff/:staffId')
 router.route('/:hotelId/rooms')
     .get(getRooms)
     .post(protect, authorize('hotel_admin', 'super_admin'), addRoom);
+
+router.route('/:hotelId/rooms/bulk')
+    .post(protect, authorize('hotel_admin', 'super_admin'), bulkUpdateRooms);
 
 router.route('/:hotelId/rooms/:roomId')
     .put(protect, authorize('hotel_admin', 'super_admin'), updateRoom)

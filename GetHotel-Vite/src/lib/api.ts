@@ -97,6 +97,7 @@ export const hotelApi = {
     addRoom: (hotelId: number, roomData: any) => apiFetch(`/hotels/${hotelId}/rooms`, { method: 'POST', body: JSON.stringify(roomData) }),
     updateRoom: (hotelId: number, roomId: number, roomData: any) => apiFetch(`/hotels/${hotelId}/rooms/${roomId}`, { method: 'PUT', body: JSON.stringify(roomData) }),
     deleteRoom: (hotelId: number, roomId: number) => apiFetch(`/hotels/${hotelId}/rooms/${roomId}`, { method: 'DELETE' }),
+    bulkUpdateRooms: (hotelId: number, rooms: any[], deleteIds: number[]) => apiFetch(`/hotels/${hotelId}/rooms/bulk`, { method: 'POST', body: JSON.stringify({ rooms, deleteIds }) }),
     getStaff: (hotelId: number) => apiFetch(`/hotels/${hotelId}/staff`),
     addStaff: (hotelId: number, staffData: any) => apiFetch(`/hotels/${hotelId}/staff`, { method: 'POST', body: JSON.stringify(staffData) }),
     removeStaff: (hotelId: number, staffId: number) => apiFetch(`/hotels/${hotelId}/staff/${staffId}`, { method: 'DELETE' }),
@@ -170,7 +171,7 @@ export const adminApi = {
     getGlobalReviews: () => apiFetch('/admin/reviews'),
     deleteReview: (id: number) => apiFetch(`/admin/reviews/${id}`, { method: 'DELETE' }),
     getRoomsOverview: () => apiFetch('/admin/rooms-overview'),
-    importOtaRooms: (data: { hotelId: number; otaUrl?: string; otaUrls?: string[]; syncMode?: "full" | "rooms" | "prices"; syncGroup?: boolean }) => apiFetch('/admin/rooms/import-ota', { method: 'POST', body: JSON.stringify(data) })
+    importOtaRooms: (data: { hotelId: number; otaUrl?: string; otaUrls?: string[]; syncMode?: "full" | "rooms" | "prices"; syncGroup?: boolean }) => apiFetch('/admin/rooms/import-ota', { method: 'POST', body: JSON.stringify(data) }),
 };
 
 export const otaApi = {

@@ -446,3 +446,115 @@ exports.deleteRoom = async (req, res, next) => {
         res.status(400).json({ success: false, message: err.message });
     }
 };
+
+// @desc    Bulk create/update/delete rooms for a hotel
+// @route   POST /api/hotels/:hotelId/rooms/bulk
+// @access  Private (Hotel Admin, Super Admin)
+exports.bulkUpdateRooms = async (req, res, next) => {
+    try {
+        const hotelId = parseInt(req.params.hotelId);
+        const { rooms, deleteIds } = req.body;
+
+        const hotel = await prisma.hotel.findUnique({
+            where: { id: hotelId }
+        });
+
+        if (!hotel) {
+            return res.status(404).json({ success: false, message: 'Hotel not found' });
+        }
+
+        if (hotel.userId !== req.user.id && req.user.role !== 'super_admin') {
+            return res.status(403).json({ success: false, message: 'Not authorized to manage rooms for this hotel' });
+        }
+
+        // 1. Delete rooms
+        if (Array.isArray(deleteIds) && deleteIds.length > 0) {
+            await prisma.room.deleteMany({
+                where: {
+                    hotelId: hotelId,
+                    id: { in: deleteIds }
+                }
+            });
+        }
+
+        // 2. Create/Update rooms
+        const savedRooms = [];
+        if (Array.isArray(rooms)) {
+            for (const r of rooms) {
+                const roomData = {
+                    name: r.name,
+                    description: r.description || "",
+                    pricePerNight: parseFloat(r.pricePerNight) || 0,
+                    maxOccupancy: parseInt(r.maxOccupancy) || 2,
+                    bedConfiguration: r.bedConfiguration || "1 King Bed",
+                    sizeM2: parseInt(r.sizeM2) || 0,
+                    amenities: normalizeJsonField(r.amenities),
+                    images: normalizeJsonField(r.images),
+                    highlights: normalizeJsonField(r.highlights),
+                    trustPoints: normalizeJsonField(r.trustPoints),
+                    status: r.status || 'active',
+                    totalInventory: parseInt(r.totalInventory) || 1,
+                    isHourlyEnabled: r.isHourlyEnabled === true || r.isHourlyEnabled === 'true',
+                    hourlyRates: typeof r.hourlyRates === 'string' ? r.hourlyRates : JSON.stringify(r.hourlyRates || {}),
+                    
+                    // Advanced room fields mappings
+                    viewType: r.viewType || null,
+                    floorNumber: r.floorNumber !== undefined && r.floorNumber !== null ? parseInt(r.floorNumber) : null,
+                    isCornerRoom: r.isCornerRoom === true || r.isCornerRoom === 'true',
+                    capacityAdults: parseInt(r.capacityAdults) || 2,
+                    capacityChildren: parseInt(r.capacityChildren) || 0,
+                    capacityInfants: parseInt(r.capacityInfants) || 0,
+                    extraMattress: r.extraMattress === true || r.extraMattress === 'true',
+                    extraBedCharge: parseFloat(r.extraBedCharge) || 0,
+                    tags: normalizeJsonField(r.tags),
+                    isFeatured: r.isFeatured === true || r.isFeatured === 'true',
+                    displayPriority: parseInt(r.displayPriority) || 0,
+                    videoUrl: r.videoUrl || null,
+                    media360Url: r.media360Url || null,
+                    minStay: parseInt(r.minStay) || 1,
+                    maxStay: parseInt(r.maxStay) || 90,
+                    isInstantBooking: r.isInstantBooking !== false && r.isInstantBooking !== 'false',
+                    advanceBookingDays: parseInt(r.advanceBookingDays) || 0,
+                    advancePayment: parseInt(r.advancePayment) || 0,
+                    securityDeposit: parseFloat(r.securityDeposit) || 0,
+                    isRefundable: r.isRefundable !== false && r.isRefundable !== 'false',
+                    isTaxIncluded: r.isTaxIncluded === true || r.isTaxIncluded === 'true',
+                    weekendPricing: normalizeJsonField(r.weekendPricing),
+                    seasonalPricing: normalizeJsonField(r.seasonalPricing),
+                    addOns: normalizeJsonField(r.addOns),
+                    petsAllowed: r.petsAllowed === true || r.petsAllowed === 'true',
+                    smokingAllowed: r.smokingAllowed === true || r.smokingAllowed === 'true',
+                    alcoholAllowed: r.alcoholAllowed !== false && r.alcoholAllowed !== 'false',
+                    partyAllowed: r.partyAllowed === true || r.partyAllowed === 'true',
+                    seoTitle: r.seoTitle || null,
+                    seoDescription: r.seoDescription || null,
+                    slug: r.slug || null,
+                    variants: normalizeJsonField(r.variants)
+                };
+
+                if (r.id && r.id > 0) {
+                    // Update
+                    const updated = await prisma.room.update({
+                        where: { id: parseInt(r.id) },
+                        data: roomData
+                    });
+                    savedRooms.push(updated);
+                } else {
+                    // Create
+                    const created = await prisma.room.create({
+                        data: {
+                            ...roomData,
+                            hotelId: hotelId
+                        }
+                    });
+                    savedRooms.push(created);
+                }
+            }
+        }
+
+        res.status(200).json({ success: true, data: savedRooms });
+    } catch (err) {
+        res.status(400).json({ success: false, message: err.message });
+    }
+};
+

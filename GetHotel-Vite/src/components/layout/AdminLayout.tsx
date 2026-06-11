@@ -5,7 +5,7 @@ import {
     LayoutDashboard, Hotel, Users,
     BarChart3, Settings, LogOut,
     Bell, Search, Plus, Clock,
-    CreditCard, Loader2, Calendar, AlertCircle, LayoutTemplate, SlidersHorizontal, Star, RefreshCw
+    CreditCard, Loader2, Calendar, AlertCircle, LayoutTemplate, SlidersHorizontal, Star, RefreshCw, LayoutGrid, Globe
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -30,6 +30,7 @@ export default function AdminLayout() {
         { id: "controlhub", label: "Manager", icon: SlidersHorizontal, href: "/admin/super/controlhub" },
         { id: "hotels", label: "Hotels", icon: Hotel, href: "/admin/super?tab=hotels" },
         { id: "otasync", label: "OTA Room Sync", icon: RefreshCw, href: "/admin/super/otasync" },
+        { id: "multi-room", label: "Multi Room Setup", icon: LayoutGrid, href: "/admin/super/multi-room" },
         { id: "bookings", label: "All Bookings", icon: Calendar, href: "/admin/super/bookings" },
         { id: "reviews", label: "Global Reviews", icon: Star, href: "/admin/super/reviews" },
         { id: "users", label: "Users", icon: Users, href: "/admin/super?tab=users" },
@@ -111,7 +112,7 @@ export default function AdminLayout() {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 ml-64 min-h-screen">
+            <main className="flex-1 ml-64 min-h-screen min-w-0 overflow-x-hidden">
                 <Outlet />
             </main>
 
