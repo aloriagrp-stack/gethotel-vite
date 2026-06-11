@@ -61,13 +61,30 @@ jobs:
             fi
           done
 
-      - name: Deploy Frontend to cPanel via lftp
+      - name: Zip Frontend Build
+        run: |
+          cd GetHotel-Vite/dist
+          zip -r ../../frontend.zip .
+          cd ../..
+
+      - name: Deploy Frontend Zip to cPanel
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
           FTP_USER: ${{ secrets.FTP_USERNAME }}
           FTP_PASS: ${{ secrets.FTP_PASSWORD }}
         run: |
-          lftp -u "$FTP_USER","$FTP_PASS" "$FTP_SERVER" -e "set ftp:ssl-allow no; set ftp:passive-mode yes; set net:timeout 60; set net:max-retries 2; mirror --reverse --parallel=10 --verbose=3 ./GetHotel-Vite/dist/ ./public_html/; bye"
+          lftp -u "$FTP_USER","$FTP_PASS" "$FTP_SERVER" -e "set ftp:ssl-allow no; set ftp:passive-mode yes; set net:timeout 60; set net:max-retries 2; put frontend.zip -o ./public_html/frontend.zip; put unzip.php -o ./public_html/unzip.php; bye"
+
+      - name: Trigger Remote Extraction
+        run: |
+          echo "Triggering remote extraction..."
+          RESPONSE=$(curl -sS --max-time 30 https://gethotelstays.com/unzip.php)
+          echo "Server Response: $RESPONSE"
+          if [ "$RESPONSE" != "DEPLOYS_SUCCESS" ]; then
+              echo "Error: Remote extraction failed or timed out. Checking if files exist."
+              exit 1
+          fi
+          echo "Remote extraction completed successfully!"
 
       - name: Finalize
         run: echo "Deployment completed successfully!"
