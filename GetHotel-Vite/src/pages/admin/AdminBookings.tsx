@@ -145,6 +145,9 @@ export default function SuperAdminBookingsPage() {
                                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">
                                                 {new Date(b.checkOut).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
                                             </p>
+                                            <p className="text-[9px] text-brand-600 font-black uppercase tracking-tighter mt-1">
+                                                Arrival: {b.arrivalTime || "Not specified"}
+                                            </p>
                                         </div>
                                     </td>
                                     <td className="px-8 py-6">

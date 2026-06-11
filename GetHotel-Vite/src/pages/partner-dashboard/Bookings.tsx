@@ -132,7 +132,7 @@ export default function PartnerBookingsPage() {
                                         <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Booking Info</th>
                                         <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Guest</th>
                                         <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Dates</th>
-                                        <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Payment Split (12/88)</th>
+                                        <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Payment Split</th>
                                         <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Status Control</th>
                                         <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">View</th>
                                     </tr>
@@ -181,8 +181,16 @@ export default function PartnerBookingsPage() {
                                                 <div className="space-y-1">
                                                     <p className="text-sm font-black text-slate-950">₹{booking.totalPrice.toLocaleString()}</p>
                                                     <div className="flex flex-col gap-0.5">
-                                                        <span className="text-[8px] font-black text-emerald-600 uppercase tracking-tighter">₹{Math.round(booking.totalPrice * 0.12).toLocaleString()} Paid Online</span>
-                                                        <span className="text-[8px] font-black text-amber-600 uppercase tracking-tighter">₹{Math.round(booking.totalPrice * 0.88).toLocaleString()} Pay at Hotel</span>
+                                                        {booking.amountPaid === 0 ? (
+                                                            <span className="text-[8px] font-black text-amber-600 uppercase tracking-tighter">Full Pay at Hotel</span>
+                                                        ) : booking.amountPaid >= booking.totalPrice ? (
+                                                            <span className="text-[8px] font-black text-emerald-600 uppercase tracking-tighter">Full Paid Online</span>
+                                                        ) : (
+                                                            <>
+                                                                <span className="text-[8px] font-black text-emerald-600 uppercase tracking-tighter">₹{booking.amountPaid.toLocaleString()} Paid Online</span>
+                                                                <span className="text-[8px] font-black text-amber-600 uppercase tracking-tighter">₹{(booking.totalPrice - booking.amountPaid).toLocaleString()} Pay at Hotel</span>
+                                                            </>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </td>
@@ -191,48 +199,66 @@ export default function PartnerBookingsPage() {
                                                     {updatingId === booking.id ? (
                                                         <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
                                                     ) : (
-                                                        <>
-                                                            {(booking.status?.toLowerCase() === 'pending' || booking.status?.toLowerCase() === 'held') && (
-                                                                <button 
-                                                                    onClick={() => handleUpdateStatus(booking.id, 'confirmed')}
-                                                                    className="p-2 bg-emerald-50 text-emerald-600 rounded-none border border-emerald-100 hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
-                                                                    title="Confirm Booking"
-                                                                >
-                                                                    <Check className="w-4 h-4" />
-                                                                </button>
-                                                            )}
-                                                            {booking.status?.toLowerCase() === 'confirmed' && (
-                                                                <button 
-                                                                    onClick={() => handleUpdateStatus(booking.id, 'checked-in')}
-                                                                    className="p-2 bg-blue-50 text-blue-600 rounded-none border border-blue-100 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
-                                                                    title="Mark Check-In"
-                                                                >
-                                                                    <LogIn className="w-4 h-4" />
-                                                                </button>
-                                                            )}
-                                                            {booking.status?.toLowerCase() === 'checked-in' && (
-                                                                <button 
-                                                                    onClick={() => handleUpdateStatus(booking.id, 'checked-out')}
-                                                                    className="p-2 bg-purple-50 text-purple-600 rounded-none border border-purple-100 hover:bg-purple-600 hover:text-white transition-all shadow-sm"
-                                                                    title="Mark Check-Out"
-                                                                >
-                                                                    <LogOut className="w-4 h-4" />
-                                                                </button>
-                                                            )}
-                                                            {['pending', 'confirmed', 'held'].includes(booking.status?.toLowerCase()) && (
-                                                                <button 
-                                                                    onClick={() => {
-                                                                        if(confirm("Bhai, kya aap sach mein ye booking cancel karna chahte ho?")) {
-                                                                            handleUpdateStatus(booking.id, 'cancelled');
-                                                                        }
-                                                                    }}
-                                                                    className="p-2 bg-red-50 text-red-400 rounded-none border border-red-50/50 hover:bg-red-500 hover:text-white transition-all"
-                                                                    title="Cancel"
-                                                                >
-                                                                    <Ban className="w-4 h-4" />
-                                                                </button>
-                                                            )}
-                                                        </>
+                                                        (() => {
+                                                            const checkInDate = new Date(booking.checkIn);
+                                                            const checkOutDate = new Date(booking.checkOut);
+                                                            const today = new Date();
+                                                            today.setHours(0, 0, 0, 0);
+                                                            checkInDate.setHours(0, 0, 0, 0);
+                                                            checkOutDate.setHours(0, 0, 0, 0);
+                                                            
+                                                            const isBeforeCheckIn = today.getTime() < checkInDate.getTime();
+                                                            const isAfterCheckOut = today.getTime() > checkOutDate.getTime();
+                                                            const statusLower = booking.status?.toLowerCase();
+
+                                                            // 1. Cancelled Tag
+                                                            if (statusLower === 'cancelled') {
+                                                                return (
+                                                                    <span className="px-2.5 py-1 bg-red-50 text-red-600 border border-red-100 rounded-none text-[8px] font-black uppercase tracking-widest">
+                                                                        Cancelled
+                                                                    </span>
+                                                                );
+                                                            }
+
+                                                            // 2. Completed Tag
+                                                            if (statusLower === 'checked-out' || isAfterCheckOut) {
+                                                                return (
+                                                                    <span className="px-2.5 py-1 bg-purple-50 text-purple-600 border border-purple-100 rounded-none text-[8px] font-black uppercase tracking-widest">
+                                                                        Completed
+                                                                    </span>
+                                                                );
+                                                            }
+
+                                                            // 3. Active status check
+                                                            const isActive = ['pending', 'confirmed', 'held', 'checked-in'].includes(statusLower);
+                                                            if (isActive) {
+                                                                if (isBeforeCheckIn) {
+                                                                    return (
+                                                                        <button 
+                                                                            onClick={() => {
+                                                                                if (confirm("Bhai, kya aap sach mein ye booking cancel/reject karna chahte ho?")) {
+                                                                                    handleUpdateStatus(booking.id, 'cancelled');
+                                                                                }
+                                                                            }}
+                                                                            className="p-2 bg-red-50 text-red-400 rounded-none border border-red-50/50 hover:bg-red-500 hover:text-white transition-all"
+                                                                            title="Cancel"
+                                                                        >
+                                                                            <Ban className="w-4 h-4" />
+                                                                        </button>
+                                                                    );
+                                                                } else {
+                                                                    return (
+                                                                        <div 
+                                                                            className="p-2 bg-emerald-50 text-emerald-600 rounded-none border border-emerald-100 flex items-center justify-center"
+                                                                            title="Confirmed & Active"
+                                                                        >
+                                                                            <Check className="w-4 h-4" />
+                                                                        </div>
+                                                                    );
+                                                                }
+                                                            }
+                                                            return <span className="text-[10px] font-bold text-slate-400">-</span>;
+                                                        })()
                                                     )}
                                                 </div>
                                             </td>
@@ -345,6 +371,13 @@ export default function PartnerBookingsPage() {
                                                 <p className="text-sm font-black text-slate-900">{new Date(selectedBooking.checkOut).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
                                             </div>
                                         </div>
+                                        <div className="flex items-center gap-3">
+                                            <Clock className="w-5 h-5 text-indigo-600" />
+                                            <div>
+                                                <p className="text-[8px] font-black text-slate-400 uppercase">Estimated Arrival</p>
+                                                <p className="text-sm font-black text-slate-900">{selectedBooking.arrivalTime || "Not specified"}</p>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div className="flex flex-col justify-center items-center bg-slate-50 rounded-none p-6 border border-slate-100">
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Total Duration</p>
@@ -370,25 +403,47 @@ export default function PartnerBookingsPage() {
                                         </div>
                                         <div className="h-[1px] bg-white/10" />
                                         <div className="space-y-4">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-1.5 h-1.5 rounded-none bg-emerald-400" />
-                                                    <span className="text-[10px] font-black text-slate-400 uppercase">Paid Online (12%)</span>
+                                            {(selectedBooking.amountPaid ?? 0) === 0 ? (
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-1.5 h-1.5 rounded-none bg-amber-400" />
+                                                        <span className="text-[10px] font-black text-slate-400 uppercase">Payment Option</span>
+                                                    </div>
+                                                    <span className="text-sm font-black text-amber-400">Full Pay at Hotel</span>
                                                 </div>
-                                                <span className="text-sm font-black text-emerald-400">₹{Math.round(selectedBooking.totalPrice * 0.12).toLocaleString()}</span>
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-1.5 h-1.5 rounded-none bg-amber-400" />
-                                                    <span className="text-[10px] font-black text-slate-400 uppercase">At Hotel (88%)</span>
+                                            ) : (selectedBooking.amountPaid ?? 0) >= selectedBooking.totalPrice ? (
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-1.5 h-1.5 rounded-none bg-emerald-400" />
+                                                        <span className="text-[10px] font-black text-slate-400 uppercase">Payment Option</span>
+                                                    </div>
+                                                    <span className="text-sm font-black text-emerald-400">Full Paid Online</span>
                                                 </div>
-                                                <span className="text-sm font-black text-amber-400">₹{Math.round(selectedBooking.totalPrice * 0.88).toLocaleString()}</span>
-                                            </div>
+                                            ) : (
+                                                <>
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="w-1.5 h-1.5 rounded-none bg-emerald-400" />
+                                                            <span className="text-[10px] font-black text-slate-400 uppercase">Paid Online</span>
+                                                        </div>
+                                                        <span className="text-sm font-black text-emerald-400">₹{selectedBooking.amountPaid.toLocaleString()}</span>
+                                                    </div>
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="w-1.5 h-1.5 rounded-none bg-amber-400" />
+                                                            <span className="text-[10px] font-black text-slate-400 uppercase">At Hotel</span>
+                                                        </div>
+                                                        <span className="text-sm font-black text-amber-400">₹{(selectedBooking.totalPrice - selectedBooking.amountPaid).toLocaleString()}</span>
+                                                    </div>
+                                                </>
+                                            )}
                                         </div>
                                         <div className="pt-4">
                                             <div className="px-4 py-3 bg-white/5 rounded-none border border-white/10 text-center">
                                                 <p className="text-[9px] font-black text-blue-400 uppercase tracking-widest">Platform Status</p>
-                                                <p className="text-xs font-black uppercase mt-1 italic">{selectedBooking.paymentStatus || 'Partially Paid'}</p>
+                                                <p className="text-xs font-black uppercase mt-1 italic">
+                                                    {selectedBooking.amountPaid === 0 ? 'Pay at Hotel' : selectedBooking.amountPaid >= selectedBooking.totalPrice ? 'Fully Paid' : 'Partially Paid'}
+                                                </p>
                                             </div>
                                         </div>
                                     </div>

@@ -141,6 +141,7 @@ export default function Navbar() {
         logout();
         setShowLogoutConfirm(false);
         setDropdownOpen(false);
+        navigate("/");
     };
 
     return (

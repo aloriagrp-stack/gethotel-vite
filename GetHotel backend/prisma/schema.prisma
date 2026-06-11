@@ -32,6 +32,7 @@ model booking {
   isBusiness         Boolean       @default(false)
   roomDetails        String?       @db.Text
   specialRequests    String?       @db.Text
+  arrivalTime        String?       @db.VarChar(50)
   holdExpiresAt      DateTime?
   razorpaySignature  String?       @db.Text
   cancellationReason String?       @db.Text

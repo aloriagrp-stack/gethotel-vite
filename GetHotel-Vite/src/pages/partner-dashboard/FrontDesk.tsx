@@ -205,6 +205,9 @@ export default function PartnerFrontDeskPage() {
                                             <div className="flex items-center gap-2 text-slate-500 font-bold text-[11px]">
                                                 <Calendar className="w-3.5 h-3.5 text-slate-300" /> {new Date(booking.checkIn).toLocaleDateString()} - {new Date(booking.checkOut).toLocaleDateString()}
                                             </div>
+                                            <div className="flex items-center gap-2 text-slate-900 font-black text-[11px]">
+                                                <Clock className="w-3.5 h-3.5 text-emerald-500" /> Arrival: {booking.arrivalTime || "Not specified"}
+                                            </div>
                                         </div>
 
                                         {booking.specialRequests && (

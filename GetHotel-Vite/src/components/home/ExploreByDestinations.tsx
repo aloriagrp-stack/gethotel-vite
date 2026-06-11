@@ -12,7 +12,7 @@ const DEFAULT_DESTINATIONS = [
     { name: "Jaipur", image: "https://images.unsplash.com/photo-1477587458883-47145ed94245?q=80&w=800&auto=format&fit=crop", properties: "540+ Hotels" }
 ];
 
-export default function ExploreByDestinations({ destinations }: { destinations?: any[] }) {
+export default function ExploreByDestinations({ destinations, loading = false }: { destinations?: any[], loading?: boolean }) {
     const displayDestinations = destinations && destinations.length > 0 ? destinations : DEFAULT_DESTINATIONS;
 
     const getDestinationUrl = (name: string, index: number) => {
@@ -36,23 +36,29 @@ export default function ExploreByDestinations({ destinations }: { destinations?:
 
                 <div className="flex gap-4 pb-12 overflow-x-auto snap-x snap-mandatory no-scrollbar -mx-3 md:-mx-8 px-3 md:px-8">
                     <div className="w-2 shrink-0 snap-start" />
-                    {displayDestinations.map((dest, i) => (
-                        <div key={dest.name} className="w-[240px] md:w-[300px] aspect-[4/5] shrink-0 snap-start">
-                            <Link to={getDestinationUrl(dest.name, i)} className="group block relative w-full h-full rounded-[2rem] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500">
-                                <Image
-                                    src={dest.image}
-                                    alt={dest.name}
-                                    fill
-                                    className="transition-transform duration-700 group-hover:scale-110"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                                <div className="absolute bottom-6 left-6 text-white">
-                                    <h3 className="text-2xl font-bold">{dest.name}</h3>
-                                    <p className="text-xs font-bold opacity-70 mt-1">{dest.properties}</p>
-                                </div>
-                            </Link>
-                        </div>
-                    ))}
+                    {loading ? (
+                        Array.from({ length: 4 }).map((_, idx) => (
+                            <div key={`dest-skeleton-${idx}`} className="w-[240px] md:w-[300px] aspect-[4/5] shrink-0 snap-start bg-slate-200 animate-pulse rounded-[2rem] border border-slate-100/50 shadow-sm" />
+                        ))
+                    ) : (
+                        displayDestinations.map((dest, i) => (
+                            <div key={dest.name} className="w-[240px] md:w-[300px] aspect-[4/5] shrink-0 snap-start">
+                                <Link to={getDestinationUrl(dest.name, i)} className="group block relative w-full h-full rounded-[2rem] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500">
+                                    <Image
+                                        src={dest.image}
+                                        alt={dest.name}
+                                        fill
+                                        className="transition-transform duration-700 group-hover:scale-110"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                                    <div className="absolute bottom-6 left-6 text-white">
+                                        <h3 className="text-2xl font-bold">{dest.name}</h3>
+                                        <p className="text-xs font-bold opacity-70 mt-1">{dest.properties}</p>
+                                    </div>
+                                </Link>
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
         </section>

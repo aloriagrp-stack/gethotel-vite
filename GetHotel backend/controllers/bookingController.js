@@ -16,7 +16,7 @@ const normalizeDateOnly = (date) => {
 // @route   POST /api/bookings
 // @access  Private
 exports.createBooking = async (req, res) => {
-    const { hotelId, rooms, checkIn, checkOut, totalGuests, guestInfo, couponCode } = req.body;
+    const { hotelId, rooms, checkIn, checkOut, totalGuests, guestInfo, couponCode, arrivalTime } = req.body;
     const userId = req.user.id;
 
     try {
@@ -261,6 +261,7 @@ exports.createBooking = async (req, res) => {
                     guestEmail: guestInfo.email,
                     guestPhone: guestInfo.phone,
                     specialRequests: guestInfo.specialRequests,
+                    arrivalTime: arrivalTime || null,
                     isBusiness: guestInfo.isBusinessTrip || false,
                     gstNumber: guestInfo.gstNumber || "",
                     companyName: guestInfo.companyName || "",

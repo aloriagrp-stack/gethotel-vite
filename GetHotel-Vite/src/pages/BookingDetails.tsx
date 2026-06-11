@@ -186,6 +186,12 @@ export default function BookingDetailsPage() {
                                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Guests</p>
                                     <p className="text-sm font-bold text-slate-900">{booking?.totalGuests || 2} Guest(s)</p>
                                 </div>
+                                <div className="space-y-1 sm:col-span-2 border-t border-slate-200/60 pt-3 mt-1">
+                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Estimated Arrival Time</p>
+                                    <p className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                                        <Clock className="w-4 h-4 text-brand-600" /> {booking?.arrivalTime || "Not specified"}
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>

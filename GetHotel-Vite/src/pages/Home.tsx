@@ -35,6 +35,7 @@ export default function HomePage() {
   const [homeConfig, setHomeConfig] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [trendingLoading, setTrendingLoading] = useState(false);
+  const [configLoading, setConfigLoading] = useState(true);
 
   // Fetch config once on mount
   useEffect(() => {
@@ -44,6 +45,8 @@ export default function HomePage() {
         if (configRes.success) setHomeConfig(configRes.data);
       } catch (err) {
         console.error("Failed to fetch homepage config:", err);
+      } finally {
+        setConfigLoading(false);
       }
     };
     fetchConfig();
@@ -97,10 +100,10 @@ export default function HomePage() {
         loading={loading || trendingLoading}
       />
       <Suspense fallback={<ExplorePlaceholder />}>
-        <ExploreByDestinations destinations={homeConfig?.destinations} />
+        <ExploreByDestinations destinations={homeConfig?.destinations} loading={configLoading} />
       </Suspense>
       <Suspense fallback={<CollectionsPlaceholder />}>
-        <FeaturedCollections collections={homeConfig?.collections} />
+        <FeaturedCollections collections={homeConfig?.collections} loading={configLoading} />
       </Suspense>
       <Suspense fallback={<WhyPlaceholder />}>
         <WhyGetHotel />

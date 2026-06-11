@@ -1045,6 +1045,7 @@ export default function SuperAdminDashboard() {
                                                     <p className="text-[9px] text-slate-400 font-bold uppercase">
                                                         Duration: {Math.round((new Date(booking.checkOut).getTime() - new Date(booking.checkIn).getTime()) / (1000 * 60 * 60))} Hours
                                                     </p>
+                                                    <p className="text-[9px] text-brand-600 font-bold uppercase mt-1">Arrival: {booking.arrivalTime || "Not specified"}</p>
                                                 </div>
                                             ) : (
                                                 <div>
@@ -1055,6 +1056,7 @@ export default function SuperAdminDashboard() {
                                                     <p className="text-[9px] text-slate-400 font-bold uppercase">
                                                         Duration: {Math.max(1, Math.round((new Date(booking.checkOut).getTime() - new Date(booking.checkIn).getTime()) / (1000 * 60 * 60 * 24)))} Night(s)
                                                     </p>
+                                                    <p className="text-[9px] text-brand-600 font-bold uppercase mt-1">Arrival: {booking.arrivalTime || "Not specified"}</p>
                                                 </div>
                                             );
 

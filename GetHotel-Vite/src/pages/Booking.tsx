@@ -1,4 +1,4 @@
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -35,6 +35,7 @@ import {
 import { hotelApi, couponApi, bookingApi } from "@/lib/api";
 import { formatPrice, formatDate, safeParse } from "@/lib/utils";
 import confetti from "canvas-confetti";
+import { useAuth } from "@/context/AuthContext";
 
 const guestSchema = z.object({
     firstName: z.string().min(2, "First name is required"),
@@ -55,6 +56,35 @@ const COUNTRY_LIST = [
     "Germany", "France", "UAE", "Singapore", "Japan",
 ];
 
+const ARRIVAL_TIME_OPTIONS = [
+    { label: "Please select", value: "" },
+    { label: "I don't know", value: "I don't know" },
+    { label: "12:00 AM - 1:00 AM", value: "12:00 AM - 1:00 AM" },
+    { label: "1:00 AM - 2:00 AM", value: "1:00 AM - 2:00 AM" },
+    { label: "2:00 AM - 3:00 AM", value: "2:00 AM - 3:00 AM" },
+    { label: "3:00 AM - 4:00 AM", value: "3:00 AM - 4:00 AM" },
+    { label: "4:00 AM - 5:00 AM", value: "4:00 AM - 5:00 AM" },
+    { label: "5:00 AM - 6:00 AM", value: "5:00 AM - 6:00 AM" },
+    { label: "6:00 AM - 7:00 AM", value: "6:00 AM - 7:00 AM" },
+    { label: "7:00 AM - 8:00 AM", value: "7:00 AM - 8:00 AM" },
+    { label: "8:00 AM - 9:00 AM", value: "8:00 AM - 9:00 AM" },
+    { label: "9:00 AM - 10:00 AM", value: "9:00 AM - 10:00 AM" },
+    { label: "10:00 AM - 11:00 AM", value: "10:00 AM - 11:00 AM" },
+    { label: "11:00 AM - 12:00 PM", value: "11:00 AM - 12:00 PM" },
+    { label: "12:00 PM - 1:00 PM", value: "12:00 PM - 1:00 PM" },
+    { label: "1:00 PM - 2:00 PM", value: "1:00 PM - 2:00 PM" },
+    { label: "2:00 PM - 3:00 PM", value: "2:00 PM - 3:00 PM" },
+    { label: "3:00 PM - 4:00 PM", value: "3:00 PM - 4:00 PM" },
+    { label: "4:00 PM - 5:00 PM", value: "4:00 PM - 5:00 PM" },
+    { label: "5:00 PM - 6:00 PM", value: "5:00 PM - 6:00 PM" },
+    { label: "6:00 PM - 7:00 PM", value: "6:00 PM - 7:00 PM" },
+    { label: "7:00 PM - 8:00 PM", value: "7:00 PM - 8:00 PM" },
+    { label: "8:00 PM - 9:00 PM", value: "8:00 PM - 9:00 PM" },
+    { label: "9:00 PM - 10:00 PM", value: "9:00 PM - 10:00 PM" },
+    { label: "10:00 PM - 11:00 PM", value: "10:00 PM - 11:00 PM" },
+    { label: "11:00 PM - 12:00 AM", value: "11:00 PM - 12:00 AM" },
+];
+
 const getImages = (data: any) => {
     if (!data) return [];
     if (Array.isArray(data)) return data;
@@ -73,6 +103,13 @@ const getImages = (data: any) => {
 function BookingContent() {
     const [searchParams] = useSearchParams();
     const router = useNavigate();
+    const { user, loading: authLoading } = useAuth();
+
+    useEffect(() => {
+        if (!authLoading && !user) {
+            router("/");
+        }
+    }, [user, authLoading, router]);
 
     // Read all params
     const hotelId = searchParams.get("hotelId") || searchParams.get("id") || "";
@@ -98,6 +135,19 @@ function BookingContent() {
     const [showConfirmAnimation, setShowConfirmAnimation] = useState(false);
     const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
     const [showSkipButton, setShowSkipButton] = useState(false);
+    const [arrivalTime, setArrivalTime] = useState("");
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     useEffect(() => {
         if (!redirectUrl) return;
@@ -328,6 +378,7 @@ function BookingContent() {
                 paymentStatus: bookingPaymentStatus,
                 couponCode: appliedCoupon ? appliedCoupon.code : undefined,
                 amountPaid,
+                arrivalTime: arrivalTime || undefined,
                 guestInfo: {
                     firstName: data.firstName,
                     lastName: data.lastName,
@@ -488,6 +539,59 @@ function BookingContent() {
                                         <label className="text-[10px] sm:text-xs font-black text-slate-900 uppercase">Special Requests (optional)</label>
                                         <textarea {...register("specialRequests")} rows={3} placeholder="Any special requests for the hotel..." className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:bg-white focus:border-blue-600 outline-none transition-all text-xs sm:text-sm font-medium resize-none" />
                                     </div>
+                                </div>
+                            </div>
+ 
+                            {/* ===== YOUR ARRIVAL TIME ===== */}
+                            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-8 space-y-4">
+                                <h3 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight uppercase">Your arrival time</h3>
+                                <div className="space-y-3">
+                                    <div className="flex items-start gap-2.5 text-[11px] font-bold text-slate-600">
+                                        <Hotel className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                                        <span>24-hour front desk – help whenever you need it!</span>
+                                    </div>
+                                </div>
+                                
+                                <div className="pt-2 space-y-1.5 relative" ref={dropdownRef}>
+                                    <label className="text-[10px] sm:text-xs font-black text-slate-900 uppercase">Add your estimated arrival time (optional)</label>
+                                    
+                                    <div className="relative w-full max-w-md">
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                            className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs sm:text-sm font-bold text-slate-900 hover:bg-white hover:border-slate-350 focus:border-blue-600 outline-none transition-all cursor-pointer shadow-sm"
+                                        >
+                                            <span className="flex items-center gap-2">
+                                                <Clock className="w-4 h-4 text-slate-400" />
+                                                {ARRIVAL_TIME_OPTIONS.find(o => o.value === arrivalTime)?.label || "Please select"}
+                                            </span>
+                                            <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${isDropdownOpen ? 'rotate-90' : ''}`} />
+                                        </button>
+
+                                        {isDropdownOpen && (
+                                            <div className="absolute left-0 right-0 z-50 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl max-h-60 overflow-y-auto py-2 divide-y divide-slate-50 focus:outline-none">
+                                                {ARRIVAL_TIME_OPTIONS.map((opt) => (
+                                                    <button
+                                                        key={opt.value}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setArrivalTime(opt.value);
+                                                            setIsDropdownOpen(false);
+                                                        }}
+                                                        className={`w-full px-5 py-3.5 text-left text-xs sm:text-sm font-bold flex items-center justify-between transition-colors ${
+                                                            arrivalTime === opt.value 
+                                                                ? "bg-blue-50 text-blue-600" 
+                                                                : "text-slate-700 hover:bg-slate-50"
+                                                        }`}
+                                                    >
+                                                        <span>{opt.label}</span>
+                                                        {arrivalTime === opt.value && <Check className="w-4 h-4 text-blue-600 shrink-0" />}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">Time is for New Delhi time zone</p>
                                 </div>
                             </div>
  
