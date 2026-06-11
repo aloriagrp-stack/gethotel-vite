@@ -15,12 +15,42 @@ const normalizeJsonField = (data) => {
     return JSON.stringify(data);
 };
 
+const resolveHotelId = async (idOrSlug) => {
+    if (!idOrSlug) return null;
+    const parsedId = parseInt(idOrSlug);
+    if (!isNaN(parsedId)) {
+        return parsedId;
+    }
+    
+    const hotels = await prisma.hotel.findMany({
+        select: { id: true, name: true }
+    });
+    
+    const slugify = (text) => {
+        return text
+            .toString()
+            .toLowerCase()
+            .trim()
+            .replace(/\s+/g, '-')
+            .replace(/[^\w\-]+/g, '')
+            .replace(/\-\-+/g, '-')
+            .replace(/^-+/, '')
+            .replace(/-+$/, '');
+    };
+    
+    const target = hotels.find(h => slugify(h.name) === idOrSlug);
+    return target ? target.id : null;
+};
+
 // @desc    Get rooms for a hotel
 // @route   GET /api/hotels/:hotelId/rooms
 // @access  Public
 exports.getRooms = async (req, res, next) => {
     try {
-        const hotelId = parseInt(req.params.hotelId);
+        const hotelId = await resolveHotelId(req.params.hotelId);
+        if (!hotelId) {
+            return res.status(404).json({ success: false, message: 'Hotel not found' });
+        }
         const { checkIn, checkOut } = req.query;
 
         const rooms = await prisma.room.findMany({

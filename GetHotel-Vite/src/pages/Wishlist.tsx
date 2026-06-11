@@ -6,6 +6,7 @@ import HotelCard from "@/components/hotels/HotelCard";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, ArrowRight, MapPin, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
+import SEOHead from "@/components/common/SEOHead";
 
 export default function WishlistPage() {
     const { wishlist } = useWishlist();
@@ -15,6 +16,7 @@ export default function WishlistPage() {
 
     return (
         <div className="min-h-screen bg-slate-50 pt-6 pb-20 px-4 md:px-8">
+            <SEOHead title="My Wishlist | GetHotelStays" description="Your saved favorite hotels." noIndex />
             {/* Background elements */}
             <div className="fixed inset-0 pointer-events-none overflow-hidden opacity-30">
                 <div className="absolute top-[10%] left-[5%] w-[40%] h-[40%] bg-gradient-to-br from-brand-200/30 to-transparent blur-[120px] rounded-full" />

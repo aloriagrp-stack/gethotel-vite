@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import HotelDetailContent from "./HotelDetailContent";
 import { hotelApi } from "@/lib/api";
+import { getHotelUrl } from "@/lib/utils";
 import SEOHead from "@/components/common/SEOHead";
 import Loader from "@/components/common/Loader";
 import { buildHotelSEO, buildHotelSchema, buildBreadcrumbSchema, SITE } from "@/lib/seo";
@@ -47,11 +48,13 @@ export default function HotelDetailPage() {
         ? `/${hotel.city.toLowerCase().trim()}-hotels`
         : `/hotels?city=${encodeURIComponent(hotel.city || "")}`;
 
+    const cleanUrl = `${SITE.url}${getHotelUrl(hotel.id, hotel.name)}`;
+
     const breadcrumb = buildBreadcrumbSchema([
         { name: "Home", url: "/" },
         { name: "Hotels", url: "/hotels" },
         { name: hotel.city || "India", url: cityUrl },
-        { name: hotel.name, url: `/hotel/${hotel.id}` },
+        { name: hotel.name, url: getHotelUrl(hotel.id, hotel.name) },
     ]);
 
     return (
@@ -62,8 +65,8 @@ export default function HotelDetailPage() {
                 keywords={seoData.keywords}
                 ogType="place"
                 ogImage={seoData.ogImage}
-                ogUrl={`${SITE.url}/hotel/${hotel.id}`}
-                canonicalUrl={`${SITE.url}/hotel/${hotel.id}`}
+                ogUrl={cleanUrl}
+                canonicalUrl={cleanUrl}
                 schemas={[hotelSchema, breadcrumb]}
             />
             <HotelDetailContent initialHotel={hotel} id={id!} />

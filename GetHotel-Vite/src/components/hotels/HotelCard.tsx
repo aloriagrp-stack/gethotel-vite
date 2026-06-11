@@ -4,7 +4,7 @@ import { useNavigate as useRouter, useSearchParams } from "react-router-dom";
 import { MapPin, Star, Heart, ChevronLeft, ChevronRight, Check, Zap, CreditCard, Clock, Wifi, Wind, Car, Coffee, Tv } from "lucide-react";
 import { motion } from "framer-motion";
 import type { Hotel } from "@/types";
-import { cn, formatPrice, safeParse } from "@/lib/utils";
+import { cn, formatPrice, safeParse, getHotelUrl } from "@/lib/utils";
 import { useWishlist } from "@/context/WishlistContext";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
@@ -80,37 +80,32 @@ export default function HotelCard({ hotel, className }: HotelCardProps) {
                     }
                     return v;
                 });
-                const rawRoomPrice = Number(r.pricePerNight || r.price_per_night || 0);
-                let pricesToEvaluate = [rawRoomPrice];
-                
+                const bp = Number(r.pricePerNight || r.price_per_night || 0);
+                let pricesToEvaluate = [bp];
                 if (variants.length > 0) {
                     variants.forEach((v: any) => {
                         if (v.price) pricesToEvaluate.push(Number(v.price));
                     });
                 }
-                
-                pricesToEvaluate.forEach((bp) => {
-                    let finalP = bp;
+                pricesToEvaluate.forEach((bpVal) => {
+                    let finalP = bpVal;
                     let pct = 0;
-                    
                     if (bestPromo) {
-                        finalP = applyDiscount(bp, Number(bestPromo.discountValue), bestPromo.discountType);
-                        pct = bestPromo.discountType === 'percentage' ? Number(bestPromo.discountValue) : Math.round((Number(bestPromo.discountValue) / bp) * 100);
+                        finalP = applyDiscount(bpVal, Number(bestPromo.discountValue), bestPromo.discountType);
+                        pct = bestPromo.discountType === 'percentage' ? Number(bestPromo.discountValue) : Math.round((Number(bestPromo.discountValue) / bpVal) * 100);
                     } else if (r.monthlyDiscount > 0) {
-                        finalP = applyDiscount(bp, r.monthlyDiscount, 'percentage');
+                        finalP = applyDiscount(bpVal, r.monthlyDiscount, 'percentage');
                         pct = r.monthlyDiscount;
                     } else if (r.weeklyDiscount > 0) {
-                        finalP = applyDiscount(bp, r.weeklyDiscount, 'percentage');
+                        finalP = applyDiscount(bpVal, r.weeklyDiscount, 'percentage');
                         pct = r.weeklyDiscount;
                     }
-                    
                     if (finalP < minFinalPrice) {
                         minFinalPrice = finalP;
                         discountPercent = pct > 0 ? pct : 20;
                     }
                 });
             });
-            
             if (minFinalPrice !== Infinity) {
                 basePrice = minFinalPrice;
             } else {
@@ -133,7 +128,7 @@ export default function HotelCard({ hotel, className }: HotelCardProps) {
 
     return (
         <div
-            onClick={() => router(`/hotel/${hotel.id}`)}
+            onClick={() => router(getHotelUrl(hotel.id, hotel.name))}
             className={cn(
                 "group relative bg-white rounded-2xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] cursor-pointer border border-slate-50 flex flex-col md:h-[480px] hover:shadow-xl transition-all duration-300",
                 className

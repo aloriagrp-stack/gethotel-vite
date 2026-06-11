@@ -36,6 +36,7 @@ import { hotelApi, couponApi, bookingApi } from "@/lib/api";
 import { formatPrice, formatDate, safeParse } from "@/lib/utils";
 import confetti from "canvas-confetti";
 import { useAuth } from "@/context/AuthContext";
+import SEOHead from "@/components/common/SEOHead";
 
 const guestSchema = z.object({
     firstName: z.string().min(2, "First name is required"),
@@ -252,7 +253,7 @@ function BookingContent() {
                 }
 
                 // Auto-apply Best Coupon
-                const couponRes = await couponApi.getCoupons(parseInt(hotelId) || 0);
+                const couponRes = await couponApi.getCoupons(hotelData.id);
                 if (couponRes && Array.isArray(couponRes.data)) {
                     const activeCoupons = couponRes.data.filter((c: any) => c.isActive);
                     setCoupons(activeCoupons);
@@ -425,6 +426,7 @@ function BookingContent() {
 
     return (
         <div className="min-h-screen bg-slate-50 pt-6 sm:pt-10 pb-16 sm:pb-20">
+            <SEOHead title="Complete Booking | GetHotelStays" description="Complete your hotel reservation securely." noIndex />
             <div className="max-w-7xl mx-auto px-4 sm:px-6">
                 {/* Stepper */}
                 <div className="flex items-center justify-center gap-2 sm:gap-4 mb-6 sm:mb-8 text-[10px] sm:text-[11px] font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] text-slate-400">

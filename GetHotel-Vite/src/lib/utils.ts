@@ -164,3 +164,21 @@ export function safeParse(data: any, fallback: any = []) {
     }
     return data;
 }
+
+export function slugify(text: string): string {
+    return text
+        .toString()
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, '-')
+        .replace(/[^\w\-]+/g, '')
+        .replace(/\-\-+/g, '-')
+        .replace(/^-+/, '')
+        .replace(/-+$/, '');
+}
+
+export function getHotelUrl(id: number | string, name?: string): string {
+    if (!name) return `/hotel/${id}`;
+    return `/hotel/${slugify(name)}`;
+}
+

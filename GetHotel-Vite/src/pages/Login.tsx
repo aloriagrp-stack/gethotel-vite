@@ -12,6 +12,7 @@ import { signInWithPopup } from "firebase/auth";
 import Image from "@/components/common/Image";
 import { TravelIllustration } from "@/components/auth/TravelIllustration";
 import { Suspense, useEffect } from "react";
+import SEOHead from "@/components/common/SEOHead";
 
 const translations: Record<string, Record<string, string>> = {
     en: {
@@ -196,6 +197,7 @@ function LoginContent() {
 
     return (
         <div className="min-h-screen bg-sky-50/50 flex flex-col md:flex-row overflow-hidden relative">
+            <SEOHead title="Login or Sign Up | GetHotelStays" description="Sign in to GetHotelStays to manage bookings, save favorites & get exclusive deals on hotels across India." noIndex />
 
 
             {/* Left Panel: Full Screen Image with Focal Point */}

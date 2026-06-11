@@ -1,3 +1,5 @@
+import { getHotelUrl } from "./utils";
+
 /**
  * GetHotelStays — Enterprise SEO Configuration
  * Targeting: India + NRI diaspora (US, UK, UAE, Canada, Australia, Singapore)
@@ -360,7 +362,7 @@ export const buildHotelSchema = (hotel: any, reviews?: any[]) => {
         "@type": "Hotel",
         name: hotel.name,
         description: hotel.description || `Book ${hotel.name} — premium hotel in ${hotel.city || "India"}.`,
-        url: `${SITE.url}/hotel/${hotel.id}`,
+        url: `${SITE.url}${getHotelUrl(hotel.id, hotel.name)}`,
         telephone: hotel.phone || undefined,
         email: hotel.email || undefined,
         starRating: hotel.starRating

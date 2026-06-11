@@ -14,7 +14,7 @@ import {
     Info
 } from "lucide-react";
 import { hotelApi } from "@/lib/api";
-import { cn } from "@/lib/utils";
+import { cn, getHotelUrl } from "@/lib/utils";
 import { motion } from "framer-motion";
 
 export default function WriteReviewPage() {
@@ -61,7 +61,7 @@ export default function WriteReviewPage() {
         e.preventDefault();
         const token = sessionStorage.getItem('token') || localStorage.getItem('token');
         if (!token) {
-            router(`/login?redirect=/hotel/${id}/write-review`);
+            router(`/login?redirect=${hotel ? getHotelUrl(hotel.id, hotel.name) : `/hotel/${id}`}/write-review`);
             return;
         }
 
@@ -80,7 +80,7 @@ export default function WriteReviewPage() {
             });
             setSuccess(true);
             setTimeout(() => {
-                router(`/hotel/${id}`);
+                router(hotel ? getHotelUrl(hotel.id, hotel.name) : `/hotel/${id}`);
             }, 3000);
         } catch (err: any) {
             setError(err.message || "Failed to submit review. You might have already reviewed this hotel.");
@@ -155,7 +155,7 @@ export default function WriteReviewPage() {
             <div className="container-page max-w-5xl mx-auto px-6">
                 {/* Back Link */}
                 <Link 
-                    to={`/hotel/${id}`} 
+                    to={hotel ? getHotelUrl(hotel.id, hotel.name) : `/hotel/${id}`} 
                     className="inline-flex items-center gap-2 text-black hover:text-brand-600 font-bold text-sm mb-6 transition-all group"
                 >
                     <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />

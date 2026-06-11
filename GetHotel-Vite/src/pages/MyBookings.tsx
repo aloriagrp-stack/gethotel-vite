@@ -19,7 +19,7 @@ import {
     Check
 } from "lucide-react";
 import { bookingApi } from "@/lib/api";
-import { formatPrice, formatDate, cn, safeParse } from "@/lib/utils";
+import { formatPrice, formatDate, cn, safeParse, getHotelUrl } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function MyBookingsPage() {
@@ -366,14 +366,14 @@ export default function MyBookingsPage() {
                                                         </button>
                                                     ) : (
                                                         <Link
-                                                            to={`/hotel/${booking.hotel?.id}/write-review`}
+                                                            to={`${getHotelUrl(booking.hotel?.id, booking.hotel?.name)}/write-review`}
                                                             className="px-5 sm:px-8 py-3.5 sm:py-4 bg-brand-600 text-white rounded-xl sm:rounded-[20px] font-black text-[10px] uppercase tracking-widest hover:bg-brand-700 transition-all shadow-xl shadow-brand-100 text-center w-full sm:w-auto"
                                                         >
                                                             Write Review
                                                         </Link>
                                                     )}
                                                     <Link
-                                                        to={`/hotel/${booking.hotel?.id}`}
+                                                        to={getHotelUrl(booking.hotel?.id, booking.hotel?.name)}
                                                         className="px-5 sm:px-8 py-3.5 sm:py-4 bg-white border border-slate-200 text-slate-800 rounded-xl sm:rounded-[20px] font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all text-center w-full sm:w-auto"
                                                     >
                                                         Book Again

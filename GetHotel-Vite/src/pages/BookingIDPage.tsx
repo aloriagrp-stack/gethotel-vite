@@ -28,7 +28,7 @@ import {
     X
 } from "lucide-react";
 import { hotelApi, bookingApi, couponApi, paymentApi, messageApi } from "@/lib/api";
-import { formatPrice, formatDate, cn, safeParse } from "@/lib/utils";
+import { formatPrice, formatDate, cn, safeParse, getHotelUrl } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { countries } from "@/lib/countries";
 import { InvoiceTemplate } from "@/components/booking/InvoiceTemplate";
@@ -113,6 +113,15 @@ function BookingContent() {
                     setSelectedRoomsData(firstRoom ? [firstRoom] : []);
                 }
 
+                // Fetch coupons using numeric hotelId
+                try {
+                    const res = await couponApi.getCoupons(hotelData.id);
+                    const couponData = res?.data || res || [];
+                    setCoupons(Array.isArray(couponData) ? couponData : []);
+                } catch (e) {
+                    console.error("Failed to fetch coupons", e);
+                }
+
                 // SESSION RECOVERY: Load guest data from sessionStorage
                 const savedGuestData = sessionStorage.getItem(`booking_guest_data_${hotelId}`);
                 if (savedGuestData) {
@@ -129,22 +138,11 @@ function BookingContent() {
             }
         };
 
-        const fetchCoupons = async () => {
-            try {
-                const res = await couponApi.getCoupons(parseInt(hotelId));
-                const couponData = res?.data || res || [];
-                setCoupons(Array.isArray(couponData) ? couponData : []);
-            } catch (e) {
-                console.error("Failed to fetch coupons", e);
-            }
-        };
-
         if (hotelId) {
             fetchData();
-            fetchCoupons();
         } else if (!loading) {
-             // If no hotel ID, go to home
-             router("/");
+            // If no hotel ID, go to home
+            router("/");
         }
     }, [hotelId, checkIn, checkOut]);
 
@@ -739,7 +737,7 @@ function BookingContent() {
     return (
         <div className="min-h-screen bg-slate-50 pt-4 pb-12">
             <div className="max-w-6xl mx-auto px-6">
-                <Link to={`/hotel/${hotelId}`} className="inline-flex items-center gap-2 text-slate-500 hover:text-brand-600 font-bold text-xs mb-2 transition-colors group uppercase tracking-widest">
+                <Link to={hotel ? getHotelUrl(hotel.id, hotel.name) : `/hotel/${hotelId}`} className="inline-flex items-center gap-2 text-slate-500 hover:text-brand-600 font-bold text-xs mb-2 transition-colors group uppercase tracking-widest">
                     <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
                     Back to Hotel
                 </Link>

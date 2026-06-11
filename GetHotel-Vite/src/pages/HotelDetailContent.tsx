@@ -12,7 +12,7 @@ import { useNavigate as useRouter } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import ImageGallery from "@/components/hotels/ImageGallery";
 import PriceBox from "@/components/hotels/PriceBox";
-import { cn, ratingLabel, amenityIcon, amenityLabel, formatDate, formatPrice, safeParse, formatDateLocal } from "@/lib/utils";
+import { cn, ratingLabel, amenityIcon, amenityLabel, formatDate, formatPrice, safeParse, formatDateLocal, getHotelUrl } from "@/lib/utils";
 import { hotelApi, messageApi, couponApi } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import SmartSearchBar from "@/components/search/SmartSearchBar";
@@ -310,7 +310,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                 if (checkInParam) params.checkIn = checkInParam;
                 if (checkOutParam) params.checkOut = checkOutParam;
 
-                const res = await hotelApi.getRooms(id, params);
+                const res = await hotelApi.getRooms(hotel?.id?.toString() || id, params);
                 setRooms(res.data || []);
             } catch (err) { console.error(err); }
             finally { 
@@ -321,7 +321,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
 
         const fetchCoupons = async () => {
             try {
-                const res = await couponApi.getCoupons(Number(id));
+                const res = await couponApi.getCoupons(hotel?.id || Number(id));
                 // Resilient data extraction: handle res.data or res.data.coupons or res directly
                 const rawData = res.data?.coupons || res.data || res;
                 const couponList = Array.isArray(rawData) ? rawData : [];
@@ -362,7 +362,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
         if (!messageContent.trim()) return;
         setIsSendingMessage(true);
         try {
-            const res = await messageApi.sendMessage({ hotelId: Number(id), content: messageContent });
+            const res = await messageApi.sendMessage({ hotelId: hotel?.id || Number(id), content: messageContent });
             if (res.success) {
                 alert("Message sent successfully!");
                 setMessageContent("");
@@ -1727,7 +1727,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                                 {trendingHotels.map((h: any) => (
                                     <Link
                                         key={h.id}
-                                        to={`/hotel/${h.id}`}
+                                        to={getHotelUrl(h.id, h.name)}
                                         className="group bg-white/40 backdrop-blur-md rounded-[40px] overflow-hidden hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
                                     >
                                         <div className="relative h-48 overflow-hidden">
@@ -2265,7 +2265,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                                 </div>
                                 <SmartSearchBar
                                     hideStories
-                                    navigationPath={`/hotel/${hotel.id}`}
+                                    navigationPath={getHotelUrl(hotel.id, hotel.name)}
                                     initialState={{
                                         destination: { label: hotel.city, id: hotel.city.toLowerCase(), category: "trending" },
                                         dates: {
