@@ -61,16 +61,13 @@ jobs:
             fi
           done
 
-      - name: Deploy Frontend to cPanel via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./GetHotel-Vite/dist/
-          server-dir: ./public_html/
-          port: 21
-          dangerous-clean-slate: false
+      - name: Deploy Frontend to cPanel via lftp
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USER: ${{ secrets.FTP_USERNAME }}
+          FTP_PASS: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          lftp -u "$FTP_USER","$FTP_PASS" "$FTP_SERVER" -e "set ftp:ssl-allow no; set ftp:passive-mode yes; set net:timeout 60; set net:max-retries 2; mirror --reverse --parallel=10 --verbose=3 ./GetHotel-Vite/dist/ ./public_html/; bye"
 
       - name: Finalize
         run: echo "Deployment completed successfully!"
