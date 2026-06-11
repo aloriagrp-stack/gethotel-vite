@@ -2,12 +2,12 @@ import { initializeApp, getApps } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyBhCEorLDjTXFgdV5AcEYIUiQBPWDCe9kA",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "gethotel-ec956.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "gethotel-ec956",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "gethotel-ec956.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "729217260156",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:729217260156:web:a11db7c9354c98ec97c7f9"
 };
 
 // Initialize Firebase

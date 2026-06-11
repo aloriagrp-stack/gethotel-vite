@@ -365,7 +365,7 @@ function BookingContent() {
                 
                 // 3. Open Razorpay Checkout
                 const options = {
-                    key: import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_mock",
+                    key: import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_SlOcGMjaom0pKq",
                     amount: orderRes.amount,
                     currency: orderRes.currency,
                     name: "GetHotel.",
