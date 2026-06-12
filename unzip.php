@@ -12,6 +12,17 @@ $zip = new ZipArchive;
 if ($zip->open($zipFile) === TRUE) {
     $zip->extractTo($extractTo);
     $zip->close();
+    // Auto-restart the backend application
+    $restartPaths = [
+        '/home/vgyuvmpi/gethotel_backend/tmp/restart.txt',
+        '../gethotel_backend/tmp/restart.txt'
+    ];
+    foreach ($restartPaths as $path) {
+        if (is_dir(dirname($path))) {
+            touch($path);
+        }
+    }
+
     echo 'DEPLOYS_SUCCESS';
     unlink($zipFile);
     unlink(__FILE__);
