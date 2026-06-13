@@ -423,9 +423,9 @@ exports.updateRoom = async (req, res, next) => {
         if (alcoholAllowed !== undefined) updateData.alcoholAllowed = alcoholAllowed === true || alcoholAllowed === 'true';
         if (partyAllowed !== undefined) updateData.partyAllowed = partyAllowed === true || partyAllowed === 'true';
         
-        if (seoTitle !== undefined) updateData.seoTitle = seoTitle;
-        if (seoDescription !== undefined) updateData.seoDescription = seoDescription;
-        if (slug !== undefined) updateData.slug = slug;
+        if (seoTitle !== undefined) updateData.seoTitle = seoTitle || null;
+        if (seoDescription !== undefined) updateData.seoDescription = seoDescription || null;
+        if (slug !== undefined) updateData.slug = slug || null;
 
         console.log(">>> UPDATING ROOM:", roomId);
         console.log(">>> DATA:", JSON.stringify(updateData, null, 2).slice(0, 500) + "...");
