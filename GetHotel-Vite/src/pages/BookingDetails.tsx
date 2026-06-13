@@ -9,7 +9,7 @@ import {
 import Image from "@/components/common/Image";
 import Loader from "@/components/common/Loader";
 import { Link } from "react-router-dom";
-import { bookingApi } from "@/lib/api";
+import { bookingApi, paymentApi } from "@/lib/api";
 import { formatDate, formatPrice } from "@/lib/utils";
 
 export default function BookingDetailsPage() {
@@ -45,33 +45,66 @@ export default function BookingDetailsPage() {
         }, 2200);
     };
 
-    useEffect(() => {
-        const fetchBookingDetails = async () => {
-            if (!params.id) return;
-            try {
-                const res = await bookingApi.getBooking(params.id);
-                const bookingData = res.data || res;
-                if (bookingData) {
-                    setBooking(bookingData);
-                }
-            } catch (err) {
-                console.error("Failed to load booking details via getBooking, trying list fallback:", err);
-                try {
-                    const listRes = await bookingApi.getMyBookings();
-                    const bookingsList = listRes.data || [];
-                    const found = bookingsList.find((b: any) => String(b.id) === String(params.id));
-                    if (found) {
-                        setBooking(found);
-                    }
-                } catch (fallbackErr) {
-                    console.error("Fallback lookup failed:", fallbackErr);
-                }
-            } finally {
-                setLoading(false);
+    const [verifying, setVerifying] = useState(false);
+    const [verificationMessage, setVerificationMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+
+    const fetchBookingDetails = async () => {
+        if (!params.id) return;
+        try {
+            const res = await bookingApi.getBooking(params.id);
+            const bookingData = res.data || res;
+            if (bookingData) {
+                setBooking(bookingData);
             }
-        };
+        } catch (err) {
+            console.error("Failed to load booking details via getBooking, trying list fallback:", err);
+            try {
+                const listRes = await bookingApi.getMyBookings();
+                const bookingsList = listRes.data || [];
+                const found = bookingsList.find((b: any) => String(b.id) === String(params.id));
+                if (found) {
+                    setBooking(found);
+                }
+            } catch (fallbackErr) {
+                console.error("Fallback lookup failed:", fallbackErr);
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchBookingDetails();
     }, [params.id]);
+
+    const handleVerifyPaymentStatus = async () => {
+        if (!booking?.id) return;
+        setVerifying(true);
+        setVerificationMessage(null);
+        try {
+            const res = await paymentApi.fetchPaymentStatus(booking.id);
+            if (res.success) {
+                setVerificationMessage({
+                    type: 'success',
+                    text: res.message || 'Payment verified successfully!'
+                });
+                await fetchBookingDetails();
+            } else {
+                setVerificationMessage({
+                    type: 'info',
+                    text: res.message || 'No successful payment found on Razorpay yet.'
+                });
+            }
+        } catch (err: any) {
+            console.error("Verification error:", err);
+            setVerificationMessage({
+                type: 'error',
+                text: err.message || 'Failed to verify payment status. Please try again.'
+            });
+        } finally {
+            setVerifying(false);
+        }
+    };
 
     const hotelName = booking?.hotel?.name || "Cottage Yes Please";
     const hotelCity = booking?.hotel?.city || "New Delhi";
@@ -253,6 +286,40 @@ export default function BookingDetailsPage() {
                                 </>
                             )}
                         </div>
+
+                        {paymentStatus !== 'paid' && (
+                            <div className="mt-4 pt-4 border-t border-slate-200/60 space-y-2">
+                                <p className="text-[10px] text-slate-500 leading-relaxed font-bold">
+                                    Did you complete your payment but the status hasn't updated? Verify with Razorpay.
+                                </p>
+                                <button 
+                                    onClick={handleVerifyPaymentStatus}
+                                    disabled={verifying}
+                                    className="w-full py-2.5 px-4 bg-brand-600 hover:bg-brand-700 disabled:bg-slate-350 text-white rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                                >
+                                    {verifying ? (
+                                        <>
+                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                            Verifying with Razorpay...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <ShieldCheck className="w-3.5 h-3.5" />
+                                            Verify Payment Status
+                                        </>
+                                    )}
+                                </button>
+                                {verificationMessage && (
+                                    <p className={`text-[10px] font-bold mt-2 text-center ${
+                                        verificationMessage.type === 'success' ? 'text-emerald-600' :
+                                        verificationMessage.type === 'error' ? 'text-red-500' :
+                                        'text-amber-600'
+                                    }`}>
+                                        {verificationMessage.text}
+                                    </p>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
 

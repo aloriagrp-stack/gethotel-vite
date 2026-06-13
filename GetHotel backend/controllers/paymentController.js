@@ -74,16 +74,93 @@ exports.createOrder = async (req, res) => {
     }
 };
 
+// Helper to process successful payment, update DB, log transaction, send email notifications
+async function processSuccessfulPayment(booking, razorpay_order_id, razorpay_payment_id, razorpay_signature, rawResponse) {
+    // Idempotency Check: Prevent duplicate payment processing
+    if (booking.status === 'confirmed' && (booking.paymentStatus === 'paid' || booking.paymentStatus === 'partial')) {
+        return { success: true, message: 'Payment already processed and verified.' };
+    }
+
+    const targetAmountPaid = booking.paymentStatus === 'paid' ? booking.totalPrice : Math.round(booking.totalPrice * 0.12);
+    const targetPaymentStatus = booking.paymentStatus === 'paid' ? 'paid' : 'partial';
+
+    // SUCCESS FLOW
+    await prisma.$transaction(async (tx) => {
+        // Concurrency Control: Lock the Booking row to prevent concurrent race conditions (pessimistic lock)
+        const lockedBookings = await tx.$queryRaw`SELECT id, paymentStatus FROM booking WHERE id = ${booking.id} FOR UPDATE`;
+        const lockedBooking = lockedBookings[0];
+        
+        if (lockedBooking && (lockedBooking.paymentStatus === 'paid' || lockedBooking.paymentStatus === 'partial') && lockedBooking.status === 'confirmed') {
+            return;
+        }
+
+        // 1. Update Booking
+        await tx.booking.update({
+            where: { id: booking.id },
+            data: {
+                paymentStatus: targetPaymentStatus,
+                amountPaid: targetAmountPaid,
+                razorpayPaymentId: razorpay_payment_id,
+                razorpaySignature: razorpay_signature || null,
+                status: 'confirmed'
+            }
+        });
+
+        // 2. Log Transaction
+        await tx.transaction.create({
+            data: {
+                bookingId: booking.id,
+                amount: targetAmountPaid,
+                status: 'success',
+                gatewayOrderId: razorpay_order_id,
+                gatewayPaymentId: razorpay_payment_id,
+                gatewaySignature: razorpay_signature || null,
+                rawResponse: JSON.stringify(rawResponse)
+            }
+        });
+    });
+
+    // Async Email Notification (Don't block response)
+    try {
+        const fullBooking = await prisma.booking.findUnique({
+            where: { id: booking.id },
+            include: { 
+                hotel: {
+                    include: { user: true }
+                }, 
+                room: true 
+            }
+        });
+        
+        if (fullBooking) {
+            sendBookingEmails({
+                id: fullBooking.id,
+                guestName: `${fullBooking.guestFirstName} ${fullBooking.guestLastName}`,
+                guestEmail: fullBooking.guestEmail,
+                guestPhone: fullBooking.guestPhone,
+                hotel: fullBooking.hotel,
+                room: fullBooking.room,
+                checkIn: fullBooking.checkIn,
+                checkOut: fullBooking.checkOut,
+                totalPrice: fullBooking.totalPrice,
+                amountPaid: fullBooking.amountPaid
+            });
+        }
+    } catch (emailErr) {
+        console.error('Async booking email notification failed:', emailErr);
+    }
+
+    return { success: true };
+}
+
 // @desc    Verify Payment Signature
 // @route   POST /api/payments/verify
 // @access  Private
-// exports.verifyPayment = ... (defined below)
 exports.verifyPayment = async (req, res) => {
     const { 
         razorpay_order_id, 
         razorpay_payment_id, 
-        razorpay_signature,
-        booking_id
+        razorpay_signature
     } = req.body;
 
     if (!process.env.RAZORPAY_KEY_SECRET) {
@@ -98,6 +175,10 @@ exports.verifyPayment = async (req, res) => {
         .digest('hex');
     const isAuthentic = expectedSignature === razorpay_signature;
 
+    if (!isAuthentic) {
+        return res.status(400).json({ success: false, message: 'Invalid payment signature' });
+    }
+
     try {
         // Find the booking by Razorpay Order ID
         const booking = await prisma.booking.findUnique({
@@ -108,105 +189,131 @@ exports.verifyPayment = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Booking not found for this order' });
         }
 
-        if (isAuthentic) {
-            // Idempotency Check: Prevent duplicate payment processing (Webhook safety)
-            if (booking.status === 'confirmed' && (booking.paymentStatus === 'paid' || booking.paymentStatus === 'partial')) {
-                return res.status(200).json({ success: true, message: 'Payment already processed and verified.' });
-            }
-
-            const targetAmountPaid = booking.paymentStatus === 'paid' ? booking.totalPrice : Math.round(booking.totalPrice * 0.12);
-            const targetPaymentStatus = booking.paymentStatus === 'paid' ? 'paid' : 'partial';
-
-            // SUCCESS FLOW
-            await prisma.$transaction(async (tx) => {
-                // Concurrency Control: Lock the Booking row to prevent concurrent race conditions (pessimistic lock)
-                const lockedBookings = await tx.$queryRaw`SELECT id, paymentStatus FROM booking WHERE id = ${booking.id} FOR UPDATE`;
-                const lockedBooking = lockedBookings[0];
-                
-                if (lockedBooking && (lockedBooking.paymentStatus === 'paid' || lockedBooking.paymentStatus === 'partial') && lockedBooking.status === 'confirmed') {
-                    // Already processed concurrently by another webhook request
-                    return;
-                }
-
-                // 1. Update Booking
-                await tx.booking.update({
-                    where: { id: booking.id },
-                    data: {
-                        paymentStatus: targetPaymentStatus,
-                        amountPaid: targetAmountPaid,
-                        razorpayPaymentId: razorpay_payment_id,
-                        razorpaySignature: razorpay_signature,
-                        status: 'confirmed'
-                    }
-                });
-
-                // 2. Log Transaction
-                await tx.transaction.create({
-                    data: {
-                        bookingId: booking.id,
-                        amount: targetAmountPaid,
-                        status: 'success',
-                        gatewayOrderId: razorpay_order_id,
-                        gatewayPaymentId: razorpay_payment_id,
-                        gatewaySignature: razorpay_signature,
-                        rawResponse: JSON.stringify(req.body)
-                    }
-                });
-            });
-
-            res.status(200).json({ success: true, message: 'Payment verified successfully. Booking Fee collected.' });
-
-            // Async Email Notification (Don't block response)
-            try {
-                const fullBooking = await prisma.booking.findUnique({
-                    where: { id: booking.id },
-                    include: { 
-                        hotel: {
-                            include: { user: true }
-                        }, 
-                        room: true 
-                    }
-                });
-                
-                if (fullBooking) {
-                    sendBookingEmails({
-                        id: fullBooking.id,
-                        guestName: `${fullBooking.guestFirstName} ${fullBooking.guestLastName}`,
-                        guestEmail: fullBooking.guestEmail,
-                        guestPhone: fullBooking.guestPhone,
-                        hotel: fullBooking.hotel,
-                        room: fullBooking.room,
-                        checkIn: fullBooking.checkIn,
-                        checkOut: fullBooking.checkOut,
-                        totalPrice: fullBooking.totalPrice,
-                        amountPaid: fullBooking.amountPaid
-                    });
-                }
-            } catch (emailErr) {
-                console.error('Async booking email notification failed:', emailErr);
-            }
-        } else {
-            // FAILED FLOW
-            await prisma.transaction.create({
-                data: {
-                    bookingId: booking.id,
-                    amount: booking.totalPrice * 0.12,
-                    status: 'failed',
-                    gatewayOrderId: razorpay_order_id,
-                    gatewayPaymentId: razorpay_payment_id,
-                    rawResponse: JSON.stringify({ ...req.body, error: 'Signature mismatch' })
-                }
-            });
-
-            await prisma.booking.update({
-                where: { id: booking.id },
-                data: { status: 'failed', paymentStatus: 'failed' }
-            });
-
-            res.status(400).json({ success: false, message: 'Invalid payment signature' });
-        }
+        const result = await processSuccessfulPayment(booking, razorpay_order_id, razorpay_payment_id, razorpay_signature, req.body);
+        return res.status(200).json({ success: true, message: 'Payment verified successfully.', ...result });
     } catch (err) {
         console.error('Verification Error:', err);
-        res.status(500).json({ success: false, message: 'Verification process failed' });
+        return res.status(500).json({ success: false, message: 'Verification process failed' });
+    }
+};
+
+// @desc    Handle Razorpay Webhook callback
+// @route   POST /api/payments/webhook
+// @access  Public
+exports.razorpayWebhook = async (req, res) => {
+    const signature = req.headers['x-razorpay-signature'];
+    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+
+    if (!webhookSecret) {
+        console.warn('[Webhook] Warning: RAZORPAY_WEBHOOK_SECRET is not configured. Webhook ignored.');
+        return res.status(200).json({ status: 'ignored', reason: 'secret missing' });
+    }
+
+    // Verify signature
+    const expectedSignature = crypto
+        .createHmac('sha256', webhookSecret)
+        .update(JSON.stringify(req.body))
+        .digest('hex');
+
+    if (expectedSignature !== signature) {
+        console.warn('[Webhook] Warning: Invalid signature received on webhook endpoint');
+        return res.status(400).json({ success: false, message: 'Invalid webhook signature' });
+    }
+
+    // Respond OK immediately to prevent timeouts from Razorpay
+    res.status(200).json({ status: 'ok' });
+
+    // Handle asynchronously
+    try {
+        const event = req.body.event;
+        if (event === 'payment.captured') {
+            const paymentPayload = req.body.payload.payment.entity;
+            const razorpay_order_id = paymentPayload.order_id;
+            const razorpay_payment_id = paymentPayload.id;
+
+            console.log(`[Webhook] Processing captured payment for Order: ${razorpay_order_id}`);
+
+            const booking = await prisma.booking.findUnique({
+                where: { razorpayOrderId: razorpay_order_id }
+            });
+
+            if (booking) {
+                await processSuccessfulPayment(booking, razorpay_order_id, razorpay_payment_id, null, req.body);
+                console.log(`[Webhook] Booking ${booking.id} verified and confirmed via webhook.`);
+            } else {
+                console.warn(`[Webhook] No booking matches Razorpay Order: ${razorpay_order_id}`);
+            }
+        }
+    } catch (err) {
+        console.error('[Webhook] Error processing callback event:', err);
+    }
+};
+
+// @desc    Fetch payment status manually from Razorpay API
+// @route   POST /api/payments/fetch-status/:bookingId
+// @access  Private
+exports.fetchPaymentStatus = async (req, res) => {
+    const bookingId = parseInt(req.params.bookingId);
+
+    if (!razorpay) {
+        return res.status(500).json({ success: false, message: 'Razorpay is not configured.' });
+    }
+
+    try {
+        const booking = await prisma.booking.findUnique({
+            where: { id: bookingId }
+        });
+
+        if (!booking) {
+            return res.status(404).json({ success: false, message: 'Booking not found' });
+        }
+
+        if (!booking.razorpayOrderId) {
+            return res.status(400).json({ success: false, message: 'No Razorpay Order ID associated with this booking' });
+        }
+
+        // Fetch payments for this order ID from Razorpay
+        console.log(`[Manual Verify] Fetching payments for Order ID: ${booking.razorpayOrderId}`);
+        const payments = await razorpay.orders.fetchPayments(booking.razorpayOrderId);
+
+        if (!payments || !payments.items || payments.items.length === 0) {
+            return res.status(200).json({ 
+                success: false, 
+                message: 'No payments found on Razorpay for this booking yet.', 
+                status: booking.status,
+                paymentStatus: booking.paymentStatus
+            });
+        }
+
+        // Find any captured or authorized payment
+        const successfulPayment = payments.items.find(p => p.status === 'captured' || p.status === 'authorized');
+
+        if (successfulPayment) {
+            console.log(`[Manual Verify] Found successful payment: ${successfulPayment.id}`);
+            const result = await processSuccessfulPayment(
+                booking, 
+                booking.razorpayOrderId, 
+                successfulPayment.id, 
+                null, 
+                successfulPayment
+            );
+            return res.status(200).json({ 
+                success: true, 
+                message: 'Payment verified successfully and booking confirmed.', 
+                status: 'confirmed',
+                paymentStatus: booking.paymentStatus === 'paid' ? 'paid' : 'partial',
+                ...result
+            });
+        }
+
+        return res.status(200).json({ 
+            success: false, 
+            message: 'No successful payment captured on Razorpay yet.',
+            status: booking.status,
+            paymentStatus: booking.paymentStatus
+        });
+    } catch (err) {
+        console.error('Fetch Payment Status Error:', err);
+        return res.status(500).json({ success: false, message: 'Failed to verify payment status' });
     }
 };
