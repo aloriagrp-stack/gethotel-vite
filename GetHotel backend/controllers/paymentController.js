@@ -39,8 +39,13 @@ exports.createOrder = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Booking not found' });
         }
 
-        // Calculate 12% of total price for online payment
-        const amountToPay = Math.round(booking.totalPrice * 0.12 * 100); // Amount in paisa
+        // Calculate amount based on paymentStatus (12% for partial, 100% for full online paid)
+        let amountToPay = 0;
+        if (booking.paymentStatus === 'paid') {
+            amountToPay = Math.round(booking.totalPrice * 100); // 100% in paisa
+        } else {
+            amountToPay = Math.round(booking.totalPrice * 0.12 * 100); // 12% in paisa
+        }
 
         const options = {
             amount: amountToPay,
@@ -72,6 +77,7 @@ exports.createOrder = async (req, res) => {
 // @desc    Verify Payment Signature
 // @route   POST /api/payments/verify
 // @access  Private
+// exports.verifyPayment = ... (defined below)
 exports.verifyPayment = async (req, res) => {
     const { 
         razorpay_order_id, 
@@ -117,9 +123,12 @@ exports.verifyPayment = async (req, res) => {
 
         if (isAuthentic) {
             // Idempotency Check: Prevent duplicate payment processing (Webhook safety)
-            if (booking.paymentStatus === 'paid') {
+            if (booking.status === 'confirmed' && (booking.paymentStatus === 'paid' || booking.paymentStatus === 'partial')) {
                 return res.status(200).json({ success: true, message: 'Payment already processed and verified.' });
             }
+
+            const targetAmountPaid = booking.paymentStatus === 'paid' ? booking.totalPrice : Math.round(booking.totalPrice * 0.12);
+            const targetPaymentStatus = booking.paymentStatus === 'paid' ? 'paid' : 'partial';
 
             // SUCCESS FLOW
             await prisma.$transaction(async (tx) => {
@@ -127,7 +136,7 @@ exports.verifyPayment = async (req, res) => {
                 const lockedBookings = await tx.$queryRaw`SELECT id, paymentStatus FROM booking WHERE id = ${booking.id} FOR UPDATE`;
                 const lockedBooking = lockedBookings[0];
                 
-                if (lockedBooking && lockedBooking.paymentStatus === 'paid') {
+                if (lockedBooking && (lockedBooking.paymentStatus === 'paid' || lockedBooking.paymentStatus === 'partial') && lockedBooking.status === 'confirmed') {
                     // Already processed concurrently by another webhook request
                     return;
                 }
@@ -136,8 +145,8 @@ exports.verifyPayment = async (req, res) => {
                 await tx.booking.update({
                     where: { id: booking.id },
                     data: {
-                        paymentStatus: 'paid',
-                        amountPaid: Math.round(booking.totalPrice * 0.12),
+                        paymentStatus: targetPaymentStatus,
+                        amountPaid: targetAmountPaid,
                         razorpayPaymentId: razorpay_payment_id,
                         razorpaySignature: razorpay_signature,
                         status: 'confirmed'
@@ -148,7 +157,7 @@ exports.verifyPayment = async (req, res) => {
                 await tx.transaction.create({
                     data: {
                         bookingId: booking.id,
-                        amount: Math.round(booking.totalPrice * 0.12),
+                        amount: targetAmountPaid,
                         status: 'success',
                         gatewayOrderId: razorpay_order_id,
                         gatewayPaymentId: razorpay_payment_id,

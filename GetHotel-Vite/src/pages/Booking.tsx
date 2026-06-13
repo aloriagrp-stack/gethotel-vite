@@ -32,7 +32,7 @@ import {
     BadgeCheck,
     Clock
 } from "lucide-react";
-import { hotelApi, couponApi, bookingApi } from "@/lib/api";
+import { hotelApi, couponApi, bookingApi, paymentApi } from "@/lib/api";
 import { formatPrice, formatDate, safeParse } from "@/lib/utils";
 import confetti from "canvas-confetti";
 import { useAuth } from "@/context/AuthContext";
@@ -359,12 +359,12 @@ function BookingContent() {
                 bookingPaymentStatus = 'pending';
                 amountPaid = 0;
             } else if (paymentMode === "pay_full_online") {
-                bookingStatus = 'confirmed';
+                bookingStatus = 'held';
                 bookingPaymentStatus = 'paid';
                 amountPaid = priceDetails.total;
             } else {
                 // pay_now (12%)
-                bookingStatus = 'confirmed';
+                bookingStatus = 'held';
                 bookingPaymentStatus = 'partial';
                 amountPaid = priceDetails.platformFee;
             }
@@ -394,15 +394,70 @@ function BookingContent() {
             const res = await bookingApi.createBooking(bookingData);
             const booking = res.data || res;
             if (booking && booking.id) {
-                setShowConfirmAnimation(true);
-                setRedirectUrl(`/booking/details/${booking.id}?success=true`);
+                if (paymentMode === "pay_at_hotel") {
+                    setShowConfirmAnimation(true);
+                    setRedirectUrl(`/booking/details/${booking.id}?success=true`);
+                } else {
+                    // Open Razorpay Checkout for online modes
+                    try {
+                        const orderRes = await paymentApi.createOrder(booking.id);
+                        
+                        const options = {
+                            key: import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_live_T13shxXok470yH",
+                            amount: orderRes.amount,
+                            currency: orderRes.currency,
+                            name: "GetHotel.",
+                            description: `Stay at ${hotel?.name}`,
+                            image: "/logo.png",
+                            order_id: orderRes.orderId,
+                            handler: async function (response: any) {
+                                try {
+                                    setIsSubmitting(true);
+                                    await paymentApi.verifyPayment({
+                                        razorpay_order_id: response.razorpay_order_id,
+                                        razorpay_payment_id: response.razorpay_payment_id,
+                                        razorpay_signature: response.razorpay_signature,
+                                        booking_id: booking.id
+                                    });
+                                    setShowConfirmAnimation(true);
+                                    setRedirectUrl(`/booking/details/${booking.id}?success=true`);
+                                } catch (err: any) {
+                                    alert("Payment verification failed. Please check your bookings dashboard or contact support.");
+                                } finally {
+                                    setIsSubmitting(false);
+                                }
+                            },
+                            modal: {
+                                ondismiss: function() {
+                                    setIsSubmitting(false);
+                                    alert("Payment was cancelled. You can retry from your bookings dashboard or start again.");
+                                }
+                            },
+                            prefill: {
+                                name: `${data.firstName} ${data.lastName}`,
+                                email: data.email,
+                                contact: data.phone
+                            },
+                            theme: {
+                                color: "#0f172a"
+                            }
+                        };
+
+                        const rzp = new (window as any).Razorpay(options);
+                        rzp.open();
+                    } catch (paymentError: any) {
+                        console.error("Razorpay workflow failed:", paymentError);
+                        alert(paymentError.message || "Failed to initialize payment gateway. Please try again.");
+                        setIsSubmitting(false);
+                    }
+                }
             } else {
                 alert("Failed to create booking. Please try again.");
+                setIsSubmitting(false);
             }
         } catch (err: any) {
             console.error("Booking Error:", err);
             alert(err.message || "Failed to create booking.");
-        } finally {
             setIsSubmitting(false);
         }
     };
@@ -648,36 +703,47 @@ function BookingContent() {
                                 </div>
 
                                 <div className="space-y-3">
-                                    {/* Option 1: Pay Now (12%) — DISABLED */}
-                                    <div
-                                        id="payment-mode-pay-now-disabled"
-                                        className="w-full text-left rounded-2xl border-2 border-slate-100 bg-slate-50/60 p-4 sm:p-5 opacity-60 cursor-not-allowed"
+                                    {/* Option 1: Pay Now (12%) */}
+                                    <button
+                                        type="button"
+                                        id="payment-mode-pay-now"
+                                        onClick={() => setPaymentMode("pay_now")}
+                                        className={`w-full text-left rounded-2xl border-2 transition-all duration-200 p-4 sm:p-5 group ${
+                                            paymentMode === "pay_now"
+                                                ? "border-emerald-500 bg-emerald-50/50"
+                                                : "border-slate-100 bg-slate-50 hover:border-slate-300 hover:bg-white"
+                                        }`}
                                     >
-                                        <div className="flex items-start gap-3 sm:gap-4">
-                                            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 bg-white border border-slate-200 text-slate-300">
-                                                <CreditCard className="w-4 h-4 sm:w-5 sm:h-5" />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex flex-wrap items-center gap-2 mb-1">
-                                                    <span className="text-sm font-black text-slate-400 uppercase tracking-tight">Pay Online Now</span>
-                                                    <div className="flex items-center gap-1 px-2 py-0.5 bg-slate-200 rounded-full flex-shrink-0">
-                                                        <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                                                        <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">Not available</span>
+                                        <div className="flex items-center justify-between gap-3">
+                                            <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+                                                <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                                                    paymentMode === "pay_now" ? "bg-emerald-500 text-white" : "bg-white border border-slate-200 text-slate-400"
+                                                }`}>
+                                                    <CreditCard className="w-4 h-4 sm:w-5 sm:h-5" />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                                                        <span className="text-sm font-black text-slate-900 uppercase tracking-tight">Pay Online Now</span>
+                                                    </div>
+                                                    <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
+                                                        Pay just <strong className="text-slate-700">12% booking fee</strong> now to secure your room. Rest at hotel.
+                                                    </p>
+                                                    <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+                                                        <span className="text-[10px] font-black text-slate-400 uppercase">Pay Now</span>
+                                                        <span className="text-sm font-black text-emerald-600">{formatPrice(priceDetails.platformFee)}</span>
+                                                        <span className="text-[10px] font-black text-slate-300">·</span>
+                                                        <span className="text-[10px] font-black text-slate-400 uppercase">At Hotel</span>
+                                                        <span className="text-sm font-black text-slate-700">{formatPrice(priceDetails.payAtHotel)}</span>
                                                     </div>
                                                 </div>
-                                                <p className="text-[11px] text-slate-400 font-medium leading-relaxed">
-                                                    Pay just <strong>12% booking fee</strong> now to secure your room. Rest at hotel.
-                                                </p>
-                                                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
-                                                    <span className="text-[10px] font-black text-slate-300 uppercase">Pay Now</span>
-                                                    <span className="text-sm font-black text-slate-300">{formatPrice(priceDetails.platformFee)}</span>
-                                                    <span className="text-[10px] font-black text-slate-200">·</span>
-                                                    <span className="text-[10px] font-black text-slate-300 uppercase">At Hotel</span>
-                                                    <span className="text-sm font-black text-slate-300">{formatPrice(priceDetails.payAtHotel)}</span>
-                                                </div>
+                                            </div>
+                                            <div className={`w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${
+                                                paymentMode === "pay_now" ? "border-emerald-500 bg-emerald-500" : "border-slate-300"
+                                            }`}>
+                                                {paymentMode === "pay_now" && <div className="w-2 h-2 rounded-full bg-white" />}
                                             </div>
                                         </div>
-                                    </div>
+                                    </button>
 
                                     {/* Option 2: Full Pay at Hotel */}
                                     <button
@@ -722,36 +788,47 @@ function BookingContent() {
                                         </div>
                                     </button>
 
-                                    {/* Option 3: Full Pay Online — DISABLED */}
-                                    <div
-                                        id="payment-mode-pay-full-online-disabled"
-                                        className="w-full text-left rounded-2xl border-2 border-slate-100 bg-slate-50/60 p-4 sm:p-5 opacity-60 cursor-not-allowed"
+                                    {/* Option 3: Full Pay Online */}
+                                    <button
+                                        type="button"
+                                        id="payment-mode-pay-full-online"
+                                        onClick={() => setPaymentMode("pay_full_online")}
+                                        className={`w-full text-left rounded-2xl border-2 transition-all duration-200 p-4 sm:p-5 group ${
+                                            paymentMode === "pay_full_online"
+                                                ? "border-emerald-500 bg-emerald-50/50"
+                                                : "border-slate-100 bg-slate-50 hover:border-slate-300 hover:bg-white"
+                                        }`}
                                     >
-                                        <div className="flex items-start gap-3 sm:gap-4">
-                                            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 bg-white border border-slate-200 text-slate-300">
-                                                <Smartphone className="w-4 h-4 sm:w-5 sm:h-5" />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex flex-wrap items-center gap-2 mb-1">
-                                                    <span className="text-sm font-black text-slate-400 uppercase tracking-tight">Pay Full Online</span>
-                                                    <div className="flex items-center gap-1 px-2 py-0.5 bg-slate-200 rounded-full flex-shrink-0">
-                                                        <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                                                        <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">Not available</span>
+                                        <div className="flex items-center justify-between gap-3">
+                                            <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+                                                <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                                                    paymentMode === "pay_full_online" ? "bg-emerald-500 text-white" : "bg-white border border-slate-200 text-slate-400"
+                                                }`}>
+                                                    <Smartphone className="w-4 h-4 sm:w-5 sm:h-5" />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                                                        <span className="text-sm font-black text-slate-900 uppercase tracking-tight">Pay Full Online</span>
+                                                    </div>
+                                                    <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
+                                                        Pay the entire amount <strong className="text-slate-700">online right now</strong>. Nothing due at hotel.
+                                                    </p>
+                                                    <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+                                                        <span className="text-[10px] font-black text-slate-400 uppercase">Pay Now</span>
+                                                        <span className="text-sm font-black text-emerald-600">{formatPrice(priceDetails.total)}</span>
+                                                        <span className="text-[10px] font-black text-slate-300">·</span>
+                                                        <span className="text-[10px] font-black text-slate-400 uppercase">At Hotel</span>
+                                                        <span className="text-sm font-black text-slate-700">₹0</span>
                                                     </div>
                                                 </div>
-                                                <p className="text-[11px] text-slate-400 font-medium leading-relaxed">
-                                                    Pay the entire amount <strong>online right now</strong>. Nothing due at hotel.
-                                                </p>
-                                                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
-                                                    <span className="text-[10px] font-black text-slate-300 uppercase">Pay Now</span>
-                                                    <span className="text-sm font-black text-slate-300">{formatPrice(priceDetails.total)}</span>
-                                                    <span className="text-[10px] font-black text-slate-200">·</span>
-                                                    <span className="text-[10px] font-black text-slate-300 uppercase">At Hotel</span>
-                                                    <span className="text-sm font-black text-slate-300">₹0</span>
-                                                </div>
+                                            </div>
+                                            <div className={`w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${
+                                                paymentMode === "pay_full_online" ? "border-emerald-500 bg-emerald-500" : "border-slate-300"
+                                            }`}>
+                                                {paymentMode === "pay_full_online" && <div className="w-2 h-2 rounded-full bg-white" />}
                                             </div>
                                         </div>
-                                    </div>
+                                    </button>
                                 </div>
 
                                 {/* Policy notice for pay_at_hotel */}
@@ -834,22 +911,48 @@ function BookingContent() {
                                 </div>
 
                                 {/* Payment Breakdown Card */}
-                                <div className="mt-8 sm:mt-10 rounded-2xl border-2 p-5 sm:p-6 border-emerald-200 bg-gradient-to-br from-emerald-50 to-slate-50">
+                                <div className={`mt-8 sm:mt-10 rounded-2xl border-2 p-5 sm:p-6 bg-gradient-to-br ${
+                                    paymentMode === "pay_at_hotel"
+                                        ? "border-emerald-200 from-emerald-50 to-slate-50"
+                                        : "border-blue-200 from-blue-50 to-slate-50"
+                                }`}>
                                     <div className="flex items-center gap-2 mb-4">
-                                        <Hotel className="w-4 h-4 text-emerald-600" />
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-emerald-700">
-                                            Full Payment at Check-In
-                                        </span>
+                                        {paymentMode === "pay_at_hotel" ? (
+                                            <>
+                                                <Hotel className="w-4 h-4 text-emerald-600" />
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-700">
+                                                    Full Payment at Check-In
+                                                </span>
+                                            </>
+                                        ) : paymentMode === "pay_now" ? (
+                                            <>
+                                                <CreditCard className="w-4 h-4 text-blue-600" />
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-blue-700">
+                                                    12% Booking Fee Online
+                                                </span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Smartphone className="w-4 h-4 text-blue-600" />
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-blue-700">
+                                                    Full Payment Online
+                                                </span>
+                                            </>
+                                        )}
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
                                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Pay Now</p>
-                                            <p className="text-2xl font-black tracking-tighter text-emerald-600">₹0</p>
+                                            <p className={`text-2xl font-black tracking-tighter ${
+                                                paymentMode === "pay_at_hotel" ? "text-emerald-600" : "text-blue-600"
+                                            }`}>
+                                                {formatPrice(getPayNowAmount())}
+                                            </p>
                                         </div>
                                         <div>
                                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">At Hotel</p>
                                             <p className="text-2xl font-black text-slate-900 tracking-tighter">
-                                                {formatPrice(priceDetails.total)}
+                                                {formatPrice(paymentMode === "pay_full_online" ? 0 : paymentMode === "pay_now" ? priceDetails.payAtHotel : priceDetails.total)}
                                             </p>
                                         </div>
                                     </div>
@@ -859,10 +962,19 @@ function BookingContent() {
                                     type="submit" 
                                     id="complete-booking-btn"
                                     disabled={isSubmitting} 
-                                    className="w-full mt-6 sm:mt-8 py-4 sm:py-5 text-white rounded-2xl font-black text-xs uppercase tracking-[0.3em] sm:tracking-[0.4em] shadow-xl transition-all flex items-center justify-center gap-3 sm:gap-4 disabled:opacity-50 bg-emerald-600 hover:bg-emerald-700"
+                                    className={`w-full mt-6 sm:mt-8 py-4 sm:py-5 text-white rounded-2xl font-black text-xs uppercase tracking-[0.3em] sm:tracking-[0.4em] shadow-xl transition-all flex items-center justify-center gap-3 sm:gap-4 disabled:opacity-50 ${
+                                        paymentMode === "pay_at_hotel"
+                                            ? "bg-emerald-600 hover:bg-emerald-700"
+                                            : "bg-blue-600 hover:bg-blue-700"
+                                    }`}
                                 >
                                     {isSubmitting && <Loader2 className="w-5 h-5 animate-spin" />}
-                                    {`Reserve Free · Pay ${formatPrice(priceDetails.total)} at Hotel`}
+                                    {paymentMode === "pay_at_hotel"
+                                        ? `Reserve Free · Pay ${formatPrice(priceDetails.total)} at Hotel`
+                                        : paymentMode === "pay_now"
+                                            ? `Pay ${formatPrice(priceDetails.platformFee)} Online Now`
+                                            : `Pay ${formatPrice(priceDetails.total)} Online Now`
+                                    }
                                 </button>
 
                                 <p className="mt-4 text-center text-[10px] text-slate-400 font-medium">
