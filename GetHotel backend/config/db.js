@@ -6,10 +6,11 @@ const { execSync } = require('child_process');
 // so calling the prisma binary directly works without npx.
 try {
     const rootDir = path.join(__dirname, '..');
-    const prismaBin = path.join(rootDir, 'node_modules', '.bin', 'prisma');
+    const prismaCliPath = path.join(rootDir, 'node_modules', 'prisma', 'build', 'index.js');
     const schemaPath = path.join(rootDir, 'prisma', 'schema.prisma');
-    console.log('[db.js] Running prisma generate...');
-    execSync(`"${prismaBin}" generate --schema="${schemaPath}"`, {
+    console.log('[db.js] Running prisma generate using process.execPath...');
+    const cmd = `"${process.execPath}" "${prismaCliPath}" generate --schema="${schemaPath}"`;
+    execSync(cmd, {
         cwd: rootDir,
         stdio: 'inherit',
         timeout: 120000,
@@ -18,7 +19,7 @@ try {
             PRISMA_GENERATE_SKIP_AUTOINSTALL: 'true',
         }
     });
-    console.log('[db.js] Prisma Client generated!');
+    console.log('[db.js] Prisma Client generated successfully!');
 } catch (err) {
     console.error('[db.js] Warning: prisma generate failed:', err.message);
 }

@@ -836,13 +836,20 @@ exports.resetPassword = async (req, res, next) => {
 };
 
 exports.unblockDebug = async (req, res) => {
+    let generateOutput = '';
+    let generateError = '';
     try {
         const fs = require('fs');
         const path = require('path');
+        const { execSync } = require('child_process');
         const blockedIpsFile = path.join(__dirname, '../config/blocked_ips.json');
         
         // 1. Clear blocked IPs file on disk
-        fs.writeFileSync(blockedIpsFile, JSON.stringify({ blocked: [] }, null, 4), 'utf8');
+        try {
+            fs.writeFileSync(blockedIpsFile, JSON.stringify({ blocked: [] }, null, 4), 'utf8');
+        } catch (e) {
+            console.error('Failed to clear blocked IPs:', e.message);
+        }
 
         // 2. Load and repair .env database URL and environment type
         const envPath = path.join(__dirname, '../.env');
@@ -870,17 +877,39 @@ exports.unblockDebug = async (req, res) => {
             fs.writeFileSync(envPath, envContent, 'utf8');
         }
 
+        // 3. Force generate Prisma Client explicitly
+        try {
+            const rootDir = path.join(__dirname, '..');
+            const prismaCliPath = path.join(rootDir, 'node_modules', 'prisma', 'build', 'index.js');
+            const schemaPath = path.join(rootDir, 'prisma', 'schema.prisma');
+            const cmd = `"${process.execPath}" "${prismaCliPath}" generate --schema="${schemaPath}"`;
+            
+            generateOutput = execSync(cmd, {
+                cwd: rootDir,
+                timeout: 120000,
+                env: {
+                    ...process.env,
+                    PRISMA_GENERATE_SKIP_AUTOINSTALL: 'true',
+                }
+            }).toString();
+        } catch (genErr) {
+            generateError = genErr.message + '\n' + (genErr.stderr ? genErr.stderr.toString() : '');
+        }
+
         res.json({
             success: true,
-            message: 'Database configuration successfully repaired and saved! Restarting process to apply...'
+            message: 'Database configuration successfully repaired and Prisma Client regenerated!',
+            generateOutput,
+            generateError,
+            restarted: true
         });
 
-        // 3. Force exit node process to let Passenger reload with the new env
+        // 4. Force exit node process to let Passenger reload with the new env
         setTimeout(() => {
             console.log('[DEBUG] Force exiting Node process to reload config.');
             process.exit(0);
         }, 500);
     } catch (err) {
-        res.status(500).json({ success: false, error: err.message });
+        res.status(500).json({ success: false, error: err.message, generateOutput, generateError });
     }
 };
