@@ -169,7 +169,7 @@ const testHandler = async (req, res) => {
 
     res.json({
         message: 'Backend is ALIVE',
-        version: 'v2.4-ISACTIVE-FIX-25MAY',
+        version: 'v2.5-DEPLOY-TEST-13JUNE',
         server_directory: __dirname,
         database: dbStatus,
         fix_results: fixResults,
