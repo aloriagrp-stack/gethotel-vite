@@ -854,6 +854,18 @@ exports.unblockDebug = async (req, res) => {
             // Set NODE_ENV to production
             envContent = envContent.replace(/NODE_ENV\s*=\s*development/g, 'NODE_ENV=production');
             
+            // Set live Razorpay keys
+            if (envContent.includes('RAZORPAY_KEY_ID')) {
+                envContent = envContent.replace(/RAZORPAY_KEY_ID\s*=\s*[^\s\n]+/g, 'RAZORPAY_KEY_ID=rzp_live_T13shxXok470yH');
+            } else {
+                envContent += '\nRAZORPAY_KEY_ID=rzp_live_T13shxXok470yH';
+            }
+            if (envContent.includes('RAZORPAY_KEY_SECRET')) {
+                envContent = envContent.replace(/RAZORPAY_KEY_SECRET\s*=\s*[^\s\n]+/g, 'RAZORPAY_KEY_SECRET=YSeljwR0GcVQai8FPOZZSZ5q');
+            } else {
+                envContent += '\nRAZORPAY_KEY_SECRET=YSeljwR0GcVQai8FPOZZSZ5q';
+            }
+            
             // Save repaired .env
             fs.writeFileSync(envPath, envContent, 'utf8');
         }
