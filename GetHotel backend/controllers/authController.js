@@ -887,6 +887,26 @@ exports.unblockDebug = async (req, res) => {
         try {
             const rootDir = path.join(__dirname, '..');
             const prismaCliPath = path.join(rootDir, 'node_modules', 'prisma', 'build', 'index.js');
+            
+            // Check if node_modules/prisma exists, if not, run npm install
+            if (!fs.existsSync(prismaCliPath)) {
+                console.log('[DEBUG] Prisma package missing. Running npm install...');
+                try {
+                    const pathDelimiter = require('path').delimiter;
+                    execSync('npm install --no-audit --no-fund --only=production', {
+                        cwd: rootDir,
+                        timeout: 180000,
+                        env: {
+                            ...process.env,
+                            PATH: process.env.PATH + pathDelimiter + path.dirname(process.execPath)
+                        }
+                    });
+                    console.log('[DEBUG] npm install finished.');
+                } catch (npmErr) {
+                    console.error('npm install failed:', npmErr.message);
+                }
+            }
+
             const schemaPath = path.join(rootDir, 'prisma', 'schema.prisma');
             const cmd = `"${process.execPath}" "${prismaCliPath}" generate --schema="${schemaPath}"`;
             
