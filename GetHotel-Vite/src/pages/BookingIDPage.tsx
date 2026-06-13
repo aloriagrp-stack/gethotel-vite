@@ -278,45 +278,10 @@ function BookingContent() {
     };
 
     const [isVerifying, setIsVerifying] = useState(false);
-    const [showSandboxModal, setShowSandboxModal] = useState(false);
+
     const [tempBooking, setTempBooking] = useState<any>(null);
 
-    const handleSimulatedPaymentSuccess = async () => {
-        try {
-            setIsVerifying(true);
-            setShowSandboxModal(false);
-            setError(null);
 
-            if (!tempBooking) {
-                throw new Error("No active booking found to verify.");
-            }
-
-            // Call verifyPayment with bypass params
-            await paymentApi.verifyPayment({
-                razorpay_order_id: tempBooking.razorpayOrderId || "mock_order_id",
-                razorpay_payment_id: "payu_mock_success_bypass",
-                razorpay_signature: "mock_signature",
-                booking_id: tempBooking.id
-            });
-
-            setCreatedBookingId(tempBooking.id.toString());
-            setCurrentBooking({
-                ...tempBooking,
-                hotel,
-                room: selectedRoomsData[0], // Simplified for receipt
-                guestFirstName: guestData.firstName,
-                guestLastName: guestData.lastName,
-                guestEmail: guestData.email,
-                guestPhone: `${guestData.countryCode} ${guestData.phone}`
-            });
-            sessionStorage.removeItem(`booking_guest_data_${hotelId}`);
-            setSuccess(true);
-        } catch (err: any) {
-            setError(err.message || "Simulated booking confirmation failed.");
-        } finally {
-            setIsVerifying(false);
-        }
-    };
 
     const handleConfirmBooking = async () => {
         // Validation
@@ -415,8 +380,8 @@ function BookingContent() {
                 const rzp = new (window as any).Razorpay(options);
                 rzp.open();
             } catch (orderError: any) {
-                console.warn("Razorpay flow failed, launching Sandbox payment gateway simulation overlay:", orderError);
-                setShowSandboxModal(true);
+                console.error("Razorpay payment flow failed:", orderError);
+                setError(orderError.message || "Payment gateway could not be initialized. Please try again.");
             }
 
         } catch (err: any) {
@@ -1097,81 +1062,13 @@ function BookingContent() {
                                 <p className="mt-4 text-[10px] text-slate-400 text-center font-bold uppercase tracking-widest">
                                     Safe & Secure Payments by GetHotel
                                 </p>
-                                
-                                <div className="mt-4 py-2 bg-amber-50 border border-amber-200 rounded-xl text-center">
-                                    <p className="text-[8px] font-black text-amber-600 uppercase tracking-[0.2em]">Test Mode Active: Razorpay Bypassed</p>
-                                </div>
+
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            {/* PayU Onboarding Sandbox Simulator Modal */}
-            <AnimatePresence>
-                {showSandboxModal && (
-                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
-                        <motion.div 
-                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl border border-slate-100 text-slate-800"
-                        >
-                            <div className="flex justify-between items-center pb-6 border-b border-slate-100 mb-6">
-                                <div className="flex items-center gap-2">
-                                    <span className="text-xl font-black italic tracking-tighter text-slate-900 uppercase">PayU<span className="text-emerald-500">.</span></span>
-                                    <span className="px-2.5 py-0.5 bg-emerald-50 text-emerald-700 text-[8px] font-black uppercase tracking-widest rounded-full border border-emerald-100">Sandbox</span>
-                                </div>
-                                <button 
-                                    onClick={() => setShowSandboxModal(false)}
-                                    type="button"
-                                    className="p-1 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-all"
-                                >
-                                    <X className="w-5 h-5" />
-                                </button>
-                            </div>
 
-                            <div className="space-y-4 mb-8 text-left">
-                                <h4 className="text-base font-black text-slate-900">Confirm Booking Payment</h4>
-                                <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                                    To secure your booking at <strong className="text-slate-700">{hotel?.name}</strong>, please complete the 12% deposit payment using the simulated Sandbox.
-                                </p>
-                                
-                                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-150 space-y-2">
-                                    <div className="flex justify-between text-xs font-bold text-slate-400 uppercase">
-                                        <span>Stay Amount:</span>
-                                        <span className="text-slate-800 font-black">{formatPrice(total)}</span>
-                                    </div>
-                                    <div className="flex justify-between text-xs font-bold text-slate-400 uppercase pt-2 border-t border-slate-200">
-                                        <span className="text-emerald-600 font-black">Payable Now (12%):</span>
-                                        <span className="text-emerald-700 text-sm font-black italic">{formatPrice(Math.round(total * 0.12))}</span>
-                                    </div>
-                                </div>
-
-                                <div className="text-[10px] text-slate-400 font-bold bg-amber-50 border border-amber-100 p-3 rounded-xl leading-relaxed">
-                                    ⚠️ <strong>Review Mode:</strong> This sandbox simulates a successful payment integration directly with the booking system to facilitate PayU compliance onboarding.
-                                </div>
-                            </div>
-
-                            <div className="flex flex-col gap-3">
-                                <button
-                                    onClick={handleSimulatedPaymentSuccess}
-                                    type="button"
-                                    className="w-full py-4 bg-emerald-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-emerald-100 hover:bg-emerald-700 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer"
-                                >
-                                    <Check className="w-4.5 h-4.5" /> Simulate Success & Book
-                                </button>
-                                <button
-                                    onClick={() => setShowSandboxModal(false)}
-                                    type="button"
-                                    className="w-full py-4 bg-white border border-slate-200 text-slate-500 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 active:scale-98 transition-all cursor-pointer"
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
         </div>
     );
 }

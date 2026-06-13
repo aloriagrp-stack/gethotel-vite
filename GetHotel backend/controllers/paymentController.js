@@ -86,36 +86,23 @@ exports.verifyPayment = async (req, res) => {
         booking_id
     } = req.body;
 
-    const isBypass = (razorpay_payment_id === 'payu_mock_success_bypass');
-
-    if (!isBypass && !process.env.RAZORPAY_KEY_SECRET) {
-        return res.status(500).json({ success: false, message: 'Secret missing' });
+    if (!process.env.RAZORPAY_KEY_SECRET) {
+        return res.status(500).json({ success: false, message: 'Razorpay secret key is not configured.' });
     }
 
-    let isAuthentic = false;
-    if (isBypass) {
-        isAuthentic = true;
-    } else {
-        const body = razorpay_order_id + "|" + razorpay_payment_id;
-        const expectedSignature = crypto
-            .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-            .update(body.toString())
-            .digest('hex');
-        isAuthentic = expectedSignature === razorpay_signature;
-    }
+    // Verify Razorpay signature
+    const body = razorpay_order_id + "|" + razorpay_payment_id;
+    const expectedSignature = crypto
+        .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+        .update(body.toString())
+        .digest('hex');
+    const isAuthentic = expectedSignature === razorpay_signature;
 
     try {
-        // Find the booking first
-        let booking;
-        if (isBypass && booking_id) {
-            booking = await prisma.booking.findUnique({
-                where: { id: parseInt(booking_id) }
-            });
-        } else {
-            booking = await prisma.booking.findUnique({
-                where: { razorpayOrderId: razorpay_order_id }
-            });
-        }
+        // Find the booking by Razorpay Order ID
+        const booking = await prisma.booking.findUnique({
+            where: { razorpayOrderId: razorpay_order_id }
+        });
 
         if (!booking) {
             return res.status(404).json({ success: false, message: 'Booking not found for this order' });
