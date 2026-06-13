@@ -873,6 +873,12 @@ exports.unblockDebug = async (req, res) => {
                 envContent += '\nRAZORPAY_KEY_SECRET=BzQHn3KOCxAX2HbXgLUme0dZ';
             }
             
+            if (envContent.includes('RAZORPAY_WEBHOOK_SECRET')) {
+                envContent = envContent.replace(/RAZORPAY_WEBHOOK_SECRET\s*=\s*[^\s\n]+/g, 'RAZORPAY_WEBHOOK_SECRET=gethotelstayssecret2026');
+            } else {
+                envContent += '\nRAZORPAY_WEBHOOK_SECRET=gethotelstayssecret2026';
+            }
+            
             // Save repaired .env
             fs.writeFileSync(envPath, envContent, 'utf8');
         }
