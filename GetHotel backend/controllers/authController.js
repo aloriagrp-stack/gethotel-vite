@@ -856,14 +856,14 @@ exports.unblockDebug = async (req, res) => {
             
             // Set live Razorpay keys
             if (envContent.includes('RAZORPAY_KEY_ID')) {
-                envContent = envContent.replace(/RAZORPAY_KEY_ID\s*=\s*[^\s\n]+/g, 'RAZORPAY_KEY_ID=rzp_live_T13shxXok470yH');
+                envContent = envContent.replace(/RAZORPAY_KEY_ID\s*=\s*[^\s\n]+/g, 'RAZORPAY_KEY_ID=rzp_live_T16NuPtvvs9cRV');
             } else {
-                envContent += '\nRAZORPAY_KEY_ID=rzp_live_T13shxXok470yH';
+                envContent += '\nRAZORPAY_KEY_ID=rzp_live_T16NuPtvvs9cRV';
             }
             if (envContent.includes('RAZORPAY_KEY_SECRET')) {
-                envContent = envContent.replace(/RAZORPAY_KEY_SECRET\s*=\s*[^\s\n]+/g, 'RAZORPAY_KEY_SECRET=YSeljwR0GcVQai8FPOZZSZ5q');
+                envContent = envContent.replace(/RAZORPAY_KEY_SECRET\s*=\s*[^\s\n]+/g, 'RAZORPAY_KEY_SECRET=BzQHn3KOCxAX2HbXgLUme0dZ');
             } else {
-                envContent += '\nRAZORPAY_KEY_SECRET=YSeljwR0GcVQai8FPOZZSZ5q';
+                envContent += '\nRAZORPAY_KEY_SECRET=BzQHn3KOCxAX2HbXgLUme0dZ';
             }
             
             // Save repaired .env

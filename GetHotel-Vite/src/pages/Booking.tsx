@@ -403,7 +403,7 @@ function BookingContent() {
                         const orderRes = await paymentApi.createOrder(booking.id);
                         
                         const options = {
-                            key: import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_live_T13shxXok470yH",
+                            key: import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_live_T16NuPtvvs9cRV",
                             amount: orderRes.amount,
                             currency: orderRes.currency,
                             name: "GetHotel.",
