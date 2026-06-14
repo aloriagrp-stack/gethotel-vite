@@ -153,6 +153,7 @@ Your tasks:
    - **CRITICAL**: For any room that already exists in the "Existing Rooms Context", you MUST preserve its database "id" field exactly in the output. This allows the backend to update the existing record instead of creating a duplicate.
    - For new room categories, do not include an "id" or set it to null.
    - Explain what edits were performed in the "reply" field.
+4. If the user asks you to look up, search, or research a hotel (e.g. "search Google for Hotel Gold Souk rooms"), or if you need to find fresh details/listings for the property on the internet, utilize your Google Search tool to find relevant travel listing web pages (e.g., Booking.com, Agoda, MakeMyTrip). Process the search results to extract, update, or structure the rooms.
 
 For each room category:
 - Identify its name, size (in sq meters), bed config, max occupancy, and total description.
@@ -182,10 +183,11 @@ Output strictly valid JSON matching the requested schema. Do not include any mar
             parts: [{ text: userInput.trim() ? userInput : (prompt || "Continue chatting") }]
         });
 
-        console.log("[AI Copilot] Calling Gemini API with history...");
+        console.log("[AI Copilot] Calling Gemini API with history and Google Search grounding...");
         const model = genAI.getGenerativeModel({
             model: "gemini-2.5-flash",
             systemInstruction,
+            tools: [{ googleSearch: {} }],
             generationConfig: {
                 responseMimeType: "application/json",
                 responseSchema: copilotSchema,
