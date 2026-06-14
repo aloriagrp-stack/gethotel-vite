@@ -30,6 +30,7 @@ export default function AdminAICopilot({ hotels }: AdminAICopilotProps) {
     const [loading, setLoading] = useState(false);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [existingRooms, setExistingRooms] = useState<any[]>([]);
+    const [loadingRoomsPercent, setLoadingRoomsPercent] = useState<number | null>(null);
     const [confirmModal, setConfirmModal] = useState<{
         show: boolean;
         messageId: string;
@@ -43,20 +44,45 @@ export default function AdminAICopilot({ hotels }: AdminAICopilotProps) {
 
     // Fetch existing rooms whenever selected hotel changes
     useEffect(() => {
+        let progressInterval: any = null;
         if (selectedHotelId) {
+            setLoadingRoomsPercent(0);
+            let progress = 0;
+            progressInterval = setInterval(() => {
+                progress += Math.floor(Math.random() * 10) + 5;
+                if (progress >= 95) {
+                    progress = 95;
+                    if (progressInterval) clearInterval(progressInterval);
+                }
+                setLoadingRoomsPercent(progress);
+            }, 100);
+
             hotelApi.getRooms(selectedHotelId.toString()).then(res => {
+                if (progressInterval) clearInterval(progressInterval);
+                setLoadingRoomsPercent(100);
+                setTimeout(() => {
+                    setLoadingRoomsPercent(null);
+                }, 300);
+
                 if (res.success && Array.isArray(res.data)) {
                     setExistingRooms(res.data);
                 } else {
                     setExistingRooms([]);
                 }
             }).catch(err => {
+                if (progressInterval) clearInterval(progressInterval);
+                setLoadingRoomsPercent(null);
                 console.error("Failed to fetch existing rooms", err);
                 setExistingRooms([]);
             });
         } else {
             setExistingRooms([]);
+            setLoadingRoomsPercent(null);
         }
+
+        return () => {
+            if (progressInterval) clearInterval(progressInterval);
+        };
     }, [selectedHotelId]);
 
     // Initial Welcome Message
@@ -354,19 +380,30 @@ export default function AdminAICopilot({ hotels }: AdminAICopilotProps) {
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
-                    <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Target Hotel:</span>
+                    <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
+                        {loadingRoomsPercent !== null ? `Loading Rooms (${loadingRoomsPercent}%):` : "Target Hotel:"}
+                    </span>
                     <div className="relative">
                         <select
                             value={selectedHotelId}
                             onChange={(e) => setSelectedHotelId(e.target.value === "" ? "" : Number(e.target.value))}
-                            className="appearance-none pl-4 pr-10 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-sm text-xs font-bold text-slate-900 focus:outline-none focus:border-slate-400 transition-colors cursor-pointer w-64"
+                            disabled={loadingRoomsPercent !== null}
+                            className="appearance-none pl-4 pr-10 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-sm text-xs font-bold text-slate-900 focus:outline-none focus:border-slate-400 transition-colors cursor-pointer w-64 disabled:opacity-80"
                         >
-                            <option value="">-- Select Target Hotel --</option>
-                            {hotels.map((h) => (
-                                <option key={h.id} value={h.id}>
-                                    {h.name} ({h.city})
+                            {loadingRoomsPercent !== null ? (
+                                <option value={selectedHotelId}>
+                                    {activeHotel ? `${activeHotel.name} (Loading ${loadingRoomsPercent}%)` : `Loading ${loadingRoomsPercent}%`}
                                 </option>
-                            ))}
+                            ) : (
+                                <>
+                                    <option value="">-- Select Target Hotel --</option>
+                                    {hotels.map((h) => (
+                                        <option key={h.id} value={h.id}>
+                                            {h.name} ({h.city})
+                                        </option>
+                                    ))}
+                                </>
+                            )}
                         </select>
                         <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                     </div>
