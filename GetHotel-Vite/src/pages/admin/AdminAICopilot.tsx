@@ -613,6 +613,39 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                                                             className="w-full mt-1 px-3 py-2 border border-slate-200 rounded-sm text-xs font-bold text-slate-900 focus:outline-none focus:border-slate-400 resize-none"
                                                         />
                                                     </div>
+
+                                                    {/* Rate Plans / Variants */}
+                                                    {room.variants && room.variants.length > 0 && (
+                                                        <div className="space-y-1.5">
+                                                            <label className="text-[9px] font-black uppercase text-slate-400 tracking-wider block">Scraped Rate Plans (EP, CP, MAP, AP)</label>
+                                                            <div className="space-y-1.5 p-2 bg-slate-50 border border-slate-100 rounded-sm">
+                                                                {room.variants.map((v: any, vIdx: number) => (
+                                                                    <div key={vIdx} className="flex items-center justify-between text-[11px] font-bold text-slate-700 bg-white border border-slate-200/50 p-2 rounded-sm shadow-xs">
+                                                                        <div className="flex flex-col min-w-0 pr-2">
+                                                                            <span className="text-slate-900 font-extrabold truncate">{v.mealPlan}</span>
+                                                                            <span className="text-[8px] text-slate-400 font-bold uppercase tracking-wider truncate">{v.policy}</span>
+                                                                        </div>
+                                                                        <div className="flex items-center gap-1 shrink-0">
+                                                                            <span className="text-slate-400 text-[10px]">₹</span>
+                                                                            <input 
+                                                                                type="number"
+                                                                                value={v.price}
+                                                                                onChange={(e) => {
+                                                                                    const updatedVariants = [...room.variants];
+                                                                                    updatedVariants[vIdx] = {
+                                                                                        ...updatedVariants[vIdx],
+                                                                                        price: Number(e.target.value)
+                                                                                    };
+                                                                                    handleFieldChange(msg.id, rIdx, "variants", updatedVariants);
+                                                                                }}
+                                                                                className="w-16 px-1.5 py-0.5 border border-slate-200 rounded-sm text-xs font-black text-slate-900 text-right focus:outline-none focus:border-slate-400"
+                                                                            />
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
 
                                                 {/* Amenities Tag List */}

@@ -35,26 +35,45 @@ exports.suggestRooms = async (req, res) => {
 
         let contextText = "";
 
-        // If a URL is provided, try to fetch and parse it
+        let otaContext = "";
+
+        // If a URL is provided, try to scrape it via detectOtaDetails
         if (url && String(url).startsWith('http')) {
             try {
-                console.log(`[AI Copilot] Fetching URL: ${url}`);
-                const response = await fetch(url, {
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-                    },
-                    signal: AbortSignal.timeout(10000) // 10s timeout
+                console.log(`[AI Copilot] Scraping URL via detectOtaDetails: ${url}`);
+                const { detectOtaDetails } = require('./adminController');
+                
+                // Fetch target hotel details to pass as fallback name
+                const targetHotel = await prisma.hotel.findUnique({
+                    where: { id: Number(hotelId) }
                 });
-
-                if (response.ok) {
-                    const html = await response.text();
-                    contextText = cleanHtmlText(html).slice(0, 50000); // Limit context size
-                    console.log(`[AI Copilot] Cleaned ${contextText.length} characters of page text.`);
-                } else {
-                    console.warn(`[AI Copilot] URL fetch failed with status: ${response.status}`);
+                const hotelName = targetHotel ? targetHotel.name : "Target Hotel";
+                const basePrice = targetHotel ? targetHotel.pricePerNight : 2500;
+                
+                const scrapedData = await detectOtaDetails(url, hotelName, basePrice);
+                if (scrapedData) {
+                    otaContext = `We scraped the following high-fidelity hotel details and room configurations from the OTA URL (${url}):\n${JSON.stringify(scrapedData, null, 2)}\n`;
+                    console.log(`[AI Copilot] Synced OTA data context successfully parsed.`);
                 }
             } catch (err) {
-                console.error(`[AI Copilot] Failed to fetch URL: ${err.message}`);
+                console.error(`[AI Copilot] Failed to scrape URL via detectOtaDetails: ${err.message}`);
+                
+                // Fallback to generic simple HTTP fetch if detectOtaDetails fails or is not available
+                try {
+                    console.log(`[AI Copilot] Scraper fallback: Fetching URL directly...`);
+                    const response = await fetch(url, {
+                        headers: {
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                        },
+                        signal: AbortSignal.timeout(10000) // 10s timeout
+                    });
+                    if (response.ok) {
+                        const html = await response.text();
+                        contextText = cleanHtmlText(html).slice(0, 50000); // Limit context size
+                    }
+                } catch (fallbackErr) {
+                    console.error(`[AI Copilot] Scraper fallback also failed: ${fallbackErr.message}`);
+                }
             }
         }
 
@@ -80,6 +99,7 @@ exports.suggestRooms = async (req, res) => {
         const userInput = `
 ${prompt ? `Instructions/Prompt: ${prompt}\n` : ''}
 ${existingRoomsContext ? `Existing Rooms Context:\n${existingRoomsContext}\n` : ''}
+${otaContext ? `OTA Synced Context:\n${otaContext}\n` : ''}
 ${contextText ? `Webpage raw text context:\n${contextText}\n` : ''}
 `;
 
@@ -105,7 +125,7 @@ ${contextText ? `Webpage raw text context:\n${contextText}\n` : ''}
                         type: "object",
                         properties: {
                             id: { type: "number", description: "Database ID of the room category if it is an existing room being edited. Omit or set to null/0 for new room categories." },
-                            name: { type: "string", description: "Name of the room category (e.g. Deluxe Double Room, Superior Suite)" },
+                            name: { type: "string", description: "Name of the room category. CRITICAL: Match the exact name of the room category as it appears in the scraped OTA context (e.g., 'Standard Double or Twin Room'). Do not change, standardise, or genericise it." },
                             description: { type: "string", description: "Brief description of the room and its view/comfort" },
                             pricePerNight: { type: "number", description: "Estimated price per night in INR" },
                             maxOccupancy: { type: "number", description: "Maximum number of total guests allowed in the room" },
@@ -114,7 +134,7 @@ ${contextText ? `Webpage raw text context:\n${contextText}\n` : ''}
                             amenities: {
                                 type: "array",
                                 items: { type: "string" },
-                                description: "List of standard amenities in this room category (e.g. Air conditioning, Free Wi-Fi, Flat-screen TV, Coffee maker)"
+                                description: "Comprehensive list of detailed amenities in this room category. You MUST include at least 10 detailed amenities if available in the context (e.g. Air conditioning, Free Wi-Fi, Flat-screen TV, Coffee maker, Private bathroom, Free toiletries, Shower, Towels, Desk)."
                             },
                             totalInventory: { type: "number", description: "Default total inventory count for this room category" },
                             variants: {
@@ -171,6 +191,8 @@ Your tasks:
 5. If the user explicitly asks you to delete, clear, or remove all rooms/categories of the hotel, set the "clearAllRooms" boolean property to true, set "rooms" as an empty array [], and explain the deletion in the "reply" field.
 
 For each room category:
+- **CRITICAL NAME MATCHING**: The room names ("name" field) MUST match the exact names of the room categories as parsed from the OTA link context (e.g., if the link context says "Standard Double or Twin Room", use exactly "Standard Double or Twin Room", do not change, shorten, or genericise it).
+- **CRITICAL AMENITIES EXTRACTION**: Compile a comprehensive list of amenities. You MUST extract and list at least 10 detailed amenities per room category if they are available in the crawled context (e.g., "Air conditioning", "Free Wi-Fi", "Flat-screen TV", "Minibar", "Electric kettle", "Private bathroom", "Free toiletries", "Shower", "Slippers", "Towels", "Desk", "Safe"). Do not truncate or shorten the list of amenities.
 - Identify its name, size (in sq meters), bed config, max occupancy, and total description.
 - Estimate or extract its base price per night in INR. If a price is found in a foreign currency, convert it to INR (roughly ₹85 to $1 USD).
 - Compile a clean list of amenities. Standardize amenity names (e.g. use "Air conditioning", "Free Wi-Fi", "Minibar", "Electric kettle", "Flat-screen TV").
