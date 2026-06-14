@@ -1,4 +1,4 @@
-const { GoogleGenAI } = require('@google/generative-ai');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 const prisma = require('../config/db');
 
 // Helper to strip script/style/HTML tags to extract readable text content
@@ -27,7 +27,7 @@ exports.suggestRooms = async (req, res) => {
             });
         }
 
-        const { hotelId, prompt, url } = req.body;
+        const { hotelId, prompt, url, history } = req.body;
 
         if (!hotelId) {
             return res.status(400).json({ success: false, message: "hotelId is required" });
@@ -48,14 +48,13 @@ exports.suggestRooms = async (req, res) => {
 
                 if (response.ok) {
                     const html = await response.text();
-                    contextText = cleanHtmlText(html).slice(0, 50000); // Limit to first 50k characters to prevent huge token limits
+                    contextText = cleanHtmlText(html).slice(0, 50000); // Limit context size
                     console.log(`[AI Copilot] Fetched and cleaned ${contextText.length} characters of page text.`);
                 } else {
                     console.warn(`[AI Copilot] URL fetch failed with status: ${response.status}`);
                 }
             } catch (err) {
                 console.error(`[AI Copilot] Failed to fetch URL: ${err.message}`);
-                // Continue with just prompt if fetch fails
             }
         }
 
@@ -65,84 +64,116 @@ ${prompt ? `Instructions/Prompt: ${prompt}\n` : ''}
 ${contextText ? `Webpage raw text context:\n${contextText}\n` : ''}
 `;
 
-        if (!userInput.trim()) {
-            return res.status(400).json({ success: false, message: "Please provide either a prompt or a valid hotel URL." });
+        if (!userInput.trim() && (!Array.isArray(history) || history.length === 0)) {
+            return res.status(400).json({ success: false, message: "Please provide either a prompt, a valid hotel URL, or query." });
         }
 
         // Initialize Gemini
-        const ai = new GoogleGenAI({ apiKey });
+        const genAI = new GoogleGenerativeAI(apiKey);
         
-        // Define Structured Schema for Gemini JSON Output
-        const roomSchema = {
-            type: "array",
-            description: "List of room categories extracted from the text.",
-            items: {
-                type: "object",
-                properties: {
-                    name: { type: "string", description: "Name of the room category (e.g. Deluxe Double Room, Superior Suite)" },
-                    description: { type: "string", description: "Brief description of the room and its view/comfort" },
-                    pricePerNight: { type: "number", description: "Estimated price per night in INR" },
-                    maxOccupancy: { type: "number", description: "Maximum number of total guests allowed in the room" },
-                    bedConfiguration: { type: "string", description: "Bed configuration (e.g. 1 king bed, 2 twin beds)" },
-                    sizeM2: { type: "number", description: "Room size in square meters" },
-                    amenities: {
-                        type: "array",
-                        items: { type: "string" },
-                        description: "List of standard amenities in this room category (e.g. Air conditioning, Free Wi-Fi, Flat-screen TV, Coffee maker)"
-                    },
-                    totalInventory: { type: "number", description: "Default total inventory count for this room category" },
-                    variants: {
-                        type: "array",
-                        description: "Applicable meal plan variants (standard is Room Only/EP, Breakfast Included/CP)",
-                        items: {
-                            type: "object",
-                            properties: {
-                                mealPlan: { type: "string", description: "Meal plan type (e.g. Room Only, Breakfast Included)" },
-                                price: { type: "number", description: "Price for this specific variant in INR" },
-                                policy: { type: "string", description: "Cancellation policy description" }
-                            },
-                            required: ["mealPlan", "price", "policy"]
-                        }
-                    }
+        // Define Structured Schema for Gemini JSON Output (Conversational + Rooms list)
+        const copilotSchema = {
+            type: "object",
+            properties: {
+                reply: {
+                    type: "string",
+                    description: "A friendly, helpful, conversational response to the user's message. Explain what was found, greet them, answer their questions, or guide them on what info is needed."
                 },
-                required: ["name", "pricePerNight", "maxOccupancy", "amenities"]
-            }
+                rooms: {
+                    type: "array",
+                    description: "List of room categories extracted from the text. This MUST be empty [] if the user is just chatting or if no rooms are mentioned.",
+                    items: {
+                        type: "object",
+                        properties: {
+                            name: { type: "string", description: "Name of the room category (e.g. Deluxe Double Room, Superior Suite)" },
+                            description: { type: "string", description: "Brief description of the room and its view/comfort" },
+                            pricePerNight: { type: "number", description: "Estimated price per night in INR" },
+                            maxOccupancy: { type: "number", description: "Maximum number of total guests allowed in the room" },
+                            bedConfiguration: { type: "string", description: "Bed configuration (e.g. 1 king bed, 2 twin beds)" },
+                            sizeM2: { type: "number", description: "Room size in square meters" },
+                            amenities: {
+                                type: "array",
+                                items: { type: "string" },
+                                description: "List of standard amenities in this room category (e.g. Air conditioning, Free Wi-Fi, Flat-screen TV, Coffee maker)"
+                            },
+                            totalInventory: { type: "number", description: "Default total inventory count for this room category" },
+                            variants: {
+                                type: "array",
+                                description: "Applicable meal plan variants (standard is Room Only/EP, Breakfast Included/CP)",
+                                items: {
+                                    type: "object",
+                                    properties: {
+                                        mealPlan: { type: "string", description: "Meal plan type (e.g. Room Only, Breakfast Included)" },
+                                        price: { type: "number", description: "Price for this specific variant in INR" },
+                                        policy: { type: "string", description: "Cancellation policy description" }
+                                    },
+                                    required: ["mealPlan", "price", "policy"]
+                                }
+                            }
+                        },
+                        required: ["name", "pricePerNight", "maxOccupancy", "amenities"]
+                    }
+                }
+            },
+            required: ["reply", "rooms"]
         };
 
         const systemInstruction = `
 You are an expert AI Travel Copilot helping administrators onboard hotel properties to their reservation engine.
-Analyze the provided user instructions or scraped webpage text and extract all listed room categories.
+You are conversational, friendly, helpful, and interactive.
+Your tasks:
+1. If the user is just greeting you, asking questions, or discussing general details, respond conversationally in the "reply" field. Keep "rooms" as an empty array [].
+2. If the user provides hotel details, description text, or a URL context and asks to extract, draft, or list room categories, analyze the text and extract all listed room categories.
+   - For each room category, populate the "rooms" array following the schema rules.
+   - Summarize what you found in a friendly manner in the "reply" field.
+3. If the user asks to modify a room or make changes based on previous history (e.g. "make standard room price 5000" or "add a balcony amenity to Deluxe"), adjust the rooms based on the history and user request, return the updated rooms in the "rooms" array, and explain the change in the "reply" field.
+
 For each room category:
-1. Identify its name, size (in sq meters), bed config, max occupancy, and total description.
-2. Estimate or extract its base price per night in INR. If a price is found in a foreign currency, convert it to INR (roughly ₹85 to $1 USD).
-3. Compile a clean list of amenities. Standardize amenity names (e.g. use "Air conditioning", "Free Wi-Fi", "Minibar", "Electric kettle", "Flat-screen TV").
-4. Formulate typical variants. For example:
-   - "Room Only" or "Room Only (EP)" (using base price)
-   - "Breakfast Included" or "Breakfast Included (CP)" (typically ₹300-₹500 more per guest)
-   Ensure variants have an incrementing integer ID starting from 1 in the final output.
-5. If details are missing, estimate standard reasonable values (e.g. standard Standard Double room size is 18m2, max occupancy is 2, standard inventory is 5).
+- Identify its name, size (in sq meters), bed config, max occupancy, and total description.
+- Estimate or extract its base price per night in INR. If a price is found in a foreign currency, convert it to INR (roughly ₹85 to $1 USD).
+- Compile a clean list of amenities. Standardize amenity names (e.g. use "Air conditioning", "Free Wi-Fi", "Minibar", "Electric kettle", "Flat-screen TV").
+- Formulate typical variants. For example:
+  - "Room Only" or "Room Only (EP)" (using base price)
+  - "Breakfast Included" or "Breakfast Included (CP)" (typically ₹300-₹500 more per guest)
+  Ensure variants have an incrementing integer ID starting from 1 in the final output.
+- If details are missing, estimate standard reasonable values (e.g. standard Standard Double room size is 18m2, max occupancy is 2, standard inventory is 5).
 
 Output strictly valid JSON matching the requested schema. Do not include any markdown fences (like \`\`\`json) outside the structural JSON formatting.
 `;
 
-        console.log("[AI Copilot] Calling Gemini API...");
-        const response = await ai.models.generateContent({
+        // Build Gemini contents with chat history if present
+        let contents = [];
+        if (Array.isArray(history) && history.length > 0) {
+            history.forEach(msg => {
+                contents.push({
+                    role: msg.role === "model" ? "model" : "user",
+                    parts: [{ text: msg.text }]
+                });
+            });
+        }
+        contents.push({
+            role: "user",
+            parts: [{ text: userInput.trim() ? userInput : (prompt || "Continue chatting") }]
+        });
+
+        console.log("[AI Copilot] Calling Gemini API with history...");
+        const model = genAI.getGenerativeModel({
             model: "gemini-2.5-flash",
-            contents: userInput,
-            config: {
-                systemInstruction,
+            systemInstruction,
+            generationConfig: {
                 responseMimeType: "application/json",
-                responseSchema: roomSchema,
-                temperature: 0.2
+                responseSchema: copilotSchema,
+                temperature: 0.3
             }
         });
 
-        const jsonText = response.text;
+        const result = await model.generateContent({ contents });
+        const jsonText = result.response.text();
         console.log("[AI Copilot] Gemini API response received.");
 
-        let parsedRooms = [];
+        let parsed = { reply: "", rooms: [] };
         try {
-            parsedRooms = JSON.parse(jsonText);
+            parsed = JSON.parse(jsonText);
         } catch (e) {
             console.error("Gemini failed to return valid JSON parser:", e.message);
             return res.status(500).json({
@@ -152,8 +183,10 @@ Output strictly valid JSON matching the requested schema. Do not include any mar
             });
         }
 
+        const rawRooms = Array.isArray(parsed.rooms) ? parsed.rooms : [];
+
         // Post-process to ensure variants have incremental IDs
-        const processedRooms = parsedRooms.map(room => {
+        const processedRooms = rawRooms.map(room => {
             const baseInventory = parseInt(room.totalInventory) || 5;
             const size = parseInt(room.sizeM2) || 18;
             
@@ -185,6 +218,7 @@ Output strictly valid JSON matching the requested schema. Do not include any mar
 
         res.status(200).json({
             success: true,
+            reply: parsed.reply || "Rooms list parsed successfully.",
             count: processedRooms.length,
             data: processedRooms
         });

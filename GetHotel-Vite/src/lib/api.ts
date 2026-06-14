@@ -173,7 +173,7 @@ export const adminApi = {
     deleteReview: (id: number) => apiFetch(`/admin/reviews/${id}`, { method: 'DELETE' }),
     getRoomsOverview: () => apiFetch('/admin/rooms-overview'),
     importOtaRooms: (data: { hotelId: number; otaUrl?: string; otaUrls?: string[]; syncMode?: "full" | "rooms" | "prices"; syncGroup?: boolean }) => apiFetch('/admin/rooms/import-ota', { method: 'POST', body: JSON.stringify(data) }),
-    suggestRooms: (data: { hotelId: number; prompt?: string; url?: string }) => apiFetch('/admin/ai/suggest-rooms', { method: 'POST', body: JSON.stringify(data) }),
+    suggestRooms: (data: { hotelId: number; prompt?: string; url?: string; history?: { role: string; text: string }[] }) => apiFetch('/admin/ai/suggest-rooms', { method: 'POST', body: JSON.stringify(data) }),
 };
 
 export const otaApi = {

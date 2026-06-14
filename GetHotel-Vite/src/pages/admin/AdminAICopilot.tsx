@@ -62,6 +62,14 @@ export default function AdminAICopilot({ hotels }: AdminAICopilotProps) {
 
         if (!promptText && !scrapingUrl) return;
 
+        // Collect chat history BEFORE adding the new message
+        const chatHistory = messages
+            .filter(m => m.id !== "welcome")
+            .map(m => ({
+                role: m.sender === "ai" ? "model" : "user",
+                text: m.text
+            }));
+
         // Reset inputs
         setInputValue("");
         setUrlInput("");
@@ -90,7 +98,7 @@ export default function AdminAICopilot({ hotels }: AdminAICopilotProps) {
             {
                 id: aiMessageId,
                 sender: "ai",
-                text: "Analyzing inputs and extracting structured room details using Gemini...",
+                text: "Thinking...",
                 timestamp: new Date()
             }
         ]);
@@ -101,19 +109,20 @@ export default function AdminAICopilot({ hotels }: AdminAICopilotProps) {
             const res = await adminApi.suggestRooms({
                 hotelId: Number(selectedHotelId),
                 prompt: promptText || undefined,
-                url: scrapingUrl || undefined
+                url: scrapingUrl || undefined,
+                history: chatHistory
             });
 
-            if (res.success && Array.isArray(res.data) && res.data.length > 0) {
+            if (res.success) {
                 // Update placeholder with parsed data
                 setMessages(prev => 
                     prev.map(msg => 
                         msg.id === aiMessageId 
                             ? {
                                 ...msg,
-                                text: `Successfully parsed ${res.data.length} room categories for "${activeHotel?.name}". You can review, edit, and confirm them in the preview below:`,
-                                suggestedRooms: res.data,
-                                status: "pending"
+                                text: res.reply || `Successfully processed request.`,
+                                suggestedRooms: Array.isArray(res.data) && res.data.length > 0 ? res.data : undefined,
+                                status: Array.isArray(res.data) && res.data.length > 0 ? "pending" : undefined
                               }
                             : msg
                     )
@@ -124,7 +133,7 @@ export default function AdminAICopilot({ hotels }: AdminAICopilotProps) {
                         msg.id === aiMessageId 
                             ? {
                                 ...msg,
-                                text: res.message || "Failed to extract any room categories. Please check your prompt or URL and try again."
+                                text: res.message || "Failed to process request. Please try again."
                               }
                             : msg
                     )
@@ -136,7 +145,7 @@ export default function AdminAICopilot({ hotels }: AdminAICopilotProps) {
                     msg.id === aiMessageId 
                         ? {
                             ...msg,
-                            text: `Error during AI extraction: ${err.message || "Request failed"}`
+                            text: `Error: ${err.message || "Request failed"}`
                           }
                         : msg
                 )
@@ -240,24 +249,15 @@ export default function AdminAICopilot({ hotels }: AdminAICopilotProps) {
             });
 
             // Call bulk update API
-            const res = await fetch(`/api/hotels/${selectedHotelId}/rooms/bulk`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem("token") || ""}` // Fallback auth lookup
-                },
-                body: JSON.stringify({ rooms: formattedRooms })
-            });
+            const res = await hotelApi.bulkUpdateRooms(Number(selectedHotelId), formattedRooms, []);
 
-            const json = await res.json();
-
-            if (json.success || res.status === 200) {
+            if (res.success) {
                 setMessages(prev => 
                     prev.map(msg => msg.id === messageId ? { ...msg, status: "saved" } : msg)
                 );
                 alert("Room categories added successfully to the hotel!");
             } else {
-                alert(`Error: ${json.message || "Failed to save rooms to the database"}`);
+                alert(`Error: ${res.message || "Failed to save rooms to the database"}`);
                 setMessages(prev => 
                     prev.map(msg => msg.id === messageId ? { ...msg, status: "error" } : msg)
                 );
