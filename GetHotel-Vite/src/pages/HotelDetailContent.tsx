@@ -480,7 +480,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
         });
 
         // 2. Sort fully valid promos to find the best applicable one
-        fullyValidPromos.sort((a, b) => Number(b.discountValue) - Number(a.discountValue));
+        fullyValidPromos.sort((a: any, b: any) => Number(b.discountValue) - Number(a.discountValue));
         const bestPromo = fullyValidPromos[0];
 
         // 3. Calculate final display results

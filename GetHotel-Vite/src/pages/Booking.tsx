@@ -292,7 +292,7 @@ function BookingContent() {
 
                     // Find best valid coupon
                     const validCoupons = activeCoupons.filter((c: any) => validateCoupon(c, stayDetailsForAutoApply).valid);
-                    validCoupons.sort((a, b) => Number(b.discountValue) - Number(a.discountValue));
+                    validCoupons.sort((a: any, b: any) => Number(b.discountValue) - Number(a.discountValue));
                     
                     if (validCoupons.length > 0) {
                         setAppliedCoupon(validCoupons[0]);
