@@ -420,6 +420,7 @@ const messages = require('./routes/messageRoutes');
 const analytics = require('./routes/analyticsRoutes');
 const homepage = require('./routes/homepageRoutes');
 const ota = require('./routes/otaRoutes');
+const ai = require('./routes/aiRoutes');
 const { protect, authorize } = require('./middleware/auth');
 const authController = require('./controllers/authController');
 const adminController = require('./controllers/adminController');
@@ -455,6 +456,7 @@ const mount = (prefix) => {
     app.use(`${prefix}/analytics`, analytics);
     app.use(`${prefix}/homepage`, homepage);
     app.use(`${prefix}/ota`, ota);
+    app.use(`${prefix}/admin/ai`, ai);
 };
 
 mount('/api');

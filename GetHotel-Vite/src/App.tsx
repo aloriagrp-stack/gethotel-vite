@@ -173,6 +173,7 @@ export default function App() {
                         <Route path="hotels" element={<SuperAdminDashboard />} />
                         <Route path="otasync" element={<SuperAdminDashboard />} />
                         <Route path="multi-room" element={<SuperAdminDashboard />} />
+                        <Route path="ai-copilot" element={<SuperAdminDashboard />} />
                         <Route path="hotels/:id" element={<AdminHotelDetails />} />
                         <Route path="bookings" element={<SuperAdminDashboard />} />
                         <Route path="reviews" element={<SuperAdminDashboard />} />

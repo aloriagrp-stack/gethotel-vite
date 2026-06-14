@@ -11,7 +11,7 @@ import {
     CheckCircle2, XCircle, Clock,
     CreditCard, TrendingUp, MoreVertical,
     ArrowUpRight, ArrowDownRight, Globe, ChevronRight, Loader2,
-    Key, ShieldAlert, Eye, EyeOff, Star, MessageSquare, Trash2,
+    Key, ShieldAlert, Eye, EyeOff, Star, MessageSquare, Trash2, Sparkles,
     UserCheck, Mail, Phone, Calendar, LogIn, Shield, Copy, ExternalLink, RefreshCw, LayoutGrid
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -24,6 +24,7 @@ import AdminControlHub from "./AdminControlHub";
 import AdminRoomSync from "./AdminRoomSync";
 import AdminAddPartner from "./AdminAddPartner";
 import AdminMultiRoomSetup from "./AdminMultiRoomSetup";
+import AdminAICopilot from "./AdminAICopilot";
 
 // ─── Safe Date Formatter ────────────────────────────────────────────────────
 function formatDateSafe(rawDate: string | Date | null | undefined, opts?: Intl.DateTimeFormatOptions): string {
@@ -394,6 +395,7 @@ export default function SuperAdminDashboard() {
         { id: "homepage", label: "Homepage Editor", icon: Settings },
         { id: "otasync", label: "OTA Room Sync", icon: RefreshCw },
         { id: "multi-room", label: "Multi Room Setup", icon: LayoutGrid },
+        { id: "ai-copilot", label: "AI Room Onboarding", icon: Sparkles },
     ];
 
     const stats = [
@@ -452,6 +454,7 @@ export default function SuperAdminDashboard() {
                     {activeTab === "otasync" && <AdminRoomSync />}
                     {activeTab === "multi-room" && <AdminMultiRoomSetup hotels={hotels} />}
                     {activeTab === "addPartner" && <AdminAddPartner hotels={hotels} partners={partners} setPartners={setPartners} />}
+                    {activeTab === "ai-copilot" && <AdminAICopilot hotels={hotels} />}
 
                     {activeTab === "overview" && (
                 <>
