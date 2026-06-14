@@ -617,9 +617,11 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
         .filter((r: any) => {
             if (stayType === 'hourly' && !(r.isHourlyEnabled || r.is_hourly_enabled)) return false;
             
-            // Filter out rooms that cannot accommodate the searched number of guests
-            const maxOcc = r.maxOccupancy || r.max_occupancy || r.capacityAdults || 2;
-            if (searchedGuests > maxOcc) return false;
+            // Filter out rooms that cannot accommodate the searched number of guests ONLY if guest count is explicitly searched
+            if (searchParams.has("adults") || searchParams.has("guests")) {
+                const maxOcc = r.maxOccupancy || r.max_occupancy || r.capacityAdults || 2;
+                if (searchedGuests > maxOcc) return false;
+            }
             
             return true;
         })

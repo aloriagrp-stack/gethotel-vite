@@ -115,7 +115,8 @@ function HotelListingContent() {
         // Amenities Filter
         if (filters.amenities.length > 0 && !filters.amenities.every((a) => h.amenities.includes(a))) return false;
 
-        // Guest Capacity Filter: Only show hotels that have rooms that can accommodate the guest count
+        // Guest Capacity Filter: Only show hotels that have rooms that can accommodate the guest count ONLY if guest count is explicitly searched
+        const hasExplicitGuests = searchParams.has("adults") || searchParams.has("guests");
         const rooms = (h as any).room || (h as any).rooms || [];
         if (rooms.length > 0) {
             const hasEligibleRoom = rooms.some((r: any) => {
@@ -123,7 +124,7 @@ function HotelListingContent() {
                 const isModeOk = stayType === "hourly"
                     ? (r.isHourlyEnabled || r.is_hourly_enabled)
                     : (!r.isHourlyEnabled && !r.is_hourly_enabled);
-                return maxOcc >= Number(guests) && isModeOk;
+                return (!hasExplicitGuests || maxOcc >= Number(guests)) && isModeOk;
             });
             if (!hasEligibleRoom) return false;
         } else if (stayType === "hourly") {

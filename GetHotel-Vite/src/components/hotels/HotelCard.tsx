@@ -25,6 +25,7 @@ export default function HotelCard({ hotel, className }: HotelCardProps) {
 
     const { mode } = useStayMode();
     const duration = searchParams.get("duration") || "3";
+    const hasExplicitGuests = searchParams.has("adults") || searchParams.has("guests");
     const adults = Number(searchParams.get("adults") || searchParams.get("guests") || "2");
 
     const rooms = (hotel as any).room || [];
@@ -33,8 +34,10 @@ export default function HotelCard({ hotel, className }: HotelCardProps) {
     
     // Dynamic Pricing Algorithm based on search criteria
     if (rooms.length > 0) {
-        // 1. Filter rooms by guest capacity (Adults)
-        const eligibleByCapacity = rooms.filter((r: any) => (r.maxOccupancy || r.max_occupancy || 2) >= adults);
+        // 1. Filter rooms by guest capacity (Adults) ONLY if explicitly searched
+        const eligibleByCapacity = hasExplicitGuests
+            ? rooms.filter((r: any) => (r.maxOccupancy || r.max_occupancy || 2) >= adults)
+            : rooms;
         
         // 2. Further filter by mode (Hourly/Nightly)
         let targetRooms = eligibleByCapacity.length > 0 ? eligibleByCapacity : rooms;

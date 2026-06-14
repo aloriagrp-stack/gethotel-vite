@@ -99,8 +99,12 @@ exports.searchHotels = async (req, res, next) => {
         }
 
         // Must have rooms that can fit the guests AND match stay type
-        const perRoomCap = Math.ceil(totalGuests / requiredRooms);
-        const roomFilter = { maxOccupancy: { gte: perRoomCap } };
+        const hasExplicitAdults = req.query.adults !== undefined && req.query.adults !== null && req.query.adults !== '';
+        const roomFilter = {};
+        if (hasExplicitAdults) {
+            const perRoomCap = Math.ceil(totalGuests / requiredRooms);
+            roomFilter.maxOccupancy = { gte: perRoomCap };
+        }
         if (stayType === 'hourly') {
             roomFilter.isHourlyEnabled = true;
         } else if (stayType === 'nightly') {
@@ -169,8 +173,9 @@ exports.searchHotels = async (req, res, next) => {
 
             for (const hotel of hotels) {
                 let availableRoomTypes = hotel.room.filter(room => {
+                    const hasExplicitAdults = req.query.adults !== undefined && req.query.adults !== null && req.query.adults !== '';
                     const perRoomCapacity = Math.ceil(totalGuests / requiredRooms);
-                    const capacityOk = room.status !== 'inactive' && room.status !== 'maintenance' && room.maxOccupancy >= perRoomCapacity;
+                    const capacityOk = room.status !== 'inactive' && room.status !== 'maintenance' && (!hasExplicitAdults || room.maxOccupancy >= perRoomCapacity);
                     if (!capacityOk) return false;
                     if (stayType === 'hourly') return room.isHourlyEnabled === true;
                     if (stayType === 'nightly') return room.isHourlyEnabled !== true;
@@ -237,8 +242,9 @@ exports.searchHotels = async (req, res, next) => {
             // No stay dates or no hotels
             for (const hotel of hotels) {
                 let availableRoomTypes = hotel.room.filter(room => {
+                    const hasExplicitAdults = req.query.adults !== undefined && req.query.adults !== null && req.query.adults !== '';
                     const perRoomCapacity = Math.ceil(totalGuests / requiredRooms);
-                    const capacityOk = room.status !== 'inactive' && room.status !== 'maintenance' && room.maxOccupancy >= perRoomCapacity;
+                    const capacityOk = room.status !== 'inactive' && room.status !== 'maintenance' && (!hasExplicitAdults || room.maxOccupancy >= perRoomCapacity);
                     if (!capacityOk) return false;
                     if (stayType === 'hourly') return room.isHourlyEnabled === true;
                     if (stayType === 'nightly') return room.isHourlyEnabled !== true;
