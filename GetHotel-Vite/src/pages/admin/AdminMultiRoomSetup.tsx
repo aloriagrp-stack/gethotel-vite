@@ -861,6 +861,9 @@ export default function AdminMultiRoomSetup({ hotels }: { hotels: HotelSummary[]
                                                                 <option value="Mountain View">Mountain View</option>
                                                                 <option value="Garden View">Garden View</option>
                                                                 <option value="Pool View">Pool View</option>
+                                                                <option value="Lake View">Lake View</option>
+                                                                <option value="River View">River View</option>
+                                                                <option value="Street View">Street View</option>
                                                             </select>
                                                         ) : (
                                                             <span className="text-[10.5px] font-medium text-slate-700">{room.viewType || "City View"}</span>

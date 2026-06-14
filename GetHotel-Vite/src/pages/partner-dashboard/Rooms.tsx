@@ -269,7 +269,30 @@ export default function PartnerRoomsPage() {
         "Shoe Shine Kit"
     ];
 
-    const bedOptions = ["1 Single Bed", "2 Single Beds", "1 Double Bed", "1 Queen Bed", "1 King Bed", "1 King + 1 Single", "2 Double Beds", "2 Queen Beds"];
+    const bedOptions = [
+        "1 Single Bed", 
+        "2 Single Beds", 
+        "1 Double Bed", 
+        "1 Queen Bed", 
+        "1 King Bed", 
+        "1 King + 1 Single", 
+        "2 Double Beds", 
+        "2 Queen Beds",
+        "3 Single Beds",
+        "2 King Beds",
+        "1 King + 2 Single Beds"
+    ];
+
+    const viewOptions = [
+        "City View",
+        "Sea View",
+        "Garden View",
+        "Mountain View",
+        "Pool View",
+        "Lake View",
+        "River View",
+        "Street View"
+    ];
 
     useEffect(() => {
         const fetchData = async () => {
@@ -732,6 +755,9 @@ export default function PartnerRoomsPage() {
             showToast("Room configuration cloned! Please review and save.", "success");
         };
 
+        const isCustomBed = formData.bedConfiguration !== undefined && !bedOptions.includes(formData.bedConfiguration);
+        const isCustomView = formData.viewType !== undefined && !viewOptions.includes(formData.viewType);
+
         return (
             <div className="animate-fade-in pb-20">
                 {/* Header Section */}
@@ -934,9 +960,30 @@ export default function PartnerRoomsPage() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         <div className="space-y-3">
                                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Bed Configuration</label>
-                                            <select value={formData.bedConfiguration} onChange={(e) => setFormData({...formData, bedConfiguration: e.target.value})} className="w-full px-6 py-4 bg-slate-50 border-transparent rounded-none text-sm font-bold outline-none appearance-none cursor-pointer">
+                                            <select 
+                                                value={isCustomBed ? "__custom__" : formData.bedConfiguration} 
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    if (val === "__custom__") {
+                                                        setFormData({...formData, bedConfiguration: ""});
+                                                    } else {
+                                                        setFormData({...formData, bedConfiguration: val});
+                                                    }
+                                                }} 
+                                                className="w-full px-6 py-4 bg-slate-50 border border-transparent focus:border-slate-200 rounded-none text-sm font-bold outline-none cursor-pointer"
+                                            >
                                                 {bedOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                                                <option value="__custom__">Write your own</option>
                                             </select>
+                                            {isCustomBed && (
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="Enter custom bed configuration" 
+                                                    value={formData.bedConfiguration} 
+                                                    onChange={(e) => setFormData({...formData, bedConfiguration: e.target.value})} 
+                                                    className="w-full px-6 py-4 bg-slate-50 border border-slate-200 text-sm font-bold outline-none rounded-none mt-2 animate-fade-in"
+                                                />
+                                            )}
                                         </div>
                                         <div className="space-y-3">
                                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Area (sq. ft)</label>
@@ -946,13 +993,30 @@ export default function PartnerRoomsPage() {
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                         <div className="space-y-3">
                                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Room View</label>
-                                            <select value={formData.viewType} onChange={(e) => setFormData({...formData, viewType: e.target.value})} className="w-full px-6 py-4 bg-slate-50 border-transparent rounded-none text-sm font-bold outline-none">
-                                                <option value="City View">City View</option>
-                                                <option value="Sea View">Sea View</option>
-                                                <option value="Garden View">Garden View</option>
-                                                <option value="Mountain View">Mountain View</option>
-                                                <option value="Pool View">Pool View</option>
+                                            <select 
+                                                value={isCustomView ? "__custom__" : formData.viewType} 
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    if (val === "__custom__") {
+                                                        setFormData({...formData, viewType: ""});
+                                                    } else {
+                                                        setFormData({...formData, viewType: val});
+                                                    }
+                                                }} 
+                                                className="w-full px-6 py-4 bg-slate-50 border border-transparent focus:border-slate-200 rounded-none text-sm font-bold outline-none cursor-pointer"
+                                            >
+                                                {viewOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                                                <option value="__custom__">Write your own</option>
                                             </select>
+                                            {isCustomView && (
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="Enter custom room view" 
+                                                    value={formData.viewType} 
+                                                    onChange={(e) => setFormData({...formData, viewType: e.target.value})} 
+                                                    className="w-full px-6 py-4 bg-slate-50 border border-slate-200 text-sm font-bold outline-none rounded-none mt-2 animate-fade-in"
+                                                />
+                                            )}
                                         </div>
                                         <div className="space-y-3">
                                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Floor Number</label>
