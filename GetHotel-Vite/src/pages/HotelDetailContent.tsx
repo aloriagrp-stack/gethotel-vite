@@ -415,24 +415,24 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
         };
 
         if (!checkIn || !checkOut || checkIn === "Dates") {
-            // 1. Check for Best Coupon
+            // 1. Check for Best Coupon (allow mobile_only on desktop for badge display)
             const sortedPromos = [...activePromos].sort((a, b) => {
-                // Priority: Mobile Only (if on mobile) > Highest Value
-                if (isMobileDevice) {
-                    if (a.promoType === 'mobile_only' && b.promoType !== 'mobile_only') return -1;
-                    if (a.promoType !== 'mobile_only' && b.promoType === 'mobile_only') return 1;
-                }
+                if (a.promoType === 'mobile_only' && b.promoType !== 'mobile_only') return -1;
+                if (a.promoType !== 'mobile_only' && b.promoType === 'mobile_only') return 1;
                 return Number(b.discountValue) - Number(a.discountValue);
             });
 
             const bestPromo = sortedPromos[0];
             if (bestPromo) {
-                const fPrice = applyDiscount(actualPrice, Number(bestPromo.discountValue), bestPromo.discountType);
                 const isMobilePromo = bestPromo.promoType === 'mobile_only';
+                const shouldApplyDiscount = !isMobilePromo || isMobileDevice;
+                const fPrice = shouldApplyDiscount
+                    ? applyDiscount(actualPrice, Number(bestPromo.discountValue), bestPromo.discountType)
+                    : actualPrice;
                 const title = isMobilePromo ? 'MOBILE EXCLUSIVE' : (bestPromo.promoType?.replace('_', ' ').toUpperCase() || 'OFFER');
                 return { 
                     finalPrice: fPrice, 
-                    originalPrice: actualPrice, 
+                    originalPrice: shouldApplyDiscount ? actualPrice : null, 
                     discountLabel: `${bestPromo.discountValue}${bestPromo.discountType === 'percentage' ? '%' : '₹'} ${title}`,
                     isMobileOnly: isMobilePromo
                 };
@@ -458,22 +458,28 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
             .filter(p => {
                 if (p.minStay && nights < Number(p.minStay)) return false;
                 if (p.minBookingAmt && actualPrice < Number(p.minBookingAmt)) return false;
-                if (p.promoType === 'mobile_only' && !isMobileDevice) return false;
+                // Allow mobile_only to pass through to sorting for badge display purposes
                 return true;
             })
             .sort((a, b) => {
-                if (isMobileDevice) {
-                    if (a.promoType === 'mobile_only' && b.promoType !== 'mobile_only') return -1;
-                    if (a.promoType !== 'mobile_only' && b.promoType === 'mobile_only') return 1;
-                }
+                if (a.promoType === 'mobile_only' && b.promoType !== 'mobile_only') return -1;
+                if (a.promoType !== 'mobile_only' && b.promoType === 'mobile_only') return 1;
                 return Number(b.discountValue) - Number(a.discountValue);
             })[0];
 
         if (bestPromo) {
-            const fPrice = applyDiscount(actualPrice, Number(bestPromo.discountValue), bestPromo.discountType);
             const isMobilePromo = bestPromo.promoType === 'mobile_only';
+            const shouldApplyDiscount = !isMobilePromo || isMobileDevice;
+            const fPrice = shouldApplyDiscount
+                ? applyDiscount(actualPrice, Number(bestPromo.discountValue), bestPromo.discountType)
+                : actualPrice;
             const label = isMobilePromo ? `MOBILE ONLY: ${bestPromo.discountValue}${bestPromo.discountType === 'percentage' ? '%' : '₹'} OFF` : `${bestPromo.discountValue}${bestPromo.discountType === 'percentage' ? '%' : '₹'} OFF (${bestPromo.code})`;
-            return { finalPrice: fPrice, originalPrice: actualPrice, discountLabel: label, isMobileOnly: isMobilePromo };
+            return { 
+                finalPrice: fPrice, 
+                originalPrice: shouldApplyDiscount ? actualPrice : null, 
+                discountLabel: label, 
+                isMobileOnly: isMobilePromo 
+            };
         }
 
         if (nights >= 30 && room.monthlyDiscount > 0) {
@@ -786,6 +792,19 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                                                                             setTempCheckIn(date);
                                                                             const params = new URLSearchParams(window.location.search);
                                                                             params.set("checkIn", formatDateLocal(date));
+                                                                            
+                                                                            // Heal checkout date if invalid (<= checkIn date)
+                                                                            if (tempCheckOut && tempCheckOut <= date) {
+                                                                                const newCheckOut = new Date(date);
+                                                                                newCheckOut.setDate(newCheckOut.getDate() + 1);
+                                                                                setTempCheckOut(newCheckOut);
+                                                                                params.set("checkOut", formatDateLocal(newCheckOut));
+                                                                            } else if (!tempCheckOut) {
+                                                                                const newCheckOut = new Date(date);
+                                                                                newCheckOut.setDate(newCheckOut.getDate() + 1);
+                                                                                setTempCheckOut(newCheckOut);
+                                                                                params.set("checkOut", formatDateLocal(newCheckOut));
+                                                                            }
                                                                             setSearchParams(params);
                                                                             
                                                                             if (stayType !== 'hourly') {
