@@ -21,6 +21,7 @@ interface ChatMessage {
     status?: "pending" | "saving" | "saved" | "error";
     searchQueries?: string[];
     searchSources?: { title: string; url: string }[];
+    clearAllRooms?: boolean;
 }
 
 export default function AdminAICopilot({ hotels }: AdminAICopilotProps) {
@@ -183,9 +184,10 @@ export default function AdminAICopilot({ hotels }: AdminAICopilotProps) {
                                 ...msg,
                                 text: res.reply || `Successfully processed request.`,
                                 suggestedRooms: Array.isArray(res.data) && res.data.length > 0 ? res.data : undefined,
-                                status: Array.isArray(res.data) && res.data.length > 0 ? "pending" : undefined,
+                                status: (Array.isArray(res.data) && res.data.length > 0) || res.clearAllRooms ? "pending" : undefined,
                                 searchQueries: Array.isArray(res.searchQueries) ? res.searchQueries : undefined,
-                                searchSources: Array.isArray(res.searchSources) ? res.searchSources : undefined
+                                searchSources: Array.isArray(res.searchSources) ? res.searchSources : undefined,
+                                clearAllRooms: res.clearAllRooms || false
                               }
                             : msg
                     )
@@ -649,6 +651,61 @@ export default function AdminAICopilot({ hotels }: AdminAICopilotProps) {
                                     </div>
                                 </div>
                             )}
+
+                            {/* Render clear all rooms block if requested */}
+                            {isAI && msg.clearAllRooms && (
+                                <div className="mt-4 p-5 bg-red-50 border border-red-200 rounded-xl max-w-lg shadow-sm space-y-4">
+                                    <div className="flex items-start gap-3">
+                                        <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center shrink-0">
+                                            <Trash2 className="w-4 h-4 text-red-600 animate-pulse" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <h4 className="text-xs font-black uppercase text-red-800 tracking-wider">Confirm Delete All Rooms</h4>
+                                            <p className="text-[10px] font-bold text-red-600 leading-normal">
+                                                This action will delete all existing room categories currently configured in the database for this hotel.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="pt-2">
+                                        {msg.status === "pending" && (
+                                            <button
+                                                onClick={async () => {
+                                                    await executeSave(msg.id, [], existingRooms.map(r => r.id));
+                                                }}
+                                                className="px-6 py-2.5 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest rounded-sm hover:bg-red-700 shadow-md active:scale-95 transition-all"
+                                            >
+                                                Confirm & Delete All Rooms
+                                            </button>
+                                        )}
+                                        {msg.status === "saving" && (
+                                            <button
+                                                disabled
+                                                className="px-6 py-2.5 bg-red-600/50 text-white text-[10px] font-black uppercase tracking-widest rounded-sm flex items-center gap-2"
+                                            >
+                                                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                                                Deleting Rooms...
+                                            </button>
+                                        )}
+                                        {msg.status === "saved" && (
+                                            <div className="px-6 py-2.5 bg-emerald-50 border border-emerald-100 text-emerald-700 text-[10px] font-black uppercase tracking-widest rounded-sm flex items-center gap-2 max-w-max">
+                                                <CheckCircle2 className="w-4 h-4" />
+                                                All Rooms Deleted Successfully
+                                            </div>
+                                        )}
+                                        {msg.status === "error" && (
+                                            <button
+                                                onClick={async () => {
+                                                    await executeSave(msg.id, [], existingRooms.map(r => r.id));
+                                                }}
+                                                className="px-6 py-2.5 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest rounded-sm hover:bg-red-700 flex items-center gap-2"
+                                            >
+                                                <AlertCircle className="w-4 h-4" />
+                                                Retry Delete
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     );
                 })}
@@ -739,27 +796,29 @@ export default function AdminAICopilot({ hotels }: AdminAICopilotProps) {
                                     </p>
                                 </div>
                             </div>
-
                             <div className="mt-6 space-y-3">
-                                {/* Option 1: Clean Install / Replace */}
+                                {/* Option A: Smart Sync Changes */}
                                 <button
                                     onClick={async () => {
                                         const { messageId, roomList, existingRoomIds } = confirmModal;
                                         setConfirmModal(null);
-                                        await executeSave(messageId, roomList, existingRoomIds);
+                                        // Calculate deleteIds based on smart diff (existing rooms that are missing in the new list)
+                                        const currentIds = roomList.map((r: any) => r.id).filter(Boolean);
+                                        const deleteIds = existingRoomIds.filter(id => !currentIds.includes(id));
+                                        await executeSave(messageId, roomList, deleteIds);
                                     }}
-                                    className="w-full p-4 border border-red-200 bg-red-50/20 hover:bg-red-50 text-left rounded-xl transition-all group flex items-start justify-between cursor-pointer"
+                                    className="w-full p-4 border border-brand-200 bg-brand-50/20 hover:bg-brand-50 text-left rounded-xl transition-all group flex items-start justify-between cursor-pointer"
                                 >
                                     <div>
-                                        <h5 className="text-[11px] font-black uppercase text-red-700 tracking-wider">Option A: Overwrite & Clean Install</h5>
-                                        <p className="text-[9px] text-red-500 font-bold mt-1 leading-normal">
-                                            Delete all {confirmModal.existingRoomsCount} current room categories and replace them with this newly drafted list.
+                                        <h5 className="text-[11px] font-black uppercase text-brand-700 tracking-wider">Option A (Recommended): Sync Changes (Smart Diff)</h5>
+                                        <p className="text-[9px] text-brand-500 font-bold mt-1 leading-normal">
+                                            Update modified rooms, insert new ones, and delete omitted/removed categories.
                                         </p>
                                     </div>
-                                    <Trash2 className="w-4 h-4 text-red-400 group-hover:text-red-600 transition-colors self-center shrink-0 ml-4" />
+                                    <Sparkles className="w-4 h-4 text-brand-400 group-hover:text-brand-600 transition-colors self-center shrink-0 ml-4" />
                                 </button>
 
-                                {/* Option 2: Keep & Append */}
+                                {/* Option B: Keep & Append */}
                                 <button
                                     onClick={async () => {
                                         const { messageId, roomList } = confirmModal;
@@ -775,6 +834,24 @@ export default function AdminAICopilot({ hotels }: AdminAICopilotProps) {
                                         </p>
                                     </div>
                                     <Plus className="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors self-center shrink-0 ml-4" />
+                                </button>
+
+                                {/* Option C: Clean Overwrite */}
+                                <button
+                                    onClick={async () => {
+                                        const { messageId, roomList, existingRoomIds } = confirmModal;
+                                        setConfirmModal(null);
+                                        await executeSave(messageId, roomList, existingRoomIds);
+                                    }}
+                                    className="w-full p-4 border border-red-200 bg-red-50/10 hover:bg-red-50 text-left rounded-xl transition-all group flex items-start justify-between cursor-pointer"
+                                >
+                                    <div>
+                                        <h5 className="text-[11px] font-black uppercase text-red-700 tracking-wider">Option C: Overwrite & Clean Install</h5>
+                                        <p className="text-[9px] text-red-500 font-bold mt-1 leading-normal">
+                                            Delete all {confirmModal.existingRoomsCount} current room categories and replace them with this newly drafted list.
+                                        </p>
+                                    </div>
+                                    <Trash2 className="w-4 h-4 text-red-400 group-hover:text-red-600 transition-colors self-center shrink-0 ml-4" />
                                 </button>
                             </div>
 

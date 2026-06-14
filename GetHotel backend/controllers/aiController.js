@@ -133,6 +133,10 @@ ${contextText ? `Webpage raw text context:\n${contextText}\n` : ''}
                         },
                         required: ["name", "pricePerNight", "maxOccupancy", "amenities"]
                     }
+                },
+                clearAllRooms: {
+                    type: "boolean",
+                    description: "Set this to true ONLY if the user explicitly requested to delete, clear, remove, or drop all room categories of the hotel."
                 }
             },
             required: ["reply", "rooms"]
@@ -157,6 +161,7 @@ Your tasks:
    - For new room categories, do not include an "id" or set it to null.
    - Explain what edits were performed in the "reply" field.
 4. If the user asks you to look up, search, or research a hotel (e.g. "search Google for Hotel Gold Souk rooms"), or if you need to find fresh details/listings for the property on the internet, utilize your Google Search tool to find relevant travel listing web pages (e.g., Booking.com, Agoda, MakeMyTrip). Process the search results to extract, update, or structure the rooms.
+5. If the user explicitly asks you to delete, clear, or remove all rooms/categories of the hotel, set the "clearAllRooms" boolean property to true, set "rooms" as an empty array [], and explain the deletion in the "reply" field.
 
 For each room category:
 - Identify its name, size (in sq meters), bed config, max occupancy, and total description.
@@ -275,7 +280,7 @@ ${existingRoomsContext || "None"}
             console.log("[AI Copilot] Calling Groq (llama-3.3-70b-versatile) for single-pass JSON generation...");
             
             let groqMessages = [
-                { role: "system", content: systemInstruction + "\n\nCRITICAL: You MUST output strictly a valid JSON object matching the schema. Do not output markdown code blocks (like ```json ... ```)." }
+                { role: "system", content: systemInstruction + `\n\nJSON SCHEMA TO FOLLOW:\n${JSON.stringify(copilotSchema, null, 2)}\n\nCRITICAL: You MUST output strictly a valid JSON object matching this schema structure. Do not output markdown code blocks (like \`\`\`json ... \`\`\`).` }
             ];
             
             if (Array.isArray(history) && history.length > 0) {
@@ -370,6 +375,7 @@ ${existingRoomsContext || "None"}
             reply: parsed.reply || "Rooms list parsed successfully.",
             count: processedRooms.length,
             data: processedRooms,
+            clearAllRooms: parsed.clearAllRooms || false,
             searchQueries,
             searchSources
         });
