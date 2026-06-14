@@ -159,7 +159,7 @@ export default function SuperAdminDashboard() {
             const needsStats = (normalizedTab === "overview") && shouldLoad("stats");
             const needsRequests = ["overview", "requests"].includes(normalizedTab) && shouldLoad("requests");
             const needsPartners = ["users", "addPartner"].includes(normalizedTab) && shouldLoad("partners");
-            const needsHotels = ["hotels", "controlhub", "addPartner", "multi-room"].includes(normalizedTab) && shouldLoad("hotels");
+            const needsHotels = ["hotels", "controlhub", "addPartner", "multi-room", "ai-copilot"].includes(normalizedTab) && shouldLoad("hotels");
             const needsBookings = normalizedTab === "bookings" && shouldLoad("bookings");
             const needsReviews = normalizedTab === "reviews" && shouldLoad("reviews");
 
@@ -456,7 +456,7 @@ export default function SuperAdminDashboard() {
                     {activeTab === "otasync" && <AdminRoomSync />}
                     {activeTab === "multi-room" && <AdminMultiRoomSetup hotels={hotels} />}
                     {activeTab === "addPartner" && <AdminAddPartner hotels={hotels} partners={partners} setPartners={setPartners} />}
-                    {activeTab === "ai-copilot" && <AdminAICopilot hotels={hotels} />}
+                    {activeTab === "ai-copilot" && <AdminAICopilot hotels={hotels} loadingHotels={!loadedSections.hotels} />}
 
                     {activeTab === "overview" && (
                 <>

@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 interface AdminAICopilotProps {
     hotels: any[];
+    loadingHotels?: boolean;
 }
 
 interface ChatMessage {
@@ -24,7 +25,7 @@ interface ChatMessage {
     clearAllRooms?: boolean;
 }
 
-export default function AdminAICopilot({ hotels }: AdminAICopilotProps) {
+export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminAICopilotProps) {
     const [selectedHotelId, setSelectedHotelId] = useState<number | "">("");
     const [inputValue, setInputValue] = useState("");
     const [urlInput, setUrlInput] = useState("");
@@ -50,13 +51,13 @@ export default function AdminAICopilot({ hotels }: AdminAICopilotProps) {
             setLoadingRoomsPercent(0);
             let progress = 0;
             progressInterval = setInterval(() => {
-                progress += Math.floor(Math.random() * 10) + 5;
+                progress += Math.floor(Math.random() * 20) + 15;
                 if (progress >= 95) {
                     progress = 95;
                     if (progressInterval) clearInterval(progressInterval);
                 }
                 setLoadingRoomsPercent(progress);
-            }, 100);
+            }, 30);
 
             hotelApi.getRooms(selectedHotelId.toString()).then(res => {
                 if (progressInterval) clearInterval(progressInterval);
@@ -383,18 +384,22 @@ export default function AdminAICopilot({ hotels }: AdminAICopilotProps) {
                 </div>
                 <div className="flex items-center gap-3">
                     <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
-                        {loadingRoomsPercent !== null ? `Loading Rooms (${loadingRoomsPercent}%):` : "Target Hotel:"}
+                        {loadingRoomsPercent !== null ? (
+                            <span className="text-brand-600 animate-pulse">Loading Rooms ({loadingRoomsPercent}%)...</span>
+                        ) : (
+                            "Target Hotel:"
+                        )}
                     </span>
-                    <div className="relative">
+                    <div className="relative w-64">
                         <select
                             value={selectedHotelId}
                             onChange={(e) => setSelectedHotelId(e.target.value === "" ? "" : Number(e.target.value))}
                             disabled={loadingRoomsPercent !== null}
-                            className="appearance-none pl-4 pr-10 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-sm text-xs font-bold text-slate-900 focus:outline-none focus:border-slate-400 transition-colors cursor-pointer w-64 disabled:opacity-80"
+                            className="appearance-none w-full pl-4 pr-10 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-sm text-xs font-bold text-slate-900 focus:outline-none focus:border-slate-400 transition-colors cursor-pointer disabled:opacity-90"
                         >
                             {loadingRoomsPercent !== null ? (
                                 <option value={selectedHotelId}>
-                                    {activeHotel ? `${activeHotel.name} (Loading ${loadingRoomsPercent}%)` : `Loading ${loadingRoomsPercent}%`}
+                                    {activeHotel ? activeHotel.name : "Loading..."}
                                 </option>
                             ) : (
                                 <>
@@ -408,6 +413,16 @@ export default function AdminAICopilot({ hotels }: AdminAICopilotProps) {
                             )}
                         </select>
                         <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                        
+                        {/* Pinned progress bar under bottom border of dropdown */}
+                        {loadingRoomsPercent !== null && (
+                            <div className="absolute bottom-[1px] left-[1px] right-[1px] h-[3px] bg-slate-100 overflow-hidden rounded-b-sm">
+                                <div 
+                                    className="h-full bg-brand-600 transition-all duration-75 ease-out" 
+                                    style={{ width: `${loadingRoomsPercent}%` }}
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
