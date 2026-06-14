@@ -5,7 +5,7 @@ import {
     LayoutDashboard, Hotel, Users,
     BarChart3, Settings, LogOut,
     Bell, Search, Plus, Clock,
-    CreditCard, Loader2, Calendar, AlertCircle, LayoutTemplate, SlidersHorizontal, Star, RefreshCw, LayoutGrid, Globe
+    CreditCard, Loader2, Calendar, AlertCircle, LayoutTemplate, SlidersHorizontal, Star, RefreshCw, LayoutGrid, Globe, Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -31,6 +31,7 @@ export default function AdminLayout() {
         { id: "hotels", label: "Hotels", icon: Hotel, href: "/admin/super?tab=hotels" },
         { id: "otasync", label: "OTA Room Sync", icon: RefreshCw, href: "/admin/super/otasync" },
         { id: "multi-room", label: "Multi Room Setup", icon: LayoutGrid, href: "/admin/super/multi-room" },
+        { id: "ai-copilot", label: "AI Room Onboarding", icon: Sparkles, href: "/admin/super/ai-copilot" },
         { id: "bookings", label: "All Bookings", icon: Calendar, href: "/admin/super/bookings" },
         { id: "reviews", label: "Global Reviews", icon: Star, href: "/admin/super/reviews" },
         { id: "users", label: "Users", icon: Users, href: "/admin/super?tab=users" },
