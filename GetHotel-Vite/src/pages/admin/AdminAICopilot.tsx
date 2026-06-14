@@ -132,6 +132,9 @@ export default function AdminAICopilot({ hotels }: AdminAICopilotProps) {
 
         setLoading(true);
 
+        const abortController = new AbortController();
+        const timeoutId = setTimeout(() => abortController.abort(), 120000);
+
         try {
             const res = await adminApi.suggestRooms({
                 hotelId: Number(selectedHotelId),
@@ -139,6 +142,8 @@ export default function AdminAICopilot({ hotels }: AdminAICopilotProps) {
                 url: scrapingUrl || undefined,
                 history: chatHistory,
                 existingRooms: existingRooms
+            }, {
+                signal: abortController.signal
             });
 
             if (res.success) {
@@ -179,6 +184,7 @@ export default function AdminAICopilot({ hotels }: AdminAICopilotProps) {
                 )
             );
         } finally {
+            clearTimeout(timeoutId);
             setLoading(false);
         }
     };
