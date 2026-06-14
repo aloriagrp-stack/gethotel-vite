@@ -168,36 +168,61 @@ For each room category:
 Output strictly valid JSON matching the requested schema. Do not include any markdown fences (like \`\`\`json) outside the structural JSON formatting.
 `;
 
-        // Build Gemini contents with chat history if present
-        let contents = [];
+        // ==========================================
+        // PASS 1: Search Grounding & Chat Context (Text Mode)
+        // ==========================================
+        console.log("[AI Copilot] Pass 1: Calling Gemini with Google Search grounding...");
+        const searchModel = genAI.getGenerativeModel({
+            model: "gemini-2.5-flash",
+            tools: [{ googleSearch: {} }],
+        });
+
+        let searchContents = [];
         if (Array.isArray(history) && history.length > 0) {
             history.forEach(msg => {
-                contents.push({
+                searchContents.push({
                     role: msg.role === "model" ? "model" : "user",
                     parts: [{ text: msg.text }]
                 });
             });
         }
-        contents.push({
+        searchContents.push({
             role: "user",
             parts: [{ text: userInput.trim() ? userInput : (prompt || "Continue chatting") }]
         });
 
-        console.log("[AI Copilot] Calling Gemini API with history and Google Search grounding...");
-        const model = genAI.getGenerativeModel({
+        const searchResponse = await searchModel.generateContent({ contents: searchContents });
+        const groundedText = searchResponse.response.text();
+        console.log(`[AI Copilot] Pass 1 completed. Grounded Text Length: ${groundedText.length}`);
+
+        // ==========================================
+        // PASS 2: JSON Schema Structure (JSON Mode)
+        // ==========================================
+        console.log("[AI Copilot] Pass 2: Structuring output to JSON...");
+        const structModel = genAI.getGenerativeModel({
             model: "gemini-2.5-flash",
             systemInstruction,
-            tools: [{ googleSearch: {} }],
             generationConfig: {
                 responseMimeType: "application/json",
                 responseSchema: copilotSchema,
-                temperature: 0.3
+                temperature: 0.2
             }
         });
 
-        const result = await model.generateContent({ contents });
+        const structPrompt = `
+Grounded Context (contains search findings or conversational replies):
+${groundedText}
+
+User Instructions/Prompt:
+${prompt || ""}
+
+Existing Rooms Context:
+${existingRoomsContext || "None"}
+`;
+
+        const result = await structModel.generateContent(structPrompt);
         const jsonText = result.response.text();
-        console.log("[AI Copilot] Gemini API response received.");
+        console.log("[AI Copilot] Pass 2 completed. JSON structured output received.");
 
         let parsed = { reply: "", rooms: [] };
         try {
