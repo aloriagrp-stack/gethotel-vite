@@ -309,6 +309,10 @@ ${existingRoomsContext || "None"}
 
     } catch (err) {
         console.error("AI_SUGGEST_ROOMS_ERROR:", err);
-        res.status(500).json({ success: false, message: "AI extraction failed", error: err.message });
+        let userMessage = "AI extraction failed";
+        if (err.message && (err.message.includes("429") || err.message.includes("quota") || err.message.includes("limit"))) {
+            userMessage = "Gemini API quota exceeded. The free tier limits requests to 20 per minute. Please wait a few seconds and try again!";
+        }
+        res.status(500).json({ success: false, message: userMessage, error: err.message });
     }
 };
