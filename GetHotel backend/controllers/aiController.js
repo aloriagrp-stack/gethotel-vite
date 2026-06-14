@@ -139,14 +139,17 @@ ${contextText ? `Webpage raw text context:\n${contextText}\n` : ''}
         };
 
         const systemInstruction = `
-You are an expert AI Travel Copilot helping administrators onboard and manage hotel properties in their reservation engine.
-You are conversational, friendly, helpful, and interactive.
+You are a friendly, conversational AI Room Copilot helping administrators onboard and manage hotel properties.
+Respond like a human friend or helpful peer—warm, conversational, and interactive.
+If the user greets you, asks general questions, or writes in Hindi/Hinglish (e.g., "kya haal tere", "tu kaun hai"), you MUST reply in natural, friendly Hindi/Hinglish (e.g. "Main badhiya hoon, aap batao!", "Main aapka AI Room Copilot hoon!").
+Do not sound like a robotic server repeating formal templates. Keep the reply casual, friendly, and helpful.
+
 Your tasks:
-1. If the user is just greeting you, asking questions, or discussing general details, respond conversationally in the "reply" field. Keep "rooms" as an empty array [].
+1. If the user is just greeting you, asking questions, or discussing general details, respond conversationally in the "reply" field in a friendly, personalized manner. Keep "rooms" as an empty array [].
 2. If the user provides hotel details, description text, or a URL context and asks to extract, draft, or list room categories:
    - Analyze the text and extract all listed room categories.
    - For each room category, populate the "rooms" array following the schema rules.
-   - Summarize what you found in a friendly manner in the "reply" field.
+   - Summarize what you found in a friendly, conversational manner in the "reply" field.
 3. If the user asks to edit, update, modify, or delete rooms from the list of existing rooms (provided in the "Existing Rooms Context"):
    - Read the existing rooms list and apply the requested changes.
    - Output the resulting full list of rooms (both unmodified rooms and modified rooms) in the "rooms" array.
@@ -168,76 +171,89 @@ For each room category:
 Output strictly valid JSON matching the requested schema. Do not include any markdown fences (like \`\`\`json) outside the structural JSON formatting.
 `;
 
-        // ==========================================
-        // PASS 1: Search Grounding & Chat Context (Text Mode)
-        // ==========================================
-        console.log("[AI Copilot] Pass 1: Calling Gemini with Google Search grounding...");
-        const searchModel = genAI.getGenerativeModel({
-            model: "gemini-2.5-flash",
-            tools: [{ googleSearch: {} }],
-        });
+        const groqApiKey = process.env.GROQ_API_KEY;
 
-        let searchContents = [];
-        if (Array.isArray(history) && history.length > 0) {
-            history.forEach(msg => {
-                searchContents.push({
-                    role: msg.role === "model" ? "model" : "user",
-                    parts: [{ text: msg.text }]
-                });
-            });
-        }
-        searchContents.push({
-            role: "user",
-            parts: [{ text: userInput.trim() ? userInput : (prompt || "Continue chatting") }]
-        });
+        const needsSearch = !url && (prompt && (
+            prompt.toLowerCase().includes("search") ||
+            prompt.toLowerCase().includes("google") ||
+            prompt.toLowerCase().includes("find") ||
+            prompt.toLowerCase().includes("look up") ||
+            prompt.toLowerCase().includes("research") ||
+            prompt.toLowerCase().includes("internet")
+        ));
 
-        const searchResponse = await searchModel.generateContent({ contents: searchContents });
-        const groundedText = searchResponse.response.text();
-        console.log(`[AI Copilot] Pass 1 completed. Grounded Text Length: ${groundedText.length}`);
-
-        // Extract search queries and sources from grounding metadata if present
+        let jsonText = "";
         let searchQueries = [];
         let searchSources = [];
-        try {
-            const candidate = searchResponse.response?.candidates?.[0];
-            if (candidate && candidate.groundingMetadata) {
-                const metadata = candidate.groundingMetadata;
-                if (Array.isArray(metadata.webSearchQueries)) {
-                    searchQueries = metadata.webSearchQueries;
-                }
-                if (Array.isArray(metadata.groundingChunks)) {
-                    searchSources = metadata.groundingChunks
-                        .map(chunk => {
-                            if (chunk.web) {
-                                return {
-                                    title: chunk.web.title || "",
-                                    url: chunk.web.uri || ""
-                                };
-                            }
-                            return null;
-                        })
-                        .filter(Boolean);
-                }
-            }
-        } catch (metadataError) {
-            console.error("[AI Copilot] Error parsing grounding metadata:", metadataError);
-        }
 
-        // ==========================================
-        // PASS 2: JSON Schema Structure (JSON Mode)
-        // ==========================================
-        console.log("[AI Copilot] Pass 2: Structuring output to JSON...");
-        const structModel = genAI.getGenerativeModel({
-            model: "gemini-2.5-flash",
-            systemInstruction,
-            generationConfig: {
-                responseMimeType: "application/json",
-                responseSchema: copilotSchema,
-                temperature: 0.2
-            }
-        });
+        if (needsSearch && apiKey) {
+            // ==========================================
+            // PASS 1: Search Grounding & Chat Context (Text Mode via Gemini)
+            // ==========================================
+            console.log("[AI Copilot] Pass 1: Calling Gemini with Google Search grounding...");
+            const searchModel = genAI.getGenerativeModel({
+                model: "gemini-2.5-flash",
+                tools: [{ googleSearch: {} }],
+            });
 
-        const structPrompt = `
+            let searchContents = [];
+            if (Array.isArray(history) && history.length > 0) {
+                history.forEach(msg => {
+                    searchContents.push({
+                        role: msg.role === "model" ? "model" : "user",
+                        parts: [{ text: msg.text }]
+                    });
+                });
+            }
+            searchContents.push({
+                role: "user",
+                parts: [{ text: userInput.trim() ? userInput : (prompt || "Continue chatting") }]
+            });
+
+            const searchResponse = await searchModel.generateContent({ contents: searchContents });
+            const groundedText = searchResponse.response.text();
+            console.log(`[AI Copilot] Pass 1 completed. Grounded Text Length: ${groundedText.length}`);
+
+            try {
+                const candidate = searchResponse.response?.candidates?.[0];
+                if (candidate && candidate.groundingMetadata) {
+                    const metadata = candidate.groundingMetadata;
+                    if (Array.isArray(metadata.webSearchQueries)) {
+                        searchQueries = metadata.webSearchQueries;
+                    }
+                    if (Array.isArray(metadata.groundingChunks)) {
+                        searchSources = metadata.groundingChunks
+                            .map(chunk => {
+                                if (chunk.web) {
+                                    return {
+                                        title: chunk.web.title || "",
+                                        url: chunk.web.uri || ""
+                                    };
+                                }
+                                return null;
+                            })
+                            .filter(Boolean);
+                    }
+                }
+            } catch (metadataError) {
+                console.error("[AI Copilot] Error parsing grounding metadata:", metadataError);
+            }
+
+            // ==========================================
+            // PASS 2: JSON Schema Structure (JSON Mode via Gemini)
+            // ==========================================
+            console.log("[AI Copilot] Pass 2: Structuring output to JSON via Gemini...");
+            const structModel = genAI.getGenerativeModel({
+                model: "gemini-2.5-flash",
+                systemInstruction,
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: copilotSchema,
+                    temperature: 0.2
+                }
+            });
+
+            const structPrompt = `
 Grounded Context (contains search findings or conversational replies):
 ${groundedText}
 
@@ -248,18 +264,69 @@ Existing Rooms Context:
 ${existingRoomsContext || "None"}
 `;
 
-        const result = await structModel.generateContent(structPrompt);
-        const jsonText = result.response.text();
-        console.log("[AI Copilot] Pass 2 completed. JSON structured output received.");
+            const result = await structModel.generateContent(structPrompt);
+            jsonText = result.response.text();
+            console.log("[AI Copilot] Pass 2 completed (Gemini). JSON structured output received.");
+
+        } else if (groqApiKey) {
+            // ==========================================
+            // Single-Pass JSON Generation via Groq (Llama-3.3-70b)
+            // ==========================================
+            console.log("[AI Copilot] Calling Groq (llama-3.3-70b-versatile) for single-pass JSON generation...");
+            
+            let groqMessages = [
+                { role: "system", content: systemInstruction + "\n\nCRITICAL: You MUST output strictly a valid JSON object matching the schema. Do not output markdown code blocks (like ```json ... ```)." }
+            ];
+            
+            if (Array.isArray(history) && history.length > 0) {
+                history.forEach(msg => {
+                    groqMessages.push({
+                        role: msg.role === "model" || msg.role === "assistant" ? "assistant" : "user",
+                        content: msg.text
+                    });
+                });
+            }
+            
+            groqMessages.push({
+                role: "user",
+                content: userInput.trim() ? userInput : (prompt || "Continue chatting")
+            });
+
+            const groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${groqApiKey}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    model: "llama-3.3-70b-versatile",
+                    messages: groqMessages,
+                    response_format: { type: "json_object" },
+                    temperature: 0.2
+                })
+            });
+
+            if (!groqResponse.ok) {
+                const errText = await groqResponse.text();
+                throw new Error(`Groq API Error: ${groqResponse.status} - ${errText}`);
+            }
+
+            const groqData = await groqResponse.json();
+            jsonText = groqData.choices[0].message.content;
+            console.log("[AI Copilot] Groq call completed. JSON structured output received.");
+
+        } else {
+            throw new Error("No available AI service found. Please check your GEMINI_API_KEY or GROQ_API_KEY in .env");
+        }
 
         let parsed = { reply: "", rooms: [] };
         try {
             parsed = JSON.parse(jsonText);
         } catch (e) {
-            console.error("Gemini failed to return valid JSON parser:", e.message);
+            console.error("AI Model failed to return valid JSON parser:", e.message);
             return res.status(500).json({
                 success: false,
-                message: "Gemini did not return valid structured data. Please try again with different inputs.",
+                message: "AI Model did not return valid structured data. Please try again with different inputs.",
                 rawResponse: jsonText
             });
         }

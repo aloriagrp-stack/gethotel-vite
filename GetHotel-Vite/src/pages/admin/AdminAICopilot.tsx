@@ -131,7 +131,7 @@ export default function AdminAICopilot({ hotels }: AdminAICopilotProps) {
 
         const userMessageId = `user-${Date.now()}`;
         const userMsgText = [
-            promptText ? `Instructions: ${promptText}` : "",
+            promptText,
             scrapingUrl ? `URL: ${scrapingUrl}` : ""
         ].filter(Boolean).join("\n");
 
