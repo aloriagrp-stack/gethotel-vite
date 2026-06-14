@@ -416,30 +416,32 @@ export default function SuperAdminDashboard() {
     }
 
     return (
-        <div className="p-8 min-w-0">
-            <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 border-b border-slate-200 pb-8">
-                <div>
-                    <h2 className="text-2xl font-bold text-slate-900 uppercase tracking-tight">
-                        {activeTab === 'overview' ? 'System Overview' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
-                    </h2>
-                    <p className="text-slate-500 text-xs font-medium">Monitoring platform statistics and property requests.</p>
-                </div>
-                <div className="flex items-center gap-3">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                        <input
-                            type="text"
-                            placeholder="Search..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-sm w-64 focus:outline-none focus:border-slate-400 font-medium text-xs shadow-sm"
-                        />
+        <div className={cn(activeTab === "ai-copilot" ? "p-0 h-screen overflow-hidden flex flex-col" : "p-8", "min-w-0")}>
+            {activeTab !== "ai-copilot" && (
+                <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 border-b border-slate-200 pb-8">
+                    <div>
+                        <h2 className="text-2xl font-bold text-slate-900 uppercase tracking-tight">
+                            {activeTab === 'overview' ? 'System Overview' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+                        </h2>
+                        <p className="text-slate-500 text-xs font-medium">Monitoring platform statistics and property requests.</p>
                     </div>
-                    <button className="p-2 bg-white border border-slate-200 rounded-sm hover:bg-slate-50 relative shadow-sm">
-                        <Bell className="w-4 h-4 text-slate-600" />
-                    </button>
-                </div>
-            </header>
+                    <div className="flex items-center gap-3">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <input
+                                type="text"
+                                placeholder="Search..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-sm w-64 focus:outline-none focus:border-slate-400 font-medium text-xs shadow-sm"
+                            />
+                        </div>
+                        <button className="p-2 bg-white border border-slate-200 rounded-sm hover:bg-slate-50 relative shadow-sm">
+                            <Bell className="w-4 h-4 text-slate-600" />
+                        </button>
+                    </div>
+                </header>
+            )}
 
             {loading && !isTabLoaded() ? (
                 <div className="min-h-[400px] flex items-center justify-center bg-transparent">

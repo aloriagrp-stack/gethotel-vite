@@ -195,6 +195,34 @@ Output strictly valid JSON matching the requested schema. Do not include any mar
         const groundedText = searchResponse.response.text();
         console.log(`[AI Copilot] Pass 1 completed. Grounded Text Length: ${groundedText.length}`);
 
+        // Extract search queries and sources from grounding metadata if present
+        let searchQueries = [];
+        let searchSources = [];
+        try {
+            const candidate = searchResponse.response?.candidates?.[0];
+            if (candidate && candidate.groundingMetadata) {
+                const metadata = candidate.groundingMetadata;
+                if (Array.isArray(metadata.webSearchQueries)) {
+                    searchQueries = metadata.webSearchQueries;
+                }
+                if (Array.isArray(metadata.groundingChunks)) {
+                    searchSources = metadata.groundingChunks
+                        .map(chunk => {
+                            if (chunk.web) {
+                                return {
+                                    title: chunk.web.title || "",
+                                    url: chunk.web.uri || ""
+                                };
+                            }
+                            return null;
+                        })
+                        .filter(Boolean);
+                }
+            }
+        } catch (metadataError) {
+            console.error("[AI Copilot] Error parsing grounding metadata:", metadataError);
+        }
+
         // ==========================================
         // PASS 2: JSON Schema Structure (JSON Mode)
         // ==========================================
@@ -274,7 +302,9 @@ ${existingRoomsContext || "None"}
             success: true,
             reply: parsed.reply || "Rooms list parsed successfully.",
             count: processedRooms.length,
-            data: processedRooms
+            data: processedRooms,
+            searchQueries,
+            searchSources
         });
 
     } catch (err) {

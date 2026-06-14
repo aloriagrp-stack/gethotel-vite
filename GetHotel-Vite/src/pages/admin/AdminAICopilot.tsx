@@ -19,6 +19,8 @@ interface ChatMessage {
     timestamp: Date;
     suggestedRooms?: any[];
     status?: "pending" | "saving" | "saved" | "error";
+    searchQueries?: string[];
+    searchSources?: { title: string; url: string }[];
 }
 
 export default function AdminAICopilot({ hotels }: AdminAICopilotProps) {
@@ -155,7 +157,9 @@ export default function AdminAICopilot({ hotels }: AdminAICopilotProps) {
                                 ...msg,
                                 text: res.reply || `Successfully processed request.`,
                                 suggestedRooms: Array.isArray(res.data) && res.data.length > 0 ? res.data : undefined,
-                                status: Array.isArray(res.data) && res.data.length > 0 ? "pending" : undefined
+                                status: Array.isArray(res.data) && res.data.length > 0 ? "pending" : undefined,
+                                searchQueries: Array.isArray(res.searchQueries) ? res.searchQueries : undefined,
+                                searchSources: Array.isArray(res.searchSources) ? res.searchSources : undefined
                               }
                             : msg
                     )
@@ -337,7 +341,7 @@ export default function AdminAICopilot({ hotels }: AdminAICopilotProps) {
     ];
 
     return (
-        <div className="w-full flex flex-col h-[calc(100vh-220px)] bg-slate-50 border border-slate-200 shadow-sm overflow-hidden">
+        <div className="w-full flex flex-col h-screen bg-slate-50 overflow-hidden">
             {/* Header / Select Hotel Selector */}
             <div className="px-6 py-4 bg-white border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
@@ -375,6 +379,42 @@ export default function AdminAICopilot({ hotels }: AdminAICopilotProps) {
                     const isAI = msg.sender === "ai";
                     return (
                         <div key={msg.id} className={cn("flex flex-col max-w-[85%] space-y-2", isAI ? "self-start text-left" : "self-end ml-auto text-right")}>
+                            {/* Search Queries and Sources display */}
+                            {isAI && msg.searchQueries && msg.searchQueries.length > 0 && (
+                                <div className="flex flex-col gap-1.5 px-3 py-2 bg-slate-200/50 border border-slate-300/40 rounded-xl max-w-lg mb-1 self-start shadow-xs text-[10px]">
+                                    <div className="flex items-center gap-1.5 text-slate-500 font-black text-[9px] uppercase tracking-wider">
+                                        <Sparkles className="w-3 h-3 text-brand-600 animate-pulse" />
+                                        <span>AI Search Queries:</span>
+                                    </div>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {msg.searchQueries.map((q, idx) => (
+                                            <span key={idx} className="bg-white border border-slate-200/80 px-2 py-0.5 rounded-full text-[9px] text-slate-700 font-bold">
+                                                "{q}"
+                                            </span>
+                                        ))}
+                                    </div>
+                                    {msg.searchSources && msg.searchSources.length > 0 && (
+                                        <div className="mt-1 flex flex-col gap-1 border-t border-slate-200/60 pt-1">
+                                            <span className="text-[8px] font-black uppercase tracking-wider text-slate-400">Sources consulted:</span>
+                                            <div className="flex flex-wrap gap-x-2.5 gap-y-1 text-[9px] text-brand-600 font-bold lowercase">
+                                                {msg.searchSources.map((src, idx) => (
+                                                    <a 
+                                                        key={idx} 
+                                                        href={src.url} 
+                                                        target="_blank" 
+                                                        rel="noopener noreferrer" 
+                                                        className="flex items-center gap-0.5 hover:text-brand-800 hover:underline transition-colors"
+                                                    >
+                                                        <span>{src.title || new URL(src.url).hostname}</span>
+                                                        <ArrowUpRight className="w-2.5 h-2.5 shrink-0" />
+                                                    </a>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
                             {/* Message Bubble */}
                             <div className={cn(
                                 "p-5 rounded-2xl shadow-sm text-xs leading-relaxed font-bold border",
