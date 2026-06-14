@@ -1131,16 +1131,82 @@ const findBestRoomMatch = (scrapedName, candidates, getNameFunc = (c) => c) => {
 };
 
 // Parser for Booking.com pages fetched via translate proxy
+// Helper to extract bed configuration from text or GraphQL object
+const extractBedConfig = (name, desc, rdJson) => {
+    // 1. Try from rdJson bedConfigurations
+    if (rdJson && rdJson.bedConfigurations && Array.isArray(rdJson.bedConfigurations)) {
+        const configs = [];
+        rdJson.bedConfigurations.forEach(config => {
+            if (config.beds && Array.isArray(config.beds)) {
+                const bedParts = [];
+                config.beds.forEach(b => {
+                    if (b.count && b.type) {
+                        bedParts.push(`${b.count} ${b.type}`);
+                    }
+                });
+                if (bedParts.length > 0) {
+                    configs.push(bedParts.join(" and "));
+                }
+            }
+        });
+        if (configs.length > 0) return configs.join(" or ");
+    }
+    
+    // 2. Try from rdJson.beds
+    if (rdJson && rdJson.beds && Array.isArray(rdJson.beds)) {
+        const bedParts = [];
+        rdJson.beds.forEach(b => {
+            if (b.count && b.type) {
+                bedParts.push(`${b.count} ${b.type}`);
+            }
+        });
+        if (bedParts.length > 0) return bedParts.join(" and ");
+    }
+
+    // 3. Fallback to parsing from name and description
+    const combined = `${name || ""} ${desc || ""}`.toLowerCase();
+    const bedPatterns = [
+        { pattern: /\b(\d+)\s*(?:extra-large|large)?\s*double\s*beds?\b/i, label: "Double Bed" },
+        { pattern: /\b(\d+)\s*king(?:\-size)?\s*beds?\b/i, label: "King Bed" },
+        { pattern: /\b(\d+)\s*queen(?:\-size)?\s*beds?\b/i, label: "Queen Bed" },
+        { pattern: /\b(\d+)\s*single\s*beds?\b/i, label: "Single Bed" },
+        { pattern: /\b(\d+)\s*twin\s*beds?\b/i, label: "Twin Bed" },
+        { pattern: /\b(\d+)\s*sofa\s*beds?\b/i, label: "Sofa Bed" }
+    ];
+
+    const found = [];
+    bedPatterns.forEach(bp => {
+        const m = combined.match(bp.pattern);
+        if (m) {
+            const count = parseInt(m[1]) || 1;
+            found.push(`${count} ${bp.label}${count > 1 ? 's' : ''}`);
+        }
+    });
+
+    if (found.length > 0) {
+        return found.join(" and ");
+    }
+
+    // Default fallback based on keywords
+    if (combined.includes("king")) return "1 King Bed";
+    if (combined.includes("queen")) return "1 Queen Bed";
+    if (combined.includes("twin") || combined.includes("two single")) return "2 Single Beds";
+    if (combined.includes("triple")) return "3 Single Beds";
+    if (combined.includes("single")) return "1 Single Bed";
+    return "1 Double Bed";
+};
+
+// Parser for Booking.com pages fetched via translate proxy
 const parseBookingComHtml = (html) => {
     const decodeUnicode = str => str.replace(/\\u([0-9a-fA-F]{4})/g, (match, grp) => String.fromCharCode(parseInt(grp, 16)));
     
     // 1. Parse Facility Map
     const facilityMap = {};
-    const instanceRegex = /"__typename":"Instance","id":(\d+),"title":"([^"]+)"/g;
+    const instanceRegex = /\\?"__typename\\?":\\?"([^\\"]+)\\?",\\?"id\\?":(\d+),\\?"title\\?":\\?"([^\\"]+)\\?"/g;
     let instMatch;
     while ((instMatch = instanceRegex.exec(html)) !== null) {
-        const id = instMatch[1];
-        const title = decodeUnicode(instMatch[2].replace(/\\"/g, '"').replace(/\\'/g, "'"));
+        const id = instMatch[2];
+        const title = decodeUnicode(instMatch[3].replace(/\\"/g, '"').replace(/\\'/g, "'"));
         facilityMap[id] = title;
     }
 
@@ -1157,6 +1223,7 @@ const parseBookingComHtml = (html) => {
                     let minPrice = Infinity;
                     let maxPersons = 2;
                     
+                    const variants = [];
                     if (r.b_blocks && r.b_blocks.length > 0) {
                         r.b_blocks.forEach(b => {
                             if (b.b_max_persons && b.b_max_persons > maxPersons) {
@@ -1197,12 +1264,57 @@ const parseBookingComHtml = (html) => {
                             if (blockPrice && blockPrice < minPrice) {
                                 minPrice = blockPrice;
                             }
+
+                            if (blockPrice) {
+                                blockPrice = Math.round(blockPrice);
+                                // Parse meal plan type
+                                let mealPlan = "Room Only (EP)";
+                                const mealName = (b.b_mealplan_included_name || "").toLowerCase();
+                                const rateName = (b.b_rate_name || "").toLowerCase();
+                                const rateDesc = (b.b_rate_description || "").toLowerCase();
+                                const combinedText = `${mealName} ${rateName} ${rateDesc}`;
+
+                                if (combinedText.includes("all inclusive") || combinedText.includes("all meals") || combinedText.includes("ap")) {
+                                    mealPlan = "All Inclusive (AP)";
+                                } else if (combinedText.includes("half board") || combinedText.includes("breakfast and dinner") || combinedText.includes("breakfast & dinner") || combinedText.includes("map")) {
+                                    mealPlan = "Half Board / Breakfast & Dinner (MAP)";
+                                } else if (combinedText.includes("breakfast") || combinedText.includes("continental breakfast") || combinedText.includes("cp")) {
+                                    mealPlan = "Breakfast Included (CP)";
+                                } else if (combinedText.includes("full board") || combinedText.includes("all meals included")) {
+                                    mealPlan = "Full Board / All Meals (AP)";
+                                }
+
+                                // Parse policy
+                                let policy = "Non-refundable";
+                                const cancelType = (b.b_cancellation_type || "").toLowerCase();
+                                const cancelDesc = (b.b_cancellation_policy_description || "").toLowerCase();
+                                const cancelText = `${cancelType} ${cancelDesc} ${combinedText}`;
+
+                                if (cancelText.includes("free cancellation") || cancelText.includes("fully refundable") || cancelText.includes("free cancel")) {
+                                    policy = "Free cancellation till 24h prior";
+                                } else if (cancelText.includes("refundable")) {
+                                    policy = "Refundable";
+                                }
+
+                                // Avoid duplicates of the same meal plan + policy combo
+                                const exists = variants.find(v => v.mealPlan === mealPlan && v.policy === policy);
+                                if (!exists) {
+                                    variants.push({
+                                        mealPlan,
+                                        price: blockPrice,
+                                        policy
+                                    });
+                                } else if (blockPrice < exists.price) {
+                                    exists.price = blockPrice;
+                                }
+                            }
                         });
                     }
                     
                     roomInfoByName[normName] = {
                         price: minPrice !== Infinity ? Math.round(minPrice) : null,
-                        maxOccupancy: maxPersons
+                        maxOccupancy: maxPersons,
+                        variants: variants
                     };
                 }
             });
@@ -1213,7 +1325,7 @@ const parseBookingComHtml = (html) => {
 
     // 3. Parse RoomPhoto definitions to get URIs
     const photoMap = {};
-    const photoRegex = /"RoomPhoto:(\d+)":/g;
+    const photoRegex = /\\?"RoomPhoto:(\d+)[^\\"]*\\?":/g;
     let photoMatch;
     while ((photoMatch = photoRegex.exec(html)) !== null) {
         const photoId = photoMatch[1];
@@ -1233,8 +1345,15 @@ const parseBookingComHtml = (html) => {
         }
         
         try {
-            const photoJson = JSON.parse(html.slice(startIndex, endIndex));
-            if (photoJson.photoUri) {
+            const rawChunk = html.slice(startIndex, endIndex);
+            let photoJson;
+            try {
+                photoJson = JSON.parse(rawChunk);
+            } catch (err) {
+                const cleaned = rawChunk.replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+                photoJson = JSON.parse(cleaned);
+            }
+            if (photoJson && photoJson.photoUri) {
                 let uri = photoJson.photoUri.replace(/\\u0026/g, '&').replace(/u0026/g, '&').replace(/\\/g, '');
                 if (!uri.startsWith('http') && !uri.startsWith('//')) {
                     uri = `https://cf.bstatic.com${uri}`;
@@ -1246,7 +1365,7 @@ const parseBookingComHtml = (html) => {
 
     // 4. Parse RoomTranslation definitions to get name & description
     const roomTranslations = {};
-    const rtRegex = /"RoomTranslation:(\d+)":/g;
+    const rtRegex = /\\?"RoomTranslation:(\d+)[^\\"]*\\?":/g;
     let rtMatch;
     while ((rtMatch = rtRegex.exec(html)) !== null) {
         const roomId = rtMatch[1];
@@ -1266,17 +1385,26 @@ const parseBookingComHtml = (html) => {
         }
         
         try {
-            const rtJson = JSON.parse(html.slice(startIndex, endIndex));
-            roomTranslations[roomId] = {
-                name: decodeUnicode(rtJson.name),
-                description: rtJson.description ? decodeUnicode(rtJson.description) : ''
-            };
+            const rawChunk = html.slice(startIndex, endIndex);
+            let rtJson;
+            try {
+                rtJson = JSON.parse(rawChunk);
+            } catch (err) {
+                const cleaned = rawChunk.replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+                rtJson = JSON.parse(cleaned);
+            }
+            if (rtJson) {
+                roomTranslations[roomId] = {
+                    name: decodeUnicode(rtJson.name),
+                    description: rtJson.description ? decodeUnicode(rtJson.description) : ''
+                };
+            }
         } catch (e) {}
     }
 
     // 5. Parse RoomData definitions to tie photos, amenities, etc.
     const rooms = [];
-    const rdRegex = /"RoomData:(\d+)":/g;
+    const rdRegex = /\\?"RoomData:(\d+)[^\\"]*\\?":/g;
     let rdMatch;
     while ((rdMatch = rdRegex.exec(html)) !== null) {
         const roomId = rdMatch[1];
@@ -1296,7 +1424,16 @@ const parseBookingComHtml = (html) => {
         }
         
         try {
-            const rdJson = JSON.parse(html.slice(startIndex, endIndex));
+            const rawChunk = html.slice(startIndex, endIndex);
+            let rdJson;
+            try {
+                rdJson = JSON.parse(rawChunk);
+            } catch (err) {
+                const cleaned = rawChunk.replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+                rdJson = JSON.parse(cleaned);
+            }
+            if (!rdJson) continue;
+            
             const translation = roomTranslations[roomId] || { name: `Room ${roomId}`, description: '' };
             
             const rimgMatches = [];
@@ -1312,20 +1449,28 @@ const parseBookingComHtml = (html) => {
             }
             
             const roomAmenities = [];
-            if (rdJson.amenities && Array.isArray(rdJson.amenities)) {
-                rdJson.amenities.forEach(am => {
-                    if (am.__ref) {
-                        const refStr = am.__ref;
-                        const idMatch = refStr.match(/"id":(\d+)/) || refStr.match(/id\\":(\d+)/);
-                        if (idMatch) {
-                            const fid = idMatch[1];
-                            if (facilityMap[fid]) {
-                                roomAmenities.push(facilityMap[fid]);
-                            }
+            const amenityRefs = [
+                ...(Array.isArray(rdJson.amenities) ? rdJson.amenities : []),
+                ...(Array.isArray(rdJson.facilities) ? rdJson.facilities : []),
+                ...(Array.isArray(rdJson.roomAmenities) ? rdJson.roomAmenities : []),
+                ...(Array.isArray(rdJson.roomFacilities) ? rdJson.roomFacilities : [])
+            ];
+            
+            amenityRefs.forEach(am => {
+                let refStr = "";
+                if (typeof am === 'string') refStr = am;
+                else if (am && am.__ref) refStr = am.__ref;
+                
+                if (refStr) {
+                    const idMatch = refStr.match(/:(\d+)(?:_[a-zA-Z0-9_\-]+)?$/) || refStr.match(/:(\d+)/) || refStr.match(/id\\":(\d+)/);
+                    if (idMatch) {
+                        const fid = idMatch[1];
+                        if (facilityMap[fid]) {
+                            roomAmenities.push(facilityMap[fid]);
                         }
                     }
-                });
-            }
+                }
+            });
 
             const name = translation.name;
             const description = translation.description;
@@ -1333,11 +1478,13 @@ const parseBookingComHtml = (html) => {
             
             let price = null;
             let maxOccupancy = 2;
+            let roomVariants = [];
             
             const matchedKey = findBestRoomMatch(name, Object.keys(roomInfoByName));
             if (matchedKey && roomInfoByName[matchedKey]) {
                 price = roomInfoByName[matchedKey].price;
                 maxOccupancy = roomInfoByName[matchedKey].maxOccupancy;
+                roomVariants = roomInfoByName[matchedKey].variants || [];
             }
             
             let sizeM2 = 24;
@@ -1348,6 +1495,11 @@ const parseBookingComHtml = (html) => {
 
             const capacityAdults = maxOccupancy;
             
+            // Filter out invalid/empty room categories that lack translation names and pricing
+            if (name.startsWith("Room ") && !price && roomVariants.length === 0) {
+                continue;
+            }
+
             rooms.push({
                 name,
                 description,
@@ -1355,9 +1507,11 @@ const parseBookingComHtml = (html) => {
                 capacityAdults,
                 capacityChildren: 0,
                 maxOccupancy,
+                bedConfiguration: extractBedConfig(name, description, rdJson),
                 amenities: roomAmenities,
                 images: rimgMatches.slice(0, 5),
-                price
+                price,
+                variants: roomVariants
             });
         } catch (e) {
             console.warn(`Error parsing RoomData for ID ${roomId}:`, e.message);
@@ -1450,8 +1604,7 @@ const detectOtaDetails = async (url, fallbackHotelName, basePrice = 2500) => {
     if (isBooking) {
         try {
             let targetUrl = url.trim();
-            const match = targetUrl.match(/booking\.com(\/hotel\/[a-zA-Z0-9_\-\/]+\.html)/i)
-                       || targetUrl.match(/booking\.com(\/hotel\/[a-zA-Z0-9_\-\/]+)/i);
+            const match = targetUrl.match(/booking\.com(\/hotel\/[^?#\s]+)/i);
             if (match) {
                 const path = match[1];
                 // Append check-in and check-out dates for next week to force Booking.com to return prices
@@ -1647,6 +1800,8 @@ const detectOtaDetails = async (url, fallbackHotelName, basePrice = 2500) => {
         faqs: mockFaqs
     };
 };
+
+exports.detectOtaDetails = detectOtaDetails;
 
 // @desc    Import/Sync hotel and rooms from up to 4 OTA links
 // @route   POST /api/admin/rooms/import-ota

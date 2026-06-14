@@ -148,6 +148,38 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
             }
         ]);
 
+        // Select loading steps list based on whether we are scraping a URL or just chatting
+        const steps = scrapingUrl 
+            ? [
+                "Initializing OTA room crawler engine...",
+                "Connecting to Booking.com translator proxy...",
+                "Scraping room categories, details & images...",
+                "Extracting detailed amenities & bed configurations...",
+                "Parsing rate plans (EP, CP, MAP, AP) & pricing...",
+                "Running Groq Llama-3.3 cognitive structure engine...",
+                "Formatting structured response..."
+              ]
+            : [
+                "Analyzing instructions & chat history context...",
+                "Checking database for existing room configurations...",
+                "Running Groq Llama-3.3 reasoning engine...",
+                "Formatting structured room recommendations...",
+                "Finalizing response..."
+              ];
+
+        let stepIndex = 0;
+        const buildStepText = (index: number) => {
+            let lines = [];
+            for (let i = 0; i <= index; i++) {
+                if (i < index) {
+                    lines.push(`✓ ${steps[i]}`);
+                } else {
+                    lines.push(`⏳ ${steps[i]}`);
+                }
+            }
+            return lines.join("\n");
+        };
+
         // 2. Add AI Loading Placeholder
         const aiMessageId = `ai-${Date.now()}`;
         setMessages(prev => [
@@ -155,10 +187,21 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
             {
                 id: aiMessageId,
                 sender: "ai",
-                text: "Thinking...",
+                text: buildStepText(0),
                 timestamp: new Date()
             }
         ]);
+
+        const stepInterval = setInterval(() => {
+            stepIndex++;
+            if (stepIndex < steps.length) {
+                setMessages(prev => 
+                    prev.map(msg => msg.id === aiMessageId ? { ...msg, text: buildStepText(stepIndex) } : msg)
+                );
+            } else {
+                clearInterval(stepInterval);
+            }
+        }, 1200);
 
         setLoading(true);
 
@@ -217,6 +260,7 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                 )
             );
         } finally {
+            clearInterval(stepInterval);
             clearTimeout(timeoutId);
             setLoading(false);
         }
@@ -384,7 +428,9 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                 </div>
                 <div className="flex items-center gap-3">
                     <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
-                        {loadingRoomsPercent !== null ? (
+                        {loadingHotels ? (
+                            <span className="text-brand-600 animate-pulse">Loading Hotels...</span>
+                        ) : loadingRoomsPercent !== null ? (
                             <span className="text-brand-600 animate-pulse">Loading Rooms ({loadingRoomsPercent}%)...</span>
                         ) : (
                             "Target Hotel:"
@@ -394,10 +440,12 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                         <select
                             value={selectedHotelId}
                             onChange={(e) => setSelectedHotelId(e.target.value === "" ? "" : Number(e.target.value))}
-                            disabled={loadingRoomsPercent !== null}
+                            disabled={loadingRoomsPercent !== null || loadingHotels}
                             className="appearance-none w-full pl-4 pr-10 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-sm text-xs font-bold text-slate-900 focus:outline-none focus:border-slate-400 transition-colors cursor-pointer disabled:opacity-90"
                         >
-                            {loadingRoomsPercent !== null ? (
+                            {loadingHotels ? (
+                                <option value="">Loading hotels list...</option>
+                            ) : loadingRoomsPercent !== null ? (
                                 <option value={selectedHotelId}>
                                     {activeHotel ? activeHotel.name : "Loading..."}
                                 </option>
@@ -415,11 +463,14 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                         <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                         
                         {/* Pinned progress bar under bottom border of dropdown */}
-                        {loadingRoomsPercent !== null && (
+                        {(loadingRoomsPercent !== null || loadingHotels) && (
                             <div className="absolute bottom-[1px] left-[1px] right-[1px] h-[3px] bg-slate-100 overflow-hidden rounded-b-sm">
                                 <div 
-                                    className="h-full bg-brand-600 transition-all duration-75 ease-out" 
-                                    style={{ width: `${loadingRoomsPercent}%` }}
+                                    className={cn(
+                                        "h-full bg-brand-600 transition-all ease-out",
+                                        loadingHotels ? "w-full animate-pulse duration-1000" : "duration-75"
+                                    )} 
+                                    style={loadingHotels ? undefined : { width: `${loadingRoomsPercent}%` }}
                                 />
                             </div>
                         )}
