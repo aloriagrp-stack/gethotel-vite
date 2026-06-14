@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { cn, safeParse } from "@/lib/utils";
 import { adminApi, hotelApi } from "@/lib/api";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface AdminAICopilotProps {
     hotels: any[];
@@ -26,9 +27,35 @@ export default function AdminAICopilot({ hotels }: AdminAICopilotProps) {
     const [urlInput, setUrlInput] = useState("");
     const [loading, setLoading] = useState(false);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
+    const [existingRooms, setExistingRooms] = useState<any[]>([]);
+    const [confirmModal, setConfirmModal] = useState<{
+        show: boolean;
+        messageId: string;
+        roomList: any[];
+        existingRoomsCount: number;
+        existingRoomIds: number[];
+    } | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const activeHotel = hotels.find(h => h.id === selectedHotelId);
+
+    // Fetch existing rooms whenever selected hotel changes
+    useEffect(() => {
+        if (selectedHotelId) {
+            hotelApi.getRooms(selectedHotelId.toString()).then(res => {
+                if (res.success && Array.isArray(res.data)) {
+                    setExistingRooms(res.data);
+                } else {
+                    setExistingRooms([]);
+                }
+            }).catch(err => {
+                console.error("Failed to fetch existing rooms", err);
+                setExistingRooms([]);
+            });
+        } else {
+            setExistingRooms([]);
+        }
+    }, [selectedHotelId]);
 
     // Initial Welcome Message
     useEffect(() => {
@@ -110,7 +137,8 @@ export default function AdminAICopilot({ hotels }: AdminAICopilotProps) {
                 hotelId: Number(selectedHotelId),
                 prompt: promptText || undefined,
                 url: scrapingUrl || undefined,
-                history: chatHistory
+                history: chatHistory,
+                existingRooms: existingRooms
             });
 
             if (res.success) {
@@ -209,8 +237,28 @@ export default function AdminAICopilot({ hotels }: AdminAICopilotProps) {
         );
     };
 
-    // Bulk approve and insert selected rooms to the database
+    // Bulk save handler with conflict check
     const handleSaveRooms = async (messageId: string, roomList: any[]) => {
+        if (!selectedHotelId) return;
+
+        // Check if there are already rooms configured for this hotel
+        if (existingRooms.length > 0) {
+            setConfirmModal({
+                show: true,
+                messageId,
+                roomList,
+                existingRoomsCount: existingRooms.length,
+                existingRoomIds: existingRooms.map((r: any) => r.id)
+            });
+            return;
+        }
+
+        // Standard save if no conflict
+        await executeSave(messageId, roomList, []);
+    };
+
+    // Actual bulk insert/update operation
+    const executeSave = async (messageId: string, roomList: any[], deleteIds: number[]) => {
         if (!selectedHotelId) return;
 
         setMessages(prev => 
@@ -220,7 +268,6 @@ export default function AdminAICopilot({ hotels }: AdminAICopilotProps) {
         try {
             // Prepare schema records for bulk inserting
             const formattedRooms = roomList.map(r => {
-                // Ensure structured variants field is correctly stringified
                 const rawVariants = Array.isArray(r.variants) ? r.variants : [];
                 const parsedVariants = rawVariants.map((v: any, index: number) => ({
                     id: index + 1,
@@ -230,32 +277,38 @@ export default function AdminAICopilot({ hotels }: AdminAICopilotProps) {
                 }));
 
                 return {
+                    id: r.id || undefined, // Preserve ID if editing
                     name: r.name,
                     description: r.description || "",
                     pricePerNight: Number(r.pricePerNight),
                     maxOccupancy: Number(r.maxOccupancy) || 2,
                     bedConfiguration: r.bedConfiguration || "1 King Bed",
                     sizeM2: Number(r.sizeM2) || 18,
-                    amenities: r.amenities, // Array will be normalized by backend
-                    images: "[]", // Default blank array for newly generated
-                    highlights: "[]",
-                    trustPoints: "[]",
-                    status: "active",
+                    amenities: r.amenities, 
+                    images: r.images || "[]",
+                    highlights: r.highlights || "[]",
+                    trustPoints: r.trustPoints || "[]",
+                    status: r.status || "active",
                     totalInventory: Number(r.totalInventory) || 5,
-                    isHourlyEnabled: false,
-                    hourlyRates: "{}",
+                    isHourlyEnabled: r.isHourlyEnabled || false,
+                    hourlyRates: typeof r.hourlyRates === 'string' ? r.hourlyRates : JSON.stringify(r.hourlyRates || {}),
                     variants: JSON.stringify(parsedVariants)
                 };
             });
 
             // Call bulk update API
-            const res = await hotelApi.bulkUpdateRooms(Number(selectedHotelId), formattedRooms, []);
+            const res = await hotelApi.bulkUpdateRooms(Number(selectedHotelId), formattedRooms, deleteIds);
 
             if (res.success) {
                 setMessages(prev => 
                     prev.map(msg => msg.id === messageId ? { ...msg, status: "saved" } : msg)
                 );
-                alert("Room categories added successfully to the hotel!");
+                alert("Rooms setup updated successfully!");
+                // Refresh existing rooms
+                const freshRooms = await hotelApi.getRooms(selectedHotelId.toString());
+                if (freshRooms.success && Array.isArray(freshRooms.data)) {
+                    setExistingRooms(freshRooms.data);
+                }
             } else {
                 alert(`Error: ${res.message || "Failed to save rooms to the database"}`);
                 setMessages(prev => 
@@ -580,6 +633,80 @@ export default function AdminAICopilot({ hotels }: AdminAICopilotProps) {
                     <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Powered by Gemini 2.5 Flash</span>
                 </div>
             </div>
+            {/* Conflict Resolution Modal */}
+            <AnimatePresence>
+                {confirmModal && confirmModal.show && (
+                    <>
+                        {/* Overlay */}
+                        <div 
+                            className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[200]" 
+                            onClick={() => setConfirmModal(null)}
+                        />
+                        {/* Dialog */}
+                        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white border border-slate-200 shadow-2xl p-8 w-[95%] max-w-lg z-[210] rounded-xl overflow-hidden text-left">
+                            <div className="flex items-start gap-4">
+                                <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center shrink-0">
+                                    <AlertCircle className="w-6 h-6 text-amber-600 animate-pulse" />
+                                </div>
+                                <div className="space-y-1 flex-1">
+                                    <h4 className="text-sm font-black uppercase text-slate-900 tracking-wider">Room Onboarding Conflict</h4>
+                                    <p className="text-[11px] font-bold text-slate-500 leading-relaxed">
+                                        This property already has <span className="text-slate-950 font-black">{confirmModal.existingRoomsCount}</span> room categories configured in the database. 
+                                        Please choose how you would like to proceed with the newly drafted rooms:
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="mt-6 space-y-3">
+                                {/* Option 1: Clean Install / Replace */}
+                                <button
+                                    onClick={async () => {
+                                        const { messageId, roomList, existingRoomIds } = confirmModal;
+                                        setConfirmModal(null);
+                                        await executeSave(messageId, roomList, existingRoomIds);
+                                    }}
+                                    className="w-full p-4 border border-red-200 bg-red-50/20 hover:bg-red-50 text-left rounded-xl transition-all group flex items-start justify-between cursor-pointer"
+                                >
+                                    <div>
+                                        <h5 className="text-[11px] font-black uppercase text-red-700 tracking-wider">Option A: Overwrite & Clean Install</h5>
+                                        <p className="text-[9px] text-red-500 font-bold mt-1 leading-normal">
+                                            Delete all {confirmModal.existingRoomsCount} current room categories and replace them with this newly drafted list.
+                                        </p>
+                                    </div>
+                                    <Trash2 className="w-4 h-4 text-red-400 group-hover:text-red-600 transition-colors self-center shrink-0 ml-4" />
+                                </button>
+
+                                {/* Option 2: Keep & Append */}
+                                <button
+                                    onClick={async () => {
+                                        const { messageId, roomList } = confirmModal;
+                                        setConfirmModal(null);
+                                        await executeSave(messageId, roomList, []);
+                                    }}
+                                    className="w-full p-4 border border-slate-200 bg-slate-50 hover:bg-slate-100 text-left rounded-xl transition-all group flex items-start justify-between cursor-pointer"
+                                >
+                                    <div>
+                                        <h5 className="text-[11px] font-black uppercase text-slate-900 tracking-wider">Option B: Keep Current & Append</h5>
+                                        <p className="text-[9px] text-slate-500 font-bold mt-1 leading-normal">
+                                            Keep all existing rooms intact and add these new drafted categories alongside them.
+                                        </p>
+                                    </div>
+                                    <Plus className="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors self-center shrink-0 ml-4" />
+                                </button>
+                            </div>
+
+                            <div className="mt-6 flex justify-end gap-2">
+                                <button
+                                    onClick={() => setConfirmModal(null)}
+                                    className="px-5 py-2.5 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-[10px] font-black uppercase rounded-sm transition-colors cursor-pointer"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

@@ -27,7 +27,7 @@ exports.suggestRooms = async (req, res) => {
             });
         }
 
-        const { hotelId, prompt, url, history } = req.body;
+        const { hotelId, prompt, url, history, existingRooms } = req.body;
 
         if (!hotelId) {
             return res.status(400).json({ success: false, message: "hotelId is required" });
@@ -49,7 +49,7 @@ exports.suggestRooms = async (req, res) => {
                 if (response.ok) {
                     const html = await response.text();
                     contextText = cleanHtmlText(html).slice(0, 50000); // Limit context size
-                    console.log(`[AI Copilot] Fetched and cleaned ${contextText.length} characters of page text.`);
+                    console.log(`[AI Copilot] Cleaned ${contextText.length} characters of page text.`);
                 } else {
                     console.warn(`[AI Copilot] URL fetch failed with status: ${response.status}`);
                 }
@@ -58,9 +58,28 @@ exports.suggestRooms = async (req, res) => {
             }
         }
 
+        // Prepare existing rooms context
+        let existingRoomsContext = "";
+        if (Array.isArray(existingRooms) && existingRooms.length > 0) {
+            const simplifiedRooms = existingRooms.map(r => ({
+                id: r.id,
+                name: r.name,
+                description: r.description,
+                pricePerNight: r.pricePerNight,
+                maxOccupancy: r.maxOccupancy,
+                bedConfiguration: r.bedConfiguration,
+                sizeM2: r.sizeM2,
+                totalInventory: r.totalInventory,
+                amenities: Array.isArray(r.amenities) ? r.amenities : (typeof r.amenities === 'string' ? JSON.parse(r.amenities || "[]") : []),
+                variants: typeof r.variants === 'string' ? JSON.parse(r.variants || "[]") : (Array.isArray(r.variants) ? r.variants : [])
+            }));
+            existingRoomsContext = `The hotel currently has the following existing rooms configured in the database:\n${JSON.stringify(simplifiedRooms, null, 2)}\n`;
+        }
+
         // Combine inputs
         const userInput = `
 ${prompt ? `Instructions/Prompt: ${prompt}\n` : ''}
+${existingRoomsContext ? `Existing Rooms Context:\n${existingRoomsContext}\n` : ''}
 ${contextText ? `Webpage raw text context:\n${contextText}\n` : ''}
 `;
 
@@ -81,10 +100,11 @@ ${contextText ? `Webpage raw text context:\n${contextText}\n` : ''}
                 },
                 rooms: {
                     type: "array",
-                    description: "List of room categories extracted from the text. This MUST be empty [] if the user is just chatting or if no rooms are mentioned.",
+                    description: "List of room categories extracted or modified. This MUST be empty [] if the user is just chatting and no rooms are being configured.",
                     items: {
                         type: "object",
                         properties: {
+                            id: { type: "number", description: "Database ID of the room category if it is an existing room being edited. Omit or set to null/0 for new room categories." },
                             name: { type: "string", description: "Name of the room category (e.g. Deluxe Double Room, Superior Suite)" },
                             description: { type: "string", description: "Brief description of the room and its view/comfort" },
                             pricePerNight: { type: "number", description: "Estimated price per night in INR" },
@@ -119,14 +139,20 @@ ${contextText ? `Webpage raw text context:\n${contextText}\n` : ''}
         };
 
         const systemInstruction = `
-You are an expert AI Travel Copilot helping administrators onboard hotel properties to their reservation engine.
+You are an expert AI Travel Copilot helping administrators onboard and manage hotel properties in their reservation engine.
 You are conversational, friendly, helpful, and interactive.
 Your tasks:
 1. If the user is just greeting you, asking questions, or discussing general details, respond conversationally in the "reply" field. Keep "rooms" as an empty array [].
-2. If the user provides hotel details, description text, or a URL context and asks to extract, draft, or list room categories, analyze the text and extract all listed room categories.
+2. If the user provides hotel details, description text, or a URL context and asks to extract, draft, or list room categories:
+   - Analyze the text and extract all listed room categories.
    - For each room category, populate the "rooms" array following the schema rules.
    - Summarize what you found in a friendly manner in the "reply" field.
-3. If the user asks to modify a room or make changes based on previous history (e.g. "make standard room price 5000" or "add a balcony amenity to Deluxe"), adjust the rooms based on the history and user request, return the updated rooms in the "rooms" array, and explain the change in the "reply" field.
+3. If the user asks to edit, update, modify, or delete rooms from the list of existing rooms (provided in the "Existing Rooms Context"):
+   - Read the existing rooms list and apply the requested changes.
+   - Output the resulting full list of rooms (both unmodified rooms and modified rooms) in the "rooms" array.
+   - **CRITICAL**: For any room that already exists in the "Existing Rooms Context", you MUST preserve its database "id" field exactly in the output. This allows the backend to update the existing record instead of creating a duplicate.
+   - For new room categories, do not include an "id" or set it to null.
+   - Explain what edits were performed in the "reply" field.
 
 For each room category:
 - Identify its name, size (in sq meters), bed config, max occupancy, and total description.
@@ -209,6 +235,7 @@ Output strictly valid JSON matching the requested schema. Do not include any mar
             }
 
             return {
+                id: room.id || undefined,
                 ...room,
                 totalInventory: baseInventory,
                 sizeM2: size,
