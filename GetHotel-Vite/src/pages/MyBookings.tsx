@@ -18,7 +18,7 @@ import {
     X,
     Check
 } from "lucide-react";
-import { bookingApi } from "@/lib/api";
+import { bookingApi, paymentApi } from "@/lib/api";
 import { formatPrice, formatDate, cn, safeParse, getHotelUrl } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -49,6 +49,50 @@ export default function MyBookingsPage() {
 
         fetchBookings();
     }, []);
+
+    useEffect(() => {
+        const verifyPendingBookings = async () => {
+            const heldBookings = bookings.filter((b: any) => b.status === 'held');
+            if (heldBookings.length === 0) return;
+
+            let updatedAny = false;
+
+            for (const b of heldBookings) {
+                const attemptedKey = `my_bookings_verify_attempt_${b.id}`;
+                if (sessionStorage.getItem(attemptedKey)) continue;
+                sessionStorage.setItem(attemptedKey, "true");
+
+                try {
+                    console.log(`[MyBookings Dashboard] Auto-verifying pending booking ${b.id}`);
+                    const res = await paymentApi.fetchPaymentStatus(b.id);
+                    if (res.success) {
+                        console.log(`[MyBookings Dashboard] Booking ${b.id} payment verified and updated!`);
+                        updatedAny = true;
+                        
+                        if (localStorage.getItem("active_checkout_booking_id") === b.id.toString()) {
+                            localStorage.removeItem("active_checkout_booking_id");
+                            localStorage.removeItem("active_checkout_booking_time");
+                        }
+                    }
+                } catch (err) {
+                    console.error(`[MyBookings Dashboard] Auto-verifying failed for booking ${b.id}:`, err);
+                }
+            }
+
+            if (updatedAny) {
+                try {
+                    const res = await bookingApi.getMyBookings();
+                    setBookings(res.data || []);
+                } catch (err) {
+                    console.error("Failed to refresh bookings after auto-verification", err);
+                }
+            }
+        };
+
+        if (bookings.length > 0) {
+            verifyPendingBookings();
+        }
+    }, [bookings]);
 
     const [cancelModal, setCancelModal] = useState<{ isOpen: boolean, bookingId: number | null, policy: string }>({
         isOpen: false,

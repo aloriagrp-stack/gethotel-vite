@@ -37,6 +37,7 @@ import { formatPrice, formatDate, safeParse } from "@/lib/utils";
 import confetti from "canvas-confetti";
 import { useAuth } from "@/context/AuthContext";
 import SEOHead from "@/components/common/SEOHead";
+import { validateCoupon } from "@/lib/promoUtils";
 
 const guestSchema = z.object({
     firstName: z.string().min(2, "First name is required"),
@@ -195,9 +196,21 @@ function BookingContent() {
         if (!couponCode.trim()) return;
         const found = coupons.find((c: any) => c.code.toLowerCase() === couponCode.trim().toLowerCase());
         if (found) {
-            setAppliedCoupon(found);
-            setCouponError("");
-            setCouponCode("");
+            const stayDetails = {
+                checkIn,
+                checkOut,
+                basePrice: (pricePerNight || 0) * nights,
+                nights,
+                roomId: selectedRoom?.id
+            };
+            const check = validateCoupon(found, stayDetails);
+            if (check.valid) {
+                setAppliedCoupon(found);
+                setCouponError("");
+                setCouponCode("");
+            } else {
+                setCouponError(check.reason || "This coupon is not valid for your stay.");
+            }
         } else {
             setCouponError("Invalid or expired coupon code.");
         }
@@ -217,6 +230,7 @@ function BookingContent() {
 
                 let targetRoomId = roomId;
                 let targetVariantIndex = variantParam;
+                let foundRoom: any = null;
 
                 // Parse room_ID_INDEX format if direct roomId is missing
                 if (!targetRoomId) {
@@ -239,7 +253,7 @@ function BookingContent() {
                     if (checkIn) params.checkIn = checkIn;
                     if (checkOut) params.checkOut = checkOut;
                     const roomsRes = await hotelApi.getRooms(hotelId, params);
-                    const foundRoom = (roomsRes.data || []).find((r: any) => String(r.id) === String(targetRoomId));
+                    foundRoom = (roomsRes.data || []).find((r: any) => String(r.id) === String(targetRoomId));
                     
                     if (foundRoom) {
                         const variants = safeParse(foundRoom.variants || foundRoom.room_variants, []);
@@ -257,9 +271,31 @@ function BookingContent() {
                 if (couponRes && Array.isArray(couponRes.data)) {
                     const activeCoupons = couponRes.data.filter((c: any) => c.isActive);
                     setCoupons(activeCoupons);
-                    const welcome = activeCoupons.find((c: any) => c.code.toUpperCase() === "WELCOME");
-                    if (welcome) {
-                        setAppliedCoupon(welcome);
+
+                    // Compute stay params for validation
+                    const d1 = new Date(checkIn);
+                    const d2 = new Date(checkOut);
+                    const stayNights = isNaN(d1.getTime()) || isNaN(d2.getTime()) ? 1 : Math.max(1, Math.floor((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24)));
+                    
+                    const resolvedRoom = foundRoom || hotelData?.room?.[0] || hotelData?.rooms?.[0];
+                    const roomBase = resolvedRoom?.selectedVariant?.price ? parseFloat(resolvedRoom.selectedVariant.price) : (resolvedRoom?.pricePerNight ?? hotelData?.pricePerNight ?? 0);
+                    const priceDiff = resolvedRoom?.dynamicPricePerNight ? (resolvedRoom.dynamicPricePerNight - resolvedRoom.pricePerNight) : 0;
+                    const calculatedBasePrice = (roomBase + priceDiff) * stayNights;
+
+                    const stayDetailsForAutoApply = {
+                        checkIn,
+                        checkOut,
+                        basePrice: calculatedBasePrice,
+                        nights: stayNights,
+                        roomId: resolvedRoom?.id
+                    };
+
+                    // Find best valid coupon
+                    const validCoupons = activeCoupons.filter((c: any) => validateCoupon(c, stayDetailsForAutoApply).valid);
+                    validCoupons.sort((a, b) => Number(b.discountValue) - Number(a.discountValue));
+                    
+                    if (validCoupons.length > 0) {
+                        setAppliedCoupon(validCoupons[0]);
                     }
                 }
             } catch (err) {
@@ -306,7 +342,12 @@ function BookingContent() {
         
         let discount = 0;
         if (appliedCoupon) {
-            discount = Math.round(baseSubtotal * (appliedCoupon.discountValue / 100));
+            if (appliedCoupon.discountType === 'percentage') {
+                discount = Math.round(baseSubtotal * (Number(appliedCoupon.discountValue) / 100));
+            } else {
+                discount = Math.round(Number(appliedCoupon.discountValue));
+            }
+            discount = Math.min(discount, baseSubtotal);
         }
         
         const discountedSubtotal = Math.max(0, baseSubtotal - discount);
@@ -395,9 +436,15 @@ function BookingContent() {
             const booking = res.data || res;
             if (booking && booking.id) {
                 if (paymentMode === "pay_at_hotel") {
+                    localStorage.removeItem("active_checkout_booking_id");
+                    localStorage.removeItem("active_checkout_booking_time");
                     setShowConfirmAnimation(true);
                     setRedirectUrl(`/booking/details/${booking.id}?success=true`);
                 } else {
+                    // Store checkout ID for auto-recovery on reload/disconnect
+                    localStorage.setItem("active_checkout_booking_id", booking.id.toString());
+                    localStorage.setItem("active_checkout_booking_time", Date.now().toString());
+
                     // Open Razorpay Checkout for online modes
                     try {
                         const orderRes = await paymentApi.createOrder(booking.id);
@@ -419,6 +466,10 @@ function BookingContent() {
                                         razorpay_signature: response.razorpay_signature,
                                         booking_id: booking.id
                                     });
+                                    // Success! Clear recovery tracker
+                                    localStorage.removeItem("active_checkout_booking_id");
+                                    localStorage.removeItem("active_checkout_booking_time");
+
                                     setShowConfirmAnimation(true);
                                     setRedirectUrl(`/booking/details/${booking.id}?success=true`);
                                 } catch (err: any) {
@@ -431,6 +482,9 @@ function BookingContent() {
                                 ondismiss: function() {
                                     setIsSubmitting(false);
                                     alert("Payment was cancelled. You can retry from your bookings dashboard or start again.");
+                                    // Clear tracking on explicit cancellation
+                                    localStorage.removeItem("active_checkout_booking_id");
+                                    localStorage.removeItem("active_checkout_booking_time");
                                 }
                             },
                             prefill: {

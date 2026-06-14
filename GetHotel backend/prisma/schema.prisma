@@ -66,7 +66,7 @@ model transaction {
 
 model coupon {
   id             Int      @id @default(autoincrement())
-  code           String   @unique(map: "Coupon_code_key")
+  code           String
   discountType   String   @default("percentage")
   discountValue  Float
   minBookingAmt  Float    @default(0)
@@ -89,6 +89,7 @@ model coupon {
   hotel          hotel?   @relation(fields: [hotelId], references: [id], onDelete: Cascade, map: "Coupon_hotelId_fkey")
 
   @@index([hotelId], map: "Coupon_hotelId_fkey")
+  @@unique([code, hotelId], map: "Coupon_code_hotelId_key")
 }
 
 model dailyrate {

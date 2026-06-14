@@ -17,6 +17,7 @@ import { hotelApi, messageApi, couponApi } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import SmartSearchBar from "@/components/search/SmartSearchBar";
 import Loader from "@/components/common/Loader";
+import { validateCoupon, isMobileDevice } from "@/lib/promoUtils";
 
 const formatDateLabel = (ci: string, co: string) => {
     if (!ci || ci === "Dates") return "Add dates";
@@ -403,7 +404,6 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
         const priceDiff = room.dynamicPricePerNight ? (room.dynamicPricePerNight - room.pricePerNight) : 0;
         const parsedBase = room?.selectedVariant?.price ? parseFloat(room.selectedVariant.price) : parseFloat(basePrice);
         const actualPrice = parsedBase + priceDiff;
-        const isMobileDevice = typeof window !== 'undefined' && window.innerWidth < 768;
 
         // Helper to apply discount with safety
         const applyDiscount = (price: number, val: number, type: string) => {
@@ -414,82 +414,171 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
             return Math.max(0, discounted); // Never go below zero
         };
 
-        if (!checkIn || !checkOut || checkIn === "Dates") {
-            // 1. Check for Best Coupon (allow mobile_only on desktop for badge display)
-            const sortedPromos = [...activePromos].sort((a, b) => {
-                if (a.promoType === 'mobile_only' && b.promoType !== 'mobile_only') return -1;
-                if (a.promoType !== 'mobile_only' && b.promoType === 'mobile_only') return 1;
-                return Number(b.discountValue) - Number(a.discountValue);
-            });
-
-            const bestPromo = sortedPromos[0];
-            if (bestPromo) {
-                const isMobilePromo = bestPromo.promoType === 'mobile_only';
-                const shouldApplyDiscount = !isMobilePromo || isMobileDevice;
-                const fPrice = shouldApplyDiscount
-                    ? applyDiscount(actualPrice, Number(bestPromo.discountValue), bestPromo.discountType)
-                    : actualPrice;
-                const title = isMobilePromo ? 'MOBILE EXCLUSIVE' : (bestPromo.promoType?.replace('_', ' ').toUpperCase() || 'OFFER');
-                return { 
-                    finalPrice: fPrice, 
-                    originalPrice: shouldApplyDiscount ? actualPrice : null, 
-                    discountLabel: `${bestPromo.discountValue}${bestPromo.discountType === 'percentage' ? '%' : '₹'} ${title}`,
-                    isMobileOnly: isMobilePromo
-                };
-            }
-
-            // 2. Default to Weekly/Monthly as 'Potential' discount if no dates
-            if (room.monthlyDiscount > 0) {
-                return { finalPrice: applyDiscount(actualPrice, room.monthlyDiscount, 'percentage'), originalPrice: actualPrice, discountLabel: `${room.monthlyDiscount}% MONTHLY SAVINGS`, isMobileOnly: false };
-            } else if (room.weeklyDiscount > 0) {
-                return { finalPrice: applyDiscount(actualPrice, room.weeklyDiscount, 'percentage'), originalPrice: actualPrice, discountLabel: `${room.weeklyDiscount}% WEEKLY DEAL`, isMobileOnly: false };
-            }
-
-            return { finalPrice: actualPrice, originalPrice: null, discountLabel: null, isMobileOnly: false };
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        
+        // Resolve check-in / check-out dates and nights
+        const hasDates = checkIn && checkOut && checkIn !== "Dates" && checkOut !== "Dates";
+        const stayCheckIn = hasDates ? checkIn : todayStr;
+        const stayCheckOut = hasDates ? checkOut : new Date(today.getTime() + 86400000).toISOString().split('T')[0];
+        
+        let stayNights = 1;
+        if (hasDates) {
+            const start = new Date(checkIn);
+            const end = new Date(checkOut);
+            stayNights = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
         }
 
-        const start = new Date(checkIn);
-        const end = new Date(checkOut);
-        const nights = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-        if (nights <= 0) return { finalPrice: actualPrice, originalPrice: null, discountLabel: null, isMobileOnly: false };
+        const stayDetails = {
+            checkIn: stayCheckIn,
+            checkOut: stayCheckOut,
+            basePrice: actualPrice,
+            nights: stayNights,
+            roomId: room?.id
+        };
 
-        // Logic for specific stay duration
-        const bestPromo = activePromos
-            .filter(p => {
-                if (p.minStay && nights < Number(p.minStay)) return false;
-                if (p.minBookingAmt && actualPrice < Number(p.minBookingAmt)) return false;
-                // Allow mobile_only to pass through to sorting for badge display purposes
-                return true;
-            })
-            .sort((a, b) => {
-                if (a.promoType === 'mobile_only' && b.promoType !== 'mobile_only') return -1;
-                if (a.promoType !== 'mobile_only' && b.promoType === 'mobile_only') return 1;
-                return Number(b.discountValue) - Number(a.discountValue);
-            })[0];
+        const isMobile = isMobileDevice();
 
-        if (bestPromo) {
-            const isMobilePromo = bestPromo.promoType === 'mobile_only';
-            const shouldApplyDiscount = !isMobilePromo || isMobileDevice;
-            const fPrice = shouldApplyDiscount
-                ? applyDiscount(actualPrice, Number(bestPromo.discountValue), bestPromo.discountType)
-                : actualPrice;
-            const label = isMobilePromo ? `MOBILE ONLY: ${bestPromo.discountValue}${bestPromo.discountType === 'percentage' ? '%' : '₹'} OFF` : `${bestPromo.discountValue}${bestPromo.discountType === 'percentage' ? '%' : '₹'} OFF (${bestPromo.code})`;
-            return { 
-                finalPrice: fPrice, 
-                originalPrice: shouldApplyDiscount ? actualPrice : null, 
-                discountLabel: label, 
-                isMobileOnly: isMobilePromo 
+        const getPromoTypeLabel = (type: string) => {
+            switch (type) {
+                case 'standard':
+                    return 'Basic Deal';
+                case 'mobile_only':
+                    return 'Mobile Only';
+                case 'last_minute':
+                    return 'Last Minute';
+                case 'early_bird':
+                    return 'Early Bird';
+                case 'weekend':
+                    return 'Weekend Getaway';
+                case 'long_stay':
+                    return 'Long Stay';
+                default:
+                    return 'Special Offer';
+            }
+        };
+
+        // 1. Separate promos into fully valid vs mobile-restricted-only
+        const fullyValidPromos: any[] = [];
+        let mobileRestrictedPromo: any = null;
+
+        activePromos.forEach(p => {
+            // Check basic constraints bypassing the mobile check
+            const copyPromo = { ...p, promoType: p.promoType === 'mobile_only' ? 'standard' : p.promoType };
+            const basicCheck = validateCoupon(copyPromo, stayDetails);
+            if (!basicCheck.valid) return;
+
+            // Check full validity
+            const fullCheck = validateCoupon(p, stayDetails);
+            if (fullCheck.valid) {
+                fullyValidPromos.push(p);
+            } else if (p.promoType === 'mobile_only' && !isMobile) {
+                if (!mobileRestrictedPromo || Number(p.discountValue) > Number(mobileRestrictedPromo.discountValue)) {
+                    mobileRestrictedPromo = p;
+                }
+            }
+        });
+
+        // 2. Sort fully valid promos to find the best applicable one
+        fullyValidPromos.sort((a, b) => Number(b.discountValue) - Number(a.discountValue));
+        const bestPromo = fullyValidPromos[0];
+
+        // 3. Calculate final display results
+        if (mobileRestrictedPromo && !isMobile) {
+            // Desktop view, show MOBILE ONLY badge, but do NOT apply mobile discount
+            const title = `MOBILE ONLY: ${mobileRestrictedPromo.discountValue}${mobileRestrictedPromo.discountType === 'percentage' ? '%' : '₹'} OFF`;
+            
+            // If there's another fully valid coupon, apply that one instead to the price
+            if (bestPromo) {
+                const fPrice = applyDiscount(actualPrice, Number(bestPromo.discountValue), bestPromo.discountType);
+                return {
+                    finalPrice: fPrice,
+                    originalPrice: actualPrice,
+                    discountLabel: title,
+                    isMobileOnly: true,
+                    promoType: 'mobile_only',
+                    promoTypeLabel: 'Mobile Only Deal'
+                };
+            }
+            return {
+                finalPrice: actualPrice,
+                originalPrice: null,
+                discountLabel: title,
+                isMobileOnly: true,
+                promoType: 'mobile_only',
+                promoTypeLabel: 'Mobile Only Deal'
             };
         }
 
-        if (nights >= 30 && room.monthlyDiscount > 0) {
-            return { finalPrice: applyDiscount(actualPrice, room.monthlyDiscount, 'percentage'), originalPrice: actualPrice, discountLabel: `${room.monthlyDiscount}% MONTHLY DISCOUNT`, isMobileOnly: false };
-        } else if (nights >= 7 && room.weeklyDiscount > 0) {
-            return { finalPrice: applyDiscount(actualPrice, room.weeklyDiscount, 'percentage'), originalPrice: actualPrice, discountLabel: `${room.weeklyDiscount}% WEEKLY DISCOUNT`, isMobileOnly: false };
+        if (bestPromo) {
+            const isMobilePromo = bestPromo.promoType === 'mobile_only';
+            const fPrice = applyDiscount(actualPrice, Number(bestPromo.discountValue), bestPromo.discountType);
+            const label = isMobilePromo 
+                ? `MOBILE ONLY: ${bestPromo.discountValue}${bestPromo.discountType === 'percentage' ? '%' : '₹'} OFF` 
+                : `${bestPromo.discountValue}${bestPromo.discountType === 'percentage' ? '%' : '₹'} OFF (${bestPromo.code})`;
+            
+            return { 
+                finalPrice: fPrice, 
+                originalPrice: actualPrice, 
+                discountLabel: label, 
+                isMobileOnly: isMobilePromo,
+                promoType: bestPromo.promoType,
+                promoTypeLabel: getPromoTypeLabel(bestPromo.promoType)
+            };
         }
 
-        return { finalPrice: actualPrice, originalPrice: null, discountLabel: null, isMobileOnly: false };
-    };
+        // 4. Default to Weekly/Monthly potential discounts if no promo matches
+        if (!hasDates) {
+            if (room.monthlyDiscount > 0) {
+                return { 
+                    finalPrice: applyDiscount(actualPrice, room.monthlyDiscount, 'percentage'), 
+                    originalPrice: actualPrice, 
+                    discountLabel: `${room.monthlyDiscount}% MONTHLY SAVINGS`, 
+                    isMobileOnly: false,
+                    promoType: 'standard',
+                    promoTypeLabel: 'Monthly Deal'
+                };
+            } else if (room.weeklyDiscount > 0) {
+                return { 
+                    finalPrice: applyDiscount(actualPrice, room.weeklyDiscount, 'percentage'), 
+                    originalPrice: actualPrice, 
+                    discountLabel: `${room.weeklyDiscount}% WEEKLY DEAL`, 
+                    isMobileOnly: false,
+                    promoType: 'standard',
+                    promoTypeLabel: 'Weekly Deal'
+                };
+            }
+        } else {
+            if (stayNights >= 30 && room.monthlyDiscount > 0) {
+                return { 
+                    finalPrice: applyDiscount(actualPrice, room.monthlyDiscount, 'percentage'), 
+                    originalPrice: actualPrice, 
+                    discountLabel: `${room.monthlyDiscount}% MONTHLY DISCOUNT`, 
+                    isMobileOnly: false,
+                    promoType: 'standard',
+                    promoTypeLabel: 'Monthly Deal'
+                };
+            } else if (stayNights >= 7 && room.weeklyDiscount > 0) {
+                return { 
+                    finalPrice: applyDiscount(actualPrice, room.weeklyDiscount, 'percentage'), 
+                    originalPrice: actualPrice, 
+                    discountLabel: `${room.weeklyDiscount}% WEEKLY DISCOUNT`, 
+                    isMobileOnly: false,
+                    promoType: 'standard',
+                    promoTypeLabel: 'Weekly Deal'
+                };
+            }
+        }
+
+        return { 
+            finalPrice: actualPrice, 
+            originalPrice: null, 
+            discountLabel: null, 
+            isMobileOnly: false,
+            promoType: null,
+            promoTypeLabel: null
+        };
+    };;
 
     // Resilient Image Extraction
     const getImages = (data: any) => {
@@ -1175,13 +1264,10 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                                                                     fill
                                                                     className="object-cover group-hover:scale-105 transition-transform duration-700"
                                                                 />
-                                                                <div className="absolute top-4 left-4 flex flex-col gap-2">
-                                                                    {stayInfo.discountLabel && (
-                                                                        <div className={cn(
-                                                                            "backdrop-blur-md text-white px-3 py-1 rounded-md text-[8px] font-black uppercase tracking-widest flex items-center gap-1.5 shadow-lg",
-                                                                            stayInfo.isMobileOnly ? "bg-purple-600/90" : "bg-blue-600/90"
-                                                                        )}>
-                                                                            <Tag className="w-3 h-3" /> {stayInfo.discountLabel}
+                                                                <div className="absolute top-4 left-4 flex flex-col gap-1.5 items-start">
+                                                                    {stayInfo.discountLabel && stayInfo.promoTypeLabel && (
+                                                                        <div className="bg-slate-900/95 backdrop-blur-sm text-white px-2.5 py-1 rounded text-[7px] font-black uppercase tracking-widest leading-none shadow-sm">
+                                                                            {stayInfo.promoTypeLabel}
                                                                         </div>
                                                                     )}
                                                                     {!isHourly && (variant.mealPlan?.toLowerCase().includes('breakfast') || variant.mealPlan?.toLowerCase().includes('cp')) && (
@@ -1318,18 +1404,15 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                                                                     fill
                                                                     className="object-cover"
                                                                 />
-                                                                <div className="absolute top-3 left-3 flex flex-col gap-2">
+                                                                <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
                                                                     {(() => {
                                                                         const rates = typeof room.hourlyRates === 'string' ? safeParse(room.hourlyRates, {}) : (room.hourlyRates || safeParse(room.hourly_rates, {}));
                                                                         const bPrice = stayType === 'hourly' ? (rates[duration] || rates[String(duration)] || room.pricePerNight / 2) : variant.price;
                                                                         const sInfo = calculateStayPrice(bPrice, room, coupons);
-                                                                        if (!sInfo.discountLabel) return null;
+                                                                        if (!sInfo.discountLabel || !sInfo.promoTypeLabel) return null;
                                                                         return (
-                                                                            <div className={cn(
-                                                                                "backdrop-blur-md text-white px-2 py-0.5 rounded-md text-[7px] font-black uppercase tracking-widest flex items-center gap-1 shadow-md",
-                                                                                sInfo.isMobileOnly ? "bg-purple-600/90" : "bg-blue-600/90"
-                                                                            )}>
-                                                                                <Tag className="w-2.5 h-2.5" /> {sInfo.discountLabel}
+                                                                            <div className="bg-slate-900/95 backdrop-blur-sm text-white px-1.5 py-0.5 rounded text-[6px] font-black uppercase tracking-widest leading-none shadow-sm">
+                                                                                {sInfo.promoTypeLabel}
                                                                             </div>
                                                                         );
                                                                     })()}

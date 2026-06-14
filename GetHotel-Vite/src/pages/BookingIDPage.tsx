@@ -33,6 +33,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { countries } from "@/lib/countries";
 import { InvoiceTemplate } from "@/components/booking/InvoiceTemplate";
 import { useRef } from "react";
+import { validateCoupon } from "@/lib/promoUtils";
 
 function BookingContent() {
     const params = useParams();
@@ -167,44 +168,36 @@ function BookingContent() {
         let discountLabel = "";
         let isMobileOnly = false;
 
-        if (!room) return { finalPrice, originalPrice, discountLabel };
+        if (!room) return { finalPrice, originalPrice, discountLabel, isMobileOnly };
 
-        const today = new Date();
-        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        // Prepare stay parameters for validation
+        const stayDetails = {
+            checkIn: checkIn || new Date().toISOString().split('T')[0],
+            checkOut: checkOut || new Date(Date.now() + 86400000).toISOString().split('T')[0],
+            basePrice,
+            nights,
+            roomId: room.id
+        };
 
-        const roomCoupons = couponsList.filter(c => {
-            const isActive = c.isActive || c.status === 'active';
-            if (!isActive) return false;
-            const startStr = typeof c.startDate === 'string' ? c.startDate.split('T')[0] : '';
-            const endStr = typeof c.endDate === 'string' ? c.endDate.split('T')[0] : '';
-            if (startStr && endStr && (todayStr < startStr || todayStr > endStr)) return false;
-            return (!c.roomId || String(c.roomId) === String(room.id)) &&
-                   (!c.hotelId || String(c.hotelId) === String(hotelId));
+        // Filter valid coupons
+        const validCoupons = couponsList.filter(c => {
+            const validation = validateCoupon(c, stayDetails);
+            return validation.valid;
         });
 
-        // FALLBACK: If no room-specific coupon, look for hotel-wide deals
-        const activeCoupons = roomCoupons.length > 0 ? roomCoupons : couponsList.filter(c => {
-            const isActive = c.isActive || c.status === 'active';
-            if (!isActive) return false;
-            const startStr = typeof c.startDate === 'string' ? c.startDate.split('T')[0] : '';
-            const endStr = typeof c.endDate === 'string' ? c.endDate.split('T')[0] : '';
-            if (startStr && endStr && (todayStr < startStr || todayStr > endStr)) return false;
-            return !c.roomId && String(c.hotelId) === String(hotelId);
-        });
-
-        if (activeCoupons.length > 0) {
-            const bestCoupon = activeCoupons.reduce((prev, curr) => 
-                (curr.discountValue > prev.discountValue) ? curr : prev
+        if (validCoupons.length > 0) {
+            const bestCoupon = validCoupons.reduce((prev, curr) => 
+                (Number(curr.discountValue) > Number(prev.discountValue)) ? curr : prev
             );
 
             if (bestCoupon.discountType === 'percentage') {
-                finalPrice = basePrice * (1 - bestCoupon.discountValue / 100);
+                finalPrice = Math.round(basePrice * (1 - Number(bestCoupon.discountValue) / 100));
                 discountLabel = `${bestCoupon.discountValue}% OFF (${bestCoupon.code})`;
             } else {
-                finalPrice = Math.max(0, basePrice - bestCoupon.discountValue);
+                finalPrice = Math.round(Math.max(0, basePrice - Number(bestCoupon.discountValue)));
                 discountLabel = `₹${bestCoupon.discountValue} OFF`;
             }
-            isMobileOnly = bestCoupon.promoType === 'mobile_only' || false;
+            isMobileOnly = bestCoupon.promoType === 'mobile_only';
         }
 
         return { finalPrice, originalPrice, discountLabel, isMobileOnly };
@@ -322,6 +315,11 @@ function BookingContent() {
             const booking = bookingRes.data;
             setTempBooking(booking);
 
+            if (booking && booking.id) {
+                localStorage.setItem("active_checkout_booking_id", booking.id.toString());
+                localStorage.setItem("active_checkout_booking_time", Date.now().toString());
+            }
+
             try {
                 // 2. Create Razorpay Order
                 const orderRes = await paymentApi.createOrder(booking.id);
@@ -343,6 +341,11 @@ function BookingContent() {
                                 razorpay_payment_id: response.razorpay_payment_id,
                                 razorpay_signature: response.razorpay_signature
                             });
+                            
+                            // Success! Clear recovery tracker
+                            localStorage.removeItem("active_checkout_booking_id");
+                            localStorage.removeItem("active_checkout_booking_time");
+
                             setCreatedBookingId(booking.id.toString());
                             setCurrentBooking({
                                 ...booking,
@@ -365,6 +368,9 @@ function BookingContent() {
                         ondismiss: function() {
                             setBookingLoading(false);
                             setError("Payment was cancelled. You can try again whenever you're ready.");
+                            // Clear tracking on explicit cancellation
+                            localStorage.removeItem("active_checkout_booking_id");
+                            localStorage.removeItem("active_checkout_booking_time");
                         }
                     },
                     prefill: {

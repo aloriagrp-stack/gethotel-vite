@@ -106,6 +106,12 @@ export default function BookingDetailsPage() {
         }
     };
 
+    useEffect(() => {
+        if (booking && booking.status === 'held' && !verifying && !verificationMessage) {
+            handleVerifyPaymentStatus();
+        }
+    }, [booking, verifying, verificationMessage]);
+
     const hotelName = booking?.hotel?.name || "Cottage Yes Please";
     const hotelCity = booking?.hotel?.city || "New Delhi";
     const hotelAddress = booking?.hotel?.address || "1843, Laxmi Narain Street, Rajguru Marg, Chuna Mandi, Pahar Ganj";

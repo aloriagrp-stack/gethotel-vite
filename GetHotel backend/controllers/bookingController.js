@@ -138,19 +138,99 @@ exports.createBooking = async (req, res) => {
         // Apply coupon code discount if provided
         let discountAmount = 0;
         if (couponCode) {
-            try {
-                const activeCoupon = await prisma.coupon.findFirst({
-                    where: {
-                        hotelId: parseInt(hotelId),
-                        code: { equals: couponCode.trim() },
-                        isActive: true
-                    }
-                });
-                if (activeCoupon) {
-                    discountAmount = Math.round(calculatedSubtotal * (activeCoupon.discountValue / 100));
+            const activeCoupon = await prisma.coupon.findFirst({
+                where: {
+                    hotelId: parseInt(hotelId),
+                    code: { equals: couponCode.trim() },
+                    isActive: true
                 }
-            } catch (e) {
-                console.error("Error applying backend coupon:", e);
+            });
+
+            if (!activeCoupon) {
+                return res.status(400).json({ success: false, message: "Invalid or expired coupon code." });
+            }
+
+            // Date validation (compare with server local/UTC date)
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            
+            const start = new Date(activeCoupon.startDate);
+            const end = new Date(activeCoupon.endDate);
+            const compareStart = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+            const compareEnd = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+
+            if (today < compareStart || today > compareEnd) {
+                return res.status(400).json({ success: false, message: "This coupon is either not active yet or has expired." });
+            }
+
+            // Min Stay validation
+            if (activeCoupon.minStay && nights < activeCoupon.minStay) {
+                return res.status(400).json({ success: false, message: `Minimum stay of ${activeCoupon.minStay} nights is required for this offer.` });
+            }
+
+            // Min Booking Amount validation
+            if (activeCoupon.minBookingAmt && calculatedSubtotal < activeCoupon.minBookingAmt) {
+                return res.status(400).json({ success: false, message: `This coupon requires a minimum booking amount of ₹${activeCoupon.minBookingAmt}.` });
+            }
+
+            // Apply to specific rooms check
+            if (activeCoupon.applyToRooms && activeCoupon.applyToRooms !== 'all') {
+                const allowedRooms = activeCoupon.applyToRooms.split(',').map(id => id.trim());
+                const isRoomAllowed = activeRooms.some(r => allowedRooms.includes(String(r.id)));
+                if (!isRoomAllowed) {
+                    return res.status(400).json({ success: false, message: "This coupon is not valid for the selected room category." });
+                }
+            }
+
+            // Advanced promo type check
+            const type = activeCoupon.promoType || 'standard';
+
+            if (type === 'mobile_only') {
+                const userAgent = req.headers['user-agent'] || '';
+                const isMobileUA = /mobile|android|iphone|ipad|phone/i.test(userAgent);
+                if (!isMobileUA) {
+                    return res.status(400).json({ success: false, message: "This coupon is exclusive to mobile device bookings." });
+                }
+            }
+
+            else if (type === 'last_minute') {
+                const checkInDate = new Date(checkInDay);
+                const checkInDayObj = new Date(checkInDate.getFullYear(), checkInDate.getMonth(), checkInDate.getDate());
+                const diffDays = Math.ceil((checkInDayObj.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                if (diffDays < 0 || diffDays > 1) {
+                    return res.status(400).json({ success: false, message: "Last minute deals are only valid for bookings checking in today or tomorrow." });
+                }
+            }
+
+            else if (type === 'early_bird') {
+                const checkInDate = new Date(checkInDay);
+                const checkInDayObj = new Date(checkInDate.getFullYear(), checkInDate.getMonth(), checkInDate.getDate());
+                const diffDays = Math.round((checkInDayObj.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                if (diffDays < 7) {
+                    return res.status(400).json({ success: false, message: "Early bird specials require booking at least 7 days in advance." });
+                }
+            }
+
+            else if (type === 'weekend') {
+                const checkInDate = new Date(checkInDay);
+                const dayOfWeek = checkInDate.getDay(); // 0 = Sunday, 5 = Friday, 6 = Saturday
+                if (dayOfWeek !== 0 && dayOfWeek !== 5 && dayOfWeek !== 6) {
+                    return res.status(400).json({ success: false, message: "Weekend deals are only valid for check-in on Friday, Saturday, or Sunday." });
+                }
+            }
+
+            else if (type === 'long_stay') {
+                const requiredNights = Math.max(3, Number(activeCoupon.minStay) || 3);
+                if (nights < requiredNights) {
+                    return res.status(400).json({ success: false, message: `Long stay incentive requires booking a stay of at least ${requiredNights} nights.` });
+                }
+            }
+
+            // Calculate discount
+            if (activeCoupon.discountType === 'percentage') {
+                discountAmount = Math.round(calculatedSubtotal * (activeCoupon.discountValue / 100));
+            } else {
+                discountAmount = Math.round(activeCoupon.discountValue);
             }
         }
 
