@@ -171,9 +171,8 @@ export const adminApi = {
     createBulkHotels: (data: any) => apiFetch('/admin/hotels/bulk', { method: 'POST', body: JSON.stringify(data) }),
     getGlobalReviews: () => apiFetch('/admin/reviews'),
     deleteReview: (id: number) => apiFetch(`/admin/reviews/${id}`, { method: 'DELETE' }),
-    getRoomsOverview: () => apiFetch('/admin/rooms-overview'),
-    importOtaRooms: (data: { hotelId: number; otaUrl?: string; otaUrls?: string[]; syncMode?: "full" | "rooms" | "prices"; syncGroup?: boolean }) => apiFetch('/admin/rooms/import-ota', { method: 'POST', body: JSON.stringify(data) }),
-    suggestRooms: (data: { hotelId: number; prompt?: string; url?: string; history?: { role: string; text: string }[]; existingRooms?: any[] }, options?: RequestInit) => apiFetch('/admin/ai/suggest-rooms', { method: 'POST', body: JSON.stringify(data), ...options }),
+    suggestRooms: (data: { hotelId: number; prompt?: string; url?: string; urls?: string[]; history?: { role: string; text: string }[]; existingRooms?: any[]; newAttachedImages?: string[] }, options?: RequestInit) => apiFetch('/admin/ai/suggest-rooms', { method: 'POST', body: JSON.stringify(data), ...options }),
+    convertWebP: (data: { imageUrl: string }) => apiFetch('/admin/ai/convert-webp', { method: 'POST', body: JSON.stringify(data) }),
 };
 
 export const otaApi = {

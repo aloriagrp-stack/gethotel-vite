@@ -3,7 +3,7 @@ const {
     getStats, getHotelDetail, getPartners, resetPartnerPassword, assignHotelsToPartner, 
     getAllHotels, getAllBookings, getAdminHotelDetail, updateHotelMetrics, recalculateHotelMetrics, 
     suspendHotel, deleteHotel, getPayouts, approvePayout, createQuickPartner, createBulkHotels, 
-    getUsers, getGlobalReviews, deleteReview, getRoomsOverview, importOtaRooms
+    getUsers, getGlobalReviews, deleteReview
 } = require('../controllers/adminController');
 const { getAnalytics } = require('../controllers/analyticsController');
 const { updateHomepageConfig, toggleTrending, toggleFeatured } = require('../controllers/homepageController');
@@ -33,8 +33,6 @@ router.post('/partners/quick', createQuickPartner);
 router.post('/partners/:id/reset-password', resetPartnerPassword);
 router.put('/partners/:id/assign-hotels', assignHotelsToPartner);
 router.put('/homepage/config', updateHomepageConfig);
-router.get('/rooms-overview', getRoomsOverview);
-router.post('/rooms/import-ota', importOtaRooms);
 // Payout administration routes
 router.get('/payouts', getPayouts);
 router.put('/payouts/:id/approve', approvePayout);

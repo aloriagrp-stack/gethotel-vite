@@ -918,66 +918,7 @@ exports.deleteReview = async (req, res) => {
     }
 };
 
-// @desc    Get rooms count, owners, and group login links for all hotels
-// @route   GET /api/admin/rooms-overview
-// @access  Private (Super Admin)
-exports.getRoomsOverview = async (req, res) => {
-    try {
-        const hotels = await prisma.hotel.findMany({
-            include: {
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true
-                    }
-                },
-                room: {
-                    select: {
-                        id: true,
-                        name: true,
-                        pricePerNight: true,
-                        maxOccupancy: true,
-                        sizeM2: true
-                    }
-                }
-            },
-            orderBy: {
-                createdAt: 'desc'
-            }
-        });
 
-        const data = hotels.map(hotel => {
-            const sameOwnerHotels = hotels
-                .filter(h => h.userId === hotel.userId && h.id !== hotel.id)
-                .map(h => ({ id: h.id, name: h.name, city: h.city }));
-
-            return {
-                id: hotel.id,
-                name: hotel.name,
-                city: hotel.city,
-                address: hotel.address,
-                pricePerNight: hotel.pricePerNight,
-                roomCount: hotel.room.length,
-                rooms: hotel.room,
-                owner: hotel.user ? {
-                    id: hotel.user.id,
-                    name: hotel.user.name,
-                    email: hotel.user.email
-                } : null,
-                groupHotels: sameOwnerHotels
-            };
-        });
-
-        res.json({
-            success: true,
-            count: data.length,
-            data
-        });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-};
 
 // Helper function to generate unique room slug
 const makeRoomSlug = (value) => {
@@ -1200,13 +1141,50 @@ const extractBedConfig = (name, desc, rdJson) => {
 const parseBookingComHtml = (html) => {
     const decodeUnicode = str => str.replace(/\\u([0-9a-fA-F]{4})/g, (match, grp) => String.fromCharCode(parseInt(grp, 16)));
     
-    // 1. Parse Facility Map
+    // 1. Parse Facility Map (support multiple key orders and typenames)
     const facilityMap = {};
+    
+    // Pattern A: Match "Facility:123" or similar in Apollo cache definitions
+    const facilityRegex = /\\?"(Facility|RoomFacility|HotelFacility|FacilityItem|Amenity):(\d+)(?:_[a-zA-Z0-9_\-]+)?\\?":\s*{([^}]+)}/g;
+    let facMatch;
+    while ((facMatch = facilityRegex.exec(html)) !== null) {
+        const type = facMatch[1];
+        const id = facMatch[2];
+        const objStr = facMatch[3];
+        const titleMatch = objStr.match(/\\?"title\\?":\s*\\?"([^\\"]+)\\?"/);
+        if (titleMatch) {
+            const title = decodeUnicode(titleMatch[1].replace(/\\"/g, '"').replace(/\\'/g, "'"));
+            facilityMap[id] = title;
+            facilityMap[`${type}:${id}`] = title;
+        }
+    }
+
+    // Pattern B: Match any general typenames with id and title keys in any order
     const instanceRegex = /\\?"__typename\\?":\\?"([^\\"]+)\\?",\\?"id\\?":(\d+),\\?"title\\?":\\?"([^\\"]+)\\?"/g;
     let instMatch;
     while ((instMatch = instanceRegex.exec(html)) !== null) {
+        const type = instMatch[1];
         const id = instMatch[2];
         const title = decodeUnicode(instMatch[3].replace(/\\"/g, '"').replace(/\\'/g, "'"));
+        facilityMap[id] = title;
+        facilityMap[`${type}:${id}`] = title;
+    }
+
+    // Pattern C: Regex for "id": 123, "title": "..."
+    const regex1 = /\\?"id\\?":\s*(?:\\?"(\d+)\\?"|(\d+)),\s*\\?"title\\?":\s*\\?"([^\\"]+)\\?"/g;
+    let match1;
+    while ((match1 = regex1.exec(html)) !== null) {
+        const id = match1[1] || match1[2];
+        const title = decodeUnicode(match1[3].replace(/\\"/g, '"').replace(/\\'/g, "'"));
+        facilityMap[id] = title;
+    }
+
+    // Pattern D: Regex for "title": "...", "id": 123
+    const regex2 = /\\?"title\\?":\s*\\?"([^\\"]+)\\?",\s*\\?"id\\?":\s*(?:\\?"(\d+)\\?"|(\d+))/g;
+    let match2;
+    while ((match2 = regex2.exec(html)) !== null) {
+        const id = match2[2] || match2[3];
+        const title = decodeUnicode(match2[1].replace(/\\"/g, '"').replace(/\\'/g, "'"));
         facilityMap[id] = title;
     }
 
@@ -1236,6 +1214,7 @@ const parseBookingComHtml = (html) => {
                             if (b.b_price_breakdown_simplified) {
                                 const bps = b.b_price_breakdown_simplified;
                                 const origPriceObj = (bps.b_original_price && bps.b_original_price[0]) ||
+                                                     (bps.b_prediscounted_price && bps.b_original_price && bps.b_original_price[0]) ||
                                                      (bps.b_prediscounted_price && bps.b_prediscounted_price[0]) ||
                                                      (bps.b_prediscounted_price_average && bps.b_prediscounted_price_average[0]);
                                 if (origPriceObj && (origPriceObj.b_raw_value_user_currency || origPriceObj.b_raw_value_user_currency_rounded)) {
@@ -1266,7 +1245,20 @@ const parseBookingComHtml = (html) => {
                             }
 
                             if (blockPrice) {
+                                // Convert currency to INR if needed (fallback check in case proxy uses foreign locales)
+                                const currency = (b.b_currency || r.b_currency || "INR").toUpperCase();
+                                if (currency === "USD") {
+                                    blockPrice = blockPrice * 85;
+                                } else if (currency === "EUR") {
+                                    blockPrice = blockPrice * 90;
+                                } else if (currency === "GBP") {
+                                    blockPrice = blockPrice * 110;
+                                } else if (currency === "AED") {
+                                    blockPrice = blockPrice * 23;
+                                }
+                                
                                 blockPrice = Math.round(blockPrice);
+
                                 // Parse meal plan type
                                 let mealPlan = "Room Only (EP)";
                                 const mealName = (b.b_mealplan_included_name || "").toLowerCase();
@@ -1312,6 +1304,7 @@ const parseBookingComHtml = (html) => {
                     }
                     
                     roomInfoByName[normName] = {
+                        originalName: roomName, // Preserve original casing!
                         price: minPrice !== Infinity ? Math.round(minPrice) : null,
                         maxOccupancy: maxPersons,
                         variants: variants
@@ -1363,12 +1356,13 @@ const parseBookingComHtml = (html) => {
         } catch (e) {}
     }
 
-    // 4. Parse RoomTranslation definitions to get name & description
+    // 4. Parse RoomTranslation definitions to get name & description (prioritize English translations)
     const roomTranslations = {};
-    const rtRegex = /\\?"RoomTranslation:(\d+)[^\\"]*\\?":/g;
+    const rtRegex = /\\?"RoomTranslation:(\d+)(?:_([a-zA-Z0-9\-]+))?\\?":/g;
     let rtMatch;
     while ((rtMatch = rtRegex.exec(html)) !== null) {
         const roomId = rtMatch[1];
+        const lang = (rtMatch[2] || '').toLowerCase();
         const startIndex = rtMatch.index + rtMatch[0].length;
         
         let braceCount = 0;
@@ -1393,11 +1387,19 @@ const parseBookingComHtml = (html) => {
                 const cleaned = rawChunk.replace(/\\"/g, '"').replace(/\\\\/g, '\\');
                 rtJson = JSON.parse(cleaned);
             }
-            if (rtJson) {
-                roomTranslations[roomId] = {
-                    name: decodeUnicode(rtJson.name),
-                    description: rtJson.description ? decodeUnicode(rtJson.description) : ''
-                };
+            if (rtJson && rtJson.name) {
+                const name = decodeUnicode(rtJson.name);
+                const description = rtJson.description ? decodeUnicode(rtJson.description) : '';
+                
+                // Prioritize English translation, or take it if none has been saved yet
+                const isEnglish = lang.startsWith('en') || lang === '';
+                if (isEnglish || !roomTranslations[roomId]) {
+                    roomTranslations[roomId] = {
+                        name,
+                        description,
+                        lang
+                    };
+                }
             }
         } catch (e) {}
     }
@@ -1449,33 +1451,49 @@ const parseBookingComHtml = (html) => {
             }
             
             const roomAmenities = [];
-            const amenityRefs = [
-                ...(Array.isArray(rdJson.amenities) ? rdJson.amenities : []),
-                ...(Array.isArray(rdJson.facilities) ? rdJson.facilities : []),
-                ...(Array.isArray(rdJson.roomAmenities) ? rdJson.roomAmenities : []),
-                ...(Array.isArray(rdJson.roomFacilities) ? rdJson.roomFacilities : [])
-            ];
             
-            amenityRefs.forEach(am => {
-                let refStr = "";
-                if (typeof am === 'string') refStr = am;
-                else if (am && am.__ref) refStr = am.__ref;
-                
-                if (refStr) {
-                    const idMatch = refStr.match(/:(\d+)(?:_[a-zA-Z0-9_\-]+)?$/) || refStr.match(/:(\d+)/) || refStr.match(/id\\":(\d+)/);
-                    if (idMatch) {
-                        const fid = idMatch[1];
-                        if (facilityMap[fid]) {
-                            roomAmenities.push(facilityMap[fid]);
+            // Scan all keys inside rdJson dynamically to ensure we extract all nested references to amenities/facilities
+            Object.values(rdJson).forEach(val => {
+                if (Array.isArray(val)) {
+                    val.forEach(item => {
+                        let refStr = "";
+                        if (typeof item === 'string') refStr = item;
+                        else if (item && item.__ref) refStr = item.__ref;
+                        
+                        if (refStr) {
+                            const idMatch = refStr.match(/:(\d+)(?:_[a-zA-Z0-9_\-]+)?$/) || refStr.match(/:(\d+)/) || refStr.match(/id\\":(\d+)/);
+                            if (idMatch) {
+                                const fid = idMatch[1];
+                                if (facilityMap[fid]) {
+                                    roomAmenities.push(facilityMap[fid]);
+                                } else if (facilityMap[refStr]) {
+                                    roomAmenities.push(facilityMap[refStr]);
+                                }
+                            }
+                        }
+                    });
+                } else if (val && typeof val === 'object') {
+                    let refStr = val.__ref || "";
+                    if (refStr) {
+                        const idMatch = refStr.match(/:(\d+)(?:_[a-zA-Z0-9_\-]+)?$/) || refStr.match(/:(\d+)/);
+                        if (idMatch) {
+                            const fid = idMatch[1];
+                            if (facilityMap[fid]) {
+                                roomAmenities.push(facilityMap[fid]);
+                            } else if (facilityMap[refStr]) {
+                                roomAmenities.push(facilityMap[refStr]);
+                            }
                         }
                     }
                 }
             });
 
+            const uniqueRoomAmenities = Array.from(new Set(roomAmenities)).filter(Boolean);
+
             const name = translation.name;
             const description = translation.description;
-            const normName = name.toLowerCase().trim();
             
+            let finalName = name;
             let price = null;
             let maxOccupancy = 2;
             let roomVariants = [];
@@ -1485,9 +1503,12 @@ const parseBookingComHtml = (html) => {
                 price = roomInfoByName[matchedKey].price;
                 maxOccupancy = roomInfoByName[matchedKey].maxOccupancy;
                 roomVariants = roomInfoByName[matchedKey].variants || [];
+                // Restore exact Booking.com UI case-sensitive room name
+                finalName = roomInfoByName[matchedKey].originalName || name;
             }
             
             let sizeM2 = 24;
+            const normName = finalName.toLowerCase();
             if (normName.includes('suite')) sizeM2 = 65;
             else if (normName.includes('deluxe') || normName.includes('classic')) sizeM2 = 32;
             else if (normName.includes('family') || normName.includes('triple')) sizeM2 = 45;
@@ -1496,19 +1517,19 @@ const parseBookingComHtml = (html) => {
             const capacityAdults = maxOccupancy;
             
             // Filter out invalid/empty room categories that lack translation names and pricing
-            if (name.startsWith("Room ") && !price && roomVariants.length === 0) {
+            if (finalName.startsWith("Room ") && !price && roomVariants.length === 0) {
                 continue;
             }
 
             rooms.push({
-                name,
+                name: finalName,
                 description,
                 sizeM2,
                 capacityAdults,
                 capacityChildren: 0,
                 maxOccupancy,
-                bedConfiguration: extractBedConfig(name, description, rdJson),
-                amenities: roomAmenities,
+                bedConfiguration: extractBedConfig(finalName, description, rdJson),
+                amenities: uniqueRoomAmenities,
                 images: rimgMatches.slice(0, 5),
                 price,
                 variants: roomVariants
@@ -1802,424 +1823,9 @@ const detectOtaDetails = async (url, fallbackHotelName, basePrice = 2500) => {
 };
 
 exports.detectOtaDetails = detectOtaDetails;
+exports.findBestRoomMatch = findBestRoomMatch;
 
-// @desc    Import/Sync hotel and rooms from up to 4 OTA links
-// @route   POST /api/admin/rooms/import-ota
-// @access  Private (Super Admin)
-exports.importOtaRooms = async (req, res) => {
-    try {
-        const { hotelId, otaUrl, otaUrls, syncMode, syncGroup } = req.body;
 
-        if (!hotelId) {
-            return res.status(400).json({ success: false, message: 'Please provide hotelId.' });
-        }
-
-        const parsedHotelId = parseInt(hotelId);
-        const selectedHotel = await prisma.hotel.findUnique({
-            where: { id: parsedHotelId }
-        });
-
-        if (!selectedHotel) {
-            return res.status(404).json({ success: false, message: 'Hotel not found.' });
-        }
-
-        const mode = syncMode || 'full'; // 'full', 'rooms', or 'prices'
-
-        // Determine which hotels we need to sync
-        let targetHotels = [selectedHotel];
-        if (syncGroup) {
-            const groupHotels = await prisma.hotel.findMany({
-                where: { userId: selectedHotel.userId }
-            });
-            if (groupHotels.length > 0) {
-                targetHotels = groupHotels;
-            }
-        }
-
-        // Gather all links (support both single string 'otaUrl' and string array 'otaUrls')
-        let links = [];
-        if (Array.isArray(otaUrls)) {
-            links = otaUrls.filter(u => u && typeof u === 'string' && u.trim().length > 0);
-        } else if (otaUrl && typeof otaUrl === 'string' && otaUrl.trim().length > 0) {
-            links = [otaUrl];
-        }
-
-        if (links.length === 0) {
-            return res.status(400).json({ success: false, message: 'Please paste at least one valid OTA URL.' });
-        }
-
-        const results = [];
-
-        // Sync each target hotel
-        for (let idx = 0; idx < targetHotels.length; idx++) {
-            const currentHotel = targetHotels[idx];
-            
-            // Assign link to this hotel: if syncGroup is enabled, try to match the index of links
-            // otherwise fallback to using the first link or a simulator based on hotel name.
-            let hotelLinks = [];
-            if (syncGroup) {
-                const specificLink = links[idx];
-                if (specificLink) {
-                    hotelLinks = [specificLink];
-                } else {
-                    // Simulation link to trigger mock data with correct hotel name
-                    hotelLinks = [`https://www.booking.com/hotel/in/${currentHotel.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.html`];
-                }
-            } else {
-                hotelLinks = links.slice(0, 4);
-            }
-
-            console.log(`[Sync Engine] Initializing sync on ${hotelLinks.length} links for hotel #${currentHotel.id} (${currentHotel.name})...`);
-
-            const scrapedHotels = [];
-            for (const link of hotelLinks) {
-                const details = await detectOtaDetails(link, currentHotel.name, currentHotel.pricePerNight);
-                scrapedHotels.push(details);
-            }
-
-            // Compare and merge details to find the BEST profile
-            const bestHotel = {
-                name: currentHotel.name,
-                tagline: currentHotel.tagline || "Verified Luxury Property",
-                description: currentHotel.description,
-                city: currentHotel.city,
-                address: currentHotel.address,
-                starRating: currentHotel.starRating,
-                guestRating: currentHotel.guestRating,
-                amenities: [],
-                images: [],
-                rooms: [],
-                policies: currentHotel.policies || "",
-                safety: currentHotel.safety || "",
-                faqs: currentHotel.faqs || ""
-            };
-
-            // Name: Pick the longest/most complete title
-            const names = scrapedHotels.map(h => h.name).filter(Boolean);
-            if (names.length > 0) {
-                bestHotel.name = names.reduce((a, b) => a.length > b.length ? a : b);
-            }
-
-            // Description: Pick the longest description
-            const descriptions = scrapedHotels.map(h => h.description).filter(Boolean);
-            if (descriptions.length > 0) {
-                bestHotel.description = descriptions.reduce((a, b) => a.length > b.length ? a : b);
-            }
-
-            // Address: Pick the longest/most complete address
-            const addresses = scrapedHotels.map(h => h.address).filter(Boolean);
-            if (addresses.length > 0) {
-                bestHotel.address = addresses.reduce((a, b) => a.length > b.length ? a : b);
-            }
-
-            // Star Rating: Maximum star rating
-            const starRatings = scrapedHotels.map(h => h.starRating).filter(r => r > 0);
-            if (starRatings.length > 0) {
-                bestHotel.starRating = Math.max(...starRatings);
-            }
-
-            // Guest Rating: Average guest rating
-            const guestRatings = scrapedHotels.map(h => h.guestRating).filter(r => r > 0);
-            if (guestRatings.length > 0) {
-                bestHotel.guestRating = parseFloat((guestRatings.reduce((sum, r) => sum + r, 0) / guestRatings.length).toFixed(1));
-            }
-
-            // Amenities: Union of all unique amenities from all platforms
-            const uniqueAmenities = new Set();
-            scrapedHotels.forEach(h => {
-                if (Array.isArray(h.amenities)) {
-                    h.amenities.forEach(amenity => uniqueAmenities.add(amenity));
-                }
-            });
-            bestHotel.amenities = Array.from(uniqueAmenities);
-
-            // Images: Merge all platform photos and download the top 10 locally to disk
-            const rawImages = [];
-            scrapedHotels.forEach(h => {
-                if (Array.isArray(h.images)) {
-                    h.images.forEach(img => {
-                        if (img && !rawImages.includes(img)) rawImages.push(img);
-                    });
-                }
-            });
-
-            const downloadedImages = [];
-            if (mode === 'full') {
-                const maxImagesToDownload = Math.min(rawImages.length, 60);
-                for (let i = 0; i < maxImagesToDownload; i++) {
-                    const localPath = await downloadExternalImage(rawImages[i]);
-                    downloadedImages.push(localPath);
-                }
-                bestHotel.images = downloadedImages;
-                bestHotel.thumbnail = downloadedImages.length > 0 ? downloadedImages[0] : null;
-            }
-
-            // Policies / Safety / FAQs
-            const policiesList = scrapedHotels.map(h => h.policies).filter(Boolean);
-            if (policiesList.length > 0) {
-                const rawPolicies = policiesList.reduce((a, b) => a.length > b.length ? a : b);
-                try {
-                    JSON.parse(rawPolicies);
-                    bestHotel.policies = rawPolicies;
-                } catch (e) {
-                    bestHotel.policies = JSON.stringify({ note: rawPolicies });
-                }
-            }
-
-            const safetyList = scrapedHotels.map(h => h.safety).filter(Boolean);
-            if (safetyList.length > 0) {
-                const rawSafety = safetyList.reduce((a, b) => a.length > b.length ? a : b);
-                try {
-                    JSON.parse(rawSafety);
-                    bestHotel.safety = rawSafety;
-                } catch (e) {
-                    const safetyArray = rawSafety.split(',').map(s => s.trim()).filter(Boolean);
-                    bestHotel.safety = JSON.stringify(safetyArray);
-                }
-            }
-
-            const faqsList = scrapedHotels.map(h => h.faqs).filter(Boolean);
-            if (faqsList.length > 0) {
-                const rawFaqs = faqsList.reduce((a, b) => a.length > b.length ? a : b);
-                try {
-                    JSON.parse(rawFaqs);
-                    bestHotel.faqs = rawFaqs;
-                } catch (e) {
-                    bestHotel.faqs = JSON.stringify([]);
-                }
-            }
-
-            // Rooms: Gather all room categories and merge by name similarity
-            const mergedRooms = [];
-            scrapedHotels.forEach(h => {
-                if (Array.isArray(h.rooms)) {
-                    h.rooms.forEach(r => {
-                        const normName = r.name.toLowerCase().trim();
-                        const existing = mergedRooms.find(mr => 
-                            mr.name.toLowerCase().trim() === normName || 
-                            mr.name.toLowerCase().trim().includes(normName) || 
-                            normName.includes(mr.name.toLowerCase().trim())
-                        );
-                        
-                        if (!existing) {
-                            mergedRooms.push({ ...r });
-                        } else {
-                            if (r.description && r.description.length > existing.description.length) {
-                                existing.description = r.description;
-                            }
-                            if (r.sizeM2 && r.sizeM2 > (existing.sizeM2 || 0)) {
-                                existing.sizeM2 = r.sizeM2;
-                            }
-                            if (r.maxOccupancy && r.maxOccupancy > existing.maxOccupancy) {
-                                existing.maxOccupancy = r.maxOccupancy;
-                            }
-                            // Union of room amenities
-                            const newRoomAmen = new Set([...(existing.amenities || []), ...(r.amenities || [])]);
-                            existing.amenities = Array.from(newRoomAmen);
-                            // Union of room images
-                            const newRoomImgs = new Set([...(existing.images || []), ...(r.images || [])]);
-                            existing.images = Array.from(newRoomImgs);
-                        }
-                    });
-                }
-            });
-
-            // 1. Save merged hotel details (Profile upgrade) if mode is 'full'
-            let updatedHotel = currentHotel;
-            if (mode === 'full') {
-                updatedHotel = await prisma.hotel.update({
-                    where: { id: currentHotel.id },
-                    data: {
-                        name: bestHotel.name,
-                        tagline: bestHotel.tagline,
-                        description: bestHotel.description,
-                        city: bestHotel.city,
-                        address: bestHotel.address,
-                        starRating: bestHotel.starRating,
-                        guestRating: bestHotel.guestRating,
-                        thumbnail: bestHotel.thumbnail || currentHotel.thumbnail,
-                        images: bestHotel.images.length > 0 ? JSON.stringify(bestHotel.images) : currentHotel.images,
-                        amenities: bestHotel.amenities.length > 0 ? JSON.stringify(bestHotel.amenities) : currentHotel.amenities,
-                        mainAmenities: bestHotel.amenities.length > 0 ? JSON.stringify(bestHotel.amenities.slice(0, 10)) : currentHotel.mainAmenities,
-                        policies: bestHotel.policies || currentHotel.policies,
-                        safety: bestHotel.safety || currentHotel.safety,
-                        faqs: bestHotel.faqs || currentHotel.faqs,
-                        otaEnabled: true
-                    }
-                });
-            }
-
-            // 2. Process and create/update Room categories in DB
-            const createdRooms = [];
-            const updatedRooms = [];
-            
-            if (mode === 'prices') {
-                const existingRooms = await prisma.room.findMany({
-                    where: { hotelId: currentHotel.id }
-                });
-
-                console.log(`[Price Sync] Existing DB rooms for hotel #${currentHotel.id}:`, existingRooms.map(r => ({ id: r.id, name: r.name, price: r.pricePerNight })));
-                console.log(`[Price Sync] Merged scraped rooms:`, mergedRooms.map(r => ({ name: r.name, price: r.price })));
-
-                // Collect raw OTA price maps from all scraped sources for direct matching
-                const rawPriceMap = {};
-                scrapedHotels.forEach(h => {
-                    if (h.roomInfoByName) {
-                        Object.entries(h.roomInfoByName).forEach(([name, info]) => {
-                            if (info.price !== null && info.price !== undefined) {
-                                rawPriceMap[name] = info.price;
-                            }
-                        });
-                    }
-                });
-                console.log(`[Price Sync] Raw OTA price map:`, rawPriceMap);
-
-                // Track which DB rooms have already been updated to avoid double-updates
-                const updatedRoomIds = new Set();
-
-                // Strategy 1: Match merged scraped rooms to DB rooms
-                for (const roomData of mergedRooms) {
-                    if (roomData.price === null || roomData.price === undefined) continue;
-                    
-                    const matchedRoom = findBestRoomMatch(roomData.name, existingRooms, (r) => r.name);
-                    if (matchedRoom && !updatedRoomIds.has(matchedRoom.id)) {
-                        console.log(`[Price Sync] Strategy 1 Match: "${roomData.name}" -> DB room "${matchedRoom.name}" (id:${matchedRoom.id}), price ${matchedRoom.pricePerNight} -> ${roomData.price}`);
-                        const updated = await prisma.room.update({
-                            where: { id: matchedRoom.id },
-                            data: { pricePerNight: roomData.price }
-                        });
-                        updatedRooms.push(updated);
-                        updatedRoomIds.add(matchedRoom.id);
-                    }
-                }
-
-                // Strategy 2: Directly match raw OTA price map names to DB rooms
-                // This catches cases where parseBookingComHtml's RoomData names differ from b_rooms_available names
-                const rawPriceNames = Object.keys(rawPriceMap);
-                if (rawPriceNames.length > 0) {
-                    for (const existingRoom of existingRooms) {
-                        if (updatedRoomIds.has(existingRoom.id)) continue;
-                        
-                        const matchedKey = findBestRoomMatch(existingRoom.name, rawPriceNames);
-                        if (matchedKey && rawPriceMap[matchedKey]) {
-                            console.log(`[Price Sync] Strategy 2 Match: DB room "${existingRoom.name}" (id:${existingRoom.id}) matched OTA name "${matchedKey}", price ${existingRoom.pricePerNight} -> ${rawPriceMap[matchedKey]}`);
-                            const updated = await prisma.room.update({
-                                where: { id: existingRoom.id },
-                                data: { pricePerNight: rawPriceMap[matchedKey] }
-                            });
-                            updatedRooms.push(updated);
-                            updatedRoomIds.add(existingRoom.id);
-                        }
-                    }
-                }
-
-                // Strategy 3: If still no matches, try assigning prices by room type keywords
-                if (updatedRoomIds.size === 0 && rawPriceNames.length > 0) {
-                    console.log(`[Price Sync] Strategy 3: Fallback keyword-based price assignment...`);
-                    
-                    // Sort raw prices ascending
-                    const sortedPrices = rawPriceNames
-                        .map(name => ({ name, price: rawPriceMap[name] }))
-                        .sort((a, b) => a.price - b.price);
-                    
-                    // Sort existing rooms by current price ascending
-                    const sortedExisting = [...existingRooms].sort((a, b) => a.pricePerNight - b.pricePerNight);
-                    
-                    // Assign prices in order (cheapest OTA price -> cheapest DB room, etc.)
-                    const matchCount = Math.min(sortedPrices.length, sortedExisting.length);
-                    for (let i = 0; i < matchCount; i++) {
-                        console.log(`[Price Sync] Strategy 3 Positional: DB room "${sortedExisting[i].name}" (id:${sortedExisting[i].id}), price ${sortedExisting[i].pricePerNight} -> ${sortedPrices[i].price} (from OTA "${sortedPrices[i].name}")`);
-                        const updated = await prisma.room.update({
-                            where: { id: sortedExisting[i].id },
-                            data: { pricePerNight: sortedPrices[i].price }
-                        });
-                        updatedRooms.push(updated);
-                        updatedRoomIds.add(sortedExisting[i].id);
-                    }
-                }
-
-                console.log(`[Price Sync] Total rooms updated: ${updatedRooms.length}`);
-            } else {
-                for (const roomData of mergedRooms) {
-                    // Check if room name already exists
-                    const existingRoom = await prisma.room.findFirst({
-                        where: {
-                            hotelId: currentHotel.id,
-                            name: roomData.name
-                        }
-                    });
-
-                    if (existingRoom) {
-                        console.log(`[Sync Engine] Skipping existing room: ${roomData.name}`);
-                        continue;
-                    }
-
-                    // Download first 10 room images locally
-                    const downloadedRoomImages = [];
-                    if (Array.isArray(roomData.images)) {
-                        const roomImgsToDownload = roomData.images.slice(0, 10);
-                        for (const rimg of roomImgsToDownload) {
-                            const localPath = await downloadExternalImage(rimg);
-                            downloadedRoomImages.push(localPath);
-                        }
-                    }
-
-                    const slug = await getUniqueImportedRoomSlug(roomData.name);
-                    const newRoom = await prisma.room.create({
-                        data: {
-                            name: roomData.name,
-                            description: roomData.description,
-                            sizeM2: roomData.sizeM2,
-                            capacityAdults: roomData.capacityAdults,
-                            capacityChildren: roomData.capacityChildren,
-                            maxOccupancy: roomData.maxOccupancy,
-                            amenities: JSON.stringify(roomData.amenities),
-                            pricePerNight: roomData.price || updatedHotel.pricePerNight,
-                            status: 'active',
-                            totalInventory: 5,
-                            hotelId: currentHotel.id,
-                            slug,
-                            images: JSON.stringify(downloadedRoomImages)
-                        }
-                    });
-                    createdRooms.push(newRoom);
-                }
-            }
-
-            results.push({
-                hotel: updatedHotel,
-                createdRooms,
-                updatedRooms
-            });
-        }
-
-        // Log admin activity
-        logAdminActivity(req.user, 'IMPORT_OTA_MULTI_SYNC', {
-            hotelId: parsedHotelId,
-            hotelName: selectedHotel.name,
-            syncedLinksCount: links.length,
-            syncMode: mode,
-            syncGroup: !!syncGroup,
-            syncedPropertiesCount: targetHotels.length,
-            syncedPropertyNames: targetHotels.map(h => h.name)
-        }, req);
-
-        let message = `Successfully synced property structure! Merged and updated details for ${targetHotels.length} ${targetHotels.length === 1 ? 'property' : 'properties'} and created missing room categories.`;
-        if (mode === 'prices') {
-            message = `Successfully synced live prices! Updated room prices for ${targetHotels.length} ${targetHotels.length === 1 ? 'property' : 'properties'}.`;
-        }
-
-        res.json({
-            success: true,
-            message,
-            data: results.length === 1 ? results[0] : { results }
-        });
-
-    } catch (error) {
-        console.error('[Import OTA Sync Error]:', error);
-        res.status(500).json({ success: false, message: error.message });
-    }
-};
 
 
 

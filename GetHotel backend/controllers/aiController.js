@@ -1,5 +1,9 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const prisma = require('../config/db');
+const sharp = require('sharp');
+const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
 
 // Helper to strip script/style/HTML tags to extract readable text content
 const cleanHtmlText = (html) => {
@@ -27,53 +31,96 @@ exports.suggestRooms = async (req, res) => {
             });
         }
 
-        const { hotelId, prompt, url, history, existingRooms } = req.body;
+        const { hotelId, prompt, url, urls, history, existingRooms, newAttachedImages } = req.body;
 
         if (!hotelId) {
             return res.status(400).json({ success: false, message: "hotelId is required" });
         }
 
         let contextText = "";
-
         let otaContext = "";
+        let scrapedData = null;
 
-        // If a URL is provided, try to scrape it via detectOtaDetails
-        if (url && String(url).startsWith('http')) {
+        // Clean up and collect valid scraping URLs
+        let activeUrls = [];
+        if (Array.isArray(urls)) {
+            activeUrls = urls.map(u => String(u).trim()).filter(u => u.startsWith('http'));
+        } else if (url && String(url).startsWith('http')) {
+            activeUrls = [String(url).trim()];
+        }
+
+        // Process URLs sequentially if any are provided
+        if (activeUrls.length > 0) {
             try {
-                console.log(`[AI Copilot] Scraping URL via detectOtaDetails: ${url}`);
                 const { detectOtaDetails } = require('./adminController');
-                
-                // Fetch target hotel details to pass as fallback name
                 const targetHotel = await prisma.hotel.findUnique({
                     where: { id: Number(hotelId) }
                 });
                 const hotelName = targetHotel ? targetHotel.name : "Target Hotel";
                 const basePrice = targetHotel ? targetHotel.pricePerNight : 2500;
-                
-                const scrapedData = await detectOtaDetails(url, hotelName, basePrice);
-                if (scrapedData) {
-                    otaContext = `We scraped the following high-fidelity hotel details and room configurations from the OTA URL (${url}):\n${JSON.stringify(scrapedData, null, 2)}\n`;
-                    console.log(`[AI Copilot] Synced OTA data context successfully parsed.`);
+
+                const scrapedHotels = [];
+                for (const scrapingUrl of activeUrls) {
+                    try {
+                        console.log(`[AI Copilot] Scraping URL via detectOtaDetails: ${scrapingUrl}`);
+                        const details = await detectOtaDetails(scrapingUrl, hotelName, basePrice);
+                        if (details) {
+                            scrapedHotels.push(details);
+                        }
+                    } catch (err) {
+                        console.error(`[AI Copilot] Failed to scrape URL ${scrapingUrl}: ${err.message}`);
+                    }
+                }
+
+                if (scrapedHotels.length > 0) {
+                    // Merge room configurations by name similarity
+                    const mergedRooms = [];
+                    scrapedHotels.forEach(sh => {
+                        if (Array.isArray(sh.rooms)) {
+                            sh.rooms.forEach(r => {
+                                const normName = r.name.toLowerCase().trim();
+                                const existing = mergedRooms.find(mr => 
+                                    mr.name.toLowerCase().trim() === normName || 
+                                    mr.name.toLowerCase().trim().includes(normName) || 
+                                    normName.includes(mr.name.toLowerCase().trim())
+                                );
+                                
+                                if (!existing) {
+                                    mergedRooms.push({ ...r });
+                                } else {
+                                    if (r.description && r.description.length > existing.description.length) {
+                                        existing.description = r.description;
+                                    }
+                                    if (r.sizeM2 && r.sizeM2 > (existing.sizeM2 || 0)) {
+                                        existing.sizeM2 = r.sizeM2;
+                                    }
+                                    if (r.maxOccupancy && r.maxOccupancy > existing.maxOccupancy) {
+                                        existing.maxOccupancy = r.maxOccupancy;
+                                    }
+                                    // Union of room amenities
+                                    const newRoomAmen = new Set([...(existing.amenities || []), ...(r.amenities || [])]);
+                                    existing.amenities = Array.from(newRoomAmen);
+                                    // Union of room images
+                                    const newRoomImgs = new Set([...(existing.images || []), ...(r.images || [])]);
+                                    existing.images = Array.from(newRoomImgs);
+                                }
+                            });
+                        }
+                    });
+
+                    // Build merged scrapedData object
+                    scrapedData = {
+                        name: scrapedHotels[0].name,
+                        description: scrapedHotels.map(h => h.description).filter(Boolean).reduce((a, b) => a.length > b.length ? a : b, ""),
+                        address: scrapedHotels.map(h => h.address).filter(Boolean).reduce((a, b) => a.length > b.length ? a : b, ""),
+                        rooms: mergedRooms
+                    };
+
+                    otaContext = `We scraped and merged room configurations from ${scrapedHotels.length} URLs:\n${JSON.stringify(scrapedData, null, 2)}\n`;
+                    console.log(`[AI Copilot] Synced and merged OTA data context successfully parsed.`);
                 }
             } catch (err) {
-                console.error(`[AI Copilot] Failed to scrape URL via detectOtaDetails: ${err.message}`);
-                
-                // Fallback to generic simple HTTP fetch if detectOtaDetails fails or is not available
-                try {
-                    console.log(`[AI Copilot] Scraper fallback: Fetching URL directly...`);
-                    const response = await fetch(url, {
-                        headers: {
-                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-                        },
-                        signal: AbortSignal.timeout(10000) // 10s timeout
-                    });
-                    if (response.ok) {
-                        const html = await response.text();
-                        contextText = cleanHtmlText(html).slice(0, 50000); // Limit context size
-                    }
-                } catch (fallbackErr) {
-                    console.error(`[AI Copilot] Scraper fallback also failed: ${fallbackErr.message}`);
-                }
+                console.error(`[AI Copilot] Failed to complete multi-link scraping: ${err.message}`);
             }
         }
 
@@ -90,16 +137,23 @@ exports.suggestRooms = async (req, res) => {
                 sizeM2: r.sizeM2,
                 totalInventory: r.totalInventory,
                 amenities: Array.isArray(r.amenities) ? r.amenities : (typeof r.amenities === 'string' ? JSON.parse(r.amenities || "[]") : []),
+                images: Array.isArray(r.images) ? r.images : (typeof r.images === 'string' ? JSON.parse(r.images || "[]") : []),
                 variants: typeof r.variants === 'string' ? JSON.parse(r.variants || "[]") : (Array.isArray(r.variants) ? r.variants : [])
             }));
             existingRoomsContext = `The hotel currently has the following existing rooms configured in the database:\n${JSON.stringify(simplifiedRooms, null, 2)}\n`;
         }
 
         // Combine inputs
+        let attachedImagesContext = "";
+        if (Array.isArray(newAttachedImages) && newAttachedImages.length > 0) {
+            attachedImagesContext = `The user has uploaded/attached the following new high-resolution optimized WebP images:\n${JSON.stringify(newAttachedImages, null, 2)}\n`;
+        }
+
         const userInput = `
 ${prompt ? `Instructions/Prompt: ${prompt}\n` : ''}
 ${existingRoomsContext ? `Existing Rooms Context:\n${existingRoomsContext}\n` : ''}
 ${otaContext ? `OTA Synced Context:\n${otaContext}\n` : ''}
+${attachedImagesContext ? `New Attached Images Context:\n${attachedImagesContext}\n` : ''}
 ${contextText ? `Webpage raw text context:\n${contextText}\n` : ''}
 `;
 
@@ -126,7 +180,7 @@ ${contextText ? `Webpage raw text context:\n${contextText}\n` : ''}
                         properties: {
                             id: { type: "number", description: "Database ID of the room category if it is an existing room being edited. Omit or set to null/0 for new room categories." },
                             name: { type: "string", description: "Name of the room category. CRITICAL: Match the exact name of the room category as it appears in the scraped OTA context (e.g., 'Standard Double or Twin Room'). Do not change, standardise, or genericise it." },
-                            description: { type: "string", description: "Brief description of the room and its view/comfort" },
+                            description: { type: "string", description: "A detailed, premium, and compelling description of the room (2 to 4 sentences, 40 to 60 words). Highlight the overall comfort, layout, type of view (e.g., city, garden), key amenities, and appeal to guests. Do not write brief or single-phrase summaries." },
                             pricePerNight: { type: "number", description: "Estimated price per night in INR" },
                             maxOccupancy: { type: "number", description: "Maximum number of total guests allowed in the room" },
                             bedConfiguration: { type: "string", description: "Bed configuration (e.g. 1 king bed, 2 twin beds)" },
@@ -134,7 +188,12 @@ ${contextText ? `Webpage raw text context:\n${contextText}\n` : ''}
                             amenities: {
                                 type: "array",
                                 items: { type: "string" },
-                                description: "Comprehensive list of detailed amenities in this room category. You MUST include at least 10 detailed amenities if available in the context (e.g. Air conditioning, Free Wi-Fi, Flat-screen TV, Coffee maker, Private bathroom, Free toiletries, Shower, Towels, Desk)."
+                                description: "Comprehensive list of detailed amenities in this room category. You MUST extract and include ALL available amenities found in the context (no matter how many, e.g. 20 to 45 amenities per room category). Do not genericise, truncate, or omit any amenities."
+                            },
+                            images: {
+                                type: "array",
+                                items: { type: "string" },
+                                description: "List of image URLs/paths associated with this room category, including any from the 'New Attached Images Context' if appropriate."
                             },
                             totalInventory: { type: "number", description: "Default total inventory count for this room category" },
                             variants: {
@@ -164,12 +223,19 @@ ${contextText ? `Webpage raw text context:\n${contextText}\n` : ''}
 
         const systemInstruction = `
 You are a friendly, conversational AI Room Copilot helping administrators onboard and manage hotel properties.
-Respond like a human friend or helpful peer—warm, conversational, and interactive.
+Respond like a warm, helpful peer or expert hotel consultant—friendly, conversational, and highly interactive.
+
+DISCUSSION & CONVERSATION RULES:
+1. Do NOT repeat the same generic boilerplate or robotic support messages. If the user greets you or discusses general details, actively converse with them!
+2. Answer questions about your capabilities (e.g., "Aap bottom bar par Paperclip icon click karke images attach kar sakte hain, ya suggestions aane ke baad card par directly add kar sakte hain. Main unhe high-res WebP mein convert kar dunga!").
+3. Suggest optimal layouts, suggest bed types, recommend room names, and estimate rates per night based on the hotel's city/class.
+4. Offer choices, suggestions, and ask guiding questions (e.g., "Kya aap deluxe room ke sath a premium suite add karna chahenge?").
+5. Explain your reasoning in the conversational reply (e.g., "I suggested a Suite because your property is a resort...").
 
 LANGUAGE RULES:
 1. **Conversational Reply (the "reply" field)**:
    - By default, speak and reply in **English**.
-   - If the user explicitly asks you to speak in Hinglish (e.g., "Hinglish me baat kar" or similar), or if you are replying to Hinglish messages, you can reply in natural, friendly **Hinglish** (using Latin script only, e.g., "Main badhiya hoon, aap batao!", "Main aapke rooms update kar raha hoon").
+   - If the user explicitly asks you to speak in Hinglish (e.g., "Hinglish me baat kar" or similar), or if you are replying to Hinglish messages (e.g., "images add kar sakta hai /"), you MUST reply in natural, friendly **Hinglish** using Latin script (e.g., "Haan bilkul! Aap screen ke niche paperclip button se images attach kar sakte hain. Aap suggestions cards par directly dynamically bhi images upload kar sakte hain...").
    - **CRITICAL**: Never write any conversational reply using Devanagari/Hindi script (e.g., avoid "सूट" or "मैं आपका सहायक हूँ" in the reply). Use only Latin characters (English/Hinglish text).
 2. **Room Details (inside the "rooms" array)**:
    - **CRITICAL**: Every single field inside the "rooms" array (such as room name, description, bedConfiguration, variants meal plan names, cancellation policies, and parsed amenities) MUST ALWAYS be generated in **STRICTLY English**.
@@ -189,11 +255,12 @@ Your tasks:
    - Explain what edits were performed in the "reply" field.
 4. If the user asks you to look up, search, or research a hotel (e.g., "search Google for Hotel Gold Souk rooms"), or if you need to find fresh details/listings for the property on the internet, utilize your Google Search tool to find relevant travel listing web pages (e.g., Booking.com, Agoda, MakeMyTrip). Process the search results to extract, update, or structure the rooms.
 5. If the user explicitly asks you to delete, clear, or remove all rooms/categories of the hotel, set the "clearAllRooms" boolean property to true, set "rooms" as an empty array [], and explain the deletion in the "reply" field.
+6. **NEW IMAGES ATTACHMENT**: If the user has uploaded new images (provided in the "New Attached Images Context"), you should suggest attaching these images to the appropriate room categories by listing their exact relative paths inside the "images" array for those room categories. Tell the user in your reply to verify these images and decide which one should be Primary vs Gallery in the interactive UI.
 
 For each room category:
 - **CRITICAL NAME MATCHING**: The room names ("name" field) MUST match the exact names of the room categories as parsed from the OTA link context (e.g., if the link context says "Standard Double or Twin Room", use exactly "Standard Double or Twin Room", do not change, shorten, or genericise it).
-- **CRITICAL AMENITIES EXTRACTION**: Compile a comprehensive list of amenities. You MUST extract and list at least 10 detailed amenities per room category if they are available in the crawled context (e.g., "Air conditioning", "Free Wi-Fi", "Flat-screen TV", "Minibar", "Electric kettle", "Private bathroom", "Free toiletries", "Shower", "Slippers", "Towels", "Desk", "Safe"). Do not truncate or shorten the list of amenities.
-- Identify its name, size (in sq meters), bed config, max occupancy, and total description.
+- **CRITICAL AMENITIES EXTRACTION**: Compile a comprehensive list of amenities. You MUST extract and list ALL available amenities found in the context (no matter how many, e.g. 20 to 45 amenities per room category). Do not genericise, truncate, or omit any amenities.
+- Write a detailed, compelling, and professional description of the room (2 to 4 sentences, 40 to 60 words). Highlight the overall comfort, decor, layout, view, and premium appeal.
 - Estimate or extract its base price per night in INR. If a price is found in a foreign currency, convert it to INR (roughly ₹85 to $1 USD).
 - Compile a clean list of amenities. Standardize amenity names (e.g. use "Air conditioning", "Free Wi-Fi", "Minibar", "Electric kettle", "Flat-screen TV").
 - Formulate typical variants. For example:
@@ -207,7 +274,7 @@ Output strictly valid JSON matching the requested schema. Do not include any mar
 
         const groqApiKey = process.env.GROQ_API_KEY;
 
-        const needsSearch = !url && (prompt && (
+        const needsSearch = !url && (!urls || urls.length === 0) && (prompt && (
             prompt.toLowerCase().includes("search") ||
             prompt.toLowerCase().includes("google") ||
             prompt.toLowerCase().includes("find") ||
@@ -227,6 +294,7 @@ Output strictly valid JSON matching the requested schema. Do not include any mar
             console.log("[AI Copilot] Pass 1: Calling Gemini with Google Search grounding...");
             const searchModel = genAI.getGenerativeModel({
                 model: "gemini-2.5-flash",
+                systemInstruction,
                 tools: [{ googleSearch: {} }],
             });
 
@@ -283,7 +351,7 @@ Output strictly valid JSON matching the requested schema. Do not include any mar
                 generationConfig: {
                     responseMimeType: "application/json",
                     responseSchema: copilotSchema,
-                    temperature: 0.2
+                    temperature: 0.6
                 }
             });
 
@@ -336,7 +404,7 @@ ${existingRoomsContext || "None"}
                     model: "llama-3.3-70b-versatile",
                     messages: groqMessages,
                     response_format: { type: "json_object" },
-                    temperature: 0.2
+                    temperature: 0.6
                 })
             });
 
@@ -367,8 +435,10 @@ ${existingRoomsContext || "None"}
 
         const rawRooms = Array.isArray(parsed.rooms) ? parsed.rooms : [];
 
+        const { findBestRoomMatch } = require('./adminController');
+
         // Post-process to ensure variants have incremental IDs
-        const processedRooms = rawRooms.map(room => {
+        let processedRooms = rawRooms.map(room => {
             const baseInventory = parseInt(room.totalInventory) || 5;
             const size = parseInt(room.sizeM2) || 18;
             
@@ -399,6 +469,116 @@ ${existingRoomsContext || "None"}
             };
         });
 
+        // Failsafe: If OTA url was provided and we successfully scraped exact room categories,
+        // restore exact names, merge amenities (ensuring at least 10), and restore live pricing variants!
+        if (scrapedData && Array.isArray(scrapedData.rooms) && scrapedData.rooms.length > 0) {
+            console.log(`[AI Copilot Failsafe] Applying post-processing restoration on raw generated rooms against ${scrapedData.rooms.length} scraped rooms.`);
+            processedRooms = processedRooms.map(room => {
+                const matchedScraped = findBestRoomMatch(room.name, scrapedData.rooms, (r) => r.name);
+                if (matchedScraped) {
+                    console.log(`[AI Copilot Failsafe] Restoring details for room: "${room.name}" -> "${matchedScraped.name}"`);
+                    
+                    // 1. Merge amenities
+                    const scrapedAmenities = Array.isArray(matchedScraped.amenities) ? matchedScraped.amenities : [];
+                    const aiAmenities = Array.isArray(room.amenities) ? room.amenities : [];
+                    const mergedAmenities = Array.from(new Set([...aiAmenities, ...scrapedAmenities])).filter(Boolean);
+                    
+                    const standardAmenities = [
+                        "Air conditioning", "Free Wi-Fi", "Flat-screen TV", "Private bathroom", 
+                        "Free toiletries", "Shower", "Towels", "Desk", "Electric kettle", "Safe"
+                    ];
+                    let finalAmenities = mergedAmenities;
+                    if (finalAmenities.length < 10) {
+                        for (const std of standardAmenities) {
+                            if (!finalAmenities.includes(std)) {
+                                finalAmenities.push(std);
+                            }
+                            if (finalAmenities.length >= 10) break;
+                        }
+                    }
+
+                    // 2. Restore live pricing variants (EP, CP, MAP, AP)
+                    const scrapedVariants = Array.isArray(matchedScraped.variants) ? matchedScraped.variants : [];
+                    const aiVariants = Array.isArray(room.variants) ? room.variants : [];
+                    let finalVariants = scrapedVariants.length > 0 ? scrapedVariants : aiVariants;
+                    
+                    const processedVariants = finalVariants.map((v, index) => ({
+                        id: index + 1,
+                        mealPlan: v.mealPlan || "Room Only",
+                        price: parseFloat(v.price) || room.pricePerNight,
+                        policy: v.policy || "Free cancellation till 24h"
+                    }));
+
+                    if (processedVariants.length === 0) {
+                        processedVariants.push({
+                            id: 1,
+                            mealPlan: "Room Only (EP)",
+                            price: room.pricePerNight,
+                            policy: "Free cancellation till 24h"
+                        });
+                    }
+
+                    // 3. Restore/Merge images automatically if database room has no images
+                    const scrapedImages = Array.isArray(matchedScraped.images) ? matchedScraped.images : [];
+                    const aiImages = Array.isArray(room.images) ? room.images : [];
+                    
+                    let dbHasNoImages = false;
+                    let existingRoomId = room.id || undefined;
+                    
+                    if (existingRoomId && Array.isArray(existingRooms)) {
+                        const extRoom = existingRooms.find(er => er.id === existingRoomId);
+                        if (extRoom) {
+                            const dbImages = Array.isArray(extRoom.images) 
+                                ? extRoom.images 
+                                : (typeof extRoom.images === 'string' ? JSON.parse(extRoom.images || "[]") : []);
+                            if (dbImages.length === 0) {
+                                dbHasNoImages = true;
+                            }
+                        }
+                    } else if (!existingRoomId) {
+                        // Match existing room by name similarity if ID was not preserved by the AI model
+                        if (Array.isArray(existingRooms)) {
+                            const extRoom = existingRooms.find(er => er.name && er.name.toLowerCase().trim() === room.name.toLowerCase().trim());
+                            if (extRoom) {
+                                existingRoomId = extRoom.id;
+                                const dbImages = Array.isArray(extRoom.images) 
+                                    ? extRoom.images 
+                                    : (typeof extRoom.images === 'string' ? JSON.parse(extRoom.images || "[]") : []);
+                                if (dbImages.length === 0) {
+                                    dbHasNoImages = true;
+                                }
+                            } else {
+                                dbHasNoImages = true;
+                            }
+                        } else {
+                            dbHasNoImages = true;
+                        }
+                    }
+
+                    let finalImages = aiImages;
+                    if (dbHasNoImages || aiImages.length === 0) {
+                        // Merge scraped images with any AI/attached images
+                        finalImages = Array.from(new Set([...aiImages, ...scrapedImages])).filter(Boolean);
+                    }
+
+                    return {
+                        ...room,
+                        id: existingRoomId,
+                        name: matchedScraped.name, // Exact name matching from link
+                        amenities: finalAmenities, // Rich amenities (minimum 10)
+                        variants: processedVariants, // Live rate plans (EP, CP, MAP, AP)
+                        images: finalImages, // Restored/Merged images
+                        pricePerNight: matchedScraped.price || room.pricePerNight,
+                        maxOccupancy: matchedScraped.maxOccupancy || room.maxOccupancy,
+                        bedConfiguration: matchedScraped.bedConfiguration || room.bedConfiguration,
+                        description: (room.description && room.description.length > 25) ? room.description : (matchedScraped.description || room.description || `Premium ${matchedScraped.name} room category offering comfort and luxury amenities.`),
+                        sizeM2: matchedScraped.sizeM2 || room.sizeM2
+                    };
+                }
+                return room;
+            });
+        }
+
         res.status(200).json({
             success: true,
             reply: parsed.reply || "Rooms list parsed successfully.",
@@ -416,5 +596,83 @@ ${existingRoomsContext || "None"}
             userMessage = "Gemini API quota exceeded. The free tier limits requests to 20 per minute. Please wait a few seconds and try again!";
         }
         res.status(500).json({ success: false, message: userMessage, error: err.message });
+    }
+};
+
+/**
+ * @desc    Download an external image, upgrade it to high resolution, convert to WebP, and save locally
+ * @route   POST /api/admin/ai/convert-webp
+ * @access  Private (Super Admin)
+ */
+exports.convertWebP = async (req, res) => {
+    try {
+        const { imageUrl } = req.body;
+        if (!imageUrl || typeof imageUrl !== 'string' || !imageUrl.startsWith('http')) {
+            return res.status(400).json({ success: false, message: 'Invalid or missing imageUrl' });
+        }
+
+        // Strictly force highest resolution possible on Booking.com images
+        let targetUrl = imageUrl;
+        if (imageUrl.includes('booking.com') || imageUrl.includes('bstatic.com')) {
+            // Replace /max300/ or /max500/ or /square60/ etc. with /max1024x768/
+            targetUrl = imageUrl.replace(/\/(max300|max500|square60|max100|max200|max400)\//gi, '/max1024x768/');
+        }
+
+        // Support relative protocols
+        if (targetUrl.startsWith('//')) {
+            targetUrl = `https:${targetUrl}`;
+        }
+
+        console.log(`[WebP Converter] Fetching image from: ${targetUrl.slice(0, 100)}`);
+
+        // Fetch image buffer
+        const response = await fetch(targetUrl, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            },
+            signal: AbortSignal.timeout(15000) // 15s timeout
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to download image: ${response.status} ${response.statusText}`);
+        }
+
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+
+        if (buffer.length < 100) {
+            throw new Error('Downloaded image buffer is too small or invalid');
+        }
+
+        // Generate unique hash filename
+        const hash = crypto.createHash('md5').update(buffer).digest('hex').slice(0, 12);
+        const filename = `webp_${Date.now()}_${hash}.webp`;
+
+        // Ensure uploads folder exists
+        const UPLOADS_DIR = path.join(__dirname, '..', 'uploads');
+        if (!fs.existsSync(UPLOADS_DIR)) {
+            fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+        }
+
+        const filePath = path.join(UPLOADS_DIR, filename);
+
+        // Convert to WebP using sharp with high quality compression (quality 90 for high crisp resolution)
+        await sharp(buffer)
+            .webp({ quality: 90 })
+            .toFile(filePath);
+
+        console.log(`[WebP Converter] Converted & saved locally: /uploads/${filename}`);
+
+        res.status(200).json({
+            success: true,
+            localPath: `/uploads/${filename}`
+        });
+
+    } catch (err) {
+        console.error('[WebP Converter Error]:', err.message);
+        res.status(500).json({
+            success: false,
+            message: `Failed to convert image to WebP: ${err.message}`
+        });
     }
 };

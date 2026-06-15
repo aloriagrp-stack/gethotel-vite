@@ -21,7 +21,6 @@ import AdminStats from "./AdminStats";
 import AdminFinance from "./AdminFinance";
 import AdminHomepageEditor from "./AdminHomepageEditor";
 import AdminControlHub from "./AdminControlHub";
-import AdminRoomSync from "./AdminRoomSync";
 import AdminAddPartner from "./AdminAddPartner";
 import AdminMultiRoomSetup from "./AdminMultiRoomSetup";
 import AdminAICopilot from "./AdminAICopilot";
@@ -393,7 +392,6 @@ export default function SuperAdminDashboard() {
         { id: "stats", label: "Analytics", icon: BarChart3 },
         { id: "finance", label: "Finance", icon: TrendingUp },
         { id: "homepage", label: "Homepage Editor", icon: Settings },
-        { id: "otasync", label: "OTA Room Sync", icon: RefreshCw },
         { id: "multi-room", label: "Multi Room Setup", icon: LayoutGrid },
         { id: "ai-copilot", label: "AI Room Onboarding", icon: Sparkles },
     ];
@@ -453,7 +451,6 @@ export default function SuperAdminDashboard() {
                     {activeTab === "finance" && <AdminFinance />}
                     {activeTab === "homepage" && <AdminHomepageEditor />}
                     {activeTab === "controlhub" && <AdminControlHub hotels={hotels} loading={loading} />}
-                    {activeTab === "otasync" && <AdminRoomSync />}
                     {activeTab === "multi-room" && <AdminMultiRoomSetup hotels={hotels} />}
                     {activeTab === "addPartner" && <AdminAddPartner hotels={hotels} partners={partners} setPartners={setPartners} />}
                     {activeTab === "ai-copilot" && <AdminAICopilot hotels={hotels} loadingHotels={!loadedSections.hotels} />}

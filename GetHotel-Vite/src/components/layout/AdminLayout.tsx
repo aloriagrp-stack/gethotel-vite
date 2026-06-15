@@ -31,7 +31,6 @@ export default function AdminLayout() {
         { id: "requests", label: "Partner Requests", icon: Clock, href: "/admin/super/requests" },
         { id: "controlhub", label: "Manager", icon: SlidersHorizontal, href: "/admin/super/controlhub" },
         { id: "hotels", label: "Hotels", icon: Hotel, href: "/admin/super?tab=hotels" },
-        { id: "otasync", label: "OTA Room Sync", icon: RefreshCw, href: "/admin/super/otasync" },
         { id: "multi-room", label: "Multi Room Setup", icon: LayoutGrid, href: "/admin/super/multi-room" },
         { id: "ai-copilot", label: "AI Room Onboarding", icon: Sparkles, href: "/admin/super/ai-copilot" },
         { id: "bookings", label: "All Bookings", icon: Calendar, href: "/admin/super/bookings" },

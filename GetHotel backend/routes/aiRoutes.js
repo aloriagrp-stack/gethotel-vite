@@ -1,5 +1,5 @@
 const express = require('express');
-const { suggestRooms } = require('../controllers/aiController');
+const { suggestRooms, convertWebP } = require('../controllers/aiController');
 const { protect, authorize } = require('../middleware/auth');
 
 const router = express.Router();
@@ -8,5 +8,10 @@ const router = express.Router();
 // Accessible only by logged in Super Admins
 router.route('/suggest-rooms')
     .post(protect, authorize('super_admin'), suggestRooms);
+
+// Route: POST /api/admin/ai/convert-webp
+// Accessible only by logged in Super Admins
+router.route('/convert-webp')
+    .post(protect, authorize('super_admin'), convertWebP);
 
 module.exports = router;

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { 
     Sparkles, MessageSquare, Send, Hotel, Info, ArrowUpRight, 
     Plus, X, Trash2, CheckCircle2, ChevronDown, RefreshCw, 
-    Edit, AlertCircle, Maximize2, Users, Bed, HelpCircle 
+    Edit, AlertCircle, Maximize2, Users, Bed, HelpCircle, Paperclip 
 } from "lucide-react";
 import { cn, safeParse } from "@/lib/utils";
 import { adminApi, hotelApi } from "@/lib/api";
@@ -23,12 +23,29 @@ interface ChatMessage {
     searchQueries?: string[];
     searchSources?: { title: string; url: string }[];
     clearAllRooms?: boolean;
+    imageProgress?: {
+        roomIndex: number;
+        current: number;
+        total: number;
+        status: "idle" | "converting" | "completed" | "error";
+        errorMsg?: string;
+    };
 }
+
+const getResolvedImageUrl = (url: string) => {
+    if (!url) return '';
+    if (url.startsWith('http') || url.startsWith('data:') || url.startsWith('blob:')) return url;
+    const backendBase = import.meta.env.MODE === 'production' 
+        ? 'https://gethotelstays.com' 
+        : (import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/api$/, '') : 'http://localhost:5000');
+    return `${backendBase}${url.startsWith('/') ? '' : '/'}${url}`;
+};
 
 export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminAICopilotProps) {
     const [selectedHotelId, setSelectedHotelId] = useState<number | "">("");
     const [inputValue, setInputValue] = useState("");
-    const [urlInput, setUrlInput] = useState("");
+    const [urls, setUrls] = useState<string[]>([""]);
+    const [attachedImages, setAttachedImages] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [existingRooms, setExistingRooms] = useState<any[]>([]);
@@ -41,6 +58,23 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
         existingRoomIds: number[];
     } | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (!files) return;
+        
+        Array.from(files).forEach(file => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                if (typeof reader.result === 'string') {
+                    setAttachedImages(prev => [...prev, reader.result as string]);
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+        e.target.value = "";
+    };
 
     const activeHotel = hotels.find(h => h.id === selectedHotelId);
 
@@ -108,16 +142,16 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
         scrollToBottom();
     }, [messages]);
 
-    const handleSend = async (textPrompt = inputValue, targetUrl = urlInput) => {
+    const handleSend = async (textPrompt = inputValue, targetUrls = urls) => {
         if (!selectedHotelId) {
             alert("Please select a target hotel from the dropdown first.");
             return;
         }
 
         const promptText = textPrompt.trim();
-        const scrapingUrl = targetUrl.trim();
+        const activeUrls = targetUrls.map(u => u.trim()).filter(u => u.startsWith('http'));
 
-        if (!promptText && !scrapingUrl) return;
+        if (!promptText && activeUrls.length === 0 && attachedImages.length === 0) return;
 
         // Collect chat history BEFORE adding the new message
         const chatHistory = messages
@@ -129,13 +163,19 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
 
         // Reset inputs
         setInputValue("");
-        setUrlInput("");
+        setUrls([""]);
+        const currentAttachedImages = [...attachedImages];
+        setAttachedImages([]);
 
         const userMessageId = `user-${Date.now()}`;
-        const userMsgText = [
-            promptText,
-            scrapingUrl ? `URL: ${scrapingUrl}` : ""
-        ].filter(Boolean).join("\n");
+        const userMsgParts = [promptText];
+        if (activeUrls.length > 0) {
+            userMsgParts.push(`URLs:\n${activeUrls.join("\n")}`);
+        }
+        if (currentAttachedImages.length > 0) {
+            userMsgParts.push(`[Attached ${currentAttachedImages.length} Image(s)]`);
+        }
+        const userMsgText = userMsgParts.filter(Boolean).join("\n");
 
         // 1. Add User Message
         setMessages(prev => [
@@ -149,7 +189,7 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
         ]);
 
         // Select loading steps list based on whether we are scraping a URL or just chatting
-        const steps = scrapingUrl 
+        const steps = activeUrls.length > 0 
             ? [
                 "Initializing OTA room crawler engine...",
                 "Connecting to Booking.com translator proxy...",
@@ -212,9 +252,10 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
             const res = await adminApi.suggestRooms({
                 hotelId: Number(selectedHotelId),
                 prompt: promptText || undefined,
-                url: scrapingUrl || undefined,
+                urls: activeUrls.length > 0 ? activeUrls : undefined,
                 history: chatHistory,
-                existingRooms: existingRooms
+                existingRooms: existingRooms,
+                newAttachedImages: currentAttachedImages.length > 0 ? currentAttachedImages : undefined
             }, {
                 signal: abortController.signal
             });
@@ -320,6 +361,117 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
         );
     };
 
+    // Real-time sequential download and WebP conversion queue manager
+    const handleOptimizeImages = async (messageId: string) => {
+        const msg = messages.find(m => m.id === messageId);
+        if (!msg || !msg.suggestedRooms || msg.suggestedRooms.length === 0) return;
+
+        const rooms = msg.suggestedRooms;
+        
+        // Start state
+        setMessages(prev => 
+            prev.map(m => m.id === messageId ? { 
+                ...m, 
+                imageProgress: { roomIndex: 0, current: 0, total: 0, status: "converting" } 
+            } : m)
+        );
+
+        let updatedRooms = [...rooms];
+        
+        try {
+            for (let rIdx = 0; rIdx < rooms.length; rIdx++) {
+                const room = rooms[rIdx];
+                const rawImages = Array.isArray(room.images) 
+                    ? room.images 
+                    : (typeof room.images === 'string' ? safeParse(room.images, []) : []);
+                
+                if (rawImages.length === 0) continue;
+
+                // Update UI state for active room category conversion progress
+                setMessages(prev => 
+                    prev.map(m => m.id === messageId ? { 
+                        ...m, 
+                        imageProgress: { 
+                            roomIndex: rIdx, 
+                            current: 0, 
+                            total: rawImages.length, 
+                            status: "converting" 
+                        } 
+                    } : m)
+                );
+
+                const localWebPPaths: string[] = [];
+
+                for (let imgIdx = 0; imgIdx < rawImages.length; imgIdx++) {
+                    const imgUrl = rawImages[imgIdx];
+                    
+                    if ((imgUrl.includes('/uploads/') || imgUrl.startsWith('/uploads/')) && imgUrl.endsWith('.webp')) {
+                        localWebPPaths.push(imgUrl);
+                        continue;
+                    }
+
+                    // Call WebP converter endpoint
+                    try {
+                        const res = await adminApi.convertWebP({ imageUrl: imgUrl });
+                        if (res.success && res.localPath) {
+                            localWebPPaths.push(res.localPath);
+                        } else {
+                            localWebPPaths.push(imgUrl);
+                        }
+                    } catch (err) {
+                        console.error("Failed to convert image:", imgUrl, err);
+                        localWebPPaths.push(imgUrl);
+                    }
+
+                    // Increment progress counter and update image list incrementally!
+                    const currentPaths = [
+                        ...localWebPPaths,
+                        ...rawImages.slice(imgIdx + 1)
+                    ];
+                    
+                    updatedRooms[rIdx] = {
+                        ...updatedRooms[rIdx],
+                        images: currentPaths
+                    };
+
+                    setMessages(prev => 
+                        prev.map(m => m.id === messageId ? { 
+                            ...m, 
+                            imageProgress: { 
+                                ...m.imageProgress!, 
+                                current: imgIdx + 1 
+                            },
+                            suggestedRooms: [...updatedRooms]
+                        } : m)
+                    );
+                }
+            }
+
+            // Completed
+            setMessages(prev => 
+                prev.map(m => m.id === messageId ? { 
+                    ...m, 
+                    imageProgress: { roomIndex: rooms.length - 1, current: 1, total: 1, status: "completed" } 
+                } : m)
+            );
+
+        } catch (err: any) {
+            console.error("WebP converter queue failed:", err);
+            setMessages(prev => 
+                prev.map(m => m.id === messageId ? { 
+                    ...m, 
+                    imageProgress: { 
+                        roomIndex: 0, 
+                        current: 0, 
+                        total: 0, 
+                        status: "error", 
+                        errorMsg: err.message || "Failed to convert images" 
+                    } 
+                } : m)
+            );
+        }
+    };
+
     // Bulk save handler with conflict check
     const handleSaveRooms = async (messageId: string, roomList: any[]) => {
         if (!selectedHotelId) return;
@@ -408,6 +560,10 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
     };
 
     const SUGGESTIONS = [
+        { 
+            label: "Setup using own data", 
+            prompt: "Extract and draft room categories, prices, bed configurations, and amenities using this raw data:\n\n"
+        },
         { label: "Standard Setup", prompt: "Recommend standard budget rooms setup: 1 Single Room, 1 Double Room, and 1 Suite Room with average standard pricing." },
         { label: "Holiday Resort Rooms", prompt: "Generate luxurious resort categories including Cottage Room, Villa with private pool, and Royal Suite." },
         { label: "Business Hotel Setup", prompt: "Recommend compact smart categories for business travelers: Executive Twin Room, Deluxe Single, and Premium Club Room." }
@@ -549,6 +705,159 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                                                         <span className="text-[10px] font-bold">{room.sizeM2 || 18} m²</span>
                                                     </div>
                                                 </div>
+
+                                                {/* Image Previews / Thumbnails & Interactive Image Manager */}
+                                                {(() => {
+                                                    const imgList = Array.isArray(room.images) 
+                                                        ? room.images 
+                                                        : (typeof room.images === 'string' ? safeParse(room.images, []) : []);
+                                                    return (
+                                                        <div className="space-y-1.5">
+                                                            <label className="text-[9px] font-black uppercase text-slate-400 tracking-wider block">Room Images ({imgList.length})</label>
+                                                            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-slate-200 items-center">
+                                                                {imgList.map((imgUrl: string, imgIdx: number) => {
+                                                                    const isWebP = imgUrl.toLowerCase().endsWith('.webp') || imgUrl.includes('.webp');
+                                                                    const isCurrentOptimizing = msg.imageProgress && 
+                                                                        msg.imageProgress.status === "converting" && 
+                                                                        msg.imageProgress.roomIndex === rIdx && 
+                                                                        msg.imageProgress.current === imgIdx + 1;
+                                                                    return (
+                                                                        <div key={imgIdx} className="relative w-24 h-18 rounded-lg border border-slate-200 overflow-hidden shrink-0 bg-slate-100 flex items-center justify-center shadow-xs group/img">
+                                                                            <img 
+                                                                                src={getResolvedImageUrl(imgUrl)} 
+                                                                                alt={`Room image ${imgIdx + 1}`} 
+                                                                                className="w-full h-full object-cover"
+                                                                                onError={(e) => {
+                                                                                    e.currentTarget.style.display = 'none';
+                                                                                }}
+                                                                            />
+                                                                            
+                                                                            {/* Primary / Gallery Badge */}
+                                                                            <div className={cn(
+                                                                                "absolute top-1 left-1 text-[8px] font-black px-1.5 py-0.5 rounded-sm shadow-xs uppercase tracking-tighter text-white",
+                                                                                imgIdx === 0 ? "bg-amber-500" : "bg-slate-700/80"
+                                                                            )}>
+                                                                                {imgIdx === 0 ? "★ Primary" : "Gallery"}
+                                                                            </div>
+
+                                                                            {isWebP && (
+                                                                                <div className="absolute bottom-1 right-1 bg-emerald-600 text-white text-[7px] font-black px-1 rounded-sm shadow-xs uppercase tracking-tighter">
+                                                                                    WebP
+                                                                                </div>
+                                                                            )}
+                                                                            
+                                                                            {isCurrentOptimizing && (
+                                                                                <div className="absolute inset-0 bg-slate-950/40 flex items-center justify-center">
+                                                                                    <RefreshCw className="w-4 h-4 text-white animate-spin" />
+                                                                                </div>
+                                                                            )}
+
+                                                                            {/* Hover Action Overlay */}
+                                                                            <div className="absolute inset-0 bg-slate-950/70 opacity-0 group-hover/img:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 p-1">
+                                                                                {imgIdx > 0 && (
+                                                                                    <button
+                                                                                        type="button"
+                                                                                        onClick={() => {
+                                                                                            const newImages = [...imgList];
+                                                                                            const temp = newImages[0];
+                                                                                            newImages[0] = newImages[imgIdx];
+                                                                                            newImages[imgIdx] = temp;
+                                                                                            handleFieldChange(msg.id, rIdx, "images", newImages);
+                                                                                        }}
+                                                                                        className="w-full py-0.5 text-center bg-amber-500 text-white text-[8px] font-black rounded-sm hover:bg-amber-600 active:scale-95 transition-all uppercase tracking-wider cursor-pointer"
+                                                                                    >
+                                                                                        Make Primary
+                                                                                    </button>
+                                                                                )}
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() => {
+                                                                                        const newImages = imgList.filter((_: string, idx: number) => idx !== imgIdx);
+                                                                                        handleFieldChange(msg.id, rIdx, "images", newImages);
+                                                                                    }}
+                                                                                    className="w-full py-0.5 text-center bg-red-600 text-white text-[8px] font-black rounded-sm hover:bg-red-700 active:scale-95 transition-all uppercase tracking-wider cursor-pointer"
+                                                                                >
+                                                                                    Delete
+                                                                                </button>
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                                
+                                                                {/* Add Image Card directly on room category card */}
+                                                                <label className="relative w-24 h-18 rounded-lg border-2 border-dashed border-slate-300 hover:border-slate-400 bg-slate-50 hover:bg-slate-100 flex flex-col items-center justify-center shrink-0 cursor-pointer transition-all">
+                                                                    <Plus className="w-4 h-4 text-slate-400" />
+                                                                    <span className="text-[8px] font-black text-slate-400 uppercase mt-1">Add Image</span>
+                                                                    <input 
+                                                                        type="file" 
+                                                                        accept="image/*"
+                                                                        multiple
+                                                                        className="hidden"
+                                                                        onChange={(e) => {
+                                                                            const files = e.target.files;
+                                                                            if (!files) return;
+                                                                            Array.from(files).forEach(file => {
+                                                                                const reader = new FileReader();
+                                                                                reader.onloadend = () => {
+                                                                                    if (typeof reader.result === 'string') {
+                                                                                        const newImages = [...imgList, reader.result];
+                                                                                        handleFieldChange(msg.id, rIdx, "images", newImages);
+                                                                                    }
+                                                                                };
+                                                                                reader.readAsDataURL(file);
+                                                                            });
+                                                                            e.target.value = "";
+                                                                        }}
+                                                                    />
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })()}
+
+                                                {/* Image WebP Optimization Live Status */}
+                                                {msg.imageProgress && (
+                                                    <div className="p-2 bg-slate-50 border border-slate-100 rounded-sm text-[10px] font-bold leading-normal transition-all duration-300">
+                                                        {msg.imageProgress.status === "converting" && msg.imageProgress.roomIndex === rIdx && (
+                                                            <div className="flex flex-col gap-1.5">
+                                                                <div className="flex items-center gap-1.5 text-amber-600">
+                                                                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                                                                    <span>WebP Optimizer: Converting image {msg.imageProgress.current} of {msg.imageProgress.total}...</span>
+                                                                </div>
+                                                                <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                                                                    <div 
+                                                                        className="bg-amber-500 h-full transition-all duration-300"
+                                                                        style={{ width: `${(msg.imageProgress.current / msg.imageProgress.total) * 100}%` }}
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                        {msg.imageProgress.status === "converting" && msg.imageProgress.roomIndex > rIdx && (
+                                                            <span className="text-emerald-600 flex items-center gap-1">
+                                                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                                                <span>All images optimized & converted to WebP</span>
+                                                            </span>
+                                                        )}
+                                                        {msg.imageProgress.status === "converting" && msg.imageProgress.roomIndex < rIdx && (
+                                                            <span className="text-slate-400 flex items-center gap-1">
+                                                                <HelpCircle className="w-3.5 h-3.5" />
+                                                                <span>Queued for WebP optimization...</span>
+                                                            </span>
+                                                        )}
+                                                        {msg.imageProgress.status === "completed" && (
+                                                            <span className="text-emerald-600 flex items-center gap-1">
+                                                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                                                <span>All images optimized & converted to WebP (strictly high-res)</span>
+                                                            </span>
+                                                        )}
+                                                        {msg.imageProgress.status === "error" && (
+                                                            <span className="text-red-500 flex items-center gap-1">
+                                                                <AlertCircle className="w-3.5 h-3.5" />
+                                                                <span>Optimization failed: {msg.imageProgress.errorMsg}</span>
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                )}
 
                                                 {/* Editable Input Fields */}
                                                 <div className="space-y-3">
@@ -708,20 +1017,55 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                                     </div>
 
                                     {/* Action Bar for the whole set */}
-                                    <div className="p-4 bg-white border border-slate-200 rounded-xl flex items-center justify-between gap-4 max-w-4xl shadow-sm">
-                                        <div className="flex items-center gap-2 text-slate-500">
-                                            <Info className="w-4 h-4 text-blue-500" />
-                                            <span className="text-[10px] font-black uppercase tracking-wider">Configure all fields, then save directly into active hotel database records</span>
-                                        </div>
-                                        <div>
-                                            {msg.status === "pending" && (
-                                                <button
-                                                    onClick={() => handleSaveRooms(msg.id, msg.suggestedRooms || [])}
-                                                    className="px-6 py-2.5 bg-brand-600 text-white text-[10px] font-black uppercase tracking-widest rounded-sm hover:bg-brand-700 shadow-md active:scale-95 transition-all"
-                                                >
-                                                    Approve & Add to Hotel
-                                                </button>
-                                            )}
+                                    {(() => {
+                                        const hasImagesToOptimize = msg.suggestedRooms?.some(room => {
+                                            const imgList = Array.isArray(room.images) 
+                                                ? room.images 
+                                                : (typeof room.images === 'string' ? safeParse(room.images, []) : []);
+                                            return imgList.length > 0 && imgList.some((imgUrl: string) => !imgUrl.toLowerCase().endsWith('.webp') && !imgUrl.includes('.webp') && imgUrl.startsWith('http'));
+                                        });
+
+                                        return (
+                                            <div className="p-4 bg-white border border-slate-200 rounded-xl flex items-center justify-between gap-4 max-w-4xl shadow-sm">
+                                                <div className="flex items-center gap-2 text-slate-500">
+                                                    <Info className="w-4 h-4 text-blue-500" />
+                                                    <span className="text-[10px] font-black uppercase tracking-wider">Configure all fields, then save directly into active hotel database records</span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    {/* WebP Optimizer Action Trigger */}
+                                                    {hasImagesToOptimize && msg.status === "pending" && (!msg.imageProgress || msg.imageProgress.status === "idle" || msg.imageProgress.status === "error") && (
+                                                        <button
+                                                            onClick={() => handleOptimizeImages(msg.id)}
+                                                            className="px-4 py-2.5 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-sm hover:bg-black active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
+                                                        >
+                                                            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                                                            Optimize Images (WebP)
+                                                        </button>
+                                                    )}
+                                                    {hasImagesToOptimize && msg.status === "pending" && msg.imageProgress && msg.imageProgress.status === "converting" && (
+                                                        <button
+                                                            disabled
+                                                            className="px-4 py-2.5 bg-amber-500/80 text-white text-[10px] font-black uppercase tracking-widest rounded-sm flex items-center gap-2 cursor-not-allowed"
+                                                        >
+                                                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                                                            Optimizing Room {msg.imageProgress.roomIndex + 1} ({msg.imageProgress.current}/{msg.imageProgress.total})...
+                                                        </button>
+                                                    )}
+                                                    {hasImagesToOptimize && msg.status === "pending" && msg.imageProgress && msg.imageProgress.status === "completed" && (
+                                                        <div className="px-4 py-2.5 bg-emerald-50 border border-emerald-100 text-emerald-700 text-[10px] font-black uppercase tracking-widest rounded-sm flex items-center gap-2">
+                                                            <CheckCircle2 className="w-3.5 h-3.5" />
+                                                            WebP Optimized
+                                                        </div>
+                                                    )}
+
+                                                    {msg.status === "pending" && (
+                                                        <button
+                                                            onClick={() => handleSaveRooms(msg.id, msg.suggestedRooms || [])}
+                                                            className="px-6 py-2.5 bg-brand-600 text-white text-[10px] font-black uppercase tracking-widest rounded-sm hover:bg-brand-700 shadow-md active:scale-95 transition-all cursor-pointer"
+                                                        >
+                                                            Approve & Add to Hotel
+                                                        </button>
+                                                    )}
                                             {msg.status === "saving" && (
                                                 <button
                                                     disabled
@@ -746,8 +1090,10 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                                                     Retry Save
                                                 </button>
                                             )}
-                                        </div>
-                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
                             )}
 
@@ -832,8 +1178,47 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
 
             {/* Footer Input Area */}
             <div className="p-4 bg-white border-t border-slate-200 space-y-3">
-                <div className="flex gap-4">
-                    <div className="flex-1 relative">
+                {/* Chat input box with paperclip button and attachment thumbnails */}
+                <div className="flex flex-col gap-2 border border-slate-200 rounded-lg p-2 bg-white focus-within:border-slate-400 transition-colors">
+                    {/* Attachment Preview Area */}
+                    {attachedImages.length > 0 && (
+                        <div className="flex flex-wrap gap-2 pb-2 border-b border-slate-100">
+                            {attachedImages.map((img, idx) => (
+                                <div key={idx} className="relative w-16 h-16 rounded-md border border-slate-200 overflow-hidden bg-slate-50 flex items-center justify-center shrink-0">
+                                    <img src={img} className="w-full h-full object-cover" />
+                                    <button
+                                        type="button"
+                                        onClick={() => setAttachedImages(prev => prev.filter((_: string, i: number) => i !== idx))}
+                                        className="absolute top-0.5 right-0.5 p-0.5 bg-slate-950/70 hover:bg-slate-950 text-white rounded-full transition-colors cursor-pointer"
+                                    >
+                                        <X className="w-3 h-3" />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                    
+                    <div className="flex items-center gap-2">
+                        {/* Paperclip upload button */}
+                        <button
+                            type="button"
+                            disabled={loading || !selectedHotelId}
+                            onClick={() => fileInputRef.current?.click()}
+                            className="p-2 text-slate-500 hover:text-brand-600 disabled:text-slate-300 hover:bg-slate-50 rounded-md transition-colors cursor-pointer"
+                            title="Attach images (converts to WebP)"
+                        >
+                            <Paperclip className="w-4 h-4" />
+                        </button>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            multiple
+                            accept="image/*"
+                            className="hidden"
+                        />
+                        
+                        {/* Main Text Input */}
                         <input 
                             type="text"
                             placeholder="Type instructions for Gemini (e.g. Recommend rooms with specific prices)..."
@@ -846,30 +1231,64 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                                     handleSend();
                                 }
                             }}
-                            className="w-full pl-4 pr-12 py-3 border border-slate-200 rounded-sm text-xs font-bold text-slate-900 focus:outline-none focus:border-slate-400 placeholder-slate-400 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                            className="flex-1 py-2 text-xs font-bold text-slate-900 focus:outline-none placeholder-slate-400 disabled:bg-transparent disabled:cursor-not-allowed"
                         />
+                        
+                        {/* Send Button */}
                         <button
                             onClick={() => handleSend()}
-                            disabled={loading || !selectedHotelId || (!inputValue.trim() && !urlInput.trim())}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-brand-600 hover:text-brand-700 disabled:text-slate-300 disabled:cursor-not-allowed transition-colors"
+                            disabled={loading || !selectedHotelId || (!inputValue.trim() && urls.every(u => !u.trim()) && attachedImages.length === 0)}
+                            className="p-2 bg-brand-600 hover:bg-brand-700 text-white rounded-md disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed transition-colors cursor-pointer"
                         >
                             <Send className="w-4 h-4" />
                         </button>
                     </div>
                 </div>
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div className="flex items-center gap-2 w-full sm:w-auto">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest shrink-0">Optional OTA Link:</span>
-                        <input 
-                            type="url"
-                            placeholder="https://www.booking.com/hotel/..."
-                            value={urlInput}
-                            onChange={(e) => setUrlInput(e.target.value)}
-                            disabled={loading || !selectedHotelId}
-                            className="flex-1 sm:w-80 px-3 py-1.5 border border-slate-200 rounded-sm text-[10px] font-bold text-slate-900 focus:outline-none focus:border-slate-400 placeholder-slate-400 disabled:bg-slate-100 disabled:cursor-not-allowed"
-                        />
+
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    {/* URL Input List */}
+                    <div className="flex flex-col gap-2 w-full md:w-auto">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Optional OTA Links (Multi-scraping):</span>
+                        <div className="space-y-2 w-full">
+                            {urls.map((url, index) => (
+                                <div key={index} className="flex items-center gap-2">
+                                    <input 
+                                        type="url"
+                                        placeholder="https://www.booking.com/hotel/..."
+                                        value={url}
+                                        onChange={(e) => {
+                                            const newUrls = [...urls];
+                                            newUrls[index] = e.target.value;
+                                            setUrls(newUrls);
+                                        }}
+                                        disabled={loading || !selectedHotelId}
+                                        className="w-full md:w-80 px-3 py-1.5 border border-slate-200 rounded-sm text-[10px] font-bold text-slate-900 focus:outline-none focus:border-slate-400 placeholder-slate-400 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                                    />
+                                    {urls.length > 1 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setUrls(urls.filter((_: string, i: number) => i !== index))}
+                                            className="p-1.5 text-red-500 hover:bg-red-50 rounded-md transition-colors cursor-pointer"
+                                            title="Remove URL"
+                                        >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                    )}
+                                    {index === urls.length - 1 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setUrls([...urls, ""])}
+                                            className="p-1.5 text-brand-600 hover:bg-brand-50 rounded-md transition-colors cursor-pointer"
+                                            title="Add URL"
+                                        >
+                                            <Plus className="w-3.5 h-3.5" />
+                                        </button>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                    <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Powered by Gemini 2.5 Flash</span>
+                    <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest self-end">Powered by Gemini 2.5 Flash</span>
                 </div>
             </div>
             {/* Conflict Resolution Modal */}

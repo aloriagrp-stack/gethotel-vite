@@ -1,0 +1,46 @@
+name: Deploy Backend to cPanel
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install lftp
+        run: sudo apt-get install -y lftp
+
+      - name: Deploy backend files via lftp
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USER: ${{ secrets.FTP_USERNAME }}
+          FTP_PASS: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          echo "$(date)" > restart.txt
+          lftp -u "$FTP_USER","$FTP_PASS" "$FTP_SERVER" <<'LFTPEOF'
+          set ftp:ssl-allow no
+          set ftp:passive-mode yes
+          set net:timeout 60
+          set net:max-retries 5
+          set net:reconnect-interval-base 5
+          mirror --reverse --delete --no-perms --verbose \
+            -x '^\.git/' \
+            -x '^\.github/' \
+            -x '^node_modules/' \
+            -x '^\.env$' \
+            -x '\.zip$' \
+            -x '\.log$' \
+            -x '^scratch/' \
+            -x '^fix_partner_login\.js$' \
+            -x '^clean_specific_hotels\.js$' \
+            -x '^delete_non_cottages\.js$' \
+            -x '^list_hotels\.js$' \
+            . ./gethotel_backend/
+          put restart.txt -o ./gethotel_backend/tmp/restart.txt
+          bye
+          LFTPEOF
