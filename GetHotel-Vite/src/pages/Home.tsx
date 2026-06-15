@@ -4,6 +4,7 @@
 import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import Hero from "@/components/home/Hero";
 import TrendingHotels from "@/components/home/TrendingHotels";
+import AICopilot from "@/components/home/AICopilot";
 
 // Lazy load non-critical, below-the-fold components to reduce initial JS execution and improve INP
 const ExploreByDestinations = lazy(() => import("@/components/home/ExploreByDestinations"));
@@ -111,6 +112,7 @@ export default function HomePage() {
       <Suspense fallback={<SEOPlaceholder />}>
         <HomeSEOContent />
       </Suspense>
+      <AICopilot />
     </main>
   );
 }
