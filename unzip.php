@@ -24,8 +24,27 @@ if ($zip->open($zipFile) === TRUE) {
     }
 
     // Force-kill existing Node.js processes to guarantee passenger reload
-    @shell_exec("pkill -u vgyuvmpi -f node");
-    @shell_exec("pkill -f node");
+    try {
+        $cmds = ["pkill -u vgyuvmpi -f node", "pkill -f node", "killall node"];
+        foreach ($cmds as $cmd) {
+            if (function_exists('shell_exec')) { 
+                @shell_exec($cmd); 
+            } else if (function_exists('exec')) { 
+                $out = []; 
+                @exec($cmd, $out); 
+            } else if (function_exists('system')) { 
+                ob_start(); 
+                @system($cmd); 
+                ob_end_clean(); 
+            } else if (function_exists('passthru')) { 
+                ob_start(); 
+                @passthru($cmd); 
+                ob_end_clean(); 
+            }
+        }
+    } catch (Throwable $e) {
+        // Ignore if disabled or disallowed
+    }
 
     echo 'DEPLOYS_SUCCESS';
     unlink($zipFile);
