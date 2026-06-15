@@ -169,7 +169,7 @@ const testHandler = async (req, res) => {
 
     res.json({
         message: 'Backend is ALIVE',
-        version: 'v2.5-DEPLOY-TEST-13JUNE',
+        version: 'v2.6-AI-ROUTING-FIX-15JUN',
         server_directory: __dirname,
         database: dbStatus,
         fix_results: fixResults,
@@ -450,13 +450,13 @@ const mount = (prefix) => {
     app.use(`${prefix}/daily-rates`, dailyRates);
     app.use(`${prefix}/payments`, payments);
     app.use(`${prefix}/partner`, partner);
+    app.use(`${prefix}/admin/ai`, ai);
     app.use(`${prefix}/admin`, admin);
     app.use(`${prefix}/notifications`, notifications);
     app.use(`${prefix}/messages`, messages);
     app.use(`${prefix}/analytics`, analytics);
     app.use(`${prefix}/homepage`, homepage);
     app.use(`${prefix}/ota`, ota);
-    app.use(`${prefix}/admin/ai`, ai);
 };
 
 mount('/api');
