@@ -39,8 +39,32 @@ export default function PartnerHotelPage() {
     const [editing, setEditing] = useState(false);
     const [editData, setEditData] = useState<any>(null);
     const [saving, setSaving] = useState(false);
-    const [dragging, setDragging] = useState<string | null>(null); // 'thumbnail' or 'gallery'
+    const [draggedPhotoIndex, setDraggedPhotoIndex] = useState<number | null>(null);
     const [customAmenity, setCustomAmenity] = useState("");
+
+    const handlePhotoDragStart = (index: number) => {
+        setDraggedPhotoIndex(index);
+    };
+
+    const handlePhotoDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+    };
+
+    const handlePhotoDrop = (targetIndex: number) => {
+        if (draggedPhotoIndex === null || draggedPhotoIndex === targetIndex) return;
+        
+        const currentImages = safeParse(editData.images, []);
+        const updatedImages = [...currentImages];
+        
+        const [draggedItem] = updatedImages.splice(draggedPhotoIndex, 1);
+        updatedImages.splice(targetIndex, 0, draggedItem);
+        
+        setEditData({
+            ...editData,
+            images: JSON.stringify(updatedImages)
+        });
+        setDraggedPhotoIndex(null);
+    };
 
     useEffect(() => {
         const fetchHotel = async () => {
@@ -276,13 +300,38 @@ export default function PartnerHotelPage() {
                             </h3>
                             <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-4">
                                 {(safeParse(editing ? editData.images : hotel.images, [])).map((img: string, i: number) => (
-                                    <div key={i} className="relative aspect-square rounded-none overflow-hidden border border-slate-100 group">
-                                        <img src={img} className="w-full h-full object-cover" />
+                                    <div 
+                                        key={i} 
+                                        draggable={editing}
+                                        onDragStart={() => handlePhotoDragStart(i)}
+                                        onDragOver={handlePhotoDragOver}
+                                        onDrop={() => handlePhotoDrop(i)}
+                                        className={cn(
+                                            "relative aspect-square rounded-none overflow-hidden border transition-all duration-200 group select-none",
+                                            editing ? "cursor-grab active:cursor-grabbing border-dashed hover:border-blue-400" : "border-slate-100",
+                                            draggedPhotoIndex === i ? "opacity-30 border-blue-500 scale-95" : ""
+                                        )}
+                                    >
+                                        <img src={img} className="w-full h-full object-cover pointer-events-none" />
+                                        
+                                        {/* Ordering / Primary Badge */}
+                                        <div className={cn(
+                                            "absolute top-2 left-2 text-[9px] font-black px-2 py-0.5 shadow-sm uppercase tracking-wider rounded-sm text-white pointer-events-none select-none",
+                                            i === 0 ? "bg-blue-600" : "bg-slate-950/70"
+                                        )}>
+                                            {i === 0 ? "★ Primary" : `#${i + 1}`}
+                                        </div>
+
                                         {editing && (
-                                            <button onClick={() => {
-                                                const current = safeParse(editData.images, []);
-                                                setEditData({ ...editData, images: JSON.stringify(current.filter((_: any, idx: number) => idx !== i)) });
-                                            }} className="absolute top-2 right-2 w-6 h-6 bg-red-600 text-white rounded-none flex items-center justify-center opacity-0 group-hover:opacity-100"><Trash2 className="w-3.5 h-3.5" /></button>
+                                            <button 
+                                                onClick={() => {
+                                                    const current = safeParse(editData.images, []);
+                                                    setEditData({ ...editData, images: JSON.stringify(current.filter((_: any, idx: number) => idx !== i)) });
+                                                }} 
+                                                className="absolute top-2 right-2 w-6 h-6 bg-red-600 text-white rounded-none flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-150 cursor-pointer"
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                            </button>
                                         )}
                                     </div>
                                 ))}
@@ -290,13 +339,22 @@ export default function PartnerHotelPage() {
                                     <label className="relative aspect-square rounded-none border-2 border-dashed border-slate-200 bg-slate-50 flex items-center justify-center cursor-pointer hover:border-blue-300">
                                         <input type="file" multiple accept="image/*" onChange={(e) => {
                                             const files = Array.from(e.target.files || []);
-                                            files.forEach(file => {
-                                                const reader = new FileReader();
-                                                reader.onloadend = () => {
-                                                    const current = safeParse(editData.images, []);
-                                                    setEditData({ ...editData, images: JSON.stringify([...current, reader.result as string]) });
-                                                };
-                                                reader.readAsDataURL(file);
+                                            Promise.all(
+                                                files.map(file => {
+                                                    return new Promise<string>((resolve) => {
+                                                        const reader = new FileReader();
+                                                        reader.onloadend = () => resolve(reader.result as string);
+                                                        reader.readAsDataURL(file);
+                                                    });
+                                                })
+                                            ).then(results => {
+                                                setEditData((prev: any) => {
+                                                    const current = safeParse(prev.images, []);
+                                                    return {
+                                                        ...prev,
+                                                        images: JSON.stringify([...current, ...results])
+                                                    };
+                                                });
                                             });
                                         }} className="hidden" />
                                         <Plus className="w-6 h-6 text-slate-300" />

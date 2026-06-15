@@ -794,17 +794,19 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                                                                         multiple
                                                                         className="hidden"
                                                                         onChange={(e) => {
-                                                                            const files = e.target.files;
-                                                                            if (!files) return;
-                                                                            Array.from(files).forEach(file => {
-                                                                                const reader = new FileReader();
-                                                                                reader.onloadend = () => {
-                                                                                    if (typeof reader.result === 'string') {
-                                                                                        const newImages = [...imgList, reader.result];
-                                                                                        handleFieldChange(msg.id, rIdx, "images", newImages);
-                                                                                    }
-                                                                                };
-                                                                                reader.readAsDataURL(file);
+                                                                            const files = Array.from(e.target.files || []);
+                                                                            if (files.length === 0) return;
+                                                                            Promise.all(
+                                                                                files.map(file => {
+                                                                                    return new Promise<string>((resolve) => {
+                                                                                        const reader = new FileReader();
+                                                                                        reader.onloadend = () => resolve(reader.result as string);
+                                                                                        reader.readAsDataURL(file);
+                                                                                    });
+                                                                                })
+                                                                            ).then(results => {
+                                                                                const cleanResults = results.filter(Boolean);
+                                                                                handleFieldChange(msg.id, rIdx, "images", [...imgList, ...cleanResults]);
                                                                             });
                                                                             e.target.value = "";
                                                                         }}
