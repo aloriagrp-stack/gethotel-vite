@@ -28,6 +28,16 @@ jobs:
           npm install
           npm run build
 
+      - name: Force Upload AI Backend Files (fix missing routes)
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USER: ${{ secrets.FTP_USERNAME }}
+          FTP_PASS: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          echo "Force uploading AI controller and routes files..."
+          lftp -u "$FTP_USER","$FTP_PASS" "$FTP_SERVER" -e "set ftp:ssl-allow no; set ftp:passive-mode yes; set net:timeout 60; set net:max-retries 3; put \"GetHotel backend/routes/aiRoutes.js\" -o ./gethotel_backend/routes/aiRoutes.js; put \"GetHotel backend/controllers/aiController.js\" -o ./gethotel_backend/controllers/aiController.js; put \"GetHotel backend/server.js\" -o ./gethotel_backend/server.js; bye"
+          echo "AI files uploaded successfully!"
+
       - name: Deploy Backend via lftp
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}

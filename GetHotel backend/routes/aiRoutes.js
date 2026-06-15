@@ -1,3 +1,4 @@
+// AI Routes - v2.6 deploy 15Jun2026
 const express = require('express');
 const { suggestRooms, convertWebP } = require('../controllers/aiController');
 const { protect, authorize } = require('../middleware/auth');
