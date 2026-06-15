@@ -23,6 +23,10 @@ if ($zip->open($zipFile) === TRUE) {
         }
     }
 
+    // Force-kill existing Node.js processes to guarantee passenger reload
+    @shell_exec("pkill -u vgyuvmpi -f node");
+    @shell_exec("pkill -f node");
+
     echo 'DEPLOYS_SUCCESS';
     unlink($zipFile);
     unlink(__FILE__);
