@@ -1,4 +1,4 @@
-// GetHotel Backend Server - v2.6 (AI Routes fix deploy 15Jun2026)
+// GetHotel Backend Server
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
