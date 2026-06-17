@@ -169,7 +169,7 @@ const testHandler = async (req, res) => {
 
     res.json({
         message: 'Backend is ALIVE',
-        version: 'v2.6-AI-ROUTING-FIX-15JUN',
+        version: 'v2.7-AI-COPILOT-REDEPLOY-16JUN',
         server_directory: __dirname,
         database: dbStatus,
         fix_results: fixResults,
