@@ -41,6 +41,25 @@ export default function PartnerHotelPage() {
     const [saving, setSaving] = useState(false);
     const [draggedPhotoIndex, setDraggedPhotoIndex] = useState<number | null>(null);
     const [customAmenity, setCustomAmenity] = useState("");
+    const [customFacilityInput, setCustomFacilityInput] = useState("");
+
+    const handleAddCustomFacility = () => {
+        const cleaned = customFacilityInput.trim();
+        if (!cleaned) return;
+        
+        const currentList = Array.isArray(editData?.amenities) 
+            ? editData.amenities 
+            : safeParse(editData?.amenities || hotel?.amenities || hotel?.hotel_amenities, []);
+            
+        if (currentList.includes(cleaned)) {
+            alert("Facility already added!");
+            return;
+        }
+        
+        const updated = [...currentList, cleaned];
+        setEditData({ ...editData, amenities: updated });
+        setCustomFacilityInput("");
+    };
 
     const handlePhotoDragStart = (index: number) => {
         setDraggedPhotoIndex(index);
@@ -276,20 +295,79 @@ export default function PartnerHotelPage() {
                             <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-8 flex items-center gap-2">
                                 <ShieldCheck className="w-5 h-5 text-blue-600" /> All Facilities
                             </h3>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                {ALL_AMENITIES.map((a) => {
+                            <div className="space-y-6">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                    {ALL_AMENITIES.map((a) => {
+                                        const currentList = Array.isArray(editing ? editData.amenities : (hotel.amenities || hotel.hotel_amenities)) ? (editing ? editData.amenities : (hotel.amenities || hotel.hotel_amenities)) : safeParse(editing ? editData.amenities : (hotel.amenities || hotel.hotel_amenities), []);
+                                        const isSelected = currentList.includes(a);
+                                        return (
+                                            <button key={a} disabled={!editing} onClick={() => {
+                                                const updated = isSelected ? currentList.filter((item: string) => item !== a) : [...currentList, a];
+                                                setEditData({ ...editData, amenities: updated });
+                                            }} className={cn("flex items-center gap-3 p-4 rounded-none border text-left transition-all", isSelected ? "bg-blue-50 border-blue-200 text-blue-600" : "bg-slate-50 border-transparent text-slate-600", editing && "hover:border-blue-400 cursor-pointer")}>
+                                                <span className="text-xl">{amenityIcon(a)}</span>
+                                                <span className="text-[10px] font-black uppercase tracking-tight">{amenityLabel(a)}</span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                {(() => {
                                     const currentList = Array.isArray(editing ? editData.amenities : (hotel.amenities || hotel.hotel_amenities)) ? (editing ? editData.amenities : (hotel.amenities || hotel.hotel_amenities)) : safeParse(editing ? editData.amenities : (hotel.amenities || hotel.hotel_amenities), []);
-                                    const isSelected = currentList.includes(a);
-                                    return (
-                                        <button key={a} disabled={!editing} onClick={() => {
-                                            const updated = isSelected ? currentList.filter((item: string) => item !== a) : [...currentList, a];
-                                            setEditData({ ...editData, amenities: updated });
-                                        }} className={cn("flex items-center gap-3 p-4 rounded-none border text-left transition-all", isSelected ? "bg-blue-50 border-blue-200 text-blue-600" : "bg-slate-50 border-transparent text-slate-600", editing && "hover:border-blue-400 cursor-pointer")}>
-                                            <span className="text-xl">{amenityIcon(a)}</span>
-                                            <span className="text-[10px] font-black uppercase tracking-tight">{amenityLabel(a)}</span>
-                                        </button>
-                                    );
-                                })}
+                                    const customSelected = currentList.filter((a: string) => !ALL_AMENITIES.includes(a));
+                                    return customSelected.length > 0 ? (
+                                        <div className="space-y-2 pt-2 border-t border-slate-50">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Custom / AI Added Facilities</label>
+                                            <div className="flex flex-wrap gap-2">
+                                                {customSelected.map((facility: string) => (
+                                                    <div key={facility} className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-600 border border-blue-100 text-[9px] font-black uppercase rounded-lg shadow-sm">
+                                                        {facility}
+                                                        {editing && (
+                                                            <button 
+                                                                type="button" 
+                                                                onClick={() => {
+                                                                    const updated = currentList.filter((item: string) => item !== facility);
+                                                                    setEditData({ ...editData, amenities: updated });
+                                                                }}
+                                                                className="hover:text-red-500 transition-colors"
+                                                            >
+                                                                <XCircle className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ) : null;
+                                })()}
+
+                                {editing && (
+                                    <div className="space-y-4 pt-6 border-t border-slate-50">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Write your own facility / amenity</label>
+                                        <div className="flex gap-2">
+                                            <input 
+                                                type="text" 
+                                                placeholder="e.g. Free Welcome Drink, Bonfire Area, Guided Tours" 
+                                                value={customFacilityInput} 
+                                                onChange={(e) => setCustomFacilityInput(e.target.value)} 
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        e.preventDefault();
+                                                        handleAddCustomFacility();
+                                                    }
+                                                }}
+                                                className="flex-1 px-4 py-3 bg-slate-50 rounded-none text-sm font-bold border border-slate-200 focus:bg-white focus:border-blue-600 outline-none" 
+                                            />
+                                            <button 
+                                                type="button"
+                                                onClick={handleAddCustomFacility} 
+                                                className="px-6 py-3 bg-slate-900 text-white rounded-none text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-colors"
+                                            >
+                                                Add Facility
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
 

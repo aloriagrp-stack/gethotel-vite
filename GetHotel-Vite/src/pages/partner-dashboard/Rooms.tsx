@@ -681,6 +681,68 @@ export default function PartnerRoomsPage() {
         processFiles(files);
     };
 
+    const [draggedImageIndex, setDraggedImageIndex] = useState<number | null>(null);
+    const [dragOverImageIndex, setDragOverImageIndex] = useState<number | null>(null);
+
+    const handleImageDragStart = (e: React.DragEvent, index: number) => {
+        setDraggedImageIndex(index);
+        e.dataTransfer.effectAllowed = "move";
+    };
+
+    const handleImageDragOver = (e: React.DragEvent, index: number) => {
+        e.preventDefault();
+        if (draggedImageIndex !== null && draggedImageIndex !== index) {
+            setDragOverImageIndex(index);
+        }
+    };
+
+    const handleImageDragEnd = () => {
+        setDraggedImageIndex(null);
+        setDragOverImageIndex(null);
+    };
+
+    const handleImageDrop = (e: React.DragEvent, targetIndex: number) => {
+        e.preventDefault();
+        if (draggedImageIndex === null || draggedImageIndex === targetIndex) {
+            setDraggedImageIndex(null);
+            setDragOverImageIndex(null);
+            return;
+        }
+
+        setFormData(prev => {
+            const newImages = [...prev.images];
+            const draggedImg = newImages[draggedImageIndex];
+            newImages.splice(draggedImageIndex, 1);
+            newImages.splice(targetIndex, 0, draggedImg);
+            return {
+                ...prev,
+                images: newImages
+            };
+        });
+        setDraggedImageIndex(null);
+        setDragOverImageIndex(null);
+    };
+
+    const [customAmenityInput, setCustomAmenityInput] = useState("");
+
+    const handleAddCustomRoomAmenity = () => {
+        const cleaned = customAmenityInput.trim();
+        if (!cleaned) return;
+        if (formData.amenities.includes(cleaned)) {
+            showToast("Amenity already added!", "error");
+            return;
+        }
+        if (formData.amenities.length >= 30) {
+            showToast("You can select a maximum of 30 amenities.", "error");
+            return;
+        }
+        setFormData(prev => ({
+            ...prev,
+            amenities: [...prev.amenities, cleaned]
+        }));
+        setCustomAmenityInput("");
+    };
+
     const handleDeleteRoom = async (roomId: number) => {
         if (!confirm("Are you sure you want to delete this room type?")) return;
         try {
@@ -1210,8 +1272,20 @@ export default function PartnerRoomsPage() {
                                     </div>
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                         {formData.images.map((url, index) => (
-                                            <div key={index} className="relative group aspect-[4/3] rounded-none overflow-hidden bg-slate-100 border border-slate-200">
-                                                <img src={url} alt="Room" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                            <div 
+                                                key={index} 
+                                                draggable
+                                                onDragStart={(e) => handleImageDragStart(e, index)}
+                                                onDragOver={(e) => handleImageDragOver(e, index)}
+                                                onDragEnd={handleImageDragEnd}
+                                                onDrop={(e) => handleImageDrop(e, index)}
+                                                className={cn(
+                                                    "relative group aspect-[4/3] rounded-none overflow-hidden bg-slate-100 border transition-all duration-200 cursor-grab active:cursor-grabbing",
+                                                    draggedImageIndex === index ? "opacity-30 border-dashed border-2 border-blue-500 scale-95" : "border-slate-200",
+                                                    dragOverImageIndex === index ? "border-blue-600 border-2 scale-105 shadow-md" : ""
+                                                )}
+                                            >
+                                                <img src={url} alt="Room" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 pointer-events-none" />
                                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                                     <button type="button" onClick={() => handleRemoveImage(index)} className="p-2.5 bg-white text-red-600 rounded-none hover:bg-red-50 transition-colors">
                                                         <Trash2 className="w-4 h-4" />
@@ -1248,17 +1322,72 @@ export default function PartnerRoomsPage() {
                                         <div className="w-1.5 h-6 bg-orange-500 rounded-none" />
                                         <h3 className="text-xl font-black text-slate-900 tracking-tight">Amenities & Rules</h3>
                                     </div>
-                                    <div className="space-y-4">
-                                        <div className="flex justify-between items-center ml-1">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Core Amenities</label>
-                                            <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest bg-blue-50 px-3 py-1.5 border border-blue-100">
-                                                Selected: {formData.amenities.length} / 30 Max
-                                            </span>
+                                    <div className="space-y-6">
+                                        <div className="space-y-4">
+                                            <div className="flex justify-between items-center ml-1">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Core Amenities</label>
+                                                <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest bg-blue-50 px-3 py-1.5 border border-blue-100">
+                                                    Selected: {formData.amenities.length} / 30 Max
+                                                </span>
+                                            </div>
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                                {commonAmenities.map((amenity) => (
+                                                    <button key={amenity} type="button" onClick={() => toggleAmenity(amenity)} className={cn("px-4 py-3.5 rounded-none text-[10px] font-bold uppercase tracking-tight border transition-all text-center", formData.amenities.includes(amenity) ? "bg-slate-900 text-white border-slate-900 shadow-xl" : "bg-slate-50 text-slate-500 border-transparent hover:border-slate-200")}>{amenity}</button>
+                                                ))}
+                                            </div>
                                         </div>
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                            {commonAmenities.map((amenity) => (
-                                                <button key={amenity} type="button" onClick={() => toggleAmenity(amenity)} className={cn("px-4 py-3.5 rounded-none text-[10px] font-bold uppercase tracking-tight border transition-all text-center", formData.amenities.includes(amenity) ? "bg-slate-900 text-white border-slate-900 shadow-xl" : "bg-slate-50 text-slate-500 border-transparent hover:border-slate-200")}>{amenity}</button>
-                                            ))}
+
+                                        {/* Custom / AI Added Amenities */}
+                                        {(() => {
+                                            const customSelectedAmenities = formData.amenities.filter(
+                                                (amenity) => !commonAmenities.includes(amenity)
+                                            );
+                                            return customSelectedAmenities.length > 0 ? (
+                                                <div className="space-y-2 pt-2 border-t border-slate-100">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Custom / AI Added Amenities</label>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {customSelectedAmenities.map((amenity) => (
+                                                            <div key={amenity} className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-600 border border-blue-100 text-[9px] font-black uppercase rounded-lg shadow-sm">
+                                                                {amenity}
+                                                                <button 
+                                                                    type="button" 
+                                                                    onClick={() => setFormData(prev => ({ ...prev, amenities: prev.amenities.filter(a => a !== amenity) }))}
+                                                                    className="hover:text-red-500 transition-colors"
+                                                                >
+                                                                    <XCircle className="w-3.5 h-3.5" />
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ) : null;
+                                        })()}
+
+                                        {/* Write your own amenity */}
+                                        <div className="space-y-3 pt-4 border-t border-slate-100">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Write your own amenity</label>
+                                            <div className="flex gap-2">
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="e.g. In-room Jacuzzi, Gaming Console, Private Balcony" 
+                                                    value={customAmenityInput} 
+                                                    onChange={(e) => setCustomAmenityInput(e.target.value)} 
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter') {
+                                                            e.preventDefault();
+                                                            handleAddCustomRoomAmenity();
+                                                        }
+                                                    }}
+                                                    className="flex-1 px-4 py-3 bg-slate-50 rounded-none text-sm font-bold border border-slate-200 focus:bg-white focus:border-blue-600 outline-none" 
+                                                />
+                                                <button 
+                                                    type="button"
+                                                    onClick={handleAddCustomRoomAmenity} 
+                                                    className="px-6 py-3 bg-slate-900 text-white rounded-none text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-colors"
+                                                >
+                                                    Add Amenity
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="space-y-6 pt-8 border-t border-slate-100">
