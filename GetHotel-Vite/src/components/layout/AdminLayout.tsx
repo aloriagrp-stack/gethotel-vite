@@ -6,7 +6,7 @@ import {
     BarChart3, Settings, LogOut,
     Bell, Search, Plus, Clock,
     CreditCard, Loader2, Calendar, AlertCircle, LayoutTemplate, SlidersHorizontal, Star, RefreshCw, LayoutGrid, Globe, Sparkles,
-    ChevronLeft, ChevronRight
+    ChevronLeft, ChevronRight, Menu, X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -45,6 +45,21 @@ export default function AdminLayout() {
         { id: "settings", label: "Settings", icon: Settings, href: "/admin/super/settings" },
     ];
 
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    const activeItem = navItems.find(item => {
+        const searchParams = new URLSearchParams(location.search);
+        const currentTab = searchParams.get("tab");
+        if (item.href.includes("?tab=")) {
+            const itemTab = new URLSearchParams(item.href.split("?")[1]).get("tab");
+            return pathname === "/admin/super" && currentTab === itemTab;
+        } else if (item.href === "/admin/super") {
+            return pathname === "/admin/super" && (!currentTab || currentTab === "overview");
+        } else {
+            return pathname === item.href;
+        }
+    }) || navItems[0];
+
     const handleLogout = () => {
         logout();
         setShowLogoutConfirm(false);
@@ -62,9 +77,9 @@ export default function AdminLayout() {
     return (
         <div className="flex min-h-screen bg-slate-50 font-sans admin-portal-wrapper">
 
-            {/* Sidebar - Sharp Edges with toggle transition */}
+            {/* Sidebar for Desktop */}
             <aside className={cn(
-                "bg-slate-900 text-white flex flex-col fixed inset-y-0 left-0 z-50 border-r border-slate-800 transition-all duration-200",
+                "hidden lg:flex bg-slate-900 text-white flex-col fixed inset-y-0 left-0 z-50 border-r border-slate-800 transition-all duration-200",
                 sidebarCollapsed ? "w-16" : "w-64"
             )}>
                 <div className={cn(
@@ -135,13 +150,115 @@ export default function AdminLayout() {
                 </div>
             </aside>
 
-            {/* Main Content with toggle margin transition */}
-            <main className={cn(
-                "flex-1 min-h-screen min-w-0 overflow-x-hidden transition-all duration-200",
-                sidebarCollapsed ? "ml-16" : "ml-64"
+            {/* Main Content Area */}
+            <div className={cn(
+                "flex-1 flex flex-col min-h-screen transition-all duration-200 min-w-0",
+                sidebarCollapsed ? "lg:ml-16" : "lg:ml-64"
             )}>
-                <Outlet />
-            </main>
+                {/* Top Mobile Header */}
+                <header className="lg:hidden h-20 bg-slate-900 text-white px-6 flex items-center justify-between sticky top-0 z-40 border-b border-slate-800">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-brand-500/10 rounded flex items-center justify-center text-brand-500">
+                            {activeItem ? <activeItem.icon className="w-5 h-5" /> : <LayoutDashboard className="w-5 h-5" />}
+                        </div>
+                        <div>
+                            <h1 className="text-sm font-black uppercase tracking-wider text-white">
+                                {activeItem ? activeItem.label : "Admin Portal"}
+                            </h1>
+                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Super Admin</p>
+                        </div>
+                    </div>
+                    <button 
+                        onClick={() => setIsMobileMenuOpen(true)}
+                        className="p-2.5 bg-slate-800 text-white rounded border border-slate-700 hover:bg-slate-700 transition-colors"
+                    >
+                        <Menu className="w-5 h-5" />
+                    </button>
+                </header>
+
+                {/* Mobile Menu Overlay */}
+                {isMobileMenuOpen && (
+                    <div 
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[60] lg:hidden"
+                    >
+                        <div 
+                            onClick={(e) => e.stopPropagation()}
+                            className="w-72 h-full bg-slate-900 text-white flex flex-col animate-slide-right border-r border-slate-850"
+                        >
+                            <div className="p-6 border-b border-slate-800 flex items-center justify-between">
+                                <h1 className="text-xl font-bold tracking-tight uppercase select-none">
+                                    Admin<span className="text-slate-400">Portal</span>
+                                </h1>
+                                <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-slate-400 hover:text-white">
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+                            <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+                                {navItems.map((item) => {
+                                    const Icon = item.icon;
+                                    const searchParams = new URLSearchParams(location.search);
+                                    const currentTab = searchParams.get("tab");
+                                    let isActive = false;
+                                    if (item.href.includes("?tab=")) {
+                                        const itemTab = new URLSearchParams(item.href.split("?")[1]).get("tab");
+                                        isActive = pathname === "/admin/super" && currentTab === itemTab;
+                                    } else if (item.href === "/admin/super") {
+                                        isActive = pathname === "/admin/super" && (!currentTab || currentTab === "overview");
+                                    } else {
+                                        isActive = pathname === item.href;
+                                    }
+
+                                    return (
+                                        <button
+                                            key={item.id}
+                                            onClick={() => {
+                                                router(item.href);
+                                                setIsMobileMenuOpen(false);
+                                            }}
+                                            className={cn(
+                                                "w-full flex items-center gap-3 px-4 py-3.5 rounded text-xs font-bold uppercase tracking-wider transition-none",
+                                                isActive
+                                                    ? "bg-slate-800 text-white border-l-4 border-brand-500"
+                                                    : "text-slate-400 hover:bg-slate-800 hover:text-white"
+                                            )}
+                                        >
+                                            <Icon className="w-4 h-4 shrink-0" />
+                                            <span>{item.label}</span>
+                                        </button>
+                                    );
+                                })}
+                            </nav>
+                            <div className="p-4 border-t border-slate-800">
+                                <button
+                                    onClick={() => {
+                                        setShowLogoutConfirm(true);
+                                        setIsMobileMenuOpen(false);
+                                    }}
+                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-slate-500 hover:text-red-400 text-xs font-bold uppercase tracking-wider transition-colors"
+                                >
+                                    <LogOut className="w-4 h-4 shrink-0" />
+                                    <span>Logout</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <main className="flex-1 min-w-0 overflow-x-hidden">
+                    <Outlet />
+                </main>
+            </div>
+
+            <style>{`
+                @keyframes slide-right {
+                    from { transform: translateX(-100%); }
+                    to { transform: translateX(0); }
+                }
+                .animate-slide-right {
+                    animation: slide-right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+                }
+            `}</style>
 
             {/* Logout Confirmation Modal */}
             <AnimatePresence>

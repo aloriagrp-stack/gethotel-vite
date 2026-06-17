@@ -60,6 +60,8 @@ export default function PartnerLayout() {
         { id: "switch", label: "Switch Property", icon: ChevronRight, href: "/partner-select" },
     ];
 
+    const activeItem = navItems.find(item => pathname === item.href) || navItems[0];
+
     const handleLogout = () => {
         logout();
         setShowLogoutConfirm(false);
@@ -155,7 +157,12 @@ export default function PartnerLayout() {
                         <div className="w-10 h-10 bg-blue-600 rounded-none flex items-center justify-center text-white">
                             <Hotel className="w-6 h-6" />
                         </div>
-                        <h1 className="text-3xl font-black tracking-tight text-slate-900 mb-2">Financial Management</h1>
+                        <div>
+                            <h1 className="text-sm font-black uppercase tracking-wider text-slate-900">
+                                {activeItem ? activeItem.label : "Partner Portal"}
+                            </h1>
+                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Partner Dashboard</p>
+                        </div>
                     </div>
                     <button 
                         onClick={() => setIsMobileMenuOpen(true)}
@@ -167,8 +174,14 @@ export default function PartnerLayout() {
 
                 {/* Mobile Menu Overlay */}
                 {isMobileMenuOpen && (
-                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] lg:hidden">
-                        <div className="w-80 h-full bg-white flex flex-col animate-slide-right">
+                    <div 
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] lg:hidden"
+                    >
+                        <div 
+                            onClick={(e) => e.stopPropagation()}
+                            className="w-80 h-full bg-white flex flex-col animate-slide-right"
+                        >
                             <div className="p-6 border-b border-slate-100 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <div className="w-8 h-8 bg-blue-600 rounded-none flex items-center justify-center text-white">
