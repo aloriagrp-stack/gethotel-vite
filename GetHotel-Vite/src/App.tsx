@@ -39,6 +39,8 @@ const JaipurHotels = lazy(() => import("./pages/destinations/JaipurHotels"));
 const ManaliHotels = lazy(() => import("./pages/destinations/ManaliHotels"));
 const ShimlaHotels = lazy(() => import("./pages/destinations/ShimlaHotels"));
 const UdaipurHotels = lazy(() => import("./pages/destinations/UdaipurHotels"));
+const DelhiHotels = lazy(() => import("./pages/destinations/DelhiHotels"));
+const CityPage = lazy(() => import("./pages/destinations/CityPage"));
 
 // ID based pages
 const BookingInvoice = lazy(() => import("./pages/BookingInvoice"));
@@ -136,6 +138,8 @@ export default function App() {
                       <Route path="/manali-hotels" element={<ManaliHotels />} />
                       <Route path="/shimla-hotels" element={<ShimlaHotels />} />
                       <Route path="/udaipur-hotels" element={<UdaipurHotels />} />
+                      <Route path="/delhi-hotels" element={<DelhiHotels />} />
+                      <Route path="/hotels-in/:citySlug" element={<CityPage />} />
                       
                       {/* ID-based Routes */}
                       <Route path="/booking/invoice/:id" element={<BookingInvoice />} />

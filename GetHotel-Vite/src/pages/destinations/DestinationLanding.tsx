@@ -6,7 +6,7 @@ import { Hotel as HotelType } from "@/types";
 import HotelCard from "@/components/hotels/HotelCard";
 import { HotelCardSkeleton } from "@/components/hotels/HotelCardSkeleton";
 import SEOHead from "@/components/common/SEOHead";
-import { SITE, buildFAQSchema, buildBreadcrumbSchema } from "@/lib/seo";
+import { SITE, buildFAQSchema, buildBreadcrumbSchema, buildCitySchema, buildCityHotelListingSchema } from "@/lib/seo";
 
 interface Section {
     h2: string;
@@ -83,6 +83,8 @@ export default function DestinationLanding({
                 canonicalUrl={`${SITE.url}/${city.toLowerCase()}-hotels`}
                 schemas={[
                     buildFAQSchema(faqs),
+                    buildCitySchema(city, `Book verified hotels in ${city} at best prices. Budget to luxury stays. Pay 12% now, rest at hotel. Trusted by NRIs worldwide.`),
+                    buildCityHotelListingSchema(city, 2000, "₹699-₹25,000"),
                     buildBreadcrumbSchema([
                         { name: "Home", url: "/" },
                         { name: "Hotels", url: "/hotels" },

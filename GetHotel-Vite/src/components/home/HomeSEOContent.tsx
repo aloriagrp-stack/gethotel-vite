@@ -246,6 +246,62 @@ export default function HomeSEOContent() {
                     </div>
                 </div>
 
+                {/* ── Section 4.5: Delhi Hotels — NRI & Budget Focus ── */}
+                <div className="space-y-6 bg-gradient-to-br from-blue-50/80 to-white border border-blue-100/60 rounded-[2.5rem] p-8 md:p-12">
+                    <div className="max-w-3xl">
+                        <h2 className="text-2xl md:text-4xl font-bold text-slate-900 tracking-tight mb-4">
+                            Book Hotels in Delhi — Affordable Stays for NRIs & International Travelers
+                        </h2>
+                        <p className="text-slate-600 text-xs md:text-sm font-semibold leading-relaxed">
+                            Planning a trip to India this season? <Link to="/delhi-hotels" className="text-brand-600 hover:underline font-bold">Hotels in Delhi</Link> are your gateway to India's rich history, culture, and business opportunities. 
+                            Whether you are an NRI flying in from <strong>USA, UK, UAE, Canada, or Australia</strong>, or an international tourist exploring the capital, 
+                            GetHotelStays makes it easy to <Link to="/delhi-hotels" className="text-brand-600 hover:underline font-bold">book affordable hotels in Delhi</Link> with just 12% payment online.
+                        </p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-5 border border-blue-50 space-y-2">
+                            <h3 className="font-bold text-slate-950 text-sm">
+                                <Link to="/delhi-hotels" className="hover:text-brand-600">Affordable Hotels Near Delhi Airport</Link>
+                            </h3>
+                            <p className="text-slate-500 text-xs font-medium">
+                                Budget hotels in Mahipalpur & Aerocity from ₹699/night. Free airport pickup, soundproof rooms, hourly stays available for transit travelers. Book from anywhere in the world.
+                            </p>
+                        </div>
+                        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-5 border border-blue-50 space-y-2">
+                            <h3 className="font-bold text-slate-950 text-sm">
+                                <Link to="/delhi-hotels" className="hover:text-brand-600">Budget Hotels in Paharganj & Karol Bagh</Link>
+                            </h3>
+                            <p className="text-slate-500 text-xs font-medium">
+                                Delhi's most affordable areas for budget travelers. Clean rooms starting from ₹500/night. Walking distance to New Delhi Railway Station, local markets & street food. Verified & safe.
+                            </p>
+                        </div>
+                        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-5 border border-blue-50 space-y-2">
+                            <h3 className="font-bold text-slate-950 text-sm">
+                                <Link to="/delhi-hotels" className="hover:text-brand-600">Luxury Hotels in Connaught Place & Aerocity</Link>
+                            </h3>
+                            <p className="text-slate-500 text-xs font-medium">
+                                5-star luxury in central Delhi. World-class hotels near India Gate, shopping districts & business hubs. Premium amenities, fine dining, pool & spa. Pay 12% now, rest at hotel.
+                            </p>
+                        </div>
+                        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-5 border border-blue-50 space-y-2">
+                            <h3 className="font-bold text-slate-950 text-sm">
+                                <Link to="/delhi-hotels" className="hover:text-brand-600">NRI Hotel Booking — Pay in Your Currency</Link>
+                            </h3>
+                            <p className="text-slate-500 text-xs font-medium">
+                                NRIs can book Delhi hotels using international cards, PayPal, or bank transfer. Pay only 12% online in USD, GBP, or AED. Rest at hotel in INR. Trusted by 10,000+ overseas travelers.
+                            </p>
+                        </div>
+                    </div>
+                    <div className="pt-2">
+                        <Link 
+                            to="/delhi-hotels" 
+                            className="inline-flex items-center gap-2 px-6 py-3 bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95"
+                        >
+                            Explore All Delhi Hotels →
+                        </Link>
+                    </div>
+                </div>
+
                 {/* ── Section 5: Trust Signals & Value Propositions ── */}
                 <div className="bg-white/70 backdrop-blur-xl border border-white/40 rounded-[2.5rem] p-8 md:p-12 space-y-8">
                     <div className="max-w-3xl">

@@ -30,7 +30,7 @@ export default function SEOHead({
     noIndex = false,
     hreflangPairs,
 }: SEOHeadProps) {
-    const finalTitle = title || "GetHotelStays — Book Best Hotels in India";
+    const finalTitle = title || "GetHotelStays.com | Official Site | Book Best Hotel Stays & Deals";
     const finalDesc = description || "Book hotels across India at unbeatable prices. Luxury, boutique & budget stays. Pay 12% now, rest at hotel. Best price guarantee.";
     const finalImage = ogImage || `${SITE.url}/og-image.jpg`;
     const finalUrl = ogUrl || (typeof window !== "undefined" ? window.location.href : SITE.url);

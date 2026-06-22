@@ -159,14 +159,19 @@ function HotelListingContent() {
     };
 
     const cityDisplay = cityParam !== "All" ? cityParam : "India";
+    const isDelhi = cityParam.toLowerCase() === "delhi" || cityParam.toLowerCase() === "new delhi";
     const pageTitle = cityParam !== "All"
-        ? `Hotels in ${cityParam} — Book Online | GetHotelStays`
+        ? `Hotels in ${cityParam} — Book Affordable to Luxury Stays | GetHotelStays`
         : PAGE_SEO.hotels.title;
-    const pageDesc = cityParam !== "All"
+    const pageDesc = cityParam !== "All" && !isDelhi
         ? `Find & book the best hotels in ${cityParam}. Compare prices, read reviews, and get instant confirmation. Pay 12% now, rest at hotel. Free cancellation available on GetHotelStays.`
-        : PAGE_SEO.hotels.description;
+        : isDelhi
+            ? `Book 2,000+ verified hotels in Delhi at best prices. Budget stays in Paharganj from ₹699 to luxury in Aerocity. Pay 12% online, rest at hotel. Trusted by NRIs from USA, UK, UAE. Free cancellation & instant confirmation.`
+            : PAGE_SEO.hotels.description;
     const pageKeywords = cityParam !== "All"
-        ? [`hotels in ${cityParam.toLowerCase()}`, `${cityParam.toLowerCase()} hotels`, `book hotel ${cityParam.toLowerCase()}`, `cheap hotels ${cityParam.toLowerCase()}`, `luxury hotels ${cityParam.toLowerCase()}`, "hotel booking india", "gethotelstays"]
+        ? isDelhi
+            ? [`hotels in delhi`, `delhi hotels booking`, `cheap hotels in delhi`, `budget hotels in delhi`, `affordable hotels in delhi`, `best hotels in delhi`, `hotels near delhi airport`, `hotels in connaught place delhi`, `delhi hotels for nri`, `book delhi hotel from usa`, `book delhi hotel from uk`, `delhi hotels pay at hotel`, `delhi hotels free cancellation`, `hourly hotels in delhi`, `gethotelstays delhi`]
+            : [`hotels in ${cityParam.toLowerCase()}`, `${cityParam.toLowerCase()} hotels`, `book hotel ${cityParam.toLowerCase()}`, `cheap hotels ${cityParam.toLowerCase()}`, `luxury hotels ${cityParam.toLowerCase()}`, "hotel booking india", "gethotelstays"]
         : PAGE_SEO.hotels.keywords;
 
     return (
@@ -188,20 +193,13 @@ function HotelListingContent() {
             {/* Search Modal Overlay */}
             {/* Page Header Area - Side-by-Side Layout */}
             <div className="w-full flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-6 px-4 md:px-10">
-                <div className="shrink-0">
-                    <h1 className="text-3xl md:text-4xl font-bold text-slate-950 tracking-tight leading-tight">
-                        {cityParam !== "All" ? (
-                            <>
-                                Hotels in <span className="text-brand-600">{cityParam}</span>
-                            </>
-                        ) : (
-                            <>
-                                Trending <span className="text-brand-600">Hotels</span>
-                            </>
-                        )}
-                    </h1>
-
-                </div>
+                {cityParam !== "All" && (
+                    <div className="shrink-0">
+                        <h1 className="text-3xl md:text-4xl font-bold text-slate-950 tracking-tight leading-tight">
+                            Hotels in <span className="text-brand-600">{cityParam}</span>
+                        </h1>
+                    </div>
+                )}
 
                 <div className="w-full lg:max-w-4xl">
                     <SmartSearchBar
