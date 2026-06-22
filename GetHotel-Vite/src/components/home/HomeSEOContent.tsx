@@ -46,6 +46,7 @@ export default function HomeSEOContent() {
                                 src="/seo_about_illustration.png" 
                                 alt="GetHotelStays Illustration" 
                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                loading="lazy"
                             />
                             {/* Ambient overlay matching visual guidelines */}
                             <div className="absolute inset-0 bg-gradient-to-t from-brand-600/10 via-transparent to-transparent pointer-events-none" />
@@ -170,12 +171,11 @@ export default function HomeSEOContent() {
                             <div className="flex items-center gap-2 text-slate-950">
                                 <MapPin className="w-4 h-4 text-blue-500" />
                                 <h3 className="font-bold">
-                                    <Link to="/hotels?city=Mumbai" className="hover:text-brand-600 hover:underline transition-colors">Mumbai</Link> & <Link to="/hotels?city=Pune" className="hover:text-brand-600 hover:underline transition-colors">Pune</Link>
+                                    <Link to="/delhi-hotels" className="hover:text-brand-600 hover:underline transition-colors">Delhi</Link>
                                 </h3>
                             </div>
                             <p className="text-slate-500 text-xs font-semibold leading-relaxed">
-                                The bustling financial capital of India and its IT neighbor. Book business hotels in South Mumbai, 
-                                corporate stays near BKC, or luxury stays near Juhu beach and Lonavala.
+                                Budget to luxury hotels in India's capital. Book affordable stays in Paharganj or 5-star luxury in Aerocity & Connaught Place. <Link to="/delhi-hotels" className="text-brand-600 hover:underline">Delhi Hotels</Link> starting ₹699/night.
                             </p>
                         </div>
 
@@ -183,12 +183,23 @@ export default function HomeSEOContent() {
                             <div className="flex items-center gap-2 text-slate-950">
                                 <MapPin className="w-4 h-4 text-blue-500" />
                                 <h3 className="font-bold">
-                                    <Link to="/hotels?city=Delhi" className="hover:text-brand-600 hover:underline transition-colors">Delhi NCR</Link> & <Link to="/hotels?city=Agra" className="hover:text-brand-600 hover:underline transition-colors">Agra</Link>
+                                    <Link to="/hotels-in/mumbai" className="hover:text-brand-600 hover:underline transition-colors">Mumbai</Link> & <Link to="/hotels-in/pune" className="hover:text-brand-600 hover:underline transition-colors">Pune</Link>
                                 </h3>
                             </div>
                             <p className="text-slate-500 text-xs font-semibold leading-relaxed">
-                                Explore the rich cultural heritage of the national capital. Find budget hotels near New Delhi Railway 
-                                Station, premium business stays in Gurgaon, or heritage views near the Taj Mahal.
+                                Financial capital & IT hub. Book business hotels in BKC, luxury stays at Juhu beach, or corporate hotels in Pune. <Link to="/hotels-in/mumbai" className="text-brand-600 hover:underline">Mumbai Hotels</Link> from ₹999.
+                            </p>
+                        </div>
+
+                        <div className="bg-white/40 backdrop-blur-md border border-white/30 p-6 rounded-3xl space-y-2">
+                            <div className="flex items-center gap-2 text-slate-950">
+                                <MapPin className="w-4 h-4 text-blue-500" />
+                                <h3 className="font-bold">
+                                    <Link to="/hotels-in/bangalore" className="hover:text-brand-600 hover:underline transition-colors">Bangalore</Link> & <Link to="/hotels-in/hyderabad" className="hover:text-brand-600 hover:underline transition-colors">Hyderabad</Link>
+                                </h3>
+                            </div>
+                            <p className="text-slate-500 text-xs font-semibold leading-relaxed">
+                                India's tech capitals. Find hourly stays near business parks or premium hotels in city centers. <Link to="/hotels-in/bangalore" className="text-brand-600 hover:underline">Bangalore Hotels</Link> & <Link to="/hotels-in/hyderabad" className="text-brand-600 hover:underline">Hyderabad Hotels</Link>.
                             </p>
                         </div>
 
@@ -200,21 +211,7 @@ export default function HomeSEOContent() {
                                 </h3>
                             </div>
                             <p className="text-slate-500 text-xs font-semibold leading-relaxed">
-                                The ultimate beach holiday destination. Choose from serene beach resorts in <Link to="/goa-hotels" className="text-brand-600 hover:underline">Goa</Link>, luxury stays 
-                                in Munnar, or houseboats and backwaters in Kumarakom and Alleppey.
-                            </p>
-                        </div>
-
-                        <div className="bg-white/40 backdrop-blur-md border border-white/30 p-6 rounded-3xl space-y-2">
-                            <div className="flex items-center gap-2 text-slate-950">
-                                <MapPin className="w-4 h-4 text-blue-500" />
-                                <h3 className="font-bold">
-                                    <Link to="/hotels?city=Bangalore" className="hover:text-brand-600 hover:underline transition-colors">Bangalore</Link> & <Link to="/hotels?city=Hyderabad" className="hover:text-brand-600 hover:underline transition-colors">Hyderabad</Link>
-                                </h3>
-                            </div>
-                            <p className="text-slate-500 text-xs font-semibold leading-relaxed">
-                                India's prominent tech cities. Find convenient hourly stays near major business parks, premium hotels 
-                                in the city center, and cozy couple retreats in quiet residential zones.
+                                Beach holiday paradise. Serene resorts in South Goa, party stays in North Goa. <Link to="/goa-hotels" className="text-brand-600 hover:underline">Hotels in Goa</Link> with hourly stays & beach access.
                             </p>
                         </div>
 
@@ -226,8 +223,7 @@ export default function HomeSEOContent() {
                                 </h3>
                             </div>
                             <p className="text-slate-500 text-xs font-semibold leading-relaxed">
-                                Immerse yourself in the rich royalty of Rajasthan. Book heritage properties, royal palace stays in <Link to="/udaipur-hotels" className="text-brand-600 hover:underline">Udaipur</Link>, and 
-                                boutique hotels in the Pink City of <Link to="/jaipur-hotels" className="text-brand-600 hover:underline">Jaipur</Link>.
+                                Royal Rajasthan. Heritage properties, palace stays in Udaipur & boutique hotels in Pink City Jaipur. <Link to="/jaipur-hotels" className="text-brand-600 hover:underline">Jaipur Hotels</Link> & <Link to="/hotels-in/jodhpur" className="text-brand-600 hover:underline">Jodhpur Hotels</Link>.
                             </p>
                         </div>
 
@@ -239,10 +235,37 @@ export default function HomeSEOContent() {
                                 </h3>
                             </div>
                             <p className="text-slate-500 text-xs font-semibold leading-relaxed">
-                                Majestic Himalayan getaways. Discover forest lodges near Shimla's Mall Road or book luxury mountain resorts and cozy wooden cottages in <Link to="/manali-hotels" className="text-brand-600 hover:underline">Manali</Link>.
+                                Himalayan getaways. Forest lodges on Mall Road, luxury mountain resorts in Manali. <Link to="/shimla-hotels" className="text-brand-600 hover:underline">Shimla Hotels</Link> & <Link to="/hotels-in/darjeeling" className="text-brand-600 hover:underline">Darjeeling Hotels</Link>.
                             </p>
                         </div>
 
+                    </div>
+                    <div className="flex flex-wrap justify-center gap-3 pt-4">
+                        <Link to="/hotels-in/chennai" className="px-4 py-2 bg-white/60 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-all">Chennai Hotels</Link>
+                        <Link to="/hotels-in/kolkata" className="px-4 py-2 bg-white/60 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-all">Kolkata Hotels</Link>
+                        <Link to="/hotels-in/ahmedabad" className="px-4 py-2 bg-white/60 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-all">Ahmedabad Hotels</Link>
+                        <Link to="/hotels-in/lucknow" className="px-4 py-2 bg-white/60 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-all">Lucknow Hotels</Link>
+                        <Link to="/hotels-in/amritsar" className="px-4 py-2 bg-white/60 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-all">Amritsar Hotels</Link>
+                        <Link to="/hotels-in/varanasi" className="px-4 py-2 bg-white/60 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-all">Varanasi Hotels</Link>
+                        <Link to="/hotels-in/agra" className="px-4 py-2 bg-white/60 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-all">Agra Hotels</Link>
+                        <Link to="/hotels-in/coimbatore" className="px-4 py-2 bg-white/60 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-all">Coimbatore Hotels</Link>
+                        <Link to="/hotels-in/indore" className="px-4 py-2 bg-white/60 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-all">Indore Hotels</Link>
+                        <Link to="/hotels-in/bhopal" className="px-4 py-2 bg-white/60 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-all">Bhopal Hotels</Link>
+                        <Link to="/hotels-in/chandigarh" className="px-4 py-2 bg-white/60 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-all">Chandigarh Hotels</Link>
+                        <Link to="/hotels-in/nagpur" className="px-4 py-2 bg-white/60 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-all">Nagpur Hotels</Link>
+                        <Link to="/hotels-in/kochi" className="px-4 py-2 bg-white/60 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-all">Kochi Hotels</Link>
+                        <Link to="/hotels-in/mysore" className="px-4 py-2 bg-white/60 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-all">Mysore Hotels</Link>
+                        <Link to="/hotels-in/madurai" className="px-4 py-2 bg-white/60 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-all">Madurai Hotels</Link>
+                        <Link to="/hotels-in/surat" className="px-4 py-2 bg-white/60 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-all">Surat Hotels</Link>
+                        <Link to="/hotels-in/srinagar" className="px-4 py-2 bg-white/60 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-all">Srinagar Hotels</Link>
+                        <Link to="/hotels-in/rishikesh" className="px-4 py-2 bg-white/60 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-all">Rishikesh Hotels</Link>
+                        <Link to="/hotels-in/haridwar" className="px-4 py-2 bg-white/60 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-all">Haridwar Hotels</Link>
+                        <Link to="/hotels-in/jaisalmer" className="px-4 py-2 bg-white/60 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-all">Jaisalmer Hotels</Link>
+                        <Link to="/hotels-in/ooty" className="px-4 py-2 bg-white/60 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-all">Ooty Hotels</Link>
+                        <Link to="/hotels-in/munnar" className="px-4 py-2 bg-white/60 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-all">Munnar Hotels</Link>
+                        <Link to="/hotels-in/alleppey" className="px-4 py-2 bg-white/60 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-all">Alleppey Hotels</Link>
+                        <Link to="/hotels-in/coorg" className="px-4 py-2 bg-white/60 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-all">Coorg Hotels</Link>
+                        <Link to="/hotels-in/puducherry" className="px-4 py-2 bg-white/60 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-all">Puducherry Hotels</Link>
                     </div>
                 </div>
 

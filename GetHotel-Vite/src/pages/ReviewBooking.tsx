@@ -50,7 +50,7 @@ export default function ReviewPage() {
                         <>
                             <div className="flex items-center gap-6 mb-12">
                                 <div className="w-20 h-20 rounded-2xl overflow-hidden shadow-md shrink-0">
-                                    <img src={hotel.thumbnail} alt={hotel.name} className="w-full h-full object-cover" />
+                                    <img src={hotel.thumbnail} alt={hotel.name} className="w-full h-full object-cover" loading="lazy" />
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-black text-brand-600 uppercase tracking-widest mb-1">Feedback for</p>

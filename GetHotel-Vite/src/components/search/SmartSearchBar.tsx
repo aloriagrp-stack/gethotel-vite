@@ -389,7 +389,7 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
                                                         >
                                                             {s.thumbnail ? (
                                                                 <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 bg-slate-100 relative">
-                                                                    <img src={s.thumbnail} alt={s.label} className="object-cover w-full h-full absolute inset-0" />
+                                                                    <img src={s.thumbnail} alt={s.label} className="object-cover w-full h-full absolute inset-0" loading="lazy" />
                                                                 </div>
                                                             ) : (
                                                                 <div className="w-10 h-10 rounded-full bg-slate-50/50 flex items-center justify-center group-hover:bg-brand-50 transition-colors shrink-0">
@@ -638,7 +638,7 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
                                                     >
                                                         {s.thumbnail ? (
                                                             <div className="w-12 h-12 rounded-2xl overflow-hidden shrink-0 bg-slate-100 relative">
-                                                                <img src={s.thumbnail} alt={s.label} className="object-cover w-full h-full absolute inset-0" />
+                                                                <img src={s.thumbnail} alt={s.label} className="object-cover w-full h-full absolute inset-0" loading="lazy" />
                                                             </div>
                                                         ) : (
                                                             <div className="w-12 h-12 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 shadow-sm shrink-0">
@@ -801,7 +801,7 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
                 <div className="mt-16 flex items-center justify-start md:justify-center gap-10 overflow-x-auto pb-6 no-scrollbar px-6 md:px-0 w-full max-w-[1400px] mx-auto relative z-10">
                     {DESTINATION_STORIES.map((story, idx) => (
                         <motion.button initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 + idx * 0.1 }} key={story.label} type="button" onClick={() => { const foundStory = destinationStories.find(s => s.id === story.label.toLowerCase()); if (foundStory) setActiveStory(foundStory); else { setQuery(story.query); handleSearch(undefined, story.query); } }} className="group flex flex-col items-center gap-4 outline-none relative">
-                            <div className="relative p-[4px] rounded-full bg-gradient-to-tr from-brand-600 via-brand-200 to-brand-500 transition-all duration-700 group-hover:scale-110 active:scale-95 shadow-premium"><div className="p-[3px] rounded-full bg-white"><div className="relative w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden shadow-inner"><img src={story.image} alt={story.label} className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-125" /></div></div></div>
+                            <div className="relative p-[4px] rounded-full bg-gradient-to-tr from-brand-600 via-brand-200 to-brand-500 transition-all duration-700 group-hover:scale-110 active:scale-95 shadow-premium"><div className="p-[3px] rounded-full bg-white"><div className="relative w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden shadow-inner"><img src={story.image} alt={story.label} className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-125" loading="lazy" /></div></div></div>
                             <span className="text-[14px] font-black text-slate-950 tracking-tight italic">{story.label}</span>
                         </motion.button>
                     ))}

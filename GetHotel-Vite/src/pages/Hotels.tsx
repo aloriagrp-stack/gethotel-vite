@@ -193,13 +193,13 @@ function HotelListingContent() {
             {/* Search Modal Overlay */}
             {/* Page Header Area - Side-by-Side Layout */}
             <div className="w-full flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-6 px-4 md:px-10">
-                {cityParam !== "All" && (
-                    <div className="shrink-0">
-                        <h1 className="text-3xl md:text-4xl font-bold text-slate-950 tracking-tight leading-tight">
-                            Hotels in <span className="text-brand-600">{cityParam}</span>
-                        </h1>
-                    </div>
-                )}
+                <div className="shrink-0">
+                    <h1 className="text-3xl md:text-4xl font-bold text-slate-950 tracking-tight leading-tight">
+                        {cityParam !== "All"
+                            ? <>Hotels in <span className="text-brand-600">{cityParam}</span></>
+                            : "All Hotels in India - Book Verified Stays"}
+                    </h1>
+                </div>
 
                 <div className="w-full lg:max-w-4xl">
                     <SmartSearchBar

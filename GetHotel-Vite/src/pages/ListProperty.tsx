@@ -158,6 +158,7 @@ export default function ListPropertyLandingPage() {
                                     src="/list property photo.jpeg" 
                                     alt="Hotel Management Dashboard"
                                     className="w-full h-full object-cover"
+                                    loading="lazy"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent"></div>
                             </div>

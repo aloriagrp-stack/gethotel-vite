@@ -33,6 +33,8 @@ interface DestinationLandingProps {
     sections: Section[];
     faqs: FAQ[];
     internalLinks: InternalLink[];
+    urlSlug?: string;
+    urlPrefix?: string;
 }
 
 export default function DestinationLanding({
@@ -44,7 +46,9 @@ export default function DestinationLanding({
     introduction,
     sections,
     faqs,
-    internalLinks
+    internalLinks,
+    urlSlug,
+    urlPrefix = "/",
 }: DestinationLandingProps) {
     const [hotels, setHotels] = useState<HotelType[]>([]);
     const [loading, setLoading] = useState(true);
@@ -79,16 +83,16 @@ export default function DestinationLanding({
                 title={title}
                 description={description}
                 keywords={keywords}
-                ogUrl={`${SITE.url}/${city.toLowerCase()}-hotels`}
-                canonicalUrl={`${SITE.url}/${city.toLowerCase()}-hotels`}
+                ogUrl={`${SITE.url}${urlPrefix}${urlSlug || city.toLowerCase() + "-hotels"}`}
+                canonicalUrl={`${SITE.url}${urlPrefix}${urlSlug || city.toLowerCase() + "-hotels"}`}
                 schemas={[
                     buildFAQSchema(faqs),
                     buildCitySchema(city, `Book verified hotels in ${city} at best prices. Budget to luxury stays. Pay 12% now, rest at hotel. Trusted by NRIs worldwide.`),
-                    buildCityHotelListingSchema(city, 2000, "₹699-₹25,000"),
+                    buildCityHotelListingSchema(city, 2000, "₹699-₹25,000", urlSlug || `${city.toLowerCase()}-hotels`),
                     buildBreadcrumbSchema([
                         { name: "Home", url: "/" },
                         { name: "Hotels", url: "/hotels" },
-                        { name: `${city} Hotels`, url: `/${city.toLowerCase()}-hotels` }
+                        { name: `${city} Hotels`, url: `${urlPrefix}${urlSlug || city.toLowerCase() + "-hotels"}` }
                     ])
                 ]}
             />

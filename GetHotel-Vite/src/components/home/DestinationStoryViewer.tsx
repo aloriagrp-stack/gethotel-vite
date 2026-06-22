@@ -155,6 +155,7 @@ export default function DestinationStoryViewer({ story, onClose, onNext }: Desti
                                     src={story.slides[0].image}
                                     alt={story.city}
                                     className="w-full h-full rounded-full object-cover"
+                                    loading="lazy"
                                 />
                             </div>
                             <div className="flex flex-col">
@@ -187,6 +188,7 @@ export default function DestinationStoryViewer({ story, onClose, onNext }: Desti
                                     src={currentSlide.image}
                                     className="w-full h-full object-cover"
                                     alt={currentSlide.title}
+                                    loading="lazy"
                                 />
                                 {/* Improved Gradient Overlay */}
                                 <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black via-black/60 to-transparent" />

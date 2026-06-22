@@ -147,7 +147,7 @@ export default function BookingDetailsPage() {
                 <div className="flex flex-col sm:flex-row gap-6 items-start pb-8 border-b border-slate-100 mb-8">
                     {/* Small Image Box */}
                     <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl overflow-hidden shrink-0 relative bg-slate-100 shadow-sm border border-slate-100">
-                        <img src={hotelThumbnail} alt={hotelName} className="w-full h-full object-cover" />
+                        <img src={hotelThumbnail} alt={hotelName} className="w-full h-full object-cover" loading="lazy" />
                     </div>
 
                     {/* Stay Info Column */}

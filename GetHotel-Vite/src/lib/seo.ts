@@ -1023,34 +1023,28 @@ export const DELHI_FAQS = [
 /** City-specific schema builder */
 export const buildCitySchema = (city: string, description: string, image?: string) => ({
     "@context": "https://schema.org",
-    "@type": "City",
-    name: city,
-    url: `${SITE.url}/${city.toLowerCase().replace(/\s+/g, '-')}-hotels`,
+    "@type": "WebPage",
+    name: `Hotels in ${city} — Book Online`,
     description: description,
-    containedInPlace: {
-        "@type": "Country",
-        name: "India",
+    url: `${SITE.url}/hotels-in/${city.toLowerCase().replace(/\s+/g, '-')}`,
+    about: {
+        "@type": "City",
+        name: city,
+        containedInPlace: { "@type": "Country", name: "India" },
     },
 });
 
 /** Build structured data for a city hotel listing page with aggregate offers */
-export const buildCityHotelListingSchema = (city: string, hotelCount: number, priceRange: string) => ({
+export const buildCityHotelListingSchema = (city: string, hotelCount: number, priceRange: string, urlSlug?: string) => ({
     "@context": "https://schema.org",
-    "@type": ["ItemList", "Product"],
+    "@type": "ItemList",
     name: `Hotels in ${city}`,
     description: `Book verified hotels in ${city} at best prices. ${hotelCount}+ properties available. Budget to luxury. Pay 12% now, rest at hotel.`,
-    url: `${SITE.url}/${city.toLowerCase().replace(/\s+/g, '-')}-hotels`,
+    url: `${SITE.url}/${urlSlug || `${city.toLowerCase().replace(/\s+/g, '-')}-hotels`}`,
     numberOfItems: hotelCount,
-    offers: {
-        "@type": "AggregateOffer",
-        priceCurrency: "INR",
-        priceRange: priceRange,
-        offerCount: hotelCount,
-        availability: "https://schema.org/InStock",
-    },
-    areaServed: {
-        "@type": "City",
-        name: city,
-        containedInPlace: { "@type": "Country", name: "India" },
+    itemListOrder: "https://schema.org/ItemListOrderAscending",
+    mainEntityOfPage: {
+        "@type": "WebPage",
+        "@id": `${SITE.url}/${urlSlug || `${city.toLowerCase().replace(/\s+/g, '-')}-hotels`}`,
     },
 });

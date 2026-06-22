@@ -230,7 +230,7 @@ export default function Navbar() {
                         >
                             <div className="w-7 h-7 bg-white/20 rounded-full flex items-center justify-center overflow-hidden">
                                 {user?.photoURL ? (
-                                    <img src={user.photoURL} alt={user.name || "User"} className="w-full h-full object-cover" />
+                                    <img src={user.photoURL} alt={user.name || "User"} className="w-full h-full object-cover" loading="lazy" />
                                 ) : (
                                     <User className="w-4 h-4 text-white" />
                                 )}
@@ -280,7 +280,7 @@ export default function Navbar() {
                         className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-900 border border-slate-200"
                     >
                         {user?.photoURL ? (
-                            <img src={user.photoURL} alt="Profile" className="w-full h-full rounded-full object-cover" />
+                            <img src={user.photoURL} alt="Profile" className="w-full h-full rounded-full object-cover" loading="lazy" />
                         ) : (
                             <span className="text-lg font-black text-slate-400 uppercase italic">
                                 {user ? (user.name || "U").charAt(0) : <User className="w-5 h-5" />}
@@ -319,7 +319,7 @@ export default function Navbar() {
                                     <div className="flex items-center gap-3">
                                         <div className="w-9 h-9 bg-slate-100 rounded-full overflow-hidden shrink-0 border border-slate-200">
                                             {user.photoURL ? (
-                                                <img src={user.photoURL} alt={user.name} className="w-full h-full object-cover" />
+                                                <img src={user.photoURL} alt={user.name} className="w-full h-full object-cover" loading="lazy" />
                                             ) : (
                                                 <div className="w-full h-full bg-brand-50 text-brand-600 flex items-center justify-center font-bold text-sm">
                                                     {user.name?.[0]}

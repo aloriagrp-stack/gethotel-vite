@@ -66,7 +66,7 @@ export const CITIES: CityData[] = [
         city: "Mumbai",
         slug: "mumbai",
         title: "Hotels in Mumbai — Book Budget to Luxury Stays | GetHotelStays",
-        description: "Book verified hotels in Mumbai at best prices. From budget stays in Colaba to luxury in Bandra & Juhu. Pay 12% now, rest at hotel. Trusted by travelers & NRIs. Instant confirmation & free cancellation!",
+        description: "Book verified hotels in Mumbai at best prices. Budget stays in Colaba to luxury in Bandra & Juhu. Pay 12% now, rest at hotel. Trusted by NRIs & travelers. Instant confirmation!",
         keywords: ["hotels in mumbai", "mumbai hotels booking", "budget hotels in mumbai", "luxury hotels in mumbai", "hotels near mumbai airport", "colaba hotels mumbai", "bandra hotels mumbai", "juhu hotels mumbai", "mumbai hotel deals", "pay at hotel mumbai"],
         h1: `Hotels in Mumbai — Budget, Luxury & Hourly Stays`,
         introduction: introTemplate("Mumbai", "the financial capital, Bollywood, Marine Drive, and Gateway of India", "Colaba (heritage, Gateway of India), Bandra (trendy, cafes), Juhu (beach, luxury resorts), Andheri (airport, business)", "₹999"),

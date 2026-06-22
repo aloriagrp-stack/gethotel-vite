@@ -20,10 +20,20 @@ export default function CityPage() {
             introduction={cityData.introduction}
             sections={cityData.sections}
             faqs={cityData.faqs}
-            internalLinks={CITIES.filter(c => c.slug !== cityData.slug).slice(0, 8).map(c => ({
-                label: `${c.city} Hotels`,
-                url: `/hotels-in/${c.slug}`,
-            }))}
+            urlSlug={cityData.slug}
+            urlPrefix="/hotels-in/"
+            internalLinks={[
+                { label: "Delhi Hotels", url: "/delhi-hotels" },
+                { label: "Goa Hotels", url: "/goa-hotels" },
+                { label: "Jaipur Hotels", url: "/jaipur-hotels" },
+                { label: "Manali Hotels", url: "/manali-hotels" },
+                { label: "Shimla Hotels", url: "/shimla-hotels" },
+                { label: "Udaipur Hotels", url: "/udaipur-hotels" },
+                ...CITIES.filter(c => c.slug !== cityData.slug).slice(0, 6).map(c => ({
+                    label: `${c.city} Hotels`,
+                    url: `/hotels-in/${c.slug}`,
+                })),
+            ]}
         />
     );
 }
