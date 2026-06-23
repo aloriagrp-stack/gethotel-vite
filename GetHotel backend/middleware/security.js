@@ -201,7 +201,9 @@ const csrfExcludedPaths = [
     '/api/ota/inventory',
     '/api/ota/rates',
     '/ota/inventory',
-    '/ota/rates'
+    '/ota/rates',
+    '/api/ai/chat',
+    '/ai/chat'
 ];
 
 exports.csrfHandler = (req, res, next) => {
@@ -226,9 +228,9 @@ exports.csrfHandler = (req, res, next) => {
             return next();
         }
 
-        // Bypass CSRF for same-origin/localhost requests
+        // Bypass CSRF for same-origin/localhost/network requests
         const origin = (req.headers.origin || req.headers.referer || '').trim().toLowerCase();
-        const isSameOrigin = origin.includes('gethotelstays.com') || origin.includes('localhost') || origin.includes('127.0.0.1');
+        const isSameOrigin = origin.includes('gethotelstays.com') || origin.includes('localhost') || origin.includes('127.0.0.1') || origin.startsWith('http://192.168.');
         if (isSameOrigin) {
             return next();
         }

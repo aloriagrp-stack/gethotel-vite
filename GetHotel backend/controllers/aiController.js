@@ -669,10 +669,217 @@ exports.convertWebP = async (req, res) => {
         });
 
     } catch (err) {
-        console.error('[WebP Converter Error]:', err.message);
+        console.error('[WebP Converter Error]:' , err.message);
         res.status(500).json({
             success: false,
             message: `Failed to convert image to WebP: ${err.message}`
         });
     }
+};
+
+/* ------------------------------------------------------------------ */
+/*  Public AI Chat (no auth required)                                   */
+/* ------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------ */
+/*  Known city list for destination detection                          */
+/* ------------------------------------------------------------------ */
+const KNOWN_CITIES = [
+    'goa', 'jaipur', 'udaipur', 'shimla', 'manali', 'delhi', 'mumbai',
+    'bangalore', 'bengaluru', 'chennai', 'kolkata', 'hyderabad', 'pune',
+    'ahmedabad', 'agra', 'varanasi', 'rishikesh', 'haridwar', 'mussoorie',
+    'nainital', 'dharamshala', 'dalhousie', 'srinagar', 'gulmarg', 'pahalgam',
+    'sonamarg', 'leh', 'ladakh', 'jaisalmer', 'jodhpur', 'bikaner', 'mount abu',
+    'ranchi', 'shillong', 'gangtok', 'darjeeling', 'coorg', 'munnar', 'alleppey',
+    'kochi', 'trivandrum', 'andaman', 'lakshadweep', 'lonavala', 'mahabaleshwar',
+    'khandala', 'panaji', 'margao', 'calangute', 'baga', 'anjuna', 'varca',
+    'cavelossim', 'benaulim', 'colva', 'palolem', 'patnem', 'agonda'
+];
+
+/* ------------------------------------------------------------------ */
+/*  Extract destination candidates from messages                       */
+/* ------------------------------------------------------------------ */
+function extractDestination(messages) {
+    const allText = messages.map(m => m.content.toLowerCase()).join(' ');
+    // Try exact match first
+    for (const city of KNOWN_CITIES) {
+        const regex = new RegExp(`\\b${city}\\b`, 'i');
+        if (regex.test(allText)) {
+            return city.charAt(0).toUpperCase() + city.slice(1);
+        }
+    }
+    // Try partial match (e.g. "delhi" matches "New Delhi")
+    for (const city of KNOWN_CITIES) {
+        if (allText.includes(city)) {
+            return city.charAt(0).toUpperCase() + city.slice(1);
+        }
+    }
+    return null;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Sanitize hotel data for AI context                                 */
+/* ------------------------------------------------------------------ */
+function sanitizeHotels(hotels) {
+    return hotels.map(h => ({
+        id: h.id,
+        name: h.name,
+        city: h.city,
+        description: (h.description || '').slice(0, 300),
+        pricePerNight: h.pricePerNight,
+        starRating: h.starRating || 0,
+        guestRating: h.guestRating || 0,
+        reviewCount: h.reviewCount || 0,
+        amenities: (() => {
+            try { return typeof h.amenities === 'string' ? JSON.parse(h.amenities) : (h.amenities || []); }
+            catch { return []; }
+        })(),
+        mainAmenities: (() => {
+            try { return typeof h.mainAmenities === 'string' ? JSON.parse(h.mainAmenities) : (h.mainAmenities || []); }
+            catch { return []; }
+        })(),
+        isActive: h.isActive,
+    }));
+}
+
+/* ------------------------------------------------------------------ */
+/*  System prompt                                                      */
+/* ------------------------------------------------------------------ */
+const SYSTEM_PROMPT = `You are GetHotelStays AI — a friendly AI Travel Companion for hotel booking and travel planning.
+
+LANGUAGE: Understand Hindi, English, and Hinglish naturally. Never say "Sorry I didn't understand." Ask friendly follow-ups instead.
+
+PERSONALITY: Friendly, smart, warm, natural. Talk like a human travel expert friend. Short replies. No robotic/formal language.
+
+TRIP PLANNING FLOW:
+1. Understand travel intention (vacation, honeymoon, family, business, weekend, friends)
+2. Ask destination if not mentioned
+3. Ask check-in/check-out dates
+4. Ask per-night budget
+5. Ask preferences (mountain view, luxury, pool, breakfast, couple friendly, etc.)
+6. Search and recommend hotels
+
+HOTEL RECOMMENDATIONS:
+- Show 3-5 hotels with name, rating, price, amenities, location, review highlights
+- Format naturally like: "🏔 The Himalayan Escape ⭐ 4.7 📍 Shimla 💰 ₹2799/night"
+- Explain why each is recommended
+- Be honest about reviews — mention both positives and negatives
+
+ROOM SELECTION: When user picks a hotel, ask which room type they want. Show available rooms with prices and features.
+
+BOOKING: Collect full name, email, phone, guests count, special requests. Confirm details before proceeding.
+
+CONVERSATION MEMORY: Remember destination, budget, dates, preferences, selected hotel/room, guest details throughout the conversation. Never ask the same question twice.
+
+CRITICAL RULES:
+- NEVER invent hotel data. Only use hotels provided in the HOTELS_DATA below.
+- NEVER make up prices, ratings, reviews, or amenities.
+- If no matching hotels exist in HOTELS_DATA, say so honestly and ask the user to try a different destination or criteria.
+- If hotels exist but none match the user's preferences, explain what's available and suggest adjusting filters.
+- Keep responses conversational, warm, and helpful.`;
+
+/**
+ * @desc    Public AI chat endpoint with hotel search + retry logic
+ * @route   POST /api/ai/chat
+ * @access  Public
+ */
+exports.chat = async (req, res) => {
+    const { messages } = req.body;
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+        return res.json({ success: true, reply: "Hello! I'm your AI travel assistant. How can I help you plan your trip today?" });
+    }
+
+    // --- Extract destination & fetch hotels ---
+    let hotelContext = '';
+    try {
+        const destination = extractDestination(messages);
+        if (destination) {
+            const hotels = await prisma.hotel.findMany({
+                where: {
+                    OR: [
+                        { city: { contains: destination } },
+                        { city: { contains: destination.toLowerCase() } },
+                    ],
+                    isActive: true,
+                },
+                select: {
+                    id: true, name: true, city: true, description: true,
+                    pricePerNight: true, starRating: true, guestRating: true,
+                    reviewCount: true, amenities: true, mainAmenities: true, isActive: true,
+                },
+                take: 20,
+            });
+            if (hotels.length > 0) {
+                hotelContext = `\n\nHOTELS_DATA (real database results for ${destination}):\n${JSON.stringify(sanitizeHotels(hotels), null, 2)}\n\nUse these hotels ONLY for recommendations. Never invent hotel data.`;
+                console.log(`[AI Chat] Found ${hotels.length} hotels for ${destination}`);
+            } else {
+                hotelContext = `\n\nNote: No active hotels found in our database for "${destination}". Be honest about this and suggest popular alternatives like Goa, Jaipur, Udaipur, Shimla, or Manali.`;
+                console.log(`[AI Chat] No hotels found for ${destination}`);
+            }
+        }
+    } catch (dbErr) {
+        console.error('[AI Chat DB Error]:', dbErr.message);
+    }
+
+    // --- Gemini call with retry ---
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+        console.error('[AI Chat] Missing GEMINI_API_KEY');
+        return res.json({ success: true, reply: "Oops 😅 I had a small issue. Please try again in a moment." });
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({
+        model: 'gemini-2.5-flash',
+        systemInstruction: SYSTEM_PROMPT,
+    });
+
+    const history = messages.slice(0, -1).map((m) => ({
+        role: m.role === 'ai' ? 'model' : 'user',
+        parts: [{ text: m.content }],
+    }));
+
+    const lastMsg = messages[messages.length - 1];
+    const userQuery = hotelContext ? `${lastMsg.content}${hotelContext}` : lastMsg.content;
+
+    let lastError = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+            if (attempt > 0) console.log(`[AI Chat] Retry attempt ${attempt + 1}...`);
+            const chat = model.startChat({ history });
+            const result = await chat.sendMessage(userQuery);
+            const reply = result.response.text();
+
+            let action;
+            const actionMatch = reply.match(/\[([^\]]+)\]\((\/[^)]+)\)/);
+            if (actionMatch) {
+                action = { label: actionMatch[1], path: actionMatch[2] };
+            }
+
+            console.log(`[AI Chat] Success (attempt ${attempt + 1})`);
+            return res.json({ success: true, reply, action });
+        } catch (err) {
+            lastError = err;
+            console.error(`[AI Chat] Attempt ${attempt + 1} failed:`, err.message);
+            
+            const isQuotaError = err.message && (err.message.includes("429") || err.message.includes("quota") || err.message.includes("limit"));
+            if (attempt < 2) {
+                const delay = isQuotaError ? 5000 * (attempt + 1) : 1000 * (attempt + 1);
+                console.log(`[AI Chat] Waiting ${delay}ms before retry...`);
+                await new Promise(r => setTimeout(r, delay));
+            }
+        }
+    }
+
+    console.error('[AI Chat] All attempts failed:', lastError?.message);
+    
+    let userMessage = "Oops 😅 I had a small issue. Please try again in a moment.";
+    if (lastError?.message && (lastError.message.includes("429") || lastError.message.includes("quota") || lastError.message.includes("limit"))) {
+        userMessage = "I'm getting a lot of requests right now. Please wait a moment and try again! 🙏";
+    }
+    
+    res.json({
+        success: true,
+        reply: userMessage
+    });
 };

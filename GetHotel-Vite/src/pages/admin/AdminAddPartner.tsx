@@ -3,7 +3,8 @@ import { adminApi } from "@/lib/api";
 import { 
     Users, Hotel, Plus, Trash2, Loader2, CheckCircle2, 
     SlidersHorizontal, Eye, EyeOff, Search, Info, AlertTriangle,
-    ChevronDown, ChevronRight, ArrowRight, ArrowLeft, Zap
+    ChevronDown, ChevronRight, ArrowRight, ArrowLeft, Zap,
+    Upload, Download
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -104,7 +105,289 @@ interface AdminAddPartnerProps {
 }
 
 export default function AdminAddPartner({ hotels, partners, setPartners }: AdminAddPartnerProps) {
-    const [subTab, setSubTab] = useState<"register" | "createProperty" | "bulk" | "studio">("register");
+    const [subTab, setSubTab] = useState<"register" | "createProperty" | "bulk" | "studio" | "csvImport">("register");
+
+    // CSV Setup States
+    const [csvFile, setCsvFile] = useState<File | null>(null);
+    const [csvRows, setCsvRows] = useState<any[]>([]);
+    const [isCsvImporting, setIsCsvImporting] = useState(false);
+    const [csvError, setCsvError] = useState("");
+    const [csvSuccess, setCsvSuccess] = useState("");
+    const [csvResultsLog, setCsvResultsLog] = useState<any[]>([]);
+
+    const parseCSV = (text: string) => {
+        const lines = [];
+        let row: string[] = [];
+        let inQuotes = false;
+        let currentVal = '';
+
+        for (let i = 0; i < text.length; i++) {
+            const char = text[i];
+            const nextChar = text[i + 1];
+
+            if (char === '"') {
+                if (inQuotes && nextChar === '"') {
+                    currentVal += '"';
+                    i++;
+                } else {
+                    inQuotes = !inQuotes;
+                }
+            } else if (char === ',' && !inQuotes) {
+                row.push(currentVal.trim());
+                currentVal = '';
+            } else if ((char === '\n' || char === '\r') && !inQuotes) {
+                if (char === '\r' && nextChar === '\n') {
+                    i++;
+                }
+                row.push(currentVal.trim());
+                if (row.length > 1 || row[0] !== '') {
+                    lines.push(row);
+                }
+                row = [];
+                currentVal = '';
+            } else {
+                currentVal += char;
+            }
+        }
+        if (currentVal !== '' || row.length > 0) {
+            row.push(currentVal.trim());
+            lines.push(row);
+        }
+        return lines;
+    };
+
+    const mapHeaders = (headers: string[]) => {
+        const cleanHeaders = headers.map(h => h.toLowerCase().replace(/[^a-z0-9]/g, ''));
+        const fieldMapping: Record<string, string[]> = {
+            partnerName: ['partnername', 'name', 'ownername', 'owner', 'fullname', 'ownerfullname'],
+            partnerEmail: ['partneremail', 'email', 'owneremail', 'loginemail', 'emailaddress'],
+            partnerPhone: ['partnerphone', 'phone', 'number', 'mobile', 'contact', 'phonenumber'],
+            partnerPassword: ['partnerpassword', 'password', 'pass', 'accountpassword'],
+            hotelName: ['hotelname', 'hotel', 'propertyname', 'property'],
+            hotelAddress: ['hoteladdress', 'address', 'fulladdress', 'location'],
+            city: ['city', 'town'],
+            price: ['price', 'pricepernight', 'rate', 'baseprice'],
+            stars: ['stars', 'star', 'starrating', 'rating'],
+            amenities: ['amenities', 'facilities', 'amenity']
+        };
+
+        const mappedIndices: Record<number, string> = {};
+
+        headers.forEach((_, index) => {
+            const clean = cleanHeaders[index];
+            for (const [field, synonyms] of Object.entries(fieldMapping)) {
+                if (synonyms.includes(clean)) {
+                    mappedIndices[index] = field;
+                    break;
+                }
+            }
+        });
+
+        return mappedIndices;
+    };
+
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setCsvFile(file);
+        setCsvError("");
+        setCsvSuccess("");
+        setCsvResultsLog([]);
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const text = event.target?.result as string;
+            if (!text) return;
+
+            try {
+                const parsed = parseCSV(text);
+                if (parsed.length < 2) {
+                    setCsvError("The CSV file must contain a header row and at least one data row.");
+                    return;
+                }
+
+                const headers = parsed[0];
+                const dataRows = parsed.slice(1);
+
+                if (dataRows.length > 10) {
+                    setCsvError("The uploaded CSV exceeds the limit of 10 rows. Please limit the CSV to max 10 rows.");
+                    return;
+                }
+
+                const headerMap = mapHeaders(headers);
+                const requiredFields = ['partnerName', 'partnerEmail', 'partnerPassword', 'hotelName', 'hotelAddress'];
+                const mappedFields = Object.values(headerMap);
+                const missingRequired = requiredFields.filter(f => !mappedFields.includes(f));
+
+                if (missingRequired.length > 0) {
+                    const friendlyNames: Record<string, string> = {
+                        partnerName: 'Partner Name',
+                        partnerEmail: 'Partner Email',
+                        partnerPassword: 'Partner Password',
+                        hotelName: 'Hotel Name',
+                        hotelAddress: 'Hotel Address'
+                    };
+                    const missingList = missingRequired.map(f => friendlyNames[f] || f).join(', ');
+                    setCsvError(`Missing required column headers: ${missingList}. Please ensure these columns are in your CSV file.`);
+                    return;
+                }
+
+                const rows = dataRows.map((cols, rowIndex) => {
+                    const rowObj: any = {
+                        id: rowIndex + 1,
+                        partnerName: "",
+                        partnerEmail: "",
+                        partnerPhone: "",
+                        partnerPassword: "",
+                        hotelName: "",
+                        hotelAddress: "",
+                        city: "New Delhi",
+                        price: "1200",
+                        stars: "3",
+                        amenities: ""
+                    };
+
+                    cols.forEach((val, colIndex) => {
+                        const fieldName = headerMap[colIndex];
+                        if (fieldName) {
+                            rowObj[fieldName] = val;
+                        }
+                    });
+
+                    return rowObj;
+                });
+
+                setCsvRows(rows);
+                setCsvSuccess(`Successfully parsed ${rows.length} rows. Please review and edit the details below before importing.`);
+
+            } catch (err: any) {
+                setCsvError("Failed to parse CSV file: " + err.message);
+            }
+        };
+        reader.readAsText(file);
+    };
+
+    const downloadCsvTemplate = () => {
+        const headers = [
+            "Partner Name", 
+            "Partner Email", 
+            "Partner Phone", 
+            "Partner Password", 
+            "Hotel Name", 
+            "Hotel Address", 
+            "City", 
+            "Price", 
+            "Stars", 
+            "Amenities"
+        ];
+        const sampleRow = [
+            "John Doe", 
+            "john.doe@example.com", 
+            "9876543210", 
+            "SecurePass123", 
+            "The Royal Orchid Resort", 
+            "12 Mall Road, Near City Center", 
+            "Shimla", 
+            "3500", 
+            "4", 
+            "Wifi, AC, Free Breakfast, Parking"
+        ];
+        
+        const csvContent = [headers.join(","), sampleRow.join(",")].join("\n");
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", "gethotel_partner_import_template.csv");
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const handleCsvRowChange = (index: number, field: string, value: string) => {
+        const updated = [...csvRows];
+        updated[index] = { ...updated[index], [field]: value };
+        setCsvRows(updated);
+    };
+
+    const removeCsvRow = (index: number) => {
+        setCsvRows(csvRows.filter((_, i) => i !== index));
+    };
+
+    const validateCsvRows = () => {
+        for (let i = 0; i < csvRows.length; i++) {
+            const row = csvRows[i];
+            if (!row.partnerName?.trim()) return `Row ${i + 1}: Partner Name is required.`;
+            if (!row.partnerEmail?.trim() || !row.partnerEmail.includes("@")) return `Row ${i + 1}: Valid Partner Email is required.`;
+            if (!row.partnerPassword?.trim() || row.partnerPassword.length < 6) return `Row ${i + 1}: Partner Password must be at least 6 characters.`;
+            if (!row.hotelName?.trim()) return `Row ${i + 1}: Hotel Name is required.`;
+            if (!row.hotelAddress?.trim()) return `Row ${i + 1}: Hotel Address is required.`;
+        }
+        return null;
+    };
+
+    const handleCsvImportSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setCsvError("");
+        setCsvSuccess("");
+        setCsvResultsLog([]);
+
+        if (csvRows.length === 0) {
+            setCsvError("No data rows to import. Please upload a CSV file first.");
+            return;
+        }
+
+        const valError = validateCsvRows();
+        if (valError) {
+            setCsvError(valError);
+            return;
+        }
+
+        setIsCsvImporting(true);
+        try {
+            const formattedRows = csvRows.map(row => ({
+                partnerName: row.partnerName.trim(),
+                partnerEmail: row.partnerEmail.trim(),
+                partnerPhone: row.partnerPhone?.trim() || "",
+                partnerPassword: row.partnerPassword,
+                hotelName: row.hotelName.trim(),
+                hotelAddress: row.hotelAddress.trim(),
+                city: row.city?.trim() || "New Delhi",
+                price: parseFloat(row.price) || 1200,
+                stars: parseInt(row.stars) || 3,
+                amenities: row.amenities
+            }));
+
+            const res = await adminApi.createBulkPartnersWithHotels({ rows: formattedRows });
+
+            if (res.success && Array.isArray(res.results)) {
+                setCsvResultsLog(res.results);
+                const total = res.results.length;
+                const successCount = res.results.filter((r: any) => r.success).length;
+                
+                if (successCount === total) {
+                    setCsvSuccess(`Successfully provisioned all ${successCount} partners and hotels!`);
+                    setCsvRows([]);
+                    setCsvFile(null);
+                } else if (successCount > 0) {
+                    setCsvSuccess(`Import partially completed. Created ${successCount} of ${total} entries. Please check the status log below for details.`);
+                } else {
+                    setCsvError("Failed to import. All entries encountered errors. See log details below.");
+                }
+
+                const refreshed = await adminApi.getPartners();
+                setPartners(refreshed.data || []);
+            } else {
+                setCsvError(res.message || "Failed to process bulk import.");
+            }
+        } catch (err: any) {
+            setCsvError(err.message || "An unexpected error occurred during import.");
+        } finally {
+            setIsCsvImporting(false);
+        }
+    };
 
     // Single Partner Registration States
     const [name, setName] = useState("");
@@ -586,6 +869,17 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                     )}
                 >
                     <SlidersHorizontal className="w-3.5 h-3.5" /> Multi-Partner Studio
+                </button>
+                <button
+                    onClick={() => setSubTab("csvImport")}
+                    className={cn(
+                        "px-6 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all rounded-sm flex items-center gap-2 cursor-pointer whitespace-nowrap",
+                        subTab === "csvImport" 
+                            ? "bg-slate-900 text-white shadow-md" 
+                            : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
+                    )}
+                >
+                    <Upload className="w-3.5 h-3.5" /> Setup Using CSV
                 </button>
             </div>
 
@@ -1517,8 +1811,293 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                             )}
                         </div>
                     )}
+
                 </div>
             )}
+
+            {/* ─── SETUP USING CSV PANEL ─────────────────────────────────────────── */}
+            {subTab === "csvImport" && (
+                        <div className="bg-white border border-slate-200 shadow-sm rounded-sm p-6 space-y-6">
+                            <div className="pb-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div>
+                                    <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                                        <Upload className="w-4 h-4 text-slate-800" /> Setup Using CSV
+                                    </h3>
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">
+                                        Register new partners and their properties in bulk using a CSV file (Max 10 records)
+                                    </p>
+                                </div>
+                                
+                                <button
+                                    type="button"
+                                    onClick={downloadCsvTemplate}
+                                    className="px-4 py-2 border border-slate-250 hover:border-slate-400 text-slate-700 text-[10px] font-black uppercase tracking-widest rounded-sm transition-all flex items-center gap-2 cursor-pointer bg-slate-50 shadow-sm"
+                                >
+                                    <Download className="w-3.5 h-3.5" /> Download CSV Template
+                                </button>
+                            </div>
+
+                            {/* Dropzone / Upload area */}
+                            <div className="border-2 border-dashed border-slate-200 hover:border-slate-350 bg-slate-50/50 rounded-sm p-8 text-center transition-colors relative">
+                                <input
+                                    type="file"
+                                    accept=".csv"
+                                    onChange={handleFileUpload}
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                />
+                                <div className="space-y-2 pointer-events-none">
+                                    <Upload className="w-8 h-8 text-slate-400 mx-auto" />
+                                    <p className="text-xs font-bold text-slate-700">
+                                        {csvFile ? `Selected: ${csvFile.name}` : "Click or drag your CSV file here to upload"}
+                                    </p>
+                                    <p className="text-[10px] text-slate-450 uppercase font-black tracking-wider">
+                                        CSV columns must match or map to: Partner Name, Email, Phone, Password, Hotel Name, Address, City, Price, Stars, Amenities
+                                    </p>
+                                </div>
+                            </div>
+
+                            {csvError && (
+                                <div className="p-3 bg-red-50 border border-red-100 text-red-800 text-xs font-medium rounded-sm animate-in fade-in">
+                                    {csvError}
+                                </div>
+                            )}
+
+                            {csvSuccess && (
+                                <div className="p-3 bg-emerald-50 border border-emerald-100 text-emerald-800 text-xs font-medium rounded-sm animate-in fade-in flex items-center gap-2">
+                                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                                    {csvSuccess}
+                                </div>
+                            )}
+
+                            {/* Rows Preview Table */}
+                            {csvRows.length > 0 && (
+                                <form onSubmit={handleCsvImportSubmit} className="space-y-6">
+                                    <div className="overflow-x-auto border border-slate-200 rounded-sm shadow-sm bg-white">
+                                        <table className="w-full text-left border-collapse min-w-[1200px]">
+                                            <thead className="bg-slate-50 border-b border-slate-200 text-[9px] font-black text-slate-450 uppercase tracking-widest">
+                                                <tr>
+                                                    <th className="px-3 py-3 w-[40px] text-center">#</th>
+                                                    <th className="px-3 py-3">Partner Name *</th>
+                                                    <th className="px-3 py-3">Partner Email *</th>
+                                                    <th className="px-3 py-3 w-[120px]">Partner Phone</th>
+                                                    <th className="px-3 py-3 w-[150px]">Partner Password *</th>
+                                                    <th className="px-3 py-3">Hotel Name *</th>
+                                                    <th className="px-3 py-3">Hotel Address *</th>
+                                                    <th className="px-3 py-3 w-[120px]">City</th>
+                                                    <th className="px-3 py-3 w-[90px]">Price (₹)</th>
+                                                    <th className="px-3 py-3 w-[80px]">Stars</th>
+                                                    <th className="px-3 py-3 w-[150px]">Amenities</th>
+                                                    <th className="px-3 py-3 w-[50px] text-center">Delete</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-150">
+                                                {csvRows.map((row, index) => (
+                                                    <tr key={row.id} className="hover:bg-slate-50/40 text-xs">
+                                                        <td className="px-3 py-3 font-bold text-slate-400 text-center">{index + 1}</td>
+                                                        
+                                                        {/* Partner fields */}
+                                                        <td className="px-1 py-1.5">
+                                                            <input
+                                                                type="text"
+                                                                value={row.partnerName}
+                                                                onChange={e => handleCsvRowChange(index, "partnerName", e.target.value)}
+                                                                disabled={isCsvImporting}
+                                                                className={cn(
+                                                                    "w-full px-2 py-1.5 bg-slate-50 border border-transparent rounded-sm outline-none focus:border-slate-350 focus:bg-white text-xs font-bold transition-all",
+                                                                    !row.partnerName?.trim() && "border-red-300 bg-red-50/20"
+                                                                )}
+                                                            />
+                                                        </td>
+                                                        <td className="px-1 py-1.5">
+                                                            <input
+                                                                type="email"
+                                                                value={row.partnerEmail}
+                                                                onChange={e => handleCsvRowChange(index, "partnerEmail", e.target.value)}
+                                                                disabled={isCsvImporting}
+                                                                className={cn(
+                                                                    "w-full px-2 py-1.5 bg-slate-50 border border-transparent rounded-sm outline-none focus:border-slate-350 focus:bg-white text-xs font-bold transition-all",
+                                                                    (!row.partnerEmail?.trim() || !row.partnerEmail.includes("@")) && "border-red-300 bg-red-50/20"
+                                                                )}
+                                                            />
+                                                        </td>
+                                                        <td className="px-1 py-1.5">
+                                                            <input
+                                                                type="text"
+                                                                value={row.partnerPhone}
+                                                                onChange={e => handleCsvRowChange(index, "partnerPhone", e.target.value)}
+                                                                disabled={isCsvImporting}
+                                                                className="w-full px-2 py-1.5 bg-slate-50 border border-transparent rounded-sm outline-none focus:border-slate-350 focus:bg-white text-xs font-bold transition-all"
+                                                            />
+                                                        </td>
+                                                        <td className="px-1 py-1.5">
+                                                            <input
+                                                                type="text"
+                                                                value={row.partnerPassword}
+                                                                onChange={e => handleCsvRowChange(index, "partnerPassword", e.target.value)}
+                                                                disabled={isCsvImporting}
+                                                                className={cn(
+                                                                    "w-full px-2 py-1.5 bg-slate-50 border border-transparent rounded-sm outline-none focus:border-slate-350 focus:bg-white text-xs font-bold transition-all",
+                                                                    (!row.partnerPassword?.trim() || row.partnerPassword.length < 6) && "border-red-300 bg-red-50/20"
+                                                                )}
+                                                            />
+                                                        </td>
+
+                                                        {/* Hotel fields */}
+                                                        <td className="px-1 py-1.5">
+                                                            <input
+                                                                type="text"
+                                                                value={row.hotelName}
+                                                                onChange={e => handleCsvRowChange(index, "hotelName", e.target.value)}
+                                                                disabled={isCsvImporting}
+                                                                className={cn(
+                                                                    "w-full px-2 py-1.5 bg-slate-50 border border-transparent rounded-sm outline-none focus:border-slate-350 focus:bg-white text-xs font-bold transition-all",
+                                                                    !row.hotelName?.trim() && "border-red-300 bg-red-50/20"
+                                                                )}
+                                                            />
+                                                        </td>
+                                                        <td className="px-1 py-1.5">
+                                                            <input
+                                                                type="text"
+                                                                value={row.hotelAddress}
+                                                                onChange={e => handleCsvRowChange(index, "hotelAddress", e.target.value)}
+                                                                disabled={isCsvImporting}
+                                                                className={cn(
+                                                                    "w-full px-2 py-1.5 bg-slate-50 border border-transparent rounded-sm outline-none focus:border-slate-350 focus:bg-white text-xs font-bold transition-all",
+                                                                    !row.hotelAddress?.trim() && "border-red-300 bg-red-50/20"
+                                                                )}
+                                                            />
+                                                        </td>
+                                                        <td className="px-1 py-1.5">
+                                                            <input
+                                                                type="text"
+                                                                value={row.city}
+                                                                onChange={e => handleCsvRowChange(index, "city", e.target.value)}
+                                                                disabled={isCsvImporting}
+                                                                className="w-full px-2 py-1.5 bg-slate-50 border border-transparent rounded-sm outline-none focus:border-slate-350 focus:bg-white text-xs font-bold transition-all"
+                                                            />
+                                                        </td>
+                                                        <td className="px-1 py-1.5">
+                                                            <input
+                                                                type="number"
+                                                                value={row.price}
+                                                                onChange={e => handleCsvRowChange(index, "price", e.target.value)}
+                                                                disabled={isCsvImporting}
+                                                                className="w-full px-2 py-1.5 bg-slate-50 border border-transparent rounded-sm outline-none focus:border-slate-350 focus:bg-white text-xs font-bold transition-all"
+                                                            />
+                                                        </td>
+                                                        <td className="px-1 py-1.5">
+                                                            <select
+                                                                value={row.stars}
+                                                                onChange={e => handleCsvRowChange(index, "stars", e.target.value)}
+                                                                disabled={isCsvImporting}
+                                                                className="w-full px-1 py-1.5 bg-slate-50 border border-transparent rounded-sm outline-none focus:border-slate-350 focus:bg-white text-xs font-bold transition-all"
+                                                            >
+                                                                <option value="1">1 ★</option>
+                                                                <option value="2">2 ★</option>
+                                                                <option value="3">3 ★</option>
+                                                                <option value="4">4 ★</option>
+                                                                <option value="5">5 ★</option>
+                                                            </select>
+                                                        </td>
+                                                        <td className="px-1 py-1.5">
+                                                            <input
+                                                                type="text"
+                                                                value={row.amenities}
+                                                                onChange={e => handleCsvRowChange(index, "amenities", e.target.value)}
+                                                                disabled={isCsvImporting}
+                                                                placeholder="Wifi, AC, TV"
+                                                                className="w-full px-2 py-1.5 bg-slate-50 border border-transparent rounded-sm outline-none focus:border-slate-350 focus:bg-white text-xs font-bold transition-all"
+                                                            />
+                                                        </td>
+
+                                                        <td className="px-3 py-3 text-center">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => removeCsvRow(index)}
+                                                                disabled={isCsvImporting}
+                                                                className="text-red-500 hover:text-red-700 disabled:opacity-30 cursor-pointer"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div className="flex justify-end pt-2">
+                                        <button
+                                            type="submit"
+                                            disabled={isCsvImporting || csvRows.length === 0}
+                                            className="px-8 py-3.5 bg-slate-900 hover:bg-black text-white text-[10px] font-black uppercase tracking-widest rounded-sm transition-all shadow-md hover:shadow-lg disabled:opacity-50 flex items-center gap-2 cursor-pointer w-full sm:w-auto justify-center"
+                                        >
+                                            {isCsvImporting ? (
+                                                <>
+                                                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> Provisioning Partner Accounts...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Upload className="w-3.5 h-3.5" /> Bulk Import {csvRows.length} Records
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
+
+                            {/* Execution Results Log */}
+                            {csvResultsLog.length > 0 && (
+                                <div className="bg-slate-50 border border-slate-200 rounded-sm p-5 space-y-4 animate-in fade-in duration-300">
+                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-250 pb-2 flex items-center gap-1.5">
+                                        <Info className="w-3.5 h-3.5" /> CSV Bulk Import Log Report
+                                    </h4>
+                                    <div className="space-y-3">
+                                        {csvResultsLog.map((result, i) => (
+                                            <div 
+                                                key={i} 
+                                                className={cn(
+                                                    "p-3.5 rounded-sm border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs",
+                                                    result.success 
+                                                        ? "bg-emerald-50/40 border-emerald-100 text-emerald-900" 
+                                                        : "bg-red-50/40 border-red-100 text-red-900"
+                                                )}
+                                            >
+                                                <div>
+                                                    <div className="font-bold uppercase tracking-wider flex items-center gap-1.5">
+                                                        <span className={cn(
+                                                            "w-2 h-2 rounded-full shrink-0", 
+                                                            result.success ? "bg-emerald-500" : "bg-red-500"
+                                                        )} />
+                                                        {result.partnerName || 'Row Details'} ({result.email})
+                                                    </div>
+                                                    <div className="text-[10px] text-slate-550 mt-1">
+                                                        {result.success ? (
+                                                            <>
+                                                                Created partner user & associated property <span className="font-bold">"{result.hotelName}"</span>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                Error: <span className="font-bold text-red-700">{result.message}</span>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div className={cn(
+                                                    "text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-sm border shrink-0 sm:text-right",
+                                                    result.success 
+                                                        ? "bg-emerald-100/50 border-emerald-250 text-emerald-800" 
+                                                        : "bg-red-100/50 border-red-250 text-red-800"
+                                                )}>
+                                                    {result.success ? "Success" : "Failed"}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
         </div>
     );
 }

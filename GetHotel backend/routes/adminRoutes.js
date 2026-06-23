@@ -3,7 +3,7 @@ const {
     getStats, getHotelDetail, getPartners, resetPartnerPassword, assignHotelsToPartner, 
     getAllHotels, getAllBookings, getAdminHotelDetail, updateHotelMetrics, recalculateHotelMetrics, 
     suspendHotel, deleteHotel, getPayouts, approvePayout, createQuickPartner, createBulkHotels, 
-    getUsers, getGlobalReviews, deleteReview
+    getUsers, getGlobalReviews, deleteReview, createBulkPartnersWithHotels
 } = require('../controllers/adminController');
 const { getAnalytics } = require('../controllers/analyticsController');
 const { updateHomepageConfig, toggleTrending, toggleFeatured } = require('../controllers/homepageController');
@@ -30,6 +30,7 @@ router.delete('/hotels/:id', deleteHotel);
 router.get('/bookings', getAllBookings);
 router.get('/partners', getPartners);
 router.post('/partners/quick', createQuickPartner);
+router.post('/partners/bulk-with-hotels', createBulkPartnersWithHotels);
 router.post('/partners/:id/reset-password', resetPartnerPassword);
 router.put('/partners/:id/assign-hotels', assignHotelsToPartner);
 router.put('/homepage/config', updateHomepageConfig);

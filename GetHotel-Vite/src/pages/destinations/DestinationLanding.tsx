@@ -58,13 +58,8 @@ export default function DestinationLanding({
         const fetchHotels = async () => {
             try {
                 setLoading(true);
-                const response = await hotelApi.getHotels();
-                const all = response.data || [];
-                // Filter hotels for this city case-insensitively
-                const filtered = all.filter((h: any) => 
-                    h.city?.toLowerCase().trim() === city.toLowerCase().trim()
-                );
-                setHotels(filtered);
+                const response = await hotelApi.getHotels(city);
+                setHotels(response.data || []);
             } catch (err) {
                 console.error(`Failed to fetch hotels for ${city}:`, err);
             } finally {

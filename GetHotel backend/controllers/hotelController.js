@@ -15,14 +15,29 @@ const nightsBetween = (checkIn, checkOut) => {
 exports.getHotels = async (req, res, next) => {
     try {
         console.log("Fetching hotels from database...");
+        const { city } = req.query;
+        const whereClause = {};
+        if (city && city !== "All" && city !== "India") {
+            whereClause.city = { contains: city };
+        }
         const hotels = await prisma.hotel.findMany({
-            include: {
-                room: true,
-                coupon: true
-            }
+            where: whereClause,
+            select: {
+                id: true,
+                name: true,
+                city: true,
+                address: true,
+                pricePerNight: true,
+                starRating: true,
+                guestRating: true,
+                reviewCount: true,
+                thumbnail: true
+            },
+            take: 500
         });
-        console.log(`Found ${hotels.length} hotels.`);
-        res.status(200).json({ success: true, count: hotels.length, data: hotels });
+        const count = hotels ? hotels.length : 0;
+        console.log(`Found ${count} hotels.`);
+        res.status(200).json({ success: true, count, data: hotels || [] });
     } catch (err) {
         console.error("DATABASE_ERROR:", err);
         res.status(500).json({ success: false, message: "Database Connection Error", error: err.message });
@@ -115,7 +130,23 @@ exports.searchHotels = async (req, res, next) => {
 
         const hotels = await prisma.hotel.findMany({
             where: whereClause,
-            include: {
+            select: {
+                id: true,
+                name: true,
+                tagline: true,
+                city: true,
+                address: true,
+                pricePerNight: true,
+                starRating: true,
+                guestRating: true,
+                reviewCount: true,
+                thumbnail: true,
+                images: true,
+                amenities: true,
+                isFeatured: true,
+                isTrending: true,
+                isActive: true,
+                qualityScore: true,
                 room: true,
                 coupon: true
             }

@@ -1,7 +1,8 @@
 // API configuration for GetHotelStays - Force refresh
 const API_URL = import.meta.env.MODE === 'production' 
     ? 'https://gethotelstays.com/api' 
-    : (import.meta.env.VITE_API_URL || 'http://localhost:5000/api');
+    : (import.meta.env.VITE_API_URL 
+        || `http://${typeof window !== 'undefined' ? window.location.hostname : 'localhost'}:5000/api`);
 
 export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
     const token = typeof window !== 'undefined' ? (sessionStorage.getItem('token') || localStorage.getItem('token')) : null;
@@ -65,7 +66,7 @@ export const authApi = {
 };
 
 export const hotelApi = {
-    getHotels: () => apiFetch('/hotels'),
+    getHotels: (city?: string) => apiFetch(city ? `/hotels?city=${encodeURIComponent(city)}` : '/hotels'),
     getHotel: (id: string) => apiFetch(`/hotels/${id}`),
     searchHotels: (params: any) => apiFetch(`/hotels/search?${new URLSearchParams(params).toString()}`),
     getSearchSuggestions: (query: string) => apiFetch(`/hotels/search-suggestions?query=${encodeURIComponent(query)}`),
@@ -167,6 +168,7 @@ export const adminApi = {
     toggleFeatured: (id: string) => apiFetch(`/admin/hotels/${id}/featured`, { method: 'PUT' }),
     updateHomepageConfig: (data: any) => apiFetch('/admin/homepage/config', { method: 'PUT', body: JSON.stringify(data) }),
     createQuickPartner: (data: any) => apiFetch('/admin/partners/quick', { method: 'POST', body: JSON.stringify(data) }),
+    createBulkPartnersWithHotels: (data: any) => apiFetch('/admin/partners/bulk-with-hotels', { method: 'POST', body: JSON.stringify(data) }),
     assignHotelsToPartner: (partnerId: number, hotelIds: number[]) => apiFetch(`/admin/partners/${partnerId}/assign-hotels`, { method: 'PUT', body: JSON.stringify({ hotelIds }) }),
     createBulkHotels: (data: any) => apiFetch('/admin/hotels/bulk', { method: 'POST', body: JSON.stringify(data) }),
     getGlobalReviews: () => apiFetch('/admin/reviews'),
@@ -182,6 +184,11 @@ export const otaApi = {
 
 export const analyticsApi = {
     ping: (page: string) => apiFetch('/analytics/ping', { method: 'POST', body: JSON.stringify({ page }) })
+};
+
+export const aiApi = {
+    chat: (messages: { role: string; content: string }[]) =>
+        apiFetch('/ai/chat', { method: 'POST', body: JSON.stringify({ messages }) }),
 };
 
 export const homepageApi = {

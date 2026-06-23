@@ -27,10 +27,16 @@ app.use(botScanner);
 app.use(requestSizeLimiter);
 app.use(throttler);
 
-// Image Response URL Mapper & Static uploads server
+// Image Response URL Mapper & Static uploads server with CORS
 app.use(responseImageResolver);
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
+const corsHeaders = (req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    next();
+};
+app.use('/uploads', corsHeaders, express.static(path.join(__dirname, 'uploads')));
+app.use('/api/uploads', corsHeaders, express.static(path.join(__dirname, 'uploads')));
 
 // 2. Structured API Request Logger
 const requestLogger = (req, res, next) => {
@@ -53,8 +59,9 @@ app.use(requestLogger);
 
 // 3. Secure Headers Configuration
 app.use(helmet({
-    contentSecurityPolicy: false, // API server, no frontend assets served directly
-    crossOriginEmbedderPolicy: false
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: false,
 }));
 
 // 4. Hardened CORS Whitelist
@@ -77,8 +84,9 @@ app.use(cors({
             
             const isDevelopment = process.env.NODE_ENV === 'development';
             const isLocalhost = cleanOrigin.startsWith('http://localhost:') || cleanOrigin.startsWith('http://127.0.0.1:');
+            const isDevNetwork = isDevelopment && cleanOrigin.startsWith('http://');
             
-            if (isWhitelisted || isSameDomain || (isDevelopment && isLocalhost)) {
+            if (isWhitelisted || isSameDomain || isLocalhost || isDevNetwork) {
                 callback(null, true);
             } else {
                 console.error(`[CORS Blocked] origin=${origin}, cleanOrigin=${cleanOrigin}, whitelist=`, whitelist);
@@ -421,6 +429,7 @@ const analytics = require('./routes/analyticsRoutes');
 const homepage = require('./routes/homepageRoutes');
 const ota = require('./routes/otaRoutes');
 const ai = require('./routes/aiRoutes');
+const aiChat = require('./routes/aiChatRoutes');
 const { protect, authorize } = require('./middleware/auth');
 const authController = require('./controllers/authController');
 const adminController = require('./controllers/adminController');
@@ -451,6 +460,7 @@ const mount = (prefix) => {
     app.use(`${prefix}/payments`, payments);
     app.use(`${prefix}/partner`, partner);
     app.use(`${prefix}/admin/ai`, ai);
+    app.use(`${prefix}/ai`, aiChat);
     app.use(`${prefix}/admin`, admin);
     app.use(`${prefix}/notifications`, notifications);
     app.use(`${prefix}/messages`, messages);

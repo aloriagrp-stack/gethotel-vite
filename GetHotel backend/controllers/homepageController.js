@@ -105,7 +105,29 @@ exports.getTrendingHotels = async (req, res) => {
     try {
         const hotels = await prisma.hotel.findMany({
             where: { isTrending: true, isActive: true },
-            include: { room: true },
+            select: {
+                id: true,
+                name: true,
+                city: true,
+                address: true,
+                pricePerNight: true,
+                starRating: true,
+                guestRating: true,
+                reviewCount: true,
+                thumbnail: true,
+                isFeatured: true,
+                isTrending: true,
+                isActive: true,
+                room: {
+                    select: {
+                        id: true,
+                        name: true,
+                        pricePerNight: true,
+                        isHourlyEnabled: true,
+                        hourlyRates: true
+                    }
+                }
+            },
             orderBy: [
                 { guestRating: 'desc' },
                 { reviewCount: 'desc' }

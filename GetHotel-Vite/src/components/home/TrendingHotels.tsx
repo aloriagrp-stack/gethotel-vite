@@ -75,7 +75,6 @@ function TrendingHotelCard({ hotel }: { hotel: Hotel }) {
     const displayPrice = maxDiscountPercent > 0
         ? Math.round(basePrice * (1 - maxDiscountPercent / 100))
         : basePrice;
-    const payNowPrice = Math.round(displayPrice * 0.12);
 
     return (
         <div className="group relative w-full h-full rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 bg-slate-100">
@@ -124,26 +123,25 @@ function TrendingHotelCard({ hotel }: { hotel: Hotel }) {
 
                 <div className="flex items-end justify-between gap-2 border-t border-white/10 pt-3">
                     <div className="flex flex-col">
-                        <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
-                            <span className="text-[9px] font-bold text-white/40 line-through decoration-red-500 decoration-1">
-                                ₹{displayOriginalPrice.toLocaleString()}
-                            </span>
+                        <div className="flex items-center gap-1.5 mb-1 flex-wrap">
                             {maxDiscountPercent > 0 && (
-                                <span className="text-[9px] font-bold text-white/50 line-through">
-                                    ₹{displayPrice.toLocaleString()}
+                                <span className="text-[9px] font-bold text-white/40 line-through decoration-red-500 decoration-1">
+                                    ₹{displayOriginalPrice.toLocaleString()}
                                 </span>
                             )}
                         </div>
 
                         <div className="space-y-1">
                             <p className="text-xl font-black text-white leading-none tracking-tight">
-                                ₹{payNowPrice.toLocaleString()}
+                                ₹{displayPrice.toLocaleString()}
                                 <span className="text-[9px] text-white/40 ml-1 font-medium">{priceLabel}</span>
                             </p>
-                            <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-500/20 border border-emerald-500/30 text-[8px] font-bold text-emerald-400 uppercase tracking-wider">
-                                <div className="w-1 h-1 bg-emerald-400 rounded-full animate-pulse" />
-                                You have to only pay now 12%
-                            </div>
+                            {maxDiscountPercent > 0 && (
+                                <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-500/20 border border-emerald-500/30 text-[8px] font-bold text-emerald-400 uppercase tracking-wider">
+                                    <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+                                    {maxDiscountPercent}% OFF PROMO
+                                </div>
+                            )}
                         </div>
                     </div>
 

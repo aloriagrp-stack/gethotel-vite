@@ -794,6 +794,151 @@ exports.createBulkHotels = async (req, res) => {
     }
 };
 
+exports.createBulkPartnersWithHotels = async (req, res) => {
+    try {
+        const { rows } = req.body;
+
+        if (!rows || !Array.isArray(rows) || rows.length === 0) {
+            return res.status(400).json({ success: false, message: 'Please provide a non-empty array of rows.' });
+        }
+
+        if (rows.length > 10) {
+            return res.status(400).json({ success: false, message: 'Maximum of 10 rows are allowed per bulk upload.' });
+        }
+
+        const results = [];
+
+        for (const row of rows) {
+            const pName = row.partnerName || row.name;
+            const pEmail = row.partnerEmail || row.email;
+            const pPassword = row.partnerPassword || row.password;
+            const pPhone = row.partnerPhone || row.phone;
+            const hName = row.hotelName;
+            const hAddress = row.hotelAddress || row.address;
+            const hCity = row.city || 'New Delhi';
+            const hPrice = parseFloat(row.price) || 1200;
+            const hStars = parseInt(row.stars) || 3;
+            const hAmenities = Array.isArray(row.amenities) 
+                ? row.amenities 
+                : (typeof row.amenities === 'string' ? row.amenities.split(',').map(s => s.trim()).filter(Boolean) : []);
+
+            try {
+                // 1. Validation
+                if (!pName || !pEmail || !pPassword || !hName || !hAddress) {
+                    throw new Error('Missing required fields: Partner Name, Email, Password, Hotel Name, or Address.');
+                }
+
+                if (pPassword.length < 6) {
+                    throw new Error('Password must be at least 6 characters long.');
+                }
+
+                const emailNormalized = pEmail.toLowerCase().trim();
+                
+                // 2. Check duplicate email
+                const existingUser = await prisma.user.findUnique({
+                    where: { email: emailNormalized }
+                });
+
+                if (existingUser) {
+                    throw new Error(`Email ${pEmail} is already registered.`);
+                }
+
+                // 3. Hash Password
+                const salt = await bcrypt.genSalt(10);
+                const hashedPassword = await bcrypt.hash(pPassword, salt);
+
+                // 4. Database creation in transaction
+                const creationResult = await prisma.$transaction(async (tx) => {
+                    const user = await tx.user.create({
+                        data: {
+                            name: pName.trim(),
+                            email: emailNormalized,
+                            password: hashedPassword,
+                            role: 'hotel_admin',
+                            updatedAt: new Date()
+                        }
+                    });
+
+                    const hotel = await tx.hotel.create({
+                        data: {
+                            name: hName.trim(),
+                            tagline: "New property setup in progress",
+                            description: "This property is being set up by the partner.",
+                            city: hCity.trim(),
+                            address: hAddress.trim(),
+                            pricePerNight: hPrice,
+                            starRating: hStars,
+                            thumbnail: null,
+                            images: JSON.stringify([]),
+                            amenities: JSON.stringify(hAmenities),
+                            mainAmenities: JSON.stringify(hAmenities),
+                            isActive: true,
+                            userId: user.id
+                        }
+                    });
+
+                    await tx.room.create({
+                        data: {
+                            name: "Standard Room",
+                            pricePerNight: hPrice,
+                            maxOccupancy: 2,
+                            images: JSON.stringify([]),
+                            status: "active",
+                            totalInventory: 5,
+                            capacityAdults: 2,
+                            description: "Comfortable standard room with basic amenities.",
+                            hotelId: hotel.id
+                        }
+                    });
+
+                    await tx.hotelwallet.create({
+                        data: {
+                            hotelId: hotel.id,
+                            totalRevenue: 0,
+                            availableBalance: 0,
+                            pendingPayouts: 0,
+                            commissionRate: 15,
+                            updatedAt: new Date()
+                        }
+                    });
+
+                    return { userId: user.id, hotelId: hotel.id };
+                });
+
+                // 5. Audit log
+                logAdminActivity(req.user, 'CREATE_PARTNER_CSV_BULK', {
+                    partnerId: creationResult.userId,
+                    hotelId: creationResult.hotelId,
+                    partnerEmail: emailNormalized
+                }, req);
+
+                results.push({
+                    success: true,
+                    email: pEmail,
+                    partnerName: pName,
+                    hotelName: hName,
+                    message: 'Created successfully'
+                });
+
+            } catch (rowError) {
+                results.push({
+                    success: false,
+                    email: pEmail || 'Unknown',
+                    partnerName: pName || 'Unknown',
+                    hotelName: hName || 'Unknown',
+                    message: rowError.message
+                });
+            }
+        }
+
+        res.status(200).json({ success: true, results });
+
+    } catch (err) {
+        console.error('[CSV_IMPORT_ERROR]:', err.message);
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
 // @desc    Get all reviews (Super Admin)
 // @route   GET /api/admin/reviews
 // @access  Private (Super Admin)

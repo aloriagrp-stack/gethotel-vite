@@ -30,7 +30,9 @@ export default function HotelCard({ hotel, className }: HotelCardProps) {
 
     const rooms = (hotel as any).room || [];
     let basePrice = hotel.pricePerNight;
-    let discountPercent = 20; // Default fallback badge
+    let originalPrice = hotel.pricePerNight;
+    let hasDiscount = false;
+    let discountPercent = 0;
     
     // Dynamic Pricing Algorithm based on search criteria
     if (rooms.length > 0) {
@@ -71,9 +73,14 @@ export default function HotelCard({ hotel, className }: HotelCardProps) {
             
             const rates = typeof minRoom.hourlyRates === 'string' ? safeParse(minRoom.hourlyRates, {}) : (minRoom.hourlyRates || safeParse(minRoom.hourly_rates, {}));
             basePrice = Number(rates[duration] || rates[String(duration)] || (minRoom.pricePerNight || minRoom.price_per_night || 0) * 0.3);
+            originalPrice = basePrice;
+            hasDiscount = false;
         } else {
             // Nightly Mode: Find minimum price among eligible rooms by evaluating room price and variants with active coupons
             let minFinalPrice = Infinity;
+            let correspondingOriginalPrice = 0;
+            let discountPercentVal = 0;
+            let isDiscounted = false;
             
             targetRooms.forEach((r: any) => {
                 const variants = safeParse(r.variants || r.room_variants || r.roomVariants, []).map((v: any) => {
@@ -93,24 +100,33 @@ export default function HotelCard({ hotel, className }: HotelCardProps) {
                 pricesToEvaluate.forEach((bpVal) => {
                     let finalP = bpVal;
                     let pct = 0;
+                    let hasPromo = false;
                     if (bestPromo) {
                         finalP = applyDiscount(bpVal, Number(bestPromo.discountValue), bestPromo.discountType);
                         pct = bestPromo.discountType === 'percentage' ? Number(bestPromo.discountValue) : Math.round((Number(bestPromo.discountValue) / bpVal) * 100);
+                        hasPromo = true;
                     } else if (r.monthlyDiscount > 0) {
                         finalP = applyDiscount(bpVal, r.monthlyDiscount, 'percentage');
                         pct = r.monthlyDiscount;
+                        hasPromo = true;
                     } else if (r.weeklyDiscount > 0) {
                         finalP = applyDiscount(bpVal, r.weeklyDiscount, 'percentage');
                         pct = r.weeklyDiscount;
+                        hasPromo = true;
                     }
                     if (finalP < minFinalPrice) {
                         minFinalPrice = finalP;
-                        discountPercent = pct > 0 ? pct : 20;
+                        correspondingOriginalPrice = bpVal;
+                        discountPercentVal = pct;
+                        isDiscounted = hasPromo;
                     }
                 });
             });
             if (minFinalPrice !== Infinity) {
                 basePrice = minFinalPrice;
+                originalPrice = correspondingOriginalPrice;
+                discountPercent = discountPercentVal;
+                hasDiscount = isDiscounted;
             } else {
                 const minRoom = targetRooms.reduce((prev: any, curr: any) => {
                     const pPrev = Number(prev.pricePerNight || prev.price_per_night || 0);
@@ -118,11 +134,11 @@ export default function HotelCard({ hotel, className }: HotelCardProps) {
                     return pPrev < pCurr ? prev : curr;
                 });
                 basePrice = Number(minRoom.pricePerNight || minRoom.price_per_night || hotel.pricePerNight);
+                originalPrice = basePrice;
+                hasDiscount = false;
             }
         }
     }
-
-    const payNowAmount = Math.round(basePrice * 0.12);
 
     const parsedImages = safeParse(hotel.images);
     const images = (Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages : [hotel.thumbnail]).filter(img => img && typeof img === 'string' && img.trim() !== "");
@@ -187,9 +203,11 @@ export default function HotelCard({ hotel, className }: HotelCardProps) {
                 </div>
 
                 <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5 z-10">
-                    <div className="bg-brand-600 text-white text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded shadow-lg flex items-center gap-1">
-                        <Zap className="w-2.5 h-2.5 fill-white" /> {discountPercent}% OFF
-                    </div>
+                    {hasDiscount && (
+                        <div className="bg-brand-600 text-white text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded shadow-lg flex items-center gap-1">
+                            <Zap className="w-2.5 h-2.5 fill-white" /> {discountPercent}% OFF
+                        </div>
+                    )}
                     {mode === 'hourly' && rooms.some((r: any) => r.isHourlyEnabled || r.is_hourly_enabled) && (
                         <div className="bg-purple-600 text-white text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded shadow-lg flex items-center gap-1">
                             <Clock className="w-2.5 h-2.5" /> HOURLY
@@ -249,14 +267,18 @@ export default function HotelCard({ hotel, className }: HotelCardProps) {
                     <div className="mt-4 flex items-end justify-between">
                         <div className="flex flex-col">
                             <div className="flex items-baseline gap-2">
-                                <span className="text-[10px] font-black text-brand-600 uppercase tracking-widest leading-none">Pay 12% Now</span>
-                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">per night before taxes</span>
+                                <span className="text-[10px] font-black text-brand-600 uppercase tracking-widest leading-none">
+                                    {mode === 'hourly' ? `For ${duration} Hours` : 'Per Night'}
+                                </span>
+                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">before taxes</span>
                             </div>
                             <div className="flex flex-col mt-1">
-                                <span className="text-2xl font-black text-slate-950 tracking-tighter italic leading-none">{formatPrice(payNowAmount)}</span>
-                                <span className="text-sm font-bold text-slate-400/80 line-through decoration-red-500 decoration-2 mt-0.5 tracking-tight">
-                                    {formatPrice(basePrice)}
-                                </span>
+                                <span className="text-2xl font-black text-slate-950 tracking-tighter italic leading-none">{formatPrice(basePrice)}</span>
+                                {hasDiscount && (
+                                    <span className="text-sm font-bold text-slate-400/80 line-through decoration-red-500 decoration-2 mt-0.5 tracking-tight">
+                                        {formatPrice(originalPrice)}
+                                    </span>
+                                )}
                             </div>
                         </div>
                         
