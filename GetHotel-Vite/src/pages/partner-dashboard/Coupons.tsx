@@ -297,6 +297,16 @@ export default function PartnerCouponsPage() {
         return sum + Number(c.discountValue);
     }, 0) / coupons.length).toFixed(0) : "0";
 
+    const todayDateObj = new Date();
+    todayDateObj.setHours(0,0,0,0);
+    const activePromosCount = coupons.filter(c => {
+        const isActive = c.isActive !== false && c.status !== 'inactive';
+        if (!isActive) return false;
+        const endDate = new Date(c.endDate);
+        const compareEnd = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+        return todayDateObj <= compareEnd;
+    }).length;
+
     return (
         <div className="space-y-10 animate-fade-in pb-20">
             {activeView === 'list' ? (
@@ -364,7 +374,7 @@ export default function PartnerCouponsPage() {
                         <Gift className="w-7 h-7" />
                     </div>
                     <div>
-                        <h4 className="text-2xl font-black text-slate-900">{coupons.filter(c => c.isActive).length}</h4>
+                        <h4 className="text-2xl font-black text-slate-900">{activePromosCount}</h4>
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Promotions</p>
                     </div>
                 </div>
@@ -392,14 +402,20 @@ export default function PartnerCouponsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {coupons.map((coupon) => {
                     const usagePercent = coupon.usageLimit ? (coupon.usedCount / coupon.usageLimit) * 100 : 0;
-                    const isExpiringSoon = new Date(coupon.endDate).getTime() - new Date().getTime() < 86400000 * 3;
+                    
+                    const todayDate = new Date();
+                    todayDate.setHours(0,0,0,0);
+                    const endDateObj = new Date(coupon.endDate);
+                    const compareEndDate = new Date(endDateObj.getFullYear(), endDateObj.getMonth(), endDateObj.getDate());
+                    const isExpired = todayDate > compareEndDate;
+                    const isExpiringSoon = !isExpired && (endDateObj.getTime() - todayDate.getTime() < 86400000 * 3);
                     
                     return (
                         <div 
                             key={coupon.id} 
                             className={cn(
                                 "bg-white rounded-none border p-8 transition-all flex flex-col justify-between group relative overflow-hidden",
-                                coupon.isActive ? "border-slate-200 shadow-sm hover:shadow-2xl hover:-translate-y-1" : "border-slate-100 opacity-60 bg-slate-50/50"
+                                coupon.isActive && !isExpired ? "border-slate-200 shadow-sm hover:shadow-2xl hover:-translate-y-1" : "border-slate-100 opacity-60 bg-slate-50/50"
                             )}
                         >
                             {/* Performance Badge */}
@@ -407,9 +423,9 @@ export default function PartnerCouponsPage() {
                                 <div className="absolute top-0 right-12">
                                     <div className={cn(
                                         "px-4 py-1 rounded-b-xl text-[8px] font-black uppercase tracking-widest text-white shadow-sm",
-                                        isExpiringSoon ? "bg-red-500 animate-pulse" : "bg-blue-600"
+                                        isExpired ? "bg-red-600" : (isExpiringSoon ? "bg-amber-500 animate-pulse" : "bg-blue-600")
                                     )}>
-                                        {isExpiringSoon ? "Ending Soon" : "Active Campaign"}
+                                        {isExpired ? "Expired" : (isExpiringSoon ? "Ending Soon" : "Active Campaign")}
                                     </div>
                                 </div>
                             )}

@@ -24,7 +24,6 @@ function TrendingHotelCard({ hotel }: { hotel: Hotel }) {
     const { toggle, isWishlisted } = useWishlist();
     const wishlisted = isWishlisted(hotel.id.toString());
     const [coupons, setCoupons] = useState<any[]>([]);
-
     useEffect(() => {
         const fetchDeal = async () => {
             try {
@@ -32,7 +31,20 @@ function TrendingHotelCard({ hotel }: { hotel: Hotel }) {
                 const res = await couponApi.getCoupons(Number(hotel.id));
                 const rawData = res.data?.coupons || res.data || res;
                 const couponList = Array.isArray(rawData) ? rawData : [];
-                setCoupons(couponList.filter((c: any) => c.isActive !== false && c.is_active !== false));
+
+                const today = new Date();
+                const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+                setCoupons(couponList.filter((c: any) => {
+                    const isActive = c.isActive !== false && c.is_active !== false;
+                    if (!isActive) return false;
+
+                    const startStr = typeof c.startDate === 'string' ? c.startDate.split('T')[0] : '';
+                    const endStr = typeof c.endDate === 'string' ? c.endDate.split('T')[0] : '';
+                    if (startStr && endStr && (todayStr < startStr || todayStr > endStr)) return false;
+
+                    return true;
+                }));
             } catch (_) { }
         };
         fetchDeal();
