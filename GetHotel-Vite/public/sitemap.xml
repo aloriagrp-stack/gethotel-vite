@@ -1,263 +1,389 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
+<url>
     <loc>https://gethotelstays.com/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels</loc>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/partner</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/list-property</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/contact</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/delhi-hotels</loc>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/goa-hotels</loc>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/jaipur-hotels</loc>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/manali-hotels</loc>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/shimla-hotels</loc>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/udaipur-hotels</loc>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/mumbai</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/bangalore</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/chennai</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/hyderabad</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/kolkata</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/ahmedabad</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/pune</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/lucknow</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/agra</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/varanasi</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/amritsar</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/guwahati</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/bhubaneswar</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/coimbatore</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/indore</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/bhopal</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/chandigarh</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/nagpur</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/thiruvananthapuram</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/kochi</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/mysore</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/madurai</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/surat</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/srinagar</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/leh-ladakh</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/goa</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/shimla</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/manali</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/udaipur</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/rishikesh</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/haridwar</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/jodhpur</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/jaisalmer</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/darjeeling</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/ooty</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/munnar</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/alleppey</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/coorg</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/puducherry</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/gangtok</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/shillong</loc>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://gethotelstays.com/hotel/natraj-yes-please</loc>
+    <lastmod>2026-06-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://gethotelstays.com/hotel/hotel-good-luck-palace</loc>
+    <lastmod>2026-06-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://gethotelstays.com/hotel/hotel-cottage-yes-please-new-delhi</loc>
+    <lastmod>2026-06-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://gethotelstays.com/hotel/hotel-amar-international</loc>
+    <lastmod>2026-06-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://gethotelstays.com/hotel/hotel-ambrosia-by-zenith-a-217-road-no-6-block-rz-mahipalpur</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://gethotelstays.com/hotel/hotel-vedas-heritage-karol-bagh</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://gethotelstays.com/hotel/hotel-gold-souk-karol-bagh</loc>
+    <lastmod>2026-06-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://gethotelstays.com/hotel/hotel-red-castle-near-ganga-ram-blk-hospital-karol-bagh</loc>
+    <lastmod>2026-06-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://gethotelstays.com/hotel/hotel-cosmo-near-blk-hospital-karol-bagh</loc>
+    <lastmod>2026-06-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://gethotelstays.com/hotel/hotel-panickers-residency-near-ganga-ram-blk-hospital-karol-bagh</loc>
+    <lastmod>2026-06-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://gethotelstays.com/hotel/hotel-tripple-tree-near-ganga-ram-blk-hospital-karol-bagh</loc>
+    <lastmod>2026-06-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://gethotelstays.com/hotel/woodrock-luxury-boutique-hotel-near-the-mall-road</loc>
+    <lastmod>2026-06-11</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://gethotelstays.com/hotel/renest-manali</loc>
+    <lastmod>2026-06-11</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://gethotelstays.com/hotel/hotel-city-star-new-delhi</loc>
+    <lastmod>2026-06-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://gethotelstays.com/hotel/hotel-gold-regency</loc>
+    <lastmod>2026-06-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://gethotelstays.com/hotel/hotel-ajanta</loc>
+    <lastmod>2026-06-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://gethotelstays.com/hotel/hotel-hari-piorko</loc>
+    <lastmod>2026-06-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://gethotelstays.com/hotel/hotel-grand-godwin</loc>
+    <lastmod>2026-06-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://gethotelstays.com/hotel/le-roi-delhi-hotel-paharganj</loc>
+    <lastmod>2026-06-20</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://gethotelstays.com/hotel/hotel-singh-empire-dx</loc>
+    <lastmod>2026-06-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://gethotelstays.com/hotel/honeymoon-inn</loc>
+    <lastmod>2026-06-20</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
   </url>
 </urlset>
