@@ -24,6 +24,7 @@ import AdminControlHub from "./AdminControlHub";
 import AdminAddPartner from "./AdminAddPartner";
 import AdminMultiRoomSetup from "./AdminMultiRoomSetup";
 import AdminAICopilot from "./AdminAICopilot";
+import AdminReviewImporter from "./AdminReviewImporter";
 
 // ─── Safe Date Formatter ────────────────────────────────────────────────────
 function formatDateSafe(rawDate: string | Date | null | undefined, opts?: Intl.DateTimeFormatOptions): string {
@@ -120,6 +121,7 @@ export default function SuperAdminDashboard() {
     // Review Detail Modal
     const [reviewModal, setReviewModal] = useState<{ show: boolean, review: any }>({ show: false, review: null });
     const [reviewSearchQuery, setReviewSearchQuery] = useState("");
+    const [reviewsSubTab, setReviewsSubTab] = useState<"list" | "import">("list");
 
     useEffect(() => {
         const path = location.pathname.split('/').pop();
@@ -158,7 +160,7 @@ export default function SuperAdminDashboard() {
             const needsStats = (normalizedTab === "overview") && shouldLoad("stats");
             const needsRequests = ["overview", "requests"].includes(normalizedTab) && shouldLoad("requests");
             const needsPartners = ["users", "addPartner"].includes(normalizedTab) && shouldLoad("partners");
-            const needsHotels = ["hotels", "controlhub", "addPartner", "multi-room", "ai-copilot"].includes(normalizedTab) && shouldLoad("hotels");
+            const needsHotels = ["hotels", "controlhub", "addPartner", "multi-room", "ai-copilot", "reviews"].includes(normalizedTab) && shouldLoad("hotels");
             const needsBookings = normalizedTab === "bookings" && shouldLoad("bookings");
             const needsReviews = normalizedTab === "reviews" && shouldLoad("reviews");
 
@@ -1158,108 +1160,144 @@ export default function SuperAdminDashboard() {
 
             {/* ─── Global Reviews Tab ──────────────────────────────────────────────── */}
             {activeTab === "reviews" && (
-                <div className="bg-white border border-slate-200 shadow-sm">
-                    <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                        <div>
-                            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Global Reviews</h3>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase mt-0.5">{globalReviews.length} Total Reviews</p>
-                        </div>
-                        <div className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-                            <input
-                                type="text"
-                                placeholder="Search reviews..."
-                                value={reviewSearchQuery}
-                                onChange={e => setReviewSearchQuery(e.target.value)}
-                                className="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-sm w-56 focus:outline-none focus:border-slate-400 font-medium text-xs"
-                            />
-                        </div>
+                <div>
+                    {/* Sub-tab switcher */}
+                    <div className="flex gap-1 mb-6 bg-slate-100 p-1 rounded-sm w-fit">
+                        <button
+                            onClick={() => setReviewsSubTab("list")}
+                            className={cn(
+                                "px-5 py-2 text-[10px] font-black uppercase tracking-widest transition-all rounded-sm",
+                                reviewsSubTab === "list"
+                                    ? "bg-white text-slate-900 shadow-sm"
+                                    : "text-slate-400 hover:text-slate-600"
+                            )}
+                        >
+                            All Reviews ({globalReviews.length})
+                        </button>
+                        <button
+                            onClick={() => setReviewsSubTab("import")}
+                            className={cn(
+                                "px-5 py-2 text-[10px] font-black uppercase tracking-widest transition-all rounded-sm",
+                                reviewsSubTab === "import"
+                                    ? "bg-white text-slate-900 shadow-sm"
+                                    : "text-slate-400 hover:text-slate-600"
+                            )}
+                        >
+                            Import Reviews (AI)
+                        </button>
                     </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead className="bg-slate-50 border-b border-slate-100">
-                                <tr>
-                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Reviewer</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Hotel</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Rating</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Stay Type</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Comment</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Date</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                                {smartFilter(globalReviews, reviewSearchQuery || searchQuery, ['user.name', 'user.email', 'hotel.name', 'hotel.city', 'comment'])
-                                    .map((review) => (
-                                    <tr
-                                        key={review.id}
-                                        className="hover:bg-slate-50 transition-none cursor-pointer"
-                                        onClick={() => setReviewModal({ show: true, review })}
-                                    >
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 overflow-hidden flex items-center justify-center border border-slate-200 shrink-0">
-                                                    {review.user?.profileImage ? (
-                                                        <img src={review.user.profileImage} alt={review.user.name} className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <span className="text-[10px] font-black text-slate-500">
-                                                            {review.user?.name?.charAt(0)?.toUpperCase() || "?"}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <div>
-                                                    <p className="text-xs font-bold text-slate-900">{review.user?.name || "Unknown"}</p>
-                                                    <p className="text-[10px] text-slate-400 font-medium">{review.user?.email}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <p className="text-xs font-bold text-slate-900">{review.hotel?.name || "N/A"}</p>
-                                            <p className="text-[10px] text-slate-400">{review.hotel?.city}</p>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex flex-col gap-1">
-                                                <StarRating rating={review.rating} />
-                                                <span className="text-[10px] font-black text-amber-600">{review.rating}/5</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={cn(
-                                                "px-2 py-0.5 text-[9px] font-black uppercase rounded-sm",
-                                                review.stayType === 'hourly' ? "bg-purple-100 text-purple-700" : "bg-sky-100 text-sky-700"
-                                            )}>
-                                                {review.stayType}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 max-w-[200px]">
-                                            <p className="text-xs text-slate-600 truncate">{review.comment || "—"}</p>
-                                        </td>
-                                        <td className="px-6 py-4 text-[10px] text-slate-500 font-medium whitespace-nowrap">
-                                            {formatDateSafe(review.createdAt)}
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <button
-                                                onClick={e => { e.stopPropagation(); handleDeleteReview(review.id); }}
-                                                disabled={actionLoading === review.id}
-                                                className="p-2 bg-red-50 text-red-500 hover:bg-red-100 transition-all rounded-sm disabled:opacity-50"
-                                                title="Delete Review"
+
+                    {reviewsSubTab === "list" ? (
+                        <div className="bg-white border border-slate-200 shadow-sm">
+                            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                                <div>
+                                    <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Global Reviews</h3>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase mt-0.5">{globalReviews.length} Total Reviews</p>
+                                </div>
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                                    <input
+                                        type="text"
+                                        placeholder="Search reviews..."
+                                        value={reviewSearchQuery}
+                                        onChange={e => setReviewSearchQuery(e.target.value)}
+                                        className="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-sm w-56 focus:outline-none focus:border-slate-400 font-medium text-xs"
+                                    />
+                                </div>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left">
+                                    <thead className="bg-slate-50 border-b border-slate-100">
+                                        <tr>
+                                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Reviewer</th>
+                                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Hotel</th>
+                                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Rating</th>
+                                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Stay Type</th>
+                                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Comment</th>
+                                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Date</th>
+                                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100">
+                                        {smartFilter(globalReviews, reviewSearchQuery || searchQuery, ['user.name', 'user.email', 'hotel.name', 'hotel.city', 'comment'])
+                                            .map((review) => (
+                                            <tr
+                                                key={review.id}
+                                                className="hover:bg-slate-50 transition-none cursor-pointer"
+                                                onClick={() => setReviewModal({ show: true, review })}
                                             >
-                                                {actionLoading === review.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                                {globalReviews.length === 0 && (
-                                    <tr>
-                                        <td colSpan={7} className="py-20 text-center">
-                                            <MessageSquare className="w-12 h-12 text-slate-200 mx-auto mb-3" />
-                                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">No reviews found</p>
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 overflow-hidden flex items-center justify-center border border-slate-200 shrink-0">
+                                                            {review.user?.profileImage ? (
+                                                                <img src={review.user.profileImage} alt={review.user.name} className="w-full h-full object-cover" />
+                                                            ) : (
+                                                                <span className="text-[10px] font-black text-slate-500">
+                                                                    {review.user?.name?.charAt(0)?.toUpperCase() || "?"}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-xs font-bold text-slate-900">{review.user?.name || "Unknown"}</p>
+                                                            <p className="text-[10px] text-slate-400 font-medium">{review.user?.email}</p>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <p className="text-xs font-bold text-slate-900">{review.hotel?.name || "N/A"}</p>
+                                                    <p className="text-[10px] text-slate-400">{review.hotel?.city}</p>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex flex-col gap-1">
+                                                        <StarRating rating={review.rating} />
+                                                        <span className="text-[10px] font-black text-amber-600">{review.rating}/5</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <span className={cn(
+                                                        "px-2 py-0.5 text-[9px] font-black uppercase rounded-sm",
+                                                        review.stayType === 'hourly' ? "bg-purple-100 text-purple-700" : "bg-sky-100 text-sky-700"
+                                                    )}>
+                                                        {review.stayType}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 max-w-[200px]">
+                                                    <p className="text-xs text-slate-600 truncate">{review.comment || "—"}</p>
+                                                </td>
+                                                <td className="px-6 py-4 text-[10px] text-slate-500 font-medium whitespace-nowrap">
+                                                    {formatDateSafe(review.createdAt)}
+                                                </td>
+                                                <td className="px-6 py-4 text-right">
+                                                    <button
+                                                        onClick={e => { e.stopPropagation(); handleDeleteReview(review.id); }}
+                                                        disabled={actionLoading === review.id}
+                                                        className="p-2 bg-red-50 text-red-500 hover:bg-red-100 transition-all rounded-sm disabled:opacity-50"
+                                                        title="Delete Review"
+                                                    >
+                                                        {actionLoading === review.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {globalReviews.length === 0 && (
+                                            <tr>
+                                                <td colSpan={7} className="py-20 text-center">
+                                                    <MessageSquare className="w-12 h-12 text-slate-200 mx-auto mb-3" />
+                                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">No reviews found</p>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    ) : (
+                        <AdminReviewImporter 
+                            hotels={hotels} 
+                            loadingHotels={loading} 
+                            onImportSuccess={() => fetchDashboardData("reviews", true)} 
+                        />
+                    )}
                 </div>
             )}
                 </>

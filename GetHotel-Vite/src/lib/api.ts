@@ -175,6 +175,7 @@ export const adminApi = {
     deleteReview: (id: number) => apiFetch(`/admin/reviews/${id}`, { method: 'DELETE' }),
     suggestRooms: (data: { hotelId: number; prompt?: string; url?: string; urls?: string[]; history?: { role: string; text: string }[]; existingRooms?: any[]; newAttachedImages?: string[] }, options?: RequestInit) => apiFetch('/admin/ai/suggest-rooms', { method: 'POST', body: JSON.stringify(data), ...options }),
     convertWebP: (data: { imageUrl: string }) => apiFetch('/admin/ai/convert-webp', { method: 'POST', body: JSON.stringify(data) }),
+    importReviews: (data: { hotelId: number; url: string }) => apiFetch('/admin/ai/import-reviews', { method: 'POST', body: JSON.stringify(data) }),
 };
 
 export const otaApi = {

@@ -2,11 +2,13 @@ import { useState, useRef, useEffect } from "react";
 import { 
     Sparkles, MessageSquare, Send, Hotel, Info, ArrowUpRight, 
     Plus, X, Trash2, CheckCircle2, ChevronDown, RefreshCw, 
-    Edit, AlertCircle, Maximize2, Users, Bed, HelpCircle, Paperclip 
+    Edit, AlertCircle, Maximize2, Users, Bed, HelpCircle, Paperclip,
+    Star, Globe, Link2
 } from "lucide-react";
 import { cn, safeParse } from "@/lib/utils";
 import { adminApi, hotelApi } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
+import AdminReviewImporter from "./AdminReviewImporter";
 
 interface AdminAICopilotProps {
     hotels: any[];
@@ -50,6 +52,9 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [existingRooms, setExistingRooms] = useState<any[]>([]);
     const [loadingRoomsPercent, setLoadingRoomsPercent] = useState<number | null>(null);
+    
+    // AI Review Importer states
+    const [activeSubTab, setActiveSubTab] = useState<"rooms" | "reviews">("rooms");
     const [confirmModal, setConfirmModal] = useState<{
         show: boolean;
         messageId: string;
@@ -634,8 +639,36 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                 </div>
             </div>
 
-            {/* Chat Area */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/50">
+            {/* Sub Tabs Selector */}
+            <div className="px-6 bg-white border-b border-slate-200 flex gap-6">
+                <button
+                    onClick={() => setActiveSubTab("rooms")}
+                    className={cn(
+                        "py-3 text-xs font-black uppercase tracking-wider border-b-2 transition-all cursor-pointer",
+                        activeSubTab === "rooms"
+                            ? "border-brand-600 text-brand-600"
+                            : "border-transparent text-slate-400 hover:text-slate-600"
+                    )}
+                >
+                    Rooms Setup (Chat)
+                </button>
+                <button
+                    onClick={() => setActiveSubTab("reviews")}
+                    className={cn(
+                        "py-3 text-xs font-black uppercase tracking-wider border-b-2 transition-all cursor-pointer",
+                        activeSubTab === "reviews"
+                            ? "border-brand-600 text-brand-600"
+                            : "border-transparent text-slate-400 hover:text-slate-600"
+                    )}
+                >
+                    Import Reviews (AI)
+                </button>
+            </div>
+
+            {activeSubTab === "rooms" ? (
+                <>
+                    {/* Chat Area */}
+                    <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/50">
                 {messages.map((msg) => {
                     const isAI = msg.sender === "ai";
                     return (
@@ -1293,6 +1326,16 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                     <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest self-end">Powered by Gemini 2.5 Flash</span>
                 </div>
             </div>
+            </>
+            ) : (
+                <div className="flex-1 overflow-y-auto p-6 bg-slate-50/30 space-y-6">
+                    <AdminReviewImporter 
+                        hotels={hotels} 
+                        hotelId={selectedHotelId} 
+                        onHotelIdChange={(id) => setSelectedHotelId(id)}
+                    />
+                </div>
+            )}
             {/* Conflict Resolution Modal */}
             <AnimatePresence>
                 {confirmModal && confirmModal.show && (
