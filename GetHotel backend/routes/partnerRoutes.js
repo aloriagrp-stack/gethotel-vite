@@ -15,13 +15,13 @@ const router = express.Router();
 const { protect, authorize } = require('../middleware/auth');
 
 const partnerRequestValidation = [
-    check('hotelName', 'Hotel name is required and must be a string').notEmpty().isString().trim(),
-    check('hotelUsername', 'Valid hotel username is required').notEmpty().isString().trim(),
+    check('hotelName', 'Hotel name must be a string').optional().isString().trim(),
+    check('hotelUsername', 'Valid hotel username must be a string').optional().isString().trim(),
     check('tagline', 'Tagline must be a string').optional().isString().trim(),
-    check('description', 'Description is required and must be a string').notEmpty().isString().trim(),
-    check('address', 'Address is required and must be a string').notEmpty().isString().trim(),
-    check('city', 'City is required and must be a string').notEmpty().isString().trim(),
-    check('pricePerNight', 'Please enter a valid positive price per night').isFloat({ min: 0 }),
+    check('description', 'Description must be a string').optional().isString().trim(),
+    check('address', 'Address must be a string').optional().isString().trim(),
+    check('city', 'City must be a string').optional().isString().trim(),
+    check('pricePerNight', 'Please enter a valid positive price per night').optional().isFloat({ min: 0 }),
     check('userName', 'User name is required and must be a string').notEmpty().isString().trim(),
     check('userEmail', 'Please include a valid email address').isEmail().normalizeEmail(),
     check('userPhone', 'Please include a valid phone number').notEmpty().isString().trim(),
