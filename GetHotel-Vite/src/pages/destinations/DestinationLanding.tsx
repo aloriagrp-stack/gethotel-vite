@@ -35,6 +35,7 @@ interface DestinationLandingProps {
     internalLinks: InternalLink[];
     urlSlug?: string;
     urlPrefix?: string;
+    filterSlug?: string;
 }
 
 export default function DestinationLanding({
@@ -49,6 +50,7 @@ export default function DestinationLanding({
     internalLinks,
     urlSlug,
     urlPrefix = "/",
+    filterSlug,
 }: DestinationLandingProps) {
     const [hotels, setHotels] = useState<HotelType[]>([]);
     const [loading, setLoading] = useState(true);
@@ -58,10 +60,27 @@ export default function DestinationLanding({
         const fetchHotels = async () => {
             try {
                 setLoading(true);
-                const response = await hotelApi.getHotels(city);
+                let response;
+                if (filterSlug) {
+                    const searchParams: any = { city };
+                    const cleanFilter = filterSlug.toLowerCase().trim();
+                    if (cleanFilter === "couple-friendly") {
+                        searchParams.searchQuery = "couple friendly";
+                    } else if (cleanFilter === "hourly") {
+                        searchParams.stayType = "hourly";
+                    } else if (cleanFilter === "budget") {
+                        searchParams.maxPrice = "2000";
+                    } else if (cleanFilter === "luxury") {
+                        searchParams.minPrice = "4000";
+                        searchParams.starRatings = "4,5";
+                    }
+                    response = await hotelApi.searchHotels(searchParams);
+                } else {
+                    response = await hotelApi.getHotels(city);
+                }
                 setHotels(response.data || []);
             } catch (err) {
-                console.error(`Failed to fetch hotels for ${city}:`, err);
+                console.error(`Failed to fetch hotels for ${city} with filter ${filterSlug}:`, err);
             } finally {
                 setLoading(false);
             }
@@ -70,7 +89,7 @@ export default function DestinationLanding({
         fetchHotels();
         // Scroll to top on route change
         window.scrollTo(0, 0);
-    }, [city]);
+    }, [city, filterSlug]);
 
     return (
         <div className="min-h-screen pt-3 pb-8 md:pt-6 md:pb-12 bg-transparent px-0">
@@ -181,6 +200,68 @@ export default function DestinationLanding({
                                 </p>
                             </div>
                         ))}
+                    </div>
+                </div>
+
+                {/* ── Category Interlinking ── */}
+                <div className="bg-slate-50 border border-slate-200/60 rounded-[2.5rem] p-8 md:p-12 text-slate-900 space-y-6">
+                    <h3 className="text-xl md:text-2xl font-black italic uppercase tracking-tighter text-slate-955">
+                        Popular Hotel Categories in {city}
+                    </h3>
+                    <p className="text-slate-500 text-xs md:text-sm font-semibold max-w-2xl leading-relaxed">
+                        Find the perfect accommodation tailored to your travel needs. Explore budget options, hourly rooms, couple-friendly stays, and premium hotels in {city}.
+                    </p>
+                    <div className="flex flex-wrap gap-3 pt-2">
+                        <Link
+                            to={`/hotels-in/${urlSlug || city.toLowerCase()}`}
+                            className={`px-4 py-2 border rounded-xl text-xs font-bold transition-all duration-300 ${
+                                !filterSlug
+                                    ? "bg-brand-600 border-brand-600 text-white shadow-md shadow-brand-100"
+                                    : "bg-white hover:bg-slate-50 border-slate-200 text-slate-700 hover:text-brand-600"
+                            }`}
+                        >
+                            All Stays in {city}
+                        </Link>
+                        <Link
+                            to={`/hotels-in/${urlSlug || city.toLowerCase()}/couple-friendly`}
+                            className={`px-4 py-2 border rounded-xl text-xs font-bold transition-all duration-300 ${
+                                filterSlug === "couple-friendly"
+                                    ? "bg-brand-600 border-brand-600 text-white shadow-md shadow-brand-100"
+                                    : "bg-white hover:bg-slate-50 border-slate-200 text-slate-700 hover:text-brand-600"
+                            }`}
+                        >
+                            Couple Friendly Hotels in {city}
+                        </Link>
+                        <Link
+                            to={`/hotels-in/${urlSlug || city.toLowerCase()}/hourly`}
+                            className={`px-4 py-2 border rounded-xl text-xs font-bold transition-all duration-300 ${
+                                filterSlug === "hourly"
+                                    ? "bg-brand-600 border-brand-600 text-white shadow-md shadow-brand-100"
+                                    : "bg-white hover:bg-slate-50 border-slate-200 text-slate-700 hover:text-brand-600"
+                            }`}
+                        >
+                            Hourly & Day-Use Hotels in {city}
+                        </Link>
+                        <Link
+                            to={`/hotels-in/${urlSlug || city.toLowerCase()}/budget`}
+                            className={`px-4 py-2 border rounded-xl text-xs font-bold transition-all duration-300 ${
+                                filterSlug === "budget"
+                                    ? "bg-brand-600 border-brand-600 text-white shadow-md shadow-brand-100"
+                                    : "bg-white hover:bg-slate-50 border-slate-200 text-slate-700 hover:text-brand-600"
+                            }`}
+                        >
+                            Budget-Friendly Hotels in {city}
+                        </Link>
+                        <Link
+                            to={`/hotels-in/${urlSlug || city.toLowerCase()}/luxury`}
+                            className={`px-4 py-2 border rounded-xl text-xs font-bold transition-all duration-300 ${
+                                filterSlug === "luxury"
+                                    ? "bg-brand-600 border-brand-600 text-white shadow-md shadow-brand-100"
+                                    : "bg-white hover:bg-slate-50 border-slate-200 text-slate-700 hover:text-brand-600"
+                            }`}
+                        >
+                            Premium & Luxury Hotels in {city}
+                        </Link>
                     </div>
                 </div>
 

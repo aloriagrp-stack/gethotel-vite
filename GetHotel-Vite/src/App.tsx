@@ -140,6 +140,7 @@ export default function App() {
                       <Route path="/udaipur-hotels" element={<UdaipurHotels />} />
                       <Route path="/delhi-hotels" element={<DelhiHotels />} />
                       <Route path="/hotels-in/:citySlug" element={<CityPage />} />
+                      <Route path="/hotels-in/:citySlug/:filterSlug" element={<CityPage />} />
                       
                       {/* ID-based Routes */}
                       <Route path="/booking/invoice/:id" element={<BookingInvoice />} />

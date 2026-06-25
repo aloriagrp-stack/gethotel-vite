@@ -1,27 +1,30 @@
 import { useParams, Navigate } from "react-router-dom";
 import DestinationLanding from "./DestinationLanding";
-import { getCityBySlug, CITIES } from "@/lib/cityData";
+import { getCityBySlug, getCitySEO, CITIES } from "@/lib/cityData";
 
 export default function CityPage() {
-    const { citySlug } = useParams<{ citySlug: string }>();
+    const { citySlug, filterSlug } = useParams<{ citySlug: string; filterSlug?: string }>();
     const cityData = getCityBySlug(citySlug || "");
 
     if (!cityData) {
         return <Navigate to="/hotels" replace />;
     }
 
+    const seoData = getCitySEO(cityData, filterSlug);
+
     return (
         <DestinationLanding
-            city={cityData.city}
-            title={cityData.title}
-            description={cityData.description}
-            keywords={cityData.keywords}
-            h1={cityData.h1}
-            introduction={cityData.introduction}
-            sections={cityData.sections}
-            faqs={cityData.faqs}
+            city={seoData.city}
+            title={seoData.title}
+            description={seoData.description}
+            keywords={seoData.keywords}
+            h1={seoData.h1}
+            introduction={seoData.introduction}
+            sections={seoData.sections}
+            faqs={seoData.faqs}
             urlSlug={cityData.slug}
             urlPrefix="/hotels-in/"
+            filterSlug={filterSlug}
             internalLinks={[
                 { label: "Delhi Hotels", url: "/delhi-hotels" },
                 { label: "Goa Hotels", url: "/goa-hotels" },

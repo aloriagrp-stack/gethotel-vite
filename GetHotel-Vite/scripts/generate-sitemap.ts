@@ -1,4 +1,7 @@
 import { CITIES } from "../src/lib/cityData";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const SITE_URL = "https://gethotelstays.com";
 
@@ -15,6 +18,8 @@ const staticPages = [
     { url: "/cookies", priority: "0.3", changefreq: "monthly" },
 ];
 
+const filters = ["couple-friendly", "hourly", "budget", "luxury"];
+
 const destinationPages = [
     { url: "/goa-hotels", priority: "0.85" },
     { url: "/jaipur-hotels", priority: "0.85" },
@@ -22,7 +27,10 @@ const destinationPages = [
     { url: "/shimla-hotels", priority: "0.85" },
     { url: "/udaipur-hotels", priority: "0.85" },
     { url: "/delhi-hotels", priority: "0.95" },
-    ...CITIES.map(c => ({ url: `/hotels-in/${c.slug}`, priority: "0.80" })),
+    ...CITIES.flatMap(c => [
+        { url: `/hotels-in/${c.slug}`, priority: "0.80" },
+        ...filters.map(f => ({ url: `/hotels-in/${c.slug}/${f}`, priority: "0.75" }))
+    ]),
 ];
 
 const generateSitemap = () => {
@@ -56,8 +64,8 @@ const generateSitemap = () => {
 const sitemapXml = generateSitemap();
 
 // Write to public folder
-const fs = require("fs");
-const path = require("path");
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const outputPath = path.join(__dirname, "..", "public", "sitemap.xml");
 fs.writeFileSync(outputPath, sitemapXml, "utf-8");
 

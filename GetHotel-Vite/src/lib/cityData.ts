@@ -534,3 +534,202 @@ export const getCityByCityName = (name: string): CityData | undefined =>
 
 export const CITY_SLUGS = CITIES.map(c => c.slug);
 export const CITY_NAMES = CITIES.map(c => c.city);
+
+export interface CitySEOData {
+    city: string;
+    slug: string;
+    title: string;
+    description: string;
+    keywords: string[];
+    h1: string;
+    introduction: string;
+    sections: { h2: string; text: string }[];
+    faqs: { question: string; answer: string }[];
+}
+
+export const getCitySEO = (cityData: CityData, filterSlug?: string): CitySEOData => {
+    const { city, slug } = cityData;
+    if (!filterSlug) {
+        return {
+            city,
+            slug,
+            title: cityData.title,
+            description: cityData.description,
+            keywords: cityData.keywords,
+            h1: cityData.h1,
+            introduction: cityData.introduction,
+            sections: cityData.sections,
+            faqs: cityData.faqs,
+        };
+    }
+
+    const cleanFilter = filterSlug.toLowerCase().trim();
+
+    if (cleanFilter === "couple-friendly") {
+        return {
+            city,
+            slug: `${slug}/couple-friendly`,
+            title: `Couple Friendly Hotels in ${city} — Safe Stays for Unmarried Couples | GetHotelStays`,
+            description: `Book safe and secure couple friendly hotels in ${city} at best prices. Pay 12% online, rest at hotel. Local IDs & unmarried couples accepted. Free cancellation!`,
+            keywords: [
+                `couple friendly hotels in ${city.toLowerCase()}`,
+                `unmarried couples hotel ${city.toLowerCase()}`,
+                `safe hotels for couples in ${city.toLowerCase()}`,
+                `local id accepted hotels ${city.toLowerCase()}`,
+                `hotels in ${city.toLowerCase()} for unmarried couples`
+            ],
+            h1: `Couple Friendly Hotels in ${city} — Unmarried Couples Welcome`,
+            introduction: `Looking for a safe, private space in ${city}? GetHotelStays offers a handpicked list of couple-friendly hotels in ${city} that accept unmarried couples and local IDs. Book your stay securely with our 'Pay 12% Now' model — pay only a small 12% deposit online and the balance directly at check-in. Enjoy premium hospitality, 24/7 front desk security, and complete privacy.`,
+            sections: [
+                {
+                    h2: `Safe & Secure Couple Friendly Hotels in ${city}`,
+                    text: `All our couple-friendly hotels in ${city} are verified to ensure absolute privacy and security for unmarried couples. Standard hotel rules apply, but rest assured, you will experience zero hassle during check-in. Local government identity proofs are accepted at all listed properties.`
+                },
+                {
+                    h2: `Why Book Couple Friendly Hotels on GetHotelStays?`,
+                    text: `We prioritize your comfort and safety. With our unique 'Pay 12% Now' model, you can book instantly without paying the full amount upfront. Our customer support is available 24/7 to resolve any issues. Enjoy flexible cancellation options at select properties in ${city}.`
+                }
+            ],
+            faqs: [
+                {
+                    question: `Do hotels in ${city} accept unmarried couples?`,
+                    answer: `Yes, absolutely! GetHotelStays has partner hotels across ${city} that welcome unmarried couples. You can search easily on our platform as these hotels are fully verified.`
+                },
+                {
+                    question: `Is local ID accepted at couple friendly hotels in ${city}?`,
+                    answer: `Yes, most couple-friendly hotels in ${city} accept local IDs (like Aadhaar, Voter Card, Driving License) for check-in. A valid ID is required for both guests.`
+                }
+            ]
+        };
+    }
+
+    if (cleanFilter === "hourly") {
+        return {
+            city,
+            slug: `${slug}/hourly`,
+            title: `Hourly Hotels in ${city} — Book 3, 6 & 12 Hour Rooms | GetHotelStays`,
+            description: `Book verified hourly hotels in ${city} at lowest rates. Save money with flexible 3, 6, and 12-hour slots. Pay 12% now, rest at hotel. Instant booking & free cancellation!`,
+            keywords: [
+                `hourly hotels in ${city.toLowerCase()}`,
+                `microstay hotels ${city.toLowerCase()}`,
+                `3 hour hotel booking ${city.toLowerCase()}`,
+                `hotels for few hours ${city.toLowerCase()}`,
+                `day use hotels ${city.toLowerCase()}`,
+                `transit hotels in ${city.toLowerCase()}`
+            ],
+            h1: `Hourly & Day-Use Hotels in ${city}`,
+            introduction: `Need a place to rest, freshen up, or work between travel transits in ${city}? GetHotelStays offers flexible hourly stays. Choose 3, 6, or 12-hour slots at handpicked, verified hotels in ${city}. Our 'Pay 12% Now' model lets you book instantly with a minimum deposit. Save up to 60% compared to full-day rates, and pay only for the hours you use!`,
+            sections: [
+                {
+                    h2: `Save Money with Flexible Microstays in ${city}`,
+                    text: `Hourly bookings are perfect for transit passengers waiting for connections, business travelers between meetings, or tourists looking for a quick rest. Why pay for a full 24 hours when you only need a few? GetHotelStays offers slot bookings at top properties in ${city}.`
+                },
+                {
+                    h2: `Hourly Hotels near Transit Hubs in ${city}`,
+                    text: `We offer hourly hotels near major transit areas in ${city} (such as airports, railway stations, and central terminals) to minimize commute times. Book securely and enjoy all standard amenities including free Wi-Fi, air conditioning, and room service.`
+                }
+            ],
+            faqs: [
+                {
+                    question: `How does hourly hotel booking work in ${city}?`,
+                    answer: `Select your check-in time and choose a slot duration of 3, 6, or 12 hours. Pay 12% online to confirm, and the balance at check-in. Your booking expires after the slot duration.`
+                },
+                {
+                    question: `Are hourly hotels in ${city} safe?`,
+                    answer: `Yes, all hourly hotels are premium, verified properties. They maintain the same high safety and cleanliness standards as full-day bookings.`
+                }
+            ]
+        };
+    }
+
+    if (cleanFilter === "budget") {
+        return {
+            city,
+            slug: `${slug}/budget`,
+            title: `Budget Hotels in ${city} — Cheap & Clean Stays from ₹699 | GetHotelStays`,
+            description: `Book best budget hotels in ${city} starting at lowest prices. Clean rooms, free WiFi, and AC. Pay 12% now, rest at hotel. Safe & family-friendly stays!`,
+            keywords: [
+                `budget hotels in ${city.toLowerCase()}`,
+                `cheap hotels ${city.toLowerCase()}`,
+                `affordable stay ${city.toLowerCase()}`,
+                `hotels under 1500 ${city.toLowerCase()}`,
+                `low price hotels ${city.toLowerCase()}`,
+                `cheap accommodation in ${city.toLowerCase()}`
+            ],
+            h1: `Budget-Friendly Hotels in ${city}`,
+            introduction: `Traveling to ${city} shouldn't break the bank. GetHotelStays offers verified budget hotels in ${city} starting from cheap rates. These pocket-friendly properties provide essential amenities like free Wi-Fi, clean linen, air conditioning, and 24/7 security. Pay only 12% online to lock in the lowest rates and the rest at the hotel.`,
+            sections: [
+                {
+                    h2: `Affordable Stays in Central ${city}`,
+                    text: `Our budget accommodations are strategically located near major markets, tourist spots, and public transport links in ${city}, helping you save on local travel costs. Choose from guest houses, homestays, and budget transit hotels.`
+                },
+                {
+                    h2: `High Quality at Lower Prices`,
+                    text: `Lower price doesn't mean compromise. Every budget hotel on GetHotelStays undergoes a rigorous quality check to ensure cleanliness, hygiene, safe drinking water, and working amenities. Ideal for solo travelers, backpackers, and families.`
+                }
+            ],
+            faqs: [
+                {
+                    question: `What amenities are included in budget hotels in ${city}?`,
+                    answer: `Most budget hotels on our platform provide free Wi-Fi, clean beds, private bathrooms, air conditioning, and complimentary drinking water.`
+                },
+                {
+                    question: `Can I book cheap hotels in ${city} with pay-at-hotel option?`,
+                    answer: `Yes! With our 'Pay 12% Now' model, you only pay a tiny deposit of 12% online to confirm the booking, and the rest (88%) is paid directly at check-in.`
+                }
+            ]
+        };
+    }
+
+    if (cleanFilter === "luxury") {
+        return {
+            city,
+            slug: `${slug}/luxury`,
+            title: `Luxury Hotels in ${city} — Book 5-Star Resorts & Stays | GetHotelStays`,
+            description: `Book premium luxury hotels and 5-star resorts in ${city}. World-class hospitality, fine dining, swimming pool, and spa. Pay 12% now, rest at hotel. Book now!`,
+            keywords: [
+                `luxury hotels in ${city.toLowerCase()}`,
+                `5 star hotels ${city.toLowerCase()}`,
+                `premium resorts ${city.toLowerCase()}`,
+                `best luxury stays ${city.toLowerCase()}`,
+                `boutique hotels ${city.toLowerCase()}`,
+                `resorts in ${city.toLowerCase()}`
+            ],
+            h1: `Premium & Luxury Hotels in ${city}`,
+            introduction: `Experience premium hospitality and world-class luxury in ${city}. GetHotelStays brings you a curated list of top-tier 4-star and 5-star hotels and luxury resorts in ${city}. Indulge in premium rooms, fine dining restaurants, infinity pools, serene spas, and exceptional guest services. Secure your luxury reservation by paying only 12% online now.`,
+            sections: [
+                {
+                    h2: `Premium Amenities & World-Class Hospitality in ${city}`,
+                    text: `Our luxury properties in ${city} feature top-of-the-line amenities such as executive lounges, fitness centers, multi-cuisine dining, concierge services, and valet parking. Perfect for business elites, honeymooners, and leisure travelers.`
+                },
+                {
+                    h2: `Boutique & Heritage Stays in ${city}`,
+                    text: `For a unique experience, explore heritage luxury hotels and boutique properties in ${city} that blend local culture with modern grandeur. Get exclusive deals, free cancellations on select dates, and dynamic upgrades.`
+                }
+            ],
+            faqs: [
+                {
+                    question: `Do luxury hotels in ${city} accept international cards?`,
+                    answer: `Yes, all our luxury hotel partners accept major credit/debit cards, UPI, netbanking, and cash at check-in.`
+                },
+                {
+                    question: `Are swimming pools and spa access free in ${city} luxury hotels?`,
+                    answer: `Generally, pool access is complimentary for in-house guests, while spa treatments and fine dining services are charged extra. Please review the hotel details section before booking.`
+                }
+            ]
+        };
+    }
+
+    // Default Fallback
+    return {
+        city,
+        slug,
+        title: cityData.title,
+        description: cityData.description,
+        keywords: cityData.keywords,
+        h1: cityData.h1,
+        introduction: cityData.introduction,
+        sections: cityData.sections,
+        faqs: cityData.faqs,
+    };
+};
