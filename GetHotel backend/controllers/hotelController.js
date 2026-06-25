@@ -71,6 +71,8 @@ exports.searchHotels = async (req, res, next) => {
         const requiredRooms = parseInt(rooms || 1);
         const checkInDate = toValidDate(checkIn);
         const checkOutDate = toValidDate(checkOut);
+        if (checkInDate) checkInDate.setUTCHours(0, 0, 0, 0);
+        if (checkOutDate) checkOutDate.setUTCHours(0, 0, 0, 0);
         const hasStayDates = checkInDate && checkOutDate && checkOutDate > checkInDate;
         const nights = hasStayDates ? nightsBetween(checkInDate, checkOutDate) : 1;
 
@@ -294,11 +296,11 @@ exports.searchHotels = async (req, res, next) => {
 
                     for (let i = 0; i < nights; i++) {
                         const currentDay = new Date(checkInDate);
-                        currentDay.setDate(currentDay.getDate() + i);
-                        currentDay.setHours(0, 0, 0, 0);
+                        currentDay.setUTCDate(currentDay.getUTCDate() + i);
+                        currentDay.setUTCHours(0, 0, 0, 0);
 
                         const nextDay = new Date(currentDay);
-                        nextDay.setDate(nextDay.getDate() + 1);
+                        nextDay.setUTCDate(nextDay.getUTCDate() + 1);
 
                         const dayKey = currentDay.toISOString().split('T')[0];
                         const override = rateMap[`${room.id}_${dayKey}`];

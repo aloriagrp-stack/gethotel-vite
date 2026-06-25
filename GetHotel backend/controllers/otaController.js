@@ -8,6 +8,14 @@ const parseDateString = (dStr) => {
     return d;
 };
 
+// Helper to format date object to YYYY-MM-DD string, robust to timezone rounding
+const formatDateToOtaString = (dateObj) => {
+    if (!dateObj) return '';
+    const d = new Date(dateObj);
+    d.setUTCHours(d.getUTCHours() + 12);
+    return d.toISOString().split('T')[0];
+};
+
 // Middleware/Helper to authenticate OTA API requests
 const authenticateOtaRequest = async (req) => {
     const apiKey = req.headers['x-ota-api-key'];
@@ -264,8 +272,8 @@ exports.getOtaReservations = async (req, res) => {
             guestName: `${b.guestFirstName} ${b.guestLastName}`.trim() || 'Guest',
             guestEmail: b.guestEmail,
             guestPhone: b.guestPhone,
-            checkIn: b.checkIn.toISOString().split('T')[0],
-            checkOut: b.checkOut.toISOString().split('T')[0],
+            checkIn: formatDateToOtaString(b.checkIn),
+            checkOut: formatDateToOtaString(b.checkOut),
             status: b.status, // "confirmed", "cancelled", etc.
             totalPrice: b.totalPrice,
             createdAt: b.createdAt,

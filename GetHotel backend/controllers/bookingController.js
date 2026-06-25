@@ -8,7 +8,7 @@ const toValidDate = (value) => {
 
 const normalizeDateOnly = (date) => {
     const normalized = new Date(date);
-    normalized.setHours(0, 0, 0, 0);
+    normalized.setUTCHours(0, 0, 0, 0);
     return normalized;
 };
 
@@ -101,7 +101,7 @@ exports.createBooking = async (req, res) => {
 
             for (let i = 0; i < nights; i++) {
                 const currentDay = new Date(checkInDay);
-                currentDay.setDate(currentDay.getDate() + i);
+                currentDay.setUTCDate(currentDay.getUTCDate() + i);
                 const dStr = currentDay.toISOString().split('T')[0];
                 
                 const rateOverride = rateMap[dStr];
@@ -279,10 +279,10 @@ exports.createBooking = async (req, res) => {
 
                 for (let i = 0; i < nights; i++) {
                     const currentDay = new Date(checkInDay);
-                    currentDay.setDate(currentDay.getDate() + i);
+                    currentDay.setUTCDate(currentDay.getUTCDate() + i);
                     
                     const nextDay = new Date(currentDay);
-                    nextDay.setDate(nextDay.getDate() + 1);
+                    nextDay.setUTCDate(nextDay.getUTCDate() + 1);
 
                     const dStr = currentDay.toISOString().split('T')[0];
                     const rateOverride = rateMap[dStr];

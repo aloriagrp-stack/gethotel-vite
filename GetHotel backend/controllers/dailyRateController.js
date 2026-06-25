@@ -15,12 +15,17 @@ const getDailyRates = async (req, res) => {
         });
         if (!room) return res.status(404).json({ message: "Room not found" });
 
+        const start = new Date(startDate);
+        start.setUTCHours(0, 0, 0, 0);
+        const end = new Date(endDate);
+        end.setUTCHours(0, 0, 0, 0);
+
         const rates = await prisma.dailyrate.findMany({
             where: {
                 roomId: parseInt(roomId),
                 date: {
-                    gte: new Date(startDate),
-                    lte: new Date(endDate)
+                    gte: start,
+                    lte: end
                 }
             }
         });
@@ -29,16 +34,14 @@ const getDailyRates = async (req, res) => {
             where: {
                 roomId: parseInt(roomId),
                 status: { in: ['paid', 'confirmed', 'checked-in', 'held'] },
-                checkIn: { lte: new Date(endDate) },
-                checkOut: { gt: new Date(startDate) }
+                checkIn: { lte: end },
+                checkOut: { gt: start }
             }
         });
 
-        const start = new Date(startDate);
-        const end = new Date(endDate);
         const resultRates = [];
 
-        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        for (let d = new Date(start); d <= end; d.setUTCDate(d.getUTCDate() + 1)) {
             const dateStr = d.toISOString().split('T')[0];
             const override = rates.find(r => r.date.toISOString().split('T')[0] === dateStr);
             const limit = override ? override.available : (room.totalInventory || 1);
@@ -46,13 +49,13 @@ const getDailyRates = async (req, res) => {
 
             let bookedCount = 0;
             const dDate = new Date(d);
-            dDate.setHours(0,0,0,0);
+            dDate.setUTCHours(0,0,0,0);
 
             bookings.forEach(b => {
                 const bCheckIn = new Date(b.checkIn);
                 const bCheckOut = new Date(b.checkOut);
-                bCheckIn.setHours(0,0,0,0);
-                bCheckOut.setHours(0,0,0,0);
+                bCheckIn.setUTCHours(0,0,0,0);
+                bCheckOut.setUTCHours(0,0,0,0);
 
                 if (bCheckIn <= dDate && bCheckOut > dDate) {
                     let qty = 1;
@@ -106,17 +109,20 @@ const bulkUpdateDailyRates = async (req, res) => {
         }
 
         const start = new Date(startDate);
+        start.setUTCHours(0, 0, 0, 0);
         const end = new Date(endDate);
+        end.setUTCHours(0, 0, 0, 0);
         const results = [];
 
         // Loop through each day in the range
-        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        for (let d = new Date(start); d <= end; d.setUTCDate(d.getUTCDate() + 1)) {
             const dateStr = d.toISOString().split('T')[0];
+            const targetDate = new Date(dateStr + "T00:00:00.000Z");
             const updated = await prisma.dailyrate.upsert({
                 where: {
                     roomId_date: {
                         roomId: parseInt(roomId),
-                        date: new Date(dateStr)
+                        date: targetDate
                     }
                 },
                 update: {
@@ -125,7 +131,7 @@ const bulkUpdateDailyRates = async (req, res) => {
                 },
                 create: {
                     roomId: parseInt(roomId),
-                    date: new Date(dateStr),
+                    date: targetDate,
                     price: price !== undefined ? parseFloat(price) : room.pricePerNight,
                     available: isBlocked ? 0 : (available !== undefined ? parseInt(available) : 1)
                 }
@@ -158,11 +164,13 @@ const updateDailyRate = async (req, res) => {
             return res.status(403).json({ message: "Not authorized" });
         }
 
+        const targetDate = new Date(date);
+        targetDate.setUTCHours(0, 0, 0, 0);
         const updated = await prisma.dailyrate.upsert({
             where: {
                 roomId_date: {
                     roomId: parseInt(roomId),
-                    date: new Date(date)
+                    date: targetDate
                 }
             },
             update: {
@@ -171,7 +179,7 @@ const updateDailyRate = async (req, res) => {
             },
             create: {
                 roomId: parseInt(roomId),
-                date: new Date(date),
+                date: targetDate,
                 price: price !== undefined ? parseFloat(price) : room.pricePerNight,
                 available: available !== undefined ? parseInt(available) : 1
             }
