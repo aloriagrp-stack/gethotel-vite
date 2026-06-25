@@ -1832,6 +1832,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                                     <Link
                                         key={h.id}
                                         to={getHotelUrl(h.id, h.name)}
+                                        target="_blank"
                                         className="group bg-white/40 backdrop-blur-md rounded-[40px] overflow-hidden hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
                                     >
                                         <div className="relative h-48 overflow-hidden">

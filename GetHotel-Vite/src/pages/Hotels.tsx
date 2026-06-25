@@ -1,6 +1,6 @@
 
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, Suspense, useRef, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { ArrowUpDown, MapPin, Hotel, X, Search, ChevronDown, SlidersHorizontal } from "lucide-react";
 import type { FilterState, SortOption } from "@/types";
@@ -45,13 +45,20 @@ function HotelListingContent() {
     const [filters, setFilters] = useState<FilterState>(defaultFilters);
     const [searchQuery, setSearchQuery] = useState("");
     const [sort, setSort] = useState<SortOption>("recommended");
-    const [visibleCount, setVisibleCount] = useState(12);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(false);
+    const [totalStays, setTotalStays] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [showMobileFilter, setShowMobileFilter] = useState(false);
     const [showSearchModal, setShowSearchModal] = useState(false);
 
-    // Fetch hotels from API using strong algorithm if params exist
+    // Reset page to 1 on searchParams change
+    useEffect(() => {
+        setPage(1);
+    }, [searchParams]);
+
+    // Fetch hotels from API with backend pagination and filters
     useEffect(() => {
         const fetchHotels = async () => {
             try {
@@ -62,100 +69,81 @@ function HotelListingContent() {
                     params[key] = value;
                 });
 
-                let response;
-                if (Object.keys(params).length > 0) {
-                    response = await hotelApi.searchHotels(params);
+                params.page = String(page);
+                params.limit = "12";
+                params.minPrice = String(filters.priceRange[0]);
+                params.maxPrice = String(filters.priceRange[1]);
+                
+                if (filters.starRatings.length > 0) {
+                    params.starRatings = filters.starRatings.join(",");
+                }
+                if (filters.guestRatingMin > 0) {
+                    params.guestRatingMin = String(filters.guestRatingMin);
+                }
+                if (filters.amenities.length > 0) {
+                    params.amenities = filters.amenities.join(",");
+                }
+                if (searchQuery) {
+                    params.searchQuery = searchQuery;
+                }
+                params.sort = sort;
+
+                const response = await hotelApi.searchHotels(params);
+
+                if (page === 1) {
+                    setAllHotels(response.data || []);
                 } else {
-                    response = await hotelApi.getHotels();
+                    setAllHotels(prev => [...prev, ...(response.data || [])]);
                 }
 
-                setAllHotels(response.data || []);
+                setTotalStays(response.count || 0);
+                setHasMore(response.hasMore || false);
                 setError(null);
             } catch (err: any) {
                 console.error("Failed to fetch hotels:", err);
                 setError("Could not load hotels. Please try again.");
-                setAllHotels([]);
+                if (page === 1) {
+                    setAllHotels([]);
+                }
             } finally {
                 setLoading(false);
             }
         };
 
         fetchHotels();
-    }, [searchParams]);
+    }, [searchParams, filters, searchQuery, sort, page]);
 
-    // Filter logic using allHotels instead of static hotels
-    const filtered = allHotels.filter((h) => {
-        // City Filter - Skip client-side city filtering if a specific destination_index or collection_index is present, or if it is a fuzzy query match
-        const hasSpecificIndex = searchParams.get("destination_index") !== null || searchParams.get("collection_index") !== null;
-        if (!hasSpecificIndex && cityParam !== "All") {
-            const cleanCityParam = cityParam.toLowerCase();
-            const cleanHotelCity = h.city.toLowerCase();
-            const cleanHotelName = h.name.toLowerCase();
-            const cleanHotelAddress = h.address.toLowerCase();
-            const isMatch = cleanHotelCity.includes(cleanCityParam) || 
-                            cleanCityParam.includes(cleanHotelCity) || 
-                            cleanHotelName.includes(cleanCityParam) || 
-                            cleanHotelAddress.includes(cleanCityParam);
-            if (!isMatch) return false;
-        }
+    const visibleHotels = allHotels;
 
-        // Name Search Filter
-        if (searchQuery && !h.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    const loadMore = useCallback(() => {
+        setPage(prev => prev + 1);
+    }, []);
 
-        // Price Filter
-        const maxPrice = filters.priceRange[1] === 50000 ? Infinity : filters.priceRange[1];
-        if (h.pricePerNight < filters.priceRange[0] || h.pricePerNight > maxPrice) return false;
+    const observerTarget = useRef<HTMLDivElement | null>(null);
 
-        // Star Rating Filter
-        if (filters.starRatings.length > 0 && !filters.starRatings.includes(h.starRating)) return false;
+    useEffect(() => {
+        const target = observerTarget.current;
+        if (!target || !hasMore) return;
 
-        // Guest Rating Filter
-        if (h.guestRating < filters.guestRatingMin) return false;
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting) {
+                    loadMore();
+                }
+            },
+            { threshold: 0.1, rootMargin: "200px" }
+        );
 
-        // Amenities Filter
-        if (filters.amenities.length > 0 && !filters.amenities.every((a) => h.amenities.includes(a))) return false;
+        observer.observe(target);
 
-        // Guest Capacity Filter: Only show hotels that have rooms that can accommodate the guest count ONLY if guest count is explicitly searched
-        const hasExplicitGuests = searchParams.has("adults") || searchParams.has("guests");
-        const rooms = (h as any).room || (h as any).rooms || [];
-        if (rooms.length > 0) {
-            const hasEligibleRoom = rooms.some((r: any) => {
-                const maxOcc = r.maxOccupancy || r.max_occupancy || r.capacityAdults || 2;
-                const isModeOk = stayType === "hourly"
-                    ? (r.isHourlyEnabled || r.is_hourly_enabled)
-                    : (!r.isHourlyEnabled && !r.is_hourly_enabled);
-                return (!hasExplicitGuests || maxOcc >= Number(guests)) && isModeOk;
-            });
-            if (!hasEligibleRoom) return false;
-        } else if (stayType === "hourly") {
-            return false;
-        }
-
-        return true;
-    });
-
-    // Sort
-    const sorted = [...filtered].sort((a, b) => {
-        if (sort === "price_asc") return a.pricePerNight - b.pricePerNight;
-        if (sort === "price_desc") return b.pricePerNight - a.pricePerNight;
-        if (sort === "rating") return b.guestRating - a.guestRating;
-
-        // Default Recommended Sort: use rankScore from backend
-        const scoreA = (a as any).rankScore || (a.isFeatured ? 100 : 0);
-        const scoreB = (b as any).rankScore || (b.isFeatured ? 100 : 0);
-        return scoreB - scoreA;
-    });
-
-    const visibleHotels = sorted.slice(0, visibleCount);
-    const hasMore = visibleCount < sorted.length;
-
-    const loadMore = () => {
-        setVisibleCount(prev => prev + 12);
-    };
+        return () => {
+            if (target) observer.unobserve(target);
+        };
+    }, [hasMore, loadMore]);
 
     const handleFilterChange = (f: FilterState) => {
         setFilters(f);
-        setVisibleCount(12); // Reset scroll on filter change
+        setPage(1);
     };
 
     const cityDisplay = cityParam !== "All" ? cityParam : "India";
@@ -258,7 +246,7 @@ function HotelListingContent() {
 
                             <div className="flex items-center gap-4">
                                 <p className="hidden sm:block text-xs text-slate-500 font-bold">
-                                    <span className="text-slate-900">{sorted.length}</span> properties found
+                                    <span className="text-slate-900">{totalStays}</span> properties found
                                 </p>
 
                                 {/* Mobile Filter Button */}
@@ -274,7 +262,10 @@ function HotelListingContent() {
                                     <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Sort By</span>
                                     <select
                                         value={sort}
-                                        onChange={(e) => setSort(e.target.value as SortOption)}
+                                        onChange={(e) => {
+                                            setSort(e.target.value as SortOption);
+                                            setPage(1);
+                                        }}
                                         className="bg-white/60 backdrop-blur-md border border-white/60 rounded-xl px-4 py-2 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all cursor-pointer shadow-sm hover:bg-white/80"
                                     >
                                         {sortOptions.map((opt) => (
@@ -296,57 +287,22 @@ function HotelListingContent() {
                         ) : visibleHotels.length > 0 ? (
                             <>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 md:gap-8">
-                                    {visibleHotels.map((hotel, index) => (
-                                        <React.Fragment key={hotel.id}>
-                                            <HotelCard hotel={hotel} />
-                                            {(index + 1) % 12 === 0 && (
-                                                <div className="col-span-full my-6 md:my-10">
-                                                    <div className="relative overflow-hidden bg-slate-950 rounded-[32px] p-8 md:p-12 group">
-                                                        <div className="absolute inset-0 bg-gradient-to-r from-brand-600/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                                                        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
-                                                            <div className="text-center md:text-left">
-                                                                <h4 className="text-2xl md:text-4xl font-black text-white tracking-tighter italic mb-2">
-                                                                    Unlock 20% Savings
-                                                                </h4>
-                                                                <p className="text-slate-400 text-sm md:text-base font-bold italic uppercase tracking-widest">
-                                                                    On your first premium booking with GetHotel
-                                                                </p>
-                                                            </div>
-                                                            <div className="flex flex-col items-center md:items-end gap-4">
-                                                                <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-1 flex items-center gap-2">
-                                                                    <div className="px-6 py-3 text-lg font-black text-white tracking-[0.2em]">GET20OFF</div>
-                                                                    <button className="px-6 py-3 bg-brand-600 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-brand-500 transition-all active:scale-95 shadow-lg shadow-brand-600/20">
-                                                                        Copy
-                                                                    </button>
-                                                                </div>
-                                                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Valid for limited time only</p>
-                                                            </div>
-                                                        </div>
-                                                        {/* Decorative Elements */}
-                                                        <div className="absolute top-0 right-0 w-64 h-64 bg-brand-600/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
-                                                        <div className="absolute bottom-0 left-0 w-64 h-64 bg-brand-600/5 rounded-full translate-y-1/2 -translate-x-1/2 blur-3xl" />
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </React.Fragment>
+                                    {visibleHotels.map((hotel) => (
+                                        <HotelCard key={hotel.id} hotel={hotel} />
                                     ))}
                                 </div>
 
-                                {hasMore && (
-                                    <div className="mt-16 flex flex-col items-center gap-6">
-                                        <div className="w-px h-16 bg-gradient-to-b from-slate-200 to-transparent" />
-                                        <button
-                                            onClick={loadMore}
-                                            className="group relative px-12 py-5 bg-white border border-slate-200 rounded-2xl overflow-hidden hover:border-brand-600 transition-all duration-500 shadow-sm hover:shadow-xl active:scale-95"
-                                        >
-                                            <div className="absolute inset-0 bg-brand-600 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
-                                            <span className="relative z-10 flex items-center gap-3 text-sm font-black uppercase tracking-[0.2em] text-slate-950 group-hover:text-white transition-colors">
-                                                Load More Properties
-                                                <ChevronDown className="w-4 h-4 group-hover:translate-y-1 transition-transform" />
-                                            </span>
-                                        </button>
+                                {hasMore ? (
+                                    <div ref={observerTarget} className="mt-8 flex flex-col items-center gap-4 py-4">
+                                        <div className="w-8 h-8 rounded-full border-2 border-slate-200 border-t-brand-600 animate-spin" />
+                                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider animate-pulse">
+                                            Loading more stays...
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="mt-8 flex flex-col items-center">
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                            Showing {visibleHotels.length} of {sorted.length} Stays
+                                            Showing all {totalStays} Stays
                                         </p>
                                     </div>
                                 )}
@@ -361,12 +317,13 @@ function HotelListingContent() {
                                     {searchQuery ? `We couldn't find anything matching "${searchQuery}".` : "Try adjusting your filters to find the perfect stay."}
                                 </p>
                                 <button
-                                    onClick={() => {
-                                        setFilters(defaultFilters);
-                                        setSearchQuery("");
-                                    }}
-                                    className="mt-8 px-10 py-4 bg-brand-600 text-white rounded-full text-sm font-black shadow-xl shadow-brand-600/20 active:scale-95 transition-all"
-                                >
+                                        onClick={() => {
+                                            setFilters(defaultFilters);
+                                            setSearchQuery("");
+                                            setPage(1);
+                                        }}
+                                        className="mt-8 px-10 py-4 bg-brand-600 text-white rounded-full text-sm font-black shadow-xl shadow-brand-600/20 active:scale-95 transition-all"
+                                    >
                                     Reset All Search & Filters
                                 </button>
                             </div>

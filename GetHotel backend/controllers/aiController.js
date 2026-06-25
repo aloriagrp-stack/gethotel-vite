@@ -16,6 +16,49 @@ const cleanHtmlText = (html) => {
         .trim();
 };
 
+// Helper to execute Gemini requests with retries and fallback models
+const runGeminiWithFallback = async (genAI, options, executeFn) => {
+    const modelsToTry = [
+        options.model || "gemini-2.5-flash",
+        "gemini-3.1-flash-lite",
+        "gemini-3.5-flash",
+        "gemini-2.0-flash",
+        "gemini-1.5-flash"
+    ];
+    const uniqueModels = Array.from(new Set(modelsToTry.filter(Boolean)));
+    
+    let lastError = null;
+    for (const modelName of uniqueModels) {
+        for (let attempt = 0; attempt < 2; attempt++) {
+            try {
+                if (attempt > 0) {
+                    console.log(`[Gemini Helper] Retrying model ${modelName} (attempt ${attempt + 1})...`);
+                } else {
+                    console.log(`[Gemini Helper] Attempting with model: ${modelName}`);
+                }
+                const modelConfig = { ...options, model: modelName };
+                const model = genAI.getGenerativeModel(modelConfig);
+                
+                const result = await executeFn(model);
+                console.log(`[Gemini Helper] Success with model: ${modelName}`);
+                return result;
+            } catch (err) {
+                console.error(`[Gemini Helper] Failed with model ${modelName} (attempt ${attempt + 1}):`, err.message);
+                lastError = err;
+                
+                const isRateLimit = err.message && (err.message.includes("429") || err.message.includes("quota") || err.message.includes("limit"));
+                if (isRateLimit && attempt < 1) {
+                    console.log(`[Gemini Helper] Rate limit hit. Waiting 3000ms before retry...`);
+                    await new Promise(r => setTimeout(r, 3000));
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+    throw lastError;
+};
+
 /**
  * @desc    Suggest and parse room categories from text or URL using Gemini API
  * @route   POST /api/admin/ai/suggest-rooms
@@ -292,12 +335,6 @@ Output strictly valid JSON matching the requested schema. Do not include any mar
             // PASS 1: Search Grounding & Chat Context (Text Mode via Gemini)
             // ==========================================
             console.log("[AI Copilot] Pass 1: Calling Gemini with Google Search grounding...");
-            const searchModel = genAI.getGenerativeModel({
-                model: "gemini-2.5-flash",
-                systemInstruction,
-                tools: [{ googleSearch: {} }],
-            });
-
             let searchContents = [];
             if (Array.isArray(history) && history.length > 0) {
                 history.forEach(msg => {
@@ -312,8 +349,17 @@ Output strictly valid JSON matching the requested schema. Do not include any mar
                 parts: [{ text: userInput.trim() ? userInput : (prompt || "Continue chatting") }]
             });
 
-            const searchResponse = await searchModel.generateContent({ contents: searchContents });
+            const searchResponse = await runGeminiWithFallback(
+                genAI,
+                {
+                    model: "gemini-2.5-flash",
+                    systemInstruction,
+                    tools: [{ googleSearch: {} }],
+                },
+                (model) => model.generateContent({ contents: searchContents })
+            );
             const groundedText = searchResponse.response.text();
+
             console.log(`[AI Copilot] Pass 1 completed. Grounded Text Length: ${groundedText.length}`);
 
             try {
@@ -345,16 +391,6 @@ Output strictly valid JSON matching the requested schema. Do not include any mar
             // PASS 2: JSON Schema Structure (JSON Mode via Gemini)
             // ==========================================
             console.log("[AI Copilot] Pass 2: Structuring output to JSON via Gemini...");
-            const structModel = genAI.getGenerativeModel({
-                model: "gemini-2.5-flash",
-                systemInstruction,
-                generationConfig: {
-                    responseMimeType: "application/json",
-                    responseSchema: copilotSchema,
-                    temperature: 0.6
-                }
-            });
-
             const structPrompt = `
 Grounded Context (contains search findings or conversational replies):
 ${groundedText}
@@ -366,9 +402,22 @@ Existing Rooms Context:
 ${existingRoomsContext || "None"}
 `;
 
-            const result = await structModel.generateContent(structPrompt);
+            const result = await runGeminiWithFallback(
+                genAI,
+                {
+                    model: "gemini-2.5-flash",
+                    systemInstruction,
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: copilotSchema,
+                        temperature: 0.6
+                    }
+                },
+                (model) => model.generateContent(structPrompt)
+            );
             jsonText = result.response.text();
             console.log("[AI Copilot] Pass 2 completed (Gemini). JSON structured output received.");
+
 
         } else if (groqApiKey) {
             // ==========================================
@@ -829,11 +878,6 @@ exports.chat = async (req, res) => {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-        model: 'gemini-2.5-flash',
-        systemInstruction: SYSTEM_PROMPT,
-    });
-
     const history = messages.slice(0, -1).map((m) => ({
         role: m.role === 'ai' ? 'model' : 'user',
         parts: [{ text: m.content }],
@@ -843,43 +887,283 @@ exports.chat = async (req, res) => {
     const userQuery = hotelContext ? `${lastMsg.content}${hotelContext}` : lastMsg.content;
 
     let lastError = null;
-    for (let attempt = 0; attempt < 3; attempt++) {
-        try {
-            if (attempt > 0) console.log(`[AI Chat] Retry attempt ${attempt + 1}...`);
-            const chat = model.startChat({ history });
-            const result = await chat.sendMessage(userQuery);
-            const reply = result.response.text();
-
-            let action;
-            const actionMatch = reply.match(/\[([^\]]+)\]\((\/[^)]+)\)/);
-            if (actionMatch) {
-                action = { label: actionMatch[1], path: actionMatch[2] };
+    try {
+        const result = await runGeminiWithFallback(
+            genAI,
+            {
+                model: 'gemini-2.5-flash',
+                systemInstruction: SYSTEM_PROMPT,
+            },
+            async (model) => {
+                const chat = model.startChat({ history });
+                return await chat.sendMessage(userQuery);
             }
+        );
 
-            console.log(`[AI Chat] Success (attempt ${attempt + 1})`);
-            return res.json({ success: true, reply, action });
-        } catch (err) {
-            lastError = err;
-            console.error(`[AI Chat] Attempt ${attempt + 1} failed:`, err.message);
-            
-            const isQuotaError = err.message && (err.message.includes("429") || err.message.includes("quota") || err.message.includes("limit"));
-            if (attempt < 2) {
-                const delay = isQuotaError ? 5000 * (attempt + 1) : 1000 * (attempt + 1);
-                console.log(`[AI Chat] Waiting ${delay}ms before retry...`);
-                await new Promise(r => setTimeout(r, delay));
-            }
+        const reply = result.response.text();
+        let action;
+        const actionMatch = reply.match(/\[([^\]]+)\]\((\/[^)]+)\)/);
+        if (actionMatch) {
+            action = { label: actionMatch[1], path: actionMatch[2] };
         }
+
+        console.log(`[AI Chat] Success with Gemini`);
+        return res.json({ success: true, reply, action });
+    } catch (err) {
+        lastError = err;
+        console.error('[AI Chat] All attempts failed:', lastError?.message);
     }
 
-    console.error('[AI Chat] All attempts failed:', lastError?.message);
-    
     let userMessage = "Oops 😅 I had a small issue. Please try again in a moment.";
     if (lastError?.message && (lastError.message.includes("429") || lastError.message.includes("quota") || lastError.message.includes("limit"))) {
         userMessage = "I'm getting a lot of requests right now. Please wait a moment and try again! 🙏";
     }
-    
+
     res.json({
         success: true,
         reply: userMessage
     });
+};
+
+/**
+ * @desc    Scrape hotel reviews from external OTA page and insert into database
+ * @route   POST /api/admin/ai/import-reviews
+ * @access  Private (Super Admin)
+ */
+exports.importReviews = async (req, res) => {
+    try {
+        const apiKey = process.env.GEMINI_API_KEY;
+        if (!apiKey) {
+            return res.status(400).json({
+                success: false,
+                message: "Gemini API Key is not configured. Please add GEMINI_API_KEY to your backend .env file."
+            });
+        }
+
+        const { hotelId, url } = req.body;
+
+        if (!hotelId) {
+            return res.status(400).json({ success: false, message: "hotelId is required" });
+        }
+        if (!url || typeof url !== 'string' || !url.startsWith('http')) {
+            return res.status(400).json({ success: false, message: "A valid hotel OTA URL is required" });
+        }
+
+        // Verify hotel exists
+        const targetHotel = await prisma.hotel.findUnique({
+            where: { id: Number(hotelId) }
+        });
+        if (!targetHotel) {
+            return res.status(404).json({ success: false, message: "Hotel not found" });
+        }
+
+        // 1. Crawl/Fetch text content from OTA Reviews URL
+        const getBookingComReviewsUrl = (targetUrl) => {
+            let cleanUrl = targetUrl.trim();
+            const match = cleanUrl.match(/booking\.com\/hotel\/([a-z]+)\/([^?#\s]+)/i);
+            if (match) {
+                const country = match[1];
+                const slug = match[2];
+                return `https://www-booking-com.translate.goog/reviews/${country}/hotel/${slug}?_x_tr_sl=auto&_x_tr_tl=en`;
+            }
+            if (cleanUrl.includes('booking.com')) {
+                return cleanUrl.replace('booking.com', 'www-booking-com.translate.goog') + (cleanUrl.includes('?') ? '&' : '?') + '_x_tr_sl=auto&_x_tr_tl=en';
+            }
+            return cleanUrl;
+        };
+
+        const reviewsUrl = getBookingComReviewsUrl(url);
+        console.log(`[Import Reviews] Fetching reviews URL: ${reviewsUrl}`);
+
+        let html = "";
+        try {
+            process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+            const response = await fetch(reviewsUrl, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
+                },
+                signal: AbortSignal.timeout(20000)
+            });
+            if (response.ok) {
+                html = await response.text();
+            } else {
+                throw new Error(`Proxy returned status ${response.status}`);
+            }
+        } catch (fetchErr) {
+            console.warn(`[Import Reviews] Proxy fetch failed (${fetchErr.message}), trying raw URL direct fetch...`);
+            const response = await fetch(url, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
+                },
+                signal: AbortSignal.timeout(15000)
+            });
+            html = await response.text();
+        }
+
+        // Clean HTML to extract readable text
+        const cleanedText = cleanHtmlText(html);
+        if (!cleanedText || cleanedText.length < 100) {
+            return res.status(400).json({
+                success: false,
+                message: "Failed to extract readable reviews text content from the provided URL page."
+            });
+        }
+
+        // 2. Setup Gemini AI to parse the reviews into standard structured JSON
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const reviewsSchema = {
+            type: "object",
+            properties: {
+                reviews: {
+                    type: "array",
+                    description: "List of extracted reviews from the webpage content text.",
+                    items: {
+                        type: "object",
+                        properties: {
+                            userName: { type: "string", description: "Full name or screen name of the reviewer. Generate realistic first/last initial names if anonymous or missing." },
+                            rating: { type: "number", description: "Overall rating given out of 5 stars. If the source shows rating out of 10 (e.g. 8.4/10), scale it down to 1-5 integer (e.g., 8.4/10 -> 4)." },
+                            comment: { type: "string", description: "Review comment content in natural English." },
+                            cleanliness: { type: "number", description: "Cleanliness rating score from 1 to 5 (default 5)." },
+                            comfort: { type: "number", description: "Comfort rating score from 1 to 5 (default 5)." },
+                            location: { type: "number", description: "Location rating score from 1 to 5 (default 5)." },
+                            staff: { type: "number", description: "Staff / Service behavior rating score from 1 to 5 (default 5)." },
+                            valueForMoney: { type: "number", description: "Value for money rating score from 1 to 5 (default 5)." },
+                            createdAt: { type: "string", description: "Review date in YYYY-MM-DD format (default is recent dates)." }
+                        },
+                        required: ["userName", "rating", "comment"]
+                    }
+                }
+            },
+            required: ["reviews"]
+        };
+
+        const systemInstruction = `
+You are an expert data extraction assistant. Your job is to extract customer review logs from the raw text content of a hotel webpage listing.
+Extract all customer reviews present in the webpage text (up to 30 reviews). Parse out reviewer name, ratings, individual subscore ratings (Cleanliness, Comfort, Location, Staff, Value For Money), comment/text, and date.
+Return the output strictly in valid JSON format matching the schema rules.
+`;
+
+        const structPrompt = `
+Webpage content text:
+${cleanedText.slice(0, 40000)}
+
+Please extract the reviews. Ensure they are structured as JSON.
+`;
+
+        console.log("[Import Reviews] Calling Gemini 2.5 flash parser...");
+        const result = await runGeminiWithFallback(
+            genAI,
+            {
+                model: "gemini-2.5-flash",
+                systemInstruction,
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: reviewsSchema,
+                    temperature: 0.2
+                }
+            },
+            (model) => model.generateContent(structPrompt)
+        );
+        const jsonText = result.response.text();
+        
+        let parsed = { reviews: [] };
+        try {
+            parsed = JSON.parse(jsonText);
+        } catch (jsonErr) {
+            console.error("Gemini failed to generate valid JSON:", jsonText);
+            throw new Error("AI did not return valid JSON structured reviews.");
+        }
+
+        const extractedReviews = Array.isArray(parsed.reviews) ? parsed.reviews : [];
+        console.log(`[Import Reviews] Extracted ${extractedReviews.length} reviews from Gemini response.`);
+
+        if (extractedReviews.length === 0) {
+            return res.status(200).json({
+                success: true,
+                message: "No reviews were found on the page to import.",
+                data: []
+            });
+        }
+
+        // 3. Store reviews in local Database
+        const bcrypt = require('bcryptjs');
+        const savedReviews = [];
+
+        for (const rev of extractedReviews) {
+            // Generate unique email address to avoid duplicate users unique constraints
+            const cleanName = rev.userName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() || 'guest';
+            const dummyEmail = `reviewer_${cleanName}_${Math.floor(Math.random() * 100000)}@gethotelstays.mock`;
+            
+            // Create virtual user account
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(Math.random().toString(36).slice(-8), salt);
+
+            const dummyUser = await prisma.user.create({
+                data: {
+                    name: rev.userName,
+                    email: dummyEmail,
+                    password: hashedPassword,
+                    role: 'user',
+                    updatedAt: new Date()
+                }
+            });
+
+            // Create review associated with the user and hotel
+            const cleanliness = Math.min(5, Math.max(1, parseInt(rev.cleanliness) || 5));
+            const comfort = Math.min(5, Math.max(1, parseInt(rev.comfort) || 5));
+            const location = Math.min(5, Math.max(1, parseInt(rev.location) || 5));
+            const staff = Math.min(5, Math.max(1, parseInt(rev.staff) || 5));
+            const valueForMoney = Math.min(5, Math.max(1, parseInt(rev.valueForMoney) || 5));
+
+            const dbReview = await prisma.review.create({
+                data: {
+                    rating: Math.min(5, Math.max(1, parseInt(rev.rating) || 5)),
+                    comment: rev.comment || "Good experience.",
+                    cleanliness,
+                    comfort,
+                    location,
+                    staff,
+                    valueForMoney,
+                    userId: dummyUser.id,
+                    hotelId: Number(hotelId),
+                    createdAt: rev.createdAt ? new Date(rev.createdAt) : new Date()
+                },
+                include: {
+                    user: {
+                        select: { name: true }
+                    }
+                }
+            });
+            savedReviews.push(dbReview);
+        }
+
+        // 4. Recalculate average guestRating and total reviewCount for target hotel
+        const allReviews = await prisma.review.findMany({
+            where: { hotelId: Number(hotelId) }
+        });
+
+        const totalRating = allReviews.reduce((sum, r) => sum + r.rating, 0);
+        const avgRating = allReviews.length > 0 ? parseFloat((totalRating / allReviews.length).toFixed(1)) : 0;
+
+        await prisma.hotel.update({
+            where: { id: Number(hotelId) },
+            data: {
+                guestRating: avgRating,
+                reviewCount: allReviews.length
+            }
+        });
+
+        console.log(`[Import Reviews] Successfully saved ${savedReviews.length} reviews. Avg rating updated to ${avgRating}`);
+
+        res.status(200).json({
+            success: true,
+            message: `Successfully imported ${savedReviews.length} reviews for this hotel!`,
+            count: savedReviews.length,
+            data: savedReviews
+        });
+
+    } catch (err) {
+        console.error("AI_IMPORT_REVIEWS_ERROR:", err);
+        res.status(500).json({ success: false, message: "AI reviews import failed", error: err.message });
+    }
 };

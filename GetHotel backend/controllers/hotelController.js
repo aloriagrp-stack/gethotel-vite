@@ -49,7 +49,24 @@ exports.getHotels = async (req, res, next) => {
 // @access  Public
 exports.searchHotels = async (req, res, next) => {
     try {
-        const { city, checkIn, checkOut, adults, children, rooms, stayType } = req.query;
+        const { 
+            city, 
+            checkIn, 
+            checkOut, 
+            adults, 
+            children, 
+            rooms, 
+            stayType,
+            page,
+            limit,
+            minPrice,
+            maxPrice,
+            starRatings,
+            guestRatingMin,
+            amenities,
+            searchQuery,
+            sort
+        } = req.query;
         const totalGuests = parseInt(adults || 2) + parseInt(children || 0);
         const requiredRooms = parseInt(rooms || 1);
         const checkInDate = toValidDate(checkIn);
@@ -127,6 +144,62 @@ exports.searchHotels = async (req, res, next) => {
         }
         // stayType undefined/both => no extra filter (show all)
         whereClause.room = { some: roomFilter };
+
+        // Extra Filters
+        if (minPrice || maxPrice) {
+            whereClause.pricePerNight = {};
+            if (minPrice) {
+                whereClause.pricePerNight.gte = parseFloat(minPrice);
+            }
+            if (maxPrice && maxPrice !== 'Infinity' && maxPrice !== '50000') {
+                whereClause.pricePerNight.lte = parseFloat(maxPrice);
+            }
+        }
+
+        if (starRatings) {
+            const ratings = starRatings.split(',').map(r => parseInt(r.trim())).filter(Number.isInteger);
+            if (ratings.length > 0) {
+                whereClause.starRating = { in: ratings };
+            }
+        }
+
+        if (guestRatingMin) {
+            whereClause.guestRating = { gte: parseFloat(guestRatingMin) };
+        }
+
+        if (amenities) {
+            const amenityList = amenities.split(',').map(a => a.trim()).filter(Boolean);
+            if (amenityList.length > 0) {
+                if (!whereClause.AND) {
+                    whereClause.AND = [];
+                } else if (!Array.isArray(whereClause.AND)) {
+                    whereClause.AND = [whereClause.AND];
+                }
+                amenityList.forEach(amenity => {
+                    whereClause.AND.push({
+                        amenities: { contains: amenity }
+                    });
+                });
+            }
+        }
+
+        if (searchQuery) {
+            const cleanQuery = searchQuery.trim();
+            if (cleanQuery) {
+                if (!whereClause.AND) {
+                    whereClause.AND = [];
+                } else if (!Array.isArray(whereClause.AND)) {
+                    whereClause.AND = [whereClause.AND];
+                }
+                whereClause.AND.push({
+                    OR: [
+                        { name: { contains: cleanQuery } },
+                        { city: { contains: cleanQuery } },
+                        { address: { contains: cleanQuery } }
+                    ]
+                });
+            }
+        }
 
         const hotels = await prisma.hotel.findMany({
             where: whereClause,
@@ -292,23 +365,38 @@ exports.searchHotels = async (req, res, next) => {
             }
         }
 
-        // 3. Strong Ranking Algorithm (The 'Secret Sauce')
-        // Score = (QualityScore * 0.5) + (Featured * 30) + (Rating * 20)
-        const rankedHotels = availableHotels.map(hotel => {
-            let rankScore = (hotel.qualityScore || 85) * 0.5;
-            if (hotel.isFeatured) rankScore += 30;
-            rankScore += (hotel.guestRating || 0) * 4; // 5 stars * 4 = 20 points
-            
-            // Bonus for trending
-            if (hotel.isTrending) rankScore += 10;
-            
-            return { ...hotel, rankScore };
-        }).sort((a, b) => b.rankScore - a.rankScore);
+        // 3. Sorting & Ranking
+        let sortedHotels = [...availableHotels];
+
+        if (sort === "price_asc") {
+            sortedHotels.sort((a, b) => (a.lowestAvailablePrice || a.pricePerNight) - (b.lowestAvailablePrice || b.pricePerNight));
+        } else if (sort === "price_desc") {
+            sortedHotels.sort((a, b) => (b.lowestAvailablePrice || b.pricePerNight) - (a.lowestAvailablePrice || a.pricePerNight));
+        } else if (sort === "rating") {
+            sortedHotels.sort((a, b) => (b.guestRating || 0) - (a.guestRating || 0));
+        } else {
+            // Default "recommended": use rankScore
+            sortedHotels = sortedHotels.map(hotel => {
+                let rankScore = (hotel.qualityScore || 85) * 0.5;
+                if (hotel.isFeatured) rankScore += 30;
+                rankScore += (hotel.guestRating || 0) * 4;
+                if (hotel.isTrending) rankScore += 10;
+                return { ...hotel, rankScore };
+            }).sort((a, b) => b.rankScore - a.rankScore);
+        }
+
+        // 4. In-Memory Pagination
+        const totalCount = sortedHotels.length;
+        const pageNum = parseInt(page || 1);
+        const limitNum = parseInt(limit || 12);
+        const skip = (pageNum - 1) * limitNum;
+        const paginatedHotels = sortedHotels.slice(skip, skip + limitNum);
 
         res.status(200).json({ 
             success: true, 
-            count: rankedHotels.length, 
-            data: rankedHotels 
+            count: totalCount, 
+            data: paginatedHotels,
+            hasMore: (skip + limitNum) < totalCount
         });
     } catch (err) {
         res.status(400).json({ success: false, message: err.message });

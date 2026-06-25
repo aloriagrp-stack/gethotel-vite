@@ -177,7 +177,7 @@ const testHandler = async (req, res) => {
 
     res.json({
         message: 'Backend is ALIVE',
-        version: 'v2.7-AI-COPILOT-REDEPLOY-16JUN',
+        version: 'v2.8-AI-REVIEWS-IMPORTER-24JUN',
         server_directory: __dirname,
         database: dbStatus,
         fix_results: fixResults,

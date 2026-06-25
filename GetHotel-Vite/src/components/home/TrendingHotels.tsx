@@ -90,7 +90,7 @@ function TrendingHotelCard({ hotel }: { hotel: Hotel }) {
 
     return (
         <div className="group relative w-full h-full rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 bg-slate-100">
-            <Link to={`${getHotelUrl(hotel.id, hotel.name)}?stayType=${isHourly ? 'hourly' : 'nightly'}`} className="absolute inset-0 z-10" />
+            <Link to={`${getHotelUrl(hotel.id, hotel.name)}?stayType=${isHourly ? 'hourly' : 'nightly'}`} target="_blank" className="absolute inset-0 z-10" />
 
             {/* Background Image */}
             <Image
@@ -159,6 +159,7 @@ function TrendingHotelCard({ hotel }: { hotel: Hotel }) {
 
                     <Link
                         to={`${getHotelUrl(hotel.id, hotel.name)}?stayType=${isHourly ? 'hourly' : 'nightly'}`}
+                        target="_blank"
                         className={cn(
                             "px-4 py-2.5 text-white text-[9px] font-black uppercase tracking-widest rounded-full shadow-lg transition-all active:scale-95 shrink-0 text-center flex items-center justify-center",
                             isHourly ? "bg-blue-600 hover:bg-blue-700 shadow-blue-500/20" : "bg-white text-slate-950 hover:bg-slate-100"

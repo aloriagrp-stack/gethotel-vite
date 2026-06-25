@@ -36,6 +36,7 @@ jobs:
             -x '\.zip$' \
             -x '\.log$' \
             -x '^scratch/' \
+            -x '^uploads/' \
             -x '^fix_partner_login\.js$' \
             -x '^clean_specific_hotels\.js$' \
             -x '^delete_non_cottages\.js$' \
