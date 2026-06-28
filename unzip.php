@@ -16,17 +16,17 @@ if (isset($_GET['action']) && $_GET['action'] === 'debug') {
         echo "/home/vgyuvmpi is not a directory or is not readable\n";
     }
     
-    $file = '/home/vgyuvmpi/gethotel_backend/routes/adminRoutes.js';
+    $file = '/home/vgyuvmpi/routes/adminRoutes.js';
     if (file_exists($file)) {
-        echo "=== adminRoutes.js ===\n";
+        echo "=== /home/vgyuvmpi/routes/adminRoutes.js ===\n";
         echo file_get_contents($file);
     } else {
         echo "routes/adminRoutes.js not found at: $file\n";
     }
     
-    $file2 = '/home/vgyuvmpi/gethotel_backend/controllers/adminController.js';
+    $file2 = '/home/vgyuvmpi/controllers/adminController.js';
     if (file_exists($file2)) {
-        echo "\n=== adminController.js (first 50 lines) ===\n";
+        echo "\n=== /home/vgyuvmpi/controllers/adminController.js (first 50 lines) ===\n";
         $lines = file($file2);
         echo implode("", array_slice($lines, 0, 50));
     } else {
