@@ -3,6 +3,14 @@
 
 if (isset($_GET['action']) && $_GET['action'] === 'debug') {
     header('Content-Type: text/plain');
+    
+    echo "=== Running Node Processes ===\n";
+    if (function_exists('shell_exec')) {
+        echo shell_exec("ps aux | grep node | grep -v grep");
+    } else {
+        echo "shell_exec not available\n";
+    }
+    
     $file = '/home/vgyuvmpi/gethotel_backend/routes/adminRoutes.js';
     if (file_exists($file)) {
         echo "=== adminRoutes.js ===\n";
