@@ -1,10 +1,8 @@
 import React, { useState, useMemo } from "react";
 import { adminApi } from "@/lib/api";
 import { 
-    Tag, Percent, PlusCircle, Trash2, Search, MapPin, 
-    Check, X, ToggleLeft, ToggleRight, Sparkles, Calendar, Info
+    Tag, Percent, Search, MapPin, Check, X, ToggleLeft, ToggleRight, Sparkles, Calendar, Info
 } from "lucide-react";
-import Loader from "@/components/common/Loader";
 
 interface Coupon {
     id: number;
@@ -33,6 +31,9 @@ export default function AdminPromotions({ hotels, onRefresh }: AdminPromotionsPr
     const [selectedHotelIds, setSelectedHotelIds] = useState<number[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [searchCity, setSearchCity] = useState("All");
+
+    // Unified Bulk Mode: "apply" | "remove"
+    const [bulkMode, setBulkMode] = useState<"apply" | "remove">("apply");
 
     // Form inputs for bulk creation
     const [promoCode, setPromoCode] = useState("");
@@ -114,11 +115,9 @@ export default function AdminPromotions({ hotels, onRefresh }: AdminPromotionsPr
 
             if (res.success) {
                 setSuccessMessage(res.message || "Promotions applied successfully!");
-                // Clear selection & code
                 setSelectedHotelIds([]);
                 setPromoCode("");
                 setDiscountValue("");
-                // Refresh list
                 onRefresh();
             } else {
                 setErrorMessage(res.message || "Failed to apply promotions.");
@@ -131,7 +130,8 @@ export default function AdminPromotions({ hotels, onRefresh }: AdminPromotionsPr
     };
 
     // Bulk Delete
-    const handleRemovePromotion = async () => {
+    const handleRemovePromotion = async (e: React.FormEvent) => {
+        e.preventDefault();
         if (selectedHotelIds.length === 0) {
             setErrorMessage("Please select at least one hotel.");
             return;
@@ -187,210 +187,174 @@ export default function AdminPromotions({ hotels, onRefresh }: AdminPromotionsPr
     }, [hotels]);
 
     return (
-        <div className="space-y-8">
-            {/* Stats Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="p-6 bg-gradient-to-tr from-brand-600 to-indigo-600 rounded-[24px] text-white shadow-xl shadow-brand-600/10">
-                    <p className="text-xs font-black uppercase tracking-wider text-white/70 mb-2">Total Hotels</p>
-                    <h3 className="text-3xl font-black">{stats.totalHotels}</h3>
-                    <p className="text-[10px] text-white/50 mt-1 uppercase font-bold">In the GetHotel database</p>
+        <div className="space-y-6 max-w-7xl mx-auto px-4">
+            
+            {/* Sleek Minimal Top Stats Header */}
+            <div className="flex flex-wrap items-center justify-between gap-4 py-2 border-b border-slate-100 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                <div className="flex gap-6">
+                    <span>Total Hotels: <strong className="text-slate-900">{stats.totalHotels}</strong></span>
+                    <span>Promoted: <strong className="text-slate-900">{stats.hotelsWithPromos}</strong></span>
+                    <span>Active Coupons: <strong className="text-emerald-600">{stats.activePromosCount}</strong></span>
                 </div>
-                <div className="p-6 bg-white rounded-[24px] border border-slate-100 shadow-xl shadow-slate-100/10 flex flex-col justify-between">
-                    <div>
-                        <p className="text-xs font-black uppercase tracking-wider text-slate-400 mb-2">Hotels with Promotions</p>
-                        <h3 className="text-3xl font-black text-slate-900">{stats.hotelsWithPromos}</h3>
-                    </div>
-                    <p className="text-[10px] text-slate-400 mt-3 uppercase font-black">
-                        {((stats.hotelsWithPromos / (stats.totalHotels || 1)) * 100).toFixed(0)}% of total properties
-                    </p>
-                </div>
-                <div className="p-6 bg-white rounded-[24px] border border-slate-100 shadow-xl shadow-slate-100/10 flex flex-col justify-between">
-                    <div>
-                        <p className="text-xs font-black uppercase tracking-wider text-slate-400 mb-2">Total Active Coupon Roles</p>
-                        <h3 className="text-3xl font-black text-slate-900">{stats.activePromosCount}</h3>
-                    </div>
-                    <p className="text-[10px] text-emerald-600 mt-3 uppercase font-black flex items-center gap-1">
-                        <Sparkles className="w-3.5 h-3.5" /> Live and applyable at checkout
-                    </p>
-                </div>
+                {selectedHotelIds.length > 0 && (
+                    <span className="text-brand-600 bg-brand-50 px-2.5 py-1 rounded">
+                        {selectedHotelIds.length} Selected
+                    </span>
+                )}
             </div>
 
             {/* Notification Messages */}
             {successMessage && (
-                <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center gap-3 text-emerald-700 text-xs font-bold">
-                    <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>{successMessage}</span>
+                <div className="p-3 bg-emerald-50 border border-emerald-100 rounded text-emerald-800 text-xs font-bold transition-all animate-fade-in">
+                    {successMessage}
                 </div>
             )}
             {errorMessage && (
-                <div className="p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-700 text-xs font-bold">
-                    <X className="w-4 h-4 text-red-600 shrink-0" />
-                    <span>{errorMessage}</span>
+                <div className="p-3 bg-red-50 border border-red-100 rounded text-red-800 text-xs font-bold transition-all animate-fade-in">
+                    {errorMessage}
                 </div>
             )}
 
-            {/* Config Hub: Form & Controls */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Bulk Form Panel */}
-                <div className="lg:col-span-2 p-6 bg-white border border-slate-100 rounded-[28px] shadow-sm space-y-6">
-                    <div className="flex items-center gap-3 border-b border-slate-50 pb-4">
-                        <div className="w-8 h-8 rounded-full bg-brand-50 flex items-center justify-center text-brand-600">
-                            <PlusCircle className="w-4 h-4" />
-                        </div>
-                        <div>
-                            <h4 className="text-sm font-black text-slate-900 uppercase tracking-wider">Bulk Add / Update Promotions</h4>
-                            <p className="text-[10px] text-slate-400 font-bold">Apply a coupon promotion to all selected properties</p>
-                        </div>
-                    </div>
+            {/* Config Hub: Minimalistic Tabs & Inline Form */}
+            <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm space-y-4">
+                <div className="flex border-b border-slate-100 pb-2">
+                    <button
+                        onClick={() => { setBulkMode("apply"); setErrorMessage(""); setSuccessMessage(""); }}
+                        className={`pb-2 px-4 text-xs font-black uppercase tracking-wider transition-all border-b-2 outline-none ${
+                            bulkMode === "apply" ? "border-slate-900 text-slate-900" : "border-transparent text-slate-400"
+                        }`}
+                    >
+                        Apply Promotion
+                    </button>
+                    <button
+                        onClick={() => { setBulkMode("remove"); setErrorMessage(""); setSuccessMessage(""); }}
+                        className={`pb-2 px-4 text-xs font-black uppercase tracking-wider transition-all border-b-2 outline-none ${
+                            bulkMode === "remove" ? "border-slate-900 text-slate-900" : "border-transparent text-slate-400"
+                        }`}
+                    >
+                        Remove Promotion
+                    </button>
+                </div>
 
+                {bulkMode === "apply" ? (
                     <form onSubmit={handleApplyPromotion} className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                             <div>
-                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Promo Code</label>
+                                <label className="block text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1">Code</label>
                                 <input
                                     type="text"
-                                    placeholder="e.g. MONSOON20"
+                                    placeholder="Code (e.g. GET15)"
                                     value={promoCode}
                                     onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-brand-500 focus:bg-white transition-all uppercase placeholder:normal-case"
+                                    className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded text-xs font-bold text-slate-900 outline-none focus:bg-white focus:border-slate-300 uppercase"
                                 />
                             </div>
                             <div>
-                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Discount Type</label>
+                                <label className="block text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1">Value</label>
+                                <input
+                                    type="number"
+                                    placeholder="15"
+                                    value={discountValue}
+                                    onChange={(e) => setDiscountValue(e.target.value)}
+                                    className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded text-xs font-bold text-slate-900 outline-none focus:bg-white focus:border-slate-300"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1">Type</label>
                                 <select
                                     value={discountType}
                                     onChange={(e) => setDiscountType(e.target.value)}
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-brand-500 focus:bg-white transition-all"
+                                    className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded text-xs font-bold text-slate-900 outline-none focus:bg-white focus:border-slate-300"
                                 >
-                                    <option value="percentage">Percentage Discount (%)</option>
-                                    <option value="fixed">Fixed Amount Discount (₹)</option>
+                                    <option value="percentage">Percent (%)</option>
+                                    <option value="fixed">Fixed (₹)</option>
                                 </select>
+                            </div>
+                            <div>
+                                <label className="block text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1">State</label>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsActive(p => !p)}
+                                    className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded text-xs font-black uppercase tracking-wider text-slate-800 outline-none text-left flex justify-between items-center"
+                                >
+                                    <span>{isActive ? "Active" : "Paused"}</span>
+                                    <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                                </button>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Discount Value</label>
-                                <input
-                                    type="number"
-                                    placeholder="e.g. 15"
-                                    value={discountValue}
-                                    onChange={(e) => setDiscountValue(e.target.value)}
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-brand-500 focus:bg-white transition-all"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Start Date</label>
+                                <label className="block text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1">Start Date</label>
                                 <input
                                     type="date"
                                     value={startDate}
                                     onChange={(e) => setStartDate(e.target.value)}
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-brand-500 focus:bg-white transition-all"
+                                    className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded text-xs font-bold text-slate-900 outline-none focus:bg-white focus:border-slate-300"
                                 />
                             </div>
                             <div>
-                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">End Date</label>
+                                <label className="block text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1">End Date</label>
                                 <input
                                     type="date"
                                     value={endDate}
                                     onChange={(e) => setEndDate(e.target.value)}
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-brand-500 focus:bg-white transition-all"
+                                    className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded text-xs font-bold text-slate-900 outline-none focus:bg-white focus:border-slate-300"
                                 />
                             </div>
-                        </div>
-
-                        <div className="flex items-center justify-between py-2 border-t border-b border-slate-50">
-                            <span className="text-xs font-bold text-slate-600">Promotion Status</span>
-                            <button
-                                type="button"
-                                onClick={() => setIsActive(prev => !prev)}
-                                className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-                            >
-                                {isActive ? (
-                                    <ToggleRight className="w-8 h-8 text-brand-600" />
-                                ) : (
-                                    <ToggleLeft className="w-8 h-8 text-slate-300" />
-                                )}
-                                <span className="text-xs font-black uppercase tracking-wider text-slate-900">
-                                    {isActive ? "Active" : "Paused"}
-                                </span>
-                            </button>
                         </div>
 
                         <button
                             type="submit"
                             disabled={actionLoading || selectedHotelIds.length === 0}
-                            className="w-full px-6 py-4 bg-slate-900 hover:bg-black text-white rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-slate-950/10 flex items-center justify-center gap-2"
+                            className="px-5 py-2.5 bg-slate-900 hover:bg-black text-white rounded text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                         >
-                            {actionLoading ? "Applying..." : `Apply to ${selectedHotelIds.length} Selected Hotel(s)`}
+                            {actionLoading ? "Processing..." : `Apply to ${selectedHotelIds.length} Selected`}
                         </button>
                     </form>
-                </div>
-
-                {/* Bulk Delete Panel */}
-                <div className="p-6 bg-white border border-slate-100 rounded-[28px] shadow-sm flex flex-col justify-between">
-                    <div className="space-y-6">
-                        <div className="flex items-center gap-3 border-b border-slate-50 pb-4">
-                            <div className="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center text-red-600">
-                                <Trash2 className="w-4 h-4" />
-                            </div>
-                            <div>
-                                <h4 className="text-sm font-black text-red-600 uppercase tracking-wider">Bulk Remove Promotion</h4>
-                                <p className="text-[10px] text-slate-400 font-bold">Remove a specific coupon from selected hotels</p>
-                            </div>
+                ) : (
+                    <form onSubmit={handleRemovePromotion} className="flex flex-wrap items-end gap-4">
+                        <div className="min-w-[200px]">
+                            <label className="block text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1">Delete Code</label>
+                            <input
+                                type="text"
+                                placeholder="WELCOME10"
+                                value={deleteCode}
+                                onChange={(e) => setDeleteCode(e.target.value.toUpperCase())}
+                                className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded text-xs font-bold text-slate-900 outline-none focus:bg-white focus:border-slate-300 uppercase"
+                            />
                         </div>
-
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Coupon Code to Delete</label>
-                                <input
-                                    type="text"
-                                    placeholder="e.g. WELCOME10"
-                                    value={deleteCode}
-                                    onChange={(e) => setDeleteCode(e.target.value.toUpperCase())}
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-red-500 focus:bg-white transition-all uppercase placeholder:normal-case"
-                                />
-                            </div>
-
-                            <div className="p-4 bg-red-50/50 border border-red-50 rounded-2xl text-[10px] text-slate-500 font-bold flex gap-2.5">
-                                <Info className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                                <p>Deleting a promotion will permanently remove this coupon code from the selected hotels' checkout options. Active bookings using it are unaffected.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button
-                        type="button"
-                        onClick={handleRemovePromotion}
-                        disabled={actionLoading || selectedHotelIds.length === 0 || !deleteCode.trim()}
-                        className="w-full mt-6 px-6 py-4 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-red-600/10 flex items-center justify-center gap-2"
-                    >
-                        {actionLoading ? "Removing..." : `Delete from ${selectedHotelIds.length} Selected`}
-                    </button>
-                </div>
+                        <button
+                            type="submit"
+                            disabled={actionLoading || selectedHotelIds.length === 0 || !deleteCode}
+                            className="px-5 py-2.5 bg-red-650 hover:bg-red-700 text-white rounded text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                            {actionLoading ? "Deleting..." : `Delete from ${selectedHotelIds.length} Selected`}
+                        </button>
+                    </form>
+                )}
             </div>
 
             {/* List and Selection Table */}
-            <div className="p-6 bg-white border border-slate-100 rounded-[28px] shadow-sm space-y-6">
-                {/* Search & Filter Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="relative flex-1 max-w-md">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div className="relative max-w-sm w-full">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
                         <input
                             type="text"
-                            placeholder="Search properties by name..."
+                            placeholder="Search properties..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-brand-500 focus:bg-white transition-all"
+                            className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-100 rounded text-xs font-bold text-slate-900 outline-none focus:bg-white focus:border-slate-300"
                         />
                     </div>
 
-                    <div className="flex items-center gap-3">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">City Filter</span>
+                    <div className="flex items-center gap-2">
+                        <span className="text-[9px] font-black uppercase tracking-wider text-slate-400">City</span>
                         <select
                             value={searchCity}
                             onChange={(e) => setSearchCity(e.target.value)}
-                            className="px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-brand-500 focus:bg-white transition-all cursor-pointer"
+                            className="px-3 py-2 bg-slate-50 border border-slate-100 rounded text-xs font-bold text-slate-900 outline-none cursor-pointer focus:bg-white focus:border-slate-300"
                         >
                             {cities.map(c => (
                                 <option key={c} value={c}>{c}</option>
@@ -399,22 +363,21 @@ export default function AdminPromotions({ hotels, onRefresh }: AdminPromotionsPr
                     </div>
                 </div>
 
-                {/* Table Container */}
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="border-b border-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                <th className="py-4 px-4 w-12">
+                            <tr className="border-b border-slate-100 text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                                <th className="py-3 px-3 w-10">
                                     <input
                                         type="checkbox"
                                         checked={filteredHotels.length > 0 && selectedHotelIds.length === filteredHotels.length}
                                         onChange={handleSelectAll}
-                                        className="w-4 h-4 rounded text-brand-600 border-slate-200 focus:ring-brand-500 cursor-pointer"
+                                        className="w-3.5 h-3.5 border-slate-200 text-slate-900 rounded focus:ring-slate-500 cursor-pointer"
                                     />
                                 </th>
-                                <th className="py-4 px-4">Property</th>
-                                <th className="py-4 px-4">Location</th>
-                                <th className="py-4 px-4">Active Promotions</th>
+                                <th className="py-3 px-3">Property</th>
+                                <th className="py-3 px-3">Location</th>
+                                <th className="py-3 px-3">Active Promotions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -426,59 +389,54 @@ export default function AdminPromotions({ hotels, onRefresh }: AdminPromotionsPr
                                         <tr 
                                             key={h.id} 
                                             className={`border-b border-slate-50 hover:bg-slate-50/50 transition-colors ${
-                                                isSelected ? "bg-brand-50/20" : ""
+                                                isSelected ? "bg-slate-50/70" : ""
                                             }`}
                                         >
-                                            <td className="py-4 px-4">
+                                            <td className="py-3 px-3">
                                                 <input
                                                     type="checkbox"
                                                     checked={isSelected}
                                                     onChange={() => handleSelectHotel(h.id)}
-                                                    className="w-4 h-4 rounded text-brand-600 border-slate-200 focus:ring-brand-500 cursor-pointer"
+                                                    className="w-3.5 h-3.5 border-slate-200 text-slate-900 rounded focus:ring-slate-500 cursor-pointer"
                                                 />
                                             </td>
-                                            <td className="py-4 px-4">
+                                            <td className="py-3 px-3">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-100 relative shrink-0">
+                                                    <div className="w-8 h-8 rounded overflow-hidden bg-slate-100 shrink-0">
                                                         {h.thumbnail ? (
                                                             <img src={h.thumbnail} alt={h.name} className="w-full h-full object-cover" />
                                                         ) : (
-                                                            <div className="w-full h-full flex items-center justify-center text-slate-300">
-                                                                <Percent className="w-4 h-4" />
+                                                            <div className="w-full h-full flex items-center justify-center text-slate-350 text-[9px] font-bold">
+                                                                No Img
                                                             </div>
                                                         )}
                                                     </div>
-                                                    <span className="text-xs font-black text-slate-900">{h.name}</span>
+                                                    <span className="text-xs font-black text-slate-800">{h.name}</span>
                                                 </div>
                                             </td>
-                                            <td className="py-4 px-4">
-                                                <span className="text-xs font-bold text-slate-500 flex items-center gap-1.5">
-                                                    <MapPin className="w-3.5 h-3.5 text-slate-400" /> {h.city}
+                                            <td className="py-3 px-3">
+                                                <span className="text-xs font-bold text-slate-500 flex items-center gap-1">
+                                                    <MapPin className="w-3 h-3 text-slate-400" /> {h.city}
                                                 </span>
                                             </td>
-                                            <td className="py-4 px-4">
-                                                <div className="flex flex-wrap gap-2">
+                                            <td className="py-3 px-3">
+                                                <div className="flex flex-wrap gap-1.5">
                                                     {coupons.length > 0 ? (
                                                         coupons.map(c => (
                                                             <span 
                                                                 key={c.id} 
-                                                                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${
+                                                                className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider border ${
                                                                     c.isActive 
-                                                                        ? "bg-emerald-50 text-emerald-700 border-emerald-100" 
-                                                                        : "bg-slate-100 text-slate-500 border-slate-200 opacity-60"
+                                                                        ? "bg-slate-900 text-white border-slate-950" 
+                                                                        : "bg-slate-100 text-slate-400 border-slate-200 opacity-60"
                                                                 }`}
                                                             >
-                                                                <Tag className="w-3 h-3" />
+                                                                <Tag className="w-2.5 h-2.5" />
                                                                 {c.code}: {c.discountValue}{c.discountType === 'percentage' ? '%' : '₹'}
-                                                                {c.isActive ? (
-                                                                    <span className="w-1 h-1 rounded-full bg-emerald-500" />
-                                                                ) : (
-                                                                    <span className="w-1 h-1 rounded-full bg-slate-400" />
-                                                                )}
                                                             </span>
                                                         ))
                                                     ) : (
-                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">
+                                                        <span className="text-[9px] font-bold text-slate-350 uppercase tracking-wider italic">
                                                             No promotions set
                                                         </span>
                                                     )}
