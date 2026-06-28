@@ -119,28 +119,6 @@ function HotelListingContent() {
         setPage(prev => prev + 1);
     }, []);
 
-    const observerTarget = useRef<HTMLDivElement | null>(null);
-
-    useEffect(() => {
-        const target = observerTarget.current;
-        if (!target || !hasMore) return;
-
-        const observer = new IntersectionObserver(
-            (entries) => {
-                if (entries[0].isIntersecting) {
-                    loadMore();
-                }
-            },
-            { threshold: 0.1, rootMargin: "200px" }
-        );
-
-        observer.observe(target);
-
-        return () => {
-            if (target) observer.unobserve(target);
-        };
-    }, [hasMore, loadMore]);
-
     const handleFilterChange = (f: FilterState) => {
         setFilters(f);
         setPage(1);
@@ -278,7 +256,7 @@ function HotelListingContent() {
                             </div>
                         </div>
 
-                        {loading ? (
+                        {loading && page === 1 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 md:gap-8">
                                 {Array.from({ length: 6 }).map((_, i) => (
                                     <HotelCardSkeleton key={i} />
@@ -292,14 +270,26 @@ function HotelListingContent() {
                                     ))}
                                 </div>
 
-                                {hasMore ? (
-                                    <div ref={observerTarget} className="mt-8 flex flex-col items-center gap-4 py-4">
-                                        <div className="w-8 h-8 rounded-full border-2 border-slate-200 border-t-brand-600 animate-spin" />
-                                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider animate-pulse">
-                                            Loading more stays...
-                                        </p>
+                                {hasMore && (
+                                    <div className="mt-8 flex justify-center py-4">
+                                        <button
+                                            onClick={loadMore}
+                                            disabled={loading}
+                                            className="px-6 py-3 bg-slate-900 hover:bg-black text-white rounded-full text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2 cursor-pointer shadow-lg shadow-slate-950/10"
+                                        >
+                                            {loading ? (
+                                                <>
+                                                    <div className="w-3.5 h-3.5 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+                                                    <span>Loading Stays...</span>
+                                                </>
+                                            ) : (
+                                                <span>Load More Stays</span>
+                                            )}
+                                        </button>
                                     </div>
-                                ) : (
+                                )}
+
+                                {!hasMore && (
                                     <div className="mt-8 flex flex-col items-center">
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
                                             Showing all {totalStays} Stays
