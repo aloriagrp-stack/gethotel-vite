@@ -28,6 +28,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
 
+    const clearAuthSession = () => {
+        // If this tab is using an isolated sessionStorage token (impersonating),
+        // only clear sessionStorage to avoid logging out the main localStorage session (Super Admin).
+        if (sessionStorage.getItem('token')) {
+            sessionStorage.removeItem('token');
+        } else {
+            localStorage.removeItem('token');
+            sessionStorage.removeItem('token');
+        }
+        localStorage.removeItem('just_logged_in');
+        setUser(null);
+    };
+
     useEffect(() => {
         const loadUser = async () => {
             // Check for impersonation token in URL query parameter
@@ -35,7 +48,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const impToken = params.get('impersonateToken');
             if (impToken) {
                 sessionStorage.setItem('token', impToken);
-                localStorage.setItem('token', impToken);
                 // Clean URL to keep it pretty and avoid leakage
                 params.delete('impersonateToken');
                 const newSearch = params.toString();
@@ -55,10 +67,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 } catch (err: any) {
                     console.error("Failed to load user profile:", err);
                     if (err.status === 401 || err.status === 403) {
-                        localStorage.removeItem('token');
-                        sessionStorage.removeItem('token');
-                        localStorage.removeItem('just_logged_in');
-                        setUser(null);
+                        clearAuthSession();
                     }
                 }
             }
@@ -98,9 +107,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const logout = () => {
-        localStorage.removeItem('token');
-        sessionStorage.removeItem('token');
-        setUser(null);
+        clearAuthSession();
     };
 
     return (

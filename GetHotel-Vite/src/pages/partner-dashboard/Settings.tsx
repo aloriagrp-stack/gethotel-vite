@@ -47,10 +47,13 @@ export default function PartnerSettingsPage() {
             const res = await hotelApi.deleteHotel(hotel.id);
             if (res.success) {
                 showToast("Property deactivated and deleted successfully!", 'success');
-                // Logout the user and redirect
                 setTimeout(() => {
-                    localStorage.removeItem('token');
-                    sessionStorage.removeItem('token');
+                    if (sessionStorage.getItem('token')) {
+                        sessionStorage.removeItem('token');
+                    } else {
+                        localStorage.removeItem('token');
+                        sessionStorage.removeItem('token');
+                    }
                     sessionStorage.removeItem('activeHotelId');
                     window.location.href = '/partner';
                 }, 2000);
