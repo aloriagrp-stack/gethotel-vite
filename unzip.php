@@ -1,5 +1,27 @@
 <?php
 // PHP Unzip Helper Script for GetHotelStays deployment
+
+if (isset($_GET['action']) && $_GET['action'] === 'debug') {
+    header('Content-Type: text/plain');
+    $file = '/home/vgyuvmpi/gethotel_backend/routes/adminRoutes.js';
+    if (file_exists($file)) {
+        echo "=== adminRoutes.js ===\n";
+        echo file_get_contents($file);
+    } else {
+        echo "routes/adminRoutes.js not found at: $file\n";
+    }
+    
+    $file2 = '/home/vgyuvmpi/gethotel_backend/controllers/adminController.js';
+    if (file_exists($file2)) {
+        echo "\n=== adminController.js (first 50 lines) ===\n";
+        $lines = file($file2);
+        echo implode("", array_slice($lines, 0, 50));
+    } else {
+        echo "controllers/adminController.js not found\n";
+    }
+    exit;
+}
+
 $zipFile = 'frontend.zip';
 $extractTo = './';
 
