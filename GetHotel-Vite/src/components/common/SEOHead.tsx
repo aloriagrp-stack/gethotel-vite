@@ -1,9 +1,6 @@
-/**
- * SEOHead — Reusable component for per-page meta tags, structured data & Open Graph.
- * Uses react-helmet-async for SSR-safe head management.
- */
 import { Helmet } from "react-helmet-async";
 import { SITE } from "@/lib/seo";
+import SSRHead from "./SSRHead";
 
 interface SEOHeadProps {
     title?: string;
@@ -13,7 +10,7 @@ interface SEOHeadProps {
     ogImage?: string;
     ogUrl?: string;
     canonicalUrl?: string;
-    schemas?: object[];                // Array of JSON-LD schemas
+    schemas?: object[];
     noIndex?: boolean;
     hreflangPairs?: { lang: string; url: string }[];
 }
@@ -36,7 +33,6 @@ export default function SEOHead({
     const finalUrl = ogUrl || (typeof window !== "undefined" ? window.location.href : SITE.url);
     const canonical = canonicalUrl || finalUrl;
 
-    // Default hreflang — English for India + major NRI markets
     const defaultHreflang = [
         { lang: "en-IN", url: SITE.url },
         { lang: "en-US", url: SITE.url },
@@ -51,69 +47,66 @@ export default function SEOHead({
     const hreflang = hreflangPairs || defaultHreflang;
 
     return (
-        <Helmet>
-            {/* ── Core ── */}
-            <html lang="en-IN" />
-            <title>{finalTitle}</title>
-            <meta name="description" content={finalDesc} />
-            {keywords.length > 0 && (
-                <meta name="keywords" content={keywords.join(", ")} />
-            )}
-            <meta name="robots" content={noIndex ? "noindex, nofollow" : "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"} />
-            <meta name="author" content="GetHotelStays" />
-            <meta name="copyright" content="GetHotelStays" />
-            <meta name="language" content="English" />
-            <meta name="revisit-after" content="3 days" />
-            <meta name="rating" content="General" />
-            <meta name="geo.region" content="IN" />
-            <meta name="geo.placename" content="India" />
-            <link rel="canonical" href={canonical} />
+        <>
+            <SSRHead title={finalTitle} description={finalDesc} keywords={keywords} canonicalUrl={canonical} />
+            <Helmet>
+                <html lang="en-IN" />
+                <title>{finalTitle}</title>
+                <meta name="description" content={finalDesc} />
+                {keywords.length > 0 && (
+                    <meta name="keywords" content={keywords.join(", ")} />
+                )}
+                <meta name="robots" content={noIndex ? "noindex, nofollow" : "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"} />
+                <meta name="author" content="GetHotelStays" />
+                <meta name="copyright" content="GetHotelStays" />
+                <meta name="language" content="English" />
+                <meta name="revisit-after" content="3 days" />
+                <meta name="rating" content="General" />
+                <meta name="geo.region" content="IN" />
+                <meta name="geo.placename" content="India" />
+                <link rel="canonical" href={canonical} />
 
-            {/* ── Open Graph ── */}
-            <meta property="og:site_name" content="GetHotelStays" />
-            <meta property="og:type" content={ogType} />
-            <meta property="og:url" content={finalUrl} />
-            <meta property="og:title" content={finalTitle} />
-            <meta property="og:description" content={finalDesc} />
-            <meta property="og:image" content={finalImage} />
-            <meta property="og:image:width" content="1200" />
-            <meta property="og:image:height" content="630" />
-            <meta property="og:image:alt" content={finalTitle} />
-            <meta property="og:locale" content="en_IN" />
-            <meta property="og:locale:alternate" content="en_US" />
-            <meta property="og:locale:alternate" content="en_GB" />
-            <meta property="og:locale:alternate" content="en_AE" />
+                <meta property="og:site_name" content="GetHotelStays" />
+                <meta property="og:type" content={ogType} />
+                <meta property="og:url" content={finalUrl} />
+                <meta property="og:title" content={finalTitle} />
+                <meta property="og:description" content={finalDesc} />
+                <meta property="og:image" content={finalImage} />
+                <meta property="og:image:width" content="1200" />
+                <meta property="og:image:height" content="630" />
+                <meta property="og:image:alt" content={finalTitle} />
+                <meta property="og:locale" content="en_IN" />
+                <meta property="og:locale:alternate" content="en_US" />
+                <meta property="og:locale:alternate" content="en_GB" />
+                <meta property="og:locale:alternate" content="en_AE" />
 
-            {/* ── Twitter / X Card ── */}
-            <meta name="twitter:card" content="summary_large_image" />
-            <meta name="twitter:site" content="@GetHotelStays" />
-            <meta name="twitter:creator" content="@GetHotelStays" />
-            <meta name="twitter:title" content={finalTitle} />
-            <meta name="twitter:description" content={finalDesc} />
-            <meta name="twitter:image" content={finalImage} />
-            <meta name="twitter:image:alt" content={finalTitle} />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:site" content="@GetHotelStays" />
+                <meta name="twitter:creator" content="@GetHotelStays" />
+                <meta name="twitter:title" content={finalTitle} />
+                <meta name="twitter:description" content={finalDesc} />
+                <meta name="twitter:image" content={finalImage} />
+                <meta name="twitter:image:alt" content={finalTitle} />
 
-            {/* ── International / hreflang ── */}
-            {hreflang.map(({ lang, url }) => (
-                <link key={lang} rel="alternate" hrefLang={lang} href={url} />
-            ))}
+                {hreflang.map(({ lang, url }) => (
+                    <link key={lang} rel="alternate" hrefLang={lang} href={url} />
+                ))}
 
-            {/* ── Mobile / PWA ── */}
-            <meta name="theme-color" content="#0052FF" />
-            <meta name="mobile-web-app-capable" content="yes" />
-            <meta name="apple-mobile-web-app-capable" content="yes" />
-            <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-            <meta name="apple-mobile-web-app-title" content="GetHotelStays" />
-            <meta name="format-detection" content="telephone=no" />
+                <meta name="theme-color" content="#0052FF" />
+                <meta name="mobile-web-app-capable" content="yes" />
+                <meta name="apple-mobile-web-app-capable" content="yes" />
+                <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+                <meta name="apple-mobile-web-app-title" content="GetHotelStays" />
+                <meta name="format-detection" content="telephone=no" />
 
-            {/* ── Structured Data (JSON-LD) ── */}
-            {schemas.map((schema, i) => (
-                <script
-                    key={i}
-                    type="application/ld+json"
-                    dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-                />
-            ))}
-        </Helmet>
+                {schemas.map((schema, i) => (
+                    <script
+                        key={i}
+                        type="application/ld+json"
+                        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+                    />
+                ))}
+            </Helmet>
+        </>
     );
 }

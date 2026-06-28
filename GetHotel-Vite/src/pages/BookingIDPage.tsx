@@ -34,6 +34,7 @@ import { countries } from "@/lib/countries";
 import { InvoiceTemplate } from "@/components/booking/InvoiceTemplate";
 import { useRef } from "react";
 import { validateCoupon } from "@/lib/promoUtils";
+import { loadRazorpay } from "@/lib/load-razorpay";
 
 function BookingContent() {
     const params = useParams();
@@ -383,6 +384,7 @@ function BookingContent() {
                     }
                 };
 
+                await loadRazorpay()
                 const rzp = new (window as any).Razorpay(options);
                 rzp.open();
             } catch (orderError: any) {

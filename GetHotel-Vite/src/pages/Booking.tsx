@@ -38,6 +38,7 @@ import confetti from "canvas-confetti";
 import { useAuth } from "@/context/AuthContext";
 import SEOHead from "@/components/common/SEOHead";
 import { validateCoupon } from "@/lib/promoUtils";
+import { loadRazorpay } from "@/lib/load-razorpay";
 
 const guestSchema = z.object({
     firstName: z.string().min(2, "First name is required"),
@@ -447,6 +448,7 @@ function BookingContent() {
 
                     // Open Razorpay Checkout for online modes
                     try {
+                        await loadRazorpay()
                         const orderRes = await paymentApi.createOrder(booking.id);
                         
                         const options = {

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { BookingProvider } from "./context/BookingContext";
@@ -10,74 +10,74 @@ import ErrorBoundary from "./components/common/ErrorBoundary";
 import ScrollToTop from "./components/common/ScrollToTop";
 import Loader from "./components/common/Loader";
 
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Hotels from "./pages/Hotels";
+import HotelDetails from "./pages/HotelDetails";
+import Profile from "./pages/Profile";
+import Wishlist from "./pages/Wishlist";
+import MyBookings from "./pages/MyBookings";
+import ListProperty from "./pages/ListProperty";
+import Booking from "./pages/Booking";
+import AdminLogin from "./pages/AdminLogin";
+import PartnerLanding from "./pages/PartnerLanding";
+import ListPropertyRegister from "./pages/ListPropertyRegister";
+
+import GoaHotels from "./pages/destinations/GoaHotels";
+import JaipurHotels from "./pages/destinations/JaipurHotels";
+import ManaliHotels from "./pages/destinations/ManaliHotels";
+import ShimlaHotels from "./pages/destinations/ShimlaHotels";
+import UdaipurHotels from "./pages/destinations/UdaipurHotels";
+import DelhiHotels from "./pages/destinations/DelhiHotels";
+import CityPage from "./pages/destinations/CityPage";
+
+import BookingInvoice from "./pages/BookingInvoice";
+import WriteReview from "./pages/WriteReview";
+import ReviewBooking from "./pages/ReviewBooking";
+import ReportBooking from "./pages/ReportBooking";
+import BookingInvoiceDetails from "./pages/BookingInvoiceDetails";
+import DisputeBooking from "./pages/DisputeBooking";
+import BookingDetails from "./pages/BookingDetails";
+import BookingIDPage from "./pages/BookingIDPage";
+
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
+import CookiePolicy from "./pages/CookiePolicy";
+import CancellationPolicy from "./pages/CancellationPolicy";
+import PricingPolicy from "./pages/PricingPolicy";
+import ContactUs from "./pages/ContactUs";
+import NotFound from "./pages/NotFound";
+
+import AdminLayout from "./components/layout/AdminLayout";
+import PartnerLayout from "./components/layout/PartnerLayout";
+
+import SuperAdminDashboard from "./pages/admin/AdminDashboard";
+import AdminHotelDetails from "./pages/admin/AdminHotelDetails";
+
+import PartnerDashboard from "./pages/partner-dashboard/Dashboard";
+import PartnerBookings from "./pages/partner-dashboard/Bookings";
+import PartnerHotel from "./pages/partner-dashboard/Hotel";
+import PartnerRooms from "./pages/partner-dashboard/Rooms";
+import PartnerPayments from "./pages/partner-dashboard/Payments";
+import PartnerCoupons from "./pages/partner-dashboard/Coupons";
+import PartnerMessages from "./pages/partner-dashboard/Messages";
+import PartnerReviews from "./pages/partner-dashboard/Reviews";
+import PartnerSettings from "./pages/partner-dashboard/Settings";
+import PartnerAnalytics from "./pages/partner-dashboard/Analytics";
+import PartnerFrontDesk from "./pages/partner-dashboard/FrontDesk";
+import PartnerInventory from "./pages/partner-dashboard/Inventory";
+import PartnerNotifications from "./pages/partner-dashboard/Notifications";
+import PartnerStaff from "./pages/partner-dashboard/Staff";
+import PartnerChannelSync from "./pages/partner-dashboard/ChannelSync";
+import PartnerHotelSelect from "./pages/PartnerHotelSelect";
+
 const PageLoader = () => (
   <div className="min-h-[60vh] flex items-center justify-center bg-transparent">
     <Loader variant="inline" />
   </div>
 );
 
-const Home = lazy(() => import("./pages/Home"));
-const Login = lazy(() => import("./pages/Login"));
-const Hotels = lazy(() => import("./pages/Hotels"));
-const HotelDetails = lazy(() => import("./pages/HotelDetails"));
-const Profile = lazy(() => import("./pages/Profile"));
-const Wishlist = lazy(() => import("./pages/Wishlist"));
-const MyBookings = lazy(() => import("./pages/MyBookings"));
-const ListProperty = lazy(() => import("./pages/ListProperty"));
-const Booking = lazy(() => import("./pages/Booking"));
-const AdminLogin = lazy(() => import("./pages/AdminLogin"));
-const PartnerLanding = lazy(() => import("./pages/PartnerLanding"));
-const ListPropertyRegister = lazy(() => import("./pages/ListPropertyRegister"));
-
-const GoaHotels = lazy(() => import("./pages/destinations/GoaHotels"));
-const JaipurHotels = lazy(() => import("./pages/destinations/JaipurHotels"));
-const ManaliHotels = lazy(() => import("./pages/destinations/ManaliHotels"));
-const ShimlaHotels = lazy(() => import("./pages/destinations/ShimlaHotels"));
-const UdaipurHotels = lazy(() => import("./pages/destinations/UdaipurHotels"));
-const DelhiHotels = lazy(() => import("./pages/destinations/DelhiHotels"));
-const CityPage = lazy(() => import("./pages/destinations/CityPage"));
-
-const BookingInvoice = lazy(() => import("./pages/BookingInvoice"));
-const WriteReview = lazy(() => import("./pages/WriteReview"));
-const ReviewBooking = lazy(() => import("./pages/ReviewBooking"));
-const ReportBooking = lazy(() => import("./pages/ReportBooking"));
-const BookingInvoiceDetails = lazy(() => import("./pages/BookingInvoiceDetails"));
-const DisputeBooking = lazy(() => import("./pages/DisputeBooking"));
-const BookingDetails = lazy(() => import("./pages/BookingDetails"));
-const BookingIDPage = lazy(() => import("./pages/BookingIDPage"));
-
-const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
-const TermsOfService = lazy(() => import("./pages/TermsOfService"));
-const CookiePolicy = lazy(() => import("./pages/CookiePolicy"));
-const CancellationPolicy = lazy(() => import("./pages/CancellationPolicy"));
-const PricingPolicy = lazy(() => import("./pages/PricingPolicy"));
-const ContactUs = lazy(() => import("./pages/ContactUs"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-
-const AdminLayout = lazy(() => import("./components/layout/AdminLayout"));
-const PartnerLayout = lazy(() => import("./components/layout/PartnerLayout"));
-
-const SuperAdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
-const AdminHotelDetails = lazy(() => import("./pages/admin/AdminHotelDetails"));
-
-const PartnerDashboard = lazy(() => import("./pages/partner-dashboard/Dashboard"));
-const PartnerBookings = lazy(() => import("./pages/partner-dashboard/Bookings"));
-const PartnerHotel = lazy(() => import("./pages/partner-dashboard/Hotel"));
-const PartnerRooms = lazy(() => import("./pages/partner-dashboard/Rooms"));
-const PartnerPayments = lazy(() => import("./pages/partner-dashboard/Payments"));
-const PartnerCoupons = lazy(() => import("./pages/partner-dashboard/Coupons"));
-const PartnerMessages = lazy(() => import("./pages/partner-dashboard/Messages"));
-const PartnerReviews = lazy(() => import("./pages/partner-dashboard/Reviews"));
-const PartnerSettings = lazy(() => import("./pages/partner-dashboard/Settings"));
-const PartnerAnalytics = lazy(() => import("./pages/partner-dashboard/Analytics"));
-const PartnerFrontDesk = lazy(() => import("./pages/partner-dashboard/FrontDesk"));
-const PartnerInventory = lazy(() => import("./pages/partner-dashboard/Inventory"));
-const PartnerNotifications = lazy(() => import("./pages/partner-dashboard/Notifications"));
-const PartnerStaff = lazy(() => import("./pages/partner-dashboard/Staff"));
-const PartnerChannelSync = lazy(() => import("./pages/partner-dashboard/ChannelSync"));
-const PartnerHotelSelect = lazy(() => import("./pages/PartnerHotelSelect"));
-
-export default function App() {
+export default function AppSSR() {
   useEffect(() => {
     try {
       sessionStorage.removeItem("chunk_reload_attempted");

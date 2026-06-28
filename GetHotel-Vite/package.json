@@ -6,6 +6,10 @@
   "scripts": {
     "dev": "vite --host --port 5180",
     "build": "tsc -b && vite build",
+    "build:client": "vite build",
+    "build:server": "vite build --ssr src/entry-server.tsx --outDir dist/server",
+    "build:ssr": "npm run build:client && npm run build:server",
+    "start:ssr": "node server/ssr.js",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -14,6 +18,7 @@
     "canvas-confetti": "^1.9.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "express": "^5.1.0",
     "firebase": "^12.13.0",
     "framer-motion": "^12.38.0",
     "lucide-react": "^0.576.0",
