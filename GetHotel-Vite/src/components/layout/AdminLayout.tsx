@@ -6,7 +6,7 @@ import {
     BarChart3, Settings, LogOut,
     Bell, Search, Plus, Clock,
     CreditCard, Loader2, Calendar, AlertCircle, LayoutTemplate, SlidersHorizontal, Star, RefreshCw, LayoutGrid, Globe, Sparkles,
-    ChevronLeft, ChevronRight, Menu, X
+    ChevronLeft, ChevronRight, Menu, X, Percent
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -31,6 +31,7 @@ export default function AdminLayout() {
         { id: "requests", label: "Partner Requests", icon: Clock, href: "/admin/super/requests" },
         { id: "controlhub", label: "Manager", icon: SlidersHorizontal, href: "/admin/super/controlhub" },
         { id: "hotels", label: "Hotels", icon: Hotel, href: "/admin/super?tab=hotels" },
+        { id: "promotions", label: "Promotions & Coupons", icon: Percent, href: "/admin/super?tab=promotions" },
         { id: "multi-room", label: "Multi Room Setup", icon: LayoutGrid, href: "/admin/super/multi-room" },
         { id: "ai-copilot", label: "AI Room Onboarding", icon: Sparkles, href: "/admin/super/ai-copilot" },
         { id: "bookings", label: "All Bookings", icon: Calendar, href: "/admin/super/bookings" },
