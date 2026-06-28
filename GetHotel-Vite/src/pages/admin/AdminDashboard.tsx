@@ -12,7 +12,7 @@ import {
     CreditCard, TrendingUp, MoreVertical,
     ArrowUpRight, ArrowDownRight, Globe, ChevronRight, Loader2,
     Key, ShieldAlert, Eye, EyeOff, Star, MessageSquare, Trash2, Sparkles,
-    UserCheck, Mail, Phone, Calendar, LogIn, Shield, Copy, ExternalLink, RefreshCw, LayoutGrid
+    UserCheck, Mail, Phone, Calendar, LogIn, Shield, Copy, ExternalLink, RefreshCw, LayoutGrid, Percent
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "@/components/common/Image";
@@ -23,6 +23,7 @@ import AdminHomepageEditor from "./AdminHomepageEditor";
 import AdminControlHub from "./AdminControlHub";
 import AdminAddPartner from "./AdminAddPartner";
 import AdminMultiRoomSetup from "./AdminMultiRoomSetup";
+import AdminPromotions from "./AdminPromotions";
 import AdminAICopilot from "./AdminAICopilot";
 import AdminReviewImporter from "./AdminReviewImporter";
 
@@ -140,6 +141,7 @@ export default function SuperAdminDashboard() {
         if (normalizedTab === "hotels") return !!loadedSections.hotels;
         if (normalizedTab === "controlhub") return !!loadedSections.hotels;
         if (normalizedTab === "multi-room") return !!loadedSections.hotels;
+        if (normalizedTab === "promotions") return !!loadedSections.hotels;
         if (normalizedTab === "addPartner") return !!(loadedSections.hotels && loadedSections.partners);
         if (normalizedTab === "bookings") return !!loadedSections.bookings;
         if (normalizedTab === "reviews") return !!loadedSections.reviews;
@@ -160,7 +162,7 @@ export default function SuperAdminDashboard() {
             const needsStats = (normalizedTab === "overview") && shouldLoad("stats");
             const needsRequests = ["overview", "requests"].includes(normalizedTab) && shouldLoad("requests");
             const needsPartners = ["users", "addPartner"].includes(normalizedTab) && shouldLoad("partners");
-            const needsHotels = ["hotels", "controlhub", "addPartner", "multi-room", "ai-copilot", "reviews"].includes(normalizedTab) && shouldLoad("hotels");
+            const needsHotels = ["hotels", "controlhub", "addPartner", "multi-room", "ai-copilot", "reviews", "promotions"].includes(normalizedTab) && shouldLoad("hotels");
             const needsBookings = normalizedTab === "bookings" && shouldLoad("bookings");
             const needsReviews = normalizedTab === "reviews" && shouldLoad("reviews");
 
@@ -388,6 +390,7 @@ export default function SuperAdminDashboard() {
         { id: "overview", label: "Overview", icon: LayoutDashboard },
         { id: "users", label: "Users", icon: Users },
         { id: "hotels", label: "Properties", icon: Hotel },
+        { id: "promotions", label: "Promotions & Coupons", icon: Percent },
         { id: "bookings", label: "Bookings", icon: CreditCard },
         { id: "reviews", label: "Reviews", icon: MessageSquare },
         { id: "requests", label: "Requests", icon: Clock },
@@ -452,6 +455,7 @@ export default function SuperAdminDashboard() {
                     {activeTab === "stats" && <AdminStats />}
                     {activeTab === "finance" && <AdminFinance />}
                     {activeTab === "homepage" && <AdminHomepageEditor />}
+                    {activeTab === "promotions" && <AdminPromotions hotels={hotels} onRefresh={() => fetchDashboardData('hotels', true)} />}
                     {activeTab === "controlhub" && <AdminControlHub hotels={hotels} loading={loading} />}
                     {activeTab === "multi-room" && <AdminMultiRoomSetup hotels={hotels} />}
                     {activeTab === "addPartner" && <AdminAddPartner hotels={hotels} partners={partners} setPartners={setPartners} />}

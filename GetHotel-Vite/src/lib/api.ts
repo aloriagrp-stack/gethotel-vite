@@ -176,6 +176,8 @@ export const adminApi = {
     suggestRooms: (data: { hotelId: number; prompt?: string; url?: string; urls?: string[]; history?: { role: string; text: string }[]; existingRooms?: any[]; newAttachedImages?: string[] }, options?: RequestInit) => apiFetch('/admin/ai/suggest-rooms', { method: 'POST', body: JSON.stringify(data), ...options }),
     convertWebP: (data: { imageUrl: string }) => apiFetch('/admin/ai/convert-webp', { method: 'POST', body: JSON.stringify(data) }),
     importReviews: (data: { hotelId: number; url: string }) => apiFetch('/admin/ai/import-reviews', { method: 'POST', body: JSON.stringify(data) }),
+    bulkUpdatePromotions: (data: { hotelIds: number[]; code: string; discountType: string; discountValue: number; isActive: boolean; startDate?: string; endDate?: string }) => apiFetch('/admin/hotels/bulk-promotion', { method: 'POST', body: JSON.stringify(data) }),
+    bulkDeletePromotions: (data: { hotelIds: number[]; code: string }) => apiFetch('/admin/hotels/bulk-delete-promotion', { method: 'POST', body: JSON.stringify(data) }),
 };
 
 export const otaApi = {

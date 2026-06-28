@@ -55,7 +55,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 window.history.replaceState(null, '', newPath);
             }
 
-            const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+            let token = sessionStorage.getItem('token');
+            if (!token) {
+                token = localStorage.getItem('token');
+                if (token) {
+                    sessionStorage.setItem('token', token);
+                }
+            }
+
             if (token) {
                 // Safeguard: If we are reloading the user from a token, we are not "just logging in"
                 // This prevents the login success popup from appearing on every refresh
@@ -78,8 +85,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const login = async (credentials: any) => {
         const res = await authApi.login(credentials);
-        sessionStorage.removeItem('token');
         localStorage.setItem('token', res.token);
+        sessionStorage.setItem('token', res.token);
         localStorage.setItem('just_logged_in', 'true');
         const userRes = await authApi.getMe();
         setUser(userRes.data);
@@ -88,8 +95,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const googleLogin = async (idToken: string) => {
         const res = await authApi.googleLogin(idToken);
-        sessionStorage.removeItem('token');
         localStorage.setItem('token', res.token);
+        sessionStorage.setItem('token', res.token);
         localStorage.setItem('just_logged_in', 'true');
         const userRes = await authApi.getMe();
         setUser(userRes.data);
@@ -98,8 +105,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const register = async (userData: any) => {
         const res = await authApi.register(userData);
-        sessionStorage.removeItem('token');
         localStorage.setItem('token', res.token);
+        sessionStorage.setItem('token', res.token);
         localStorage.setItem('just_logged_in', 'true');
         const userRes = await authApi.getMe();
         setUser(userRes.data);

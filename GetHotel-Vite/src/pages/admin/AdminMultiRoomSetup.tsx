@@ -339,6 +339,15 @@ export default function AdminMultiRoomSetup({ hotels }: { hotels: HotelSummary[]
         }
 
         // Validations
+        const totalImagesAcrossRooms = rooms.reduce((sum, r) => sum + (r.images || []).length, 0);
+        if (totalImagesAcrossRooms < 1) {
+            setSaveLog({ 
+                type: "error", 
+                message: "Validation Error: Please upload at least 1 image to at least one of the room categories." 
+            });
+            return;
+        }
+
         for (const room of rooms) {
             // 1. Meal plan pricing validation
             const base = room.pricePerNight;
@@ -364,15 +373,8 @@ export default function AdminMultiRoomSetup({ hotels }: { hotels: HotelSummary[]
                 }
             }
 
-            // 2. Images count validation: minimum 1, maximum 20
+            // 2. Images count validation: maximum 20 per category
             const imgList = room.images || [];
-            if (imgList.length < 1) {
-                setSaveLog({ 
-                    type: "error", 
-                    message: `Validation Error for ${room.name}: Please upload at least 1 image (minimum 1, maximum 20 images are allowed).` 
-                });
-                return;
-            }
             if (imgList.length > 20) {
                 setSaveLog({ 
                     type: "error", 

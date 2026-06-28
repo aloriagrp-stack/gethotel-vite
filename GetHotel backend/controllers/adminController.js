@@ -243,7 +243,8 @@ exports.getAllHotels = async (req, res) => {
         const hotels = await prisma.hotel.findMany({
             include: {
                 user: { select: { name: true, email: true } },
-                room: true
+                room: true,
+                coupon: true
             },
             orderBy: { createdAt: 'desc' }
         });
@@ -1969,6 +1970,87 @@ const detectOtaDetails = async (url, fallbackHotelName, basePrice = 2500) => {
 
 exports.detectOtaDetails = detectOtaDetails;
 exports.findBestRoomMatch = findBestRoomMatch;
+
+// @desc    Bulk create/update coupon promotions for hotels
+// @route   POST /api/admin/hotels/bulk-promotion
+// @access  Private (Super Admin)
+exports.bulkUpdatePromotions = async (req, res) => {
+    const { hotelIds, code, discountType, discountValue, isActive, startDate, endDate } = req.body;
+    
+    if (!hotelIds || !Array.isArray(hotelIds) || hotelIds.length === 0 || !code || discountValue === undefined) {
+        return res.status(400).json({ success: false, message: 'Invalid bulk promotion input' });
+    }
+
+    try {
+        const start = startDate ? new Date(startDate) : new Date();
+        const end = endDate ? new Date(endDate) : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 1 year default
+
+        await prisma.$transaction(
+            hotelIds.map(hId => {
+                const upperCode = code.toUpperCase().trim();
+                return prisma.coupon.upsert({
+                    where: {
+                        code_hotelId: {
+                            code: upperCode,
+                            hotelId: hId
+                        }
+                    },
+                    update: {
+                        discountType: discountType || 'percentage',
+                        discountValue: parseFloat(discountValue),
+                        isActive: isActive !== undefined ? isActive : true,
+                        startDate: start,
+                        endDate: end,
+                        minBookingAmt: 0,
+                        promoType: 'standard',
+                        targetAudience: 'all',
+                        applyToRooms: 'all'
+                    },
+                    create: {
+                        code: upperCode,
+                        hotelId: hId,
+                        discountType: discountType || 'percentage',
+                        discountValue: parseFloat(discountValue),
+                        isActive: isActive !== undefined ? isActive : true,
+                        startDate: start,
+                        endDate: end,
+                        minBookingAmt: 0,
+                        promoType: 'standard',
+                        targetAudience: 'all',
+                        applyToRooms: 'all'
+                    }
+                });
+            })
+        );
+
+        res.json({ success: true, message: `Successfully updated promotion '${code}' for ${hotelIds.length} hotels.` });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Bulk delete coupon promotions from hotels
+// @route   POST /api/admin/hotels/bulk-delete-promotion
+// @access  Private (Super Admin)
+exports.bulkDeletePromotions = async (req, res) => {
+    const { hotelIds, code } = req.body;
+
+    if (!hotelIds || !Array.isArray(hotelIds) || hotelIds.length === 0 || !code) {
+        return res.status(400).json({ success: false, message: 'Invalid bulk delete input' });
+    }
+
+    try {
+        await prisma.coupon.deleteMany({
+            where: {
+                hotelId: { in: hotelIds },
+                code: code.toUpperCase().trim()
+            }
+        });
+        res.json({ success: true, message: `Successfully removed promotion '${code}' from selected hotels.` });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
 
 
 
