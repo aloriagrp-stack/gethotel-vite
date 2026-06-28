@@ -70,7 +70,7 @@ if ($zip->open($zipFile) === TRUE) {
 
     echo 'DEPLOYS_SUCCESS';
     unlink($zipFile);
-    unlink(__FILE__);
+    // unlink(__FILE__);
 } else {
     echo 'DEPLOYS_FAILED';
 }
