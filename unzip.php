@@ -4,11 +4,16 @@
 if (isset($_GET['action']) && $_GET['action'] === 'debug') {
     header('Content-Type: text/plain');
     
-    echo "=== Running Node Processes ===\n";
-    if (function_exists('shell_exec')) {
-        echo shell_exec("ps aux | grep node | grep -v grep");
+    echo "=== scandir /home/vgyuvmpi ===\n";
+    if (is_dir('/home/vgyuvmpi')) {
+        $dirs = scandir('/home/vgyuvmpi');
+        foreach ($dirs as $d) {
+            if ($d !== '.' && $d !== '..' && is_dir("/home/vgyuvmpi/$d")) {
+                echo "Folder: $d\n";
+            }
+        }
     } else {
-        echo "shell_exec not available\n";
+        echo "/home/vgyuvmpi is not a directory or is not readable\n";
     }
     
     $file = '/home/vgyuvmpi/gethotel_backend/routes/adminRoutes.js';
