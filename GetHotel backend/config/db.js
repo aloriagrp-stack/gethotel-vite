@@ -36,9 +36,30 @@ const { PrismaClient } = require('@prisma/client');
 const DATABASE_URL = process.env.DATABASE_URL;
 console.log('[db.js] DB host:', DATABASE_URL ? DATABASE_URL.split('@')[1] : 'NOT SET');
 
-const prisma = new PrismaClient({
+const prismaRaw = new PrismaClient({
     datasources: { db: { url: DATABASE_URL } },
     log: ['error', 'warn'],
+});
+
+// Auto-regenerate sitemap on hotel additions, updates, deletions, or status toggling
+const { generateSitemap } = require('../utils/sitemap');
+
+const prisma = prismaRaw.$extends({
+    query: {
+        hotel: {
+            async $allOperations({ model, operation, args, query }) {
+                const result = await query(args);
+                
+                const mutations = ['create', 'createMany', 'update', 'updateMany', 'upsert', 'delete', 'deleteMany'];
+                if (mutations.includes(operation)) {
+                    console.log(`[db.js] Prisma detected mutations on Hotel model (${operation}). Triggering sitemap auto-generation...`);
+                    generateSitemap(prismaRaw).catch(err => console.error('[db.js] Auto-sitemap generation failed:', err));
+                }
+                
+                return result;
+            }
+        }
+    }
 });
 
 module.exports = prisma;

@@ -472,6 +472,35 @@ const mount = (prefix) => {
 mount('/api');
 mount(''); // Also mount at root as fallback
 
+// Expose dynamic sitemap endpoints
+app.get(['/api/sitemap.xml', '/sitemap.xml'], async (req, res) => {
+    try {
+        const searchPaths = [
+            path.join(__dirname, '..', 'public_html', 'sitemap.xml'),
+            '/home/vgyuvmpi/public_html/sitemap.xml',
+            path.join(__dirname, '..', 'GetHotel-Vite', 'public', 'sitemap.xml')
+        ];
+        
+        let sitemapPath = '';
+        for (const p of searchPaths) {
+            if (fs.existsSync(p)) {
+                sitemapPath = p;
+                break;
+            }
+        }
+        
+        if (sitemapPath) {
+            res.header('Content-Type', 'application/xml');
+            return res.sendFile(sitemapPath);
+        } else {
+            return res.status(404).send('Sitemap not found');
+        }
+    } catch (err) {
+        console.error('[server] Error serving dynamic sitemap:', err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
 app.use('/api', (req, res) => {
     res.status(404).json({
         success: false,
@@ -485,4 +514,14 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
+    
+    // Regenerate sitemap on startup
+    try {
+        const prisma = require('./config/db');
+        const { generateSitemap } = require('./utils/sitemap');
+        console.log('[server] Triggering sitemap regeneration on startup...');
+        generateSitemap(prisma).catch(err => console.error('[server] Startup sitemap regeneration failed:', err));
+    } catch (err) {
+        console.error('[server] Failed to require sitemap module at startup:', err);
+    }
 });
