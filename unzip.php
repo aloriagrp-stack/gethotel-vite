@@ -31,6 +31,13 @@ if (isset($_GET['action']) && $_GET['action'] === 'debug') {
     } else {
         echo "\nassets/ directory NOT found!\n";
     }
+    
+    if (file_exists('.htaccess')) {
+        echo "\n=== .htaccess ===\n";
+        echo file_get_contents('.htaccess');
+    } else {
+        echo "\n.htaccess NOT found!\n";
+    }
     exit;
 }
 
