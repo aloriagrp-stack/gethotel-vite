@@ -17,19 +17,33 @@ if (isset($_GET['action']) && $_GET['action'] === 'debug') {
         }
     }
     
-    if (is_dir('./assets')) {
-        echo "\n=== Scandir assets/ ===\n";
-        $assets = scandir('./assets');
-        foreach ($assets as $a) {
-            if ($a !== '.' && $a !== '..') {
-                if (strpos($a, 'index-') === 0 || strpos($a, 'PartnerLayout-') === 0 || strpos($a, 'Dashboard-') === 0) {
-                    $mtime = date("Y-m-d H:i:s", filemtime("./assets/$a"));
-                    echo "[FILE] $a - $mtime (" . filesize("./assets/$a") . " bytes)\n";
+    if (is_dir('./client')) {
+        echo "\n=== Scandir client/ ===\n";
+        $cfiles = scandir('./client');
+        foreach ($cfiles as $cf) {
+            if ($cf !== '.' && $cf !== '..') {
+                $isDir = is_dir("./client/$cf") ? "[DIR]" : "[FILE]";
+                $mtime = date("Y-m-d H:i:s", filemtime("./client/$cf"));
+                echo "$isDir $cf - $mtime\n";
+            }
+        }
+    } else {
+        echo "\nclient/ directory NOT found!\n";
+    }
+    
+    if (is_dir('./client/assets')) {
+        echo "\n=== Scandir client/assets/ ===\n";
+        $cassets = scandir('./client/assets');
+        foreach ($cassets as $ca) {
+            if ($ca !== '.' && $ca !== '..') {
+                if (strpos($ca, 'index-') === 0 || strpos($ca, 'PartnerLayout-') === 0 || strpos($ca, 'Dashboard-') === 0) {
+                    $mtime = date("Y-m-d H:i:s", filemtime("./client/assets/$ca"));
+                    echo "[FILE] $ca - $mtime (" . filesize("./client/assets/$ca") . " bytes)\n";
                 }
             }
         }
     } else {
-        echo "\nassets/ directory NOT found!\n";
+        echo "\nclient/assets/ directory NOT found!\n";
     }
     
     if (file_exists('.htaccess')) {
