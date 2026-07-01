@@ -65,8 +65,16 @@ if (!file_exists($zipFile)) {
 
 $zip = new ZipArchive;
 if ($zip->open($zipFile) === TRUE) {
-    $zip->extractTo($extractTo);
+    $extractResult = $zip->extractTo($extractTo);
     $zip->close();
+    
+    if ($extractResult !== TRUE) {
+        echo 'ERROR: Zip extraction failed. Please check folder permissions.';
+        $user = function_exists('posix_getpwuid') && function_exists('posix_geteuid') ? posix_getpwuid(posix_geteuid())['name'] : 'unknown';
+        echo " PHP User: $user";
+        exit;
+    }
+    
     // Auto-restart the backend application
     $restartPaths = [
         '/home/vgyuvmpi/gethotel_backend/tmp/restart.txt',
