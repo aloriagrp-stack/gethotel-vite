@@ -4,21 +4,32 @@
 if (isset($_GET['action']) && $_GET['action'] === 'debug') {
     header('Content-Type: text/plain');
     
-    echo "=== check hotelController.js in both directories ===\n";
-    $paths = [
-        '/home/vgyuvmpi/gethotel_backend/controllers/hotelController.js',
-        '/home/vgyuvmpi/controllers/hotelController.js'
-    ];
-    foreach ($paths as $path) {
-        if (file_exists($path)) {
-            echo "\nFound at: $path (size: " . filesize($path) . " bytes, modified: " . date("Y-m-d H:i:s", filemtime($path)) . ")\n";
-            $lines = file($path);
-            echo "--- First 40 lines ---\n";
-            echo implode("", array_slice($lines, 0, 40));
-            echo "---------------------\n";
-        } else {
-            echo "\nNot found: $path\n";
+    echo "Current Directory: " . __DIR__ . "\n\n";
+    
+    echo "=== Scandir Current Dir ===\n";
+    $files = scandir('.');
+    foreach ($files as $f) {
+        if ($f !== '.' && $f !== '..') {
+            $isDir = is_dir($f) ? "[DIR]" : "[FILE]";
+            $mtime = date("Y-m-d H:i:s", filemtime($f));
+            $size = is_dir($f) ? "" : " (" . filesize($f) . " bytes)";
+            echo "$isDir $f - $mtime$size\n";
         }
+    }
+    
+    if (is_dir('./assets')) {
+        echo "\n=== Scandir assets/ ===\n";
+        $assets = scandir('./assets');
+        foreach ($assets as $a) {
+            if ($a !== '.' && $a !== '..') {
+                if (strpos($a, 'index-') === 0 || strpos($a, 'PartnerLayout-') === 0 || strpos($a, 'Dashboard-') === 0) {
+                    $mtime = date("Y-m-d H:i:s", filemtime("./assets/$a"));
+                    echo "[FILE] $a - $mtime (" . filesize("./assets/$a") . " bytes)\n";
+                }
+            }
+        }
+    } else {
+        echo "\nassets/ directory NOT found!\n";
     }
     exit;
 }
