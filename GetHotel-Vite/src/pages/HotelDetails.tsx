@@ -44,7 +44,7 @@ export default function HotelDetailPage() {
 
     const seoData = buildHotelSEO(hotel);
     const hotelSchema = buildHotelSchema(hotel, hotel.reviews || []);
-    const cityUrl = hotel.city && ["goa", "jaipur", "manali", "shimla", "udaipur"].includes(hotel.city.toLowerCase().trim())
+    const cityUrl = hotel.city && ["goa", "jaipur", "manali", "shimla", "udaipur", "delhi"].includes(hotel.city.toLowerCase().trim())
         ? `/${hotel.city.toLowerCase().trim()}-hotels`
         : `/hotels?city=${encodeURIComponent(hotel.city || "")}`;
 

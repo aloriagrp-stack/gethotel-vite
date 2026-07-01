@@ -681,7 +681,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                     {hotel.city && (
                         <>
                             <ChevronRight className="w-3 h-3 text-slate-300" />
-                            {["goa", "jaipur", "manali", "shimla", "udaipur"].includes(hotel.city.toLowerCase().trim()) ? (
+                            {["goa", "jaipur", "manali", "shimla", "udaipur", "delhi"].includes(hotel.city.toLowerCase().trim()) ? (
                                 <Link to={`/${hotel.city.toLowerCase().trim()}-hotels`} className="hover:text-brand-600 transition-colors">
                                     {hotel.city} Hotels
                                 </Link>

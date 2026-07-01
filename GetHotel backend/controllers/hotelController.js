@@ -25,13 +25,22 @@ exports.getHotels = async (req, res, next) => {
             select: {
                 id: true,
                 name: true,
+                tagline: true,
                 city: true,
                 address: true,
                 pricePerNight: true,
                 starRating: true,
                 guestRating: true,
                 reviewCount: true,
-                thumbnail: true
+                thumbnail: true,
+                images: true,
+                amenities: true,
+                isFeatured: true,
+                isTrending: true,
+                isActive: true,
+                qualityScore: true,
+                room: true,
+                coupon: true
             },
             take: 500
         });
@@ -108,7 +117,7 @@ exports.searchHotels = async (req, res, next) => {
             }
         }
 
-        if (linkedHotelIds !== null) {
+        if (linkedHotelIds !== null && linkedHotelIds.length > 0) {
             whereClause.id = { in: linkedHotelIds };
         } else {
             if (city && city !== "All" && city !== "India") {

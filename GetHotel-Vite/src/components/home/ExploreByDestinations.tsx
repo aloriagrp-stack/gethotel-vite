@@ -17,7 +17,7 @@ export default function ExploreByDestinations({ destinations, loading = false }:
 
     const getDestinationUrl = (name: string, index: number) => {
         const n = name.toLowerCase().trim();
-        if (["goa", "jaipur", "manali", "shimla", "udaipur"].includes(n)) {
+        if (["goa", "jaipur", "manali", "shimla", "udaipur", "delhi"].includes(n)) {
             return `/${n}-hotels`;
         }
         return `/hotels?city=${encodeURIComponent(name)}&destination_index=${index}`;
