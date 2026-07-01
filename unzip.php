@@ -4,53 +4,33 @@
 if (isset($_GET['action']) && $_GET['action'] === 'debug') {
     header('Content-Type: text/plain');
     
-    echo "Current Directory: " . __DIR__ . "\n\n";
-    
-    echo "=== Scandir Current Dir ===\n";
-    $files = scandir('.');
-    foreach ($files as $f) {
-        if ($f !== '.' && $f !== '..') {
-            $isDir = is_dir($f) ? "[DIR]" : "[FILE]";
-            $mtime = date("Y-m-d H:i:s", filemtime($f));
-            $size = is_dir($f) ? "" : " (" . filesize($f) . " bytes)";
-            echo "$isDir $f - $mtime$size\n";
-        }
-    }
-    
-    if (is_dir('./client')) {
-        echo "\n=== Scandir client/ ===\n";
-        $cfiles = scandir('./client');
-        foreach ($cfiles as $cf) {
-            if ($cf !== '.' && $cf !== '..') {
-                $isDir = is_dir("./client/$cf") ? "[DIR]" : "[FILE]";
-                $mtime = date("Y-m-d H:i:s", filemtime("./client/$cf"));
-                echo "$isDir $cf - $mtime\n";
+    echo "=== scandir /home/vgyuvmpi ===\n";
+    if (is_dir('/home/vgyuvmpi')) {
+        $dirs = scandir('/home/vgyuvmpi');
+        foreach ($dirs as $d) {
+            if ($d !== '.' && $d !== '..' && is_dir("/home/vgyuvmpi/$d")) {
+                echo "Folder: $d\n";
             }
         }
     } else {
-        echo "\nclient/ directory NOT found!\n";
+        echo "/home/vgyuvmpi is not a directory or is not readable\n";
     }
     
-    if (is_dir('./client/assets')) {
-        echo "\n=== Scandir client/assets/ ===\n";
-        $cassets = scandir('./client/assets');
-        foreach ($cassets as $ca) {
-            if ($ca !== '.' && $ca !== '..') {
-                if (strpos($ca, 'index-') === 0 || strpos($ca, 'PartnerLayout-') === 0 || strpos($ca, 'Dashboard-') === 0) {
-                    $mtime = date("Y-m-d H:i:s", filemtime("./client/assets/$ca"));
-                    echo "[FILE] $ca - $mtime (" . filesize("./client/assets/$ca") . " bytes)\n";
-                }
-            }
-        }
+    $file = '/home/vgyuvmpi/routes/adminRoutes.js';
+    if (file_exists($file)) {
+        echo "=== /home/vgyuvmpi/routes/adminRoutes.js ===\n";
+        echo file_get_contents($file);
     } else {
-        echo "\nclient/assets/ directory NOT found!\n";
+        echo "routes/adminRoutes.js not found at: $file\n";
     }
     
-    if (file_exists('.htaccess')) {
-        echo "\n=== .htaccess ===\n";
-        echo file_get_contents('.htaccess');
+    $file2 = '/home/vgyuvmpi/controllers/adminController.js';
+    if (file_exists($file2)) {
+        echo "\n=== /home/vgyuvmpi/controllers/adminController.js (first 50 lines) ===\n";
+        $lines = file($file2);
+        echo implode("", array_slice($lines, 0, 50));
     } else {
-        echo "\n.htaccess NOT found!\n";
+        echo "controllers/adminController.js not found\n";
     }
     exit;
 }

@@ -58,9 +58,9 @@ jobs:
 
       - name: Zip Frontend Build
         run: |
-          cd GetHotel-Vite/dist
-          zip -r ../../frontend.zip .
-          cd ../..
+          cd GetHotel-Vite/dist/client
+          zip -r ../../../frontend.zip .
+          cd ../../..
 
       - name: Deploy Frontend Zip to cPanel
         env:
