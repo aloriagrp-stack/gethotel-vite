@@ -105,17 +105,17 @@ export default function PartnerDashboardHome() {
     }).sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     const quickStats = [
-        { label: "Today Bookings", value: todayBookingsCount.toString(), icon: Calendar, color: "text-blue-600", bg: "bg-blue-50" },
-        { label: "Current Occupancy", value: occupancyRate.toString(), icon: TrendingUp, color: "text-emerald-600", bg: "bg-emerald-50", suffix: "%" },
-        { label: "Net Earnings", value: `₹${Math.round(netEarnings).toLocaleString()}`, icon: DollarSign, color: "text-amber-600", bg: "bg-amber-50" },
-        { label: "Today Arrivals", value: pendingArrivalsCount.toString(), icon: LogIn, color: "text-purple-600", bg: "bg-purple-50" },
+        { label: "Today Bookings", value: todayBookingsCount.toString(), icon: Calendar, color: "text-stone-700", bg: "bg-stone-50" },
+        { label: "Current Occupancy", value: occupancyRate.toString(), icon: TrendingUp, color: "text-stone-700", bg: "bg-stone-50", suffix: "%" },
+        { label: "Net Earnings", value: `₹${Math.round(netEarnings).toLocaleString()}`, icon: DollarSign, color: "text-stone-700", bg: "bg-stone-50" },
+        { label: "Today Arrivals", value: pendingArrivalsCount.toString(), icon: LogIn, color: "text-stone-700", bg: "bg-stone-50" },
     ];
 
     return (
         <div className="space-y-10 pb-12">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <h1 className="text-3xl font-black text-slate-900 tracking-tight italic">
-                    Welcome back, <span className="text-blue-600 uppercase">{hotel.name || "Host"}</span>
+                <h1 className="text-3xl font-black text-stone-900 tracking-tight">
+                    Welcome back, <span className="text-stone-950 uppercase font-black">{hotel.name || "Host"}</span>
                 </h1>
             </div>
 
@@ -123,12 +123,12 @@ export default function PartnerDashboardHome() {
                 {quickStats.map((stat) => {
                     const Icon = stat.icon;
                     return (
-                        <div key={stat.label} className="bg-white p-8 rounded-none border border-slate-100 shadow-premium group cursor-default">
+                        <div key={stat.label} className="bg-white p-8 rounded-none border border-stone-200 shadow-none group cursor-default">
                             <div className={cn("w-14 h-14 rounded-none flex items-center justify-center mb-6", stat.bg)}>
                                 <Icon className={cn("w-7 h-7", stat.color)} />
                             </div>
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
-                            <h3 className="text-3xl font-black text-slate-950 italic tracking-tighter">
+                            <h3 className="text-3xl font-black text-stone-950 italic tracking-tighter">
                                 {stat.value}{stat.suffix || ""}
                             </h3>
                         </div>
@@ -138,36 +138,36 @@ export default function PartnerDashboardHome() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                 <div className="lg:col-span-2 flex flex-col">
-                    <div className="bg-white rounded-none p-8 border border-slate-200 shadow-sm flex-1 flex flex-col relative">
+                    <div className="bg-white rounded-none p-8 border border-stone-200 shadow-none flex-1 flex flex-col relative">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
                             <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
-                                <History className="w-5 h-5 text-blue-600" /> Recent Activity
+                                <History className="w-5 h-5 text-stone-700" /> Recent Activity
                             </h3>
                             <div className="flex items-center gap-3">
                                 <button 
                                     onClick={() => setShowFilters(!showFilters)}
                                     className={cn(
-                                        "flex items-center gap-2 px-4 py-2 rounded-none text-[10px] font-black uppercase tracking-widest border",
+                                        "flex items-center gap-2 px-4 py-2 rounded-none text-[10px] font-black uppercase tracking-widest border cursor-pointer",
                                         showFilters || dateRange.start || dateRange.end 
-                                            ? "bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-100" 
-                                            : "bg-slate-50 text-slate-500 border-slate-100 hover:bg-slate-100"
+                                            ? "bg-stone-900 text-white border-stone-900 shadow-none" 
+                                            : "bg-stone-50 text-stone-500 border-stone-200 hover:bg-stone-100"
                                     )}
                                 >
                                     <Calendar className="w-3.5 h-3.5" />
                                     {dateRange.start || dateRange.end ? "Dates Applied" : "Filter by Date"}
                                 </button>
-                                <button className="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:underline">View Log</button>
+                                <button className="text-[10px] font-black text-stone-900 uppercase tracking-widest hover:underline cursor-pointer">View Log</button>
                             </div>
                         </div>
 
                         {showFilters && (
-                            <div className="absolute top-24 right-8 z-30 bg-white border border-slate-100 shadow-2xl rounded-none p-6 w-72 space-y-4">
+                            <div className="absolute top-24 right-8 z-30 bg-white border border-stone-200 shadow-2xl rounded-none p-6 w-72 space-y-4">
                                 <div className="flex items-center justify-between mb-2">
-                                    <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Select Range</h4>
+                                    <h4 className="text-[10px] font-black text-stone-900 uppercase tracking-widest">Select Range</h4>
                                     {(dateRange.start || dateRange.end) && (
                                         <button 
                                             onClick={() => setDateRange({ start: '', end: '' })}
-                                            className="text-[9px] font-black text-red-500 uppercase hover:underline"
+                                            className="text-[9px] font-black text-red-500 uppercase hover:underline cursor-pointer"
                                         >
                                             Clear
                                         </button>
@@ -180,7 +180,7 @@ export default function PartnerDashboardHome() {
                                             type="date" 
                                             value={dateRange.start}
                                             onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
-                                            className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-none text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                                            className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-none text-xs font-bold text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-900/10"
                                         />
                                     </div>
                                     <div className="space-y-1">
@@ -189,13 +189,13 @@ export default function PartnerDashboardHome() {
                                             type="date" 
                                             value={dateRange.end}
                                             onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
-                                            className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-none text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                                            className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-none text-xs font-bold text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-900/10"
                                         />
                                     </div>
                                 </div>
                                 <button 
                                     onClick={() => setShowFilters(false)}
-                                    className="w-full py-2 bg-slate-900 text-white rounded-none text-[9px] font-black uppercase tracking-widest hover:bg-slate-800 mt-2"
+                                    className="w-full py-2 bg-stone-900 text-white rounded-none text-[9px] font-black uppercase tracking-widest hover:bg-stone-800 mt-2 cursor-pointer"
                                 >
                                     Apply Filter
                                 </button>
@@ -204,13 +204,13 @@ export default function PartnerDashboardHome() {
 
                         <div className="space-y-6 flex-1">
                             {filteredActivity.slice(0, 10).map((booking: any, idx: number) => (
-                                <div key={booking.id || idx} className="flex items-start gap-4 p-4 rounded-none hover:bg-slate-50 border border-transparent hover:border-slate-100 group">
-                                    <div className="w-12 h-12 rounded-none bg-blue-50 flex items-center justify-center shrink-0">
-                                        <LogIn className="w-5 h-5 text-blue-600" />
+                                <div key={booking.id || idx} className="flex items-start gap-4 p-4 rounded-none hover:bg-stone-50 border border-transparent hover:border-stone-200/60 group">
+                                    <div className="w-12 h-12 rounded-none bg-stone-50 flex items-center justify-center shrink-0">
+                                        <LogIn className="w-5 h-5 text-stone-700" />
                                     </div>
                                     <div className="flex-1">
                                         <div className="flex items-center justify-between mb-1">
-                                            <p className="text-sm font-black text-slate-900">New Booking: {booking.user?.name || "Guest"}</p>
+                                            <p className="text-sm font-black text-stone-900">New Booking: {booking.user?.name || "Guest"}</p>
                                             <div className="flex items-center gap-3">
                                                 {booking.guestPhone && (
                                                     <a 
@@ -227,12 +227,12 @@ export default function PartnerDashboardHome() {
                                             </div>
                                         </div>
                                         <div className="flex items-center justify-between">
-                                            <p className="text-xs text-slate-500 font-medium">Room: {booking.room?.name || 'Unknown'} • Status: <span className="uppercase text-[9px] font-black text-blue-600">{booking.status || 'N/A'}</span></p>
-                                            <button className="text-[8px] font-black text-red-400 uppercase tracking-widest hover:text-red-600">Report Issue</button>
+                                            <p className="text-xs text-stone-500 font-medium">Room: {booking.room?.name || 'Unknown'} • Status: <span className="uppercase text-[9px] font-black text-stone-900">{booking.status || 'N/A'}</span></p>
+                                            <button className="text-[8px] font-black text-stone-400 uppercase tracking-widest hover:text-stone-600 cursor-pointer">Report Issue</button>
                                         </div>
                                     </div>
                                     <div className="opacity-0 group-hover:opacity-100">
-                                        <ArrowRight className="w-4 h-4 text-blue-600" />
+                                        <ArrowRight className="w-4 h-4 text-stone-850" />
                                     </div>
                                 </div>
                             ))}

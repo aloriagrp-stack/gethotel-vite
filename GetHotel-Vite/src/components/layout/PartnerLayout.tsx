@@ -77,23 +77,23 @@ export default function PartnerLayout() {
     }
 
     return (
-        <div className="flex min-h-screen bg-[#F8FAFC] partner-portal-wrapper">
+        <div className="flex min-h-screen bg-[#FAF9F6] text-stone-900 partner-portal-wrapper">
             {/* Sidebar for Desktop */}
             <aside className={cn(
-                "hidden lg:flex bg-white border-r border-slate-200 flex-col fixed inset-y-0 left-0 z-50 transition-all duration-300",
+                "hidden lg:flex bg-white border-r border-stone-200/80 flex-col fixed inset-y-0 left-0 z-50 transition-all duration-300",
                 isCollapsed ? "w-24" : "w-72"
             )}>
-                <div className="p-8 border-b border-slate-50 relative">
+                <div className="p-8 border-b border-stone-100 relative">
                     {!isCollapsed ? (
                         <motion.div 
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             className="overflow-hidden whitespace-nowrap"
                         >
-                            <h1 className="text-xl font-black text-slate-900 tracking-tight">
-                                GetHotel<span className="text-blue-600 font-black italic">Stays</span>
+                            <h1 className="text-xl font-black text-stone-950 tracking-tight">
+                                GetHotel<span className="text-stone-900 font-extrabold italic">Stays</span>
                             </h1>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-0.5">Partner Portal</p>
+                            <p className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] mt-0.5">Partner Portal</p>
                         </motion.div>
                     ) : null}
                     
@@ -101,7 +101,7 @@ export default function PartnerLayout() {
                     <button 
                         onClick={() => setIsCollapsed(!isCollapsed)}
                         className={cn(
-                            "absolute w-7 h-7 bg-slate-50 border border-slate-100 rounded-none flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-white transition-all shadow-sm z-[60]",
+                            "absolute w-7 h-7 bg-stone-50 border border-stone-200 rounded-none flex items-center justify-center text-stone-400 hover:text-stone-950 hover:bg-white transition-all shadow-none z-[60] cursor-pointer",
                             isCollapsed ? "left-1/2 -translate-x-1/2 top-6" : "right-6 top-8"
                         )}
                     >
@@ -124,8 +124,8 @@ export default function PartnerLayout() {
                                 className={cn(
                                     "w-full flex items-center justify-between px-4 py-3.5 rounded-none text-sm font-bold group transition-all",
                                     isActive 
-                                        ? "bg-blue-600 text-white shadow-xl shadow-blue-100" 
-                                        : "text-slate-500 hover:text-slate-900",
+                                        ? "bg-stone-900 text-white shadow-none" 
+                                        : "text-stone-500 hover:text-stone-900 hover:bg-stone-50",
                                     isCollapsed && "justify-center",
                                     isDisabled && "opacity-50 cursor-not-allowed"
                                 )}
@@ -135,11 +135,11 @@ export default function PartnerLayout() {
                                 title={isCollapsed ? item.label : ""}
                             >
                                 <div className="flex items-center gap-3">
-                                    <Icon className={cn("w-5 h-5 shrink-0", isActive ? "text-white" : "text-slate-400 group-hover:text-blue-600")} />
+                                    <Icon className={cn("w-5 h-5 shrink-0", isActive ? "text-white" : "text-stone-400 group-hover:text-stone-900")} />
                                     {!isCollapsed && <span>{item.label}</span>}
                                 </div>
-                                {isDisabled && !isCollapsed && <Lock className="w-3 h-3 text-slate-300" />}
-                                {(isActive && !isCollapsed) && <div className="w-1.5 h-1.5 rounded-none bg-white shadow-glow" />}
+                                {isDisabled && !isCollapsed && <Lock className="w-3 h-3 text-stone-300" />}
+                                {(isActive && !isCollapsed) && <div className="w-1.5 h-1.5 rounded-none bg-white/70" />}
                             </Link>
                         );
                     })}
@@ -152,21 +152,21 @@ export default function PartnerLayout() {
                 isCollapsed ? "lg:ml-24" : "lg:ml-72"
             )}>
                 {/* Top Mobile Header */}
-                <header className="lg:hidden h-20 bg-white border-b border-slate-200 px-6 flex items-center justify-between sticky top-0 z-40">
+                <header className="lg:hidden h-20 bg-white border-b border-stone-200 px-6 flex items-center justify-between sticky top-0 z-40">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-blue-600 rounded-none flex items-center justify-center text-white">
+                        <div className="w-10 h-10 bg-stone-900 rounded-none flex items-center justify-center text-white">
                             <Hotel className="w-6 h-6" />
                         </div>
                         <div>
-                            <h1 className="text-sm font-black uppercase tracking-wider text-slate-900">
+                            <h1 className="text-sm font-black uppercase tracking-wider text-stone-950">
                                 {activeItem ? activeItem.label : "Partner Portal"}
                             </h1>
-                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Partner Dashboard</p>
+                            <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest">Partner Dashboard</p>
                         </div>
                     </div>
                     <button 
                         onClick={() => setIsMobileMenuOpen(true)}
-                        className="p-2.5 bg-slate-50 rounded-none text-slate-600 border border-slate-100"
+                        className="p-2.5 bg-stone-50 rounded-none text-stone-600 border border-stone-200 cursor-pointer"
                     >
                         <Menu className="w-6 h-6" />
                     </button>
@@ -176,20 +176,20 @@ export default function PartnerLayout() {
                 {isMobileMenuOpen && (
                     <div 
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] lg:hidden"
+                        className="fixed inset-0 bg-stone-950/60 backdrop-blur-sm z-[60] lg:hidden"
                     >
                         <div 
                             onClick={(e) => e.stopPropagation()}
                             className="w-80 h-full bg-white flex flex-col animate-slide-right"
                         >
-                            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                            <div className="p-6 border-b border-stone-100 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 bg-blue-600 rounded-none flex items-center justify-center text-white">
+                                    <div className="w-8 h-8 bg-stone-900 rounded-none flex items-center justify-center text-white">
                                         <Hotel className="w-5 h-5" />
                                     </div>
-                                    <span className="font-black text-slate-900 uppercase tracking-tight">Menu</span>
+                                    <span className="font-black text-stone-950 uppercase tracking-tight">Menu</span>
                                 </div>
-                                <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-slate-400">
+                                <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-stone-400 cursor-pointer">
                                     <X className="w-6 h-6" />
                                 </button>
                             </div>
@@ -204,7 +204,7 @@ export default function PartnerLayout() {
                                             onClick={() => setIsMobileMenuOpen(false)}
                                             className={cn(
                                                 "flex items-center gap-3 px-4 py-4 rounded-none text-sm font-bold transition-all",
-                                                isActive ? "bg-blue-600 text-white" : "text-slate-500"
+                                                isActive ? "bg-stone-900 text-white" : "text-stone-500 hover:bg-stone-50"
                                             )}
                                         >
                                             <Icon className="w-5 h-5" />
@@ -213,8 +213,8 @@ export default function PartnerLayout() {
                                     );
                                 })}
                             </nav>
-                            <div className="p-6 border-t border-slate-100">
-                                <button onClick={() => { setShowLogoutConfirm(true); setIsMobileMenuOpen(false); }} className="w-full flex items-center gap-3 text-red-600 font-bold text-sm">
+                            <div className="p-6 border-t border-stone-100">
+                                <button onClick={() => { setShowLogoutConfirm(true); setIsMobileMenuOpen(false); }} className="w-full flex items-center gap-3 text-red-600 font-bold text-sm cursor-pointer">
                                     <LogOut className="w-5 h-5" /> Logout
                                 </button>
                             </div>
@@ -371,11 +371,11 @@ export default function PartnerLayout() {
                     background: transparent;
                 }
                 .custom-scrollbar::-webkit-scrollbar-thumb {
-                    background: #E2E8F0;
+                    background: #E7E5E4;
                     border-radius: 0px;
                 }
                 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                    background: #CBD5E1;
+                    background: #D6D3D1;
                 }
                 @keyframes slide-right {
                     from { transform: translateX(-100%); }
@@ -384,8 +384,127 @@ export default function PartnerLayout() {
                 .animate-slide-right {
                     animation: slide-right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
                 }
-                .shadow-glow {
-                    box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+
+                /* Off-White Minimalism Global Overrides */
+                .partner-portal-wrapper {
+                    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+                }
+                .partner-portal-wrapper h1, 
+                .partner-portal-wrapper h2, 
+                .partner-portal-wrapper h3, 
+                .partner-portal-wrapper h4, 
+                .partner-portal-wrapper h5 {
+                    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+                    letter-spacing: -0.03em !important;
+                    color: #1C1917 !important;
+                }
+
+                /* Overriding typical panel cards to premium, border-only minimalist panels */
+                .partner-portal-wrapper .bg-white {
+                    background-color: #FFFFFF !important;
+                    border: 1px solid #E7E5E4 !important;
+                    border-radius: 0px !important;
+                    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.01) !important;
+                }
+
+                /* Neutralizing colorful cards and stats boxes */
+                .partner-portal-wrapper .shadow-premium,
+                .partner-portal-wrapper .shadow-sm {
+                    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.01) !important;
+                }
+
+                /* Solid black / dark stone minimalist primary action buttons */
+                .partner-portal-wrapper button.bg-blue-600,
+                .partner-portal-wrapper a.bg-blue-600,
+                .partner-portal-wrapper .bg-blue-600:not(.nav-active-dot) {
+                    background-color: #1C1917 !important;
+                    color: #FFFFFF !important;
+                    border-radius: 0px !important;
+                    border: 1px solid #1C1917 !important;
+                    box-shadow: none !important;
+                    transition: all 0.2s ease !important;
+                    cursor: pointer;
+                }
+                .partner-portal-wrapper button.bg-blue-600:hover,
+                .partner-portal-wrapper a.bg-blue-600:hover {
+                    background-color: #2E2A27 !important;
+                    border-color: #2E2A27 !important;
+                }
+
+                /* Text colors - Override main branding blue with dark stone for text links */
+                .partner-portal-wrapper .text-blue-600 {
+                    color: #1C1917 !important;
+                }
+                .partner-portal-wrapper .hover\:text-blue-600:hover {
+                    color: #000000 !important;
+                }
+
+                /* Muted, neutral background for stats icons instead of saturated blue/green/amber/purple */
+                .partner-portal-wrapper .bg-blue-50,
+                .partner-portal-wrapper .bg-emerald-50,
+                .partner-portal-wrapper .bg-amber-50,
+                .partner-portal-wrapper .bg-purple-50 {
+                    background-color: #F5F5F4 !important;
+                    color: #44403C !important;
+                    border-radius: 0px !important;
+                }
+                .partner-portal-wrapper .text-blue-600,
+                .partner-portal-wrapper .text-emerald-600,
+                .partner-portal-wrapper .text-amber-600,
+                .partner-portal-wrapper .text-purple-600 {
+                    color: #44403C !important;
+                }
+
+                /* Inputs & selections styling override */
+                .partner-portal-wrapper input,
+                .partner-portal-wrapper select,
+                .partner-portal-wrapper textarea {
+                    background-color: #FAF9F6 !important;
+                    border: 1px solid #E7E5E4 !important;
+                    border-radius: 0px !important;
+                    color: #1C1917 !important;
+                    padding: 8px 12px !important;
+                    font-size: 13px !important;
+                }
+                .partner-portal-wrapper input:focus,
+                .partner-portal-wrapper select:focus,
+                .partner-portal-wrapper textarea:focus {
+                    border-color: #1C1917 !important;
+                    outline: none !important;
+                    box-shadow: 0 0 0 1px #1C1917 !important;
+                }
+
+                /* Muted secondary buttons */
+                .partner-portal-wrapper .border-slate-200,
+                .partner-portal-wrapper .border-slate-100 {
+                    border-color: #E7E5E4 !important;
+                }
+
+                /* Clean, flat tables override */
+                .partner-portal-wrapper table {
+                    border-collapse: collapse !important;
+                    width: 100% !important;
+                }
+                .partner-portal-wrapper th {
+                    background-color: #FAF9F6 !important;
+                    color: #57534E !important;
+                    font-size: 11px !important;
+                    font-weight: 800 !important;
+                    letter-spacing: 0.08em !important;
+                    text-transform: uppercase !important;
+                    border-bottom: 2px solid #E7E5E4 !important;
+                    padding: 14px 18px !important;
+                    text-align: left !important;
+                }
+                .partner-portal-wrapper td {
+                    border-bottom: 1px solid #FAF9F6 !important;
+                    padding: 14px 18px !important;
+                    background-color: #FFFFFF !important;
+                    color: #44403C !important;
+                    font-size: 13px !important;
+                }
+                .partner-portal-wrapper tr:hover td {
+                    background-color: #FAF9F6 !important;
                 }
             `}</style>
         </div>
