@@ -33,6 +33,19 @@ const destinationPages = [
     ]),
 ];
 
+const escapeXml = (unsafe: string) => {
+    return unsafe.replace(/[<>&'"]/g, (c) => {
+        switch (c) {
+            case '<': return '&lt;';
+            case '>': return '&gt;';
+            case '&': return '&amp;';
+            case '\'': return '&apos;';
+            case '"': return '&quot;';
+            default: return c;
+        }
+    });
+};
+
 const generateSitemap = () => {
     const now = new Date().toISOString().split("T")[0];
 
@@ -41,7 +54,7 @@ const generateSitemap = () => {
 
     for (const page of staticPages) {
         xml += `  <url>\n`;
-        xml += `    <loc>${SITE_URL}${page.url}</loc>\n`;
+        xml += `    <loc>${SITE_URL}${escapeXml(page.url)}</loc>\n`;
         xml += `    <lastmod>${now}</lastmod>\n`;
         xml += `    <changefreq>${page.changefreq}</changefreq>\n`;
         xml += `    <priority>${page.priority}</priority>\n`;
@@ -50,7 +63,7 @@ const generateSitemap = () => {
 
     for (const page of destinationPages) {
         xml += `  <url>\n`;
-        xml += `    <loc>${SITE_URL}${page.url}</loc>\n`;
+        xml += `    <loc>${SITE_URL}${escapeXml(page.url)}</loc>\n`;
         xml += `    <lastmod>${now}</lastmod>\n`;
         xml += `    <changefreq>weekly</changefreq>\n`;
         xml += `    <priority>${page.priority}</priority>\n`;
