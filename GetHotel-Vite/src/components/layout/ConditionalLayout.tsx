@@ -15,8 +15,20 @@ export default function ConditionalLayout({
 }) {
     const pathname = useLocation().pathname;
     const navigate = useNavigate();
-    const isNoLayoutPage = pathname?.startsWith("/admin") || pathname?.startsWith("/partner-dashboard") || pathname === "/.controlhub" || pathname === "/list-property/register" || pathname === "/partner" || pathname === "/partner-select";
-    const isNoFooterPage = pathname === "/login" || pathname === "/register";
+
+    // Strip language code prefix if present (e.g., /en/admin -> /admin)
+    const segments = pathname.split("/").filter(Boolean);
+    const firstSegment = segments[0];
+    const isLangSegment = ["en", "hi", "es", "fr", "de", "zh", "ja", "ar", "ru", "pt"].includes(firstSegment);
+    const cleanPathname = isLangSegment ? "/" + segments.slice(1).join("/") : pathname;
+
+    const isNoLayoutPage = cleanPathname.startsWith("/admin") || 
+                           cleanPathname.startsWith("/partner-dashboard") || 
+                           cleanPathname === "/.controlhub" || 
+                           cleanPathname === "/list-property/register" || 
+                           cleanPathname === "/partner" || 
+                           cleanPathname === "/partner-select";
+    const isNoFooterPage = cleanPathname === "/login" || cleanPathname === "/register";
 
     useEffect(() => {
         const runAutoRecovery = async () => {
