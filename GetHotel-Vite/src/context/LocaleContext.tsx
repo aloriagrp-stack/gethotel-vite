@@ -21,7 +21,8 @@ export const currencies: Currency[] = [
     { name: "Euro", code: "EUR", symbol: "€", flag: "🇪🇺" },
     { name: "British Pound", code: "GBP", symbol: "£", flag: "🇬🇧" },
     { name: "Japanese Yen", code: "JPY", symbol: "¥", flag: "🇯🇵" },
-    { name: "UAE Dirham", code: "AED", symbol: "د.إ", flag: "🇦🇪" }
+    { name: "UAE Dirham", code: "AED", symbol: "د.إ", flag: "🇦🇪" },
+    { name: "Russian Ruble", code: "RUB", symbol: "₽", flag: "🇷🇺" }
 ];
 
 export const languages: Language[] = [
@@ -55,7 +56,8 @@ const fallbacks: Record<string, number> = {
     EUR: 0.011,
     GBP: 0.0094,
     JPY: 1.88,
-    AED: 0.044
+    AED: 0.044,
+    RUB: 1.05
 };
 
 export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -109,6 +111,7 @@ export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         else if (["de", "fr"].includes(langCode)) targetCurrCode = "EUR";
         else if (langCode === "ja") targetCurrCode = "JPY";
         else if (langCode === "ar") targetCurrCode = "AED";
+        else if (langCode === "ru") targetCurrCode = "RUB";
         else if (langCode === "en") {
             // For English, use the detected local currency from geolocation, or default to INR
             const detectedCurr = localStorage.getItem("detected-local-currency") || "INR";
@@ -238,6 +241,9 @@ export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                 } else if (country === "AE") {
                     targetLang = "ar";
                     targetCurr = currencies.find(c => c.code === "AED")!;
+                } else if (country === "RU") {
+                    targetLang = "ru";
+                    targetCurr = currencies.find(c => c.code === "RUB")!;
                 }
 
                 // Store detected local currency for language fallback sync

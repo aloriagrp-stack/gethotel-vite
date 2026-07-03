@@ -25,6 +25,7 @@ export function formatPrice(amount: number, currency?: string): string {
         GBP: "en-GB",
         JPY: "ja-JP",
         AED: "ar-AE",
+        RUB: "ru-RU",
     };
     const locale = localeMap[targetCurrency] || "en-US";
 
