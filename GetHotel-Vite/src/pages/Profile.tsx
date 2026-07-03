@@ -1,6 +1,7 @@
 
 
 import { useAuth } from "@/context/AuthContext";
+import { useLocale, languages, currencies } from "@/context/LocaleContext";
 import { 
     User, Mail, Phone, MapPin, 
     CreditCard, ShieldCheck, 
@@ -41,11 +42,10 @@ export default function ProfilePage() {
     const [statusMessage, setStatusMessage] = useState<{type: 'success' | 'info' | 'error', text: string} | null>(null);
     const [heroName, setHeroName] = useState(user?.name || "Premium Guest");
 
-    // Language & Preference State
-    const [currentLanguage, setCurrentLanguage] = useState({ name: "English", flag: "🇺🇸", code: "en" });
+    // Language & Preference State (using global LocaleContext)
+    const { langCode, currency, changeLanguage: globalChangeLanguage, changeCurrency: globalChangeCurrency } = useLocale();
+    const currentLanguage = languages.find(l => l.code === langCode) || { name: "English", flag: "🇺🇸", code: "en" };
     const [showLanguageModal, setShowLanguageModal] = useState(false);
-    
-    const [currency, setCurrency] = useState({ name: "Indian Rupee", code: "INR", symbol: "₹", flag: "🇮🇳" });
     const [showCurrencyModal, setShowCurrencyModal] = useState(false);
     
     const [notifications, setNotifications] = useState({
@@ -61,27 +61,7 @@ export default function ProfilePage() {
         setShowLogoutConfirm(false);
     };
 
-    const currencies = [
-        { name: "Indian Rupee", code: "INR", symbol: "₹", flag: "🇮🇳" },
-        { name: "US Dollar", code: "USD", symbol: "$", flag: "🇺🇸" },
-        { name: "Euro", code: "EUR", symbol: "€", flag: "🇪🇺" },
-        { name: "British Pound", code: "GBP", symbol: "£", flag: "🇬🇧" },
-        { name: "Japanese Yen", code: "JPY", symbol: "¥", flag: "🇯🇵" },
-        { name: "UAE Dirham", code: "AED", symbol: "د.إ", flag: "🇦🇪" }
-    ];
 
-    const languages = [
-        { name: "English", native: "English", flag: "🇺🇸", code: "en" },
-        { name: "Hindi", native: "हिन्दी", flag: "🇮🇳", code: "hi" },
-        { name: "Spanish", native: "Español", flag: "🇪🇸", code: "es" },
-        { name: "French", native: "Français", flag: "🇫🇷", code: "fr" },
-        { name: "German", native: "Deutsch", flag: "🇩🇪", code: "de" },
-        { name: "Chinese", native: "中文", flag: "🇨🇳", code: "zh" },
-        { name: "Japanese", native: "日本語", flag: "🇯🇵", code: "ja" },
-        { name: "Arabic", native: "العربية", flag: "🇸🇦", code: "ar" },
-        { name: "Russian", native: "Русский", flag: "🇷🇺", code: "ru" },
-        { name: "Portuguese", native: "Português", flag: "🇵🇹", code: "pt" }
-    ];
 
     const translations: Record<string, Record<string, string>> = {
         en: {
@@ -213,30 +193,15 @@ export default function ProfilePage() {
         return translations[currentLanguage.code]?.[key] || translations['en'][key] || key;
     };
 
-    // Initialize Google Translate
-    useEffect(() => {
-        // Load saved language
-        const savedLangCode = localStorage.getItem('user-language');
-        if (savedLangCode) {
-            const lang = languages.find(l => l.code === savedLangCode);
-            if (lang) {
-                setCurrentLanguage(lang);
-            }
-        }
-    }, []);
-
     const changeLanguage = (lang: any) => {
-        setCurrentLanguage(lang);
-        localStorage.setItem('user-language', lang.code);
-        // Dispatch event for other components (like Navbar)
-        window.dispatchEvent(new Event('languageChanged'));
+        globalChangeLanguage(lang.code);
         setShowLanguageModal(false);
         setStatusMessage({ type: 'success', text: `Language changed to ${lang.name}! ✨` });
         setTimeout(() => setStatusMessage(null), 3000);
     };
 
-    const changeCurrency = (curr: any) => {
-        setCurrency(curr);
+    const changeCurrency = async (curr: any) => {
+        await globalChangeCurrency(curr);
         setShowCurrencyModal(false);
         setStatusMessage({ type: 'success', text: `Currency changed to ${curr.code} (${curr.symbol})! 💰` });
         setTimeout(() => setStatusMessage(null), 3000);

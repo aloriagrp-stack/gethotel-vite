@@ -1,9 +1,11 @@
 import { lazy, Suspense, useEffect } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Outlet, useParams } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { BookingProvider } from "./context/BookingContext";
 import { WishlistProvider } from "./context/WishlistContext";
 import { StayModeProvider } from "./context/StayModeContext";
+import { LocaleProvider, useLocale } from "./context/LocaleContext";
+import LanguageRedirector from "./components/common/LanguageRedirector";
 import ConditionalLayout from "./components/layout/ConditionalLayout";
 import GlobalTranslator from "./components/layout/GlobalTranslator";
 import ErrorBoundary from "./components/common/ErrorBoundary";
@@ -76,6 +78,18 @@ const PartnerNotifications = lazy(() => import("./pages/partner-dashboard/Notifi
 const PartnerStaff = lazy(() => import("./pages/partner-dashboard/Staff"));
 const PartnerChannelSync = lazy(() => import("./pages/partner-dashboard/ChannelSync"));
 const PartnerHotelSelect = lazy(() => import("./pages/PartnerHotelSelect"));
+function LocalizedLayout() {
+  const { lang } = useParams();
+  const { langCode, changeLanguage } = useLocale();
+
+  useEffect(() => {
+    if (lang && lang !== langCode) {
+      changeLanguage(lang, false); // sync state without navigation loop
+    }
+  }, [lang, langCode, changeLanguage]);
+
+  return <Outlet />;
+}
 
 export default function App() {
   useEffect(() => {
@@ -86,95 +100,109 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <ScrollToTop />
-      <GlobalTranslator />
-      <AuthProvider>
-        <StayModeProvider>
-          <BookingProvider>
-            <WishlistProvider>
-              <ConditionalLayout>
-                <Suspense fallback={<PageLoader />}>
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Login />} />
-                    <Route path="/hotels" element={<Hotels />} />
-                    <Route path="/hotel/:id" element={<HotelDetails />} />
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="/wishlist" element={<Wishlist />} />
-                    <Route path="/my-bookings" element={<MyBookings />} />
-                    <Route path="/list-property" element={<ListProperty />} />
-                    <Route path="/list-property/register" element={<ListPropertyRegister />} />
-                    <Route path="/booking" element={<Booking />} />
-                    <Route path="/booking/:id" element={<BookingIDPage />} />
-                    <Route path="/partner" element={<PartnerLanding />} />
-                    <Route path="/partner-select" element={<PartnerHotelSelect />} />
-                    <Route path="/.controlhub" element={<AdminLogin />} />
-                    <Route path="/privacy" element={<PrivacyPolicy />} />
-                    <Route path="/terms-&-conditions" element={<TermsOfService />} />
-                    <Route path="/cookies" element={<CookiePolicy />} />
-                    <Route path="/cancellation-policy" element={<CancellationPolicy />} />
-                    <Route path="/pricing-policy" element={<PricingPolicy />} />
-                    <Route path="/contact" element={<ContactUs />} />
-                    <Route path="/goa-hotels" element={<GoaHotels />} />
-                    <Route path="/jaipur-hotels" element={<JaipurHotels />} />
-                    <Route path="/manali-hotels" element={<ManaliHotels />} />
-                    <Route path="/shimla-hotels" element={<ShimlaHotels />} />
-                    <Route path="/udaipur-hotels" element={<UdaipurHotels />} />
-                    <Route path="/delhi-hotels" element={<DelhiHotels />} />
-                    <Route path="/hotels-in/:citySlug" element={<CityPage />} />
-                    <Route path="/hotels-in/:citySlug/:filterSlug" element={<CityPage />} />
-                    <Route path="/booking/invoice/:id" element={<BookingInvoice />} />
-                    <Route path="/hotel/:id/write-review" element={<WriteReview />} />
-                    <Route path="/bookings/review/:id" element={<ReviewBooking />} />
-                    <Route path="/bookings/report/:id" element={<ReportBooking />} />
-                    <Route path="/bookings/invoice/:id" element={<BookingInvoiceDetails />} />
-                    <Route path="/bookings/dispute/:id" element={<DisputeBooking />} />
-                    <Route path="/bookings/details/:id" element={<BookingDetails />} />
-                    <Route path="/booking/details/:id" element={<BookingDetails />} />
-                    <Route path="/partner-dashboard" element={<PartnerLayout />}>
-                      <Route index element={<PartnerDashboard />} />
-                      <Route path="bookings" element={<PartnerBookings />} />
-                      <Route path="hotel" element={<PartnerHotel />} />
-                      <Route path="rooms" element={<PartnerRooms />} />
-                      <Route path="payments" element={<PartnerPayments />} />
-                      <Route path="coupons" element={<PartnerCoupons />} />
-                      <Route path="messages" element={<PartnerMessages />} />
-                      <Route path="reviews" element={<PartnerReviews />} />
-                      <Route path="settings" element={<PartnerSettings />} />
-                      <Route path="analytics" element={<PartnerAnalytics />} />
-                      <Route path="frontdesk" element={<PartnerFrontDesk />} />
-                      <Route path="inventory" element={<PartnerInventory />} />
-                      <Route path="notifications" element={<PartnerNotifications />} />
-                      <Route path="staff" element={<PartnerStaff />} />
-                      <Route path="channel" element={<PartnerChannelSync />} />
-                    </Route>
-                    <Route path="/admin/super" element={<AdminLayout />}>
-                      <Route index element={<SuperAdminDashboard />} />
-                      <Route path="requests" element={<SuperAdminDashboard />} />
-                      <Route path="controlhub" element={<SuperAdminDashboard />} />
-                      <Route path="hotels" element={<SuperAdminDashboard />} />
-                      <Route path="multi-room" element={<SuperAdminDashboard />} />
-                      <Route path="ai-copilot" element={<SuperAdminDashboard />} />
-                      <Route path="hotels/:id" element={<AdminHotelDetails />} />
-                      <Route path="bookings" element={<SuperAdminDashboard />} />
-                      <Route path="reviews" element={<SuperAdminDashboard />} />
-                      <Route path="users" element={<SuperAdminDashboard />} />
-                      <Route path="stats" element={<SuperAdminDashboard />} />
-                      <Route path="finance" element={<SuperAdminDashboard />} />
-                      <Route path="disputes" element={<SuperAdminDashboard />} />
-                      <Route path="notifications" element={<SuperAdminDashboard />} />
-                      <Route path="settings" element={<SuperAdminDashboard />} />
-                      <Route path="homepage" element={<SuperAdminDashboard />} />
-                    </Route>
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </Suspense>
-              </ConditionalLayout>
-            </WishlistProvider>
-          </BookingProvider>
-        </StayModeProvider>
-      </AuthProvider>
+      <LocaleProvider>
+        <ScrollToTop />
+        <GlobalTranslator />
+        <AuthProvider>
+          <StayModeProvider>
+            <BookingProvider>
+              <WishlistProvider>
+                <ConditionalLayout>
+                  <Suspense fallback={<PageLoader />}>
+                    <Routes>
+                      {/* Root Redirector */}
+                      <Route path="/" element={<LanguageRedirector />} />
+
+                      {/* Localized routes group */}
+                      <Route path="/:lang" element={<LocalizedLayout />}>
+                        <Route index element={<Home />} />
+                        <Route path="login" element={<Login />} />
+                        <Route path="register" element={<Login />} />
+                        <Route path="hotels" element={<Hotels />} />
+                        <Route path="hotel/:id" element={<HotelDetails />} />
+                        <Route path="profile" element={<Profile />} />
+                        <Route path="wishlist" element={<Wishlist />} />
+                        <Route path="my-bookings" element={<MyBookings />} />
+                        <Route path="list-property" element={<ListProperty />} />
+                        <Route path="list-property/register" element={<ListPropertyRegister />} />
+                        <Route path="booking" element={<Booking />} />
+                        <Route path="booking/:id" element={<BookingIDPage />} />
+                        <Route path="partner" element={<PartnerLanding />} />
+                        <Route path="partner-select" element={<PartnerHotelSelect />} />
+                        <Route path=".controlhub" element={<AdminLogin />} />
+                        <Route path="privacy" element={<PrivacyPolicy />} />
+                        <Route path="terms-&-conditions" element={<TermsOfService />} />
+                        <Route path="cookies" element={<CookiePolicy />} />
+                        <Route path="cancellation-policy" element={<CancellationPolicy />} />
+                        <Route path="pricing-policy" element={<PricingPolicy />} />
+                        <Route path="contact" element={<ContactUs />} />
+                        <Route path="goa-hotels" element={<GoaHotels />} />
+                        <Route path="jaipur-hotels" element={<JaipurHotels />} />
+                        <Route path="manali-hotels" element={<ManaliHotels />} />
+                        <Route path="shimla-hotels" element={<ShimlaHotels />} />
+                        <Route path="udaipur-hotels" element={<UdaipurHotels />} />
+                        <Route path="delhi-hotels" element={<DelhiHotels />} />
+                        <Route path="hotels-in/:citySlug" element={<CityPage />} />
+                        <Route path="hotels-in/:citySlug/:filterSlug" element={<CityPage />} />
+                        <Route path="booking/invoice/:id" element={<BookingInvoice />} />
+                        <Route path="hotel/:id/write-review" element={<WriteReview />} />
+                        <Route path="bookings/review/:id" element={<ReviewBooking />} />
+                        <Route path="bookings/report/:id" element={<ReportBooking />} />
+                        <Route path="bookings/invoice/:id" element={<BookingInvoiceDetails />} />
+                        <Route path="bookings/dispute/:id" element={<DisputeBooking />} />
+                        <Route path="bookings/details/:id" element={<BookingDetails />} />
+                        <Route path="booking/details/:id" element={<BookingDetails />} />
+                        
+                        <Route path="partner-dashboard" element={<PartnerLayout />}>
+                          <Route index element={<PartnerDashboard />} />
+                          <Route path="bookings" element={<PartnerBookings />} />
+                          <Route path="hotel" element={<PartnerHotel />} />
+                          <Route path="rooms" element={<PartnerRooms />} />
+                          <Route path="payments" element={<PartnerPayments />} />
+                          <Route path="coupons" element={<PartnerCoupons />} />
+                          <Route path="messages" element={<PartnerMessages />} />
+                          <Route path="reviews" element={<PartnerReviews />} />
+                          <Route path="settings" element={<PartnerSettings />} />
+                          <Route path="analytics" element={<PartnerAnalytics />} />
+                          <Route path="frontdesk" element={<PartnerFrontDesk />} />
+                          <Route path="inventory" element={<PartnerInventory />} />
+                          <Route path="notifications" element={<PartnerNotifications />} />
+                          <Route path="staff" element={<PartnerStaff />} />
+                          <Route path="channel" element={<PartnerChannelSync />} />
+                        </Route>
+                        
+                        <Route path="admin/super" element={<AdminLayout />}>
+                          <Route index element={<SuperAdminDashboard />} />
+                          <Route path="requests" element={<SuperAdminDashboard />} />
+                          <Route path="controlhub" element={<SuperAdminDashboard />} />
+                          <Route path="hotels" element={<SuperAdminDashboard />} />
+                          <Route path="multi-room" element={<SuperAdminDashboard />} />
+                          <Route path="ai-copilot" element={<SuperAdminDashboard />} />
+                          <Route path="hotels/:id" element={<AdminHotelDetails />} />
+                          <Route path="bookings" element={<SuperAdminDashboard />} />
+                          <Route path="reviews" element={<SuperAdminDashboard />} />
+                          <Route path="users" element={<SuperAdminDashboard />} />
+                          <Route path="stats" element={<SuperAdminDashboard />} />
+                          <Route path="finance" element={<SuperAdminDashboard />} />
+                          <Route path="disputes" element={<SuperAdminDashboard />} />
+                          <Route path="notifications" element={<SuperAdminDashboard />} />
+                          <Route path="settings" element={<SuperAdminDashboard />} />
+                          <Route path="homepage" element={<SuperAdminDashboard />} />
+                        </Route>
+                        
+                        <Route path="*" element={<NotFound />} />
+                      </Route>
+                      
+                      {/* Wildcard redirector for un-prefixed paths */}
+                      <Route path="*" element={<LanguageRedirector fallback />} />
+                    </Routes>
+                  </Suspense>
+                </ConditionalLayout>
+              </WishlistProvider>
+            </BookingProvider>
+          </StayModeProvider>
+        </AuthProvider>
+      </LocaleProvider>
     </ErrorBoundary>
   );
 }

@@ -564,3 +564,18 @@
     border-radius: 0px !important;
   }
 }
+
+/* Google Translate Top Bar Hiding Style */
+iframe.goog-te-banner-frame,
+.goog-te-banner-frame,
+#goog-gt-tt,
+.goog-te-balloon-frame {
+    display: none !important;
+}
+html {
+    margin-top: 0px !important;
+}
+body {
+    top: 0px !important;
+    position: static !important;
+}

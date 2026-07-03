@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp, SlidersHorizontal } from "lucide-react";
 import type { FilterState, Amenity } from "@/types";
-import { cn, amenityLabel, amenityIcon } from "@/lib/utils";
+import { cn, amenityLabel, amenityIcon, formatPrice } from "@/lib/utils";
 
 const ALL_AMENITIES: Amenity[] = [
     "wifi", "pool", "spa", "gym", "restaurant", "bar",
@@ -74,8 +74,8 @@ export default function FilterPanel({ filters, onChange }: FilterPanelProps) {
             <FilterSection title="Price per Night" open={priceOpen} onToggle={() => setPriceOpen(!priceOpen)}>
                 <div className="pt-2">
                     <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 mb-3 px-1">
-                        <span className="bg-white/50 px-2 py-1 rounded-md border border-white/40">₹{filters.priceRange[0].toLocaleString()}</span>
-                        <span className="bg-white/50 px-2 py-1 rounded-md border border-white/40">₹{filters.priceRange[1].toLocaleString()}</span>
+                        <span className="bg-white/50 px-2 py-1 rounded-md border border-white/40 notranslate">{formatPrice(filters.priceRange[0])}</span>
+                        <span className="bg-white/50 px-2 py-1 rounded-md border border-white/40 notranslate">{formatPrice(filters.priceRange[1])}</span>
                     </div>
                     <div className="px-1">
                         <input

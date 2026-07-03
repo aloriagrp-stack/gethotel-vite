@@ -11,6 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
+import { useLocale } from "@/context/LocaleContext";
 import { motion, AnimatePresence } from "framer-motion";
 
 const navTranslations: Record<string, Record<string, string>> = {
@@ -27,31 +28,14 @@ const navTranslations: Record<string, Record<string, string>> = {
 };
 
 export default function Navbar() {
-    const [langCode, setLangCode] = useState("en");
-
-    useEffect(() => {
-        const saved = localStorage.getItem('user-language');
-        if (saved) setLangCode(saved);
-
-        const handleSync = () => {
-            const current = localStorage.getItem('user-language');
-            if (current) setLangCode(current);
-        };
-        window.addEventListener('storage', handleSync);
-        window.addEventListener('languageChanged', handleSync);
-
-        return () => {
-            window.removeEventListener('storage', handleSync);
-            window.removeEventListener('languageChanged', handleSync);
-        };
-    }, []);
+    const { langCode } = useLocale();
 
     const t = (key: string) => navTranslations[langCode]?.[key] || navTranslations['en'][key] || key;
 
     const navLinks = [
-        { href: "/", label: t('home') },
-        { href: "/hotels", label: t('hotels') },
-        { href: "/my-bookings", label: t('bookings') },
+        { href: `/${langCode}`, label: t('home') },
+        { href: `/${langCode}/hotels`, label: t('hotels') },
+        { href: `/${langCode}/my-bookings`, label: t('bookings') },
     ];
     const pathname = useLocation().pathname;
     const navigate = useNavigate();

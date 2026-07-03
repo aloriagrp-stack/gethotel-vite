@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Star, ArrowRight, Heart, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
-import { cn, safeParse, getHotelUrl } from "@/lib/utils";
+import { cn, safeParse, getHotelUrl, formatPrice } from "@/lib/utils";
 import { useWishlist } from "@/context/WishlistContext";
 import { useStayMode } from "@/context/StayModeContext";
 import Image from "@/components/common/Image";
@@ -137,15 +137,15 @@ function TrendingHotelCard({ hotel }: { hotel: Hotel }) {
                     <div className="flex flex-col">
                         <div className="flex items-center gap-1.5 mb-1 flex-wrap">
                             {maxDiscountPercent > 0 && (
-                                <span className="text-[9px] font-bold text-white/40 line-through decoration-red-500 decoration-1">
-                                    ₹{displayOriginalPrice.toLocaleString()}
+                                <span className="text-[9px] font-bold text-white/40 line-through decoration-red-500 decoration-1 notranslate">
+                                    {formatPrice(displayOriginalPrice)}
                                 </span>
                             )}
                         </div>
 
                         <div className="space-y-1">
-                            <p className="text-xl font-black text-white leading-none tracking-tight">
-                                ₹{displayPrice.toLocaleString()}
+                            <p className="text-xl font-black text-white leading-none tracking-tight notranslate">
+                                {formatPrice(displayPrice)}
                                 <span className="text-[9px] text-white/40 ml-1 font-medium">{priceLabel}</span>
                             </p>
                             {maxDiscountPercent > 0 && (

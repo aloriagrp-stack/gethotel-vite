@@ -5,12 +5,34 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-export function formatPrice(amount: number, currency = "INR"): string {
-    return new Intl.NumberFormat("en-IN", {
+export function formatPrice(amount: number, currency?: string): string {
+    const targetCurrency = currency && currency !== "INR" 
+        ? currency 
+        : (typeof window !== "undefined" ? (localStorage.getItem("user-currency") || "INR") : "INR");
+
+    let convertedAmount = amount;
+    if (targetCurrency !== "INR") {
+        const rateStr = typeof window !== "undefined" ? localStorage.getItem("currency-rate") : null;
+        const rate = rateStr ? parseFloat(rateStr) : 1;
+        convertedAmount = amount * rate;
+    }
+
+    const localeMap: Record<string, string> = {
+        INR: "en-IN",
+        USD: "en-US",
+        EUR: "es-ES",
+        MXN: "es-MX",
+        GBP: "en-GB",
+        JPY: "ja-JP",
+        AED: "ar-AE",
+    };
+    const locale = localeMap[targetCurrency] || "en-US";
+
+    return new Intl.NumberFormat(locale, {
         style: "currency",
-        currency,
+        currency: targetCurrency,
         maximumFractionDigits: 0,
-    }).format(amount);
+    }).format(convertedAmount || 0);
 }
 
 export function formatDate(dateStr: string | Date | null | undefined): string {

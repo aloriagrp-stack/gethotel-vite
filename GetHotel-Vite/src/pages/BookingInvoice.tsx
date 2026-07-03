@@ -134,7 +134,7 @@ export default function BookingInvoicePage() {
                         <div className="inline-block px-4 py-2 bg-white/10 rounded-xl border border-white/10 mb-6">
                             <p className="text-[10px] font-black uppercase tracking-widest">Invoice #GH-{booking.id + 10000}</p>
                         </div>
-                        <h2 className="text-5xl font-black tracking-tighter mb-2 italic">₹{booking.totalPrice.toLocaleString()}</h2>
+                        <h2 className="text-5xl font-black tracking-tighter mb-2 italic notranslate">{formatPrice(booking.totalPrice)}</h2>
                         <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400 flex items-center justify-end gap-2">
                             <ShieldCheck className="w-4 h-4" /> {booking.paymentStatus === 'paid' ? 'Fully Paid' : 'Payment Verified'}
                         </p>
@@ -205,7 +205,7 @@ export default function BookingInvoicePage() {
                                         <span className="px-4 py-2 bg-slate-50 rounded-xl font-black text-sm text-slate-700">{item.quantity} Rooms</span>
                                     </td>
                                     <td className="py-8 text-right font-black text-slate-900 text-lg">
-                                        ₹{(item.price * item.quantity).toLocaleString()}
+                                        <span className="notranslate">{formatPrice(item.price * item.quantity)}</span>
                                     </td>
                                 </tr>
                             ))}
@@ -242,7 +242,7 @@ export default function BookingInvoicePage() {
                         </div>
                         <div className="pt-6 border-t border-slate-200 flex justify-between items-center">
                             <span className="text-lg font-black text-slate-900 uppercase tracking-tighter">Total Price</span>
-                            <span className="text-3xl font-black text-blue-600 tracking-tighter italic">₹{booking.totalPrice.toLocaleString()}</span>
+                            <span className="text-3xl font-black text-blue-600 tracking-tighter italic notranslate">{formatPrice(booking.totalPrice)}</span>
                         </div>
                     </div>
                 </div>
