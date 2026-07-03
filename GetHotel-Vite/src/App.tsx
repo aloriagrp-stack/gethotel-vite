@@ -1,10 +1,10 @@
 import { lazy, Suspense, useEffect } from "react";
-import { Routes, Route, Outlet, useParams } from "react-router-dom";
+import { Routes, Route, Outlet, useParams, useNavigate, useLocation } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { BookingProvider } from "./context/BookingContext";
 import { WishlistProvider } from "./context/WishlistContext";
 import { StayModeProvider } from "./context/StayModeContext";
-import { LocaleProvider, useLocale } from "./context/LocaleContext";
+import { LocaleProvider, useLocale, languages } from "./context/LocaleContext";
 import LanguageRedirector from "./components/common/LanguageRedirector";
 import ConditionalLayout from "./components/layout/ConditionalLayout";
 import GlobalTranslator from "./components/layout/GlobalTranslator";
@@ -81,12 +81,27 @@ const PartnerHotelSelect = lazy(() => import("./pages/PartnerHotelSelect"));
 function LocalizedLayout() {
   const { lang } = useParams();
   const { langCode, changeLanguage } = useLocale();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Guard: if the :lang param is NOT a valid language code, redirect with prefix
+  const isValidLang = languages.some(l => l.code === lang);
 
   useEffect(() => {
+    if (!isValidLang) {
+      // The URL doesn't have a valid language prefix (e.g. /hotel/xyz instead of /en/hotel/xyz)
+      const targetLang = langCode || localStorage.getItem("user-language") || "en";
+      const newPath = `/${targetLang}${location.pathname}${location.search}${location.hash}`;
+      navigate(newPath, { replace: true });
+      return;
+    }
+
     if (lang && lang !== langCode) {
       changeLanguage(lang, false); // sync state without navigation loop
     }
-  }, [lang, langCode, changeLanguage]);
+  }, [lang, langCode, changeLanguage, isValidLang, navigate, location]);
+
+  if (!isValidLang) return null; // Don't render children while redirecting
 
   return <Outlet />;
 }
