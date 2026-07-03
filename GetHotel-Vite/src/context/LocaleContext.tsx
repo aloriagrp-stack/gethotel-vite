@@ -103,13 +103,17 @@ export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     // Auto-sync currency based on active langCode if they don't match
     useEffect(() => {
-        let targetCurrCode = "INR";
+        let targetCurrCode = currency.code;
         if (langCode === "es") targetCurrCode = "EUR";
-        else if (langCode === "en") targetCurrCode = "USD";
         else if (langCode === "hi") targetCurrCode = "INR";
         else if (["de", "fr"].includes(langCode)) targetCurrCode = "EUR";
         else if (langCode === "ja") targetCurrCode = "JPY";
         else if (langCode === "ar") targetCurrCode = "AED";
+        else if (langCode === "en") {
+            // For English, use the detected local currency from geolocation, or default to INR
+            const detectedCurr = localStorage.getItem("detected-local-currency") || "INR";
+            targetCurrCode = detectedCurr;
+        }
 
         if (currency.code !== targetCurrCode) {
             const foundCurr = currencies.find(c => c.code === targetCurrCode);
@@ -207,11 +211,6 @@ export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     // Detect User Location (Country) and initialize language & currency accordingly
     const detectAndInitLocale = async () => {
-        // Do not overwrite user selections if they have already manually set preferences
-        if (localStorage.getItem("user-language") || localStorage.getItem("user-currency")) {
-            return;
-        }
-
         try {
             const res = await fetch("https://ipapi.co/json/");
             const data = await res.json();
@@ -239,6 +238,14 @@ export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                 } else if (country === "AE") {
                     targetLang = "ar";
                     targetCurr = currencies.find(c => c.code === "AED")!;
+                }
+
+                // Store detected local currency for language fallback sync
+                localStorage.setItem("detected-local-currency", targetCurr.code);
+
+                // Do not overwrite user selections if they have already manually set preferences
+                if (localStorage.getItem("user-language") || localStorage.getItem("user-currency")) {
+                    return;
                 }
 
                 setLangCodeState(targetLang);
