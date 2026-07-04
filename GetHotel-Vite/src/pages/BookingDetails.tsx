@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate as useRouter, useParams } from 'react-router-dom';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import { 
     ChevronLeft, MapPin, Calendar, 
     ShieldCheck, QrCode, MessageSquare, 
     ArrowRight, Info, CreditCard, Clock, Loader2,
-    X, Phone, Mail, CheckCircle2
+    X, Phone, Mail, CheckCircle2, Download
 } from "lucide-react";
 import Image from "@/components/common/Image";
 import Loader from "@/components/common/Loader";
@@ -17,6 +19,7 @@ export default function BookingDetailsPage() {
     const router = useRouter();
     const [booking, setBooking] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [downloadingVoucher, setDownloadingVoucher] = useState(false);
     const [showContactModal, setShowContactModal] = useState(false);
     const [showKeyModal, setShowKeyModal] = useState(false);
     const [scanning, setScanning] = useState(false);
@@ -43,6 +46,41 @@ export default function BookingDetailsPage() {
             setMessageSent(false);
             setShowContactModal(false);
         }, 2200);
+    };
+
+    const handleDownloadVoucherPDF = async () => {
+        if (!booking) return;
+        setDownloadingVoucher(true);
+        try {
+            const element = document.getElementById("minimal-booking-voucher");
+            if (!element) {
+                alert("Voucher template not found!");
+                return;
+            }
+
+            // Generate PDF using html2canvas and jspdf
+            const canvas = await html2canvas(element, {
+                scale: 2, // High resolution
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: "#ffffff"
+            });
+            
+            const imgData = canvas.toDataURL("image/png");
+            const pdf = new jsPDF({
+                orientation: "portrait",
+                unit: "px",
+                format: [canvas.width / 2, canvas.height / 2]
+            });
+            
+            pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 2, canvas.height / 2);
+            pdf.save(`Booking_Voucher_GH-${booking.id + 10000}.pdf`);
+        } catch (err) {
+            console.error("Failed to generate PDF", err);
+            alert("Failed to download PDF voucher. Please try again.");
+        } finally {
+            setDownloadingVoucher(false);
+        }
     };
 
     const [verifying, setVerifying] = useState(false);
@@ -136,12 +174,32 @@ export default function BookingDetailsPage() {
     return (
         <div className="min-h-screen bg-white py-12 px-4 md:px-8">
             <div className="max-w-4xl mx-auto animate-fade-in">
-                <button 
-                    onClick={() => router("/my-bookings")}
-                    className="flex items-center gap-2 text-slate-500 hover:text-brand-600 font-bold mb-8 transition-colors group"
-                >
-                    <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" /> Back to Journeys
-                </button>
+                <div className="flex justify-between items-center mb-8">
+                    <button 
+                        onClick={() => router("/my-bookings")}
+                        className="flex items-center gap-2 text-slate-500 hover:text-brand-600 font-bold transition-colors group"
+                    >
+                        <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" /> Back to Journeys
+                    </button>
+                    {booking && (
+                        <button
+                            onClick={handleDownloadVoucherPDF}
+                            disabled={downloadingVoucher}
+                            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black uppercase tracking-wider rounded-xl transition-all shadow-md flex items-center gap-2 disabled:bg-slate-300"
+                        >
+                            {downloadingVoucher ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    Downloading PDF...
+                                </>
+                            ) : (
+                                <>
+                                    <Download className="w-4 h-4" /> Download PDF Voucher
+                                </>
+                            )}
+                        </button>
+                    )}
+                </div>
 
                 {/* Stay Header Card */}
                 <div className="flex flex-col sm:flex-row gap-6 items-start pb-8 border-b border-slate-100 mb-8">
@@ -293,7 +351,7 @@ export default function BookingDetailsPage() {
                             )}
                         </div>
 
-                        {paymentStatus !== 'paid' && (
+                        {paymentStatus !== 'paid' && booking?.razorpayOrderId && (
                             <div className="mt-4 pt-4 border-t border-slate-200/60 space-y-2">
                                 <p className="text-[10px] text-slate-500 leading-relaxed font-bold">
                                     Did you complete your payment but the status hasn't updated? Verify with Razorpay.
@@ -495,6 +553,148 @@ export default function BookingDetailsPage() {
                                     </button>
                                 </form>
                             )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Hidden Minimal Voucher Template for PDF Generation */}
+            {booking && (
+                <div 
+                    id="minimal-booking-voucher" 
+                    className="fixed bg-white text-slate-800 p-12 space-y-8 font-sans border border-slate-100 shadow-sm"
+                    style={{ 
+                        position: 'absolute', 
+                        top: '-9999px', 
+                        left: '-9999px', 
+                        width: '794px', // Standard A4 width at 96 DPI is 794px
+                        boxSizing: 'border-box'
+                    }}
+                >
+                    {/* Header */}
+                    <div className="flex justify-between items-start border-b border-slate-100 pb-6">
+                        <div>
+                            <h1 className="text-2xl font-black tracking-tight text-blue-600 uppercase">GETHOTEL<span className="text-slate-800">STAYS</span></h1>
+                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Official Booking Confirmation</p>
+                        </div>
+                        <div className="text-right">
+                            <span className="px-3 py-1 bg-blue-50 text-blue-700 text-[10px] font-black uppercase tracking-widest rounded border border-blue-100">
+                                {paymentStatus === 'paid' ? 'Fully Paid' : paymentStatus === 'partial' ? '12% Deposit Paid' : 'Pay At Hotel'}
+                            </span>
+                            <p className="text-[10px] font-mono text-slate-400 mt-2">Voucher ID: {bookingId}</p>
+                        </div>
+                    </div>
+
+                    {/* Content details */}
+                    <div className="grid grid-cols-2 gap-8 text-xs">
+                        {/* Stay details */}
+                        <div className="space-y-3">
+                            <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Stay & Property</h3>
+                            <div className="space-y-1">
+                                <p className="text-sm font-black text-slate-900">{hotelName}</p>
+                                <p className="text-[11px] text-slate-500 leading-relaxed">{hotelAddress}</p>
+                                <p className="text-[11px] font-bold text-slate-800 uppercase mt-1">{roomName}</p>
+                            </div>
+                        </div>
+
+                        {/* Timings / Dates details */}
+                        <div className="space-y-3">
+                            <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Timing & Dates</h3>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p className="text-[9px] text-slate-400 uppercase">Check-in</p>
+                                    <p className="font-bold text-slate-800">{checkInDate}</p>
+                                </div>
+                                <div>
+                                    <p className="text-[9px] text-slate-400 uppercase">Check-out</p>
+                                    <p className="font-bold text-slate-800">{checkOutDate}</p>
+                                </div>
+                            </div>
+                            <p className="text-[10px] font-bold text-slate-500 mt-1">Arrival Time: {booking?.arrivalTime || "Not specified"}</p>
+                        </div>
+                    </div>
+
+                    {/* Guest info */}
+                    <div className="border-t border-slate-100 pt-6">
+                        <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-wider mb-3">Guest Information</h3>
+                        <div className="grid grid-cols-3 gap-4 text-xs">
+                            <div>
+                                <p className="text-[9px] text-slate-400 uppercase">Primary Guest</p>
+                                <p className="font-bold text-slate-800 uppercase">{booking?.guestFirstName} {booking?.guestLastName}</p>
+                            </div>
+                            <div>
+                                <p className="text-[9px] text-slate-400 uppercase">Phone Number</p>
+                                <p className="font-bold text-slate-800">{booking?.guestPhone}</p>
+                            </div>
+                            <div>
+                                <p className="text-[9px] text-slate-400 uppercase">Email Address</p>
+                                <p className="font-bold text-slate-800">{booking?.guestEmail}</p>
+                            </div>
+                        </div>
+                        {booking?.isBusiness && (
+                            <div className="mt-3 p-3 bg-slate-50 rounded-lg border border-slate-100 flex gap-6 text-xs">
+                                <div>
+                                    <p className="text-[8px] text-slate-400 uppercase">Company Name</p>
+                                    <p className="font-bold text-slate-800">{booking?.companyName}</p>
+                                </div>
+                                <div>
+                                    <p className="text-[8px] text-slate-400 uppercase">GSTIN</p>
+                                    <p className="font-bold text-slate-800">{booking?.gstNumber}</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Billing details */}
+                    <div className="border-t border-slate-100 pt-6">
+                        <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-wider mb-4">Payment Breakdown</h3>
+                        <div className="bg-slate-50/50 border border-slate-100 rounded-xl p-4 space-y-2 text-xs">
+                            <div className="flex justify-between">
+                                <span className="text-slate-500 font-bold uppercase text-[9px]">Total Tariff</span>
+                                <span className="font-black text-slate-800">{formatPrice(totalPriceVal)}</span>
+                            </div>
+                            {paymentStatus === 'paid' && (
+                                <div className="flex justify-between border-t border-slate-100 pt-2 text-emerald-600 font-bold">
+                                    <span className="uppercase text-[9px]">Amount Paid Online</span>
+                                    <span>{formatPrice(totalPriceVal)}</span>
+                                </div>
+                            )}
+                            {paymentStatus === 'partial' && (
+                                <>
+                                    <div className="flex justify-between border-t border-slate-100 pt-2 text-emerald-600 font-bold">
+                                        <span className="uppercase text-[9px]">Deposit Paid Online (12%)</span>
+                                        <span>{formatPrice(amountPaidVal)}</span>
+                                    </div>
+                                    <div className="flex justify-between text-amber-600 font-bold">
+                                        <span className="uppercase text-[9px]">Payable at Hotel (88%)</span>
+                                        <span>{formatPrice(payAtHotelVal)}</span>
+                                    </div>
+                                </>
+                            )}
+                            {paymentStatus === 'pending' && (
+                                <>
+                                    <div className="flex justify-between border-t border-slate-100 pt-2 text-slate-500 font-bold">
+                                        <span className="uppercase text-[9px]">Amount Paid Online</span>
+                                        <span>₹0</span>
+                                    </div>
+                                    <div className="flex justify-between text-amber-600 font-bold">
+                                        <span className="uppercase text-[9px]">Payable at Hotel (100%)</span>
+                                        <span>{formatPrice(totalPriceVal)}</span>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Footer notes */}
+                    <div className="border-t border-slate-100 pt-6 flex justify-between items-center text-[10px] text-slate-400 leading-normal">
+                        <div>
+                            <p className="font-bold">Thank you for booking with GetHotelStays!</p>
+                            <p className="text-[8px] uppercase tracking-wider mt-0.5">Please present this voucher and valid ID upon arrival.</p>
+                        </div>
+                        <div className="text-right">
+                            <p className="font-bold">Support Details</p>
+                            <p>support@gethotelstays.com</p>
                         </div>
                     </div>
                 </div>

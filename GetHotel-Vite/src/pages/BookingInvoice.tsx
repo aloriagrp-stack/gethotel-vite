@@ -1,7 +1,7 @@
 
 
 import { useState, useEffect, useRef } from "react";
-import { useNavigate as useRouter, useParams } from 'react-router-dom';;
+import { useNavigate as useRouter, useParams, useSearchParams } from 'react-router-dom';
 import { 
     Printer, Download, ShieldCheck, 
     Mail, MapPin, Phone, Globe,
@@ -15,6 +15,7 @@ import { formatPrice, formatDate } from "@/lib/utils";
 export default function BookingInvoicePage() {
     const { id } = useParams();
     const router = useRouter();
+    const [searchParams] = useSearchParams();
     const [booking, setBooking] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const printRef = useRef<HTMLDivElement>(null);
@@ -36,6 +37,15 @@ export default function BookingInvoicePage() {
         };
         fetchBooking();
     }, [id]);
+ 
+    useEffect(() => {
+        if (!loading && booking && searchParams.get("print") === "true") {
+            const timer = setTimeout(() => {
+                window.print();
+            }, 800);
+            return () => clearTimeout(timer);
+        }
+    }, [loading, booking, searchParams]);
 
     const handlePrint = () => {
         window.print();
@@ -99,6 +109,7 @@ export default function BookingInvoicePage() {
                         <Printer className="w-4 h-4" /> Print Invoice
                     </button>
                     <button 
+                        onClick={handlePrint}
                         className="px-6 py-3 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 hover:bg-black transition-all shadow-xl shadow-slate-200"
                     >
                         <Download className="w-4 h-4" /> PDF Download
@@ -110,157 +121,146 @@ export default function BookingInvoicePage() {
             <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="max-w-4xl mx-auto bg-white shadow-2xl rounded-[48px] overflow-hidden border border-slate-200 print:shadow-none print:rounded-none print:border-none"
+                className="max-w-4xl mx-auto bg-white shadow-md rounded-2xl overflow-hidden border border-slate-100 print:shadow-none print:rounded-none print:border-none"
             >
                 {/* Header */}
-                <div className="p-12 md:p-16 bg-slate-900 text-white flex flex-col md:flex-row justify-between items-start gap-12 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/20 rounded-full blur-3xl -mr-32 -mt-32" />
-                    
-                    <div className="relative z-10">
-                        <h1 className="text-4xl font-black tracking-tighter italic uppercase mb-2">GetHotel<span className="text-blue-500">Stays</span></h1>
-                        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Official Booking Receipt</p>
+                <div className="p-8 md:p-12 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 bg-white">
+                    <div>
+                        <h1 className="text-2xl font-black tracking-tight text-blue-600 uppercase">GETHOTEL<span className="text-slate-950">STAYS</span></h1>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Official Booking Confirmation Receipt</p>
                         
-                        <div className="mt-12 space-y-2 opacity-80">
-                            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest">
-                                <MapPin className="w-3 h-3 text-blue-400" /> Sector 62, Noida, India
-                            </div>
-                            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest">
-                                <Globe className="w-3 h-3 text-blue-400" /> support@gethotelstays.com
-                            </div>
+                        <div className="mt-4 space-y-1.5 text-xs text-slate-500 font-medium">
+                            <p className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-slate-400" /> Sector 62, Noida, India</p>
+                            <p className="flex items-center gap-1.5"><Mail className="w-3.5 h-3.5 text-slate-400" /> support@gethotelstays.com</p>
                         </div>
                     </div>
 
-                    <div className="text-right relative z-10">
-                        <div className="inline-block px-4 py-2 bg-white/10 rounded-xl border border-white/10 mb-6">
-                            <p className="text-[10px] font-black uppercase tracking-widest">Invoice #GH-{booking.id + 10000}</p>
-                        </div>
-                        <h2 className="text-5xl font-black tracking-tighter mb-2 italic notranslate">{formatPrice(booking.totalPrice)}</h2>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400 flex items-center justify-end gap-2">
-                            <ShieldCheck className="w-4 h-4" /> {booking.paymentStatus === 'paid' ? 'Fully Paid' : 'Payment Verified'}
-                        </p>
+                    <div className="sm:text-right">
+                        <span className={`inline-block px-3 py-1 text-[9px] font-black uppercase tracking-widest rounded border ${
+                            booking.paymentStatus === 'paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
+                            booking.paymentStatus === 'partial' ? 'bg-blue-50 text-blue-700 border-blue-100' :
+                            'bg-amber-50 text-amber-700 border-amber-100'
+                        }`}>
+                            {booking.paymentStatus === 'paid' ? 'Fully Paid' :
+                             booking.paymentStatus === 'partial' ? '12% Deposit Paid' :
+                             'Pay At Hotel'}
+                        </span>
+                        <p className="text-3xl font-black text-slate-950 tracking-tight mt-3 notranslate">{formatPrice(booking.totalPrice)}</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1.5">Invoice #GH-{booking.id + 10000}</p>
                     </div>
                 </div>
 
                 {/* Details Grid */}
-                <div className="p-12 md:p-16 grid grid-cols-1 md:grid-cols-2 gap-16 border-b border-slate-100">
+                <div className="p-8 md:p-12 grid grid-cols-1 md:grid-cols-2 gap-10 border-b border-slate-100">
                     {/* Guest Info */}
-                    <div>
-                        <h3 className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-6 flex items-center gap-2">
+                    <div className="space-y-4">
+                        <h3 className="text-[9px] font-black text-blue-600 uppercase tracking-widest flex items-center gap-2">
                             <User className="w-4 h-4" /> Guest Information
                         </h3>
                         <div className="space-y-1">
-                            <p className="text-xl font-black text-slate-900">{booking.guestFirstName} {booking.guestLastName}</p>
-                            <p className="text-sm font-bold text-slate-500">{booking.guestEmail}</p>
-                            <p className="text-sm font-bold text-slate-500">{booking.guestPhone}</p>
+                            <p className="text-base font-black text-slate-900">{booking.guestFirstName} {booking.guestLastName}</p>
+                            <p className="text-xs font-bold text-slate-500">{booking.guestEmail}</p>
+                            <p className="text-xs font-bold text-slate-500">{booking.guestPhone}</p>
                         </div>
                         {booking.isBusiness && (
-                            <div className="mt-6 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                            <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 text-xs">
                                 <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Business GST Details</p>
-                                <p className="text-xs font-black text-slate-700">{booking.companyName}</p>
-                                <p className="text-[10px] font-bold text-slate-500">GST: {booking.gstNumber}</p>
+                                <p className="font-black text-slate-700">{booking.companyName}</p>
+                                <p className="text-slate-500 mt-0.5">GST: {booking.gstNumber}</p>
                             </div>
                         )}
                     </div>
 
                     {/* Stay Info */}
-                    <div>
-                        <h3 className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-6 flex items-center gap-2">
+                    <div className="space-y-4">
+                        <h3 className="text-[9px] font-black text-blue-600 uppercase tracking-widest flex items-center gap-2">
                             <Building2 className="w-4 h-4" /> Property Details
                         </h3>
                         <div className="space-y-1">
-                            <p className="text-xl font-black text-slate-900">{booking.hotel.name}</p>
-                            <p className="text-sm font-bold text-slate-500">{booking.hotel.address}, {booking.hotel.city}</p>
+                            <p className="text-base font-black text-slate-900">{booking.hotel.name}</p>
+                            <p className="text-xs font-bold text-slate-500">{booking.hotel.address}, {booking.hotel.city}</p>
                         </div>
-                        <div className="mt-6 grid grid-cols-2 gap-4">
-                            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                        <div className="grid grid-cols-2 gap-4 pt-1">
+                            <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100">
                                 <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Check-in</p>
-                                <p className="text-xs font-black text-slate-700">{new Date(booking.checkIn).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                                <p className="text-xs font-black text-slate-800">{new Date(booking.checkIn).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
                             </div>
-                            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                            <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100">
                                 <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Check-out</p>
-                                <p className="text-xs font-black text-slate-700">{new Date(booking.checkOut).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                                <p className="text-xs font-black text-slate-800">{new Date(booking.checkOut).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Billing Table */}
-                <div className="p-12 md:p-16">
-                    <table className="w-full">
+                <div className="p-8 md:p-12 border-b border-slate-100">
+                    <table className="w-full text-xs">
                         <thead>
                             <tr className="border-b border-slate-200">
-                                <th className="text-left py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Description</th>
-                                <th className="text-center py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Quantity</th>
-                                <th className="text-right py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Price</th>
+                                <th className="text-left pb-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">Description</th>
+                                <th className="text-center pb-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">Quantity</th>
+                                <th className="text-right pb-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">Price</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
                             {roomDetails.map((item: any, idx: number) => (
-                                <tr key={idx} className="group">
-                                    <td className="py-8">
-                                        <p className="text-base font-black text-slate-900 mb-1">{item.name}</p>
-                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest italic">Luxury Suite Accommodation</p>
+                                <tr key={idx}>
+                                    <td className="py-6">
+                                        <p className="text-sm font-black text-slate-900">{item.name}</p>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider italic mt-0.5">Stay Accommodation</p>
                                     </td>
-                                    <td className="py-8 text-center">
-                                        <span className="px-4 py-2 bg-slate-50 rounded-xl font-black text-sm text-slate-700">{item.quantity} Rooms</span>
+                                    <td className="py-6 text-center">
+                                        <span className="px-3 py-1.5 bg-slate-50 rounded-lg font-black text-slate-700">{item.quantity} Room(s)</span>
                                     </td>
-                                    <td className="py-8 text-right font-black text-slate-900 text-lg">
-                                        <span className="notranslate">{formatPrice(item.price * item.quantity)}</span>
+                                    <td className="py-6 text-right font-black text-slate-900 text-sm notranslate">
+                                        {formatPrice(item.price * item.quantity)}
                                     </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
+                </div>
 
-                    {/* Summary */}
-                    <div className="mt-12 ml-auto max-w-sm space-y-4">
-                        <div className="flex justify-between items-center text-slate-500 font-bold text-sm">
-                            <span>{booking.couponCode ? "Promo Stay Amount" : "Room Charges"}</span>
-                            <span>{formatPrice(subtotal)}</span>
+                {/* Summary & Price list */}
+                <div className="p-8 md:p-12 bg-slate-50/50 flex justify-end">
+                    <div className="w-full max-w-xs space-y-3.5 text-xs">
+                        <div className="flex justify-between items-center text-slate-500 font-medium">
+                            <span>Room Charges</span>
+                            <span className="font-bold text-slate-800">{formatPrice(subtotal)}</span>
                         </div>
                         {gstRate > 0 && (
-                            <div className="flex justify-between items-center text-slate-500 font-bold text-sm">
+                            <div className="flex justify-between items-center text-slate-500 font-medium">
                                 <span>GST ({Math.round(gstRate * 100)}%)</span>
-                                <span>+{formatPrice(tax)}</span>
+                                <span className="font-bold text-slate-800">+{formatPrice(tax)}</span>
                             </div>
                         )}
-                        <div className="pt-4 border-t border-slate-100 space-y-3">
+                        <div className="pt-3 border-t border-slate-100 space-y-2">
                             <div className="flex justify-between items-center">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 bg-emerald-500 rounded-full" />
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Paid Online (12%)</span>
-                                </div>
-                                <span className="text-sm font-black text-emerald-600 italic">{formatPrice(Math.round(booking.totalPrice * 0.12))}</span>
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Paid Online (12%)</span>
+                                <span className="font-black text-emerald-600 italic">{formatPrice(Math.round(booking.totalPrice * 0.12))}</span>
                             </div>
                             <div className="flex justify-between items-center">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 bg-brand-500 rounded-full animate-pulse" />
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Payable at Hotel (88%)</span>
-                                </div>
-                                <span className="text-base font-black text-slate-900 italic">{formatPrice(booking.totalPrice - Math.round(booking.totalPrice * 0.12))}</span>
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Payable at Hotel (88%)</span>
+                                <span className="font-black text-slate-800 italic">{formatPrice(booking.totalPrice - Math.round(booking.totalPrice * 0.12))}</span>
                             </div>
                         </div>
-                        <div className="pt-6 border-t border-slate-200 flex justify-between items-center">
-                            <span className="text-lg font-black text-slate-900 uppercase tracking-tighter">Total Price</span>
-                            <span className="text-3xl font-black text-blue-600 tracking-tighter italic notranslate">{formatPrice(booking.totalPrice)}</span>
+                        <div className="pt-4 border-t border-slate-200 flex justify-between items-center">
+                            <span className="text-sm font-black text-slate-950 uppercase tracking-wider">Total Price</span>
+                            <span className="text-2xl font-black text-blue-600 tracking-tight italic notranslate">{formatPrice(booking.totalPrice)}</span>
                         </div>
                     </div>
                 </div>
 
-                {/* Footer */}
-                <div className="p-12 bg-slate-50 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-8">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center border border-slate-200">
-                            <CreditCard className="w-5 h-5 text-slate-400" />
-                        </div>
-                        <div>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Payment Method</p>
-                            <p className="text-xs font-black text-slate-700">Razorpay Secure Online</p>
-                        </div>
+                {/* Footer details */}
+                <div className="p-8 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-6 text-[10px] text-slate-400">
+                    <div className="flex items-center gap-2">
+                        <CreditCard className="w-4 h-4 text-slate-300" />
+                        <span className="font-bold text-slate-500">Secure booking verified via GetHotelStays</span>
                     </div>
-                    <div className="text-center md:text-right">
-                        <p className="text-[10px] font-bold text-slate-400 mb-1">Thank you for choosing GetHotelStays.</p>
-                        <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest">Terms & Conditions Apply • Non-Refundable within 24h of check-in</p>
+                    <div className="text-center sm:text-right">
+                        <p className="font-bold text-slate-400">Thank you for choosing GetHotelStays.</p>
+                        <p className="text-[8px] tracking-wider mt-0.5">Subject to terms & conditions • Present ID at check-in</p>
                     </div>
                 </div>
             </motion.div>
