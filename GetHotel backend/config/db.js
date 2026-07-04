@@ -52,8 +52,12 @@ const prisma = prismaRaw.$extends({
                 
                 const mutations = ['create', 'createMany', 'update', 'updateMany', 'upsert', 'delete', 'deleteMany'];
                 if (mutations.includes(operation)) {
-                    console.log(`[db.js] Prisma detected mutations on Hotel model (${operation}). Triggering sitemap auto-generation...`);
-                    generateSitemap(prismaRaw).catch(err => console.error('[db.js] Auto-sitemap generation failed:', err));
+                    if (process.env.NODE_ENV === 'production') {
+                        console.log(`[db.js] Prisma detected mutations on Hotel model (${operation}). Triggering sitemap auto-generation...`);
+                        generateSitemap(prismaRaw).catch(err => console.error('[db.js] Auto-sitemap generation failed:', err));
+                    } else {
+                        console.log(`[db.js] Prisma detected mutations on Hotel model (${operation}). Skipping auto-sitemap generation in development to prevent Vite reloads.`);
+                    }
                 }
                 
                 return result;

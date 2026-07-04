@@ -249,7 +249,7 @@ export default function WriteReviewPage() {
                                                 <MessageSquare className="w-3.5 h-3.5 text-black" />
                                                 Share Detailed Feedback
                                             </label>
-                                            <span className="text-[10px] font-medium text-black tracking-wider">{comment.length} / 1000 characters</span>
+                                            <span className="text-[10px] font-medium text-black tracking-wider">{comment.length} / 2000 characters</span>
                                         </div>
                                         <textarea 
                                             className="w-full px-4 py-3 bg-white border border-slate-200 rounded-md font-medium text-slate-950 focus:border-slate-400 transition-all outline-none min-h-[160px] placeholder:text-slate-300 resize-none text-xs"
@@ -257,7 +257,7 @@ export default function WriteReviewPage() {
                                             value={comment}
                                             onChange={(e) => setComment(e.target.value)}
                                             required
-                                            maxLength={1000}
+                                            maxLength={2000}
                                         />
                                     </div>
  

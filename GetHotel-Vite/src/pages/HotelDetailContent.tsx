@@ -267,6 +267,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
     const [fetchingRooms, setFetchingRooms] = useState(false);
     const [showDescriptionModal, setShowDescriptionModal] = useState(false);
     const [showReviewsModal, setShowReviewsModal] = useState(false);
+    const [selectedDetailedReview, setSelectedDetailedReview] = useState<any | null>(null);
     const [showMoreCategories, setShowMoreCategories] = useState(false);
     const [viewers, setViewers] = useState(4);
     const [trendingHotels, setTrendingHotels] = useState<any[]>([]);
@@ -1630,10 +1631,14 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                             {reviews.length > 0 && (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {reviews.slice(0, 2).map((rev: any) => (
-                                        <div key={rev.id} className="p-10 bg-white/40 backdrop-blur-md rounded-[40px] shadow-sm hover:shadow-xl transition-all space-y-6">
+                                        <div 
+                                            key={rev.id} 
+                                            onClick={() => setSelectedDetailedReview(rev)}
+                                            className="p-10 bg-white/40 backdrop-blur-md rounded-xl shadow-sm hover:shadow-xl transition-all space-y-6 cursor-pointer hover:scale-[1.01]"
+                                        >
                                             <div className="flex justify-between items-start">
                                                 <div className="flex items-center gap-4">
-                                                    <div className="w-12 h-12 bg-slate-950 text-white rounded-full flex items-center justify-center font-black text-sm">
+                                                    <div className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center font-black text-sm">
                                                         {rev.user?.name?.charAt(0) || "G"}
                                                     </div>
                                                     <div>
@@ -1645,7 +1650,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                                                     {rev.rating || "5.0"}
                                                 </div>
                                             </div>
-                                            <p className="text-sm text-slate-600 leading-relaxed font-medium italic">"{parseComment(rev.comment) || "Exceptional stay, everything was perfect!"}"</p>
+                                            <p className="text-sm text-slate-600 leading-relaxed font-medium italic">{parseComment(rev.comment) || "Exceptional stay, everything was perfect!"}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -1653,7 +1658,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
 
                             <button
                                 onClick={() => setShowReviewsModal(true)}
-                                className="w-full sm:w-fit px-12 py-4 bg-slate-950 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-full hover:bg-black transition-all shadow-xl mx-auto block mt-4"
+                                className="w-full sm:w-fit px-12 py-4 bg-blue-600 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-full hover:bg-blue-700 transition-all shadow-xl mx-auto block mt-4"
                             >
                                 Experience All Reviews
                             </button>
@@ -2426,6 +2431,182 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                                     className="px-12 py-4 bg-slate-950 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl hover:bg-brand-600 transition-all"
                                 >
                                     Close Description
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Single Review Detail Pop-up Modal */}
+            <AnimatePresence>
+                {selectedDetailedReview && (
+                    <div className="fixed inset-0 z-[320] flex items-center justify-center p-4 md:p-10">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setSelectedDetailedReview(null)}
+                            className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+                        >
+                            {/* Modal Header */}
+                            <div className="p-6 border-b border-slate-50 flex justify-between items-center bg-white sticky top-0 z-10">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center font-black text-sm">
+                                        {selectedDetailedReview.user?.name?.charAt(0) || "G"}
+                                    </div>
+                                    <div>
+                                        <p className="text-base font-black text-slate-950 leading-none">
+                                            {selectedDetailedReview.user?.name || "Verified Guest"}
+                                        </p>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1.5">
+                                            {formatDate(selectedDetailedReview.createdAt)}
+                                        </p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setSelectedDetailedReview(null)}
+                                    className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 transition-colors"
+                                >
+                                    <X className="w-5 h-5 text-slate-600" />
+                                </button>
+                            </div>
+                            
+                            {/* Modal Content */}
+                            <div className="p-6 space-y-6 overflow-y-auto max-h-[60vh] no-scrollbar">
+                                {/* Rating Badge */}
+                                <div className="flex items-center justify-between bg-slate-50 p-4 rounded-xl">
+                                    <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Overall Stay Rating</span>
+                                    <div className="px-3.5 py-1.5 bg-emerald-500 text-white rounded-lg text-sm font-black italic">
+                                        ⭐ {selectedDetailedReview.rating || "5.0"} / 5
+                                    </div>
+                                </div>
+
+                                {/* Review Comment */}
+                                <div className="space-y-2">
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Guest Comment</span>
+                                    <p className="text-slate-700 leading-relaxed text-sm md:text-base font-medium italic whitespace-pre-line bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+                                        {parseComment(selectedDetailedReview.comment) || "Exceptional stay, everything was perfect!"}
+                                    </p>
+                                </div>
+
+                                {/* Subscores list */}
+                                <div className="space-y-4 pt-2">
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Detailed Ratings</span>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        {[
+                                            { label: "Cleanliness", value: selectedDetailedReview.cleanliness || 5 },
+                                            { label: "Comfort", value: selectedDetailedReview.comfort || 5 },
+                                            { label: "Location", value: selectedDetailedReview.location || 5 },
+                                            { label: "Staff & Service", value: selectedDetailedReview.staff || 5 },
+                                            { label: "Value For Money", value: selectedDetailedReview.valueForMoney || 5 }
+                                        ].map((sub, sIdx) => (
+                                            <div key={sIdx} className="bg-slate-50/50 border border-slate-100 p-3.5 rounded-xl space-y-2">
+                                                <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-wider text-slate-500">
+                                                    <span>{sub.label}</span>
+                                                    <span className="text-slate-900 text-xs italic">{sub.value} / 5</span>
+                                                </div>
+                                                <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
+                                                    <div 
+                                                        className="h-full bg-blue-600 rounded-full" 
+                                                        style={{ width: `${(sub.value / 5) * 100}%` }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Modal Footer */}
+                            <div className="p-6 bg-slate-50 border-t border-slate-100 flex justify-center">
+                                <button
+                                    onClick={() => setSelectedDetailedReview(null)}
+                                    className="px-10 py-3.5 bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-blue-700 transition-all shadow-md"
+                                >
+                                    Close Detail
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* All Reviews Modal */}
+            <AnimatePresence>
+                {showReviewsModal && (
+                    <div className="fixed inset-0 z-[310] flex items-center justify-center p-4 md:p-10">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setShowReviewsModal(false)}
+                            className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="relative w-full max-w-3xl bg-white rounded-2xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden"
+                        >
+                            {/* Modal Header */}
+                            <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-white sticky top-0 z-10">
+                                <div>
+                                    <h3 className="text-2xl font-bold text-slate-950">Guest Reviews ({reviews.length})</h3>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{hotel.name}</p>
+                                </div>
+                                <button
+                                    onClick={() => setShowReviewsModal(false)}
+                                    className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 transition-colors"
+                                >
+                                    <X className="w-6 h-6 text-slate-600" />
+                                </button>
+                            </div>
+
+                            {/* Modal Scrollable Content */}
+                            <div className="p-8 overflow-y-auto no-scrollbar space-y-4">
+                                {reviews.map((rev: any) => (
+                                    <div 
+                                        key={rev.id} 
+                                        onClick={() => setSelectedDetailedReview(rev)}
+                                        className="p-6 bg-slate-50 hover:bg-slate-100/50 border border-slate-100 rounded-xl shadow-xs transition-all cursor-pointer flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-black text-sm">
+                                                {rev.user?.name?.charAt(0) || "G"}
+                                            </div>
+                                            <div>
+                                                <h5 className="text-[13px] font-black text-slate-900">{rev.user?.name || "Verified Guest"}</h5>
+                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                                                    {formatDate(rev.createdAt)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex-1 min-w-0 sm:pl-4">
+                                            <p className="text-xs text-slate-600 italic truncate max-w-md">
+                                                {parseComment(rev.comment) || "Exceptional stay!"}
+                                            </p>
+                                        </div>
+                                        <div className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-xs font-black italic">
+                                            ⭐ {rev.rating || "5.0"}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Modal Footer */}
+                            <div className="p-8 bg-slate-50 border-t border-slate-100 flex justify-center">
+                                <button
+                                    onClick={() => setShowReviewsModal(false)}
+                                    className="px-12 py-4 bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl hover:bg-blue-700 transition-all"
+                                >
+                                    Close Reviews
                                 </button>
                             </div>
                         </motion.div>

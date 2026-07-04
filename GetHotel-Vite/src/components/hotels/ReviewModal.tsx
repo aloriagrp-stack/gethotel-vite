@@ -112,14 +112,17 @@ export default function ReviewModal({ isOpen, onClose, hotelId, hotelName, onRev
                                 </p>
                             </div>
 
-                            {/* Comment */}
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Your Feedback</label>
+                                <div className="flex justify-between items-center px-1">
+                                    <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Your Feedback</label>
+                                    <span className="text-[9px] font-bold text-slate-400">{comment.length} / 2000</span>
+                                </div>
                                 <textarea 
                                     className="w-full px-6 py-5 bg-slate-50 border border-slate-100 rounded-3xl font-bold text-slate-900 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:border-brand-600 transition-all outline-none min-h-[140px] placeholder:text-slate-300"
                                     placeholder="Tell us about the service, amenities, and your overall vibe..."
                                     value={comment}
                                     onChange={(e) => setComment(e.target.value)}
+                                    maxLength={2000}
                                     required
                                 />
                             </div>
