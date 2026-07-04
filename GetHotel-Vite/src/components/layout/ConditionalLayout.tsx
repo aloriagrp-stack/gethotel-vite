@@ -27,7 +27,11 @@ export default function ConditionalLayout({
                            cleanPathname === "/.controlhub" || 
                            cleanPathname === "/list-property/register" || 
                            cleanPathname === "/partner" || 
-                           cleanPathname === "/partner-select";
+                           cleanPathname === "/partner-select" ||
+                           pathname.includes("/admin/") ||
+                           pathname.includes("/partner-dashboard/") ||
+                           pathname.includes("/.controlhub") ||
+                           pathname.includes("/partner-select");
     const isNoFooterPage = cleanPathname === "/login" || cleanPathname === "/register";
 
     useEffect(() => {

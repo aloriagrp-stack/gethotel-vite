@@ -81,7 +81,7 @@ export default function AdminLayout() {
             {/* Sidebar for Desktop */}
             <aside className={cn(
                 "hidden lg:flex bg-slate-900 text-white flex-col fixed inset-y-0 left-0 z-50 border-r border-slate-800 transition-all duration-200",
-                sidebarCollapsed ? "w-16" : "w-64"
+                sidebarCollapsed ? "w-16" : "w-72"
             )}>
                 <div className={cn(
                     "p-6 border-b border-slate-800 flex items-center",
@@ -154,7 +154,7 @@ export default function AdminLayout() {
             {/* Main Content Area */}
             <div className={cn(
                 "flex-1 flex flex-col min-h-screen transition-all duration-200 min-w-0",
-                sidebarCollapsed ? "lg:ml-16" : "lg:ml-64"
+                sidebarCollapsed ? "lg:ml-16" : "lg:ml-72"
             )}>
                 {/* Top Mobile Header */}
                 <header className="lg:hidden h-20 bg-slate-900 text-white px-6 flex items-center justify-between sticky top-0 z-40 border-b border-slate-800">

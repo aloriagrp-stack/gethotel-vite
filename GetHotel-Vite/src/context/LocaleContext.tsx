@@ -67,7 +67,7 @@ export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     // 1. Language state initialization
     const [langCode, setLangCodeState] = useState<string>(() => {
         // First try to check URL path prefix on reload
-        const pathSegments = window.location.pathname.split("/").filter(Boolean);
+        const pathSegments = typeof window !== "undefined" ? window.location.pathname.split("/").filter(Boolean) : [];
         const urlLang = pathSegments[0];
         if (languages.some(l => l.code === urlLang)) {
             localStorage.setItem("user-language", urlLang);
@@ -75,24 +75,23 @@ export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         }
 
         // Second try: localStorage
-        const savedLang = localStorage.getItem("user-language");
+        const savedLang = typeof window !== "undefined" ? localStorage.getItem("user-language") : null;
         if (savedLang && languages.some(l => l.code === savedLang)) {
             return savedLang;
         }
 
-        // Default: 'en'
         return "en";
     });
 
     // 2. Currency state initialization
     const [currency, setCurrencyState] = useState<Currency>(() => {
-        const savedCode = localStorage.getItem("user-currency");
+        const savedCode = typeof window !== "undefined" ? localStorage.getItem("user-currency") : null;
         const found = currencies.find(c => c.code === savedCode);
         return found || { name: "Indian Rupee", code: "INR", symbol: "₹", flag: "🇮🇳" };
     });
 
     const [exchangeRate, setExchangeRate] = useState<number>(() => {
-        const savedRate = localStorage.getItem("currency-rate");
+        const savedRate = typeof window !== "undefined" ? localStorage.getItem("currency-rate") : null;
         return savedRate ? parseFloat(savedRate) : (fallbacks[currency.code] || 1);
     });
 
@@ -105,6 +104,11 @@ export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     // Auto-sync currency based on active langCode if they don't match
     useEffect(() => {
+        // If the user has a manually selected currency, do NOT auto-sync it on language changes
+        if (typeof window !== "undefined" && localStorage.getItem("user-currency-manual")) {
+            return;
+        }
+
         let targetCurrCode = currency.code;
         if (langCode === "es") targetCurrCode = "EUR";
         else if (langCode === "hi") targetCurrCode = "INR";
@@ -113,8 +117,7 @@ export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         else if (langCode === "ar") targetCurrCode = "AED";
         else if (langCode === "ru") targetCurrCode = "RUB";
         else if (langCode === "en") {
-            // For English, use the detected local currency from geolocation, or default to INR
-            const detectedCurr = localStorage.getItem("detected-local-currency") || "INR";
+            const detectedCurr = typeof window !== "undefined" ? (localStorage.getItem("detected-local-currency") || "INR") : "INR";
             targetCurrCode = detectedCurr;
         }
 
@@ -161,27 +164,8 @@ export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setLangCodeState(code);
         localStorage.setItem("user-language", code);
 
-        // Auto-change currency based on language to match local currency
-        let targetCurrCode = "INR";
-        if (code === "es") {
-            targetCurrCode = "EUR";
-        } else if (code === "en") {
-            targetCurrCode = "USD";
-        } else if (code === "hi") {
-            targetCurrCode = "INR";
-        } else if (["de", "fr"].includes(code)) {
-            targetCurrCode = "EUR";
-        } else if (code === "ja") {
-            targetCurrCode = "JPY";
-        } else if (code === "ar") {
-            targetCurrCode = "AED";
-        }
-
-        const foundCurr = currencies.find(c => c.code === targetCurrCode);
-        if (foundCurr) {
-            setCurrencyState(foundCurr);
-            localStorage.setItem("user-currency", foundCurr.code);
-            fetchExchangeRate(foundCurr.code);
+        if (shouldNavigate) {
+            localStorage.setItem("user-language-manual", "true");
         }
 
         // Dispatch events for legacy sync in the app
@@ -208,6 +192,7 @@ export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const changeCurrency = async (curr: Currency) => {
         setCurrencyState(curr);
         localStorage.setItem("user-currency", curr.code);
+        localStorage.setItem("user-currency-manual", "true"); // Mark as manual preference
         await fetchExchangeRate(curr.code);
         window.dispatchEvent(new Event("currencyChanged"));
     };
@@ -227,7 +212,7 @@ export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                     targetLang = "es";
                     targetCurr = currencies.find(c => c.code === (country === "ES" ? "EUR" : "USD")) || targetCurr;
                 } else if (country === "IN") {
-                    targetLang = "en"; // default for tourism
+                    targetLang = "en";
                     targetCurr = currencies.find(c => c.code === "INR")!;
                 } else if (["DE", "FR", "IT", "NL", "BE"].includes(country)) {
                     targetLang = country === "DE" ? "de" : (country === "FR" ? "fr" : "en");
@@ -249,14 +234,19 @@ export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                 // Store detected local currency for language fallback sync
                 localStorage.setItem("detected-local-currency", targetCurr.code);
 
-                // Do not overwrite user selections if they have already manually set preferences
-                if (localStorage.getItem("user-language") || localStorage.getItem("user-currency")) {
+                // If user doesn't have a manual currency preference, sync active currency state to detected local currency
+                if (!localStorage.getItem("user-currency-manual")) {
+                    setCurrencyState(targetCurr);
+                    localStorage.setItem("user-currency", targetCurr.code);
+                    fetchExchangeRate(targetCurr.code);
+                }
+
+                // Do not overwrite user selections if they have already manually set language preferences
+                if (localStorage.getItem("user-language-manual") || localStorage.getItem("user-language")) {
                     return;
                 }
 
                 setLangCodeState(targetLang);
-                setCurrencyState(targetCurr);
-                await fetchExchangeRate(targetCurr.code);
                 
                 // Redirect user to their detected language prefix
                 changeLanguage(targetLang, true);

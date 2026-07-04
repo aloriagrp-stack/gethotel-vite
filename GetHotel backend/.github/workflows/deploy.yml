@@ -28,7 +28,7 @@ jobs:
           set net:timeout 60
           set net:max-retries 5
           set net:reconnect-interval-base 5
-          mirror --reverse --delete --no-perms --verbose \
+          mirror --reverse --no-perms --verbose \
             -x '^\.git/' \
             -x '^\.github/' \
             -x '^node_modules/' \
