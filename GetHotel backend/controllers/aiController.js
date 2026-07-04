@@ -81,10 +81,13 @@ exports.suggestRooms = async (req, res) => {
         }
 
         // Intercept raw review import request
-        const reviewImportMatch = prompt && typeof prompt === 'string' && prompt.trim().match(/^review\s+import\s*:\s*([\s\S]*)$/i);
-        if (reviewImportMatch) {
+        const cleanPrompt = prompt && typeof prompt === 'string' ? prompt.trim() : '';
+        const isReviewImport = cleanPrompt.toLowerCase().startsWith('review import');
+        if (isReviewImport) {
             console.log(`[AI Copilot] Intercepted review import request for hotelId: ${hotelId}`);
-            const rawReviewData = reviewImportMatch[1].trim();
+            let rawReviewData = cleanPrompt.slice(13).trim();
+            // Clean leading separators like colons, hyphens, equals, spaces
+            rawReviewData = rawReviewData.replace(/^[:\-\s\=]+/, '').trim();
             if (!rawReviewData) {
                 return res.status(200).json({
                     success: true,

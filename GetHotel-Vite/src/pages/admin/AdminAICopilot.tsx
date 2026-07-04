@@ -193,7 +193,7 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
             }
         ]);
 
-        const isReviewImport = promptText.toLowerCase().trim().startsWith("review import:");
+        const isReviewImport = promptText.toLowerCase().trim().startsWith("review import");
         // Select loading steps list based on whether we are scraping a URL or just chatting
         const steps = activeUrls.length > 0 
             ? [
