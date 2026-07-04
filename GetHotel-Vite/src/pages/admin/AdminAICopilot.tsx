@@ -193,6 +193,7 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
             }
         ]);
 
+        const isReviewImport = promptText.toLowerCase().trim().startsWith("review import:");
         // Select loading steps list based on whether we are scraping a URL or just chatting
         const steps = activeUrls.length > 0 
             ? [
@@ -203,6 +204,16 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                 "Parsing rate plans (EP, CP, MAP, AP) & pricing...",
                 "Running Groq Llama-3.3 cognitive structure engine...",
                 "Formatting structured response..."
+              ]
+            : isReviewImport
+            ? [
+                "Analyzing raw review data...",
+                "Initializing Gemini review parser...",
+                "Extracting reviewer names, ratings, and comments...",
+                "Structuring individual cleanliness, comfort & staff scores...",
+                "Creating virtual guest accounts in database...",
+                "Recalculating average guest ratings...",
+                "Formatting import report..."
               ]
             : [
                 "Analyzing instructions & chat history context...",

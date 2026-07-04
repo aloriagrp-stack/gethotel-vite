@@ -80,6 +80,188 @@ exports.suggestRooms = async (req, res) => {
             return res.status(400).json({ success: false, message: "hotelId is required" });
         }
 
+        // Intercept raw review import request
+        const reviewImportMatch = prompt && typeof prompt === 'string' && prompt.trim().match(/^review\s+import\s*:\s*([\s\S]*)$/i);
+        if (reviewImportMatch) {
+            console.log(`[AI Copilot] Intercepted review import request for hotelId: ${hotelId}`);
+            const rawReviewData = reviewImportMatch[1].trim();
+            if (!rawReviewData) {
+                return res.status(200).json({
+                    success: true,
+                    reply: "Aapne 'review import:' ke baad koi raw data nahi diya hai. Please raw reviews paste karein taaki main unhe parse karke import kar sakoon!",
+                    rooms: []
+                });
+            }
+
+            // Verify hotel exists
+            const targetHotel = await prisma.hotel.findUnique({
+                where: { id: Number(hotelId) }
+            });
+            if (!targetHotel) {
+                return res.status(404).json({ success: false, message: "Hotel not found" });
+            }
+
+            // Setup Gemini AI to parse the reviews into standard structured JSON
+            const genAI = new GoogleGenerativeAI(apiKey);
+            const reviewSchemaConfig = {
+                type: "object",
+                properties: {
+                    reviews: {
+                        type: "array",
+                        description: "List of extracted reviews from the raw text provided.",
+                        items: {
+                            type: "object",
+                            properties: {
+                                userName: { type: "string", description: "Full name or screen name of the reviewer. Generate realistic first/last initial names if anonymous or missing." },
+                                rating: { type: "number", description: "Overall rating given out of 5 stars. Scale down to 1-5 if out of 10." },
+                                comment: { type: "string", description: "Review comment content in natural English." },
+                                cleanliness: { type: "number", description: "Cleanliness rating score from 1 to 5 (default 5)." },
+                                comfort: { type: "number", description: "Comfort rating score from 1 to 5 (default 5)." },
+                                location: { type: "number", description: "Location rating score from 1 to 5 (default 5)." },
+                                staff: { type: "number", description: "Staff rating score from 1 to 5 (default 5)." },
+                                valueForMoney: { type: "number", description: "Value for money rating score from 1 to 5 (default 5)." },
+                                createdAt: { type: "string", description: "Review date in YYYY-MM-DD format (default is recent dates)." }
+                            },
+                            required: ["userName", "rating", "comment"]
+                        }
+                    }
+                },
+                required: ["reviews"]
+            };
+
+            const reviewSystemInstruction = `
+You are an expert data extraction assistant. Your job is to extract customer review logs from the raw text provided by the user.
+Extract all customer reviews present in the text (up to 50 reviews). Parse out reviewer name, ratings, individual subscore ratings (Cleanliness, Comfort, Location, Staff, Value For Money), comment/text, and date.
+Return the output strictly in valid JSON format matching the schema rules.
+`;
+
+            const reviewStructPrompt = `
+User raw review data:
+${rawReviewData.slice(0, 40000)}
+
+Please extract the reviews. Ensure they are structured as JSON.
+`;
+
+            console.log("[AI Copilot - Import Reviews] Calling Gemini 2.5 flash review parser...");
+            const reviewResult = await runGeminiWithFallback(
+                genAI,
+                {
+                    model: "gemini-2.5-flash",
+                    systemInstruction: reviewSystemInstruction,
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: reviewSchemaConfig,
+                        temperature: 0.2
+                    }
+                },
+                (model) => model.generateContent(reviewStructPrompt)
+            );
+            const reviewJsonText = reviewResult.response.text();
+            
+            let parsedReviews = { reviews: [] };
+            try {
+                parsedReviews = JSON.parse(reviewJsonText);
+            } catch (jsonErr) {
+                console.error("Gemini failed to generate valid JSON for raw reviews:", reviewJsonText);
+                throw new Error("AI did not return valid JSON structured reviews.");
+            }
+
+            const extractedReviews = Array.isArray(parsedReviews.reviews) ? parsedReviews.reviews : [];
+            console.log(`[AI Copilot - Import Reviews] Extracted ${extractedReviews.length} reviews from raw data.`);
+
+            if (extractedReviews.length === 0) {
+                return res.status(200).json({
+                    success: true,
+                    reply: "Mujhe raw text me koi reviews nahi mile jinhe main import kar sakoon. Please review text format sahi se paste karein.",
+                    rooms: []
+                });
+            }
+
+            // Store reviews in local Database
+            const bcrypt = require('bcryptjs');
+            const savedReviews = [];
+
+            for (const rev of extractedReviews) {
+                const cleanName = rev.userName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() || 'guest';
+                const dummyEmail = `reviewer_${cleanName}_${Math.floor(Math.random() * 100000)}@gethotelstays.mock`;
+                
+                const salt = await bcrypt.genSalt(10);
+                const hashedPassword = await bcrypt.hash(Math.random().toString(36).slice(-8), salt);
+
+                const dummyUser = await prisma.user.create({
+                    data: {
+                        name: rev.userName,
+                        email: dummyEmail,
+                        password: hashedPassword,
+                        role: 'user',
+                        updatedAt: new Date()
+                    }
+                });
+
+                const cleanliness = Math.min(5, Math.max(1, parseInt(rev.cleanliness) || 5));
+                const comfort = Math.min(5, Math.max(1, parseInt(rev.comfort) || 5));
+                const location = Math.min(5, Math.max(1, parseInt(rev.location) || 5));
+                const staff = Math.min(5, Math.max(1, parseInt(rev.staff) || 5));
+                const valueForMoney = Math.min(5, Math.max(1, parseInt(rev.valueForMoney) || 5));
+
+                const dbReview = await prisma.review.create({
+                    data: {
+                        rating: Math.min(5, Math.max(1, parseInt(rev.rating) || 5)),
+                        comment: rev.comment || "Good experience.",
+                        cleanliness,
+                        comfort,
+                        location,
+                        staff,
+                        valueForMoney,
+                        userId: dummyUser.id,
+                        hotelId: Number(hotelId),
+                        createdAt: rev.createdAt ? new Date(rev.createdAt) : new Date()
+                    },
+                    include: {
+                        user: {
+                            select: { name: true }
+                        }
+                    }
+                });
+                savedReviews.push(dbReview);
+            }
+
+            // Recalculate average guestRating and total reviewCount for target hotel
+            const allReviews = await prisma.review.findMany({
+                where: { hotelId: Number(hotelId) }
+            });
+
+            const totalRating = allReviews.reduce((sum, r) => sum + r.rating, 0);
+            const avgRating = allReviews.length > 0 ? parseFloat((totalRating / allReviews.length).toFixed(1)) : 0;
+
+            await prisma.hotel.update({
+                where: { id: Number(hotelId) },
+                data: {
+                    guestRating: avgRating,
+                    reviewCount: allReviews.length
+                }
+            });
+
+            console.log(`[AI Copilot - Import Reviews] Successfully saved ${savedReviews.length} reviews. Avg rating updated to ${avgRating}`);
+
+            // Build premium conversational Hinglish response
+            const previewLines = savedReviews.slice(0, 5).map(rev => `- **${rev.user?.name || rev.userName}** (⭐${rev.rating}): "${rev.comment.length > 80 ? rev.comment.slice(0, 80) + '...' : rev.comment}"`).join('\n');
+            const previewText = savedReviews.length > 5 ? `\n${previewLines}\n- ...aur **${savedReviews.length - 5} aur reviews**.` : `\n${previewLines}`;
+
+            const replyMessage = `Maine aapke raw data se successfully **${savedReviews.length} reviews** ko simplify aur structure karke **${targetHotel.name}** me import kar diya hai! Yahan ek chota preview hai:
+${previewText}
+
+Hotel ki average rating ab update hokar **⭐${avgRating}** (total ${allReviews.length} reviews) ho gayi hai.`;
+
+            return res.status(200).json({
+                success: true,
+                reply: replyMessage,
+                count: savedReviews.length,
+                data: [], // empty rooms data since we only imported reviews
+                clearAllRooms: false
+            });
+        }
+
         let contextText = "";
         let otaContext = "";
         let scrapedData = null;
