@@ -200,12 +200,40 @@ export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     // Detect User Location (Country) and initialize language & currency accordingly
     const detectAndInitLocale = async () => {
         try {
-            const res = await fetch("https://ipapi.co/json/");
-            const data = await res.json();
-            if (data && data.country_code) {
-                const country = data.country_code.toUpperCase();
+            let country = "";
+
+            // Try freeipapi.com first (reliable, fast, no Cloudflare blocks for dev/local)
+            try {
+                const res = await fetch("https://freeipapi.com/api/json");
+                const data = await res.json();
+                if (data && data.countryCode) {
+                    country = data.countryCode.toUpperCase();
+                }
+            } catch (err) {
+                console.warn("freeipapi.com failed, trying ipapi.co:", err);
+            }
+
+            // Fallback to ipapi.co if freeipapi failed
+            if (!country) {
+                try {
+                    const res = await fetch("https://ipapi.co/json/");
+                    const data = await res.json();
+                    if (data && data.country_code) {
+                        country = data.country_code.toUpperCase();
+                    }
+                } catch (err) {
+                    console.warn("ipapi.co fallback failed:", err);
+                }
+            }
+
+            // Default to India if geolocation failed completely (saves local dev and ad-blocked users)
+            if (!country) {
+                country = "IN";
+            }
+
+            if (country) {
                 let targetLang = "en";
-                let targetCurr = currencies.find(c => c.code === "USD")!;
+                let targetCurr = currencies.find(c => c.code === "INR")!; // Default fallback to INR (Indian Rupee)
 
                 // Map country codes to locales
                 if (["ES", "MX", "AR", "CO", "PE", "CL"].includes(country)) {
@@ -229,6 +257,9 @@ export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                 } else if (country === "RU") {
                     targetLang = "ru";
                     targetCurr = currencies.find(c => c.code === "RUB")!;
+                } else if (["US", "CA", "AU", "SG", "NZ", "HK"].includes(country)) {
+                    targetLang = "en";
+                    targetCurr = currencies.find(c => c.code === "USD")!;
                 }
 
                 // Store detected local currency for language fallback sync
