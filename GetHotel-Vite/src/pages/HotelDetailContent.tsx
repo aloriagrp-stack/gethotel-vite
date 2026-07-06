@@ -126,6 +126,15 @@ const FAQItem = ({ faq }: { faq: any }) => {
 
 export default function HotelDetailContent({ id, initialHotel }: { id: string, initialHotel?: any }) {
     const router = useRouter();
+    const handleBack = () => {
+        if (window.history.length > 1) {
+            router(-1);
+        } else {
+            const parts = window.location.pathname.split("/");
+            const langCode = ["en", "hi", "de", "ja", "fr", "es", "zh", "ar", "ru", "pt"].includes(parts[1]) ? parts[1] : "en";
+            router(`/${langCode}/hotels`);
+        }
+    };
     const { user } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
     const [hotel, setHotel] = useState<any>(initialHotel || null);
@@ -642,7 +651,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
             {/* 1. Static Rounded Search Pill (Same as Hotels page) */}
             <div className="w-full bg-white py-2 px-4 border-b border-slate-50 flex flex-col items-center gap-4">
                 <div className="w-full max-w-7xl flex items-center justify-between">
-                    <button onClick={() => router(-1)} className="p-2 hover:bg-slate-50 rounded-full transition-colors">
+                    <button onClick={handleBack} className="p-2 hover:bg-slate-50 rounded-full transition-colors">
                         <ArrowLeft className="w-6 h-6 text-slate-600" />
                     </button>
 
