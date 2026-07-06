@@ -117,7 +117,8 @@ export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         else if (langCode === "ar") targetCurrCode = "AED";
         else if (langCode === "ru") targetCurrCode = "RUB";
         else if (langCode === "en") {
-            targetCurrCode = "INR";
+            const detectedCurr = typeof window !== "undefined" ? (localStorage.getItem("detected-local-currency") || "INR") : "INR";
+            targetCurrCode = detectedCurr;
         }
 
         if (currency.code !== targetCurrCode) {
@@ -200,28 +201,56 @@ export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const detectAndInitLocale = async () => {
         try {
             let country = "";
-
-            // Try freeipapi.com first (reliable, fast, no Cloudflare blocks for dev/local)
-            try {
-                const res = await fetch("https://freeipapi.com/api/json");
-                const data = await res.json();
-                if (data && data.countryCode) {
-                    country = data.countryCode.toUpperCase();
+            // Check browser timezone first (most reliable, networkless, bypasses dynamic IP location errors)
+            if (typeof window !== "undefined") {
+                try {
+                    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                    if (tz === "Asia/Kolkata" || tz === "Asia/Calcutta") {
+                        country = "IN";
+                    } else if (tz.startsWith("Europe/")) {
+                        if (tz === "Europe/London") {
+                            country = "GB";
+                        } else if (tz === "Europe/Moscow") {
+                            country = "RU";
+                        } else {
+                            country = "DE"; // Default Europe to Germany for EUR
+                        }
+                    } else if (tz.startsWith("America/")) {
+                        country = "US";
+                    } else if (tz === "Asia/Tokyo") {
+                        country = "JP";
+                    } else if (tz === "Asia/Dubai") {
+                        country = "AE";
+                    }
+                } catch (tzError) {
+                    console.warn("Timezone detection failed:", tzError);
                 }
-            } catch (err) {
-                console.warn("freeipapi.com failed, trying ipapi.co:", err);
             }
 
-            // Fallback to ipapi.co if freeipapi failed
+            // Fallback to IP geolocation APIs if timezone detection didn't match or failed
             if (!country) {
+                // Try freeipapi.com first (reliable, fast, no Cloudflare blocks for dev/local)
                 try {
-                    const res = await fetch("https://ipapi.co/json/");
+                    const res = await fetch("https://freeipapi.com/api/json");
                     const data = await res.json();
-                    if (data && data.country_code) {
-                        country = data.country_code.toUpperCase();
+                    if (data && data.countryCode) {
+                        country = data.countryCode.toUpperCase();
                     }
                 } catch (err) {
-                    console.warn("ipapi.co fallback failed:", err);
+                    console.warn("freeipapi.com failed, trying ipapi.co:", err);
+                }
+
+                // Fallback to ipapi.co if freeipapi failed
+                if (!country) {
+                    try {
+                        const res = await fetch("https://ipapi.co/json/");
+                        const data = await res.json();
+                        if (data && data.country_code) {
+                            country = data.country_code.toUpperCase();
+                        }
+                    } catch (err) {
+                        console.warn("ipapi.co fallback failed:", err);
+                    }
                 }
             }
 
@@ -243,10 +272,10 @@ export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                     targetCurr = currencies.find(c => c.code === "INR")!;
                 } else if (["DE", "FR", "IT", "NL", "BE"].includes(country)) {
                     targetLang = country === "DE" ? "de" : (country === "FR" ? "fr" : "en");
-                    targetCurr = currencies.find(c => c.code === (targetLang === "en" ? "INR" : "EUR"))!;
+                    targetCurr = currencies.find(c => c.code === "EUR")!;
                 } else if (country === "GB") {
                     targetLang = "en";
-                    targetCurr = currencies.find(c => c.code === "INR")!;
+                    targetCurr = currencies.find(c => c.code === "GBP")!;
                 } else if (country === "JP") {
                     targetLang = "ja";
                     targetCurr = currencies.find(c => c.code === "JPY")!;
@@ -258,7 +287,7 @@ export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                     targetCurr = currencies.find(c => c.code === "RUB")!;
                 } else if (["US", "CA", "AU", "SG", "NZ", "HK"].includes(country)) {
                     targetLang = "en";
-                    targetCurr = currencies.find(c => c.code === "INR")!;
+                    targetCurr = currencies.find(c => c.code === "USD")!;
                 }
 
                 // Store detected local currency for language fallback sync
