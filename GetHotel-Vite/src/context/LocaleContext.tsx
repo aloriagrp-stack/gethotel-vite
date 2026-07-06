@@ -117,8 +117,7 @@ export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         else if (langCode === "ar") targetCurrCode = "AED";
         else if (langCode === "ru") targetCurrCode = "RUB";
         else if (langCode === "en") {
-            const detectedCurr = typeof window !== "undefined" ? (localStorage.getItem("detected-local-currency") || "INR") : "INR";
-            targetCurrCode = detectedCurr;
+            targetCurrCode = "INR";
         }
 
         if (currency.code !== targetCurrCode) {
@@ -244,10 +243,10 @@ export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                     targetCurr = currencies.find(c => c.code === "INR")!;
                 } else if (["DE", "FR", "IT", "NL", "BE"].includes(country)) {
                     targetLang = country === "DE" ? "de" : (country === "FR" ? "fr" : "en");
-                    targetCurr = currencies.find(c => c.code === "EUR")!;
+                    targetCurr = currencies.find(c => c.code === (targetLang === "en" ? "INR" : "EUR"))!;
                 } else if (country === "GB") {
                     targetLang = "en";
-                    targetCurr = currencies.find(c => c.code === "GBP")!;
+                    targetCurr = currencies.find(c => c.code === "INR")!;
                 } else if (country === "JP") {
                     targetLang = "ja";
                     targetCurr = currencies.find(c => c.code === "JPY")!;
@@ -259,7 +258,7 @@ export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                     targetCurr = currencies.find(c => c.code === "RUB")!;
                 } else if (["US", "CA", "AU", "SG", "NZ", "HK"].includes(country)) {
                     targetLang = "en";
-                    targetCurr = currencies.find(c => c.code === "USD")!;
+                    targetCurr = currencies.find(c => c.code === "INR")!;
                 }
 
                 // Store detected local currency for language fallback sync
