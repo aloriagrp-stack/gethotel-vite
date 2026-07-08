@@ -93,7 +93,17 @@ export default function DestinationStoryViewer({ story, onClose, onNext }: Desti
     if (!story || !mounted) return null;
 
     const handleAction = () => {
-        router(`/hotels?city=${story.city}`);
+        if (story.query) {
+            if (story.query.startsWith('http')) {
+                window.open(story.query, '_blank');
+            } else if (story.query.startsWith('/')) {
+                router(story.query);
+            } else {
+                router(`/hotels?search=${encodeURIComponent(story.query)}`);
+            }
+        } else {
+            router(`/hotels?city=${story.city}`);
+        }
         onClose();
     };
 
@@ -224,7 +234,7 @@ export default function DestinationStoryViewer({ story, onClose, onNext }: Desti
                             onClick={(e) => { e.stopPropagation(); handleAction(); }}
                             className="w-full bg-white text-slate-900 font-bold py-4 rounded-2xl flex items-center justify-center gap-2 hover:bg-brand-50 transition-all active:scale-[0.98] shadow-2xl cursor-pointer"
                         >
-                            Explore {story.city}
+                            {story.buttonText || `Explore ${story.city}`}
                             <ExternalLink className="w-4 h-4" />
                         </button>
                     </div>

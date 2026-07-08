@@ -24,7 +24,8 @@ export default function AdminLoginPage() {
                 pass: password,
                 userpassword: password,
                 partnerpassword: password,
-                partnerPassword: password
+                partnerPassword: password,
+                portal: 'admin'
             });
             if (user.role === 'super_admin') {
                 router("/admin/super");

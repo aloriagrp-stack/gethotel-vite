@@ -187,7 +187,7 @@ exports.verifyOTP = async (req, res, next) => {
 // @route   POST /api/auth/login
 // @access  Public
 exports.login = async (req, res, next) => {
-    const { email, password, userpassword, partnerpassword, controlpassword } = req.body;
+    const { email, password, userpassword, partnerpassword, controlpassword, portal } = req.body;
     
     // Support multiple naming conventions for different portals
     const actualPassword = password || userpassword || partnerpassword || controlpassword;
@@ -223,6 +223,15 @@ exports.login = async (req, res, next) => {
         if (!user) {
             trackFailedAttempt(ip, normalizedEmail, req);
             return res.status(401).json({ success: false, message: 'Invalid credentials' });
+        }
+
+        // Restrict partner accounts from logging in as regular customers
+        if (user.role === 'hotel_admin' && portal !== 'partner') {
+            trackFailedAttempt(ip, normalizedEmail, req);
+            return res.status(403).json({
+                success: false,
+                message: 'Partner accounts cannot be used as customer accounts. Please log in through the Partner Portal.'
+            });
         }
 
         // Check if password matches
@@ -332,6 +341,13 @@ exports.googleLogin = async (req, res, next) => {
             });
             console.log(`[SECURITY] New user created via Google: ${email}`);
         } else {
+            if (user.role === 'hotel_admin') {
+                console.log(`[SECURITY] Google login denied for partner account: ${email}`);
+                return res.status(403).json({
+                    success: false,
+                    message: 'Partner accounts cannot be used as customer accounts. Please log in through the Partner Portal.'
+                });
+            }
             console.log(`[SECURITY] Existing user logged in via Google: ${email}`);
         }
 

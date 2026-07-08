@@ -7,7 +7,7 @@ const {
     bulkUpdatePromotions, bulkDeletePromotions
 } = require('../controllers/adminController');
 const { getAnalytics } = require('../controllers/analyticsController');
-const { updateHomepageConfig, toggleTrending, toggleFeatured } = require('../controllers/homepageController');
+const { updateHomepageConfig, toggleTrending, toggleFeatured, updateTrendingBulk } = require('../controllers/homepageController');
 const { protect, authorize } = require('../middleware/auth');
 
 const router = express.Router();
@@ -27,6 +27,7 @@ router.get('/hotels/:id', getAdminHotelDetail);
 router.patch('/hotels/:id/metrics', updateHotelMetrics);
 router.post('/hotels/:id/recalculate', recalculateHotelMetrics);
 router.put('/hotels/:id/suspend', suspendHotel);
+router.put('/hotels/trending/bulk', updateTrendingBulk);
 router.put('/hotels/:id/trending', toggleTrending);
 router.put('/hotels/:id/featured', toggleFeatured);
 router.delete('/hotels/:id', deleteHotel);

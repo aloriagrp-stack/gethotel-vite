@@ -43,7 +43,8 @@ export default function PartnerLoginPage() {
                 pass: password,
                 userpassword: password,
                 partnerpassword: password,
-                partnerPassword: password 
+                partnerPassword: password,
+                portal: 'partner'
             });
             if (user.role === 'hotel_admin') {
                 router("/partner-select");

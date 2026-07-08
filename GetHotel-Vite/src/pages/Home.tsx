@@ -95,6 +95,8 @@ export default function HomePage() {
       <Hero
         title={homeConfig?.heroTitle}
         highlight={homeConfig?.heroHighlight}
+        transitionInterval={homeConfig?.heroTransitionInterval}
+        stories={homeConfig?.stories}
       />
       <TrendingHotels
         hotels={trendingHotels}

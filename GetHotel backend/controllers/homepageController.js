@@ -96,6 +96,38 @@ exports.toggleFeatured = async (req, res) => {
     }
 };
 
+// @desc    Update trending status for multiple hotels in bulk
+// @route   PUT /api/admin/hotels/trending/bulk
+// @access  Private (super_admin)
+exports.updateTrendingBulk = async (req, res) => {
+    try {
+        const { hotelIds } = req.body; // Array of IDs of hotels that should be trending
+        if (!Array.isArray(hotelIds)) {
+            return res.status(400).json({ success: false, message: 'hotelIds must be an array of numbers' });
+        }
+
+        const numericIds = hotelIds.map(id => parseInt(id)).filter(id => !isNaN(id));
+
+        // Use a Prisma transaction to ensure all updates happen atomically
+        await prisma.$transaction([
+            // 1. Set isTrending = false for all hotels not in the list
+            prisma.hotel.updateMany({
+                where: { id: { notIn: numericIds } },
+                data: { isTrending: false }
+            }),
+            // 2. Set isTrending = true for all hotels in the list
+            prisma.hotel.updateMany({
+                where: { id: { in: numericIds } },
+                data: { isTrending: true }
+            })
+        ]);
+
+        res.json({ success: true, message: 'Trending status updated successfully in bulk' });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
 // Realistic mock locations for localhost testing (mirrors analyticsController)
 
 // @desc    Get trending hotels (public)

@@ -12,6 +12,8 @@ export interface DestinationStory {
     id: string;
     city: string;
     slides: StorySlide[];
+    query?: string;
+    buttonText?: string;
 }
 
 export const destinationStories: DestinationStory[] = [

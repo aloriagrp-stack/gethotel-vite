@@ -45,7 +45,7 @@ const DESTINATION_STORIES = [
 const getDaysInMonth = (month: number, year: number) => new Date(year, month + 1, 0).getDate();
 const getFirstDayOfMonth = (month: number, year: number) => new Date(year, month, 1).getDay();
 
-export default function SmartSearchBar({ className, hideStories, initialState, onSearch, navigationPath, layoutMode = "home" }: any) {
+export default function SmartSearchBar({ className, hideStories, initialState, onSearch, navigationPath, layoutMode = "home", stories }: any) {
     const { mode } = useStayMode();
     const isMobile = useIsMobile();
     const router = useRouter();
@@ -798,17 +798,113 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
             )}
 
             {!hideStories && (
-                <div className="mt-16 flex items-center justify-start md:justify-center gap-10 overflow-x-auto pb-6 no-scrollbar px-6 md:px-0 w-full max-w-[1400px] mx-auto relative z-10">
-                    {DESTINATION_STORIES.map((story, idx) => (
-                        <motion.button initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 + idx * 0.1 }} key={story.label} type="button" onClick={() => { const foundStory = destinationStories.find(s => s.id === story.label.toLowerCase()); if (foundStory) setActiveStory(foundStory); else { setQuery(story.query); handleSearch(undefined, story.query); } }} className="group flex flex-col items-center gap-4 outline-none relative">
-                            <div className="relative p-[4px] rounded-full bg-gradient-to-tr from-brand-600 via-brand-200 to-brand-500 transition-all duration-700 group-hover:scale-110 active:scale-95 shadow-premium"><div className="p-[3px] rounded-full bg-white"><div className="relative w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden shadow-inner"><img src={story.image} alt={story.label} className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-125" loading="lazy" /></div></div></div>
+                <div className="mt-12 pt-4 flex items-center justify-start md:justify-center gap-10 overflow-x-auto pb-6 no-scrollbar px-6 md:px-0 w-full max-w-[1400px] mx-auto relative z-10">
+                    {(stories && stories.length > 0 ? stories : DESTINATION_STORIES).map((story: any, idx: number) => (
+                        <motion.button 
+                            initial={{ opacity: 0, y: 20 }} 
+                            animate={{ opacity: 1, y: 0 }} 
+                            transition={{ delay: 0.5 + idx * 0.1 }} 
+                            key={story.label} 
+                            type="button" 
+                            onClick={() => { 
+                                const foundStory = stories && stories.length > 0 
+                                    ? stories.find((s: any) => s.label.toLowerCase() === story.label.toLowerCase())
+                                    : destinationStories.find(s => s.id === story.label.toLowerCase());
+                                if (foundStory) {
+                                    const mappedStory = stories && stories.length > 0
+                                        ? { 
+                                            id: foundStory.label.toLowerCase(), 
+                                            city: foundStory.label, 
+                                            slides: foundStory.slides || [],
+                                            query: foundStory.query,
+                                            buttonText: foundStory.buttonText
+                                          }
+                                        : foundStory;
+                                    setActiveStory(mappedStory);
+                                } else { 
+                                    setQuery(story.query); 
+                                    handleSearch(undefined, story.query); 
+                                } 
+                            }} 
+                            className="group flex flex-col items-center gap-4 outline-none relative"
+                        >
+                            <div className="relative p-[4px] rounded-full bg-gradient-to-tr from-brand-600 via-brand-200 to-brand-500 transition-all duration-700 group-hover:scale-110 active:scale-95 shadow-premium">
+                                {/* Story Badge */}
+                                {story.badge && (
+                                    <span className={`absolute -top-1 left-[2px] z-20 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest shadow-md border border-white whitespace-nowrap leading-none premium-shine-badge select-none ${
+                                        story.badge.toLowerCase() === 'hot' 
+                                            ? 'bg-gradient-to-r from-red-600 via-rose-300 to-red-600 text-white' 
+                                            : story.badge.toLowerCase() === 'new' 
+                                                ? 'bg-gradient-to-r from-emerald-600 via-emerald-300 to-emerald-600 text-white' 
+                                                : story.badge.toLowerCase() === 'trend'
+                                                    ? 'bg-gradient-to-r from-blue-600 via-blue-300 to-blue-600 text-white'
+                                                    : 'bg-gradient-to-r from-slate-900 via-slate-400 to-slate-900 text-white'
+                                    }`}>
+                                        {story.badge}
+                                    </span>
+                                )}
+                                <div className="p-[3px] rounded-full bg-white">
+                                    <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden shadow-inner">
+                                        <img src={story.image} alt={story.label} className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-125" loading="lazy" />
+                                    </div>
+                                </div>
+                            </div>
                             <span className="text-[14px] font-black text-slate-950 tracking-tight italic">{story.label}</span>
                         </motion.button>
                     ))}
                 </div>
             )}
 
-            <DestinationStoryViewer story={activeStory} onClose={() => setActiveStory(null)} onNext={() => { if (!activeStory) return; const currentIndex = destinationStories.findIndex(s => s.id === activeStory.id); const nextIndex = (currentIndex + 1) % destinationStories.length; setActiveStory(destinationStories[nextIndex]); }} />
+            <DestinationStoryViewer 
+                story={activeStory} 
+                onClose={() => setActiveStory(null)} 
+                onNext={() => { 
+                    if (!activeStory) return; 
+                    const currentStoriesList = stories && stories.length > 0 ? stories : DESTINATION_STORIES;
+                    const currentIndex = currentStoriesList.findIndex((s: any) => s.label.toLowerCase() === activeStory.id); 
+                    const nextIndex = (currentIndex + 1) % currentStoriesList.length; 
+                    const nextStory = currentStoriesList[nextIndex];
+                    if (nextStory) {
+                        const foundStory = stories && stories.length > 0
+                            ? nextStory
+                            : destinationStories.find(s => s.id === nextStory.label.toLowerCase());
+                        if (foundStory) {
+                            const mappedStory = stories && stories.length > 0
+                                ? { 
+                                    id: foundStory.label.toLowerCase(), 
+                                    city: foundStory.label, 
+                                    slides: foundStory.slides || [],
+                                    query: foundStory.query,
+                                    buttonText: foundStory.buttonText
+                                  }
+                                : foundStory;
+                            setActiveStory(mappedStory);
+                        }
+                    }
+                }} 
+            />
+            <style>{`
+                @keyframes badge-shine {
+                    0% { background-position: -200% center; }
+                    100% { background-position: 200% center; }
+                }
+                @keyframes flag-wave {
+                    0% {
+                        transform: translateY(0) rotate(-2deg) skewX(-1deg);
+                    }
+                    50% {
+                        transform: translateY(-1.2px) rotate(2deg) skewX(1deg);
+                    }
+                    100% {
+                        transform: translateY(0) rotate(-2deg) skewX(-1deg);
+                    }
+                }
+                .premium-shine-badge {
+                    background-size: 200% auto !important;
+                    animation: badge-shine 3s linear infinite, flag-wave 2.5s ease-in-out infinite !important;
+                    transform-origin: left center;
+                }
+            `}</style>
         </div>
     );
 }

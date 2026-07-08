@@ -128,6 +128,7 @@ function LoginContent() {
                     password,
                     userpassword: password,
                     partnerpassword: password,
+                    portal: 'user'
                 });
                 const redirectPath = searchParams.get("redirect") || "/";
                 router(redirectPath);

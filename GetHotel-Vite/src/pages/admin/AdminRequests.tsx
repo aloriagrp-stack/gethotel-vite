@@ -78,7 +78,7 @@ export default function PartnerRequestsPage() {
         const newTab = window.open("about:blank", "_blank");
         try {
             setActionIsLoading(`login-${email}`);
-            const res = await authApi.login({ email, partnerpassword: pass });
+            const res = await authApi.login({ email, partnerpassword: pass, portal: 'partner' });
             if (res.success) {
                 if (newTab) {
                     newTab.location.href = `/partner-dashboard?impersonateToken=${res.token}`;
