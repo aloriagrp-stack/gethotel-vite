@@ -55,39 +55,103 @@
   </div>
 
   <script>
-    // Monkeypatch window.open to force internal redirects (like search results) to open in the same frame
+    // Helper function to check if a URL is internal
+    function isInternalUrl(url) {
+      if (!url) return false;
+      const hostname = window.location.hostname;
+      return url.startsWith('/') || url.startsWith('./') || url.includes(hostname);
+    }
+
+    // Monkeypatch window.open, parent.open, and top.open
     const originalOpen = window.open;
     window.open = function(url, target, features) {
-      if (url && (url.startsWith('/') || url.includes(window.location.hostname))) {
+      if (isInternalUrl(url)) {
         window.location.href = url;
         return window;
       }
       return originalOpen.apply(this, arguments);
     };
 
-    // Capture and force all form submissions for internal routes to submit in _self
-    document.addEventListener('submit', function(event) {
-      const form = event.target;
-      const action = form.getAttribute('action') || '';
-      if (action.startsWith('/') || action.includes(window.location.hostname) || action === '') {
-        form.setAttribute('target', '_self');
-      }
-    }, true);
-
-    // Capture and force all click events on internal anchors to navigate in _self
-    document.addEventListener('click', function(event) {
-      let target = event.target;
-      while (target && target !== document.body) {
-        if (target.tagName === 'A') {
-          const href = target.getAttribute('href');
-          if (href && (href.startsWith('/') || href.includes(window.location.hostname))) {
-            target.setAttribute('target', '_self');
+    try {
+      if (window.parent && window.parent !== window) {
+        const originalParentOpen = window.parent.open;
+        window.parent.open = function(url, target, features) {
+          if (isInternalUrl(url)) {
+            window.location.href = url;
+            return window;
           }
-          break;
-        }
-        target = target.parentNode;
+          const openFn = originalParentOpen || window.parent.open;
+          return openFn.apply(this, arguments);
+        };
       }
-    }, true);
+    } catch (e) {
+      console.error("Failed to monkeypatch parent.open:", e);
+    }
+
+    try {
+      if (window.top && window.top !== window) {
+        const originalTopOpen = window.top.open;
+        window.top.open = function(url, target, features) {
+          if (isInternalUrl(url)) {
+            window.location.href = url;
+            return window;
+          }
+          const openFn = originalTopOpen || window.top.open;
+          return openFn.apply(this, arguments);
+        };
+      }
+    } catch (e) {
+      console.error("Failed to monkeypatch top.open:", e);
+    }
+
+    // Helper to register capture listeners on a document
+    function registerListeners(doc) {
+      if (!doc) return;
+
+      // Capture all form submissions for internal routes to submit in _self
+      doc.addEventListener('submit', function(event) {
+        const form = event.target;
+        const action = form.getAttribute('action') || '';
+        if (action === '' || isInternalUrl(action)) {
+          form.setAttribute('target', '_self');
+        }
+      }, true);
+
+      // Capture all click events on internal anchors to navigate in _self
+      doc.addEventListener('click', function(event) {
+        let target = event.target;
+        while (target && target !== doc.body) {
+          if (target.tagName === 'A') {
+            const href = target.getAttribute('href');
+            if (isInternalUrl(href)) {
+              target.setAttribute('target', '_self');
+            }
+            break;
+          }
+          target = target.parentNode;
+        }
+      }, true);
+    }
+
+    // Register on local document
+    registerListeners(document);
+
+    // Register on parent and top documents if accessible
+    try {
+      if (window.parent && window.parent !== window && window.parent.document) {
+        registerListeners(window.parent.document);
+      }
+    } catch (e) {
+      console.warn("Could not register listeners on parent document:", e);
+    }
+
+    try {
+      if (window.top && window.top !== window && window.top.document) {
+        registerListeners(window.top.document);
+      }
+    } catch (e) {
+      console.warn("Could not register listeners on top document:", e);
+    }
 
     window.TPWL_CONFIGURATION = {
       ...window.TPWL_CONFIGURATION,
