@@ -65,6 +65,30 @@
       return originalOpen.apply(this, arguments);
     };
 
+    // Capture and force all form submissions for internal routes to submit in _self
+    document.addEventListener('submit', function(event) {
+      const form = event.target;
+      const action = form.getAttribute('action') || '';
+      if (action.startsWith('/') || action.includes(window.location.hostname) || action === '') {
+        form.setAttribute('target', '_self');
+      }
+    }, true);
+
+    // Capture and force all click events on internal anchors to navigate in _self
+    document.addEventListener('click', function(event) {
+      let target = event.target;
+      while (target && target !== document.body) {
+        if (target.tagName === 'A') {
+          const href = target.getAttribute('href');
+          if (href && (href.startsWith('/') || href.includes(window.location.hostname))) {
+            target.setAttribute('target', '_self');
+          }
+          break;
+        }
+        target = target.parentNode;
+      }
+    }, true);
+
     window.TPWL_CONFIGURATION = {
       ...window.TPWL_CONFIGURATION,
       resultsURL: window.location.origin + window.location.pathname
