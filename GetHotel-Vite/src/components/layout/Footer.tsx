@@ -138,16 +138,16 @@ export default function Footer() {
 
             {/* ── Bottom Bar ── */}
             <div className="border-t border-black/5 py-8">
-                <div className="w-full max-w-none mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] font-bold text-slate-400">
+                <div className="w-full max-w-none mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] font-bold text-slate-400 text-center md:text-left">
                     <p>© 2026 GetHotelStays. Owned & operated by Aloria Group, Dwarka Mor, Vipin Garden, New Delhi - 110059.</p>
-                    <div className="flex items-center gap-6">
+                    <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
                         <div className="flex items-center gap-1.5 grayscale opacity-60">
                             <span>Made with</span>
                             <span className="text-brand-600">♥</span>
                             <span>in India</span>
                         </div>
-                        <div className="h-4 w-px bg-black/5 hidden md:block" />
-                        <div className="flex items-center gap-4 uppercase tracking-widest">
+                        <div className="h-4 w-px bg-black/5 hidden sm:block" />
+                        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 uppercase tracking-widest">
                             <Link to="/privacy" className="hover:text-black transition-colors">Privacy Policy</Link>
                             <Link to="/terms-&-conditions" className="hover:text-black transition-colors">Terms & Conditions</Link>
                             <Link to="/cancellation-policy" className="hover:text-black transition-colors">Refund & Cancellation</Link>

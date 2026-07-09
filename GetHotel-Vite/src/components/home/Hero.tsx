@@ -1,6 +1,8 @@
 
 
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useLocale } from "@/context/LocaleContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Play, Calendar, MapPin, Users, Hotel, Clock, Plane } from "lucide-react";
 import SmartSearchBar from "@/components/search/SmartSearchBar";
@@ -9,6 +11,8 @@ import { cn } from "@/lib/utils";
 
 export default function Hero({ title, highlight, transitionInterval, stories }: { title?: string, highlight?: string, transitionInterval?: number | string, stories?: any[] }) {
     const { mode, setMode } = useStayMode();
+    const navigate = useNavigate();
+    const { langCode } = useLocale();
     const displayTitle = title || "Where would you";
     const displayHighlight = highlight || "like to stay?";
 
@@ -156,7 +160,7 @@ export default function Hero({ title, highlight, transitionInterval, stories }: 
                         </button>
                         <button 
                             type="button"
-                            onClick={() => alert("Flights booking feature is coming soon!")}
+                            onClick={() => navigate(`/${langCode}/flights`)}
                             className="px-3.5 py-2.5 md:px-6 md:py-3 rounded-full text-[10px] md:text-xs font-black transition-all duration-300 flex items-center gap-1.5 md:gap-2 border shadow-sm bg-white/80 backdrop-blur-md text-slate-600 border-slate-200/80 hover:bg-white hover:text-slate-950 shrink-0"
                         >
                             <Plane className="w-3 h-3.5 md:w-3.5 md:h-3.5 text-slate-500" />

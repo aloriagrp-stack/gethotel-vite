@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flights Widget</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      overflow: hidden;
+    }
+    #search-card {
+      background: #ffffff;
+      border-radius: 16px;
+      border: 1px solid #f1f5f9;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    @media (min-width: 768px) {
+      #search-card {
+        padding: 32px;
+      }
+    }
+    /* Hide the "Show hotels" checkbox to prevent Booking.com hotel search results */
+    label[class*="SearchEdit-module__hotelsLabel"] {
+      display: none !important;
+    }
+    #tpwl-tickets {
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+    }
+    #tpwl-tickets > div,
+    #tpwl-tickets > div > div {
+      border-radius: 16px !important;
+      overflow: hidden !important;
+    }
+  </style>
+</head>
+<body>
+  <!-- Wrapper container to prevent infinite height expansion feedback loop -->
+  <div id="widget-wrapper" style="width: 100%; display: flow-root;">
+    <!-- Search form card container styled directly inside the iframe -->
+    <div id="search-card">
+      <!-- Metasearch widget container -->
+      <div id="tpwl-search"></div>
+    </div>
+    
+    <!-- Search results container -->
+    <div id="tpwl-tickets"></div>
+  </div>
+
+  <script>
+    window.TPWL_CONFIGURATION = {
+      ...window.TPWL_CONFIGURATION,
+      resultsURL: window.location.origin + window.location.pathname
+    };
+  </script>
+
+  <script nowprocket data-noptimize="1" data-cfasync="false" data-wpfc-render="false" seraph-accel-crit="1" data-no-defer="1">
+    (function () {
+      var script = document.createElement("script");
+      script.async = 1;
+      script.type = "module";
+      script.src = "https://tpwdgt.com/wl_web/main.js?wl_id=19509";
+      document.head.appendChild(script);
+    })();
+  </script>
+
+  <!-- Script to communicate content height to parent for auto-resize and programmatically uncheck hotels -->
+  <script>
+    function disableHotelsCheckbox() {
+      const checkbox = document.querySelector('input[type="checkbox"]');
+      if (checkbox && checkbox.checked) {
+        checkbox.click();
+      }
+    }
+
+    function fixFormTarget() {
+      const forms = document.querySelectorAll('#tpwl-search form');
+      forms.forEach(form => {
+        if (form.getAttribute('target') !== '_self') {
+          form.setAttribute('target', '_self');
+        }
+      });
+    }
+
+    function getActualContentHeight() {
+      const wrapper = document.getElementById("widget-wrapper");
+      if (!wrapper) return 0;
+      const children = wrapper.getElementsByTagName("*");
+      let maxBottom = 0;
+      for (let i = 0; i < children.length; i++) {
+        const child = children[i];
+        if (child.id === 'widget-wrapper') continue;
+        if (child.offsetWidth > 0 && child.offsetHeight > 0) {
+          const rect = child.getBoundingClientRect();
+          if (rect.bottom > maxBottom) {
+            maxBottom = rect.bottom;
+          }
+        }
+      }
+      return maxBottom;
+    }
+
+    function sendHeight() {
+      const height = getActualContentHeight();
+      if (height > 0) {
+        window.parent.postMessage({ type: 'resize-iframe', height: height + 16 }, '*');
+      }
+    }
+
+    function handleDOMChange() {
+      disableHotelsCheckbox();
+      fixFormTarget();
+      sendHeight();
+    }
+
+    // Run on load, resize, and periodically
+    window.addEventListener('load', handleDOMChange);
+    window.addEventListener('resize', handleDOMChange);
+    
+    // Set up a MutationObserver to watch for DOM changes (like tickets loading)
+    const observer = new MutationObserver(handleDOMChange);
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true });
+
+    // Fallback interval
+    setInterval(handleDOMChange, 400);
+  </script>
+</body>
+</html>

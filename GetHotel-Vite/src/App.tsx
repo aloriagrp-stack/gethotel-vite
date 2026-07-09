@@ -21,6 +21,7 @@ const PageLoader = () => (
 const Home = lazy(() => import("./pages/Home"));
 const Login = lazy(() => import("./pages/Login"));
 const Hotels = lazy(() => import("./pages/Hotels"));
+const Flights = lazy(() => import("./pages/Flights"));
 const HotelDetails = lazy(() => import("./pages/HotelDetails"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Wishlist = lazy(() => import("./pages/Wishlist"));
@@ -134,6 +135,7 @@ export default function App() {
                         <Route path="login" element={<Login />} />
                         <Route path="register" element={<Login />} />
                         <Route path="hotels" element={<Hotels />} />
+                        <Route path="flights" element={<Flights />} />
                         <Route path="hotel/:id" element={<HotelDetails />} />
                         <Route path="profile" element={<Profile />} />
                         <Route path="wishlist" element={<Wishlist />} />
