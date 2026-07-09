@@ -55,6 +55,13 @@
   </div>
 
   <script>
+    // Helper function to check if a URL is a hotel redirect
+    function isHotelRedirect(url) {
+      if (!url) return false;
+      const urlStr = String(url).toLowerCase();
+      return urlStr.includes('booking.com') || urlStr.includes('hotellook');
+    }
+
     // Helper function to check if a URL is a search redirect or internal target
     function isSearchRedirect(url) {
       if (!url) return false;
@@ -73,6 +80,10 @@
     // Monkeypatch window.open, parent.open, and top.open
     const originalOpen = window.open;
     window.open = function(url, target, features) {
+      if (isHotelRedirect(url)) {
+        console.log("Blocking hotel redirect:", url);
+        return window;
+      }
       if (isSearchRedirect(url)) {
         window.location.href = url;
         return window;
@@ -84,6 +95,10 @@
       if (window.parent && window.parent !== window) {
         const originalParentOpen = window.parent.open;
         window.parent.open = function(url, target, features) {
+          if (isHotelRedirect(url)) {
+            console.log("Blocking hotel redirect:", url);
+            return window;
+          }
           if (isSearchRedirect(url)) {
             window.location.href = url;
             return window;
@@ -100,6 +115,10 @@
       if (window.top && window.top !== window) {
         const originalTopOpen = window.top.open;
         window.top.open = function(url, target, features) {
+          if (isHotelRedirect(url)) {
+            console.log("Blocking hotel redirect:", url);
+            return window;
+          }
           if (isSearchRedirect(url)) {
             window.location.href = url;
             return window;
@@ -120,6 +139,11 @@
       doc.addEventListener('submit', function(event) {
         const form = event.target;
         const action = form.getAttribute('action') || '';
+        if (isHotelRedirect(action)) {
+          event.preventDefault();
+          event.stopPropagation();
+          return;
+        }
         if (form.closest('#tpwl-search') || action === '' || isSearchRedirect(action)) {
           form.setAttribute('target', '_self');
         }
@@ -131,6 +155,11 @@
         while (target && target !== doc.body) {
           if (target.tagName === 'A') {
             const href = target.getAttribute('href');
+            if (isHotelRedirect(href)) {
+              event.preventDefault();
+              event.stopPropagation();
+              return;
+            }
             if (target.closest('#tpwl-search') || isSearchRedirect(href)) {
               target.setAttribute('target', '_self');
             }
@@ -186,6 +215,29 @@
       }
     }
 
+    function hideHotelsCheckbox() {
+      // Find all input checkboxes
+      const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+      checkboxes.forEach(cb => {
+        const parent = cb.closest('label') || cb.parentElement;
+        if (parent && (parent.textContent.toLowerCase().includes('hotel') || parent.textContent.toLowerCase().includes('show'))) {
+          parent.style.setProperty('display', 'none', 'important');
+        }
+      });
+
+      // Find any labels or span elements containing "Show hotels"
+      const labels = document.querySelectorAll('label, span, div');
+      labels.forEach(el => {
+        if (el.textContent.trim().toLowerCase().includes('show hotels')) {
+          el.style.setProperty('display', 'none', 'important');
+          const parent = el.closest('div');
+          if (parent && parent !== document.body && parent.id !== 'widget-wrapper') {
+            parent.style.setProperty('display', 'none', 'important');
+          }
+        }
+      });
+    }
+
     function fixFormTarget() {
       const forms = document.querySelectorAll('#tpwl-search form');
       forms.forEach(form => {
@@ -231,6 +283,7 @@
 
     function handleDOMChange() {
       disableHotelsCheckbox();
+      hideHotelsCheckbox();
       fixFormTarget();
       fixLinkTargets();
       sendHeight();

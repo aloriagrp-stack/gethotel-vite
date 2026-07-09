@@ -76,7 +76,7 @@ export default function Flights() {
 
           <iframe
             ref={iframeRef}
-            src={`/flights-widget.html${window.location.search ? window.location.search + '&' : '?'}v=1.1.4`}
+            src={`/flights-widget.html${window.location.search ? window.location.search + '&' : '?'}v=1.1.6`}
             style={{ height: `${iframeHeight}px`, minHeight: "550px" }}
             scrolling="no"
             sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
