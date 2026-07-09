@@ -175,6 +175,29 @@ const testHandler = async (req, res) => {
         dbStatus = 'Failed: ' + err.message;
     }
 
+    let adminRoutesContent = 'Not found';
+    try {
+        adminRoutesContent = fs.readFileSync(path.join(__dirname, 'routes', 'adminRoutes.js'), 'utf8');
+    } catch (e) {
+        adminRoutesContent = 'Error reading: ' + e.message;
+    }
+
+    // List registered routes
+    const routesList = [];
+    const printRoutes = (stack, prefix = '') => {
+        stack.forEach(val => {
+            if (val.route) {
+                const methods = Object.keys(val.route.methods).join(',').toUpperCase();
+                routesList.push(`${methods} ${prefix}${val.route.path}`);
+            } else if (val.name === 'router' && val.handle.stack) {
+                printRoutes(val.handle.stack, prefix + (val.regexp.source.replace('^\\', '').replace('\\/?(?=\\/|$)', '').replace('\\/?$', '') || ''));
+            }
+        });
+    };
+    if (app._router && app._router.stack) {
+        printRoutes(app._router.stack);
+    }
+
     res.json({
         message: 'Backend is ALIVE',
         version: 'v2.8-AI-REVIEWS-IMPORTER-24JUN',
@@ -182,6 +205,9 @@ const testHandler = async (req, res) => {
         database: dbStatus,
         fix_results: fixResults,
         path_received: req.path,
+        admin_routes_file_contains_bulk: adminRoutesContent.includes('trending/bulk'),
+        admin_routes_preview: adminRoutesContent.slice(0, 1000) + '...',
+        routes: routesList.filter(r => r.includes('hotels'))
     });
 };
 
