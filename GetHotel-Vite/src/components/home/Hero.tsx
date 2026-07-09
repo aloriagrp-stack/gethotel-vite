@@ -88,7 +88,7 @@ export default function Hero({ title, highlight, transitionInterval, stories }: 
         : "";
 
     return (
-        <section className="relative z-20 min-h-[70vh] md:min-h-[90vh] flex flex-col items-center justify-center pt-16 md:pt-20 pb-12 md:pb-16 px-3 md:px-8">
+        <section className="relative z-20 min-h-[70vh] md:min-h-[90vh] flex flex-col items-center justify-start pt-20 md:justify-center md:pt-20 pb-12 md:pb-16 px-3 md:px-8">
             {/* Atmospheric Background Elements (Static for Performance) */}
             <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
                 <div 
