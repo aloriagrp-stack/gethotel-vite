@@ -108,22 +108,22 @@
     function registerListeners(doc) {
       if (!doc) return;
 
-      // Capture all form submissions for internal routes to submit in _self
+      // Capture all form submissions: if inside search widget or internal target, force _self
       doc.addEventListener('submit', function(event) {
         const form = event.target;
         const action = form.getAttribute('action') || '';
-        if (action === '' || isInternalUrl(action)) {
+        if (form.closest('#tpwl-search') || action === '' || isInternalUrl(action)) {
           form.setAttribute('target', '_self');
         }
       }, true);
 
-      // Capture all click events on internal anchors to navigate in _self
+      // Capture all click events on anchors: if inside search widget or internal target, force _self
       doc.addEventListener('click', function(event) {
         let target = event.target;
         while (target && target !== doc.body) {
           if (target.tagName === 'A') {
             const href = target.getAttribute('href');
-            if (isInternalUrl(href)) {
+            if (target.closest('#tpwl-search') || isInternalUrl(href)) {
               target.setAttribute('target', '_self');
             }
             break;
