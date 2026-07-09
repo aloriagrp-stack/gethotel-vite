@@ -55,9 +55,17 @@
   </div>
 
   <script>
-    // Helper function to check if a URL is internal
-    function isInternalUrl(url) {
+    // Helper function to check if a URL is a search redirect or internal target
+    function isSearchRedirect(url) {
       if (!url) return false;
+      const urlStr = String(url).toLowerCase();
+      // If it contains flightsearch, flights-widget, or search airport queries, it is a search redirect
+      if (urlStr.includes('flightsearch') || 
+          urlStr.includes('flights-widget') || 
+          urlStr.includes('destination_airports') ||
+          urlStr.includes('origin_airports')) {
+        return true;
+      }
       const hostname = window.location.hostname;
       return url.startsWith('/') || url.startsWith('./') || url.includes(hostname);
     }
@@ -65,7 +73,7 @@
     // Monkeypatch window.open, parent.open, and top.open
     const originalOpen = window.open;
     window.open = function(url, target, features) {
-      if (isInternalUrl(url)) {
+      if (isSearchRedirect(url)) {
         window.location.href = url;
         return window;
       }
@@ -76,7 +84,7 @@
       if (window.parent && window.parent !== window) {
         const originalParentOpen = window.parent.open;
         window.parent.open = function(url, target, features) {
-          if (isInternalUrl(url)) {
+          if (isSearchRedirect(url)) {
             window.location.href = url;
             return window;
           }
@@ -92,7 +100,7 @@
       if (window.top && window.top !== window) {
         const originalTopOpen = window.top.open;
         window.top.open = function(url, target, features) {
-          if (isInternalUrl(url)) {
+          if (isSearchRedirect(url)) {
             window.location.href = url;
             return window;
           }
@@ -108,22 +116,22 @@
     function registerListeners(doc) {
       if (!doc) return;
 
-      // Capture all form submissions: if inside search widget or internal target, force _self
+      // Capture all form submissions: if inside search widget or search target, force _self
       doc.addEventListener('submit', function(event) {
         const form = event.target;
         const action = form.getAttribute('action') || '';
-        if (form.closest('#tpwl-search') || action === '' || isInternalUrl(action)) {
+        if (form.closest('#tpwl-search') || action === '' || isSearchRedirect(action)) {
           form.setAttribute('target', '_self');
         }
       }, true);
 
-      // Capture all click events on anchors: if inside search widget or internal target, force _self
+      // Capture all click events on anchors: if inside search widget or search target, force _self
       doc.addEventListener('click', function(event) {
         let target = event.target;
         while (target && target !== doc.body) {
           if (target.tagName === 'A') {
             const href = target.getAttribute('href');
-            if (target.closest('#tpwl-search') || isInternalUrl(href)) {
+            if (target.closest('#tpwl-search') || isSearchRedirect(href)) {
               target.setAttribute('target', '_self');
             }
             break;
