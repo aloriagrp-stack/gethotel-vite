@@ -55,6 +55,16 @@
   </div>
 
   <script>
+    // Monkeypatch window.open to force internal redirects (like search results) to open in the same frame
+    const originalOpen = window.open;
+    window.open = function(url, target, features) {
+      if (url && (url.startsWith('/') || url.includes(window.location.hostname))) {
+        window.location.href = url;
+        return window;
+      }
+      return originalOpen.apply(this, arguments);
+    };
+
     window.TPWL_CONFIGURATION = {
       ...window.TPWL_CONFIGURATION,
       resultsURL: window.location.origin + window.location.pathname
@@ -89,6 +99,15 @@
       });
     }
 
+    function fixLinkTargets() {
+      const links = document.querySelectorAll('#tpwl-search a');
+      links.forEach(link => {
+        if (link.getAttribute('target') !== '_self') {
+          link.setAttribute('target', '_self');
+        }
+      });
+    }
+
     function getActualContentHeight() {
       const wrapper = document.getElementById("widget-wrapper");
       if (!wrapper) return 0;
@@ -117,6 +136,7 @@
     function handleDOMChange() {
       disableHotelsCheckbox();
       fixFormTarget();
+      fixLinkTargets();
       sendHeight();
     }
 
