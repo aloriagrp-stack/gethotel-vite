@@ -411,7 +411,7 @@ function BookingContent() {
                 amountPaid = priceDetails.platformFee;
             }
 
-            const bookingData = {
+            const bookingData: any = {
                 hotelId: parseInt(hotelId),
                 rooms: [{ id: String(selectedRoom?.id), quantity: 1, variantIdx: variantParam || "0" }],
                 checkIn,
@@ -422,6 +422,8 @@ function BookingContent() {
                 couponCode: appliedCoupon ? appliedCoupon.code : undefined,
                 amountPaid,
                 arrivalTime: arrivalTime || undefined,
+                stayType,
+                duration,
                 guestInfo: {
                     firstName: data.firstName,
                     lastName: data.lastName,
