@@ -11,7 +11,7 @@ export default function Flights() {
   const lastGoodUrlRef = useRef("");
 
   // Build the initial widget URL
-  const widgetUrl = `/flights-widget.html${window.location.search ? window.location.search + '&' : '?'}v=1.4.0`;
+  const widgetUrl = `/flights-widget.html${window.location.search ? window.location.search + '&' : '?'}v=1.5.0`;
 
   // Initialize lastGoodUrl
   if (!lastGoodUrlRef.current) {

@@ -197,8 +197,8 @@
 
     var originalOpen = window.open;
     window.open = function(url, target, features) {
-      if (isHotelRedirect(url) || (isExternalUrl(url) && !isSearchRedirect(url))) {
-        console.log("[flights-widget] Blocked window.open to:", url);
+      if (isHotelRedirect(url)) {
+        console.log("[flights-widget] Blocked window.open to hotel:", url);
         return window;
       }
       if (isSearchRedirect(url)) {
@@ -212,7 +212,8 @@
       if (window.parent && window.parent !== window) {
         var originalParentOpen = window.parent.open;
         window.parent.open = function(url) {
-          if (isHotelRedirect(url) || (isExternalUrl(url) && !isSearchRedirect(url))) {
+          if (isHotelRedirect(url)) {
+            console.log("[flights-widget] Blocked parent.open to hotel:", url);
             return window;
           }
           if (isSearchRedirect(url)) { window.location.href = url; return window; }
@@ -225,7 +226,8 @@
       if (window.top && window.top !== window) {
         var originalTopOpen = window.top.open;
         window.top.open = function(url) {
-          if (isHotelRedirect(url) || (isExternalUrl(url) && !isSearchRedirect(url))) {
+          if (isHotelRedirect(url)) {
+            console.log("[flights-widget] Blocked top.open to hotel:", url);
             return window;
           }
           if (isSearchRedirect(url)) { window.location.href = url; return window; }
@@ -262,8 +264,8 @@
       var originalFormSubmit = HTMLFormElement.prototype.submit;
       HTMLFormElement.prototype.submit = function() {
         var action = this.getAttribute('action') || '';
-        if (isHotelRedirect(action) || isExternalUrl(action)) {
-          console.log("[flights-widget] Blocked form.submit() to:", action);
+        if (isHotelRedirect(action)) {
+          console.log("[flights-widget] Blocked form.submit() to hotel:", action);
           return;
         }
         if (this.closest('#tpwl-search') || action === '' || isSearchRedirect(action)) {
@@ -279,7 +281,7 @@
       if (formActionDesc && formActionDesc.set) {
         Object.defineProperty(HTMLFormElement.prototype, 'action', {
           set: function(val) {
-            if (isHotelRedirect(val) || isExternalUrl(val)) {
+            if (isHotelRedirect(val)) {
               console.log("[flights-widget] Neutered form.action =", val);
               formActionDesc.set.call(this, '');
               return;
@@ -315,7 +317,7 @@
           if (value === '_blank' && isSearchRedirect(href)) { value = '_self'; }
         }
         if (name === 'action' && this.tagName === 'FORM') {
-          if (isHotelRedirect(value) || isExternalUrl(value)) {
+          if (isHotelRedirect(value)) {
             console.log("[flights-widget] Neutered setAttribute('action',", value, ")");
             return originalSetAttribute.call(this, name, '');
           }
