@@ -11,14 +11,26 @@ interface StayModeContextType {
 const StayModeContext = createContext<StayModeContextType | undefined>(undefined);
 
 export const StayModeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [mode, setModeState] = useState<StayMode>(() => {
-        const saved = localStorage.getItem("stay_mode");
-        return (saved as StayMode) || "nightly";
-    });
+    const [mode, setModeState] = useState<StayMode>("nightly");
+
+    useEffect(() => {
+        try {
+            const saved = localStorage.getItem("stay_mode");
+            if (saved === "hourly" || saved === "nightly") {
+                setModeState(saved as StayMode);
+            }
+        } catch (e) {
+            console.error("Failed to load stay_mode from localStorage:", e);
+        }
+    }, []);
 
     const setMode = (newMode: StayMode) => {
         setModeState(newMode);
-        localStorage.setItem("stay_mode", newMode);
+        try {
+            localStorage.setItem("stay_mode", newMode);
+        } catch (e) {
+            console.error("Failed to save stay_mode to localStorage:", e);
+        }
     };
 
     const toggleMode = () => {

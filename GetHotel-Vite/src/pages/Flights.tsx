@@ -11,12 +11,15 @@ export default function Flights() {
   const lastGoodUrlRef = useRef("");
 
   // Build the initial widget URL
-  const widgetUrl = `/flights-widget.html${window.location.search ? window.location.search + '&' : '?'}v=1.5.0`;
+  const [widgetUrl, setWidgetUrl] = useState("/flights-widget.html?v=1.5.0");
 
-  // Initialize lastGoodUrl
-  if (!lastGoodUrlRef.current) {
-    lastGoodUrlRef.current = widgetUrl;
-  }
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const url = `/flights-widget.html${window.location.search ? window.location.search + '&' : '?'}v=1.5.0`;
+      setWidgetUrl(url);
+      lastGoodUrlRef.current = url;
+    }
+  }, []);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -93,8 +96,8 @@ export default function Flights() {
         description="Search, compare, and book flights globally with GetHotelStays. Find the best airfares with our premium metasearch engine powered by Travelpayouts."
         keywords={["flights", "book flights", "cheap airfares", "metasearch flights", "travelpayouts", "gethotelstays flights"]}
         ogType="website"
-        ogUrl={window.location.href}
-        canonicalUrl={window.location.href}
+        ogUrl={typeof window !== 'undefined' ? window.location.href : ""}
+        canonicalUrl={typeof window !== 'undefined' ? window.location.href : ""}
       />
 
       {/* Hero Section */}
