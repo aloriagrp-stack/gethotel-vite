@@ -4,6 +4,7 @@ import React, { useState, useEffect, Suspense, useRef, useCallback } from "react
 import { useSearchParams } from "react-router-dom";
 import { ArrowUpDown, MapPin, Hotel, X, Search, ChevronDown, SlidersHorizontal } from "lucide-react";
 import type { FilterState, SortOption } from "@/types";
+import { useStayMode } from "@/context/StayModeContext";
 
 import HotelCard from "@/components/hotels/HotelCard";
 import FilterPanel from "@/components/hotels/FilterPanel";
@@ -35,11 +36,12 @@ const defaultFilters: FilterState = {
 };
 
 function HotelListingContent() {
+    const { mode } = useStayMode();
     const isMobile = useIsMobile();
     const [searchParams] = useSearchParams();
     const cityParam = searchParams.get("city") || "All";
     const guests = searchParams.get("adults") || searchParams.get("guests") || "2";
-    const stayType = searchParams.get("stayType") || "nightly";
+    const stayType = searchParams.get("stayType") || mode || "nightly";
 
     const [allHotels, setAllHotels] = useState<HotelType[]>([]);
     const [filters, setFilters] = useState<FilterState>(defaultFilters);
@@ -87,6 +89,7 @@ function HotelListingContent() {
                     params.searchQuery = searchQuery;
                 }
                 params.sort = sort;
+                params.stayType = stayType;
 
                 const response = await hotelApi.searchHotels(params);
 
