@@ -135,8 +135,38 @@ exports.updateTrendingBulk = async (req, res) => {
 // @access  Public
 exports.getTrendingHotels = async (req, res) => {
     try {
+        const { stayType } = req.query;
+        let whereClause = { isActive: true };
+
+        if (stayType === 'hourly') {
+            // First check if there are any trending hotels that support hourly stays
+            const trendingHourlyCount = await prisma.hotel.count({
+                where: {
+                    isTrending: true,
+                    isActive: true,
+                    room: {
+                        some: { isHourlyEnabled: true }
+                    }
+                }
+            });
+
+            if (trendingHourlyCount > 0) {
+                whereClause.isTrending = true;
+                whereClause.room = {
+                    some: { isHourlyEnabled: true }
+                };
+            } else {
+                // Fallback: Show any active hotel that supports hourly stays
+                whereClause.room = {
+                    some: { isHourlyEnabled: true }
+                };
+            }
+        } else {
+            whereClause.isTrending = true;
+        }
+
         const hotels = await prisma.hotel.findMany({
-            where: { isTrending: true, isActive: true },
+            where: whereClause,
             select: {
                 id: true,
                 name: true,

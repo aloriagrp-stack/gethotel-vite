@@ -203,13 +203,22 @@ export const homepageApi = {
             return { success: true, data: {} };
         }
     },
-    getTrendingHotels: async (city?: string) => {
+    getTrendingHotels: async (city?: string, stayType?: string) => {
         try {
-            return await apiFetch(`/hotels/trending${city ? `?city=${encodeURIComponent(city)}` : ''}`);
+            const params = new URLSearchParams();
+            if (city) params.append('city', city);
+            if (stayType) params.append('stayType', stayType);
+            const query = params.toString() ? `?${params.toString()}` : '';
+            return await apiFetch(`/hotels/trending${query}`);
         } catch (error) {
+            const params = new URLSearchParams();
+            if (city) params.append('city', city);
+            if (stayType) params.append('stayType', stayType);
+            const query = params.toString() ? `?${params.toString()}` : '';
+            
             const fallback = city
-                ? await apiFetch(`/hotels/search?city=${encodeURIComponent(city)}`)
-                : await apiFetch('/hotels');
+                ? await apiFetch(`/hotels/search${query}`)
+                : await apiFetch(`/hotels${query}`);
 
             return {
                 ...fallback,

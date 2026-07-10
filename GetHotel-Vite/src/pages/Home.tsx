@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import Hero from "@/components/home/Hero";
 import TrendingHotels from "@/components/home/TrendingHotels";
 import AICopilot from "@/components/home/AICopilot";
+import { useStayMode } from "@/context/StayModeContext";
 
 // Lazy load non-critical, below-the-fold components to reduce initial JS execution and improve INP
 const ExploreByDestinations = lazy(() => import("@/components/home/ExploreByDestinations"));
@@ -37,6 +38,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [trendingLoading, setTrendingLoading] = useState(false);
   const [configLoading, setConfigLoading] = useState(true);
+  const { mode } = useStayMode();
 
   // Fetch config once on mount
   useEffect(() => {
@@ -57,7 +59,7 @@ export default function HomePage() {
   const fetchTrending = useCallback(async () => {
     setTrendingLoading(true);
     try {
-      const res = await homepageApi.getTrendingHotels();
+      const res = await homepageApi.getTrendingHotels(undefined, mode);
       if (res.success) {
         setTrendingHotels(res.data);
       }
@@ -67,7 +69,7 @@ export default function HomePage() {
       setTrendingLoading(false);
       setLoading(false);
     }
-  }, []);
+  }, [mode]);
 
   // Initial fetch (no city override — let backend auto-detect)
   useEffect(() => {
