@@ -29,6 +29,10 @@
     label[class*="SearchEdit-module__hotelsLabel"] {
       display: none !important;
     }
+    /* Hide any element containing "Show hotels" or "hotel" checkbox text */
+    [class*="hotels"], [class*="Hotels"] {
+      display: none !important;
+    }
     #tpwl-tickets {
       border-radius: 16px;
       overflow: hidden;
@@ -65,22 +69,41 @@
 
   <script>
     // ========================================================================
+    // Save original widget URL for restoration after hijack
+    // ========================================================================
+    var WIDGET_ORIGIN_URL = window.location.href;
+
+    // Continuously save the current URL so parent can restore after a hijack
+    setInterval(function() {
+      try {
+        var currentUrl = window.location.href;
+        if (currentUrl.includes('flights-widget')) {
+          sessionStorage.setItem('__fw_last_url', currentUrl);
+          window.parent.postMessage({ type: 'widget-url-update', url: currentUrl }, '*');
+        }
+      } catch(e) {}
+    }, 500);
+
+    // On beforeunload, save current state
+    window.addEventListener('beforeunload', function() {
+      try {
+        window.parent.postMessage({ type: 'widget-url-update', url: window.location.href }, '*');
+      } catch(e) {}
+    });
+
+    // ========================================================================
     // LAYER 1: URL classification helpers
     // ========================================================================
 
-    // Check if a URL leads to a hotel/booking domain (direct or tracking)
     function isHotelRedirect(url) {
       if (!url) return false;
       var u = String(url).toLowerCase();
-      // Direct hotel domains
       if (u.includes('booking.com') || u.includes('hotellook') || u.includes('hotelscombined')) return true;
-      // Travelpayouts tracking URLs that contain hotel-related params
       if ((u.includes('tp.media') || u.includes('c.tp.st') || u.includes('travelpayouts')) &&
           (u.includes('hotel') || u.includes('booking') || u.includes('hotellook'))) return true;
       return false;
     }
 
-    // Check if a URL is external (different domain from current page)
     function isExternalUrl(url) {
       if (!url || url === '' || url === '#' || url.startsWith('javascript:')) return false;
       try {
@@ -94,7 +117,6 @@
       }
     }
 
-    // Check if a URL is a flight search redirect or internal target
     function isSearchRedirect(url) {
       if (!url) return false;
       var urlStr = String(url).toLowerCase();
@@ -111,18 +133,68 @@
         if (targetHost === currentHost || targetHost === 'localhost' || targetHost === '127.0.0.1') {
           return true;
         }
-      } catch (e) {
-        // Fallback
-      }
+      } catch (e) {}
       var cleanHostname = window.location.hostname.replace(/^www\./i, '');
       return url.startsWith('/') || url.startsWith('./') || url.includes(cleanHostname);
     }
 
     // ========================================================================
-    // LAYER 2: Intercept ALL navigation methods
+    // LAYER 2: Intercept fetch() and XMLHttpRequest
+    // Kill any hotel-related API calls at the network level so the widget
+    // never even gets hotel data to trigger a redirect
     // ========================================================================
 
-    // --- 2a. Monkeypatch window.open (and parent/top) ---
+    try {
+      var origFetch = window.fetch;
+      window.fetch = function(input) {
+        var url = '';
+        if (typeof input === 'string') url = input;
+        else if (input && input.url) url = input.url;
+        var lowerUrl = url.toLowerCase();
+        if (lowerUrl.includes('hotellook') || lowerUrl.includes('hotelscombined') ||
+            (lowerUrl.includes('booking.com') && !lowerUrl.includes('flight'))) {
+          console.log('[flights-widget] Blocked fetch to hotel endpoint:', url);
+          return Promise.resolve(new Response('{}', { status: 200, headers: { 'Content-Type': 'application/json' } }));
+        }
+        return origFetch.apply(this, arguments);
+      };
+    } catch(e) {}
+
+    try {
+      var origXHROpen = XMLHttpRequest.prototype.open;
+      XMLHttpRequest.prototype.open = function(method, url) {
+        this.__fw_url = String(url || '').toLowerCase();
+        this.__fw_blocked = false;
+        if (this.__fw_url.includes('hotellook') || this.__fw_url.includes('hotelscombined') ||
+            (this.__fw_url.includes('booking.com') && !this.__fw_url.includes('flight'))) {
+          this.__fw_blocked = true;
+          console.log('[flights-widget] Blocked XHR to hotel endpoint:', url);
+        }
+        return origXHROpen.apply(this, arguments);
+      };
+
+      var origXHRSend = XMLHttpRequest.prototype.send;
+      XMLHttpRequest.prototype.send = function() {
+        if (this.__fw_blocked) {
+          var self = this;
+          Object.defineProperty(self, 'status', { value: 200, writable: false });
+          Object.defineProperty(self, 'readyState', { value: 4, writable: false });
+          Object.defineProperty(self, 'responseText', { value: '{}', writable: false });
+          Object.defineProperty(self, 'response', { value: '{}', writable: false });
+          setTimeout(function() {
+            if (typeof self.onreadystatechange === 'function') self.onreadystatechange();
+            if (typeof self.onload === 'function') self.onload();
+          }, 10);
+          return;
+        }
+        return origXHRSend.apply(this, arguments);
+      };
+    } catch(e) {}
+
+    // ========================================================================
+    // LAYER 3: Override window.open (and parent/top)
+    // ========================================================================
+
     var originalOpen = window.open;
     window.open = function(url, target, features) {
       if (isHotelRedirect(url) || (isExternalUrl(url) && !isSearchRedirect(url))) {
@@ -139,17 +211,12 @@
     try {
       if (window.parent && window.parent !== window) {
         var originalParentOpen = window.parent.open;
-        window.parent.open = function(url, target, features) {
+        window.parent.open = function(url) {
           if (isHotelRedirect(url) || (isExternalUrl(url) && !isSearchRedirect(url))) {
-            console.log("[flights-widget] Blocked parent.open to:", url);
             return window;
           }
-          if (isSearchRedirect(url)) {
-            window.location.href = url;
-            return window;
-          }
-          var openFn = originalParentOpen || window.parent.open;
-          return openFn.apply(this, arguments);
+          if (isSearchRedirect(url)) { window.location.href = url; return window; }
+          return (originalParentOpen || window.parent.open).apply(this, arguments);
         };
       }
     } catch (e) {}
@@ -157,29 +224,24 @@
     try {
       if (window.top && window.top !== window) {
         var originalTopOpen = window.top.open;
-        window.top.open = function(url, target, features) {
+        window.top.open = function(url) {
           if (isHotelRedirect(url) || (isExternalUrl(url) && !isSearchRedirect(url))) {
-            console.log("[flights-widget] Blocked top.open to:", url);
             return window;
           }
-          if (isSearchRedirect(url)) {
-            window.location.href = url;
-            return window;
-          }
-          var openFn = originalTopOpen || window.top.open;
-          return openFn.apply(this, arguments);
+          if (isSearchRedirect(url)) { window.location.href = url; return window; }
+          return (originalTopOpen || window.top.open).apply(this, arguments);
         };
       }
     } catch (e) {}
 
-    // --- 2b. Monkeypatch location.assign and location.replace ---
+    // ========================================================================
+    // LAYER 4: Override location.assign, location.replace
+    // ========================================================================
+
     try {
       var origAssign = window.location.assign.bind(window.location);
       window.location.assign = function(url) {
-        if (isHotelRedirect(url)) {
-          console.log("[flights-widget] Blocked location.assign to:", url);
-          return;
-        }
+        if (isHotelRedirect(url)) { console.log("[flights-widget] Blocked location.assign:", url); return; }
         origAssign(url);
       };
     } catch (e) {}
@@ -187,21 +249,19 @@
     try {
       var origReplace = window.location.replace.bind(window.location);
       window.location.replace = function(url) {
-        if (isHotelRedirect(url)) {
-          console.log("[flights-widget] Blocked location.replace to:", url);
-          return;
-        }
+        if (isHotelRedirect(url)) { console.log("[flights-widget] Blocked location.replace:", url); return; }
         origReplace(url);
       };
     } catch (e) {}
 
-    // --- 2c. Monkeypatch HTMLFormElement.prototype.submit ---
-    // Catches programmatic form.submit() calls that bypass 'submit' event
+    // ========================================================================
+    // LAYER 5: Override HTMLFormElement.prototype.submit + action property setter
+    // ========================================================================
+
     try {
       var originalFormSubmit = HTMLFormElement.prototype.submit;
       HTMLFormElement.prototype.submit = function() {
         var action = this.getAttribute('action') || '';
-        // Block hotel redirects and ALL external form submissions
         if (isHotelRedirect(action) || isExternalUrl(action)) {
           console.log("[flights-widget] Blocked form.submit() to:", action);
           return;
@@ -213,113 +273,106 @@
       };
     } catch (e) {}
 
-    // --- 2d. Monkeypatch HTMLAnchorElement.prototype.click ---
+    // Override form.action property setter to neuter external actions at assignment time
     try {
-      var originalAnchorClick = HTMLAnchorElement.prototype.click;
-      HTMLAnchorElement.prototype.click = function() {
-        var href = this.getAttribute('href') || this.href;
-        if (isHotelRedirect(href)) {
-          console.log("[flights-widget] Blocked anchor.click() to:", href);
-          return;
-        }
-        if (isSearchRedirect(href)) {
-          this.setAttribute('target', '_self');
-        }
-        originalAnchorClick.apply(this, arguments);
-      };
-    } catch (e) {}
-
-    // --- 2e. Monkeypatch Element.prototype.setAttribute ---
-    // Rewrite target="_blank" to "_self" for internal URLs, fully block for hotel URLs
-    try {
-      var originalSetAttribute = Element.prototype.setAttribute;
-      Element.prototype.setAttribute = function(name, value) {
-        if (name === 'target' && this.tagName === 'A') {
-          var href = this.getAttribute('href') || this.href;
-          if (isHotelRedirect(href)) {
-            // Don't even set target, we'll block the click anyway
-            return originalSetAttribute.call(this, name, '_self');
-          }
-          if (value === '_blank' && isSearchRedirect(href)) {
-            value = '_self';
-          }
-        }
-        return originalSetAttribute.call(this, name, value);
-      };
-    } catch (e) {}
-
-    // --- 2f. Monkeypatch HTMLAnchorElement.target property setter ---
-    try {
-      var originalTargetDescriptor = Object.getOwnPropertyDescriptor(HTMLAnchorElement.prototype, 'target');
-      if (originalTargetDescriptor && originalTargetDescriptor.set) {
-        Object.defineProperty(HTMLAnchorElement.prototype, 'target', {
+      var formActionDesc = Object.getOwnPropertyDescriptor(HTMLFormElement.prototype, 'action');
+      if (formActionDesc && formActionDesc.set) {
+        Object.defineProperty(HTMLFormElement.prototype, 'action', {
           set: function(val) {
-            if (val === '_blank') {
-              var href = this.getAttribute('href') || this.href;
-              if (isSearchRedirect(href) || isHotelRedirect(href)) {
-                val = '_self';
-              }
+            if (isHotelRedirect(val) || isExternalUrl(val)) {
+              console.log("[flights-widget] Neutered form.action =", val);
+              formActionDesc.set.call(this, '');
+              return;
             }
-            originalTargetDescriptor.set.call(this, val);
+            formActionDesc.set.call(this, val);
           },
-          get: originalTargetDescriptor.get,
+          get: formActionDesc.get,
           configurable: true
         });
       }
     } catch (e) {}
 
     // ========================================================================
-    // LAYER 3: Capture event listeners on document (and parent/top docs)
+    // LAYER 6: Override anchor click, setAttribute, target setter
+    // ========================================================================
+
+    try {
+      var originalAnchorClick = HTMLAnchorElement.prototype.click;
+      HTMLAnchorElement.prototype.click = function() {
+        var href = this.getAttribute('href') || this.href;
+        if (isHotelRedirect(href)) { return; }
+        if (isSearchRedirect(href)) { this.setAttribute('target', '_self'); }
+        originalAnchorClick.apply(this, arguments);
+      };
+    } catch (e) {}
+
+    try {
+      var originalSetAttribute = Element.prototype.setAttribute;
+      Element.prototype.setAttribute = function(name, value) {
+        if (name === 'target' && this.tagName === 'A') {
+          var href = this.getAttribute('href') || this.href;
+          if (isHotelRedirect(href)) { return originalSetAttribute.call(this, name, '_self'); }
+          if (value === '_blank' && isSearchRedirect(href)) { value = '_self'; }
+        }
+        if (name === 'action' && this.tagName === 'FORM') {
+          if (isHotelRedirect(value) || isExternalUrl(value)) {
+            console.log("[flights-widget] Neutered setAttribute('action',", value, ")");
+            return originalSetAttribute.call(this, name, '');
+          }
+        }
+        return originalSetAttribute.call(this, name, value);
+      };
+    } catch (e) {}
+
+    try {
+      var origTargetDesc = Object.getOwnPropertyDescriptor(HTMLAnchorElement.prototype, 'target');
+      if (origTargetDesc && origTargetDesc.set) {
+        Object.defineProperty(HTMLAnchorElement.prototype, 'target', {
+          set: function(val) {
+            if (val === '_blank') {
+              var href = this.getAttribute('href') || this.href;
+              if (isSearchRedirect(href) || isHotelRedirect(href)) { val = '_self'; }
+            }
+            origTargetDesc.set.call(this, val);
+          },
+          get: origTargetDesc.get,
+          configurable: true
+        });
+      }
+    } catch (e) {}
+
+    // ========================================================================
+    // LAYER 7: Capture event listeners on document (and parent/top)
     // ========================================================================
 
     function registerListeners(doc) {
       if (!doc) return;
 
-      // Capture all form submissions
       doc.addEventListener('submit', function(event) {
         var form = event.target;
         var action = form.getAttribute('action') || '';
-        // Block hotel redirects
         if (isHotelRedirect(action)) {
-          event.preventDefault();
-          event.stopPropagation();
-          console.log("[flights-widget] Blocked form submit event to:", action);
-          return;
+          event.preventDefault(); event.stopPropagation(); return;
         }
-        // Block ALL external form submissions from within the search widget
         if (form.closest('#tpwl-search') && isExternalUrl(action)) {
-          event.preventDefault();
-          event.stopPropagation();
-          console.log("[flights-widget] Blocked external form submit from widget to:", action);
-          return;
+          event.preventDefault(); event.stopPropagation(); return;
         }
-        // Force same-frame for internal search URLs
         if (form.closest('#tpwl-search') || action === '' || isSearchRedirect(action)) {
           form.setAttribute('target', '_self');
         }
       }, true);
 
-      // Capture all click events on anchors
       doc.addEventListener('click', function(event) {
         var target = event.target;
         while (target && target !== doc.body) {
           if (target.tagName === 'A') {
             var href = target.getAttribute('href');
-            // Block hotel redirects
             if (isHotelRedirect(href)) {
-              event.preventDefault();
-              event.stopPropagation();
-              console.log("[flights-widget] Blocked anchor click to:", href);
-              return;
+              event.preventDefault(); event.stopPropagation(); return;
             }
-            // Block external links from within search widget (these are tracking redirects)
             if (target.closest('#tpwl-search') && isExternalUrl(href)) {
-              event.preventDefault();
-              event.stopPropagation();
-              console.log("[flights-widget] Blocked external link click from widget to:", href);
-              return;
+              event.preventDefault(); event.stopPropagation(); return;
             }
-            // Force same-frame for internal search URLs
             if (target.closest('#tpwl-search') || isSearchRedirect(href)) {
               target.setAttribute('target', '_self');
             }
@@ -330,25 +383,14 @@
       }, true);
     }
 
-    // Register on local document
     registerListeners(document);
-
-    // Register on parent and top documents if accessible
-    try {
-      if (window.parent && window.parent !== window && window.parent.document) {
-        registerListeners(window.parent.document);
-      }
-    } catch (e) {}
-
-    try {
-      if (window.top && window.top !== window && window.top.document) {
-        registerListeners(window.top.document);
-      }
-    } catch (e) {}
+    try { if (window.parent && window.parent !== window && window.parent.document) { registerListeners(window.parent.document); } } catch (e) {}
+    try { if (window.top && window.top !== window && window.top.document) { registerListeners(window.top.document); } } catch (e) {}
 
     // ========================================================================
-    // LAYER 4: MutationObserver to nuke any injected booking.com iframes
+    // LAYER 8: MutationObserver to nuke injected booking.com iframes
     // ========================================================================
+
     try {
       var iframeKiller = new MutationObserver(function(mutations) {
         for (var i = 0; i < mutations.length; i++) {
@@ -359,7 +401,6 @@
               var src = (node.getAttribute('src') || '').toLowerCase();
               if (src.includes('booking.com') || src.includes('hotellook') || src.includes('hotelscombined')) {
                 node.remove();
-                console.log("[flights-widget] Removed injected hotel iframe:", src);
               }
             }
           }
@@ -369,11 +410,27 @@
     } catch (e) {}
 
     // ========================================================================
-    // Widget configuration
+    // Widget configuration — disable hotels via every possible flag
     // ========================================================================
     window.TPWL_CONFIGURATION = {
       ...window.TPWL_CONFIGURATION,
-      resultsURL: window.location.origin + window.location.pathname
+      resultsURL: window.location.origin + window.location.pathname,
+      // Shotgun: set every possible flag to disable hotel search
+      showHotels: false,
+      show_hotels: false,
+      hotels: false,
+      hotelsEnabled: false,
+      hotels_enabled: false,
+      enableHotelSearch: false,
+      enable_hotel_search: false,
+      withHotelSearch: false,
+      with_hotel_search: false,
+      hotelsDisabled: true,
+      hotels_disabled: true,
+      hotelTab: false,
+      hotel_tab: false,
+      accommodation: false,
+      show_accommodation: false,
     };
   </script>
 
@@ -390,29 +447,37 @@
   <!-- Script to communicate content height to parent for auto-resize and programmatically uncheck hotels -->
   <script>
     function disableHotelsCheckbox() {
-      var checkbox = document.querySelector('input[type="checkbox"]');
-      if (checkbox && checkbox.checked) {
-        checkbox.click();
-      }
+      // Uncheck ALL checkboxes - this widget should only have a hotels checkbox
+      var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+      checkboxes.forEach(function(cb) {
+        if (cb.checked) {
+          cb.checked = false;
+          cb.click(); // Trigger the widget's own uncheck handler
+          // Also dispatch change event in case the widget listens for it
+          cb.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      });
     }
 
     function hideHotelsCheckbox() {
-      // Find all input checkboxes
       var checkboxes = document.querySelectorAll('input[type="checkbox"]');
       checkboxes.forEach(function(cb) {
         var parent = cb.closest('label') || cb.parentElement;
-        if (parent && (parent.textContent.toLowerCase().includes('hotel') || parent.textContent.toLowerCase().includes('show'))) {
+        if (parent) {
           parent.style.setProperty('display', 'none', 'important');
+          parent.style.setProperty('visibility', 'hidden', 'important');
+          parent.style.setProperty('height', '0', 'important');
+          parent.style.setProperty('overflow', 'hidden', 'important');
         }
       });
 
-      // Find any labels or span elements containing "Show hotels"
       var labels = document.querySelectorAll('label, span, div');
       labels.forEach(function(el) {
-        if (el.textContent.trim().toLowerCase().includes('show hotels')) {
+        var text = el.textContent.trim().toLowerCase();
+        if (text.includes('show hotels') || text === 'hotels' || text.includes('show hotel')) {
           el.style.setProperty('display', 'none', 'important');
           var parent = el.closest('div');
-          if (parent && parent !== document.body && parent.id !== 'widget-wrapper') {
+          if (parent && parent !== document.body && parent.id !== 'widget-wrapper' && parent.id !== 'search-card') {
             parent.style.setProperty('display', 'none', 'important');
           }
         }
@@ -423,9 +488,8 @@
       var forms = document.querySelectorAll('#tpwl-search form');
       forms.forEach(function(form) {
         var action = form.getAttribute('action') || '';
-        // If form points to external URL, neuter it entirely
         if (isExternalUrl(action) || isHotelRedirect(action)) {
-          form.setAttribute('action', '');
+          form.removeAttribute('action');
           form.setAttribute('target', '_self');
         } else if (form.getAttribute('target') !== '_self') {
           form.setAttribute('target', '_self');
@@ -437,8 +501,7 @@
       var links = document.querySelectorAll('#tpwl-search a');
       links.forEach(function(link) {
         var href = link.getAttribute('href') || '';
-        // If link points to hotel/external URL, remove it
-        if (isHotelRedirect(href)) {
+        if (isHotelRedirect(href) || (isExternalUrl(href) && !href.includes('tpwdgt.com'))) {
           link.removeAttribute('href');
           link.style.setProperty('pointer-events', 'none', 'important');
         } else if (link.getAttribute('target') !== '_self') {
@@ -480,15 +543,12 @@
       sendHeight();
     }
 
-    // Run on load, resize, and periodically
     window.addEventListener('load', handleDOMChange);
     window.addEventListener('resize', handleDOMChange);
     
-    // Set up a MutationObserver to watch for DOM changes (like tickets loading)
     var observer = new MutationObserver(handleDOMChange);
     observer.observe(document.body, { childList: true, subtree: true, attributes: true });
 
-    // Fallback interval
     setInterval(handleDOMChange, 400);
   </script>
 </body>

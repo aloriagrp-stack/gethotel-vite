@@ -8,15 +8,33 @@ export default function Flights() {
   const [loaded, setLoaded] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const reloadCountRef = useRef(0);
+  const lastGoodUrlRef = useRef("");
 
-  // Build the widget URL once
-  const widgetUrl = `/flights-widget.html${window.location.search ? window.location.search + '&' : '?'}v=1.3.0`;
+  // Build the initial widget URL
+  const widgetUrl = `/flights-widget.html${window.location.search ? window.location.search + '&' : '?'}v=1.4.0`;
+
+  // Initialize lastGoodUrl
+  if (!lastGoodUrlRef.current) {
+    lastGoodUrlRef.current = widgetUrl;
+  }
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      if (event.data && event.data.type === "resize-iframe") {
+      if (!event.data) return;
+
+      // Handle iframe height resize
+      if (event.data.type === "resize-iframe") {
         setIframeHeight(event.data.height);
         setLoaded(true);
+      }
+
+      // Handle widget URL updates — save the last known good URL
+      // so we can restore search state if booking.com hijacks the iframe
+      if (event.data.type === "widget-url-update" && event.data.url) {
+        const url = event.data.url;
+        if (url.includes("flights-widget")) {
+          lastGoodUrlRef.current = url;
+        }
       }
     };
 
@@ -26,38 +44,41 @@ export default function Flights() {
     };
   }, []);
 
-  // LAYER 5 (parent-side safety net): Detect if iframe navigated to cross-origin
-  // (e.g. booking.com loaded inside the iframe despite all our blocks).
-  // When this happens, iframe.contentWindow.location throws SecurityError.
-  // We catch it and reload the widget.
+  // SAFETY NET: Detect if iframe navigated to cross-origin (booking.com)
+  // When detected, reload the iframe with the LAST KNOWN GOOD URL
+  // which includes the search parameters — so the user doesn't lose their search
   useEffect(() => {
     const iframe = iframeRef.current;
     if (!iframe) return;
 
     const handleIframeLoad = () => {
-      // Don't reload infinitely — max 3 attempts
+      // Max 3 reload attempts to prevent infinite loops
       if (reloadCountRef.current >= 3) return;
 
       try {
-        // If same-origin, this succeeds. Check for booking.com just in case.
+        // If same-origin, we can read the URL
         const href = iframe.contentWindow?.location?.href || "";
+
         if (
           href.includes("booking.com") ||
           href.includes("hotellook") ||
           href.includes("hotelscombined")
         ) {
-          console.warn("[Flights] Detected hotel site in iframe, reloading widget");
+          // Hotel site loaded same-origin somehow — reload
+          console.warn("[Flights] Hotel site detected in iframe, reloading with search state");
           reloadCountRef.current++;
-          iframe.src = widgetUrl;
+          iframe.src = lastGoodUrlRef.current || widgetUrl;
         } else if (href.includes("flights-widget")) {
-          // Widget loaded correctly, reset reload counter
+          // Widget loaded correctly — save URL and reset counter
+          lastGoodUrlRef.current = href;
           reloadCountRef.current = 0;
         }
       } catch (e) {
-        // SecurityError = iframe navigated to cross-origin domain (booking.com)
-        console.warn("[Flights] Iframe navigated to cross-origin site, reloading widget");
+        // SecurityError = cross-origin page loaded (booking.com hijacked iframe)
+        // Reload with the last known good URL to preserve search state
+        console.warn("[Flights] Iframe hijacked to cross-origin, restoring:", lastGoodUrlRef.current);
         reloadCountRef.current++;
-        iframe.src = widgetUrl;
+        iframe.src = lastGoodUrlRef.current || widgetUrl;
       }
     };
 
