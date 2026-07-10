@@ -73,8 +73,97 @@
           urlStr.includes('origin_airports')) {
         return true;
       }
+      
+      try {
+        const parsedUrl = new URL(url, window.location.href);
+        const currentHost = window.location.hostname.replace(/^www\./i, '');
+        const targetHost = parsedUrl.hostname.replace(/^www\./i, '');
+        if (targetHost === currentHost || targetHost === 'localhost' || targetHost === '127.0.0.1') {
+          return true;
+        }
+      } catch (e) {
+        // Fallback to basic hostname comparison
+      }
+      
       const hostname = window.location.hostname;
-      return url.startsWith('/') || url.startsWith('./') || url.includes(hostname);
+      const cleanHostname = hostname.replace(/^www\./i, '');
+      return url.startsWith('/') || url.startsWith('./') || url.includes(cleanHostname);
+    }
+
+    // Monkeypatch HTMLFormElement.prototype.submit to capture programmatic form submissions
+    try {
+      const originalFormSubmit = HTMLFormElement.prototype.submit;
+      HTMLFormElement.prototype.submit = function() {
+        const action = this.getAttribute('action') || '';
+        if (isHotelRedirect(action)) {
+          console.log("Blocking hotel form submit:", action);
+          return;
+        }
+        if (this.closest('#tpwl-search') || action === '' || isSearchRedirect(action)) {
+          this.setAttribute('target', '_self');
+        }
+        originalFormSubmit.apply(this, arguments);
+      };
+    } catch (e) {
+      console.error("Failed to monkeypatch HTMLFormElement.submit:", e);
+    }
+
+    // Monkeypatch HTMLAnchorElement.prototype.click to capture programmatic anchor clicks
+    try {
+      const originalClick = HTMLAnchorElement.prototype.click;
+      HTMLAnchorElement.prototype.click = function() {
+        const href = this.getAttribute('href') || this.href;
+        if (isHotelRedirect(href)) {
+          console.log("Blocking hotel click:", href);
+          return;
+        }
+        if (isSearchRedirect(href)) {
+          this.setAttribute('target', '_self');
+          window.location.href = href;
+          return;
+        }
+        originalClick.apply(this, arguments);
+      };
+    } catch (e) {
+      console.error("Failed to monkeypatch HTMLAnchorElement.click:", e);
+    }
+
+    // Monkeypatch setAttribute to catch target="_blank" assignments on anchors
+    try {
+      const originalSetAttribute = Element.prototype.setAttribute;
+      Element.prototype.setAttribute = function(name, value) {
+        if (name === 'target' && value === '_blank' && this.tagName === 'A') {
+          const href = this.getAttribute('href') || this.href;
+          if (isSearchRedirect(href)) {
+            value = '_self';
+          }
+        }
+        return originalSetAttribute.call(this, name, value);
+      };
+    } catch (e) {
+      console.error("Failed to monkeypatch Element.setAttribute:", e);
+    }
+
+    // Monkeypatch HTMLAnchorElement.target setter property
+    try {
+      const originalTargetDescriptor = Object.getOwnPropertyDescriptor(HTMLAnchorElement.prototype, 'target');
+      if (originalTargetDescriptor && originalTargetDescriptor.set) {
+        Object.defineProperty(HTMLAnchorElement.prototype, 'target', {
+          set: function(val) {
+            if (val === '_blank') {
+              const href = this.getAttribute('href') || this.href;
+              if (isSearchRedirect(href)) {
+                val = '_self';
+              }
+            }
+            originalTargetDescriptor.set.call(this, val);
+          },
+          get: originalTargetDescriptor.get,
+          configurable: true
+        });
+      }
+    } catch (e) {
+      console.error("Failed to monkeypatch HTMLAnchorElement.target property:", e);
     }
 
     // Monkeypatch window.open, parent.open, and top.open
