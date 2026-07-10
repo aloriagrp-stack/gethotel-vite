@@ -17,6 +17,7 @@ import { hotelApi, messageApi, couponApi } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import SmartSearchBar from "@/components/search/SmartSearchBar";
 import Loader from "@/components/common/Loader";
+import { useStayMode } from "@/context/StayModeContext";
 import { validateCoupon, isMobileDevice } from "@/lib/promoUtils";
 
 const formatDateLabel = (ci: string, co: string) => {
@@ -217,11 +218,12 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
         }
     };
 
+    const { mode: globalMode } = useStayMode();
     const handleBook = (e: React.MouseEvent, roomId: string, variantIdx?: string) => {
         e.stopPropagation();
         const checkInParam = searchParams.get("checkIn");
         const checkOutParam = searchParams.get("checkOut");
-        const mode = searchParams.get("stayType") || "nightly";
+        const mode = searchParams.get("stayType") || globalMode || "nightly";
         
         if (!checkInParam || (mode === "nightly" && !checkOutParam)) {
             playTannSound();
@@ -405,7 +407,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
     const checkIn = searchParams.get("checkIn") || "Dates";
     const checkOut = searchParams.get("checkOut") || "Dates";
     const adults = searchParams.get("adults") || "2";
-    const stayType = searchParams.get("stayType") || "nightly";
+    const stayType = searchParams.get("stayType") || globalMode || "nightly";
     const duration = searchParams.get("duration") || "3";
     const arrivalTime = searchParams.get("arrivalTime") || "12:00";
     const searchedGuests = parseInt(adults);

@@ -147,7 +147,13 @@ export default function HotelCard({ hotel, className }: HotelCardProps) {
 
     return (
         <div
-            onClick={() => window.open(getHotelUrl(hotel.id, hotel.name), "_blank")}
+            onClick={() => {
+                const params = new URLSearchParams(searchParams);
+                if (!params.has("stayType")) {
+                    params.set("stayType", mode);
+                }
+                window.open(`${getHotelUrl(hotel.id, hotel.name)}?${params.toString()}`, "_blank");
+            }}
             className={cn(
                 "group relative bg-white rounded-2xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] cursor-pointer border border-slate-50 flex flex-col md:h-[480px] hover:shadow-xl transition-all duration-300",
                 className
