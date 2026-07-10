@@ -39,6 +39,15 @@
       border-radius: 16px !important;
       overflow: hidden !important;
     }
+    /* Nuclear CSS: hide any booking.com iframes that may get injected */
+    iframe[src*="booking.com"],
+    iframe[src*="hotellook"],
+    iframe[src*="hotelscombined"] {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+      pointer-events: none !important;
+    }
   </style>
 </head>
 <body>
@@ -55,122 +64,69 @@
   </div>
 
   <script>
-    // Helper function to check if a URL is a hotel redirect
+    // ========================================================================
+    // LAYER 1: URL classification helpers
+    // ========================================================================
+
+    // Check if a URL leads to a hotel/booking domain (direct or tracking)
     function isHotelRedirect(url) {
       if (!url) return false;
-      const urlStr = String(url).toLowerCase();
-      return urlStr.includes('booking.com') || urlStr.includes('hotellook');
+      var u = String(url).toLowerCase();
+      // Direct hotel domains
+      if (u.includes('booking.com') || u.includes('hotellook') || u.includes('hotelscombined')) return true;
+      // Travelpayouts tracking URLs that contain hotel-related params
+      if ((u.includes('tp.media') || u.includes('c.tp.st') || u.includes('travelpayouts')) &&
+          (u.includes('hotel') || u.includes('booking') || u.includes('hotellook'))) return true;
+      return false;
     }
 
-    // Helper function to check if a URL is a search redirect or internal target
+    // Check if a URL is external (different domain from current page)
+    function isExternalUrl(url) {
+      if (!url || url === '' || url === '#' || url.startsWith('javascript:')) return false;
+      try {
+        var parsed = new URL(url, window.location.href);
+        var currentHost = window.location.hostname.replace(/^www\./i, '');
+        var targetHost = parsed.hostname.replace(/^www\./i, '');
+        if (targetHost === currentHost || targetHost === 'localhost' || targetHost === '127.0.0.1') return false;
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    // Check if a URL is a flight search redirect or internal target
     function isSearchRedirect(url) {
       if (!url) return false;
-      const urlStr = String(url).toLowerCase();
-      // If it contains flightsearch, flights-widget, or search airport queries, it is a search redirect
+      var urlStr = String(url).toLowerCase();
       if (urlStr.includes('flightsearch') || 
           urlStr.includes('flights-widget') || 
           urlStr.includes('destination_airports') ||
           urlStr.includes('origin_airports')) {
         return true;
       }
-      
       try {
-        const parsedUrl = new URL(url, window.location.href);
-        const currentHost = window.location.hostname.replace(/^www\./i, '');
-        const targetHost = parsedUrl.hostname.replace(/^www\./i, '');
+        var parsedUrl = new URL(url, window.location.href);
+        var currentHost = window.location.hostname.replace(/^www\./i, '');
+        var targetHost = parsedUrl.hostname.replace(/^www\./i, '');
         if (targetHost === currentHost || targetHost === 'localhost' || targetHost === '127.0.0.1') {
           return true;
         }
       } catch (e) {
-        // Fallback to basic hostname comparison
+        // Fallback
       }
-      
-      const hostname = window.location.hostname;
-      const cleanHostname = hostname.replace(/^www\./i, '');
+      var cleanHostname = window.location.hostname.replace(/^www\./i, '');
       return url.startsWith('/') || url.startsWith('./') || url.includes(cleanHostname);
     }
 
-    // Monkeypatch HTMLFormElement.prototype.submit to capture programmatic form submissions
-    try {
-      const originalFormSubmit = HTMLFormElement.prototype.submit;
-      HTMLFormElement.prototype.submit = function() {
-        const action = this.getAttribute('action') || '';
-        if (isHotelRedirect(action)) {
-          console.log("Blocking hotel form submit:", action);
-          return;
-        }
-        if (this.closest('#tpwl-search') || action === '' || isSearchRedirect(action)) {
-          this.setAttribute('target', '_self');
-        }
-        originalFormSubmit.apply(this, arguments);
-      };
-    } catch (e) {
-      console.error("Failed to monkeypatch HTMLFormElement.submit:", e);
-    }
+    // ========================================================================
+    // LAYER 2: Intercept ALL navigation methods
+    // ========================================================================
 
-    // Monkeypatch HTMLAnchorElement.prototype.click to capture programmatic anchor clicks
-    try {
-      const originalClick = HTMLAnchorElement.prototype.click;
-      HTMLAnchorElement.prototype.click = function() {
-        const href = this.getAttribute('href') || this.href;
-        if (isHotelRedirect(href)) {
-          console.log("Blocking hotel click:", href);
-          return;
-        }
-        if (isSearchRedirect(href)) {
-          this.setAttribute('target', '_self');
-          window.location.href = href;
-          return;
-        }
-        originalClick.apply(this, arguments);
-      };
-    } catch (e) {
-      console.error("Failed to monkeypatch HTMLAnchorElement.click:", e);
-    }
-
-    // Monkeypatch setAttribute to catch target="_blank" assignments on anchors
-    try {
-      const originalSetAttribute = Element.prototype.setAttribute;
-      Element.prototype.setAttribute = function(name, value) {
-        if (name === 'target' && value === '_blank' && this.tagName === 'A') {
-          const href = this.getAttribute('href') || this.href;
-          if (isSearchRedirect(href)) {
-            value = '_self';
-          }
-        }
-        return originalSetAttribute.call(this, name, value);
-      };
-    } catch (e) {
-      console.error("Failed to monkeypatch Element.setAttribute:", e);
-    }
-
-    // Monkeypatch HTMLAnchorElement.target setter property
-    try {
-      const originalTargetDescriptor = Object.getOwnPropertyDescriptor(HTMLAnchorElement.prototype, 'target');
-      if (originalTargetDescriptor && originalTargetDescriptor.set) {
-        Object.defineProperty(HTMLAnchorElement.prototype, 'target', {
-          set: function(val) {
-            if (val === '_blank') {
-              const href = this.getAttribute('href') || this.href;
-              if (isSearchRedirect(href)) {
-                val = '_self';
-              }
-            }
-            originalTargetDescriptor.set.call(this, val);
-          },
-          get: originalTargetDescriptor.get,
-          configurable: true
-        });
-      }
-    } catch (e) {
-      console.error("Failed to monkeypatch HTMLAnchorElement.target property:", e);
-    }
-
-    // Monkeypatch window.open, parent.open, and top.open
-    const originalOpen = window.open;
+    // --- 2a. Monkeypatch window.open (and parent/top) ---
+    var originalOpen = window.open;
     window.open = function(url, target, features) {
-      if (isHotelRedirect(url)) {
-        console.log("Blocking hotel redirect:", url);
+      if (isHotelRedirect(url) || (isExternalUrl(url) && !isSearchRedirect(url))) {
+        console.log("[flights-widget] Blocked window.open to:", url);
         return window;
       }
       if (isSearchRedirect(url)) {
@@ -182,73 +138,188 @@
 
     try {
       if (window.parent && window.parent !== window) {
-        const originalParentOpen = window.parent.open;
+        var originalParentOpen = window.parent.open;
         window.parent.open = function(url, target, features) {
-          if (isHotelRedirect(url)) {
-            console.log("Blocking hotel redirect:", url);
+          if (isHotelRedirect(url) || (isExternalUrl(url) && !isSearchRedirect(url))) {
+            console.log("[flights-widget] Blocked parent.open to:", url);
             return window;
           }
           if (isSearchRedirect(url)) {
             window.location.href = url;
             return window;
           }
-          const openFn = originalParentOpen || window.parent.open;
+          var openFn = originalParentOpen || window.parent.open;
           return openFn.apply(this, arguments);
         };
       }
-    } catch (e) {
-      console.error("Failed to monkeypatch parent.open:", e);
-    }
+    } catch (e) {}
 
     try {
       if (window.top && window.top !== window) {
-        const originalTopOpen = window.top.open;
+        var originalTopOpen = window.top.open;
         window.top.open = function(url, target, features) {
-          if (isHotelRedirect(url)) {
-            console.log("Blocking hotel redirect:", url);
+          if (isHotelRedirect(url) || (isExternalUrl(url) && !isSearchRedirect(url))) {
+            console.log("[flights-widget] Blocked top.open to:", url);
             return window;
           }
           if (isSearchRedirect(url)) {
             window.location.href = url;
             return window;
           }
-          const openFn = originalTopOpen || window.top.open;
+          var openFn = originalTopOpen || window.top.open;
           return openFn.apply(this, arguments);
         };
       }
-    } catch (e) {
-      console.error("Failed to monkeypatch top.open:", e);
-    }
+    } catch (e) {}
 
-    // Helper to register capture listeners on a document
+    // --- 2b. Monkeypatch location.assign and location.replace ---
+    try {
+      var origAssign = window.location.assign.bind(window.location);
+      window.location.assign = function(url) {
+        if (isHotelRedirect(url)) {
+          console.log("[flights-widget] Blocked location.assign to:", url);
+          return;
+        }
+        origAssign(url);
+      };
+    } catch (e) {}
+
+    try {
+      var origReplace = window.location.replace.bind(window.location);
+      window.location.replace = function(url) {
+        if (isHotelRedirect(url)) {
+          console.log("[flights-widget] Blocked location.replace to:", url);
+          return;
+        }
+        origReplace(url);
+      };
+    } catch (e) {}
+
+    // --- 2c. Monkeypatch HTMLFormElement.prototype.submit ---
+    // Catches programmatic form.submit() calls that bypass 'submit' event
+    try {
+      var originalFormSubmit = HTMLFormElement.prototype.submit;
+      HTMLFormElement.prototype.submit = function() {
+        var action = this.getAttribute('action') || '';
+        // Block hotel redirects and ALL external form submissions
+        if (isHotelRedirect(action) || isExternalUrl(action)) {
+          console.log("[flights-widget] Blocked form.submit() to:", action);
+          return;
+        }
+        if (this.closest('#tpwl-search') || action === '' || isSearchRedirect(action)) {
+          this.setAttribute('target', '_self');
+        }
+        originalFormSubmit.apply(this, arguments);
+      };
+    } catch (e) {}
+
+    // --- 2d. Monkeypatch HTMLAnchorElement.prototype.click ---
+    try {
+      var originalAnchorClick = HTMLAnchorElement.prototype.click;
+      HTMLAnchorElement.prototype.click = function() {
+        var href = this.getAttribute('href') || this.href;
+        if (isHotelRedirect(href)) {
+          console.log("[flights-widget] Blocked anchor.click() to:", href);
+          return;
+        }
+        if (isSearchRedirect(href)) {
+          this.setAttribute('target', '_self');
+        }
+        originalAnchorClick.apply(this, arguments);
+      };
+    } catch (e) {}
+
+    // --- 2e. Monkeypatch Element.prototype.setAttribute ---
+    // Rewrite target="_blank" to "_self" for internal URLs, fully block for hotel URLs
+    try {
+      var originalSetAttribute = Element.prototype.setAttribute;
+      Element.prototype.setAttribute = function(name, value) {
+        if (name === 'target' && this.tagName === 'A') {
+          var href = this.getAttribute('href') || this.href;
+          if (isHotelRedirect(href)) {
+            // Don't even set target, we'll block the click anyway
+            return originalSetAttribute.call(this, name, '_self');
+          }
+          if (value === '_blank' && isSearchRedirect(href)) {
+            value = '_self';
+          }
+        }
+        return originalSetAttribute.call(this, name, value);
+      };
+    } catch (e) {}
+
+    // --- 2f. Monkeypatch HTMLAnchorElement.target property setter ---
+    try {
+      var originalTargetDescriptor = Object.getOwnPropertyDescriptor(HTMLAnchorElement.prototype, 'target');
+      if (originalTargetDescriptor && originalTargetDescriptor.set) {
+        Object.defineProperty(HTMLAnchorElement.prototype, 'target', {
+          set: function(val) {
+            if (val === '_blank') {
+              var href = this.getAttribute('href') || this.href;
+              if (isSearchRedirect(href) || isHotelRedirect(href)) {
+                val = '_self';
+              }
+            }
+            originalTargetDescriptor.set.call(this, val);
+          },
+          get: originalTargetDescriptor.get,
+          configurable: true
+        });
+      }
+    } catch (e) {}
+
+    // ========================================================================
+    // LAYER 3: Capture event listeners on document (and parent/top docs)
+    // ========================================================================
+
     function registerListeners(doc) {
       if (!doc) return;
 
-      // Capture all form submissions: if inside search widget or search target, force _self
+      // Capture all form submissions
       doc.addEventListener('submit', function(event) {
-        const form = event.target;
-        const action = form.getAttribute('action') || '';
+        var form = event.target;
+        var action = form.getAttribute('action') || '';
+        // Block hotel redirects
         if (isHotelRedirect(action)) {
           event.preventDefault();
           event.stopPropagation();
+          console.log("[flights-widget] Blocked form submit event to:", action);
           return;
         }
+        // Block ALL external form submissions from within the search widget
+        if (form.closest('#tpwl-search') && isExternalUrl(action)) {
+          event.preventDefault();
+          event.stopPropagation();
+          console.log("[flights-widget] Blocked external form submit from widget to:", action);
+          return;
+        }
+        // Force same-frame for internal search URLs
         if (form.closest('#tpwl-search') || action === '' || isSearchRedirect(action)) {
           form.setAttribute('target', '_self');
         }
       }, true);
 
-      // Capture all click events on anchors: if inside search widget or search target, force _self
+      // Capture all click events on anchors
       doc.addEventListener('click', function(event) {
-        let target = event.target;
+        var target = event.target;
         while (target && target !== doc.body) {
           if (target.tagName === 'A') {
-            const href = target.getAttribute('href');
+            var href = target.getAttribute('href');
+            // Block hotel redirects
             if (isHotelRedirect(href)) {
               event.preventDefault();
               event.stopPropagation();
+              console.log("[flights-widget] Blocked anchor click to:", href);
               return;
             }
+            // Block external links from within search widget (these are tracking redirects)
+            if (target.closest('#tpwl-search') && isExternalUrl(href)) {
+              event.preventDefault();
+              event.stopPropagation();
+              console.log("[flights-widget] Blocked external link click from widget to:", href);
+              return;
+            }
+            // Force same-frame for internal search URLs
             if (target.closest('#tpwl-search') || isSearchRedirect(href)) {
               target.setAttribute('target', '_self');
             }
@@ -267,18 +338,39 @@
       if (window.parent && window.parent !== window && window.parent.document) {
         registerListeners(window.parent.document);
       }
-    } catch (e) {
-      console.warn("Could not register listeners on parent document:", e);
-    }
+    } catch (e) {}
 
     try {
       if (window.top && window.top !== window && window.top.document) {
         registerListeners(window.top.document);
       }
-    } catch (e) {
-      console.warn("Could not register listeners on top document:", e);
-    }
+    } catch (e) {}
 
+    // ========================================================================
+    // LAYER 4: MutationObserver to nuke any injected booking.com iframes
+    // ========================================================================
+    try {
+      var iframeKiller = new MutationObserver(function(mutations) {
+        for (var i = 0; i < mutations.length; i++) {
+          var added = mutations[i].addedNodes;
+          for (var j = 0; j < added.length; j++) {
+            var node = added[j];
+            if (node.tagName === 'IFRAME') {
+              var src = (node.getAttribute('src') || '').toLowerCase();
+              if (src.includes('booking.com') || src.includes('hotellook') || src.includes('hotelscombined')) {
+                node.remove();
+                console.log("[flights-widget] Removed injected hotel iframe:", src);
+              }
+            }
+          }
+        }
+      });
+      iframeKiller.observe(document.documentElement, { childList: true, subtree: true });
+    } catch (e) {}
+
+    // ========================================================================
+    // Widget configuration
+    // ========================================================================
     window.TPWL_CONFIGURATION = {
       ...window.TPWL_CONFIGURATION,
       resultsURL: window.location.origin + window.location.pathname
@@ -298,7 +390,7 @@
   <!-- Script to communicate content height to parent for auto-resize and programmatically uncheck hotels -->
   <script>
     function disableHotelsCheckbox() {
-      const checkbox = document.querySelector('input[type="checkbox"]');
+      var checkbox = document.querySelector('input[type="checkbox"]');
       if (checkbox && checkbox.checked) {
         checkbox.click();
       }
@@ -306,20 +398,20 @@
 
     function hideHotelsCheckbox() {
       // Find all input checkboxes
-      const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-      checkboxes.forEach(cb => {
-        const parent = cb.closest('label') || cb.parentElement;
+      var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+      checkboxes.forEach(function(cb) {
+        var parent = cb.closest('label') || cb.parentElement;
         if (parent && (parent.textContent.toLowerCase().includes('hotel') || parent.textContent.toLowerCase().includes('show'))) {
           parent.style.setProperty('display', 'none', 'important');
         }
       });
 
       // Find any labels or span elements containing "Show hotels"
-      const labels = document.querySelectorAll('label, span, div');
-      labels.forEach(el => {
+      var labels = document.querySelectorAll('label, span, div');
+      labels.forEach(function(el) {
         if (el.textContent.trim().toLowerCase().includes('show hotels')) {
           el.style.setProperty('display', 'none', 'important');
-          const parent = el.closest('div');
+          var parent = el.closest('div');
           if (parent && parent !== document.body && parent.id !== 'widget-wrapper') {
             parent.style.setProperty('display', 'none', 'important');
           }
@@ -328,33 +420,43 @@
     }
 
     function fixFormTarget() {
-      const forms = document.querySelectorAll('#tpwl-search form');
-      forms.forEach(form => {
-        if (form.getAttribute('target') !== '_self') {
+      var forms = document.querySelectorAll('#tpwl-search form');
+      forms.forEach(function(form) {
+        var action = form.getAttribute('action') || '';
+        // If form points to external URL, neuter it entirely
+        if (isExternalUrl(action) || isHotelRedirect(action)) {
+          form.setAttribute('action', '');
+          form.setAttribute('target', '_self');
+        } else if (form.getAttribute('target') !== '_self') {
           form.setAttribute('target', '_self');
         }
       });
     }
 
     function fixLinkTargets() {
-      const links = document.querySelectorAll('#tpwl-search a');
-      links.forEach(link => {
-        if (link.getAttribute('target') !== '_self') {
+      var links = document.querySelectorAll('#tpwl-search a');
+      links.forEach(function(link) {
+        var href = link.getAttribute('href') || '';
+        // If link points to hotel/external URL, remove it
+        if (isHotelRedirect(href)) {
+          link.removeAttribute('href');
+          link.style.setProperty('pointer-events', 'none', 'important');
+        } else if (link.getAttribute('target') !== '_self') {
           link.setAttribute('target', '_self');
         }
       });
     }
 
     function getActualContentHeight() {
-      const wrapper = document.getElementById("widget-wrapper");
+      var wrapper = document.getElementById("widget-wrapper");
       if (!wrapper) return 0;
-      const children = wrapper.getElementsByTagName("*");
-      let maxBottom = 0;
-      for (let i = 0; i < children.length; i++) {
-        const child = children[i];
+      var children = wrapper.getElementsByTagName("*");
+      var maxBottom = 0;
+      for (var i = 0; i < children.length; i++) {
+        var child = children[i];
         if (child.id === 'widget-wrapper') continue;
         if (child.offsetWidth > 0 && child.offsetHeight > 0) {
-          const rect = child.getBoundingClientRect();
+          var rect = child.getBoundingClientRect();
           if (rect.bottom > maxBottom) {
             maxBottom = rect.bottom;
           }
@@ -364,7 +466,7 @@
     }
 
     function sendHeight() {
-      const height = getActualContentHeight();
+      var height = getActualContentHeight();
       if (height > 0) {
         window.parent.postMessage({ type: 'resize-iframe', height: height + 16 }, '*');
       }
@@ -383,7 +485,7 @@
     window.addEventListener('resize', handleDOMChange);
     
     // Set up a MutationObserver to watch for DOM changes (like tickets loading)
-    const observer = new MutationObserver(handleDOMChange);
+    var observer = new MutationObserver(handleDOMChange);
     observer.observe(document.body, { childList: true, subtree: true, attributes: true });
 
     // Fallback interval

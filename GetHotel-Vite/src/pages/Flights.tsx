@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import SEOHead from "@/components/common/SEOHead";
 import { Plane, Compass } from "lucide-react";
 import { motion } from "framer-motion";
@@ -7,6 +7,10 @@ export default function Flights() {
   const [iframeHeight, setIframeHeight] = useState(250);
   const [loaded, setLoaded] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const reloadCountRef = useRef(0);
+
+  // Build the widget URL once
+  const widgetUrl = `/flights-widget.html${window.location.search ? window.location.search + '&' : '?'}v=1.3.0`;
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -21,6 +25,45 @@ export default function Flights() {
       window.removeEventListener("message", handleMessage);
     };
   }, []);
+
+  // LAYER 5 (parent-side safety net): Detect if iframe navigated to cross-origin
+  // (e.g. booking.com loaded inside the iframe despite all our blocks).
+  // When this happens, iframe.contentWindow.location throws SecurityError.
+  // We catch it and reload the widget.
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+
+    const handleIframeLoad = () => {
+      // Don't reload infinitely — max 3 attempts
+      if (reloadCountRef.current >= 3) return;
+
+      try {
+        // If same-origin, this succeeds. Check for booking.com just in case.
+        const href = iframe.contentWindow?.location?.href || "";
+        if (
+          href.includes("booking.com") ||
+          href.includes("hotellook") ||
+          href.includes("hotelscombined")
+        ) {
+          console.warn("[Flights] Detected hotel site in iframe, reloading widget");
+          reloadCountRef.current++;
+          iframe.src = widgetUrl;
+        } else if (href.includes("flights-widget")) {
+          // Widget loaded correctly, reset reload counter
+          reloadCountRef.current = 0;
+        }
+      } catch (e) {
+        // SecurityError = iframe navigated to cross-origin domain (booking.com)
+        console.warn("[Flights] Iframe navigated to cross-origin site, reloading widget");
+        reloadCountRef.current++;
+        iframe.src = widgetUrl;
+      }
+    };
+
+    iframe.addEventListener("load", handleIframeLoad);
+    return () => iframe.removeEventListener("load", handleIframeLoad);
+  }, [widgetUrl]);
 
   return (
     <main className="flex flex-col min-h-screen bg-slate-50 overflow-x-hidden">
@@ -76,7 +119,7 @@ export default function Flights() {
 
           <iframe
             ref={iframeRef}
-            src={`/flights-widget.html${window.location.search ? window.location.search + '&' : '?'}v=1.2.0`}
+            src={widgetUrl}
             style={{ height: `${iframeHeight}px`, minHeight: "550px" }}
             scrolling="no"
             sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
@@ -88,3 +131,4 @@ export default function Flights() {
     </main>
   );
 }
+
