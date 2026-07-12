@@ -177,7 +177,7 @@ const testHandler = async (req, res) => {
 
     res.json({
         message: 'Backend is ALIVE',
-        version: 'v2.8-AI-REVIEWS-IMPORTER-24JUN',
+        version: 'v2.9-RELEASE',
         server_directory: __dirname,
         database: dbStatus,
         fix_results: fixResults,
@@ -305,6 +305,82 @@ app.get('/api/maintenance/fix-db', async (req, res) => {
         }
 
         res.json({ success: true, results, message: 'Database sync, Prisma regeneration, and restart triggered successfully!' });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message, results });
+    }
+});
+
+// =========================================================
+// TEMPORARY MAINTENANCE: Standardize Hotel City Names
+// =========================================================
+app.get('/api/maintenance/standardize-cities', async (req, res) => {
+    const token = req.query.token;
+    if (token !== 'gethotel_maint_2026') {
+        return res.status(403).json({ success: false, message: 'Unauthorized' });
+    }
+    const results = [];
+    try {
+        const prisma = require('./config/db');
+        await prisma.$connect();
+        
+        const hotels = await prisma.hotel.findMany({
+            select: { id: true, name: true, city: true }
+        });
+        
+        results.push(`Found ${hotels.length} hotels in total.`);
+        
+        let updateCount = 0;
+        for (const hotel of hotels) {
+            const trimmedCity = hotel.city.trim().toLowerCase();
+            let targetCity = hotel.city.trim();
+            
+            if (
+                trimmedCity.includes('delhi') ||
+                trimmedCity.includes('paharganj') ||
+                trimmedCity.includes('karol bagh') ||
+                trimmedCity.includes('mahipalpur')
+            ) {
+                targetCity = 'New Delhi';
+            } else if (trimmedCity.includes('agra')) {
+                targetCity = 'Agra';
+            } else if (trimmedCity.includes('jaipur')) {
+                targetCity = 'Jaipur';
+            } else if (trimmedCity.includes('udaipur')) {
+                targetCity = 'Udaipur';
+            } else if (trimmedCity.includes('manali')) {
+                targetCity = 'Manali';
+            } else if (trimmedCity.includes('shimla')) {
+                targetCity = 'Shimla';
+            } else if (trimmedCity.includes('jodhpur')) {
+                targetCity = 'Jodhpur';
+            } else if (trimmedCity.includes('varanasi')) {
+                targetCity = 'Varanasi';
+            } else if (trimmedCity === 'goa') {
+                targetCity = 'Goa';
+            } else if (trimmedCity.includes('haridwar')) {
+                targetCity = 'Haridwar';
+            } else if (trimmedCity.includes('gurugram')) {
+                targetCity = 'Gurugram';
+            } else if (trimmedCity.includes('ranthambore')) {
+                targetCity = 'Ranthambore';
+            } else if (trimmedCity.includes('bhimtal')) {
+                targetCity = 'Bhimtal';
+            } else if (trimmedCity.includes('rudrapur')) {
+                targetCity = 'Rudrapur';
+            }
+            
+            if (hotel.city !== targetCity) {
+                await prisma.hotel.update({
+                    where: { id: hotel.id },
+                    data: { city: targetCity }
+                });
+                results.push(`Updated "${hotel.name}" (ID ${hotel.id}) city from "${hotel.city}" to "${targetCity}"`);
+                updateCount++;
+            }
+        }
+        
+        results.push(`Successfully standardized city names for ${updateCount} hotels.`);
+        res.json({ success: true, results });
     } catch (err) {
         res.status(500).json({ success: false, error: err.message, results });
     }
