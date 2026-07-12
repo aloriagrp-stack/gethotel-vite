@@ -21,6 +21,8 @@ export default function Flights() {
     }
   }, []);
 
+  const partnerIntentRef = useRef(false);
+
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (!event.data) return;
@@ -40,15 +42,13 @@ export default function Flights() {
         }
       }
 
-      // Handle flight partner redirect
-      if (event.data.type === "flight-redirect" && event.data.url) {
-        console.log("[Flights] Flight partner redirect message received:", event.data.url);
-        // Attempt to open in a new tab first
-        const newTab = window.open(event.data.url, "_blank");
-        // If the popup is blocked, fallback to redirecting the current tab
-        if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
-          window.location.href = event.data.url;
-        }
+      // Handle flight partner intent — widget is about to navigate to a partner
+      // Set flag so the safety net doesn't reset the iframe
+      if (event.data.type === "flight-partner-intent") {
+        console.log("[Flights] Partner intent received — suppressing safety net");
+        partnerIntentRef.current = true;
+        // Auto-clear after 10 seconds
+        setTimeout(() => { partnerIntentRef.current = false; }, 10000);
       }
     };
 
@@ -88,8 +88,14 @@ export default function Flights() {
           reloadCountRef.current = 0;
         }
       } catch (e) {
-        // SecurityError = cross-origin page loaded (booking.com hijacked iframe)
-        // Reload with the last known good URL to preserve search state
+        // SecurityError = cross-origin page loaded
+        // If a partner intent was signalled, this is a legitimate redirect — skip reset
+        if (partnerIntentRef.current) {
+          console.log("[Flights] Cross-origin detected but partner intent active — skipping reset");
+          partnerIntentRef.current = false;
+          return;
+        }
+        // Otherwise it's a booking.com hijack — reset
         console.warn("[Flights] Iframe hijacked to cross-origin, restoring:", lastGoodUrlRef.current);
         reloadCountRef.current++;
         iframe.src = lastGoodUrlRef.current || widgetUrl;

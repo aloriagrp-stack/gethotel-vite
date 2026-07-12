@@ -211,9 +211,9 @@
         return window;
       }
       if (isFlightPartnerRedirect(url)) {
-        console.log("[flights-widget] Intercepted window.open to partner:", url);
-        window.parent.postMessage({ type: 'flight-redirect', url: url }, '*');
-        return window;
+        console.log("[flights-widget] Opening partner in new tab:", url);
+        window.parent.postMessage({ type: 'flight-partner-intent' }, '*');
+        return originalOpen.call(window, url, '_blank');
       }
       if (isSearchRedirect(url)) {
         window.location.href = url;
@@ -231,9 +231,9 @@
             return window;
           }
           if (isFlightPartnerRedirect(url)) {
-            console.log("[flights-widget] Intercepted parent.open to partner:", url);
-            window.parent.postMessage({ type: 'flight-redirect', url: url }, '*');
-            return window;
+            console.log("[flights-widget] Opening partner via parent in new tab:", url);
+            window.parent.postMessage({ type: 'flight-partner-intent' }, '*');
+            return originalOpen.call(window, url, '_blank');
           }
           if (isSearchRedirect(url)) { window.location.href = url; return window; }
           return (originalParentOpen || window.parent.open).apply(this, arguments);
@@ -250,9 +250,9 @@
             return window;
           }
           if (isFlightPartnerRedirect(url)) {
-            console.log("[flights-widget] Intercepted top.open to partner:", url);
-            window.parent.postMessage({ type: 'flight-redirect', url: url }, '*');
-            return window;
+            console.log("[flights-widget] Opening partner via top in new tab:", url);
+            window.parent.postMessage({ type: 'flight-partner-intent' }, '*');
+            return originalOpen.call(window, url, '_blank');
           }
           if (isSearchRedirect(url)) { window.location.href = url; return window; }
           return (originalTopOpen || window.top.open).apply(this, arguments);
@@ -269,8 +269,9 @@
       window.location.assign = function(url) {
         if (isHotelRedirect(url)) { console.log("[flights-widget] Blocked location.assign:", url); return; }
         if (isFlightPartnerRedirect(url)) {
-          console.log("[flights-widget] Intercepted location.assign to partner:", url);
-          window.parent.postMessage({ type: 'flight-redirect', url: url }, '*');
+          console.log("[flights-widget] Opening partner (assign) in new tab:", url);
+          window.parent.postMessage({ type: 'flight-partner-intent' }, '*');
+          originalOpen.call(window, url, '_blank');
           return;
         }
         origAssign(url);
@@ -282,8 +283,9 @@
       window.location.replace = function(url) {
         if (isHotelRedirect(url)) { console.log("[flights-widget] Blocked location.replace:", url); return; }
         if (isFlightPartnerRedirect(url)) {
-          console.log("[flights-widget] Intercepted location.replace to partner:", url);
-          window.parent.postMessage({ type: 'flight-redirect', url: url }, '*');
+          console.log("[flights-widget] Opening partner (replace) in new tab:", url);
+          window.parent.postMessage({ type: 'flight-partner-intent' }, '*');
+          originalOpen.call(window, url, '_blank');
           return;
         }
         origReplace(url);
@@ -337,6 +339,11 @@
       HTMLAnchorElement.prototype.click = function() {
         var href = this.getAttribute('href') || this.href;
         if (isHotelRedirect(href)) { return; }
+        if (isFlightPartnerRedirect(href)) {
+          this.setAttribute('target', '_blank');
+          this.setAttribute('rel', 'noopener noreferrer');
+          window.parent.postMessage({ type: 'flight-partner-intent' }, '*');
+        }
         if (isSearchRedirect(href)) { this.setAttribute('target', '_self'); }
         originalAnchorClick.apply(this, arguments);
       };
@@ -347,6 +354,7 @@
       Element.prototype.setAttribute = function(name, value) {
         if (name === 'target' && this.tagName === 'A') {
           var href = this.getAttribute('href') || this.href;
+          if (isFlightPartnerRedirect(href)) { return originalSetAttribute.call(this, name, '_blank'); }
           if (isHotelRedirect(href)) { return originalSetAttribute.call(this, name, '_self'); }
           if (value === '_blank' && isSearchRedirect(href)) { value = '_self'; }
         }
@@ -363,10 +371,11 @@
     try {
       var origTargetDesc = Object.getOwnPropertyDescriptor(HTMLAnchorElement.prototype, 'target');
       if (origTargetDesc && origTargetDesc.set) {
-        Object.defineProperty(HTMLAnchorElement.prototype, 'target', {
+         Object.defineProperty(HTMLAnchorElement.prototype, 'target', {
           set: function(val) {
-            if (val === '_blank') {
-              var href = this.getAttribute('href') || this.href;
+            var href = this.getAttribute('href') || this.href;
+            if (isFlightPartnerRedirect(href)) { val = '_blank'; }
+            else if (val === '_blank') {
               if (isSearchRedirect(href) || isHotelRedirect(href)) { val = '_self'; }
             }
             origTargetDesc.set.call(this, val);
@@ -407,10 +416,13 @@
               event.preventDefault(); event.stopPropagation(); return;
             }
             if (isFlightPartnerRedirect(href)) {
-              event.preventDefault();
-              event.stopPropagation();
-              window.parent.postMessage({ type: 'flight-redirect', url: href }, '*');
-              return;
+              // Set target=_blank and let the browser open it natively
+              // (preserves user gesture context so popup won't be blocked)
+              target.setAttribute('target', '_blank');
+              target.setAttribute('rel', 'noopener noreferrer');
+              window.parent.postMessage({ type: 'flight-partner-intent' }, '*');
+              console.log('[flights-widget] Buy click → opening partner in new tab:', href);
+              break; // let the default click action proceed
             }
             if (target.closest('#tpwl-search') && isExternalUrl(href)) {
               event.preventDefault(); event.stopPropagation(); return;
@@ -577,11 +589,24 @@
       }
     }
 
+    function fixBuyButtonTargets() {
+      // Proactively set target=_blank on all flight partner links in the results
+      var links = document.querySelectorAll('#tpwl-tickets a');
+      links.forEach(function(link) {
+        var href = link.getAttribute('href') || link.href || '';
+        if (href && isFlightPartnerRedirect(href)) {
+          link.setAttribute('target', '_blank');
+          link.setAttribute('rel', 'noopener noreferrer');
+        }
+      });
+    }
+
     function handleDOMChange() {
       disableHotelsCheckbox();
       hideHotelsCheckbox();
       fixFormTarget();
       fixLinkTargets();
+      fixBuyButtonTargets();
       sendHeight();
     }
 
