@@ -39,6 +39,17 @@ export default function Flights() {
           lastGoodUrlRef.current = url;
         }
       }
+
+      // Handle flight partner redirect
+      if (event.data.type === "flight-redirect" && event.data.url) {
+        console.log("[Flights] Flight partner redirect message received:", event.data.url);
+        // Attempt to open in a new tab first
+        const newTab = window.open(event.data.url, "_blank");
+        // If the popup is blocked, fallback to redirecting the current tab
+        if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
+          window.location.href = event.data.url;
+        }
+      }
     };
 
     window.addEventListener("message", handleMessage);

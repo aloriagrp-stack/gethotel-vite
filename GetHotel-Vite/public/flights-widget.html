@@ -117,6 +117,15 @@
       }
     }
 
+    function isFlightPartnerRedirect(url) {
+      if (!url) return false;
+      var u = String(url).toLowerCase();
+      if (isHotelRedirect(url)) return false;
+      if (u.includes('tpwdgt.com')) return true;
+      if (isExternalUrl(url)) return true;
+      return false;
+    }
+
     function isSearchRedirect(url) {
       if (!url) return false;
       var urlStr = String(url).toLowerCase();
@@ -201,6 +210,11 @@
         console.log("[flights-widget] Blocked window.open to hotel:", url);
         return window;
       }
+      if (isFlightPartnerRedirect(url)) {
+        console.log("[flights-widget] Intercepted window.open to partner:", url);
+        window.parent.postMessage({ type: 'flight-redirect', url: url }, '*');
+        return window;
+      }
       if (isSearchRedirect(url)) {
         window.location.href = url;
         return window;
@@ -214,6 +228,11 @@
         window.parent.open = function(url) {
           if (isHotelRedirect(url)) {
             console.log("[flights-widget] Blocked parent.open to hotel:", url);
+            return window;
+          }
+          if (isFlightPartnerRedirect(url)) {
+            console.log("[flights-widget] Intercepted parent.open to partner:", url);
+            window.parent.postMessage({ type: 'flight-redirect', url: url }, '*');
             return window;
           }
           if (isSearchRedirect(url)) { window.location.href = url; return window; }
@@ -230,6 +249,11 @@
             console.log("[flights-widget] Blocked top.open to hotel:", url);
             return window;
           }
+          if (isFlightPartnerRedirect(url)) {
+            console.log("[flights-widget] Intercepted top.open to partner:", url);
+            window.parent.postMessage({ type: 'flight-redirect', url: url }, '*');
+            return window;
+          }
           if (isSearchRedirect(url)) { window.location.href = url; return window; }
           return (originalTopOpen || window.top.open).apply(this, arguments);
         };
@@ -244,6 +268,11 @@
       var origAssign = window.location.assign.bind(window.location);
       window.location.assign = function(url) {
         if (isHotelRedirect(url)) { console.log("[flights-widget] Blocked location.assign:", url); return; }
+        if (isFlightPartnerRedirect(url)) {
+          console.log("[flights-widget] Intercepted location.assign to partner:", url);
+          window.parent.postMessage({ type: 'flight-redirect', url: url }, '*');
+          return;
+        }
         origAssign(url);
       };
     } catch (e) {}
@@ -252,6 +281,11 @@
       var origReplace = window.location.replace.bind(window.location);
       window.location.replace = function(url) {
         if (isHotelRedirect(url)) { console.log("[flights-widget] Blocked location.replace:", url); return; }
+        if (isFlightPartnerRedirect(url)) {
+          console.log("[flights-widget] Intercepted location.replace to partner:", url);
+          window.parent.postMessage({ type: 'flight-redirect', url: url }, '*');
+          return;
+        }
         origReplace(url);
       };
     } catch (e) {}
@@ -371,6 +405,12 @@
             var href = target.getAttribute('href');
             if (isHotelRedirect(href)) {
               event.preventDefault(); event.stopPropagation(); return;
+            }
+            if (isFlightPartnerRedirect(href)) {
+              event.preventDefault();
+              event.stopPropagation();
+              window.parent.postMessage({ type: 'flight-redirect', url: href }, '*');
+              return;
             }
             if (target.closest('#tpwl-search') && isExternalUrl(href)) {
               event.preventDefault(); event.stopPropagation(); return;
