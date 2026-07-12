@@ -826,10 +826,11 @@ export const buildHotelSchema = (hotel: any, reviews?: any[]) => {
     };
 
     // Add aggregate rating if reviews exist
-    if (hotel.rating && hotel.reviewCount) {
+    const ratingValue = hotel.guestRating || hotel.rating;
+    if (ratingValue && hotel.reviewCount) {
         schema.aggregateRating = {
             "@type": "AggregateRating",
-            ratingValue: hotel.rating,
+            ratingValue: ratingValue,
             reviewCount: hotel.reviewCount,
             bestRating: 10,
             worstRating: 1,
