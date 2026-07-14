@@ -257,7 +257,7 @@ export default function AICopilot() {
                   e.preventDefault();
                   handleSend(input);
                 }}
-                className="flex items-end gap-2 bg-white border border-slate-200 focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-500/10 rounded-xl px-4 py-2.5 transition-all shadow-sm"
+                className="flex items-end gap-2 bg-white border border-slate-200 focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-500/10 rounded-full px-5 py-2.5 transition-all shadow-sm"
               >
                 <textarea
                   ref={textareaRef}
@@ -269,12 +269,12 @@ export default function AICopilot() {
                   onKeyDown={handleKeyDown}
                   placeholder="Ask about hotels, destinations, or travel tips..."
                   rows={1}
-                  className="flex-1 bg-transparent py-1 text-sm text-[#1a1d23] placeholder-slate-400 outline-none resize-none font-normal leading-6 max-h-[160px]"
+                  className="flex-1 bg-transparent py-1 pl-1 text-sm text-[#1a1d23] placeholder-slate-400 outline-none resize-none font-normal leading-6 max-h-[160px]"
                 />
                 <button
                   type="submit"
                   disabled={!input.trim()}
-                  className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-all disabled:opacity-40 disabled:cursor-not-allowed enabled:bg-brand-600 enabled:text-white enabled:shadow-sm active:scale-90"
+                  className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all disabled:opacity-40 disabled:cursor-not-allowed enabled:bg-brand-600 enabled:text-white enabled:shadow-sm active:scale-90"
                 >
                   <Send className="w-4 h-4" />
                 </button>
