@@ -183,8 +183,9 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
             finalCheckOut = null;
         }
 
+        const isHotelSelected = state.destination?.category === "hotel";
         const params = new URLSearchParams({
-            city: state.destination?.label || query || "All",
+            city: isHotelSelected ? (state.destination?.sublabel || "All") : (state.destination?.label || query || "All"),
             checkIn: formatDateLocal(finalCheckIn),
             checkOut: mode === 'nightly' ? formatDateLocal(finalCheckOut) : "",
             adults: String(state.guests.adults),
@@ -198,7 +199,10 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
         setIsSearching(false);
         setActiveSection(null);
         if (onSearch) onSearch();
-        if (navigationPath) {
+        
+        if (isHotelSelected && state.destination?.id) {
+            router(`/hotel/${state.destination.id}?${params.toString()}`);
+        } else if (navigationPath) {
             router(`${navigationPath}?${params.toString()}`);
         } else {
             router(`/hotels?${params.toString()}`);
