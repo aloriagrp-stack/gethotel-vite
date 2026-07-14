@@ -868,35 +868,80 @@ exports.getSearchSuggestions = async (req, res, next) => {
 
         const cleanQuery = query.trim().toLowerCase();
 
-        // 1. Fetch matching hotels to extract distinct cities
-        const matchingHotelsForCities = await prisma.hotel.findMany({
-            where: {
-                OR: [
-                    { city: { contains: cleanQuery } },
-                    { address: { contains: cleanQuery } }
-                ],
-                isActive: true
-            },
-            select: {
-                city: true
-            },
-            take: 30
-        });
+        // State to cities mapping
+        const STATE_TO_CITIES = {
+            "rajasthan": ["Jaipur", "Udaipur", "Jodhpur", "Ranthambore"],
+            "himachal pradesh": ["Manali", "Shimla"],
+            "himachal": ["Manali", "Shimla"],
+            "uttar pradesh": ["Agra", "Varanasi"],
+            "up": ["Agra", "Varanasi"],
+            "uttarakhand": ["Bhimtal", "Rudrapur", "Haridwar"],
+            "haryana": ["Gurugram"],
+            "delhi": ["New Delhi", "Delhi"],
+            "goa": ["Goa"]
+        };
 
-        const citiesSet = new Set();
-        matchingHotelsForCities.forEach(h => {
-            if (h.city) {
-                citiesSet.add(h.city.trim());
-            }
-        });
+        // If query matches a state, return all cities of that state
+        const matchedStateKey = Object.keys(STATE_TO_CITIES).find(key => key.includes(cleanQuery));
+        let citySuggestions = [];
+        if (matchedStateKey) {
+            const cities = STATE_TO_CITIES[matchedStateKey];
+            citySuggestions = cities.map(cityName => ({
+                id: `city-${cityName.toLowerCase().replace(/\s+/g, '-')}`,
+                label: cityName,
+                sublabel: `City in ${matchedStateKey.toUpperCase()}`,
+                category: "city",
+                emoji: "🏙️"
+            }));
+        } else {
+            // 1. Fetch matching hotels to extract distinct cities or sub-cities/areas
+            const matchingHotelsForCities = await prisma.hotel.findMany({
+                where: {
+                    OR: [
+                        { city: { contains: cleanQuery } },
+                        { address: { contains: cleanQuery } }
+                    ],
+                    isActive: true
+                },
+                select: {
+                    city: true,
+                    address: true
+                },
+                take: 30
+            });
 
-        const citySuggestions = Array.from(citiesSet).map(cityName => ({
-            id: `city-${cityName.toLowerCase().replace(/\s+/g, '-')}`,
-            label: cityName,
-            sublabel: "City",
-            category: "city",
-            emoji: "🏙️"
-        })).slice(0, 5);
+            const citiesSet = new Set();
+            matchingHotelsForCities.forEach(h => {
+                if (h.city && h.city.toLowerCase().includes(cleanQuery)) {
+                    citiesSet.add(h.city.trim());
+                } else if (h.address && h.address.toLowerCase().includes(cleanQuery)) {
+                    const parts = h.address.split(',').map(p => p.trim());
+                    const matchingPart = parts.find(p => p.toLowerCase().includes(cleanQuery));
+                    if (matchingPart) {
+                        const cleanPart = matchingPart.replace(/[^a-zA-Z0-9\s-]/g, '').trim();
+                        if (
+                            cleanPart.length >= 3 && 
+                            cleanPart.length <= 45 && 
+                            !cleanPart.toLowerCase().includes(h.city.toLowerCase())
+                        ) {
+                            citiesSet.add(`${cleanPart}, ${h.city.trim()}`);
+                        } else {
+                            citiesSet.add(h.city.trim());
+                        }
+                    } else {
+                        citiesSet.add(h.city.trim());
+                    }
+                }
+            });
+
+            citySuggestions = Array.from(citiesSet).map(cityName => ({
+                id: `city-${cityName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+                label: cityName,
+                sublabel: "City / Area",
+                category: "city",
+                emoji: "🏙️"
+            })).slice(0, 5);
+        }
 
         // 2. Fetch matching hotels by name or city
         const matchingHotels = await prisma.hotel.findMany({
