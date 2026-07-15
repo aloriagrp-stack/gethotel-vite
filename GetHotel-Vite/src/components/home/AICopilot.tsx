@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback, memo } from "react";
 import { Send, ArrowLeft, Plus, Settings, HelpCircle, MessageSquare, Menu, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { aiApi } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 
 interface Message {
   id: string;
@@ -188,6 +189,7 @@ function TriggerButton({ onClick }: { onClick: () => void }) {
 /*  Main component                                                     */
 /* ------------------------------------------------------------------ */
 export default function AICopilot() {
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Collapsed by default
   const [input, setInput] = useState("");
@@ -404,7 +406,18 @@ export default function AICopilot() {
   return (
     <>
       {/* ---------- trigger ---------- */}
-      {!isOpen && <TriggerButton onClick={() => setIsOpen(true)} />}
+      {!isOpen && (
+        <TriggerButton 
+          onClick={() => {
+            if (!user) {
+              alert("Login first");
+              navigate("/login");
+            } else {
+              setIsOpen(true);
+            }
+          }} 
+        />
+      )}
 
       {/* ---------- full-screen chat (Website Whitish Blue Gradient Theme) ---------- */}
       {isOpen && (
