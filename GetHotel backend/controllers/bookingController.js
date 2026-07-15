@@ -16,34 +16,38 @@ const normalizeDateOnly = (date) => {
 // @route   POST /api/bookings
 // @access  Private
 exports.createBooking = async (req, res) => {
-    const { hotelId, rooms, checkIn, checkOut, totalGuests, guestInfo, couponCode, arrivalTime } = req.body;
+    const { hotelId, rooms, checkIn, checkOut, totalGuests, guestInfo, couponCode, arrivalTime, stayType, duration } = req.body;
     const userId = req.user.id;
 
     try {
         const checkInDate = toValidDate(checkIn);
         const checkOutDate = toValidDate(checkOut);
 
-        if (!hotelId || !checkInDate || !checkOutDate) {
+        if (!hotelId || !checkInDate || (stayType !== 'hourly' && !checkOutDate)) {
             return res.status(400).json({ success: false, message: "Valid hotel, check-in, and check-out dates are required." });
         }
 
         const today = normalizeDateOnly(new Date());
         const checkInDay = normalizeDateOnly(checkInDate);
-        const checkOutDay = normalizeDateOnly(checkOutDate);
+        const checkOutDay = checkOutDate ? normalizeDateOnly(checkOutDate) : checkInDay;
 
         if (checkInDay < today) {
             return res.status(400).json({ success: false, message: "Check-in date cannot be in the past." });
         }
-        if (checkOutDay <= checkInDay) {
-            return res.status(400).json({ success: false, message: "Check-out date must be after the check-in date." });
-        }
 
-        const nights = Math.ceil((checkOutDay - checkInDay) / (1000 * 60 * 60 * 24));
-        if (nights < 1) {
-            return res.status(400).json({ success: false, message: "Stay duration must be at least one night." });
-        }
-        if (nights > 90) {
-            return res.status(400).json({ success: false, message: "Stay duration cannot exceed 90 nights." });
+        let nights = 1;
+        if (stayType !== 'hourly') {
+            if (checkOutDay <= checkInDay) {
+                return res.status(400).json({ success: false, message: "Check-out date must be after the check-in date." });
+            }
+
+            nights = Math.ceil((checkOutDay - checkInDay) / (1000 * 60 * 60 * 24));
+            if (nights < 1) {
+                return res.status(400).json({ success: false, message: "Stay duration must be at least one night." });
+            }
+            if (nights > 90) {
+                return res.status(400).json({ success: false, message: "Stay duration cannot exceed 90 nights." });
+            }
         }
 
         // 2. FETCH HOTEL & ROOMS TO VERIFY PRICING & AVAILABILITY
@@ -80,41 +84,50 @@ exports.createBooking = async (req, res) => {
             const dbRoom = hotel.room.find(r => r.id === selectedRoom.id);
             if (!dbRoom) return res.status(400).json({ success: false, message: `Room ID ${selectedRoom.id} doesn't exist.` });
             
-            // Query daily rates overrides for this room
-            const rates = await prisma.dailyrate.findMany({
-                where: {
-                    roomId: dbRoom.id,
-                    date: {
-                        gte: checkInDay,
-                        lt: checkOutDay
-                    }
-                }
-            });
-
-            const rateMap = {};
-            rates.forEach(r => {
-                const dStr = r.date.toISOString().split('T')[0];
-                rateMap[dStr] = r;
-            });
-
             let roomTotalStayPrice = 0;
 
-            for (let i = 0; i < nights; i++) {
-                const currentDay = new Date(checkInDay);
-                currentDay.setUTCDate(currentDay.getUTCDate() + i);
-                const dStr = currentDay.toISOString().split('T')[0];
-                
-                const rateOverride = rateMap[dStr];
-                if (rateOverride) {
-                    roomTotalStayPrice += rateOverride.price;
-                } else {
-                    roomTotalStayPrice += dbRoom.pricePerNight;
+            if (stayType === 'hourly') {
+                const hourlyRatesObj = typeof dbRoom.hourlyRates === 'string' 
+                    ? JSON.parse(dbRoom.hourlyRates || '{}') 
+                    : (dbRoom.hourlyRates || {});
+                const reqDuration = duration || '3';
+                const hrPrice = Number(hourlyRatesObj[reqDuration] || hourlyRatesObj[String(reqDuration)] || dbRoom.pricePerNight * 0.3);
+                roomTotalStayPrice = hrPrice;
+            } else {
+                // Query daily rates overrides for this room
+                const rates = await prisma.dailyrate.findMany({
+                    where: {
+                        roomId: dbRoom.id,
+                        date: {
+                            gte: checkInDay,
+                            lt: checkOutDay
+                        }
+                    }
+                });
+
+                const rateMap = {};
+                rates.forEach(r => {
+                    const dStr = r.date.toISOString().split('T')[0];
+                    rateMap[dStr] = r;
+                });
+
+                for (let i = 0; i < nights; i++) {
+                    const currentDay = new Date(checkInDay);
+                    currentDay.setUTCDate(currentDay.getUTCDate() + i);
+                    const dStr = currentDay.toISOString().split('T')[0];
+                    
+                    const rateOverride = rateMap[dStr];
+                    if (rateOverride) {
+                        roomTotalStayPrice += rateOverride.price;
+                    } else {
+                        roomTotalStayPrice += dbRoom.pricePerNight;
+                    }
                 }
             }
 
             // Support for variant-specific pricing markup
             let variantMarkup = 0;
-            if (selectedRoom.variantIdx !== undefined) {
+            if (stayType !== 'hourly' && selectedRoom.variantIdx !== undefined) {
                 try {
                     const variants = typeof dbRoom.variants === 'string' ? JSON.parse(dbRoom.variants) : (dbRoom.variants || []);
                     const selectedVariant = variants[parseInt(selectedRoom.variantIdx)];

@@ -989,15 +989,16 @@ TRIP PLANNING FLOW:
 1. Understand travel intention (vacation, honeymoon, family, business, weekend, friends)
 2. Ask destination if not mentioned
 3. Ask check-in/check-out dates
-4. Ask per-night budget
+4. Ask per-night budget (e.g. in rupees ₹ or dollars $) to filter recommendations properly
 5. Ask preferences (mountain view, luxury, pool, breakfast, couple friendly, etc.)
 6. Search and recommend hotels
 
 HOTEL RECOMMENDATIONS:
-- Show 3-5 hotels with name, rating, price, amenities, location, review highlights
-- Format naturally like: "🏔 The Himalayan Escape ⭐ 4.7 📍 Shimla 💰 ₹2799/night"
-- Explain why each is recommended
-- Be honest about reviews — mention both positives and negatives
+- Show 3-5 hotels matching user's budget and preferences.
+- CRITICAL: You MUST always format the hotel name as a markdown link pointing to its ID: [Hotel Name](/hotel/ID). Example: "[Ginger Goa Candolim](/hotel/18)". If you don't use this exact markdown link format, the frontend cannot render the interactive hotel cards!
+- Format description naturally like: "🏔 [Hotel Name](/hotel/ID) ⭐ 4.7 📍 Location 💰 ₹2799/night"
+- Explain why each is recommended.
+- Be honest about reviews — mention both positives and negatives.
 
 ROOM SELECTION: When user picks a hotel, ask which room type they want. Show available rooms with prices and features.
 
@@ -1020,15 +1021,16 @@ CRITICAL RULES:
 exports.chat = async (req, res) => {
     const { messages } = req.body;
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
-        return res.json({ success: true, reply: "Hello! I'm your AI travel assistant. How can I help you plan your trip today?" });
+        return res.json({ success: true, reply: "Hello! I'm your AI travel assistant. How can I help you plan your trip today?", hotels: [] });
     }
 
     // --- Extract destination & fetch hotels ---
     let hotelContext = '';
+    let dbHotels = [];
     try {
         const destination = extractDestination(messages);
         if (destination) {
-            const hotels = await prisma.hotel.findMany({
+            dbHotels = await prisma.hotel.findMany({
                 where: {
                     OR: [
                         { city: { contains: destination } },
@@ -1040,12 +1042,13 @@ exports.chat = async (req, res) => {
                     id: true, name: true, city: true, description: true,
                     pricePerNight: true, starRating: true, guestRating: true,
                     reviewCount: true, amenities: true, mainAmenities: true, isActive: true,
+                    thumbnail: true
                 },
                 take: 20,
             });
-            if (hotels.length > 0) {
-                hotelContext = `\n\nHOTELS_DATA (real database results for ${destination}):\n${JSON.stringify(sanitizeHotels(hotels), null, 2)}\n\nUse these hotels ONLY for recommendations. Never invent hotel data.`;
-                console.log(`[AI Chat] Found ${hotels.length} hotels for ${destination}`);
+            if (dbHotels.length > 0) {
+                hotelContext = `\n\nHOTELS_DATA (real database results for ${destination}):\n${JSON.stringify(sanitizeHotels(dbHotels), null, 2)}\n\nUse these hotels ONLY for recommendations. Never invent hotel data.`;
+                console.log(`[AI Chat] Found ${dbHotels.length} hotels for ${destination}`);
             } else {
                 hotelContext = `\n\nNote: No active hotels found in our database for "${destination}". Be honest about this and suggest popular alternatives like Goa, Jaipur, Udaipur, Shimla, or Manali.`;
                 console.log(`[AI Chat] No hotels found for ${destination}`);
@@ -1059,7 +1062,7 @@ exports.chat = async (req, res) => {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
         console.error('[AI Chat] Missing GEMINI_API_KEY');
-        return res.json({ success: true, reply: "Oops 😅 I had a small issue. Please try again in a moment." });
+        return res.json({ success: true, reply: "Oops 😅 I had a small issue. Please try again in a moment.", hotels: [] });
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
@@ -1092,11 +1095,36 @@ exports.chat = async (req, res) => {
             action = { label: actionMatch[1], path: actionMatch[2] };
         }
 
-        console.log(`[AI Chat] Success with Gemini`);
-        return res.json({ success: true, reply, action });
+        // Parse exact recommended hotel IDs from the AI response text
+        const regex = /\/hotel\/(\d+)/g;
+        let match;
+        const hotelIds = [];
+        while ((match = regex.exec(reply)) !== null) {
+            hotelIds.push(parseInt(match[1]));
+        }
+
+        let recommendedHotels = [];
+        if (hotelIds.length > 0) {
+            recommendedHotels = await prisma.hotel.findMany({
+                where: {
+                    id: { in: hotelIds },
+                    isActive: true
+                },
+                select: {
+                    id: true, name: true, city: true, description: true,
+                    pricePerNight: true, starRating: true, guestRating: true,
+                    reviewCount: true, amenities: true, mainAmenities: true, isActive: true,
+                    thumbnail: true
+                }
+            });
+        }
+
+        console.log(`[AI Chat] Success with Gemini. Extracted ${recommendedHotels.length} recommended hotels.`);
+        return res.json({ success: true, reply, action, hotels: recommendedHotels });
     } catch (err) {
         lastError = err;
         console.error('[AI Chat] All attempts failed:', lastError?.message);
+        return res.json({ success: false, reply: "Sorry, I had an error generating the response.", hotels: [] });
     }
 
     let userMessage = "Oops 😅 I had a small issue. Please try again in a moment.";

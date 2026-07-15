@@ -3,6 +3,8 @@
 
 @theme {
   /* Modern premium sharp type system */
+  --font-outfit: 'Outfit', sans-serif;
+  --font-dm-sans: 'DM Sans', sans-serif;
   --font-sans: var(--font-outfit), var(--font-dm-sans), system-ui, sans-serif;
   --font-display: var(--font-outfit), var(--font-dm-sans), system-ui, sans-serif;
   --font-luxury: 'Playfair Display', serif;
