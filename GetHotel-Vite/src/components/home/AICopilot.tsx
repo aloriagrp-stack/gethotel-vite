@@ -48,67 +48,92 @@ const TypingDots = memo(function TypingDots() {
 /*  Emoji to SVG inline icon parser                                    */
 /* ------------------------------------------------------------------ */
 const parseTextWithIcons = (text: string) => {
-  let parts = text.split("**");
+  const parts = text.split("**");
   return parts.map((part, i) => {
     const isBold = i % 2 === 1;
     
+    // Brand icons: ⭐ (2b50), 📍 (1f4cc), 💰 (1f4b0), 🏔 (1f3d4)
+    // Other emojis: \p{Extended_Pictographic}
+    const regex = /(⭐|📍|💰|🏔)|(\p{Extended_Pictographic})/gu;
+    
     const subParts = [];
-    let currentText = part;
-    
-    const emojiRegex = /(⭐|📍|💰|🏔)/g;
-    let match;
     let lastIndex = 0;
+    let match;
     
-    while ((match = emojiRegex.exec(currentText)) !== null) {
+    regex.lastIndex = 0;
+    
+    while ((match = regex.exec(part)) !== null) {
       const matchIndex = match.index;
+      
       if (matchIndex > lastIndex) {
-        subParts.push(currentText.substring(lastIndex, matchIndex));
+        subParts.push(part.substring(lastIndex, matchIndex));
       }
       
-      const emoji = match[0];
-      if (emoji === "⭐") {
+      const [matchedChar, brandIcon, otherEmoji] = match;
+      
+      if (brandIcon) {
+        if (brandIcon === "⭐") {
+          subParts.push(
+            <span key={`star-${matchIndex}`} className="inline-flex items-center mx-0.5 text-amber-500 align-middle">
+              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+              </svg>
+            </span>
+          );
+        } else if (brandIcon === "📍") {
+          subParts.push(
+            <span key={`pin-${matchIndex}`} className="inline-flex items-center mx-0.5 text-red-500 align-middle">
+              <svg className="w-4 h-4 fill-none stroke-current" strokeWidth="2.5" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+            </span>
+          );
+        } else if (brandIcon === "💰") {
+          subParts.push(
+            <span key={`money-${matchIndex}`} className="inline-flex items-center mx-0.5 text-emerald-600 align-middle">
+              <svg className="w-4 h-4 fill-none stroke-current" strokeWidth="2.5" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" x2="12" y1="2" y2="22"/>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+            </span>
+          );
+        } else if (brandIcon === "🏔") {
+          subParts.push(
+            <span key={`mountain-${matchIndex}`} className="inline-flex items-center mx-0.5 text-blue-500 align-middle">
+              <svg className="w-4 h-4 fill-none stroke-current" strokeWidth="2.5" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m8 3 4 8 5-5 5 15H2L8 3z"/>
+              </svg>
+            </span>
+          );
+        }
+      } else if (otherEmoji) {
+        const hex = Array.from(otherEmoji)
+          .map(char => char.codePointAt(0)!.toString(16))
+          .filter(Boolean)
+          .join("-");
+        
+        const src = `https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/${hex}.png`;
         subParts.push(
-          <span key={`star-${matchIndex}`} className="inline-flex items-center mx-0.5 text-amber-500 align-middle">
-            <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-            </svg>
-          </span>
-        );
-      } else if (emoji === "📍") {
-        subParts.push(
-          <span key={`pin-${matchIndex}`} className="inline-flex items-center mx-0.5 text-red-500 align-middle">
-            <svg className="w-4 h-4 fill-none stroke-current" strokeWidth="2.5" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
-              <circle cx="12" cy="10" r="3"/>
-            </svg>
-          </span>
-        );
-      } else if (emoji === "💰") {
-        subParts.push(
-          <span key={`money-${matchIndex}`} className="inline-flex items-center mx-0.5 text-emerald-600 align-middle">
-            <svg className="w-4 h-4 fill-none stroke-current" strokeWidth="2.5" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" x2="12" y1="2" y2="22"/>
-              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-            </svg>
-          </span>
-        );
-      } else if (emoji === "🏔") {
-        subParts.push(
-          <span key={`mountain-${matchIndex}`} className="inline-flex items-center mx-0.5 text-blue-500 align-middle">
-            <svg className="w-4 h-4 fill-none stroke-current" strokeWidth="2.5" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
-              <path d="m8 3 4 8 5-5 5 15H2L8 3z"/>
-            </svg>
-          </span>
+          <img
+            key={`apple-emoji-${matchIndex}`}
+            src={src}
+            alt={otherEmoji}
+            className="inline-block w-5 h-5 mx-0.5 align-middle object-contain select-none"
+            onError={(e) => {
+              (e.target as HTMLElement).outerHTML = otherEmoji;
+            }}
+          />
         );
       }
       
-      lastIndex = emojiRegex.lastIndex;
+      lastIndex = regex.lastIndex;
     }
     
-    if (lastIndex < currentText.length) {
-      subParts.push(currentText.substring(lastIndex));
+    if (lastIndex < part.length) {
+      subParts.push(part.substring(lastIndex));
     }
-
+    
     return isBold ? (
       <strong key={i} className="font-semibold text-brand-600">
         {subParts}
@@ -139,7 +164,7 @@ const UserMessage = memo(function UserMessage({ text }: { text: string }) {
   return (
     <div className="flex justify-end w-full py-1">
       <div className="max-w-[80%] px-5 py-3.5 bg-gradient-to-br from-brand-500 to-brand-700 text-white text-[16px] leading-[1.6] rounded-2xl rounded-tr-sm shadow-md">
-        {text}
+        {parseTextWithIcons(text)}
       </div>
     </div>
   );
@@ -386,7 +411,7 @@ export default function AICopilot() {
         <div 
           className="fixed inset-0 z-[999] flex text-slate-800 font-sans overflow-hidden"
           style={{
-            background: "radial-gradient(circle at 50% 120%, rgba(30, 64, 175, 0.9) 0%, rgba(191, 219, 254, 0) 75%), linear-gradient(180deg, #ffffff 0%, #9fc3ff 100%)"
+            background: "radial-gradient(circle at 50% 120%, rgba(30, 64, 175, 0.6) 0%, rgba(191, 219, 254, 0) 75%), linear-gradient(180deg, #ffffff 0%, #b8d7ff 100%)"
           }}
         >
           
@@ -640,14 +665,6 @@ export default function AICopilot() {
                     }}
                     className="flex items-end gap-2 bg-white/60 backdrop-blur-md border border-white/80 focus-within:ring-2 focus-within:ring-brand-400/20 focus-within:border-brand-400/40 rounded-full px-5 py-2.5 transition-all shadow-lg shadow-slate-100/50"
                   >
-                    {/* Plus button */}
-                    <button 
-                      type="button" 
-                      className="p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-200/50 shrink-0 transition-colors"
-                      title="Add attachment"
-                    >
-                      <Plus className="w-5 h-5" />
-                    </button>
 
                     <textarea
                       ref={textareaRef}
@@ -657,9 +674,9 @@ export default function AICopilot() {
                         adjustHeight();
                       }}
                       onKeyDown={handleKeyDown}
-                      placeholder="Ask about hotels, destinations, or travel tips..."
+                      placeholder="Ask about hotels..."
                       rows={1}
-                      className="flex-1 bg-transparent py-1.5 px-1 text-sm text-slate-800 placeholder-slate-400 outline-none resize-none font-normal leading-6 max-h-[160px]"
+                      className="flex-1 bg-transparent py-1.5 px-1 text-sm text-slate-800 placeholder-slate-400 outline-none resize-none font-normal leading-6 max-h-[160px] no-scrollbar"
                     />
 
                     {/* Send button */}

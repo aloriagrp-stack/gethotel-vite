@@ -1,6 +1,7 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const prisma = require('../config/db');
 const sharp = require('sharp');
+const { sendBookingEmails } = require('../utils/emailService');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
@@ -1013,6 +1014,115 @@ CRITICAL RULES:
 - If hotels exist but none match the user's preferences, explain what's available and suggest adjusting filters.
 - Keep responses conversational, warm, and helpful.`;
 
+async function checkAndSendAiBookingEmail(reply) {
+    try {
+        // 1. Detect if booking is confirmed
+        const isConfirmed = /booking\s+(?:confirm|summary|details|id)|confirm(?:ed)?/i.test(reply) && 
+                            /email/i.test(reply);
+        if (!isConfirmed) return;
+
+        console.log('[AI Email Trigger] Detected booking confirmation in AI reply.');
+
+        // 2. Parse Email
+        const emailMatch = reply.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
+        if (!emailMatch) {
+            console.log('[AI Email Trigger] No email address found in reply. Skipping email.');
+            return;
+        }
+        const guestEmail = emailMatch[1].trim();
+
+        // 3. Parse Hotel ID from markdown link: [Name](/hotel/ID)
+        const hotelLinkMatch = reply.match(/\[([^\]]+)\]\(\/hotel\/(\d+)\)/);
+        let hotelId = null;
+        let hotelName = 'GetHotel Partner';
+        if (hotelLinkMatch) {
+            hotelName = hotelLinkMatch[1];
+            hotelId = parseInt(hotelLinkMatch[2]);
+        }
+
+        // Fetch hotel from database if ID exists
+        let hotelDb = null;
+        if (hotelId) {
+            hotelDb = await prisma.hotel.findUnique({
+                where: { id: hotelId }
+            });
+        }
+
+        const hotelObj = {
+            name: hotelDb?.name || hotelName,
+            city: hotelDb?.city || 'India',
+            address: hotelDb?.address || 'India',
+            email: hotelDb?.email || 'admin@gethotelstays.com'
+        };
+
+        // 4. Parse Guest Name
+        let guestName = 'Valued Guest';
+        const nameMatch = reply.match(/(?:Guest\s+)?Name:\s*([^\n\r*]+)/i);
+        if (nameMatch) {
+            guestName = nameMatch[1].trim();
+        } else {
+            // Try to extract name from greeting, e.g. "confirm ho gayi hai, Ajay!"
+            const greetingMatch = reply.match(/confirm ho gayi hai,\s*([A-Za-z]+)/i);
+            if (greetingMatch) {
+                guestName = greetingMatch[1].trim();
+            }
+        }
+
+        // 5. Parse Dates (Check-In & Check-Out)
+        let checkInDate = new Date();
+        let checkOutDate = new Date(Date.now() + 24 * 60 * 60 * 1000); // tomorrow
+
+        // Check if there is a date range like "18th July - 23rd July" or "20th July"
+        const dateMatch = reply.match(/(?:Dates?|Stay):\s*([^\n\r*]+)/i) || reply.match(/(?:in|on)\s+(\d+(?:st|nd|rd|th)?\s+[A-Za-z]+)/i);
+        if (dateMatch) {
+            const rawDates = dateMatch[1];
+            const dateParts = rawDates.split(/[–-]/); // Split by dash or en-dash
+            if (dateParts[0]) {
+                const parsedIn = Date.parse(dateParts[0].trim().replace(/(st|nd|rd|th)/g, ''));
+                if (!isNaN(parsedIn)) checkInDate = new Date(parsedIn);
+            }
+            if (dateParts[1]) {
+                const parsedOut = Date.parse(dateParts[1].trim().replace(/(st|nd|rd|th)/g, ''));
+                if (!isNaN(parsedOut)) checkOutDate = new Date(parsedOut);
+            } else {
+                // If only one date is mentioned, checkout is next day
+                checkOutDate = new Date(checkInDate.getTime() + 24 * 60 * 60 * 1000);
+            }
+        }
+
+        // 6. Parse Total Price
+        let totalPrice = 2500;
+        const priceMatch = reply.match(/(?:Total|Price):\s*₹?\s*([\d,]+)/i) || reply.match(/₹\s*([\d,]+)/);
+        if (priceMatch) {
+            totalPrice = parseInt(priceMatch[1].replace(/,/g, ''));
+        }
+
+        // Create the mock booking object
+        const mockBooking = {
+            id: Math.floor(Math.random() * 100000),
+            guestName,
+            guestEmail,
+            guestPhone: 'N/A',
+            hotel: hotelObj,
+            room: { name: 'Standard Room' },
+            checkIn: checkInDate,
+            checkOut: checkOutDate,
+            totalPrice,
+            amountPaid: 0 // Pay at Hotel
+        };
+
+        console.log(`[AI Email Trigger] Triggering email for booking ID: ${mockBooking.id} to ${guestEmail}`);
+        
+        // Send emails asynchronously
+        sendBookingEmails(mockBooking).catch(err => {
+            console.error('[AI Email Trigger] Error inside sendBookingEmails:', err);
+        });
+
+    } catch (e) {
+        console.error('[AI Email Trigger] Error processing booking confirmation email:', e);
+    }
+}
+
 /**
  * @desc    Public AI chat endpoint with hotel search + retry logic
  * @route   POST /api/ai/chat
@@ -1118,6 +1228,11 @@ exports.chat = async (req, res) => {
                 }
             });
         }
+
+        // Check if AI confirmed booking and trigger confirmation email
+        checkAndSendAiBookingEmail(reply).catch(err => {
+            console.error('[AI Chat] checkAndSendAiBookingEmail failed:', err);
+        });
 
         console.log(`[AI Chat] Success with Gemini. Extracted ${recommendedHotels.length} recommended hotels.`);
         return res.json({ success: true, reply, action, hotels: recommendedHotels });
