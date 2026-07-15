@@ -518,7 +518,7 @@ export default function AICopilot() {
             <div className="flex-1 flex flex-col justify-between overflow-hidden relative">
               
               {/* Scrollable messages container */}
-              <div className="flex-1 overflow-y-auto overflow-x-hidden relative scrollbar-thin px-4">
+              <div className="flex-1 overflow-y-auto overflow-x-hidden relative no-scrollbar px-4">
                 
                 {/* Collapsible Spacer (only when chat is empty to push heading down) */}
                 <div className={`transition-all duration-700 ease-in-out ${messages.length === 0 ? "h-[25vh]" : "h-0"}`} />
