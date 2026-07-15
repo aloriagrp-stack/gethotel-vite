@@ -34,10 +34,7 @@ interface ChatSession {
 /* ------------------------------------------------------------------ */
 const TypingDots = memo(function TypingDots() {
   return (
-    <div className="flex items-center gap-4 py-2 select-none">
-      <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 via-purple-500 to-amber-400 flex items-center justify-center shrink-0 shadow-sm opacity-60">
-        <span className="text-[10px] text-white">✨</span>
-      </div>
+    <div className="flex items-center py-2 select-none">
       <div className="flex items-center gap-1.5 py-2">
         <span className="w-2 h-2 bg-brand-500 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
         <span className="w-2 h-2 bg-brand-500 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
@@ -127,11 +124,8 @@ const parseTextWithIcons = (text: string) => {
 /* ------------------------------------------------------------------ */
 const AssistantMessage = memo(function AssistantMessage({ text }: { text: string }) {
   return (
-    <div className="flex gap-4 w-full py-2.5">
-      <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 via-purple-500 to-amber-400 flex items-center justify-center shrink-0 shadow-sm mt-0.5 select-none text-white text-[11px]">
-        ✨
-      </div>
-      <div className="flex-1 text-[16px] leading-[1.75] text-[#1f2937] font-normal max-w-none whitespace-pre-line tracking-wide">
+    <div className="w-full py-2.5">
+      <div className="text-[16px] leading-[1.75] text-[#1f2937] font-normal max-w-none whitespace-pre-line tracking-wide">
         {parseTextWithIcons(text)}
       </div>
     </div>
@@ -549,7 +543,7 @@ export default function AICopilot() {
                           <UserMessage text={msg.text} />
                         )}
                         {msg.action && (
-                          <div className="mt-3 pl-12">
+                          <div className="mt-3">
                             <button
                               onClick={() => navigateTo(msg.action!.path)}
                               className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white text-[11px] font-bold uppercase tracking-wider rounded-xl shadow-sm active:scale-[0.97] transition-all"
@@ -564,7 +558,7 @@ export default function AICopilot() {
                         )}
 
                         {msg.hotels && msg.hotels.length > 0 && (
-                          <div className="mt-4 pl-13 select-none">
+                          <div className="mt-4 select-none">
                             <div className="flex gap-4 overflow-x-auto pb-3 scrollbar-thin max-w-full">
                               {msg.hotels.map((h) => (
                                 <div
