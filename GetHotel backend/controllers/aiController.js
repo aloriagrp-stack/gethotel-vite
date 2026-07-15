@@ -956,25 +956,38 @@ function extractDestination(messages) {
 /*  Sanitize hotel data for AI context                                 */
 /* ------------------------------------------------------------------ */
 function sanitizeHotels(hotels) {
-    return hotels.map(h => ({
-        id: h.id,
-        name: h.name,
-        city: h.city,
-        description: (h.description || '').slice(0, 300),
-        pricePerNight: h.pricePerNight,
-        starRating: h.starRating || 0,
-        guestRating: h.guestRating || 0,
-        reviewCount: h.reviewCount || 0,
-        amenities: (() => {
-            try { return typeof h.amenities === 'string' ? JSON.parse(h.amenities) : (h.amenities || []); }
-            catch { return []; }
-        })(),
-        mainAmenities: (() => {
-            try { return typeof h.mainAmenities === 'string' ? JSON.parse(h.mainAmenities) : (h.mainAmenities || []); }
-            catch { return []; }
-        })(),
-        isActive: h.isActive,
-    }));
+    return hotels.map(h => {
+        const activeRooms = h.room || [];
+        const cheapestPrice = activeRooms.length > 0
+            ? Math.min(...activeRooms.map(r => r.pricePerNight))
+            : h.pricePerNight;
+
+        return {
+            id: h.id,
+            name: h.name,
+            city: h.city,
+            description: (h.description || '').slice(0, 300),
+            pricePerNight: cheapestPrice,
+            starRating: h.starRating || 0,
+            guestRating: h.guestRating || 0,
+            reviewCount: h.reviewCount || 0,
+            rooms: activeRooms.map(r => ({
+                id: r.id,
+                name: r.name,
+                pricePerNight: r.pricePerNight,
+                maxOccupancy: r.maxOccupancy
+            })),
+            amenities: (() => {
+                try { return typeof h.amenities === 'string' ? JSON.parse(h.amenities) : (h.amenities || []); }
+                catch { return []; }
+            })(),
+            mainAmenities: (() => {
+                try { return typeof h.mainAmenities === 'string' ? JSON.parse(h.mainAmenities) : (h.mainAmenities || []); }
+                catch { return []; }
+            })(),
+            isActive: h.isActive,
+        };
+    });
 }
 
 /* ------------------------------------------------------------------ */
@@ -992,23 +1005,27 @@ TRIP PLANNING FLOW:
 3. Ask check-in/check-out dates
 4. Ask per-night budget (e.g. in rupees ₹ or dollars $) to filter recommendations properly
 5. Ask preferences (mountain view, luxury, pool, breakfast, couple friendly, etc.)
-6. Search and recommend hotels
+6. Search and recommend hotels (always show the cheapest active room's price as the starting price)
 
 HOTEL RECOMMENDATIONS:
 - Show 3-5 hotels matching user's budget and preferences.
 - CRITICAL: You MUST always format the hotel name as a markdown link pointing to its ID: [Hotel Name](/hotel/ID). Example: "[Ginger Goa Candolim](/hotel/18)". If you don't use this exact markdown link format, the frontend cannot render the interactive hotel cards!
-- Format description naturally like: "🏔 [Hotel Name](/hotel/ID) ⭐ 4.7 📍 Location 💰 ₹2799/night"
+- Format description naturally like: "🏔 [Hotel Name](/hotel/ID) ⭐ 4.7 📍 Location 💰 ₹2799/night" (stating it is the price of their cheapest room)
 - Explain why each is recommended.
 - Be honest about reviews — mention both positives and negatives.
 
-ROOM SELECTION: When user picks a hotel, ask which room type they want. Show available rooms with prices and features.
+ROOM SELECTION: When user picks a hotel, list all available room types and their pricing (from the rooms list in HOTELS_DATA). Ask which room type they want.
 
-BOOKING: Collect full name, email, phone, guests count, special requests. Confirm details before proceeding.
+BOOKING FLOW & PAYMENT:
+1. Collect full name, email, phone, guests count, special requests.
+2. Ask user's payment preference: "Online payment" or "Pay at Hotel".
+3. Present booking summary with name, email, hotel, dates, guests, price, and selected payment method (Online Payment or Pay at Hotel). Ask user to confirm.
+4. Once confirmed, state that the booking is confirmed and details have been sent.
 
-CONVERSATION MEMORY: Remember destination, budget, dates, preferences, selected hotel/room, guest details throughout the conversation. Never ask the same question twice.
+CONVERSATION MEMORY: Remember destination, budget, dates, preferences, selected hotel/room, guest details, and payment method throughout the conversation. Never ask the same question twice.
 
 CRITICAL RULES:
-- NEVER invent hotel data. Only use hotels provided in the HOTELS_DATA below.
+- NEVER invent hotel or room data. Only use hotels and rooms provided in the HOTELS_DATA below.
 - NEVER make up prices, ratings, reviews, or amenities.
 - If no matching hotels exist in HOTELS_DATA, say so honestly and ask the user to try a different destination or criteria.
 - If hotels exist but none match the user's preferences, explain what's available and suggest adjusting filters.
@@ -1097,6 +1114,20 @@ async function checkAndSendAiBookingEmail(reply) {
             totalPrice = parseInt(priceMatch[1].replace(/,/g, ''));
         }
 
+        // 7. Parse Payment Method & Room Type
+        let amountPaid = 0; // Default to Pay at Hotel
+        const isOnlinePayment = /online\s+pay|pay\s+online|online\s+payment|paid\s+online/i.test(reply);
+        if (isOnlinePayment) {
+            amountPaid = totalPrice;
+        }
+
+        let roomTypeName = 'Standard Room';
+        // Try to match selected room type, e.g. Deluxe Double Room, etc.
+        const roomMatch = reply.match(/(?:Room|Room Type):\s*([^\n\r*]+)/i);
+        if (roomMatch) {
+            roomTypeName = roomMatch[1].trim();
+        }
+
         // Create the mock booking object
         const mockBooking = {
             id: Math.floor(Math.random() * 100000),
@@ -1104,11 +1135,11 @@ async function checkAndSendAiBookingEmail(reply) {
             guestEmail,
             guestPhone: 'N/A',
             hotel: hotelObj,
-            room: { name: 'Standard Room' },
+            room: { name: roomTypeName },
             checkIn: checkInDate,
             checkOut: checkOutDate,
             totalPrice,
-            amountPaid: 0 // Pay at Hotel
+            amountPaid
         };
 
         console.log(`[AI Email Trigger] Triggering email for booking ID: ${mockBooking.id} to ${guestEmail}`);
@@ -1152,7 +1183,16 @@ exports.chat = async (req, res) => {
                     id: true, name: true, city: true, description: true,
                     pricePerNight: true, starRating: true, guestRating: true,
                     reviewCount: true, amenities: true, mainAmenities: true, isActive: true,
-                    thumbnail: true
+                    thumbnail: true,
+                    room: {
+                        where: { status: 'active' },
+                        select: {
+                            id: true,
+                            name: true,
+                            pricePerNight: true,
+                            maxOccupancy: true
+                        }
+                    }
                 },
                 take: 20,
             });
@@ -1215,7 +1255,7 @@ exports.chat = async (req, res) => {
 
         let recommendedHotels = [];
         if (hotelIds.length > 0) {
-            recommendedHotels = await prisma.hotel.findMany({
+            const dbRecommended = await prisma.hotel.findMany({
                 where: {
                     id: { in: hotelIds },
                     isActive: true
@@ -1224,8 +1264,37 @@ exports.chat = async (req, res) => {
                     id: true, name: true, city: true, description: true,
                     pricePerNight: true, starRating: true, guestRating: true,
                     reviewCount: true, amenities: true, mainAmenities: true, isActive: true,
-                    thumbnail: true
+                    thumbnail: true,
+                    room: {
+                        where: { status: 'active' },
+                        select: {
+                            id: true,
+                            name: true,
+                            pricePerNight: true,
+                            maxOccupancy: true
+                        }
+                    }
                 }
+            });
+
+            recommendedHotels = dbRecommended.map(h => {
+                const cheapestPrice = h.room.length > 0
+                    ? Math.min(...h.room.map(r => r.pricePerNight))
+                    : h.pricePerNight;
+                return {
+                    id: h.id,
+                    name: h.name,
+                    city: h.city,
+                    description: h.description,
+                    pricePerNight: cheapestPrice,
+                    starRating: h.starRating,
+                    guestRating: h.guestRating,
+                    reviewCount: h.reviewCount,
+                    amenities: h.amenities,
+                    mainAmenities: h.mainAmenities,
+                    isActive: h.isActive,
+                    thumbnail: h.thumbnail
+                };
             });
         }
 
