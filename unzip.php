@@ -36,6 +36,26 @@ if (isset($_GET['action']) && $_GET['action'] === 'debug') {
     exit;
 }
 
+if (isset($_GET['action']) && $_GET['action'] === 'cleanup') {
+    header('Content-Type: text/plain');
+    $dir = '/home/vgyuvmpi/ai.gethotelstays.com/ai.gethotelstays.com';
+    if (is_dir($dir)) {
+        $files = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::CHILD_FIRST
+        );
+        foreach ($files as $fileinfo) {
+            $todo = ($fileinfo->isDir() ? 'rmdir' : 'unlink');
+            $todo($fileinfo->getRealPath());
+        }
+        rmdir($dir);
+        echo "Cleaned up nested subdomain folder successfully!\n";
+    } else {
+        echo "Nested subdomain folder not found or already deleted.\n";
+    }
+    exit;
+}
+
 if (isset($_GET['action']) && $_GET['action'] === 'restart') {
     header('Content-Type: text/plain');
     
