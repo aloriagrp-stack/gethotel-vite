@@ -13,12 +13,12 @@ if (isset($_GET['action']) && $_GET['action'] === 'debug') {
             echo "DATABASE_URL exists\n";
             
             // Connect using simple PDO to check rooms
-            // mysql://user:pass@host:port/dbname
-            if (preg_match('/mysql:\/\/([^:]+):([^@]*)\@([^:]+):(\d+)\/(.+)/', $dbUrl, $matches)) {
+            // mysql://user:pass@host:port/dbname or mysql://user:pass@host/dbname
+            if (preg_match('/mysql:\/\/([^:]+):([^@]*)\@([^:\/]+)(?::(\d+))?\/([^?]+)/', $dbUrl, $matches)) {
                 $user = $matches[1];
                 $pass = $matches[2];
                 $host = $matches[3];
-                $port = $matches[4];
+                $port = !empty($matches[4]) ? $matches[4] : '3306';
                 $dbname = explode('?', $matches[5])[0];
                 
                 $pdo = new PDO("mysql:host=$host;port=$port;dbname=$dbname;charset=utf8", $user, $pass);
