@@ -6,31 +6,22 @@ if (isset($_GET['action']) && $_GET['action'] === 'debug') {
     
     echo "=== scandir /home/vgyuvmpi ===\n";
     if (is_dir('/home/vgyuvmpi')) {
-        $dirs = scandir('/home/vgyuvmpi');
-        foreach ($dirs as $d) {
-            if ($d !== '.' && $d !== '..' && is_dir("/home/vgyuvmpi/$d")) {
-                echo "Folder: $d\n";
-            }
+        $files = scandir('/home/vgyuvmpi');
+        foreach ($files as $f) {
+            echo (is_dir("/home/vgyuvmpi/$f") ? "[DIR] " : "[FILE] ") . "$f\n";
         }
     } else {
-        echo "/home/vgyuvmpi is not a directory or is not readable\n";
+        echo "/home/vgyuvmpi is not readable\n";
     }
     
-    $file = '/home/vgyuvmpi/routes/adminRoutes.js';
-    if (file_exists($file)) {
-        echo "=== /home/vgyuvmpi/routes/adminRoutes.js ===\n";
-        echo file_get_contents($file);
+    echo "\n=== scandir /home/vgyuvmpi/public_html ===\n";
+    if (is_dir('/home/vgyuvmpi/public_html')) {
+        $files = scandir('/home/vgyuvmpi/public_html');
+        foreach ($files as $f) {
+            echo (is_dir("/home/vgyuvmpi/public_html/$f") ? "[DIR] " : "[FILE] ") . "$f\n";
+        }
     } else {
-        echo "routes/adminRoutes.js not found at: $file\n";
-    }
-    
-    $file2 = '/home/vgyuvmpi/controllers/adminController.js';
-    if (file_exists($file2)) {
-        echo "\n=== /home/vgyuvmpi/controllers/adminController.js (first 50 lines) ===\n";
-        $lines = file($file2);
-        echo implode("", array_slice($lines, 0, 50));
-    } else {
-        echo "controllers/adminController.js not found\n";
+        echo "/home/vgyuvmpi/public_html is not readable\n";
     }
     exit;
 }
