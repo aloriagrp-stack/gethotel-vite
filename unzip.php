@@ -4,7 +4,56 @@
 if (isset($_GET['action']) && $_GET['action'] === 'debug') {
     header('Content-Type: text/plain');
     
-    echo "=== scandir /home/vgyuvmpi ===\n";
+    // Include Prisma or database credentials to verify live rooms
+    try {
+        $envFile = '/home/vgyuvmpi/gethotel_backend/.env';
+        if (file_exists($envFile)) {
+            $env = parse_ini_file($envFile);
+            $dbUrl = isset($env['DATABASE_URL']) ? $env['DATABASE_URL'] : '';
+            echo "DATABASE_URL exists\n";
+            
+            // Connect using simple PDO to check rooms
+            // mysql://user:pass@host:port/dbname
+            if (preg_match('/mysql:\/\/([^:]+):([^@]*)\@([^:]+):(\d+)\/(.+)/', $dbUrl, $matches)) {
+                $user = $matches[1];
+                $pass = $matches[2];
+                $host = $matches[3];
+                $port = $matches[4];
+                $dbname = explode('?', $matches[5])[0];
+                
+                $pdo = new PDO("mysql:host=$host;port=$port;dbname=$dbname;charset=utf8", $user, $pass);
+                $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                
+                echo "=== PDO Connected successfully ===\n";
+                
+                // Get Hotel City Star New Delhi ID and Rooms
+                $stmt = $pdo->prepare("SELECT id, name FROM hotel WHERE name LIKE '%City Star%' LIMIT 1");
+                $stmt->execute();
+                $hotel = $stmt->fetch(PDO::FETCH_ASSOC);
+                if ($hotel) {
+                    echo "Found Hotel: " . $hotel['name'] . " (ID: " . $hotel['id'] . ")\n";
+                    
+                    $stmt2 = $pdo->prepare("SELECT id, name, status, pricePerNight FROM room WHERE hotelId = ?");
+                    $stmt2->execute([$hotel['id']]);
+                    $rooms = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+                    echo "Total Rooms: " . count($rooms) . "\n";
+                    foreach ($rooms as $r) {
+                        echo "Room ID: " . $r['id'] . " | Name: " . $r['name'] . " | Status: " . $r['status'] . " | Price: " . $r['pricePerNight'] . "\n";
+                    }
+                } else {
+                    echo "Hotel City Star not found in DB\n";
+                }
+            } else {
+                echo "DATABASE_URL pattern match failed\n";
+            }
+        } else {
+            echo ".env not found at: $envFile\n";
+        }
+    } catch (Throwable $e) {
+        echo "DB Check Error: " . $e->getMessage() . "\n";
+    }
+    
+    echo "\n=== scandir /home/vgyuvmpi ===\n";
     if (is_dir('/home/vgyuvmpi')) {
         $files = scandir('/home/vgyuvmpi');
         foreach ($files as $f) {
@@ -12,26 +61,6 @@ if (isset($_GET['action']) && $_GET['action'] === 'debug') {
         }
     } else {
         echo "/home/vgyuvmpi is not readable\n";
-    }
-    
-    echo "\n=== scandir /home/vgyuvmpi/public_html ===\n";
-    if (is_dir('/home/vgyuvmpi/public_html')) {
-        $files = scandir('/home/vgyuvmpi/public_html');
-        foreach ($files as $f) {
-            echo (is_dir("/home/vgyuvmpi/public_html/$f") ? "[DIR] " : "[FILE] ") . "$f\n";
-        }
-    } else {
-        echo "/home/vgyuvmpi/public_html is not readable\n";
-    }
-
-    echo "\n=== scandir /home/vgyuvmpi/ai.gethotelstays.com ===\n";
-    if (is_dir('/home/vgyuvmpi/ai.gethotelstays.com')) {
-        $files = scandir('/home/vgyuvmpi/ai.gethotelstays.com');
-        foreach ($files as $f) {
-            echo (is_dir("/home/vgyuvmpi/ai.gethotelstays.com/$f") ? "[DIR] " : "[FILE] ") . "$f\n";
-        }
-    } else {
-        echo "/home/vgyuvmpi/ai.gethotelstays.com is not readable\n";
     }
     exit;
 }
