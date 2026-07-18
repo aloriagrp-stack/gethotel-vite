@@ -23,6 +23,16 @@ if (isset($_GET['action']) && $_GET['action'] === 'debug') {
     } else {
         echo "/home/vgyuvmpi/public_html is not readable\n";
     }
+
+    echo "\n=== scandir /home/vgyuvmpi/ai.gethotelstays.com ===\n";
+    if (is_dir('/home/vgyuvmpi/ai.gethotelstays.com')) {
+        $files = scandir('/home/vgyuvmpi/ai.gethotelstays.com');
+        foreach ($files as $f) {
+            echo (is_dir("/home/vgyuvmpi/ai.gethotelstays.com/$f") ? "[DIR] " : "[FILE] ") . "$f\n";
+        }
+    } else {
+        echo "/home/vgyuvmpi/ai.gethotelstays.com is not readable\n";
+    }
     exit;
 }
 
