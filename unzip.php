@@ -53,6 +53,19 @@ if (isset($_GET['action']) && $_GET['action'] === 'debug') {
         echo "DB Check Error: " . $e->getMessage() . "\n";
     }
     
+    try {
+        $file = '/home/vgyuvmpi/gethotel_backend/controllers/aiController.js';
+        if (file_exists($file)) {
+            echo "\n=== aiController.js (lines 950-1080) ===\n";
+            $lines = file($file);
+            echo implode("", array_slice($lines, 950, 130));
+        } else {
+            echo "aiController.js not found\n";
+        }
+    } catch (Throwable $e) {
+        echo "Error reading aiController.js: " . $e->getMessage() . "\n";
+    }
+    
     echo "\n=== scandir /home/vgyuvmpi ===\n";
     if (is_dir('/home/vgyuvmpi')) {
         $files = scandir('/home/vgyuvmpi');
