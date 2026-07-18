@@ -9,6 +9,7 @@ import { cn, safeParse } from "@/lib/utils";
 import { adminApi, hotelApi } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
 import AdminReviewImporter from "./AdminReviewImporter";
+import AdminBulkOnboarder from "./AdminBulkOnboarder";
 
 interface AdminAICopilotProps {
     hotels: any[];
@@ -54,7 +55,7 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
     const [loadingRoomsPercent, setLoadingRoomsPercent] = useState<number | null>(null);
     
     // AI Review Importer states
-    const [activeSubTab, setActiveSubTab] = useState<"rooms" | "reviews">("rooms");
+    const [activeSubTab, setActiveSubTab] = useState<"rooms" | "reviews" | "bulk">("rooms");
     const [confirmModal, setConfirmModal] = useState<{
         show: boolean;
         messageId: string;
@@ -673,6 +674,17 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                     )}
                 >
                     Import Reviews (AI)
+                </button>
+                <button
+                    onClick={() => setActiveSubTab("bulk")}
+                    className={cn(
+                        "py-3 text-xs font-black uppercase tracking-wider border-b-2 transition-all cursor-pointer",
+                        activeSubTab === "bulk"
+                            ? "border-brand-600 text-brand-600"
+                            : "border-transparent text-slate-400 hover:text-slate-600"
+                    )}
+                >
+                    Bulk Onboard (JSON)
                 </button>
             </div>
 
@@ -1338,12 +1350,23 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                 </div>
             </div>
             </>
-            ) : (
+            ) : activeSubTab === "reviews" ? (
                 <div className="flex-1 overflow-y-auto p-6 bg-slate-50/30 space-y-6">
                     <AdminReviewImporter 
                         hotels={hotels} 
                         hotelId={selectedHotelId} 
                         onHotelIdChange={(id) => setSelectedHotelId(id)}
+                    />
+                </div>
+            ) : (
+                <div className="flex-1 overflow-y-auto p-6 bg-slate-50/30 space-y-6">
+                    <AdminBulkOnboarder 
+                        onSuccess={() => {
+                            // Automatically reload window/hotels list
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1500);
+                        }}
                     />
                 </div>
             )}
