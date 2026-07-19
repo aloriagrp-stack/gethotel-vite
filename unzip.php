@@ -10,7 +10,8 @@ if (isset($_GET['action']) && $_GET['action'] === 'debug') {
         if (file_exists($envFile)) {
             $env = parse_ini_file($envFile);
             $dbUrl = isset($env['DATABASE_URL']) ? $env['DATABASE_URL'] : '';
-            echo "DATABASE_URL exists\n";
+            echo "DATABASE_URL exists (length: " . strlen($dbUrl) . ")\n";
+            echo "DATABASE_URL prefix: " . substr($dbUrl, 0, 35) . "\n";
             
             // Connect using simple PDO to check rooms
             // mysql://user:pass@host:port/dbname or mysql://user:pass@host/dbname
