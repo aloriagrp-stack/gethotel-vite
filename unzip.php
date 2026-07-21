@@ -158,6 +158,24 @@ if (isset($_GET['action']) && $_GET['action'] === 'sync_backend') {
     exit;
 }
 
+if (isset($_GET['action']) && $_GET['action'] === 'check_package') {
+    header('Content-Type: text/plain');
+    $paths = [
+        '/home/vgyuvmpi/package.json',
+        '/home/vgyuvmpi/gethotel_backend/package.json'
+    ];
+    foreach ($paths as $path) {
+        if (file_exists($path)) {
+            echo "=== $path ===\n";
+            $content = json_decode(file_get_contents($path), true);
+            echo "main: " . ($content['main'] ?? 'not set') . "\n";
+            echo "start: " . ($content['scripts']['start'] ?? 'not set') . "\n";
+            echo "server: " . ($content['scripts']['server'] ?? 'not set') . "\n";
+        }
+    }
+    exit;
+}
+
 if (isset($_GET['action']) && $_GET['action'] === 'read_serverjs') {
     header('Content-Type: text/plain');
     $paths = [
@@ -181,7 +199,24 @@ if (isset($_GET['action']) && $_GET['action'] === 'read_serverjs') {
             } else {
                 echo "CONTAINS /api/ai/rooms route: NO\n";
             }
+            if (strpos($content, 'mountAiRoutes') !== false) {
+                echo "CONTAINS mountAiRoutes function: YES\n";
+            } else {
+                echo "CONTAINS mountAiRoutes function: NO\n";
+            }
+            if (strpos($content, 'prefix}/ai/') !== false) {
+                echo "CONTAINS template literal prefix route: YES\n";
+            } else {
+                echo "CONTAINS template literal prefix route: NO\n";
+            }
             echo "First 100 chars: " . substr($content, 0, 100) . "\n";
+            // Show lines containing debug-hotels or mountAiRoutes
+            $lines = file($path);
+            foreach ($lines as $i => $line) {
+                if (strpos($line, 'debug-hotels') !== false || strpos($line, 'mountAiRoutes') !== false) {
+                    echo "L" . ($i+1) . ": " . $line;
+                }
+            }
         } else {
             echo "=== $path === NOT FOUND\n";
         }
