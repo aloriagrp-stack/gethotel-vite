@@ -452,6 +452,8 @@ const mountCriticalRoutes = (prefix) => {
 // AI chat routes mounted inline so they work even if routes/aiChatRoutes.js is stale on server
 // Registered with both /api/ai and /ai prefixes to match frontend calls
 const prisma = require('./config/db');
+app.get('/api/ai/ping', (req, res) => res.json({ pong: true, time: Date.now() }));
+app.get('/ai/ping', (req, res) => res.json({ pong: true, time: Date.now() }));
 const mountAiRoutes = (prefix) => {
     app.get(`${prefix}/ai/debug-hotels`, async (req, res) => {
         try {
