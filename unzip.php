@@ -1,6 +1,32 @@
 <?php
 // PHP Unzip Helper Script for GetHotelStays deployment
 
+if (isset($_GET['action']) && $_GET['action'] === 'extract_ai') {
+    header('Content-Type: text/plain');
+    $aiZipFile = '/home/vgyuvmpi/ai.gethotelstays.com/ai-frontend.zip';
+    $aiExtractTo = '/home/vgyuvmpi/ai.gethotelstays.com/';
+
+    if (!file_exists($aiZipFile)) {
+        echo 'AI_ZIP_NOT_FOUND';
+        exit;
+    }
+
+    $zip = new ZipArchive;
+    if ($zip->open($aiZipFile) === TRUE) {
+        $result = $zip->extractTo($aiExtractTo);
+        $zip->close();
+        if ($result) {
+            unlink($aiZipFile);
+            echo 'AI_DEPLOY_SUCCESS';
+        } else {
+            echo 'AI_EXTRACT_FAILED';
+        }
+    } else {
+        echo 'AI_ZIP_OPEN_FAILED';
+    }
+    exit;
+}
+
 if (isset($_GET['action']) && $_GET['action'] === 'debug') {
     header('Content-Type: text/plain');
     

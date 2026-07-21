@@ -5,6 +5,16 @@ const { sendBookingEmails } = require('../utils/emailService');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const Razorpay = require('razorpay');
+const jwt = require('jsonwebtoken');
+
+let razorpay;
+if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+    razorpay = new Razorpay({
+        key_id: process.env.RAZORPAY_KEY_ID,
+        key_secret: process.env.RAZORPAY_KEY_SECRET,
+    });
+}
 
 // Helper to strip script/style/HTML tags to extract readable text content
 const cleanHtmlText = (html) => {
@@ -353,23 +363,57 @@ Hotel ki average rating ab update hokar **⭐${avgRating}** (total ${allReviews.
             }
         }
 
-        // Prepare existing rooms context
+        // Prepare existing rooms context from DB directly to include up-to-date dynamic daily rates!
         let existingRoomsContext = "";
-        if (Array.isArray(existingRooms) && existingRooms.length > 0) {
-            const simplifiedRooms = existingRooms.map(r => ({
-                id: r.id,
-                name: r.name,
-                description: r.description,
-                pricePerNight: r.pricePerNight,
-                maxOccupancy: r.maxOccupancy,
-                bedConfiguration: r.bedConfiguration,
-                sizeM2: r.sizeM2,
-                totalInventory: r.totalInventory,
-                amenities: Array.isArray(r.amenities) ? r.amenities : (typeof r.amenities === 'string' ? JSON.parse(r.amenities || "[]") : []),
-                images: Array.isArray(r.images) ? r.images : (typeof r.images === 'string' ? JSON.parse(r.images || "[]") : []),
-                variants: typeof r.variants === 'string' ? JSON.parse(r.variants || "[]") : (Array.isArray(r.variants) ? r.variants : [])
-            }));
-            existingRoomsContext = `The hotel currently has the following existing rooms configured in the database:\n${JSON.stringify(simplifiedRooms, null, 2)}\n`;
+        try {
+            const dbRooms = await prisma.room.findMany({
+                where: { hotelId: Number(hotelId) },
+                include: {
+                    dailyrate: {
+                        where: {
+                            date: {
+                                gte: new Date(new Date().setHours(0,0,0,0))
+                            }
+                        },
+                        orderBy: {
+                            date: 'asc'
+                        },
+                        take: 30
+                    }
+                }
+            });
+
+            if (dbRooms && dbRooms.length > 0) {
+                const simplifiedRooms = dbRooms.map(r => {
+                    const activeOverrides = (r.dailyrate || []).map(dr => ({
+                        date: dr.date.toISOString().split('T')[0],
+                        priceOverride: dr.price,
+                        availableOverride: dr.available
+                    }));
+
+                    return {
+                        id: r.id,
+                        name: r.name,
+                        description: r.description,
+                        pricePerNight: r.pricePerNight,
+                        maxOccupancy: r.maxOccupancy,
+                        bedConfiguration: r.bedConfiguration,
+                        sizeM2: r.sizeM2,
+                        totalInventory: r.totalInventory,
+                        amenities: Array.isArray(r.amenities) ? r.amenities : (typeof r.amenities === 'string' ? JSON.parse(r.amenities || "[]") : []),
+                        images: Array.isArray(r.images) ? r.images : (typeof r.images === 'string' ? JSON.parse(r.images || "[]") : []),
+                        variants: typeof r.variants === 'string' ? JSON.parse(r.variants || "[]") : (Array.isArray(r.variants) ? r.variants : []),
+                        activeDailyRateOverrides: activeOverrides
+                    };
+                });
+                existingRoomsContext = `The hotel currently has the following existing rooms configured in the database (with dynamic daily rate overrides):\n${JSON.stringify(simplifiedRooms, null, 2)}\n`;
+            }
+        } catch (dbErr) {
+            console.error("Failed to query dbRooms for context:", dbErr);
+            // fallback to client-passed existingRooms if query fails
+            if (Array.isArray(existingRooms) && existingRooms.length > 0) {
+                existingRoomsContext = `The hotel currently has the following existing rooms configured in the database:\n${JSON.stringify(existingRooms, null, 2)}\n`;
+            }
         }
 
         // Combine inputs
@@ -463,28 +507,36 @@ DISCUSSION & CONVERSATION RULES:
 
 LANGUAGE RULES:
 1. **Conversational Reply (the "reply" field)**:
-   - By default, speak and reply in **English**.
-   - If the user explicitly asks you to speak in Hinglish (e.g., "Hinglish me baat kar" or similar), or if you are replying to Hinglish messages (e.g., "images add kar sakta hai /"), you MUST reply in natural, friendly **Hinglish** using Latin script (e.g., "Haan bilkul! Aap screen ke niche paperclip button se images attach kar sakte hain. Aap suggestions cards par directly dynamically bhi images upload kar sakte hain...").
-   - **CRITICAL**: Never write any conversational reply using Devanagari/Hindi script (e.g., avoid "सूट" or "मैं आपका सहायक हूँ" in the reply). Use only Latin characters (English/Hinglish text).
+   - **CRITICAL**: Detect the language and writing script (Latin, Devanagari, etc.) used by the user in their prompt or conversation history, and reply in the **EXACT SAME language, script, and tone** (whether English, Hinglish, Hindi, Spanish, or any other global language).
+   - If the user uses English, reply in English.
+   - If the user uses Hinglish (e.g., "room setup kar de"), reply in Hinglish.
+   - If the user uses Hindi script (e.g., "कमरे जोड़ें"), reply in Hindi script.
+   - If the user uses Spanish, reply in Spanish.
+   - Adapt dynamically to whatever language they choose.
 2. **Room Details (inside the "rooms" array)**:
    - **CRITICAL**: Every single field inside the "rooms" array (such as room name, description, bedConfiguration, variants meal plan names, cancellation policies, and parsed amenities) MUST ALWAYS be generated in **STRICTLY English**.
    - Absolutely NO Devanagari characters, and NO Hinglish allowed inside the "rooms" array fields. For example, write "Suite" instead of "सूट", "1 King Bed" instead of "1 किंग साइज़ बेड", and "Air conditioning" instead of "एयर कंडीशनर".
 
 Your tasks:
-1. If the user is just greeting you, asking questions, or discussing general details, respond conversationally in the "reply" field in a friendly, personalized manner. Keep "rooms" as an empty array [].
-2. If the user provides hotel details, description text, or a URL context and asks to extract, draft, or list room categories:
+1. If the user is just greeting you, asking general questions, or discussing details which DO NOT require showing or listing rooms, respond conversationally in the "reply" field. Keep "rooms" as an empty array [].
+2. If the user asks to see, show, list, view, or display the rooms (e.g. "rooms dikhao", "rooms show karo", "show rooms"):
+   - Populate the "rooms" array with all the existing rooms configured in the database (preserving their database "id" fields exactly).
+   - Write a friendly reply in the "reply" field listing the rooms and inviting them to review or edit them.
+3. If the user asks about room pricing:
+   - Always check the "activeDailyRateOverrides" property of the rooms. If there are active overrides for specific dates (e.g. ₹2), emphasize these promo rates in your conversational reply instead of only quoting the base price (e.g., ₹7500)! Tell the user that the rates have been overridden dynamically for those dates.
+4. If the user provides hotel details, description text, or a URL context and asks to extract, draft, or list room categories:
    - Analyze the text and extract all listed room categories.
    - For each room category, populate the "rooms" array following the schema rules in strictly English.
    - Summarize what you found in a friendly, conversational manner in the "reply" field.
-3. If the user asks to edit, update, modify, or delete rooms from the list of existing rooms (provided in the "Existing Rooms Context"):
+5. If the user asks to edit, update, modify, or delete rooms from the list of existing rooms (provided in the "Existing Rooms Context"):
    - Read the existing rooms list and apply the requested changes.
    - Output the resulting full list of rooms (both unmodified rooms and modified rooms) in the "rooms" array.
    - **CRITICAL**: For any room that already exists in the "Existing Rooms Context", you MUST preserve its database "id" field exactly in the output. This allows the backend to update the existing record instead of creating a duplicate.
    - For new room categories, do not include an "id" or set it to null.
    - Explain what edits were performed in the "reply" field.
-4. If the user asks you to look up, search, or research a hotel (e.g., "search Google for Hotel Gold Souk rooms"), or if you need to find fresh details/listings for the property on the internet, utilize your Google Search tool to find relevant travel listing web pages (e.g., Booking.com, Agoda, MakeMyTrip). Process the search results to extract, update, or structure the rooms.
-5. If the user explicitly asks you to delete, clear, or remove all rooms/categories of the hotel, set the "clearAllRooms" boolean property to true, set "rooms" as an empty array [], and explain the deletion in the "reply" field.
-6. **NEW IMAGES ATTACHMENT**: If the user has uploaded new images (provided in the "New Attached Images Context"), you should suggest attaching these images to the appropriate room categories by listing their exact relative paths inside the "images" array for those room categories. Tell the user in your reply to verify these images and decide which one should be Primary vs Gallery in the interactive UI.
+6. If the user asks you to look up, search, or research a hotel (e.g., "search Google for Hotel Gold Souk rooms"), or if you need to find fresh details/listings for the property on the internet, utilize your Google Search tool to find relevant travel listing web pages (e.g., Booking.com, Agoda, MakeMyTrip). Process the search results to extract, update, or structure the rooms.
+7. If the user explicitly asks you to delete, clear, or remove all rooms/categories of the hotel, set the "clearAllRooms" boolean property to true, set "rooms" as an empty array [], and explain the deletion in the "reply" field.
+8. **NEW IMAGES ATTACHMENT**: If the user has uploaded new images (provided in the "New Attached Images Context"), you should suggest attaching these images to the appropriate room categories by listing their exact relative paths inside the "images" array for those room categories. Tell the user in your reply to verify these images and decide which one should be Primary vs Gallery in the interactive UI.
 
 For each room category:
 - **CRITICAL NAME MATCHING**: The room names ("name" field) MUST match the exact names of the room categories as parsed from the OTA link context (e.g., if the link context says "Standard Double or Twin Room", use exactly "Standard Double or Twin Room", do not change, shorten, or genericise it).
@@ -958,24 +1010,85 @@ function extractDestination(messages) {
 function sanitizeHotels(hotels) {
     return hotels.map(h => {
         const activeRooms = h.room || [];
-        const cheapestPrice = activeRooms.length > 0
-            ? Math.min(...activeRooms.map(r => r.pricePerNight))
-            : h.pricePerNight;
+
+        // Calculate cheapest price considering daily rate overrides
+        let cheapestPrice = h.pricePerNight;
+        let promotionalPrice = null;
+
+        if (activeRooms.length > 0) {
+            cheapestPrice = Math.min(...activeRooms.map(r => r.pricePerNight));
+
+            // Check if any room has active daily rate overrides with lower prices
+            const today = new Date().toISOString().split('T')[0];
+            let lowestOverridePrice = Infinity;
+            activeRooms.forEach(r => {
+                if (r.dailyrate && Array.isArray(r.dailyrate)) {
+                    r.dailyrate.forEach(dr => {
+                        const drDate = dr.date instanceof Date ? dr.date.toISOString().split('T')[0] : String(dr.date).split('T')[0];
+                        if (drDate >= today && dr.price < lowestOverridePrice) {
+                            lowestOverridePrice = dr.price;
+                        }
+                    });
+                }
+            });
+            if (lowestOverridePrice < Infinity && lowestOverridePrice < cheapestPrice) {
+                promotionalPrice = lowestOverridePrice;
+            }
+        }
 
         return {
             id: h.id,
             name: h.name,
             city: h.city,
+            thumbnail: h.thumbnail || null,
+            slug: h.slug || null,
             description: (h.description || '').slice(0, 300),
             pricePerNight: cheapestPrice,
+            promotionalPrice: promotionalPrice,
             starRating: h.starRating || 0,
             guestRating: h.guestRating || 0,
             reviewCount: h.reviewCount || 0,
-            rooms: activeRooms.map(r => ({
-                id: r.id,
-                name: r.name,
-                pricePerNight: r.pricePerNight,
-                maxOccupancy: r.maxOccupancy
+            rooms: activeRooms.map(r => {
+                let parsedImages = [];
+                try {
+                    parsedImages = Array.isArray(r.images) 
+                        ? r.images 
+                        : (typeof r.images === 'string' ? JSON.parse(r.images || "[]") : []);
+                } catch {
+                    parsedImages = [];
+                }
+
+                // Check for room-specific daily rate overrides
+                let roomPromoPrice = null;
+                const today = new Date().toISOString().split('T')[0];
+                if (r.dailyrate && Array.isArray(r.dailyrate)) {
+                    let lowestOverride = Infinity;
+                    r.dailyrate.forEach(dr => {
+                        const drDate = dr.date instanceof Date ? dr.date.toISOString().split('T')[0] : String(dr.date).split('T')[0];
+                        if (drDate >= today && dr.price < lowestOverride) {
+                            lowestOverride = dr.price;
+                        }
+                    });
+                    if (lowestOverride < Infinity && lowestOverride < r.pricePerNight) {
+                        roomPromoPrice = lowestOverride;
+                    }
+                }
+
+                return {
+                    id: r.id,
+                    name: r.name,
+                    pricePerNight: r.pricePerNight,
+                    promotionalPrice: roomPromoPrice,
+                    maxOccupancy: r.maxOccupancy,
+                    description: r.description || '',
+                    images: parsedImages
+                };
+            }),
+            reviews: (h.review || []).map(rev => ({
+                id: rev.id,
+                rating: rev.rating,
+                comment: rev.comment,
+                userName: rev.user?.name || "Guest"
             })),
             amenities: (() => {
                 try { return typeof h.amenities === 'string' ? JSON.parse(h.amenities) : (h.amenities || []); }
@@ -995,9 +1108,17 @@ function sanitizeHotels(hotels) {
 /* ------------------------------------------------------------------ */
 const SYSTEM_PROMPT = `You are GetHotelStays AI — a friendly AI Travel Companion for hotel booking and travel planning.
 
-LANGUAGE: Understand Hindi, English, and Hinglish naturally. Never say "Sorry I didn't understand." Ask friendly follow-ups instead.
+LANGUAGE:
+- Detect the language the user is chatting in (English, Hinglish, Hindi, Spanish, French, or any other language) and reply in the EXACT SAME language, script, and tone.
+- If the user says a single word like "spanish", "hindi", "french", etc., understand that they want you to SWITCH to that language for replies — they are NOT asking to travel there.
+- Never say "Sorry I didn't understand." Ask friendly follow-ups instead.
 
 PERSONALITY: Friendly, smart, warm, natural. Talk like a human travel expert friend. Short replies. No robotic/formal language.
+
+FORMATTING RULES:
+- You MUST structure your responses in clear bullet points or numbered lists (similar to ChatGPT) so they are easy to read and understand.
+- You MUST naturally use colorful travel-related emojis (e.g. 🏨, ✈️, 🌴, 🍳, 📶, ❄️, ✨, 😊, 🧐, 🏆, ⏰) in every single response to keep the conversation warm, visual, and highly engaging.
+- CRITICAL: You MUST NEVER use markdown header hashtags (#, ##, ###) or bolding stars (*, **) in your responses. Format headings or key points using flat capitalized text and clean spacing instead of markdown bold stars. Do NOT use ** or * anywhere!
 
 TRIP PLANNING FLOW:
 1. Understand travel intention (vacation, honeymoon, family, business, weekend, friends)
@@ -1008,18 +1129,44 @@ TRIP PLANNING FLOW:
 6. Search and recommend hotels (always show the cheapest active room's price as the starting price)
 
 HOTEL RECOMMENDATIONS:
-- Show 3-5 hotels matching user's budget and preferences.
-- CRITICAL: You MUST always format the hotel name as a markdown link pointing to its ID: [Hotel Name](/hotel/ID). Example: "[Ginger Goa Candolim](/hotel/18)". If you don't use this exact markdown link format, the frontend cannot render the interactive hotel cards!
-- Format description naturally like: "🏔 [Hotel Name](/hotel/ID) ⭐ 4.7 📍 Location 💰 ₹2799/night" (stating it is the price of their cheapest room)
+- Show exactly 3-4 hotels matching user's budget and preferences (never recommend just 1 if others are available under budget).
+- DATABASE SEARCH METRICS: Explain to the user that out of X total hotels in our database (e.g., 300+), Y hotels (e.g., 30) match their budget and preferences. State that you are recommending the top 4 of those, and ask the user to refine their choices (e.g., mountain view, couple friendly, pool) to narrow down further. Example: "Humare database ke 300+ properties check karne ke baad, aapke budget aur description ke hisab se 30 properties mile hain. Main unme se top 4 niche suggest kar raha hoon. Aap criteria narrow down karne ke liye pool ya couple-friendly preferences choose kar sakte hain." Never display more than 4 hotels visually.
+- CRITICAL: You MUST format the hotel name as a markdown link pointing to its ID (e.g., "[Ginger Goa Candolim](/hotel/18)") ONLY in the following cases:
+  1. When you first search, recommend, or introduce hotels.
+  2. When the user specifically asks to see the rooms, photos, amenities, or reviews of a hotel.
+  In all other general follow-up chats, questions, or checkout logs, refer to the hotel by its plain text name (e.g., "Ginger Goa Candolim") without any brackets or link formatting. This prevents duplicate cards while ensuring interactive cards/rooms render when the user queries them.
+- Format description naturally like: "Hotel Name (/hotel/ID) - Star Rating: 4 - Price: ₹2799/night" (stating it is the price of their cheapest room)
 - Explain why each is recommended.
-- Be honest about reviews — mention both positives and negatives.
+- HONEST REVIEWS & AMENITIES WORKFLOW: You MUST be completely honest about hotel reviews and ratings. If a hotel has low ratings, negative reviews, or poor feedback, state them clearly and warn the user. Never sugarcoat bad properties.
+- AMENITIES & FEATURES: When the user asks about room or hotel amenities, detail exactly what facilities are provided (e.g. pool, Wi-Fi, AC, breakfast, toiletries, view, etc.) based on the hotel and room features in HOTELS_DATA.
+- ROOMS & PHOTOS REQUEST FLOW: When the user asks to see a hotel's rooms (e.g., "rooms dikha", "iske rooms kese hai", "rooms show karo", "room photos"):
+   1. CRITICAL: You MUST format the hotel name as a link "[Hotel Name](/hotel/ID)" in your reply. Without this link, the interactive room cards WILL NOT render for the user. This is NOT optional.
+   2. List all available room types and their pricing.
+   3. Detail the main amenities and a brief reviews summary of the hotel.
+   4. CRITICAL: You MUST end the reply by asking the user: "Kya aap is hotel ke detailed guest reviews padhna chahenge?"
+- DETAILED REVIEWS DISPLAY: If the user says "Yes" / "Haan" to reading reviews:
+  1. Look up the "reviews" array in the hotel's data.
+  2. Present the reviews by attributing specific comments to guest names from the reviews list (e.g., "Alex ne likha hai ki room mein WiFi sahi nahi chal raha tha, par Priya ne housekeeping aur location ki tareef ki").
+  3. Never invent names or reviews — ONLY cite reviews present in the "reviews" list of HOTELS_DATA. If the reviews list is empty, say so honestly.
 
 ROOM SELECTION: When user picks a hotel, list all available room types and their pricing (from the rooms list in HOTELS_DATA). Ask which room type they want.
 
 BOOKING FLOW & PAYMENT:
 1. Collect full name, email, phone, guests count, special requests.
-2. Ask user's payment preference: "Online payment" or "Pay at Hotel".
-3. Present booking summary with name, email, hotel, dates, guests, price, and selected payment method (Online Payment or Pay at Hotel). Ask user to confirm.
+2. Ask user's payment preference: "Online Payment" (requires paying a 12% deposit online now to secure the booking, and remaining 88% at the hotel) or "Pay at Hotel".
+3. Present booking summary with:
+   - Guest Name, Email
+   - Hotel Name
+   - Dates, Guests Count
+   - Room Type Selected
+   - Payment Method Selected
+   - Subtotal: [amount] (calculated as room price * nights)
+   - GST Tax: [amount] (calculate dynamically: 0% if room price per night <= ₹1000; 5% if room price per night <= ₹7500; 18% if room price per night > ₹7500)
+   - Total Price: [amount] (calculated as Subtotal + GST Tax)
+   - If payment method is Online Payment, you MUST display the 12% split breakdown:
+     * 12% Online Deposit (to confirm booking): ₹[12% of Total Price]
+     * 88% Remaining Balance (Pay at Hotel check-in): ₹[88% of Total Price]
+   Ask user to confirm.
 4. Once confirmed, state that the booking is confirmed and details have been sent.
 
 CONVERSATION MEMORY: Remember destination, budget, dates, preferences, selected hotel/room, guest details, and payment method throughout the conversation. Never ask the same question twice.
@@ -1029,32 +1176,48 @@ CRITICAL RULES:
 - NEVER make up prices, ratings, reviews, or amenities.
 - If no matching hotels exist in HOTELS_DATA, say so honestly and ask the user to try a different destination or criteria.
 - If hotels exist but none match the user's preferences, explain what's available and suggest adjusting filters.
-- Keep responses conversational, warm, and helpful.`;
+- Keep responses conversational, warm, and helpful.
+- ABSOLUTE RULE: If a hotel is NOT present in HOTELS_DATA, you MUST NOT recommend it, mention it, or make up any details about it. Do not hallucinate hotels like "Taj Lake Palace" or "Rambagh Palace" unless they exist in HOTELS_DATA. If a user asks for a destination/hotel not in HOTELS_DATA, honestly say it's not in your database yet.`;
 
-async function checkAndSendAiBookingEmail(reply) {
+async function checkAndSendAiBookingEmail(reply, userId, messages) {
     try {
         // 1. Detect if booking is confirmed
         const isConfirmed = /booking\s+(?:confirm|summary|details|id)|confirm(?:ed)?/i.test(reply) && 
                             /email/i.test(reply);
-        if (!isConfirmed) return;
+        if (!isConfirmed) return null;
 
-        console.log('[AI Email Trigger] Detected booking confirmation in AI reply.');
+        console.log('[AI Booking Processor] Detected booking confirmation in AI reply.');
 
         // 2. Parse Email
         const emailMatch = reply.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
         if (!emailMatch) {
-            console.log('[AI Email Trigger] No email address found in reply. Skipping email.');
-            return;
+            console.log('[AI Booking Processor] No email address found in reply. Skipping.');
+            return null;
         }
         const guestEmail = emailMatch[1].trim();
 
-        // 3. Parse Hotel ID from markdown link: [Name](/hotel/ID)
-        const hotelLinkMatch = reply.match(/\[([^\]]+)\]\(\/hotel\/(\d+)\)/);
+        // 3. Parse Hotel ID from markdown link: [Name](/hotel/ID) or plain /hotel/ID
+        const hotelLinkMatch = reply.match(/\[([^\]]+)\]\(\/hotel\/(\d+)\)/) || reply.match(/\/hotel\/(\d+)/);
         let hotelId = null;
         let hotelName = 'GetHotel Partner';
         if (hotelLinkMatch) {
-            hotelName = hotelLinkMatch[1];
-            hotelId = parseInt(hotelLinkMatch[2]);
+            if (hotelLinkMatch[2]) {
+                hotelName = hotelLinkMatch[1];
+                hotelId = parseInt(hotelLinkMatch[2]);
+            } else {
+                hotelId = parseInt(hotelLinkMatch[1]);
+            }
+        }
+
+        // If hotelId is still null, fallback to scanning history messages from newest to oldest
+        if (!hotelId && messages) {
+            for (let i = messages.length - 1; i >= 0; i--) {
+                const histMatch = messages[i].content.match(/\[([^\]]+)\]\(\/hotel\/(\d+)\)/) || messages[i].content.match(/\/hotel\/(\d+)/);
+                if (histMatch) {
+                    hotelId = histMatch[2] ? parseInt(histMatch[2]) : parseInt(histMatch[1]);
+                    break;
+                }
+            }
         }
 
         // Fetch hotel from database if ID exists
@@ -1063,14 +1226,8 @@ async function checkAndSendAiBookingEmail(reply) {
             hotelDb = await prisma.hotel.findUnique({
                 where: { id: hotelId }
             });
+            if (hotelDb) hotelName = hotelDb.name;
         }
-
-        const hotelObj = {
-            name: hotelDb?.name || hotelName,
-            city: hotelDb?.city || 'India',
-            address: hotelDb?.address || 'India',
-            email: hotelDb?.email || 'admin@gethotelstays.com'
-        };
 
         // 4. Parse Guest Name
         let guestName = 'Valued Guest';
@@ -1078,22 +1235,30 @@ async function checkAndSendAiBookingEmail(reply) {
         if (nameMatch) {
             guestName = nameMatch[1].trim();
         } else {
-            // Try to extract name from greeting, e.g. "confirm ho gayi hai, Ajay!"
             const greetingMatch = reply.match(/confirm ho gayi hai,\s*([A-Za-z]+)/i);
             if (greetingMatch) {
                 guestName = greetingMatch[1].trim();
             }
         }
+        const nameParts = guestName.split(/\s+/);
+        const guestFirstName = nameParts[0] || 'Valued';
+        const guestLastName = nameParts.slice(1).join(' ') || 'Guest';
 
-        // 5. Parse Dates (Check-In & Check-Out)
+        // 5. Parse Phone
+        let guestPhone = '9999999999';
+        const phoneMatch = reply.match(/(?:Phone|Mobile|Contact)(?:\s+Number)?:\s*([^\n\r*]+)/i);
+        if (phoneMatch) {
+            guestPhone = phoneMatch[1].trim();
+        }
+
+        // 6. Parse Dates (Check-In & Check-Out)
         let checkInDate = new Date();
         let checkOutDate = new Date(Date.now() + 24 * 60 * 60 * 1000); // tomorrow
 
-        // Check if there is a date range like "18th July - 23rd July" or "20th July"
         const dateMatch = reply.match(/(?:Dates?|Stay):\s*([^\n\r*]+)/i) || reply.match(/(?:in|on)\s+(\d+(?:st|nd|rd|th)?\s+[A-Za-z]+)/i);
         if (dateMatch) {
             const rawDates = dateMatch[1];
-            const dateParts = rawDates.split(/[–-]/); // Split by dash or en-dash
+            const dateParts = rawDates.split(/[–-]/);
             if (dateParts[0]) {
                 const parsedIn = Date.parse(dateParts[0].trim().replace(/(st|nd|rd|th)/g, ''));
                 if (!isNaN(parsedIn)) checkInDate = new Date(parsedIn);
@@ -1102,55 +1267,168 @@ async function checkAndSendAiBookingEmail(reply) {
                 const parsedOut = Date.parse(dateParts[1].trim().replace(/(st|nd|rd|th)/g, ''));
                 if (!isNaN(parsedOut)) checkOutDate = new Date(parsedOut);
             } else {
-                // If only one date is mentioned, checkout is next day
                 checkOutDate = new Date(checkInDate.getTime() + 24 * 60 * 60 * 1000);
             }
         }
 
-        // 6. Parse Total Price
+        // 7. Parse Pricing Details (Subtotal, GST, and Total Price)
         let totalPrice = 2500;
-        const priceMatch = reply.match(/(?:Total|Price):\s*₹?\s*([\d,]+)/i) || reply.match(/₹\s*([\d,]+)/);
-        if (priceMatch) {
-            totalPrice = parseInt(priceMatch[1].replace(/,/g, ''));
+        const totalMatch = reply.match(/(?:Total\s+Price|Total):\s*₹?\s*([\d,]+)/i);
+        const subtotalMatch = reply.match(/Subtotal:\s*₹?\s*([\d,]+)/i);
+        
+        if (totalMatch) {
+            totalPrice = parseInt(totalMatch[1].replace(/,/g, ''));
+        } else if (subtotalMatch) {
+            const subtotalPrice = parseInt(subtotalMatch[1].replace(/,/g, ''));
+            const nights = Math.max(1, Math.round((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24)));
+            const averagePricePerNight = subtotalPrice / nights;
+            
+            let gstRate = 0.05;
+            if (averagePricePerNight <= 1000) {
+                gstRate = 0;
+            } else if (averagePricePerNight <= 7500) {
+                gstRate = 0.05;
+            } else {
+                gstRate = 0.18;
+            }
+            const calculatedTaxes = Math.round(subtotalPrice * gstRate);
+            totalPrice = subtotalPrice + calculatedTaxes;
+        } else {
+            const generalPriceMatch = reply.match(/₹\s*([\d,]+)/);
+            if (generalPriceMatch) {
+                totalPrice = parseInt(generalPriceMatch[1].replace(/,/g, ''));
+            }
         }
 
-        // 7. Parse Payment Method & Room Type
-        let amountPaid = 0; // Default to Pay at Hotel
-        const isOnlinePayment = /online\s+pay|pay\s+online|online\s+payment|paid\s+online/i.test(reply);
-        if (isOnlinePayment) {
-            amountPaid = totalPrice;
-        }
-
+        // 8. Parse Payment Method & Room Type
+        const historyText = (messages || []).map(m => m.content.toLowerCase()).join(' ');
+        const isOnlinePayment = /online\s+pay|pay\s+online|online\s+payment|paid\s+online/i.test(reply) || 
+                                /online\s+pay|pay\s+online|online\s+payment|paid\s+online/i.test(historyText);
         let roomTypeName = 'Standard Room';
-        // Try to match selected room type, e.g. Deluxe Double Room, etc.
         const roomMatch = reply.match(/(?:Room|Room Type):\s*([^\n\r*]+)/i);
         if (roomMatch) {
             roomTypeName = roomMatch[1].trim();
         }
 
-        // Create the mock booking object
-        const mockBooking = {
-            id: Math.floor(Math.random() * 100000),
-            guestName,
-            guestEmail,
-            guestPhone: 'N/A',
-            hotel: hotelObj,
-            room: { name: roomTypeName },
-            checkIn: checkInDate,
-            checkOut: checkOutDate,
-            totalPrice,
-            amountPaid
-        };
+        // Find room ID matching room name
+        let roomId = null;
+        if (hotelId) {
+            const searchKeyword = roomTypeName.replace(/(room|double|deluxe|suite)/gi, '').trim().toLowerCase();
+            const dbRoom = await prisma.room.findFirst({
+                where: {
+                    hotelId: hotelId,
+                    name: { contains: searchKeyword }
+                }
+            });
+            if (dbRoom) {
+                roomId = dbRoom.id;
+            } else {
+                const firstRoom = await prisma.room.findFirst({
+                    where: { hotelId: hotelId, status: 'active' }
+                });
+                if (firstRoom) roomId = firstRoom.id;
+            }
+        }
 
-        console.log(`[AI Email Trigger] Triggering email for booking ID: ${mockBooking.id} to ${guestEmail}`);
-        
-        // Send emails asynchronously
-        sendBookingEmails(mockBooking).catch(err => {
-            console.error('[AI Email Trigger] Error inside sendBookingEmails:', err);
+        if (!hotelId) {
+            console.log('[AI Booking Processor] hotelId is null. Cannot write booking.');
+            return null;
+        }
+
+        // De-duplicate check: look for booking made in the last 2 minutes
+        const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
+        let booking = await prisma.booking.findFirst({
+            where: {
+                guestEmail: guestEmail,
+                hotelId: hotelId,
+                checkIn: checkInDate,
+                checkOut: checkOutDate,
+                createdAt: { gte: twoMinutesAgo }
+            }
         });
 
+        if (!booking) {
+            booking = await prisma.booking.create({
+                data: {
+                    userId: userId || undefined,
+                    hotelId: hotelId,
+                    roomId: roomId,
+                    checkIn: checkInDate,
+                    checkOut: checkOutDate,
+                    totalPrice: totalPrice,
+                    totalGuests: 1,
+                    status: isOnlinePayment ? 'held' : 'confirmed',
+                    paymentStatus: isOnlinePayment ? 'partial' : 'pending',
+                    amountPaid: 0,
+                    guestFirstName,
+                    guestLastName,
+                    guestEmail,
+                    guestPhone,
+                    roomDetails: JSON.stringify([{ id: roomId, quantity: 1 }]),
+                    internalNotes: `AI_BOOKING: ${isOnlinePayment ? 'Online Partial 12% Deposit pending' : 'Pay at Hotel confirmed'}`
+                }
+            });
+        }
+
+        if (isOnlinePayment) {
+            const onlineDeposit = Math.round(totalPrice * 0.12);
+            const remainingAtHotel = totalPrice - onlineDeposit;
+            const amountToPay = Math.round(onlineDeposit * 100); // 12% in paisa
+
+            let order = null;
+            if (razorpay) {
+                const options = {
+                    amount: amountToPay,
+                    currency: 'INR',
+                    receipt: `receipt_booking_${booking.id}`,
+                };
+                order = await razorpay.orders.create(options);
+                
+                await prisma.booking.update({
+                    where: { id: booking.id },
+                    data: { razorpayOrderId: order.id }
+                });
+            }
+
+            const modifiedReply = `Online Payment select karne ke liye dhanyawad! 💳 Aapko booking confirm karne ke liye abhi sirf 12% deposit (₹${onlineDeposit}) online pay karna hoga, aur baaki 88% (₹${remainingAtHotel}) aap hotel check-in ke waqt pay kar sakte hain. Rukiye, main aapke liye payment panel khol raha hoon abhi...`;
+            const action = {
+                type: 'RAZORPAY_PAYMENT',
+                bookingId: booking.id,
+                razorpayOrderId: order ? order.id : null,
+                amount: amountToPay,
+                currency: 'INR',
+                keyId: process.env.RAZORPAY_KEY_ID || '',
+                guestName: `${guestFirstName} ${guestLastName}`,
+                guestEmail,
+                guestPhone,
+                hotelName,
+                hotelId,
+                depositAmount: onlineDeposit,
+                balanceAmount: remainingAtHotel
+            };
+
+            return { booking, order, action, modifiedReply };
+        } else {
+            // Trigger Pay at Hotel email directly
+            const fullBooking = await prisma.booking.findUnique({
+                where: { id: booking.id },
+                include: {
+                    hotel: {
+                        include: { user: true }
+                    },
+                    room: true
+                }
+            });
+            sendBookingEmails(fullBooking).catch(err => {
+                console.error('[AI Email Trigger] Error inside sendBookingEmails:', err);
+            });
+
+            return { booking, action: null, modifiedReply: null };
+        }
+
     } catch (e) {
-        console.error('[AI Email Trigger] Error processing booking confirmation email:', e);
+        console.error('[AI Booking Processor] Error during process booking confirmation:', e);
+        return null;
     }
 }
 
@@ -1165,44 +1443,156 @@ exports.chat = async (req, res) => {
         return res.json({ success: true, reply: "Hello! I'm your AI travel assistant. How can I help you plan your trip today?", hotels: [] });
     }
 
-    // --- Extract destination & fetch hotels ---
+    let userId = null;
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        try {
+            const token = req.headers.authorization.split(' ')[1];
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            userId = decoded.id;
+        } catch (e) {
+            // Ignore optional token decoding failures
+        }
+    }
+
+    // --- Extract destination keywords & fetch matching hotels ---
     let hotelContext = '';
     let dbHotels = [];
     try {
-        const destination = extractDestination(messages);
-        if (destination) {
-            dbHotels = await prisma.hotel.findMany({
-                where: {
-                    OR: [
-                        { city: { contains: destination } },
-                        { city: { contains: destination.toLowerCase() } },
-                    ],
-                    isActive: true,
+        const lastMsgText = messages[messages.length - 1].content.toLowerCase();
+        const words = lastMsgText.split(/[\s,?!.@()]+/);
+        const stopWords = new Set([
+            'me', 'in', 'at', 'on', 'of', 'for', 'to', 'hotel', 'hotels', 'dikha', 'dikhao', 'koi', 
+            'jiska', 'budget', 'per', 'night', 'ho', 'and', 'acha', 'sa', 'saaf', 'sutra', 'and', 'is', 
+            'ske', 'rooms', 'photo', 'photos', 'pic', 'pics', 'image', 'images', 'tasveer', 'tasveere',
+            'karo', 'karne', 'hai', 'hath', 'se', 'ya', 'na', 'hu', 'aur', 'han', 'sun', 'ye', 'jo', 'ke'
+        ]);
+        const keywords = words.filter(w => w.length > 2 && !stopWords.has(w));
+
+        const whereClause = { isActive: true };
+        if (keywords.length > 0) {
+            whereClause.OR = keywords.flatMap(kw => [
+                { city: { contains: kw } },
+                { address: { contains: kw } },
+                { name: { contains: kw } }
+            ]);
+        }
+
+        dbHotels = await prisma.hotel.findMany({
+            where: whereClause,
+            select: {
+                id: true, name: true, city: true, description: true,
+                pricePerNight: true, starRating: true, guestRating: true,
+                reviewCount: true, amenities: true, mainAmenities: true, isActive: true,
+                thumbnail: true, slug: true,
+                room: {
+                    where: { status: 'active' },
+                    select: {
+                        id: true,
+                        name: true,
+                        pricePerNight: true,
+                        maxOccupancy: true,
+                        images: true,
+                        description: true,
+                        dailyrate: {
+                            where: {
+                                date: {
+                                    gte: new Date(new Date().setHours(0,0,0,0))
+                                }
+                            },
+                            select: {
+                                date: true,
+                                price: true,
+                                available: true
+                            },
+                            orderBy: { date: 'asc' },
+                            take: 14
+                        }
+                    }
                 },
+                review: {
+                    select: {
+                        id: true,
+                        rating: true,
+                        comment: true,
+                        user: {
+                            select: {
+                                name: true
+                            }
+                        }
+                    },
+                    take: 5
+                }
+            },
+            take: 25,
+        });
+        console.log(`[AI Chat] DB keyword search found ${dbHotels.length} active hotels.`);
+
+        // Fallback: If no keywords matched database records, fetch all active hotels
+        if (dbHotels.length === 0) {
+            console.log('[AI Chat] No keyword-matched hotels. Fetching all active hotels...');
+            dbHotels = await prisma.hotel.findMany({
+                where: { isActive: true },
                 select: {
                     id: true, name: true, city: true, description: true,
                     pricePerNight: true, starRating: true, guestRating: true,
                     reviewCount: true, amenities: true, mainAmenities: true, isActive: true,
-                    thumbnail: true,
+                    thumbnail: true, slug: true,
                     room: {
                         where: { status: 'active' },
                         select: {
                             id: true,
                             name: true,
                             pricePerNight: true,
-                            maxOccupancy: true
+                            maxOccupancy: true,
+                            images: true,
+                            description: true,
+                            dailyrate: {
+                                where: {
+                                    date: {
+                                        gte: new Date(new Date().setHours(0,0,0,0))
+                                    }
+                                },
+                                select: {
+                                    date: true,
+                                    price: true,
+                                    available: true
+                                },
+                                orderBy: { date: 'asc' },
+                                take: 14
+                            }
                         }
+                    },
+                    review: {
+                        select: {
+                            id: true,
+                            rating: true,
+                            comment: true,
+                            user: {
+                                select: {
+                                    name: true
+                                }
+                            }
+                        },
+                        take: 5
                     }
                 },
-                take: 20,
+                take: 25,
             });
-            if (dbHotels.length > 0) {
-                hotelContext = `\n\nHOTELS_DATA (real database results for ${destination}):\n${JSON.stringify(sanitizeHotels(dbHotels), null, 2)}\n\nUse these hotels ONLY for recommendations. Never invent hotel data.`;
-                console.log(`[AI Chat] Found ${dbHotels.length} hotels for ${destination}`);
-            } else {
-                hotelContext = `\n\nNote: No active hotels found in our database for "${destination}". Be honest about this and suggest popular alternatives like Goa, Jaipur, Udaipur, Shimla, or Manali.`;
-                console.log(`[AI Chat] No hotels found for ${destination}`);
-            }
+            console.log(`[AI Chat] Fallback query found ${dbHotels.length} active hotels.`);
+        }
+
+        // De-duplicate hotels by name (case-insensitive) to prevent database duplicates from showing up
+        const seenNames = new Set();
+        dbHotels = dbHotels.filter(h => {
+            const normalized = h.name.toLowerCase().trim();
+            if (seenNames.has(normalized)) return false;
+            seenNames.add(normalized);
+            return true;
+        });
+
+        if (dbHotels.length > 0) {
+            hotelContext = `\n\nHOTELS_DATA (real database results):\n${JSON.stringify(sanitizeHotels(dbHotels), null, 2)}\n\nUse these hotels ONLY for recommendations. Never invent hotel data.`;
+            console.log(`[AI Chat] Loaded ${dbHotels.length} active database hotels for prompt context.`);
         }
     } catch (dbErr) {
         console.error('[AI Chat DB Error]:', dbErr.message);
@@ -1264,47 +1654,160 @@ exports.chat = async (req, res) => {
                     id: true, name: true, city: true, description: true,
                     pricePerNight: true, starRating: true, guestRating: true,
                     reviewCount: true, amenities: true, mainAmenities: true, isActive: true,
-                    thumbnail: true,
+                    thumbnail: true, slug: true,
                     room: {
                         where: { status: 'active' },
                         select: {
                             id: true,
                             name: true,
                             pricePerNight: true,
-                            maxOccupancy: true
+                            maxOccupancy: true,
+                            images: true,
+                            description: true,
+                            dailyrate: {
+                                where: {
+                                    date: {
+                                        gte: new Date(new Date().setHours(0,0,0,0))
+                                    }
+                                },
+                                select: {
+                                    date: true,
+                                    price: true,
+                                    available: true
+                                },
+                                orderBy: { date: 'asc' },
+                                take: 14
+                            }
                         }
+                    },
+                    review: {
+                        select: {
+                            id: true,
+                            rating: true,
+                            comment: true,
+                            user: {
+                                select: {
+                                    name: true
+                                }
+                            }
+                        },
+                        take: 5
                     }
                 }
             });
 
-            recommendedHotels = dbRecommended.map(h => {
-                const cheapestPrice = h.room.length > 0
-                    ? Math.min(...h.room.map(r => r.pricePerNight))
-                    : h.pricePerNight;
-                return {
-                    id: h.id,
-                    name: h.name,
-                    city: h.city,
-                    description: h.description,
-                    pricePerNight: cheapestPrice,
-                    starRating: h.starRating,
-                    guestRating: h.guestRating,
-                    reviewCount: h.reviewCount,
-                    amenities: h.amenities,
-                    mainAmenities: h.mainAmenities,
-                    isActive: h.isActive,
-                    thumbnail: h.thumbnail
-                };
-            });
+            recommendedHotels = sanitizeHotels(dbRecommended);
         }
 
-        // Check if AI confirmed booking and trigger confirmation email
-        checkAndSendAiBookingEmail(reply).catch(err => {
+        // FALLBACK: If no hotel IDs found in AI reply but user asked about rooms/photos,
+        // scan conversation history for previously mentioned hotel IDs and return that hotel
+        if (recommendedHotels.length === 0) {
+            const lastUserMsg = (lastMsg.content || '').toLowerCase();
+            const isRoomQuery = lastUserMsg.includes('room') || lastUserMsg.includes('photo') || lastUserMsg.includes('pic') || lastUserMsg.includes('dikha') || lastUserMsg.includes('dikhao') || lastUserMsg.includes('detail') || lastUserMsg.includes('tasveer') || lastUserMsg.includes('images');
+
+            if (isRoomQuery) {
+                // Scan ALL messages (including AI replies) for /hotel/ID links
+                const historyHotelIds = [];
+                for (const m of messages) {
+                    const histRegex = /\/hotel\/(\d+)/g;
+                    let histMatch;
+                    while ((histMatch = histRegex.exec(m.content || '')) !== null) {
+                        historyHotelIds.push(parseInt(histMatch[1]));
+                    }
+                }
+                // Also check AI's current reply for hotel names matching dbHotels or database
+                if (historyHotelIds.length === 0 && dbHotels.length > 0) {
+                    const replyLower = reply.toLowerCase();
+                    const matchedHotel = dbHotels.find(h => replyLower.includes(h.name.toLowerCase()));
+                    if (matchedHotel) {
+                        historyHotelIds.push(matchedHotel.id);
+                    }
+                }
+                if (historyHotelIds.length === 0) {
+                    const replyLower = reply.toLowerCase();
+                    const allActiveHotels = await prisma.hotel.findMany({
+                        where: { isActive: true },
+                        select: { id: true, name: true }
+                    });
+                    const matchedHotel = allActiveHotels.find(h => replyLower.includes(h.name.toLowerCase()));
+                    if (matchedHotel) {
+                        historyHotelIds.push(matchedHotel.id);
+                    }
+                }
+                // Also check if user's message contains a hotel name
+                if (historyHotelIds.length === 0 && dbHotels.length > 0) {
+                    const matchedHotel = dbHotels.find(h => lastUserMsg.includes(h.name.toLowerCase()));
+                    if (matchedHotel) {
+                        historyHotelIds.push(matchedHotel.id);
+                    }
+                }
+                if (historyHotelIds.length === 0) {
+                    const allActiveHotels = await prisma.hotel.findMany({
+                        where: { isActive: true },
+                        select: { id: true, name: true }
+                    });
+                    const matchedHotel = allActiveHotels.find(h => lastUserMsg.includes(h.name.toLowerCase()));
+                    if (matchedHotel) {
+                        historyHotelIds.push(matchedHotel.id);
+                    }
+                }
+
+                const uniqueHistoryIds = [...new Set(historyHotelIds)];
+                if (uniqueHistoryIds.length > 0) {
+                    // Take the LAST mentioned hotel (most recently discussed)
+                    const fallbackId = uniqueHistoryIds[uniqueHistoryIds.length - 1];
+                    console.log(`[AI Chat] Room query fallback: using hotel ID ${fallbackId} from conversation history`);
+                    const fallbackHotel = await prisma.hotel.findMany({
+                        where: { id: fallbackId, isActive: true },
+                        select: {
+                            id: true, name: true, city: true, description: true,
+                            pricePerNight: true, starRating: true, guestRating: true,
+                            reviewCount: true, amenities: true, mainAmenities: true, isActive: true,
+                            thumbnail: true, slug: true,
+                            room: {
+                                where: { status: 'active' },
+                                select: {
+                                    id: true, name: true, pricePerNight: true, maxOccupancy: true,
+                                    images: true, description: true,
+                                    dailyrate: {
+                                        where: { date: { gte: new Date(new Date().setHours(0,0,0,0)) } },
+                                        select: { date: true, price: true, available: true },
+                                        orderBy: { date: 'asc' },
+                                        take: 14
+                                    }
+                                }
+                            },
+                            review: {
+                                select: { id: true, rating: true, comment: true, user: { select: { name: true } } },
+                                take: 5
+                            }
+                        }
+                    });
+                    recommendedHotels = sanitizeHotels(fallbackHotel);
+                }
+            }
+        }
+
+        let finalReply = reply;
+        let finalAction = action;
+
+        // Check if AI confirmed booking and execute database writes & payment setups
+        try {
+            const bookingResult = await checkAndSendAiBookingEmail(reply, userId, messages);
+            if (bookingResult) {
+                if (bookingResult.action) {
+                    finalAction = bookingResult.action;
+                }
+                if (bookingResult.modifiedReply) {
+                    finalReply = bookingResult.modifiedReply;
+                }
+            }
+        } catch (err) {
             console.error('[AI Chat] checkAndSendAiBookingEmail failed:', err);
-        });
+        }
 
         console.log(`[AI Chat] Success with Gemini. Extracted ${recommendedHotels.length} recommended hotels.`);
-        return res.json({ success: true, reply, action, hotels: recommendedHotels });
+        return res.json({ success: true, reply: finalReply, action: finalAction, hotels: recommendedHotels });
     } catch (err) {
         lastError = err;
         console.error('[AI Chat] All attempts failed:', lastError?.message);
@@ -1562,5 +2065,558 @@ Please extract the reviews. Ensure they are structured as JSON.
     } catch (err) {
         console.error("AI_IMPORT_REVIEWS_ERROR:", err);
         res.status(500).json({ success: false, message: "AI reviews import failed", error: err.message });
+    }
+};
+
+/**
+ * @desc    Onboard multiple hotels and their rooms from uploaded JSON files via Gemini AI parser
+ * @route   POST /api/admin/ai/bulk-onboard-hotels
+ * @access  Private (Super Admin)
+ */
+const getHistoryFilePath = () => {
+    return path.join(__dirname, '..', 'uploads', 'bulk_onboard_history.json');
+};
+
+const readHistoryLog = () => {
+    try {
+        const file = getHistoryFilePath();
+        if (fs.existsSync(file)) {
+            const raw = fs.readFileSync(file, 'utf8');
+            return JSON.parse(raw || '[]');
+        }
+    } catch (e) {
+        console.error("Failed to read onboarding history log:", e);
+    }
+    return [];
+};
+
+const writeHistoryLog = (newEntries) => {
+    try {
+        const file = getHistoryFilePath();
+        const dir = path.dirname(file);
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+        const current = readHistoryLog();
+        const updated = [...newEntries, ...current].slice(0, 1000); // limit to 1000 entries
+        fs.writeFileSync(file, JSON.stringify(updated, null, 2), 'utf8');
+    } catch (e) {
+        console.error("Failed to write onboarding history log:", e);
+    }
+};
+
+/**
+ * @desc    Preview/Parse bulk hotel uploads via Gemini AI (does not write to DB)
+ * @route   POST /api/admin/ai/bulk-onboard-preview
+ * @access  Private (Super Admin)
+ */
+exports.bulkOnboardPreview = async (req, res) => {
+    try {
+        const apiKey = process.env.GEMINI_API_KEY;
+        if (!apiKey) {
+            return res.status(400).json({
+                success: false,
+                message: "Gemini API Key is not configured. Please add GEMINI_API_KEY to your backend .env file."
+            });
+        }
+
+        const { files } = req.body;
+        if (!files || !Array.isArray(files) || files.length === 0) {
+            return res.status(400).json({ success: false, message: "Please provide a non-empty array of files." });
+        }
+
+        if (files.length > 10) {
+            return res.status(400).json({ success: false, message: "Maximum of 10 files are allowed per bulk onboarding." });
+        }
+
+        const normalizedHotels = [];
+        const genAI = new GoogleGenerativeAI(apiKey);
+
+        // Gemini Schema configuration
+        const onboardingSchema = {
+            type: "object",
+            properties: {
+                hotel: {
+                    type: "object",
+                    properties: {
+                        name: { type: "string" },
+                        tagline: { type: "string" },
+                        description: { type: "string" },
+                        city: { type: "string" },
+                        address: { type: "string" },
+                        pricePerNight: { type: "number" },
+                        starRating: { type: "number" },
+                        amenities: { type: "array", items: { type: "string" } },
+                        mainAmenities: { type: "array", items: { type: "string" } }
+                    },
+                    required: ["name", "city", "address", "description"]
+                },
+                partner: {
+                    type: "object",
+                    properties: {
+                        name: { type: "string" },
+                        email: { type: "string" },
+                        password: { type: "string" },
+                        phone: { type: "string" }
+                    }
+                },
+                rooms: {
+                    type: "array",
+                    items: {
+                        type: "object",
+                        properties: {
+                            name: { type: "string" },
+                            pricePerNight: { type: "number" },
+                            maxOccupancy: { type: "number" },
+                            bedConfiguration: { type: "string" },
+                            sizeM2: { type: "number" },
+                            totalInventory: { type: "number" },
+                            amenities: { type: "array", items: { type: "string" } },
+                            description: { type: "string" }
+                        },
+                        required: ["name", "pricePerNight"]
+                    }
+                }
+            },
+            required: ["hotel", "partner", "rooms"]
+        };
+
+        const systemInstruction = `
+You are an expert data migration AI assistant. Your job is to read arbitrary content representing a hotel registration profile and its room categories, and extract/normalize it into a strict JSON matching the schema rules.
+
+RULES:
+- Clean up values (trim whitespaces, convert foreign currency to INR roughly ₹85 per USD).
+- Do NOT generate markdown code blocks or formatting. Output only valid JSON matching the schema.
+- For partner name, email, password, phone, extract them if available in the text.
+`;
+
+        // 1. Run all Gemini AI normalizations in parallel
+        console.log(`[AI Onboard Preview] Normalizing ${files.length} files...`);
+        const normalizationPromises = files.map(async (fileObj) => {
+            const fileName = fileObj.fileName || "unnamed.json";
+            const content = fileObj.content || "";
+            try {
+                console.log(`[AI Onboard Preview] [Gemini Start] Normalizing file: ${fileName}...`);
+                const geminiResult = await runGeminiWithFallback(
+                    genAI,
+                    {
+                        model: "gemini-2.5-flash",
+                        systemInstruction,
+                        generationConfig: {
+                            responseMimeType: "application/json",
+                            responseSchema: onboardingSchema,
+                            temperature: 0.1
+                        }
+                    },
+                    (model) => model.generateContent(`File content:\n${content}`)
+                );
+
+                const normalizedText = geminiResult.response.text();
+                const parsed = JSON.parse(normalizedText);
+                return { fileName, success: true, parsed };
+            } catch (err) {
+                console.error(`[AI Onboard Preview] [Gemini Error] File ${fileName}:`, err);
+                return { fileName, success: false, error: err.message || "Gemini parsing failed." };
+            }
+        });
+
+        const normalizedFiles = await Promise.all(normalizationPromises);
+        console.log(`[AI Onboard Preview] Parallel normalization completed. Processing duplicate checks...`);
+
+        // 2. Perform duplicate checks and credentials generation for preview
+        for (const normFile of normalizedFiles) {
+            const { fileName } = normFile;
+
+            if (!normFile.success) {
+                normalizedHotels.push({
+                    fileName,
+                    success: false,
+                    skipped: false,
+                    message: normFile.error
+                });
+                continue;
+            }
+
+            try {
+                const { hotel, partner, rooms } = normFile.parsed;
+
+                if (!hotel || !hotel.name || !hotel.city || !hotel.address) {
+                    throw new Error("Normalized hotel profile lacks required fields (name, city, address).");
+                }
+
+                const hName = hotel.name.trim();
+                const hCity = hotel.city.trim();
+                const hAddress = hotel.address.trim();
+
+                // Generate credentials if missing
+                let pEmail = partner?.email ? partner.email.toLowerCase().trim() : '';
+                if (!pEmail) {
+                    const cleanHotelSlug = hName.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    pEmail = `sample@${cleanHotelSlug}.com`;
+                }
+
+                let pPassword = partner?.password ? String(partner.password).trim() : '';
+                let generatedPasswordMsg = '';
+                if (!pPassword) {
+                    pPassword = `${hName.replace(/[^a-zA-Z0-9]/g, '')}#2026`;
+                    generatedPasswordMsg = ' (Auto-generated password)';
+                }
+
+                const pPhone = partner?.phone ? String(partner.phone).trim() : '';
+
+                // Duplicate Check
+                const existingUser = await prisma.user.findUnique({
+                    where: { email: pEmail }
+                });
+
+                const existingHotel = await prisma.hotel.findFirst({
+                    where: {
+                        name: hName,
+                        city: hCity
+                    }
+                });
+
+                let skipped = false;
+                let message = "Ready to onboard.";
+                if (existingUser || existingHotel) {
+                    skipped = true;
+                    if (existingUser && existingHotel) {
+                        message = `Duplicate Warning: Partner email "${pEmail}" AND hotel "${hName}" in "${hCity}" already exist.`;
+                    } else if (existingUser) {
+                        message = `Duplicate Warning: Partner email "${pEmail}" already exists.`;
+                    } else {
+                        message = `Duplicate Warning: Hotel "${hName}" in "${hCity}" already exists.`;
+                    }
+                }
+
+                normalizedHotels.push({
+                    fileName,
+                    success: true,
+                    skipped,
+                    hotelName: hName,
+                    hotel: {
+                        ...hotel,
+                        name: hName,
+                        city: hCity,
+                        address: hAddress
+                    },
+                    partner: {
+                        name: partner?.name || hName,
+                        email: pEmail,
+                        password: pPassword,
+                        phone: pPhone
+                    },
+                    rooms: rooms || [],
+                    message
+                });
+
+            } catch (err) {
+                normalizedHotels.push({
+                    fileName,
+                    success: false,
+                    skipped: false,
+                    message: err.message || "Failed to normalize parsed hotel."
+                });
+            }
+        }
+
+        res.status(200).json({
+            success: true,
+            hotels: normalizedHotels
+        });
+
+    } catch (err) {
+        console.error("AI_BULK_ONBOARD_PREVIEW_ERROR:", err);
+        res.status(500).json({ success: false, message: "Failed to generate bulk onboarding preview", error: err.message });
+    }
+};
+
+/**
+ * @desc    Confirm and save approved bulk hotel registrations in database
+ * @route   POST /api/admin/ai/bulk-onboard-confirm
+ * @access  Private (Super Admin)
+ */
+exports.bulkOnboardConfirm = async (req, res) => {
+    try {
+        const { hotels } = req.body;
+        if (!hotels || !Array.isArray(hotels) || hotels.length === 0) {
+            return res.status(400).json({ success: false, message: "Please provide a non-empty array of hotels to save." });
+        }
+
+        const results = [];
+        const historyEntries = [];
+        const bcrypt = require('bcryptjs');
+
+        for (const item of hotels) {
+            const fileName = item.fileName || "unnamed.json";
+            const hName = item.hotelName;
+
+            if (!item.success || item.skipped) {
+                // If it was already skipped or failed in preview, keep status
+                results.push({
+                    fileName,
+                    success: false,
+                    skipped: item.skipped || false,
+                    hotelName: hName,
+                    message: item.message || "Skipped or failed in preview."
+                });
+                continue;
+            }
+
+            try {
+                const { hotel, partner, rooms } = item;
+
+                // Recheck duplicates to avoid concurrent duplicate creation
+                const existingUser = await prisma.user.findUnique({
+                    where: { email: partner.email }
+                });
+
+                const existingHotel = await prisma.hotel.findFirst({
+                    where: {
+                        name: hotel.name,
+                        city: hotel.city
+                    }
+                });
+
+                if (existingUser || existingHotel) {
+                    let dupReason = "";
+                    if (existingUser && existingHotel) {
+                        dupReason = `User with email "${partner.email}" AND hotel with name "${hotel.name}" in city "${hotel.city}" already exist.`;
+                    } else if (existingUser) {
+                        dupReason = `User with email "${partner.email}" already exists.`;
+                    } else {
+                        dupReason = `Hotel with name "${hotel.name}" in city "${hotel.city}" already exists.`;
+                    }
+
+                    const skipMsg = `Skipped (Duplicate): ${dupReason}`;
+                    results.push({
+                        fileName,
+                        success: false,
+                        skipped: true,
+                        hotelName: hotel.name,
+                        email: partner.email,
+                        password: partner.password,
+                        phone: partner.phone,
+                        message: skipMsg
+                    });
+
+                    historyEntries.push({
+                        timestamp: new Date(),
+                        fileName,
+                        hotelName: hotel.name,
+                        email: partner.email,
+                        password: partner.password,
+                        phone: partner.phone,
+                        roomsCount: rooms?.length || 0,
+                        status: 'duplicate_skipped',
+                        message: skipMsg
+                    });
+                    continue;
+                }
+
+                // Hash Password
+                const salt = await bcrypt.genSalt(10);
+                const hashedPassword = await bcrypt.hash(partner.password, salt);
+
+                // Run Prisma Transaction
+                const creationResult = await prisma.$transaction(async (tx) => {
+                    // Create User
+                    const userNameStr = partner.name || hotel.name;
+                    const finalUserName = partner.phone ? `${userNameStr} (${partner.phone})` : userNameStr;
+
+                    const user = await tx.user.create({
+                        data: {
+                            name: finalUserName,
+                            email: partner.email,
+                            password: hashedPassword,
+                            role: 'hotel_admin',
+                            updatedAt: new Date()
+                        }
+                    });
+
+                    // Create Hotel
+                    const amenitiesStr = JSON.stringify(hotel.amenities || []);
+                    const mainAmenitiesStr = JSON.stringify(hotel.mainAmenities || hotel.amenities || []);
+                    const hPrice = parseFloat(hotel.pricePerNight) || 1500;
+                    const hStars = parseInt(hotel.starRating) || 3;
+                    const hotelUsername = partner.phone ? partner.phone : `${hotel.name.toLowerCase().replace(/[^a-z0-9]/g, '')}_${Date.now()}`;
+
+                    const newHotel = await tx.hotel.create({
+                        data: {
+                            name: hotel.name,
+                            tagline: hotel.tagline || `Welcome to ${hotel.name}`,
+                            description: hotel.description || "Welcome to our property.",
+                            city: hotel.city,
+                            address: hotel.address,
+                            pricePerNight: hPrice,
+                            starRating: hStars,
+                            thumbnail: null,
+                            images: JSON.stringify([]),
+                            amenities: amenitiesStr,
+                            mainAmenities: mainAmenitiesStr,
+                            isActive: true,
+                            userId: user.id,
+                            hotelUsername
+                        }
+                    });
+
+                    // Create Wallet
+                    await tx.hotelwallet.create({
+                        data: {
+                            hotelId: newHotel.id,
+                            totalRevenue: 0,
+                            availableBalance: 0,
+                            pendingPayouts: 0,
+                            commissionRate: 15,
+                            updatedAt: new Date()
+                        }
+                    });
+
+                    // Create Rooms
+                    const createdRooms = [];
+                    if (Array.isArray(rooms) && rooms.length > 0) {
+                        for (const r of rooms) {
+                            const rPrice = parseFloat(r.pricePerNight) || hPrice;
+                            const rName = r.name || "Standard Room";
+                            const rMaxOcc = parseInt(r.maxOccupancy) || 2;
+                            const rBeds = r.bedConfiguration || "1 King Bed";
+                            const rSize = parseInt(r.sizeM2) || 18;
+                            const rInventory = parseInt(r.totalInventory) || 5;
+                            const rAmenities = JSON.stringify(r.amenities || []);
+                            const rDesc = r.description || `Premium ${rName} room category offering comfort and luxury amenities.`;
+
+                            const epVariant = [
+                                {
+                                    id: 1,
+                                    mealPlan: "Room Only (EP)",
+                                    price: rPrice,
+                                    policy: "Free cancellation till 24h"
+                                }
+                            ];
+
+                            const newRoom = await tx.room.create({
+                                data: {
+                                    name: rName,
+                                    pricePerNight: rPrice,
+                                    maxOccupancy: rMaxOcc,
+                                    bedConfiguration: rBeds,
+                                    sizeM2: rSize,
+                                    totalInventory: rInventory,
+                                    amenities: rAmenities,
+                                    images: JSON.stringify([]),
+                                    description: rDesc,
+                                    status: 'active',
+                                    hotelId: newHotel.id,
+                                    capacityAdults: rMaxOcc,
+                                    variants: JSON.stringify(epVariant)
+                                }
+                            });
+                            createdRooms.push(newRoom);
+                        }
+                    } else {
+                        // Fallback Standard Room if no rooms list provided
+                        const newRoom = await tx.room.create({
+                            data: {
+                                name: "Standard Room",
+                                pricePerNight: hPrice,
+                                maxOccupancy: 2,
+                                bedConfiguration: "1 King Bed",
+                                sizeM2: 18,
+                                totalInventory: 5,
+                                amenities: JSON.stringify([]),
+                                images: JSON.stringify([]),
+                                description: "Comfortable standard room category.",
+                                status: 'active',
+                                hotelId: newHotel.id,
+                                capacityAdults: 2,
+                                variants: JSON.stringify([{ id: 1, mealPlan: "Room Only (EP)", price: hPrice, policy: "Free cancellation till 24h" }])
+                            }
+                        });
+                        createdRooms.push(newRoom);
+                    }
+
+                    return { user, hotel: newHotel, roomsCount: createdRooms.length };
+                });
+
+                // Audit log Admin activity
+                const { logAdminActivity } = require('../utils/auditLogger');
+                logAdminActivity(req.user, 'CREATE_PARTNER_AI_BULK', {
+                    partnerId: creationResult.user.id,
+                    hotelId: creationResult.hotel.id,
+                    partnerEmail: partner.email
+                }, req);
+
+                results.push({
+                    fileName,
+                    success: true,
+                    skipped: false,
+                    hotelName: hotel.name,
+                    email: partner.email,
+                    password: partner.password,
+                    phone: partner.phone,
+                    roomsCount: creationResult.roomsCount,
+                    message: "Onboarded successfully!"
+                });
+
+                historyEntries.push({
+                    timestamp: new Date(),
+                    fileName,
+                    hotelName: hotel.name,
+                    email: partner.email,
+                    password: partner.password,
+                    phone: partner.phone,
+                    roomsCount: creationResult.roomsCount,
+                    status: 'success',
+                    message: "Onboarded successfully!"
+                });
+
+            } catch (fileErr) {
+                console.error(`Error confirming file ${fileName}:`, fileErr);
+                results.push({
+                    fileName,
+                    success: false,
+                    skipped: false,
+                    message: fileErr.message || "Failed to onboard hotel."
+                });
+
+                historyEntries.push({
+                    timestamp: new Date(),
+                    fileName,
+                    hotelName: hName || "Unknown",
+                    status: 'failed',
+                    message: fileErr.message || "Failed to onboard hotel."
+                });
+            }
+        }
+
+        // Save history logs to local json file
+        writeHistoryLog(historyEntries);
+
+        res.status(200).json({
+            success: true,
+            results
+        });
+
+    } catch (err) {
+        console.error("AI_BULK_ONBOARD_CONFIRM_ERROR:", err);
+        res.status(500).json({ success: false, message: "AI bulk hotel onboarding confirmation failed", error: err.message });
+    }
+};
+
+/**
+ * @desc    Get bulk onboarding history logs
+ * @route   GET /api/admin/ai/bulk-onboard-history
+ * @access  Private (Super Admin)
+ */
+exports.bulkOnboardHistory = async (req, res) => {
+    try {
+        const history = readHistoryLog();
+        res.status(200).json({
+            success: true,
+            history
+        });
+    } catch (err) {
+        console.error("AI_BULK_ONBOARD_HISTORY_ERROR:", err);
+        res.status(500).json({ success: false, message: "Failed to load bulk onboarding history", error: err.message });
     }
 };

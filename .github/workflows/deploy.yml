@@ -22,9 +22,15 @@ jobs:
       - name: Install lftp
         run: sudo apt-get install -y lftp
 
-      - name: Build Frontend
+      - name: Build Main Frontend
         run: |
           cd GetHotel-Vite
+          npm install
+          npm run build
+
+      - name: Build AI Chat Frontend
+        run: |
+          cd ai.gethotelstays.com
           npm install
           npm run build
 
@@ -70,19 +76,33 @@ jobs:
           LFTPEOF
           echo "Backend full mirror deploy + restart completed!"
 
-      - name: Zip Frontend Build
+      - name: Zip Main Frontend Build
         run: |
           cd GetHotel-Vite/dist/client
           zip -r ../../../frontend.zip .
           cd ../../..
 
-      - name: Deploy Frontend Zip to cPanel
+      - name: Deploy Main Frontend Zip to cPanel
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
           FTP_USER: ${{ secrets.FTP_USERNAME }}
           FTP_PASS: ${{ secrets.FTP_PASSWORD }}
         run: |
           lftp -u "$FTP_USER","$FTP_PASS" "$FTP_SERVER" -e "set ftp:ssl-allow no; set ftp:passive-mode yes; set net:timeout 60; set net:max-retries 2; put frontend.zip -o ./public_html/frontend.zip; put unzip.php -o ./public_html/unzip.php; put set_env.php -o ./public_html/set_env.php; bye"
+
+      - name: Zip AI Frontend Build
+        run: |
+          cd ai.gethotelstays.com/dist
+          zip -r ../../ai-frontend.zip .
+          cd ../..
+
+      - name: Deploy AI Frontend to cPanel
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USER: ${{ secrets.FTP_USERNAME }}
+          FTP_PASS: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          lftp -u "$FTP_USER","$FTP_PASS" "$FTP_SERVER" -e "set ftp:ssl-allow no; set ftp:passive-mode yes; set net:timeout 60; set net:max-retries 2; put ai-frontend.zip -o ./ai.gethotelstays.com/ai-frontend.zip; bye"
 
       - name: Trigger Remote Extraction & Env Update
         run: |
@@ -98,6 +118,10 @@ jobs:
               exit 1
           fi
           echo "Remote extraction completed successfully!"
+
+          echo "Extracting AI frontend..."
+          AI_RESPONSE=$(curl -sS --max-time 30 "https://gethotelstays.com/unzip.php?action=extract_ai")
+          echo "AI Extraction Response: $AI_RESPONSE"
 
       - name: Finalize
         run: echo "Deployment and Env updates completed successfully!"

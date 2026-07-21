@@ -69,6 +69,7 @@ const whitelist = [
     process.env.FRONTEND_URL,
     'https://gethotelstays.com',
     'https://www.gethotelstays.com',
+    'https://ai.gethotelstays.com',
     'http://localhost:5173',
     'http://localhost:3000'
 ].map(url => url ? url.trim().replace(/\/$/, '') : '').filter(Boolean);

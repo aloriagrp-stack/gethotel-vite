@@ -1,0 +1,183 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  /* Modern premium sharp type system */
+  --font-inter: 'Inter', sans-serif;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-display: var(--font-inter), system-ui, sans-serif;
+  --font-luxury: 'Playfair Display', serif;
+
+  --color-brand-50: #f0f7ff;
+  --color-brand-100: #e0effe;
+  --color-brand-200: #baddfd;
+  --color-brand-300: #7fc4fb;
+  --color-brand-400: #3aa5f6;
+  --color-brand-500: #1087e7;
+  --color-brand-600: #0369c5;
+  --color-brand-700: #0254a0;
+  --color-brand-800: #064785;
+  --color-brand-900: #0b3c6e;
+  --color-brand-950: #07264a;
+
+  --color-gold-400: #fbbf24;
+  --color-gold-500: #f59e0b;
+
+  --color-surface-DEFAULT: #ffffff;
+  --color-surface-secondary: #f8fafc;
+  --color-surface-tertiary: #f1f5f9;
+
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 4px 12px 0 rgba(0, 0, 0, 0.08);
+  --shadow-card-hover: 0 4px 8px 0 rgba(0, 0, 0, 0.06), 0 12px 28px 0 rgba(0, 0, 0, 0.12);
+  --shadow-nav: 0 1px 0 0 rgba(0, 0, 0, 0.06);
+  --shadow-float: 0 12px 48px rgba(0, 0, 0, 0.12);
+  --shadow-premium: 0 20px 50px rgba(0, 0, 0, 0.1);
+  --shadow-input: 0 0 0 3px rgba(16, 135, 231, 0.12);
+
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.25rem;
+  --radius-4xl: 1.5rem;
+  --radius-5xl: 2rem;
+
+  --glass-bg: rgba(255, 255, 255, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.4);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+  --glass-blur: blur(20px);
+
+  --animate-shimmer: shimmer 1.5s infinite;
+  --animate-slide-up: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-fade-in: fadeIn 0.3s ease-out;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes slideUp {
+  0% {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes glow {
+  0% { box-shadow: 0 0 5px rgba(14,165,233,0.2); }
+  50% { box-shadow: 0 0 20px rgba(14,165,233,0.5); }
+  100% { box-shadow: 0 0 5px rgba(14,165,233,0.2); }
+}
+
+@keyframes dottedScale {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(0.4);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.15);
+    opacity: 1;
+  }
+}
+
+.animate-glow {
+  animation: glow 2s infinite ease-in-out;
+}
+
+.animate-dotted {
+  animation: dottedScale 1.2s infinite ease-in-out;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    color: #020617; /* slate-950 */
+    font-family: var(--font-sans);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #f1f5f9;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 100px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
+  }
+
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    will-change: transform, opacity;
+  }
+
+  .glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    color: #000000;
+    will-change: transform;
+  }
+
+  .glass-card:hover {
+    background: rgba(255, 255, 255, 0.55);
+    transform: translateY(-6px);
+    box-shadow: 0 20px 60px rgba(0, 50, 150, 0.15);
+  }
+}
