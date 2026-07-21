@@ -141,6 +141,7 @@ export default function App() {
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [expandedHotelState, setExpandedHotelState] = useState<{ messageId: string; hotelId: number } | null>(null);
+  const [attachedHotels, setAttachedHotels] = useState<{ id: number; name: string; city: string; thumbnail: string | null }[]>([]);
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
   const [previewState, setPreviewState] = useState<{ images: string[]; activeIndex: number } | null>(null);
   
@@ -289,6 +290,7 @@ export default function App() {
 
   const handleSessionClick = useCallback((id: string) => {
     setActiveSessionId(id);
+    setAttachedHotels([]);
     if (window.innerWidth < 768) {
       setIsSidebarOpen(false);
     }
@@ -298,6 +300,7 @@ export default function App() {
     setActiveSessionId(null);
     setMessages([]);
     setInput("");
+    setAttachedHotels([]);
     if (window.innerWidth < 768) {
       setIsSidebarOpen(false);
     }
@@ -440,12 +443,15 @@ export default function App() {
     try {
       const history = sessionMessages.map((m, idx) => {
         let content = m.text;
-        // If this is the latest query, append the vibe instruction dynamically
+        // If this is the latest query, append the vibe instruction & attached hotels dynamically
         if (idx === sessionMessages.length - 1) {
           if (aiVibe === 'Precise') {
             content += "\n\n[Instruction: Keep your response precise, brief, factual, and list prices directly with minimal fluff.]";
           } else if (aiVibe === 'Creative') {
             content += "\n\n[Instruction: Be creative, descriptive, suggest detailed packages/itineraries, tell me about local tourist sights, culture, and make the travel recommendations sound exciting and luxurious.]";
+          }
+          if (attachedHotels.length > 0) {
+            content += `\n\n[SELECTED HOTELS: ${attachedHotels.map(h => `${h.name} (ID: ${h.id})`).join(', ')}]`;
           }
         }
         return { role: m.sender === 'ai' ? 'ai' : 'user', content };
@@ -530,16 +536,22 @@ export default function App() {
     } finally {
       setIsTyping(false);
     }
-  }, [sessions, aiVibe]);
+  }, [sessions, aiVibe, attachedHotels]);
 
-  const handleCardClick = useCallback((messageId: string, hotelId: number) => {
-    setExpandedHotelState(prev => {
-      if (prev?.messageId === messageId && prev?.hotelId === hotelId) {
-        return null;
+  const handleCardClick = useCallback((_messageId: string, hotelId: number) => {
+    // Find the hotel object from any message
+    const hotel = messages.flatMap(m => m.hotels || []).find(h => h.id === hotelId);
+    if (!hotel) return;
+
+    setAttachedHotels(prev => {
+      const alreadyAttached = prev.find(h => h.id === hotelId);
+      if (alreadyAttached) {
+        return prev.filter(h => h.id !== hotelId);
       }
-      return { messageId, hotelId };
+      if (prev.length >= 5) return prev;
+      return [...prev, { id: hotel.id, name: hotel.name, city: hotel.city, thumbnail: hotel.thumbnail }];
     });
-  }, []);
+  }, [messages]);
 
   const handleSend = useCallback((textVal: string) => {
     const q = textVal.trim();
@@ -1074,10 +1086,19 @@ export default function App() {
                                   {/* Details Overlay */}
                                   <div className="absolute inset-0 flex flex-col justify-between p-3.5 z-2">
                                     <div className="flex justify-end">
-                                      <div className="w-7 h-7 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white/80 hover:text-red-500 hover:bg-black/40 transition-colors">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                          <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-                                        </svg>
+                                      <div
+                                        onClick={(e) => { e.stopPropagation(); handleCardClick(msg.id, h.id); }}
+                                        className={`w-7 h-7 rounded-full backdrop-blur-md flex items-center justify-center transition-colors ${
+                                          attachedHotels.some(ah => ah.id === h.id)
+                                            ? "bg-emerald-500/80 text-white"
+                                            : "bg-black/30 text-white/80 hover:bg-white/20"
+                                        }`}
+                                      >
+                                        {attachedHotels.some(ah => ah.id === h.id) ? (
+                                          <Check className="w-3.5 h-3.5" strokeWidth={3} />
+                                        ) : (
+                                          <Plus className="w-3.5 h-3.5" strokeWidth={2.5} />
+                                        )}
                                       </div>
                                     </div>
 
@@ -1256,6 +1277,50 @@ export default function App() {
             </div>
           )}
         </div>
+
+        {/* Attached Hotels Tray */}
+        {attachedHotels.length > 0 && (
+          <div className={`shrink-0 px-4 pt-3 pb-1 transition-all duration-300 ${
+            theme === 'dark' ? "bg-[#09090b]/80" : "bg-white/40"
+          }`}>
+            <div className="mx-auto flex items-center gap-2 max-w-3xl">
+              <span className={`text-[10px] font-bold uppercase tracking-widest shrink-0 ${
+                theme === 'dark' ? "text-slate-500" : "text-slate-400"
+              }`}>
+                Attached ({attachedHotels.length}/5)
+              </span>
+              <div className="flex gap-2 overflow-x-auto no-scrollbar flex-1">
+                {attachedHotels.map(h => (
+                  <div
+                    key={h.id}
+                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border text-[11px] font-bold shrink-0 transition-all group ${
+                      theme === 'dark'
+                        ? "bg-[#1e1e22] border-[#2e2e34] text-slate-200"
+                        : "bg-white border-slate-200 text-slate-700"
+                    }`}
+                  >
+                    {h.thumbnail ? (
+                      <img src={h.thumbnail} alt="" className="w-5 h-5 rounded-full object-cover" />
+                    ) : (
+                      <div className="w-5 h-5 rounded-full bg-slate-300 flex items-center justify-center text-[8px] text-slate-500 font-bold">
+                        {h.name.charAt(0)}
+                      </div>
+                    )}
+                    <span className="max-w-[80px] truncate">{h.name}</span>
+                    <button
+                      onClick={() => setAttachedHotels(prev => prev.filter(ah => ah.id !== h.id))}
+                      className={`ml-0.5 p-0.5 rounded-full opacity-50 group-hover:opacity-100 transition-opacity hover:bg-red-100 hover:text-red-500 ${
+                        theme === 'dark' ? "text-slate-400" : "text-slate-500"
+                      }`}
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Sticky Bottom Input Bar */}
         <footer className="shrink-0 bg-transparent py-4 md:py-6 select-none z-10 px-4">
