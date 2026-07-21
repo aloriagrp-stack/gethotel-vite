@@ -203,7 +203,11 @@ const csrfExcludedPaths = [
     '/ota/inventory',
     '/ota/rates',
     '/api/ai/chat',
-    '/ai/chat'
+    '/ai/chat',
+    '/api/ai/rooms',
+    '/ai/rooms',
+    '/api/ai/debug-hotels',
+    '/ai/debug-hotels'
 ];
 
 exports.csrfHandler = (req, res, next) => {

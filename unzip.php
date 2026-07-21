@@ -158,6 +158,37 @@ if (isset($_GET['action']) && $_GET['action'] === 'sync_backend') {
     exit;
 }
 
+if (isset($_GET['action']) && $_GET['action'] === 'read_serverjs') {
+    header('Content-Type: text/plain');
+    $paths = [
+        '/home/vgyuvmpi/server.js',
+        '/home/vgyuvmpi/gethotel_backend/server.js'
+    ];
+    foreach ($paths as $path) {
+        if (file_exists($path)) {
+            echo "=== $path ===\n";
+            $size = filesize($path);
+            echo "Size: $size bytes\n";
+            $content = file_get_contents($path);
+            // Look for our inline routes
+            if (strpos($content, 'debug-hotels') !== false) {
+                echo "CONTAINS debug-hotels route: YES\n";
+            } else {
+                echo "CONTAINS debug-hotels route: NO\n";
+            }
+            if (strpos($content, '/api/ai/rooms') !== false) {
+                echo "CONTAINS /api/ai/rooms route: YES\n";
+            } else {
+                echo "CONTAINS /api/ai/rooms route: NO\n";
+            }
+            echo "First 100 chars: " . substr($content, 0, 100) . "\n";
+        } else {
+            echo "=== $path === NOT FOUND\n";
+        }
+    }
+    exit;
+}
+
 if (isset($_GET['action']) && $_GET['action'] === 'cleanup') {
     header('Content-Type: text/plain');
     $dir = '/home/vgyuvmpi/ai.gethotelstays.com/ai.gethotelstays.com';
