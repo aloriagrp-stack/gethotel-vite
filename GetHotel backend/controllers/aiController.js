@@ -1919,6 +1919,26 @@ exports.getRooms = async (req, res) => {
  * @route   POST /api/admin/ai/import-reviews
  * @access  Private (Super Admin)
  */
+exports.debugHotels = async (req, res) => {
+    try {
+        const total = await prisma.hotel.count();
+        const active = await prisma.hotel.count({ where: { isActive: true } });
+        const byCity = await prisma.hotel.groupBy({ by: ['city'], where: { isActive: true }, _count: { id: true } });
+        const sample = await prisma.hotel.findMany({ where: { isActive: true }, select: { id: true, name: true, city: true }, take: 10 });
+        console.log('[AI Debug] total:', total, 'active:', active);
+        return res.json({ success: true, totalHotels: total, activeHotels: active, byCity: byCity.map(c => ({ city: c.city, count: c._count.id })), sample });
+    } catch (err) {
+        console.error('[AI Debug Error]:', err.message);
+        return res.json({ success: false, message: err.message });
+    }
+};
+
+
+/**
+ * @desc    Scrape hotel reviews from external OTA page and insert into database
+ * @route   POST /api/admin/ai/import-reviews
+ * @access  Private (Super Admin)
+ */
 exports.importReviews = async (req, res) => {
     try {
         const apiKey = process.env.GEMINI_API_KEY;
@@ -2709,3 +2729,4 @@ exports.bulkOnboardHistory = async (req, res) => {
         res.status(500).json({ success: false, message: "Failed to load bulk onboarding history", error: err.message });
     }
 };
+
