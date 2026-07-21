@@ -1,0 +1,3465 @@
+{
+  "rawPriceData": [
+    {
+      "b_blocks": [
+        {
+          "b_mealplan_included_name": null,
+          "b_price": "Rs. 3,570",
+          "b_paymentterms": {
+            "b_depositterms_id": 1,
+            "b_paymentterms_id": 29
+          },
+          "b_cfar_tc_link": "https://r-xx.bstatic.com/cdata/cfar/cancelforanyreason_v010825.pdf",
+          "b_stay_prices": [
+            {
+              "b_raw_price": "",
+              "b_local_price": 0,
+              "b_stays": 0,
+              "b_cfar_price": 0,
+              "b_price_per_night": "",
+              "b_price": "",
+              "b_cfar_raw_price": 0
+            },
+            {
+              "b_cfar_raw_price": 0,
+              "b_price": "Rs. 3,570",
+              "b_price_per_night": "Rs. 3,570",
+              "b_cfar_price": 0,
+              "b_stays": 1,
+              "b_local_price": 3570,
+              "b_raw_price": 3570
+            },
+            {
+              "b_local_price": 7140,
+              "b_raw_price": 7140,
+              "b_cfar_raw_price": 0,
+              "b_price_per_night": "Rs. 7,140",
+              "b_price": "Rs. 7,140",
+              "b_stays": 2,
+              "b_cfar_price": 0
+            },
+            {
+              "b_cfar_price": 0,
+              "b_stays": 3,
+              "b_price": "Rs. 10,710",
+              "b_price_per_night": "Rs. 10,710",
+              "b_cfar_raw_price": 0,
+              "b_raw_price": 10710,
+              "b_local_price": 10710
+            },
+            {
+              "b_cfar_raw_price": 0,
+              "b_cfar_price": 0,
+              "b_stays": 4,
+              "b_price": "Rs. 14,280",
+              "b_price_per_night": "Rs. 14,280",
+              "b_local_price": 14280,
+              "b_raw_price": 14280
+            },
+            {
+              "b_price_per_night": "Rs. 17,850",
+              "b_price": "Rs. 17,850",
+              "b_stays": 5,
+              "b_cfar_price": 0,
+              "b_cfar_raw_price": 0,
+              "b_raw_price": 17850,
+              "b_local_price": 17850
+            },
+            {
+              "b_cfar_price": 0,
+              "b_stays": 6,
+              "b_price_per_night": "Rs. 21,420",
+              "b_price": "Rs. 21,420",
+              "b_cfar_raw_price": 0,
+              "b_raw_price": 21420,
+              "b_local_price": 21420
+            },
+            {
+              "b_cfar_raw_price": 0,
+              "b_price": "Rs. 24,990",
+              "b_price_per_night": "Rs. 24,990",
+              "b_stays": 7,
+              "b_cfar_price": 0,
+              "b_raw_price": 24990,
+              "b_local_price": 24990
+            },
+            {
+              "b_cfar_raw_price": 0,
+              "b_price_per_night": "Rs. 28,560",
+              "b_price": "Rs. 28,560",
+              "b_cfar_price": 0,
+              "b_stays": 8,
+              "b_raw_price": 28560,
+              "b_local_price": 28560
+            },
+            {
+              "b_price": "Rs. 32,130",
+              "b_price_per_night": "Rs. 32,130",
+              "b_stays": 9,
+              "b_cfar_price": 0,
+              "b_cfar_raw_price": 0,
+              "b_raw_price": 32130,
+              "b_local_price": 32130
+            }
+          ],
+          "b_rate_is_genius": 0,
+          "b_raw_price": "3570.00",
+          "b_is_cfar": 0,
+          "b_cancellation_type": "free_cancellation",
+          "b_block_id": "80392102_430056064_2_42_0",
+          "b_nr_stays": 9,
+          "b_avg_price_per_night_eur": "32.32",
+          "b_price_breakdown_simplified": {
+            "b_long_stays_monthly_rate_plan_discounted_price": 0,
+            "b_charges_info_copy": {
+              "b_is_all_included": 0,
+              "b_line_copy": "",
+              "b_tooltip_copy": "Total"
+            },
+            "b_hide_breakdown": 0,
+            "b_sum_discounts": [
+              {
+                "b_copy": "Sum of discounts",
+                "b_raw_value_user_currency": 2380,
+                "b_copy_alt": "Sum of discounts",
+                "b_value_user_currency": "Rs. 2,380",
+                "b_raw_value_user_currency_rounded": 2380,
+                "b_value_user_currency_rounded": "Rs. 2,380",
+                "b_type": "discount_sum"
+              }
+            ],
+            "b_sum_included_charges": [
+              {
+                "b_type": "subtotal",
+                "b_raw_value_user_currency_rounded": 0,
+                "b_value_hotel_currency": "Rs. 0",
+                "b_value_user_currency_rounded": "Rs. 0",
+                "b_value_user_currency": "Rs. 0",
+                "b_copy_alt": "Sum of all included charges",
+                "b_raw_value_user_currency": 0,
+                "b_copy": "sum included",
+                "b_raw_value_hotel_currency": 0
+              }
+            ],
+            "b_excluded_charges": [
+              {
+                "b_raw_value": "178.5",
+                "b_copy_alt": "Goods & services tax",
+                "b_type": "variable_amount__excluded",
+                "b_copy": "Goods & services tax",
+                "b_value": "Rs. 178.50",
+                "b_value_user_currency_rounded": "Rs. 179"
+              }
+            ],
+            "b_conditional_included_charges": [],
+            "b_charges_info": [
+              {
+                "excludes": [
+                  "Goods & services tax"
+                ],
+                "includes": []
+              }
+            ],
+            "b_subtotal_price_average": [
+              {
+                "b_type": "subtotal_per_night",
+                "b_raw_value_user_currency_rounded": 3570,
+                "b_value_user_currency_rounded": "Rs. 3,570",
+                "b_value_hotel_currency": "Rs. 3,570",
+                "b_value_user_currency": "Rs. 3,570",
+                "b_copy_rounded": "Rs. 3,570 × 1 night",
+                "b_copy_alt": "Subtotal Average Price",
+                "b_raw_value_user_currency": 3570,
+                "b_raw_value_hotel_currency": 3570,
+                "b_copy": "Rs. 3,570 × 1 night"
+              }
+            ],
+            "b_booking_sponsored_discounts": [],
+            "b_aggregated_addons": [],
+            "b_addons": [],
+            "b_total_price": [
+              {
+                "b_value_user_currency_rounded": "Rs. 3,749",
+                "b_value_hotel_currency": "Rs. 3,748.50",
+                "b_value_user_currency": "Rs. 3,748.50",
+                "b_type": "total",
+                "b_raw_value_user_currency": 3748.50000265986,
+                "b_raw_value_hotel_currency": 3748.50000265986,
+                "b_copy": "Total",
+                "b_copy_alt": "Total Price"
+              }
+            ],
+            "b_all_discounts": [
+              {
+                "b_value_user_currency_rounded": "Rs. 2,380",
+                "b_raw_value_user_currency_rounded": 2380,
+                "b_value_user_currency": "Rs. 2,380",
+                "b_type": "Promotions",
+                "b_rule_name": "deals_basic_deal_composer",
+                "b_raw_value_user_currency": 2380,
+                "b_subtype": "basic-deal",
+                "b_copy": "Bonus savings",
+                "b_copy_alt": "You’re getting a reduced rate because this property is offering a discount."
+              }
+            ],
+            "b_subtotal_price": [
+              {
+                "b_copy_alt": "Subtotal Price",
+                "b_copy": "Total",
+                "b_raw_value_hotel_currency": 3570,
+                "b_raw_value_user_currency": 3570,
+                "b_raw_value_hotel_currency_rounded": 3570,
+                "b_type": "subtotal",
+                "b_value_user_currency": "Rs. 3,570",
+                "b_raw_value_user_currency_rounded": 3570,
+                "b_value_hotel_currency": "Rs. 3,570",
+                "b_value_user_currency_rounded": "Rs. 3,570"
+              }
+            ],
+            "b_price_display_config": [
+              {
+                "key": "use_nightly_prices",
+                "value": 1
+              },
+              {
+                "key": "use_nightly_as_dominant",
+                "value": 0
+              },
+              {
+                "key": "use_js_tracking",
+                "value": 1
+              }
+            ],
+            "b_included_charges": [],
+            "b_average_per_night_net_price": [
+              {
+                "b_value_user_currency_rounded": "Rs. 3,570",
+                "b_raw_value_user_currency_rounded": 3570,
+                "b_value_user_currency": "Rs. 3,570",
+                "b_type": "net_price_per_night",
+                "b_raw_value_user_currency": 3570,
+                "b_copy": "",
+                "b_copy_alt": ""
+              }
+            ],
+            "b_extra_addons": [],
+            "b_prediscounted_price": [
+              {
+                "b_value_user_currency_rounded": "Rs. 5,950",
+                "b_raw_value_user_currency_rounded": 5950,
+                "b_value_user_currency": "Rs. 5,950",
+                "b_type": "prediscounted_price",
+                "b_raw_value_user_currency": 5950,
+                "b_copy": "Original price",
+                "b_copy_alt": "You’re getting a discount because this property offers reduced rates on some rooms that match your search."
+              }
+            ],
+            "b_credit_rewards": [],
+            "b_other_benefits": [
+              {
+                "b_variant": "constructive",
+                "b_icon": null,
+                "b_copy": "40% off",
+                "b_type": "combined-discount",
+                "b_copy_alt": "You’re getting a reduced rate because this property is offering a discount."
+              }
+            ],
+            "b_rate_level_discounts": [
+              {
+                "b_value_user_currency_rounded": "Rs. 2,380",
+                "b_raw_value_user_currency_rounded": 2380,
+                "b_value_user_currency": "Rs. 2,380",
+                "b_type": "Promotions",
+                "b_rule_name": "deals_basic_deal_composer",
+                "b_raw_value_user_currency": 2380,
+                "b_subtype": "basic-deal",
+                "b_copy": "Bonus savings",
+                "b_copy_alt": "You’re getting a reduced rate because this property is offering a discount."
+              }
+            ],
+            "b_sum_credit_rewards": [],
+            "b_all_charges": [
+              {
+                "b_raw_value": "178.5",
+                "b_copy_alt": "Goods & services tax",
+                "b_type": "variable_amount__excluded",
+                "b_copy": "Goods & services tax",
+                "b_value": "Rs. 178.50",
+                "b_value_user_currency_rounded": "Rs. 179"
+              }
+            ],
+            "b_subtotal_price_before_total_level_discounts": [
+              {
+                "b_copy_alt": "Subtotal Price Before Booking Sponsored Discounts",
+                "b_raw_value_user_currency": 3570,
+                "b_raw_value_hotel_currency": 3570,
+                "b_copy": "Total",
+                "b_type": "subtotal",
+                "b_raw_value_user_currency_rounded": 3570,
+                "b_value_hotel_currency": "Rs. 3,570",
+                "b_value_user_currency_rounded": "Rs. 3,570",
+                "b_value_user_currency": "Rs. 3,570"
+              }
+            ],
+            "b_subtotal_price_average_before_total_level_discounts": [
+              {
+                "b_type": "subtotal_per_night",
+                "b_value_user_currency": "Rs. 3,570",
+                "b_raw_value_user_currency_rounded": 3570,
+                "b_value_user_currency_rounded": "Rs. 3,570",
+                "b_value_hotel_currency": "Rs. 3,570",
+                "b_copy_alt": "Subtotal Average Price Before Booking Sponsored Discounts",
+                "b_copy_rounded": "Rs. 3,570 × 1 night",
+                "b_copy": "Rs. 3,570 × 1 night",
+                "b_raw_value_hotel_currency": 3570,
+                "b_raw_value_user_currency": 3570
+              }
+            ],
+            "b_vm_products": [
+              {
+                "b_variant": "constructive",
+                "b_icon": null,
+                "b_copy": "40% off",
+                "b_type": "combined-discount",
+                "b_copy_alt": "You’re getting a reduced rate because this property is offering a discount."
+              }
+            ],
+            "b_tax_exceptions": [],
+            "b_conditional_charges": [],
+            "b_long_stays_weekly_rate_plan_discounted_price": 0,
+            "b_prediscounted_price_average": [
+              {
+                "b_type": "prediscounted_price_per_night",
+                "b_value_user_currency_rounded": "Rs. 5,950",
+                "b_raw_value_user_currency_rounded": 5950,
+                "b_value_user_currency": "Rs. 5,950",
+                "b_copy_rounded": "Rs. 5,950 × 1 night",
+                "b_copy_alt": "You’re getting a discount because this property offers reduced rates on some rooms that match your search.",
+                "b_raw_value_user_currency": 5950,
+                "b_copy": "Rs. 5,950 × 1 night"
+              }
+            ],
+            "b_insurance_products": [],
+            "b_tpi_info": 0,
+            "b_sum_discounts_percentage": [
+              {
+                "b_copy": "Discounts percentage",
+                "b_raw_value_user_currency": 40,
+                "b_copy_alt": "Discounts percentage",
+                "b_value_user_currency": "40%",
+                "b_raw_value_user_currency_rounded": 40,
+                "b_value_user_currency_rounded": "40%",
+                "b_type": "discount_percentage"
+              }
+            ],
+            "b_nonmandatory_charges": [],
+            "b_excluded_charges_amount": 178.5,
+            "b_original_price": [
+              {
+                "b_copy": "",
+                "b_raw_value_user_currency": 5950,
+                "b_copy_alt": "",
+                "b_value_user_currency": "Rs. 5,950",
+                "b_value_user_currency_rounded": "Rs. 5,950",
+                "b_raw_value_user_currency_rounded": 5950,
+                "b_type": "prediscounted_price_before_insurance"
+              }
+            ],
+            "b_net_room_price": [
+              {
+                "b_value": "Rs. 3,570",
+                "b_copy": "Rs. 3,570 × 1 night",
+                "b_copy_alt": "1 room",
+                "b_copy_rounded": "Rs. 3,570 × 1 night",
+                "b_value_per_night_rounded": "Rs. 3,570",
+                "b_value_user_currency_rounded": "Rs. 3,570",
+                "b_type": "net_room_price",
+                "b_raw_value": "3570"
+              }
+            ],
+            "b_sum_charges": [
+              {
+                "b_type": "subtotal",
+                "b_value_user_currency": "Rs. 178.50",
+                "b_raw_value_user_currency_rounded": 179,
+                "b_value_hotel_currency": "Rs. 178.50",
+                "b_value_user_currency_rounded": "Rs. 179",
+                "b_copy_alt": "Sum of all excluded charges",
+                "b_raw_value_hotel_currency": 178.500002659857,
+                "b_copy": "sum excluded",
+                "b_raw_value_user_currency": 178.5
+              }
+            ],
+            "b_client_translations": {
+              "b_amount_per_night_suffix": "per night",
+              "b_tooltip_total_text": "Total before taxes",
+              "b_total_text": "",
+              "b_tooltip_footnote_text": [
+                "Rs. 3,570 is the average price per night. This excludes taxes and fees."
+              ],
+              "b_per_night_amount_prefix": "Per night"
+            }
+          },
+          "b_can_fit_them_all": 2,
+          "b_max_persons": 2
+        },
+        {
+          "b_block_id": "80392102_430056065_2_41_0_873442",
+          "b_cancellation_type": "free_cancellation",
+          "b_stay_prices": [
+            {
+              "b_cfar_raw_price": 0,
+              "b_price": "",
+              "b_price_per_night": "",
+              "b_cfar_price": 0,
+              "b_stays": 0,
+              "b_local_price": 0,
+              "b_raw_price": ""
+            },
+            {
+              "b_cfar_raw_price": 0,
+              "b_price_per_night": "Rs. 3,780",
+              "b_price": "Rs. 3,780",
+              "b_stays": 1,
+              "b_cfar_price": 0,
+              "b_local_price": 3780,
+              "b_raw_price": 3780
+            },
+            {
+              "b_raw_price": 7560,
+              "b_local_price": 7560,
+              "b_stays": 2,
+              "b_cfar_price": 0,
+              "b_price": "Rs. 7,560",
+              "b_price_per_night": "Rs. 7,560",
+              "b_cfar_raw_price": 0
+            },
+            {
+              "b_local_price": 11340,
+              "b_raw_price": 11340,
+              "b_cfar_raw_price": 0,
+              "b_stays": 3,
+              "b_cfar_price": 0,
+              "b_price": "Rs. 11,340",
+              "b_price_per_night": "Rs. 11,340"
+            },
+            {
+              "b_cfar_raw_price": 0,
+              "b_price": "Rs. 15,120",
+              "b_price_per_night": "Rs. 15,120",
+              "b_cfar_price": 0,
+              "b_stays": 4,
+              "b_local_price": 15120,
+              "b_raw_price": 15120
+            },
+            {
+              "b_local_price": 18900,
+              "b_raw_price": 18900,
+              "b_price": "Rs. 18,900",
+              "b_price_per_night": "Rs. 18,900",
+              "b_cfar_price": 0,
+              "b_stays": 5,
+              "b_cfar_raw_price": 0
+            },
+            {
+              "b_cfar_raw_price": 0,
+              "b_price": "Rs. 22,680",
+              "b_price_per_night": "Rs. 22,680",
+              "b_stays": 6,
+              "b_cfar_price": 0,
+              "b_raw_price": 22680,
+              "b_local_price": 22680
+            },
+            {
+              "b_stays": 7,
+              "b_cfar_price": 0,
+              "b_price_per_night": "Rs. 26,460",
+              "b_price": "Rs. 26,460",
+              "b_cfar_raw_price": 0,
+              "b_local_price": 26460,
+              "b_raw_price": 26460
+            },
+            {
+              "b_cfar_raw_price": 0,
+              "b_price": "Rs. 30,240",
+              "b_price_per_night": "Rs. 30,240",
+              "b_cfar_price": 0,
+              "b_stays": 8,
+              "b_raw_price": 30240,
+              "b_local_price": 30240
+            },
+            {
+              "b_cfar_raw_price": 0,
+              "b_cfar_price": 0,
+              "b_stays": 9,
+              "b_price_per_night": "Rs. 34,020",
+              "b_price": "Rs. 34,020",
+              "b_raw_price": 34020,
+              "b_local_price": 34020
+            }
+          ],
+          "b_rate_is_genius": 0,
+          "b_raw_price": "3780.00",
+          "b_is_cfar": 0,
+          "b_price_breakdown_simplified": {
+            "b_long_stays_monthly_rate_plan_discounted_price": 0,
+            "b_charges_info_copy": {
+              "b_tooltip_copy": "Total",
+              "b_line_copy": "",
+              "b_is_all_included": 0
+            },
+            "b_hide_breakdown": 0,
+            "b_sum_included_charges": [
+              {
+                "b_copy_alt": "Sum of all included charges",
+                "b_raw_value_user_currency": 0,
+                "b_copy": "sum included",
+                "b_raw_value_hotel_currency": 0,
+                "b_type": "subtotal",
+                "b_value_user_currency_rounded": "Rs. 0",
+                "b_raw_value_user_currency_rounded": 0,
+                "b_value_hotel_currency": "Rs. 0",
+                "b_value_user_currency": "Rs. 0"
+              }
+            ],
+            "b_sum_discounts": [
+              {
+                "b_type": "discount_sum",
+                "b_value_user_currency_rounded": "Rs. 2,520",
+                "b_raw_value_user_currency_rounded": 2520,
+                "b_value_user_currency": "Rs. 2,520",
+                "b_copy_alt": "Sum of discounts",
+                "b_raw_value_user_currency": 2520,
+                "b_copy": "Sum of discounts"
+              }
+            ],
+            "b_charges_info": [
+              {
+                "excludes": [
+                  "Goods & services tax"
+                ],
+                "includes": []
+              }
+            ],
+            "b_conditional_included_charges": [],
+            "b_excluded_charges": [
+              {
+                "b_value": "Rs. 189",
+                "b_value_user_currency_rounded": "Rs. 189",
+                "b_copy": "Goods & services tax",
+                "b_type": "variable_amount__excluded",
+                "b_copy_alt": "Goods & services tax",
+                "b_raw_value": "189"
+              }
+            ],
+            "b_booking_sponsored_discounts": [],
+            "b_subtotal_price_average": [
+              {
+                "b_type": "subtotal_per_night",
+                "b_value_user_currency": "Rs. 3,780",
+                "b_raw_value_user_currency_rounded": 3780,
+                "b_value_user_currency_rounded": "Rs. 3,780",
+                "b_value_hotel_currency": "Rs. 3,780",
+                "b_copy_alt": "Subtotal Average Price",
+                "b_copy_rounded": "Rs. 3,780 × 1 night",
+                "b_copy": "Rs. 3,780 × 1 night",
+                "b_raw_value_hotel_currency": 3780,
+                "b_raw_value_user_currency": 3780
+              }
+            ],
+            "b_addons": [],
+            "b_total_price": [
+              {
+                "b_value_user_currency_rounded": "Rs. 3,969",
+                "b_value_hotel_currency": "Rs. 3,969",
+                "b_value_user_currency": "Rs. 3,969",
+                "b_type": "total",
+                "b_raw_value_user_currency": 3969.00000281632,
+                "b_copy": "Total",
+                "b_raw_value_hotel_currency": 3969.00000281632,
+                "b_copy_alt": "Total Price"
+              }
+            ],
+            "b_aggregated_addons": [],
+            "b_all_discounts": [
+              {
+                "b_copy_alt": "You’re getting a reduced rate because this property is offering a discount.",
+                "b_subtype": "basic-deal",
+                "b_copy": "Bonus savings",
+                "b_raw_value_user_currency": 2520,
+                "b_rule_name": "deals_basic_deal_composer",
+                "b_type": "Promotions",
+                "b_value_user_currency": "Rs. 2,520",
+                "b_raw_value_user_currency_rounded": 2520,
+                "b_value_user_currency_rounded": "Rs. 2,520"
+              }
+            ],
+            "b_price_display_config": [
+              {
+                "value": 1,
+                "key": "use_nightly_prices"
+              },
+              {
+                "key": "use_nightly_as_dominant",
+                "value": 0
+              },
+              {
+                "value": 1,
+                "key": "use_js_tracking"
+              }
+            ],
+            "b_included_charges": [],
+            "b_subtotal_price": [
+              {
+                "b_copy_alt": "Subtotal Price",
+                "b_raw_value_user_currency": 3780,
+                "b_copy": "Total",
+                "b_raw_value_hotel_currency": 3780,
+                "b_type": "subtotal",
+                "b_raw_value_hotel_currency_rounded": 3780,
+                "b_value_user_currency_rounded": "Rs. 3,780",
+                "b_raw_value_user_currency_rounded": 3780,
+                "b_value_hotel_currency": "Rs. 3,780",
+                "b_value_user_currency": "Rs. 3,780"
+              }
+            ],
+            "b_prediscounted_price": [
+              {
+                "b_type": "prediscounted_price",
+                "b_value_user_currency": "Rs. 6,300",
+                "b_raw_value_user_currency_rounded": 6300,
+                "b_value_user_currency_rounded": "Rs. 6,300",
+                "b_copy_alt": "You’re getting a discount because this property offers reduced rates on some rooms that match your search.",
+                "b_copy": "Original price",
+                "b_raw_value_user_currency": 6300
+              }
+            ],
+            "b_credit_rewards": [],
+            "b_average_per_night_net_price": [
+              {
+                "b_copy_alt": "",
+                "b_copy": "",
+                "b_raw_value_user_currency": 3780,
+                "b_type": "net_price_per_night",
+                "b_value_user_currency": "Rs. 3,780",
+                "b_raw_value_user_currency_rounded": 3780,
+                "b_value_user_currency_rounded": "Rs. 3,780"
+              }
+            ],
+            "b_extra_addons": [],
+            "b_rate_level_discounts": [
+              {
+                "b_copy_alt": "You’re getting a reduced rate because this property is offering a discount.",
+                "b_subtype": "basic-deal",
+                "b_copy": "Bonus savings",
+                "b_raw_value_user_currency": 2520,
+                "b_rule_name": "deals_basic_deal_composer",
+                "b_type": "Promotions",
+                "b_value_user_currency": "Rs. 2,520",
+                "b_raw_value_user_currency_rounded": 2520,
+                "b_value_user_currency_rounded": "Rs. 2,520"
+              }
+            ],
+            "b_sum_credit_rewards": [],
+            "b_other_benefits": [
+              {
+                "b_variant": "constructive",
+                "b_icon": null,
+                "b_copy": "40% off",
+                "b_type": "combined-discount",
+                "b_copy_alt": "You’re getting a reduced rate because this property is offering a discount."
+              }
+            ],
+            "b_vm_products": [
+              {
+                "b_variant": "constructive",
+                "b_icon": null,
+                "b_copy": "40% off",
+                "b_type": "combined-discount",
+                "b_copy_alt": "You’re getting a reduced rate because this property is offering a discount."
+              }
+            ],
+            "b_subtotal_price_before_total_level_discounts": [
+              {
+                "b_copy_alt": "Subtotal Price Before Booking Sponsored Discounts",
+                "b_raw_value_user_currency": 3780,
+                "b_raw_value_hotel_currency": 3780,
+                "b_copy": "Total",
+                "b_type": "subtotal",
+                "b_raw_value_user_currency_rounded": 3780,
+                "b_value_hotel_currency": "Rs. 3,780",
+                "b_value_user_currency_rounded": "Rs. 3,780",
+                "b_value_user_currency": "Rs. 3,780"
+              }
+            ],
+            "b_all_charges": [
+              {
+                "b_value": "Rs. 189",
+                "b_value_user_currency_rounded": "Rs. 189",
+                "b_copy": "Goods & services tax",
+                "b_type": "variable_amount__excluded",
+                "b_copy_alt": "Goods & services tax",
+                "b_raw_value": "189"
+              }
+            ],
+            "b_subtotal_price_average_before_total_level_discounts": [
+              {
+                "b_type": "subtotal_per_night",
+                "b_raw_value_user_currency_rounded": 3780,
+                "b_value_user_currency_rounded": "Rs. 3,780",
+                "b_value_hotel_currency": "Rs. 3,780",
+                "b_value_user_currency": "Rs. 3,780",
+                "b_copy_alt": "Subtotal Average Price Before Booking Sponsored Discounts",
+                "b_copy_rounded": "Rs. 3,780 × 1 night",
+                "b_raw_value_user_currency": 3780,
+                "b_copy": "Rs. 3,780 × 1 night",
+                "b_raw_value_hotel_currency": 3780
+              }
+            ],
+            "b_prediscounted_price_average": [
+              {
+                "b_copy": "Rs. 6,300 × 1 night",
+                "b_raw_value_user_currency": 6300,
+                "b_copy_alt": "You’re getting a discount because this property offers reduced rates on some rooms that match your search.",
+                "b_copy_rounded": "Rs. 6,300 × 1 night",
+                "b_value_user_currency": "Rs. 6,300",
+                "b_value_user_currency_rounded": "Rs. 6,300",
+                "b_raw_value_user_currency_rounded": 6300,
+                "b_type": "prediscounted_price_per_night"
+              }
+            ],
+            "b_conditional_charges": [],
+            "b_tax_exceptions": [],
+            "b_long_stays_weekly_rate_plan_discounted_price": 0,
+            "b_insurance_products": [],
+            "b_nonmandatory_charges": [],
+            "b_excluded_charges_amount": 189,
+            "b_tpi_info": 0,
+            "b_sum_discounts_percentage": [
+              {
+                "b_type": "discount_percentage",
+                "b_raw_value_user_currency_rounded": 40,
+                "b_value_user_currency_rounded": "40%",
+                "b_value_user_currency": "40%",
+                "b_copy_alt": "Discounts percentage",
+                "b_raw_value_user_currency": 40,
+                "b_copy": "Discounts percentage"
+              }
+            ],
+            "b_sum_charges": [
+              {
+                "b_raw_value_user_currency": 189,
+                "b_raw_value_hotel_currency": 189.000002816319,
+                "b_copy": "sum excluded",
+                "b_copy_alt": "Sum of all excluded charges",
+                "b_raw_value_user_currency_rounded": 189,
+                "b_value_hotel_currency": "Rs. 189",
+                "b_value_user_currency_rounded": "Rs. 189",
+                "b_value_user_currency": "Rs. 189",
+                "b_type": "subtotal"
+              }
+            ],
+            "b_client_translations": {
+              "b_per_night_amount_prefix": "Per night",
+              "b_tooltip_footnote_text": [
+                "Rs. 3,780 is the average price per night. This excludes taxes and fees."
+              ],
+              "b_total_text": "",
+              "b_amount_per_night_suffix": "per night",
+              "b_tooltip_total_text": "Total before taxes"
+            },
+            "b_original_price": [
+              {
+                "b_type": "prediscounted_price_before_insurance",
+                "b_value_user_currency_rounded": "Rs. 6,300",
+                "b_raw_value_user_currency_rounded": 6300,
+                "b_value_user_currency": "Rs. 6,300",
+                "b_copy_alt": "",
+                "b_raw_value_user_currency": 6300,
+                "b_copy": ""
+              }
+            ],
+            "b_net_room_price": [
+              {
+                "b_copy": "Rs. 3,780 × 1 night",
+                "b_value": "Rs. 3,780",
+                "b_value_per_night_rounded": "Rs. 3,780",
+                "b_copy_alt": "1 room",
+                "b_copy_rounded": "Rs. 3,780 × 1 night",
+                "b_value_user_currency_rounded": "Rs. 3,780",
+                "b_raw_value": "3780",
+                "b_type": "net_room_price"
+              }
+            ]
+          },
+          "b_can_fit_them_all": 2,
+          "b_max_persons": 2,
+          "b_nr_stays": 9,
+          "b_avg_price_per_night_eur": "34.22",
+          "b_mealplan_included_name": "breakfast",
+          "b_price": "Rs. 3,780",
+          "b_paymentterms": {
+            "b_paymentterms_id": 42,
+            "b_depositterms_id": 1
+          },
+          "b_cfar_tc_link": "https://r-xx.bstatic.com/cdata/cfar/cancelforanyreason_v010825.pdf"
+        }
+      ],
+      "b_has_room_inventory": 1,
+      "b_id": 80392102,
+      "b_name": "Standard Double Room",
+      "b_roomtype_id": 9
+    },
+    {
+      "b_name": "Deluxe Double Room",
+      "b_id": 80392110,
+      "b_has_room_inventory": 1,
+      "b_blocks": [
+        {
+          "b_paymentterms": {
+            "b_paymentterms_id": 29,
+            "b_depositterms_id": 1
+          },
+          "b_cfar_tc_link": "https://r-xx.bstatic.com/cdata/cfar/cancelforanyreason_v010825.pdf",
+          "b_mealplan_included_name": null,
+          "b_price": "Rs. 3,360",
+          "b_nr_stays": 10,
+          "b_avg_price_per_night_eur": "30.42",
+          "b_price_breakdown_simplified": {
+            "b_sum_charges": [
+              {
+                "b_raw_value_user_currency": 168,
+                "b_copy": "sum excluded",
+                "b_raw_value_hotel_currency": 168.000002503395,
+                "b_copy_alt": "Sum of all excluded charges",
+                "b_value_user_currency_rounded": "Rs. 168",
+                "b_raw_value_user_currency_rounded": 168,
+                "b_value_hotel_currency": "Rs. 168",
+                "b_value_user_currency": "Rs. 168",
+                "b_type": "subtotal"
+              }
+            ],
+            "b_client_translations": {
+              "b_total_text": "",
+              "b_tooltip_footnote_text": [
+                "Rs. 3,360 is the average price per night. This excludes taxes and fees."
+              ],
+              "b_per_night_amount_prefix": "Per night",
+              "b_amount_per_night_suffix": "per night",
+              "b_tooltip_total_text": "Total before taxes"
+            },
+            "b_original_price": [
+              {
+                "b_type": "prediscounted_price_before_insurance",
+                "b_raw_value_user_currency_rounded": 5600,
+                "b_value_user_currency_rounded": "Rs. 5,600",
+                "b_value_user_currency": "Rs. 5,600",
+                "b_copy_alt": "",
+                "b_raw_value_user_currency": 5600,
+                "b_copy": ""
+              }
+            ],
+            "b_net_room_price": [
+              {
+                "b_copy": "Rs. 3,360 × 1 night",
+                "b_value": "Rs. 3,360",
+                "b_value_per_night_rounded": "Rs. 3,360",
+                "b_copy_alt": "1 room",
+                "b_copy_rounded": "Rs. 3,360 × 1 night",
+                "b_value_user_currency_rounded": "Rs. 3,360",
+                "b_raw_value": "3360",
+                "b_type": "net_room_price"
+              }
+            ],
+            "b_nonmandatory_charges": [],
+            "b_excluded_charges_amount": 168,
+            "b_sum_discounts_percentage": [
+              {
+                "b_copy": "Discounts percentage",
+                "b_raw_value_user_currency": 40,
+                "b_copy_alt": "Discounts percentage",
+                "b_value_user_currency": "40%",
+                "b_value_user_currency_rounded": "40%",
+                "b_raw_value_user_currency_rounded": 40,
+                "b_type": "discount_percentage"
+              }
+            ],
+            "b_tpi_info": 0,
+            "b_insurance_products": [],
+            "b_prediscounted_price_average": [
+              {
+                "b_raw_value_user_currency": 5600,
+                "b_copy": "Rs. 5,600 × 1 night",
+                "b_copy_alt": "You’re getting a discount because this property offers reduced rates on some rooms that match your search.",
+                "b_copy_rounded": "Rs. 5,600 × 1 night",
+                "b_value_user_currency_rounded": "Rs. 5,600",
+                "b_raw_value_user_currency_rounded": 5600,
+                "b_value_user_currency": "Rs. 5,600",
+                "b_type": "prediscounted_price_per_night"
+              }
+            ],
+            "b_tax_exceptions": [],
+            "b_conditional_charges": [],
+            "b_long_stays_weekly_rate_plan_discounted_price": 0,
+            "b_vm_products": [
+              {
+                "b_type": "combined-discount",
+                "b_copy_alt": "You’re getting a reduced rate because this property is offering a discount.",
+                "b_variant": "constructive",
+                "b_icon": null,
+                "b_copy": "40% off"
+              }
+            ],
+            "b_subtotal_price_before_total_level_discounts": [
+              {
+                "b_type": "subtotal",
+                "b_value_user_currency": "Rs. 3,360",
+                "b_raw_value_user_currency_rounded": 3360,
+                "b_value_user_currency_rounded": "Rs. 3,360",
+                "b_value_hotel_currency": "Rs. 3,360",
+                "b_copy_alt": "Subtotal Price Before Booking Sponsored Discounts",
+                "b_copy": "Total",
+                "b_raw_value_hotel_currency": 3360,
+                "b_raw_value_user_currency": 3360
+              }
+            ],
+            "b_all_charges": [
+              {
+                "b_copy": "Goods & services tax",
+                "b_value_user_currency_rounded": "Rs. 168",
+                "b_value": "Rs. 168",
+                "b_raw_value": "168",
+                "b_copy_alt": "Goods & services tax",
+                "b_type": "variable_amount__excluded"
+              }
+            ],
+            "b_subtotal_price_average_before_total_level_discounts": [
+              {
+                "b_raw_value_hotel_currency": 3360,
+                "b_copy": "Rs. 3,360 × 1 night",
+                "b_raw_value_user_currency": 3360,
+                "b_copy_rounded": "Rs. 3,360 × 1 night",
+                "b_copy_alt": "Subtotal Average Price Before Booking Sponsored Discounts",
+                "b_value_user_currency": "Rs. 3,360",
+                "b_raw_value_user_currency_rounded": 3360,
+                "b_value_user_currency_rounded": "Rs. 3,360",
+                "b_value_hotel_currency": "Rs. 3,360",
+                "b_type": "subtotal_per_night"
+              }
+            ],
+            "b_rate_level_discounts": [
+              {
+                "b_type": "Promotions",
+                "b_rule_name": "deals_basic_deal_composer",
+                "b_raw_value_user_currency_rounded": 2240,
+                "b_value_user_currency_rounded": "Rs. 2,240",
+                "b_value_user_currency": "Rs. 2,240",
+                "b_copy_alt": "You’re getting a reduced rate because this property is offering a discount.",
+                "b_raw_value_user_currency": 2240,
+                "b_subtype": "basic-deal",
+                "b_copy": "Bonus savings"
+              }
+            ],
+            "b_sum_credit_rewards": [],
+            "b_other_benefits": [
+              {
+                "b_type": "combined-discount",
+                "b_copy_alt": "You’re getting a reduced rate because this property is offering a discount.",
+                "b_variant": "constructive",
+                "b_icon": null,
+                "b_copy": "40% off"
+              }
+            ],
+            "b_prediscounted_price": [
+              {
+                "b_copy": "Original price",
+                "b_raw_value_user_currency": 5600,
+                "b_copy_alt": "You’re getting a discount because this property offers reduced rates on some rooms that match your search.",
+                "b_value_user_currency": "Rs. 5,600",
+                "b_raw_value_user_currency_rounded": 5600,
+                "b_value_user_currency_rounded": "Rs. 5,600",
+                "b_type": "prediscounted_price"
+              }
+            ],
+            "b_credit_rewards": [],
+            "b_average_per_night_net_price": [
+              {
+                "b_value_user_currency": "Rs. 3,360",
+                "b_value_user_currency_rounded": "Rs. 3,360",
+                "b_raw_value_user_currency_rounded": 3360,
+                "b_type": "net_price_per_night",
+                "b_copy": "",
+                "b_raw_value_user_currency": 3360,
+                "b_copy_alt": ""
+              }
+            ],
+            "b_extra_addons": [],
+            "b_subtotal_price": [
+              {
+                "b_copy_alt": "Subtotal Price",
+                "b_raw_value_hotel_currency": 3360,
+                "b_copy": "Total",
+                "b_raw_value_user_currency": 3360,
+                "b_raw_value_hotel_currency_rounded": 3360,
+                "b_type": "subtotal",
+                "b_value_user_currency": "Rs. 3,360",
+                "b_value_hotel_currency": "Rs. 3,360",
+                "b_raw_value_user_currency_rounded": 3360,
+                "b_value_user_currency_rounded": "Rs. 3,360"
+              }
+            ],
+            "b_price_display_config": [
+              {
+                "value": 1,
+                "key": "use_nightly_prices"
+              },
+              {
+                "key": "use_nightly_as_dominant",
+                "value": 0
+              },
+              {
+                "value": 1,
+                "key": "use_js_tracking"
+              }
+            ],
+            "b_included_charges": [],
+            "b_all_discounts": [
+              {
+                "b_type": "Promotions",
+                "b_rule_name": "deals_basic_deal_composer",
+                "b_raw_value_user_currency_rounded": 2240,
+                "b_value_user_currency_rounded": "Rs. 2,240",
+                "b_value_user_currency": "Rs. 2,240",
+                "b_copy_alt": "You’re getting a reduced rate because this property is offering a discount.",
+                "b_raw_value_user_currency": 2240,
+                "b_subtype": "basic-deal",
+                "b_copy": "Bonus savings"
+              }
+            ],
+            "b_addons": [],
+            "b_total_price": [
+              {
+                "b_copy_alt": "Total Price",
+                "b_raw_value_hotel_currency": 3528.0000025034,
+                "b_copy": "Total",
+                "b_raw_value_user_currency": 3528.0000025034,
+                "b_type": "total",
+                "b_value_user_currency": "Rs. 3,528",
+                "b_value_hotel_currency": "Rs. 3,528",
+                "b_value_user_currency_rounded": "Rs. 3,528"
+              }
+            ],
+            "b_aggregated_addons": [],
+            "b_booking_sponsored_discounts": [],
+            "b_subtotal_price_average": [
+              {
+                "b_type": "subtotal_per_night",
+                "b_raw_value_user_currency_rounded": 3360,
+                "b_value_hotel_currency": "Rs. 3,360",
+                "b_value_user_currency_rounded": "Rs. 3,360",
+                "b_value_user_currency": "Rs. 3,360",
+                "b_copy_alt": "Subtotal Average Price",
+                "b_copy_rounded": "Rs. 3,360 × 1 night",
+                "b_raw_value_user_currency": 3360,
+                "b_copy": "Rs. 3,360 × 1 night",
+                "b_raw_value_hotel_currency": 3360
+              }
+            ],
+            "b_charges_info": [
+              {
+                "includes": [],
+                "excludes": [
+                  "Goods & services tax"
+                ]
+              }
+            ],
+            "b_excluded_charges": [
+              {
+                "b_copy": "Goods & services tax",
+                "b_value_user_currency_rounded": "Rs. 168",
+                "b_value": "Rs. 168",
+                "b_raw_value": "168",
+                "b_copy_alt": "Goods & services tax",
+                "b_type": "variable_amount__excluded"
+              }
+            ],
+            "b_conditional_included_charges": [],
+            "b_sum_included_charges": [
+              {
+                "b_type": "subtotal",
+                "b_raw_value_user_currency_rounded": 0,
+                "b_value_hotel_currency": "Rs. 0",
+                "b_value_user_currency_rounded": "Rs. 0",
+                "b_value_user_currency": "Rs. 0",
+                "b_copy_alt": "Sum of all included charges",
+                "b_raw_value_user_currency": 0,
+                "b_copy": "sum included",
+                "b_raw_value_hotel_currency": 0
+              }
+            ],
+            "b_sum_discounts": [
+              {
+                "b_copy": "Sum of discounts",
+                "b_raw_value_user_currency": 2240,
+                "b_copy_alt": "Sum of discounts",
+                "b_value_user_currency": "Rs. 2,240",
+                "b_value_user_currency_rounded": "Rs. 2,240",
+                "b_raw_value_user_currency_rounded": 2240,
+                "b_type": "discount_sum"
+              }
+            ],
+            "b_hide_breakdown": 0,
+            "b_charges_info_copy": {
+              "b_line_copy": "",
+              "b_is_all_included": 0,
+              "b_tooltip_copy": "Total"
+            },
+            "b_long_stays_monthly_rate_plan_discounted_price": 0
+          },
+          "b_can_fit_them_all": 2,
+          "b_max_persons": 2,
+          "b_stay_prices": [
+            {
+              "b_cfar_raw_price": 0,
+              "b_price_per_night": "",
+              "b_price": "",
+              "b_cfar_price": 0,
+              "b_stays": 0,
+              "b_local_price": 0,
+              "b_raw_price": ""
+            },
+            {
+              "b_raw_price": 3360,
+              "b_local_price": 3360,
+              "b_price": "Rs. 3,360",
+              "b_price_per_night": "Rs. 3,360",
+              "b_stays": 1,
+              "b_cfar_price": 0,
+              "b_cfar_raw_price": 0
+            },
+            {
+              "b_raw_price": 6720,
+              "b_local_price": 6720,
+              "b_price": "Rs. 6,720",
+              "b_price_per_night": "Rs. 6,720",
+              "b_cfar_price": 0,
+              "b_stays": 2,
+              "b_cfar_raw_price": 0
+            },
+            {
+              "b_raw_price": 10080,
+              "b_local_price": 10080,
+              "b_price_per_night": "Rs. 10,080",
+              "b_price": "Rs. 10,080",
+              "b_cfar_price": 0,
+              "b_stays": 3,
+              "b_cfar_raw_price": 0
+            },
+            {
+              "b_price_per_night": "Rs. 13,440",
+              "b_price": "Rs. 13,440",
+              "b_stays": 4,
+              "b_cfar_price": 0,
+              "b_cfar_raw_price": 0,
+              "b_raw_price": 13440,
+              "b_local_price": 13440
+            },
+            {
+              "b_local_price": 16800,
+              "b_raw_price": 16800,
+              "b_cfar_raw_price": 0,
+              "b_cfar_price": 0,
+              "b_stays": 5,
+              "b_price_per_night": "Rs. 16,800",
+              "b_price": "Rs. 16,800"
+            },
+            {
+              "b_cfar_raw_price": 0,
+              "b_price": "Rs. 20,160",
+              "b_price_per_night": "Rs. 20,160",
+              "b_cfar_price": 0,
+              "b_stays": 6,
+              "b_raw_price": 20160,
+              "b_local_price": 20160
+            },
+            {
+              "b_raw_price": 23520,
+              "b_local_price": 23520,
+              "b_cfar_raw_price": 0,
+              "b_cfar_price": 0,
+              "b_stays": 7,
+              "b_price_per_night": "Rs. 23,520",
+              "b_price": "Rs. 23,520"
+            },
+            {
+              "b_local_price": 26880,
+              "b_raw_price": 26880,
+              "b_price_per_night": "Rs. 26,880",
+              "b_price": "Rs. 26,880",
+              "b_cfar_price": 0,
+              "b_stays": 8,
+              "b_cfar_raw_price": 0
+            },
+            {
+              "b_price_per_night": "Rs. 30,240",
+              "b_price": "Rs. 30,240",
+              "b_stays": 9,
+              "b_cfar_price": 0,
+              "b_cfar_raw_price": 0,
+              "b_local_price": 30240,
+              "b_raw_price": 30240
+            },
+            {
+              "b_raw_price": 33600,
+              "b_local_price": 33600,
+              "b_cfar_raw_price": 0,
+              "b_price": "Rs. 33,600",
+              "b_price_per_night": "Rs. 33,600",
+              "b_cfar_price": 0,
+              "b_stays": 10
+            }
+          ],
+          "b_raw_price": "3360.00",
+          "b_rate_is_genius": 0,
+          "b_is_cfar": 0,
+          "b_block_id": "80392110_430056064_2_42_0",
+          "b_cancellation_type": "free_cancellation"
+        },
+        {
+          "b_cancellation_type": "free_cancellation",
+          "b_block_id": "80392110_430056065_2_41_0_873442",
+          "b_stay_prices": [
+            {
+              "b_stays": 0,
+              "b_cfar_price": 0,
+              "b_price": "",
+              "b_price_per_night": "",
+              "b_cfar_raw_price": 0,
+              "b_raw_price": "",
+              "b_local_price": 0
+            },
+            {
+              "b_cfar_raw_price": 0,
+              "b_stays": 1,
+              "b_cfar_price": 0,
+              "b_price_per_night": "Rs. 3,402",
+              "b_price": "Rs. 3,402",
+              "b_local_price": 3402,
+              "b_raw_price": 3402
+            },
+            {
+              "b_raw_price": 6804,
+              "b_local_price": 6804,
+              "b_price_per_night": "Rs. 6,804",
+              "b_price": "Rs. 6,804",
+              "b_stays": 2,
+              "b_cfar_price": 0,
+              "b_cfar_raw_price": 0
+            },
+            {
+              "b_local_price": 10206,
+              "b_raw_price": 10206,
+              "b_cfar_raw_price": 0,
+              "b_price_per_night": "Rs. 10,206",
+              "b_price": "Rs. 10,206",
+              "b_stays": 3,
+              "b_cfar_price": 0
+            },
+            {
+              "b_raw_price": 13608,
+              "b_local_price": 13608,
+              "b_price": "Rs. 13,608",
+              "b_price_per_night": "Rs. 13,608",
+              "b_stays": 4,
+              "b_cfar_price": 0,
+              "b_cfar_raw_price": 0
+            },
+            {
+              "b_cfar_raw_price": 0,
+              "b_price_per_night": "Rs. 17,010",
+              "b_price": "Rs. 17,010",
+              "b_cfar_price": 0,
+              "b_stays": 5,
+              "b_local_price": 17010,
+              "b_raw_price": 17010
+            },
+            {
+              "b_cfar_price": 0,
+              "b_stays": 6,
+              "b_price": "Rs. 20,412",
+              "b_price_per_night": "Rs. 20,412",
+              "b_cfar_raw_price": 0,
+              "b_local_price": 20412,
+              "b_raw_price": 20412
+            },
+            {
+              "b_local_price": 23814,
+              "b_raw_price": 23814,
+              "b_cfar_raw_price": 0,
+              "b_price_per_night": "Rs. 23,814",
+              "b_price": "Rs. 23,814",
+              "b_stays": 7,
+              "b_cfar_price": 0
+            },
+            {
+              "b_local_price": 27216,
+              "b_raw_price": 27216,
+              "b_price": "Rs. 27,216",
+              "b_price_per_night": "Rs. 27,216",
+              "b_cfar_price": 0,
+              "b_stays": 8,
+              "b_cfar_raw_price": 0
+            },
+            {
+              "b_raw_price": 30618,
+              "b_local_price": 30618,
+              "b_stays": 9,
+              "b_cfar_price": 0,
+              "b_price": "Rs. 30,618",
+              "b_price_per_night": "Rs. 30,618",
+              "b_cfar_raw_price": 0
+            },
+            {
+              "b_cfar_price": 0,
+              "b_stays": 10,
+              "b_price_per_night": "Rs. 34,020",
+              "b_price": "Rs. 34,020",
+              "b_cfar_raw_price": 0,
+              "b_raw_price": 34020,
+              "b_local_price": 34020
+            }
+          ],
+          "b_rate_is_genius": 0,
+          "b_raw_price": "3402.00",
+          "b_is_cfar": 0,
+          "b_price_breakdown_simplified": {
+            "b_long_stays_monthly_rate_plan_discounted_price": 0,
+            "b_charges_info_copy": {
+              "b_tooltip_copy": "Total",
+              "b_line_copy": "",
+              "b_is_all_included": 0
+            },
+            "b_hide_breakdown": 0,
+            "b_sum_included_charges": [
+              {
+                "b_type": "subtotal",
+                "b_value_user_currency": "Rs. 0",
+                "b_value_user_currency_rounded": "Rs. 0",
+                "b_raw_value_user_currency_rounded": 0,
+                "b_value_hotel_currency": "Rs. 0",
+                "b_copy_alt": "Sum of all included charges",
+                "b_raw_value_hotel_currency": 0,
+                "b_copy": "sum included",
+                "b_raw_value_user_currency": 0
+              }
+            ],
+            "b_sum_discounts": [
+              {
+                "b_copy_alt": "Sum of discounts",
+                "b_raw_value_user_currency": 2268,
+                "b_copy": "Sum of discounts",
+                "b_type": "discount_sum",
+                "b_raw_value_user_currency_rounded": 2268,
+                "b_value_user_currency_rounded": "Rs. 2,268",
+                "b_value_user_currency": "Rs. 2,268"
+              }
+            ],
+            "b_charges_info": [
+              {
+                "excludes": [
+                  "Goods & services tax"
+                ],
+                "includes": []
+              }
+            ],
+            "b_excluded_charges": [
+              {
+                "b_copy": "Goods & services tax",
+                "b_value": "Rs. 170.10",
+                "b_value_user_currency_rounded": "Rs. 170",
+                "b_raw_value": "170.1",
+                "b_copy_alt": "Goods & services tax",
+                "b_type": "variable_amount__excluded"
+              }
+            ],
+            "b_conditional_included_charges": [],
+            "b_booking_sponsored_discounts": [],
+            "b_subtotal_price_average": [
+              {
+                "b_type": "subtotal_per_night",
+                "b_value_user_currency": "Rs. 3,402",
+                "b_value_user_currency_rounded": "Rs. 3,402",
+                "b_raw_value_user_currency_rounded": 3402,
+                "b_value_hotel_currency": "Rs. 3,402",
+                "b_copy_rounded": "Rs. 3,402 × 1 night",
+                "b_copy_alt": "Subtotal Average Price",
+                "b_raw_value_hotel_currency": 3402,
+                "b_copy": "Rs. 3,402 × 1 night",
+                "b_raw_value_user_currency": 3402
+              }
+            ],
+            "b_total_price": [
+              {
+                "b_copy_alt": "Total Price",
+                "b_raw_value_user_currency": 3572.10000253469,
+                "b_raw_value_hotel_currency": 3572.10000253469,
+                "b_copy": "Total",
+                "b_type": "total",
+                "b_value_user_currency_rounded": "Rs. 3,572",
+                "b_value_hotel_currency": "Rs. 3,572.10",
+                "b_value_user_currency": "Rs. 3,572.10"
+              }
+            ],
+            "b_addons": [],
+            "b_aggregated_addons": [],
+            "b_all_discounts": [
+              {
+                "b_type": "Promotions",
+                "b_rule_name": "deals_basic_deal_composer",
+                "b_raw_value_user_currency_rounded": 2268,
+                "b_value_user_currency_rounded": "Rs. 2,268",
+                "b_value_user_currency": "Rs. 2,268",
+                "b_copy_alt": "You’re getting a reduced rate because this property is offering a discount.",
+                "b_raw_value_user_currency": 2268,
+                "b_copy": "Bonus savings",
+                "b_subtype": "basic-deal"
+              }
+            ],
+            "b_included_charges": [],
+            "b_price_display_config": [
+              {
+                "key": "use_nightly_prices",
+                "value": 1
+              },
+              {
+                "value": 0,
+                "key": "use_nightly_as_dominant"
+              },
+              {
+                "key": "use_js_tracking",
+                "value": 1
+              }
+            ],
+            "b_subtotal_price": [
+              {
+                "b_raw_value_hotel_currency": 3402,
+                "b_copy": "Total",
+                "b_raw_value_user_currency": 3402,
+                "b_copy_alt": "Subtotal Price",
+                "b_value_user_currency": "Rs. 3,402",
+                "b_value_user_currency_rounded": "Rs. 3,402",
+                "b_raw_value_user_currency_rounded": 3402,
+                "b_value_hotel_currency": "Rs. 3,402",
+                "b_raw_value_hotel_currency_rounded": 3402,
+                "b_type": "subtotal"
+              }
+            ],
+            "b_credit_rewards": [],
+            "b_prediscounted_price": [
+              {
+                "b_raw_value_user_currency": 5670,
+                "b_copy": "Original price",
+                "b_copy_alt": "You’re getting a discount because this property offers reduced rates on some rooms that match your search.",
+                "b_raw_value_user_currency_rounded": 5670,
+                "b_value_user_currency_rounded": "Rs. 5,670",
+                "b_value_user_currency": "Rs. 5,670",
+                "b_type": "prediscounted_price"
+              }
+            ],
+            "b_extra_addons": [],
+            "b_average_per_night_net_price": [
+              {
+                "b_raw_value_user_currency_rounded": 3402,
+                "b_value_user_currency_rounded": "Rs. 3,402",
+                "b_value_user_currency": "Rs. 3,402",
+                "b_type": "net_price_per_night",
+                "b_raw_value_user_currency": 3402,
+                "b_copy": "",
+                "b_copy_alt": ""
+              }
+            ],
+            "b_sum_credit_rewards": [],
+            "b_rate_level_discounts": [
+              {
+                "b_type": "Promotions",
+                "b_rule_name": "deals_basic_deal_composer",
+                "b_raw_value_user_currency_rounded": 2268,
+                "b_value_user_currency_rounded": "Rs. 2,268",
+                "b_value_user_currency": "Rs. 2,268",
+                "b_copy_alt": "You’re getting a reduced rate because this property is offering a discount.",
+                "b_raw_value_user_currency": 2268,
+                "b_copy": "Bonus savings",
+                "b_subtype": "basic-deal"
+              }
+            ],
+            "b_other_benefits": [
+              {
+                "b_type": "combined-discount",
+                "b_copy_alt": "You’re getting a reduced rate because this property is offering a discount.",
+                "b_variant": "constructive",
+                "b_icon": null,
+                "b_copy": "40% off"
+              }
+            ],
+            "b_vm_products": [
+              {
+                "b_type": "combined-discount",
+                "b_copy_alt": "You’re getting a reduced rate because this property is offering a discount.",
+                "b_variant": "constructive",
+                "b_icon": null,
+                "b_copy": "40% off"
+              }
+            ],
+            "b_subtotal_price_average_before_total_level_discounts": [
+              {
+                "b_type": "subtotal_per_night",
+                "b_value_user_currency": "Rs. 3,402",
+                "b_raw_value_user_currency_rounded": 3402,
+                "b_value_hotel_currency": "Rs. 3,402",
+                "b_value_user_currency_rounded": "Rs. 3,402",
+                "b_copy_rounded": "Rs. 3,402 × 1 night",
+                "b_copy_alt": "Subtotal Average Price Before Booking Sponsored Discounts",
+                "b_raw_value_hotel_currency": 3402,
+                "b_copy": "Rs. 3,402 × 1 night",
+                "b_raw_value_user_currency": 3402
+              }
+            ],
+            "b_all_charges": [
+              {
+                "b_copy": "Goods & services tax",
+                "b_value": "Rs. 170.10",
+                "b_value_user_currency_rounded": "Rs. 170",
+                "b_raw_value": "170.1",
+                "b_copy_alt": "Goods & services tax",
+                "b_type": "variable_amount__excluded"
+              }
+            ],
+            "b_subtotal_price_before_total_level_discounts": [
+              {
+                "b_type": "subtotal",
+                "b_value_user_currency": "Rs. 3,402",
+                "b_value_user_currency_rounded": "Rs. 3,402",
+                "b_raw_value_user_currency_rounded": 3402,
+                "b_value_hotel_currency": "Rs. 3,402",
+                "b_copy_alt": "Subtotal Price Before Booking Sponsored Discounts",
+                "b_copy": "Total",
+                "b_raw_value_hotel_currency": 3402,
+                "b_raw_value_user_currency": 3402
+              }
+            ],
+            "b_prediscounted_price_average": [
+              {
+                "b_value_user_currency": "Rs. 5,670",
+                "b_raw_value_user_currency_rounded": 5670,
+                "b_value_user_currency_rounded": "Rs. 5,670",
+                "b_type": "prediscounted_price_per_night",
+                "b_copy": "Rs. 5,670 × 1 night",
+                "b_raw_value_user_currency": 5670,
+                "b_copy_rounded": "Rs. 5,670 × 1 night",
+                "b_copy_alt": "You’re getting a discount because this property offers reduced rates on some rooms that match your search."
+              }
+            ],
+            "b_long_stays_weekly_rate_plan_discounted_price": 0,
+            "b_tax_exceptions": [],
+            "b_conditional_charges": [],
+            "b_insurance_products": [],
+            "b_excluded_charges_amount": 170.1,
+            "b_nonmandatory_charges": [],
+            "b_tpi_info": 0,
+            "b_sum_discounts_percentage": [
+              {
+                "b_raw_value_user_currency": 40,
+                "b_copy": "Discounts percentage",
+                "b_copy_alt": "Discounts percentage",
+                "b_raw_value_user_currency_rounded": 40,
+                "b_value_user_currency_rounded": "40%",
+                "b_value_user_currency": "40%",
+                "b_type": "discount_percentage"
+              }
+            ],
+            "b_client_translations": {
+              "b_tooltip_total_text": "Total before taxes",
+              "b_amount_per_night_suffix": "per night",
+              "b_tooltip_footnote_text": [
+                "Rs. 3,402 is the average price per night. This excludes taxes and fees."
+              ],
+              "b_total_text": "",
+              "b_per_night_amount_prefix": "Per night"
+            },
+            "b_sum_charges": [
+              {
+                "b_copy_alt": "Sum of all excluded charges",
+                "b_copy": "sum excluded",
+                "b_raw_value_hotel_currency": 170.100002534688,
+                "b_raw_value_user_currency": 170.1,
+                "b_type": "subtotal",
+                "b_value_user_currency": "Rs. 170.10",
+                "b_value_user_currency_rounded": "Rs. 170",
+                "b_raw_value_user_currency_rounded": 170,
+                "b_value_hotel_currency": "Rs. 170.10"
+              }
+            ],
+            "b_net_room_price": [
+              {
+                "b_value_per_night_rounded": "Rs. 3,402",
+                "b_copy_alt": "1 room",
+                "b_copy_rounded": "Rs. 3,402 × 1 night",
+                "b_copy": "Rs. 3,402 × 1 night",
+                "b_value": "Rs. 3,402",
+                "b_raw_value": "3402",
+                "b_type": "net_room_price",
+                "b_value_user_currency_rounded": "Rs. 3,402"
+              }
+            ],
+            "b_original_price": [
+              {
+                "b_copy": "",
+                "b_raw_value_user_currency": 5670,
+                "b_copy_alt": "",
+                "b_value_user_currency": "Rs. 5,670",
+                "b_raw_value_user_currency_rounded": 5670,
+                "b_value_user_currency_rounded": "Rs. 5,670",
+                "b_type": "prediscounted_price_before_insurance"
+              }
+            ]
+          },
+          "b_can_fit_them_all": 2,
+          "b_max_persons": 2,
+          "b_nr_stays": 10,
+          "b_avg_price_per_night_eur": "30.80",
+          "b_mealplan_included_name": "breakfast",
+          "b_price": "Rs. 3,402",
+          "b_paymentterms": {
+            "b_depositterms_id": 1,
+            "b_paymentterms_id": 42
+          },
+          "b_cfar_tc_link": "https://r-xx.bstatic.com/cdata/cfar/cancelforanyreason_v010825.pdf"
+        }
+      ],
+      "b_roomtype_id": 9
+    },
+    {
+      "b_has_room_inventory": 1,
+      "b_name": "Classic Triple Room",
+      "b_id": 80392109,
+      "b_blocks": [
+        {
+          "b_cfar_tc_link": "https://r-xx.bstatic.com/cdata/cfar/cancelforanyreason_v010825.pdf",
+          "b_paymentterms": {
+            "b_depositterms_id": 1,
+            "b_paymentterms_id": 29
+          },
+          "b_price": "Rs. 5,040",
+          "b_mealplan_included_name": null,
+          "b_can_fit_them_all": 2,
+          "b_max_persons": 3,
+          "b_price_breakdown_simplified": {
+            "b_sum_included_charges": [
+              {
+                "b_copy_alt": "Sum of all included charges",
+                "b_raw_value_user_currency": 0,
+                "b_copy": "sum included",
+                "b_raw_value_hotel_currency": 0,
+                "b_type": "subtotal",
+                "b_value_hotel_currency": "Rs. 0",
+                "b_raw_value_user_currency_rounded": 0,
+                "b_value_user_currency_rounded": "Rs. 0",
+                "b_value_user_currency": "Rs. 0"
+              }
+            ],
+            "b_sum_discounts": [
+              {
+                "b_type": "discount_sum",
+                "b_value_user_currency_rounded": "Rs. 3,360",
+                "b_raw_value_user_currency_rounded": 3360,
+                "b_value_user_currency": "Rs. 3,360",
+                "b_copy_alt": "Sum of discounts",
+                "b_raw_value_user_currency": 3360,
+                "b_copy": "Sum of discounts"
+              }
+            ],
+            "b_conditional_included_charges": [],
+            "b_excluded_charges": [
+              {
+                "b_raw_value": "252",
+                "b_type": "variable_amount__excluded",
+                "b_copy_alt": "Goods & services tax",
+                "b_copy": "Goods & services tax",
+                "b_value_user_currency_rounded": "Rs. 252",
+                "b_value": "Rs. 252"
+              }
+            ],
+            "b_charges_info": [
+              {
+                "includes": [],
+                "excludes": [
+                  "Goods & services tax"
+                ]
+              }
+            ],
+            "b_charges_info_copy": {
+              "b_tooltip_copy": "Total",
+              "b_line_copy": "",
+              "b_is_all_included": 0
+            },
+            "b_long_stays_monthly_rate_plan_discounted_price": 0,
+            "b_hide_breakdown": 0,
+            "b_all_discounts": [
+              {
+                "b_type": "Promotions",
+                "b_rule_name": "deals_basic_deal_composer",
+                "b_raw_value_user_currency_rounded": 3360,
+                "b_value_user_currency_rounded": "Rs. 3,360",
+                "b_value_user_currency": "Rs. 3,360",
+                "b_copy_alt": "You’re getting a reduced rate because this property is offering a discount.",
+                "b_raw_value_user_currency": 3360,
+                "b_subtype": "basic-deal",
+                "b_copy": "Bonus savings"
+              }
+            ],
+            "b_subtotal_price": [
+              {
+                "b_copy": "Total",
+                "b_raw_value_hotel_currency": 5040,
+                "b_raw_value_user_currency": 5040,
+                "b_copy_alt": "Subtotal Price",
+                "b_value_user_currency": "Rs. 5,040",
+                "b_raw_value_user_currency_rounded": 5040,
+                "b_value_user_currency_rounded": "Rs. 5,040",
+                "b_value_hotel_currency": "Rs. 5,040",
+                "b_raw_value_hotel_currency_rounded": 5040,
+                "b_type": "subtotal"
+              }
+            ],
+            "b_price_display_config": [
+              {
+                "key": "use_nightly_prices",
+                "value": 1
+              },
+              {
+                "key": "use_nightly_as_dominant",
+                "value": 0
+              },
+              {
+                "value": 1,
+                "key": "use_js_tracking"
+              }
+            ],
+            "b_included_charges": [],
+            "b_subtotal_price_average": [
+              {
+                "b_raw_value_user_currency_rounded": 5040,
+                "b_value_hotel_currency": "Rs. 5,040",
+                "b_value_user_currency_rounded": "Rs. 5,040",
+                "b_value_user_currency": "Rs. 5,040",
+                "b_type": "subtotal_per_night",
+                "b_raw_value_user_currency": 5040,
+                "b_raw_value_hotel_currency": 5040,
+                "b_copy": "Rs. 5,040 × 1 night",
+                "b_copy_rounded": "Rs. 5,040 × 1 night",
+                "b_copy_alt": "Subtotal Average Price"
+              }
+            ],
+            "b_booking_sponsored_discounts": [],
+            "b_aggregated_addons": [],
+            "b_addons": [],
+            "b_total_price": [
+              {
+                "b_raw_value_user_currency": 5292.00000375509,
+                "b_copy": "Total",
+                "b_raw_value_hotel_currency": 5292.00000375509,
+                "b_copy_alt": "Total Price",
+                "b_value_user_currency_rounded": "Rs. 5,292",
+                "b_value_hotel_currency": "Rs. 5,292",
+                "b_value_user_currency": "Rs. 5,292",
+                "b_type": "total"
+              }
+            ],
+            "b_subtotal_price_before_total_level_discounts": [
+              {
+                "b_value_hotel_currency": "Rs. 5,040",
+                "b_raw_value_user_currency_rounded": 5040,
+                "b_value_user_currency_rounded": "Rs. 5,040",
+                "b_value_user_currency": "Rs. 5,040",
+                "b_type": "subtotal",
+                "b_raw_value_user_currency": 5040,
+                "b_raw_value_hotel_currency": 5040,
+                "b_copy": "Total",
+                "b_copy_alt": "Subtotal Price Before Booking Sponsored Discounts"
+              }
+            ],
+            "b_all_charges": [
+              {
+                "b_raw_value": "252",
+                "b_type": "variable_amount__excluded",
+                "b_copy_alt": "Goods & services tax",
+                "b_copy": "Goods & services tax",
+                "b_value_user_currency_rounded": "Rs. 252",
+                "b_value": "Rs. 252"
+              }
+            ],
+            "b_subtotal_price_average_before_total_level_discounts": [
+              {
+                "b_raw_value_user_currency": 5040,
+                "b_raw_value_hotel_currency": 5040,
+                "b_copy": "Rs. 5,040 × 1 night",
+                "b_copy_rounded": "Rs. 5,040 × 1 night",
+                "b_copy_alt": "Subtotal Average Price Before Booking Sponsored Discounts",
+                "b_value_hotel_currency": "Rs. 5,040",
+                "b_raw_value_user_currency_rounded": 5040,
+                "b_value_user_currency_rounded": "Rs. 5,040",
+                "b_value_user_currency": "Rs. 5,040",
+                "b_type": "subtotal_per_night"
+              }
+            ],
+            "b_vm_products": [
+              {
+                "b_copy_alt": "You’re getting a reduced rate because this property is offering a discount.",
+                "b_type": "combined-discount",
+                "b_copy": "40% off",
+                "b_icon": null,
+                "b_variant": "constructive"
+              }
+            ],
+            "b_average_per_night_net_price": [
+              {
+                "b_type": "net_price_per_night",
+                "b_raw_value_user_currency_rounded": 5040,
+                "b_value_user_currency_rounded": "Rs. 5,040",
+                "b_value_user_currency": "Rs. 5,040",
+                "b_copy_alt": "",
+                "b_raw_value_user_currency": 5040,
+                "b_copy": ""
+              }
+            ],
+            "b_extra_addons": [],
+            "b_prediscounted_price": [
+              {
+                "b_copy_alt": "You’re getting a discount because this property offers reduced rates on some rooms that match your search.",
+                "b_copy": "Original price",
+                "b_raw_value_user_currency": 8400,
+                "b_type": "prediscounted_price",
+                "b_value_user_currency": "Rs. 8,400",
+                "b_value_user_currency_rounded": "Rs. 8,400",
+                "b_raw_value_user_currency_rounded": 8400
+              }
+            ],
+            "b_credit_rewards": [],
+            "b_other_benefits": [
+              {
+                "b_copy_alt": "You’re getting a reduced rate because this property is offering a discount.",
+                "b_type": "combined-discount",
+                "b_copy": "40% off",
+                "b_icon": null,
+                "b_variant": "constructive"
+              }
+            ],
+            "b_rate_level_discounts": [
+              {
+                "b_type": "Promotions",
+                "b_rule_name": "deals_basic_deal_composer",
+                "b_raw_value_user_currency_rounded": 3360,
+                "b_value_user_currency_rounded": "Rs. 3,360",
+                "b_value_user_currency": "Rs. 3,360",
+                "b_copy_alt": "You’re getting a reduced rate because this property is offering a discount.",
+                "b_raw_value_user_currency": 3360,
+                "b_subtype": "basic-deal",
+                "b_copy": "Bonus savings"
+              }
+            ],
+            "b_sum_credit_rewards": [],
+            "b_sum_discounts_percentage": [
+              {
+                "b_copy": "Discounts percentage",
+                "b_raw_value_user_currency": 40,
+                "b_copy_alt": "Discounts percentage",
+                "b_value_user_currency": "40%",
+                "b_value_user_currency_rounded": "40%",
+                "b_raw_value_user_currency_rounded": 40,
+                "b_type": "discount_percentage"
+              }
+            ],
+            "b_tpi_info": 0,
+            "b_nonmandatory_charges": [],
+            "b_excluded_charges_amount": 252,
+            "b_original_price": [
+              {
+                "b_value_user_currency": "Rs. 8,400",
+                "b_raw_value_user_currency_rounded": 8400,
+                "b_value_user_currency_rounded": "Rs. 8,400",
+                "b_type": "prediscounted_price_before_insurance",
+                "b_copy": "",
+                "b_raw_value_user_currency": 8400,
+                "b_copy_alt": ""
+              }
+            ],
+            "b_net_room_price": [
+              {
+                "b_copy_alt": "1 room",
+                "b_copy_rounded": "Rs. 5,040 × 1 night",
+                "b_value_per_night_rounded": "Rs. 5,040",
+                "b_value": "Rs. 5,040",
+                "b_copy": "Rs. 5,040 × 1 night",
+                "b_type": "net_room_price",
+                "b_raw_value": "5040",
+                "b_value_user_currency_rounded": "Rs. 5,040"
+              }
+            ],
+            "b_sum_charges": [
+              {
+                "b_copy": "sum excluded",
+                "b_raw_value_hotel_currency": 252.000003755093,
+                "b_raw_value_user_currency": 252,
+                "b_copy_alt": "Sum of all excluded charges",
+                "b_value_user_currency": "Rs. 252",
+                "b_value_hotel_currency": "Rs. 252",
+                "b_raw_value_user_currency_rounded": 252,
+                "b_value_user_currency_rounded": "Rs. 252",
+                "b_type": "subtotal"
+              }
+            ],
+            "b_client_translations": {
+              "b_amount_per_night_suffix": "per night",
+              "b_tooltip_total_text": "Total before taxes",
+              "b_total_text": "",
+              "b_tooltip_footnote_text": [
+                "Rs. 5,040 is the average price per night. This excludes taxes and fees."
+              ],
+              "b_per_night_amount_prefix": "Per night"
+            },
+            "b_conditional_charges": [],
+            "b_tax_exceptions": [],
+            "b_long_stays_weekly_rate_plan_discounted_price": 0,
+            "b_prediscounted_price_average": [
+              {
+                "b_copy_alt": "You’re getting a discount because this property offers reduced rates on some rooms that match your search.",
+                "b_copy_rounded": "Rs. 8,400 × 1 night",
+                "b_raw_value_user_currency": 8400,
+                "b_copy": "Rs. 8,400 × 1 night",
+                "b_type": "prediscounted_price_per_night",
+                "b_value_user_currency_rounded": "Rs. 8,400",
+                "b_raw_value_user_currency_rounded": 8400,
+                "b_value_user_currency": "Rs. 8,400"
+              }
+            ],
+            "b_insurance_products": []
+          },
+          "b_avg_price_per_night_eur": "45.62",
+          "b_nr_stays": 7,
+          "b_block_id": "80392109_430056064_3_42_0",
+          "b_cancellation_type": "free_cancellation",
+          "b_rate_is_genius": 0,
+          "b_raw_price": "5040.00",
+          "b_is_cfar": 0,
+          "b_stay_prices": [
+            {
+              "b_price": "",
+              "b_price_per_night": "",
+              "b_stays": 0,
+              "b_cfar_price": 0,
+              "b_cfar_raw_price": 0,
+              "b_raw_price": "",
+              "b_local_price": 0
+            },
+            {
+              "b_local_price": 5040,
+              "b_raw_price": 5040,
+              "b_price_per_night": "Rs. 5,040",
+              "b_price": "Rs. 5,040",
+              "b_stays": 1,
+              "b_cfar_price": 0,
+              "b_cfar_raw_price": 0
+            },
+            {
+              "b_local_price": 10080,
+              "b_raw_price": 10080,
+              "b_price_per_night": "Rs. 10,080",
+              "b_price": "Rs. 10,080",
+              "b_stays": 2,
+              "b_cfar_price": 0,
+              "b_cfar_raw_price": 0
+            },
+            {
+              "b_cfar_raw_price": 0,
+              "b_price": "Rs. 15,120",
+              "b_price_per_night": "Rs. 15,120",
+              "b_cfar_price": 0,
+              "b_stays": 3,
+              "b_raw_price": 15120,
+              "b_local_price": 15120
+            },
+            {
+              "b_local_price": 20160,
+              "b_raw_price": 20160,
+              "b_cfar_raw_price": 0,
+              "b_price_per_night": "Rs. 20,160",
+              "b_price": "Rs. 20,160",
+              "b_stays": 4,
+              "b_cfar_price": 0
+            },
+            {
+              "b_raw_price": 25200,
+              "b_local_price": 25200,
+              "b_cfar_price": 0,
+              "b_stays": 5,
+              "b_price_per_night": "Rs. 25,200",
+              "b_price": "Rs. 25,200",
+              "b_cfar_raw_price": 0
+            },
+            {
+              "b_local_price": 30240,
+              "b_raw_price": 30240,
+              "b_cfar_price": 0,
+              "b_stays": 6,
+              "b_price": "Rs. 30,240",
+              "b_price_per_night": "Rs. 30,240",
+              "b_cfar_raw_price": 0
+            },
+            {
+              "b_local_price": 35280,
+              "b_raw_price": 35280,
+              "b_cfar_raw_price": 0,
+              "b_stays": 7,
+              "b_cfar_price": 0,
+              "b_price": "Rs. 35,280",
+              "b_price_per_night": "Rs. 35,280"
+            }
+          ]
+        },
+        {
+          "b_nr_stays": 7,
+          "b_avg_price_per_night_eur": "47.52",
+          "b_price_breakdown_simplified": {
+            "b_excluded_charges": [
+              {
+                "b_copy": "Goods & services tax",
+                "b_value_user_currency_rounded": "Rs. 263",
+                "b_value": "Rs. 262.50",
+                "b_raw_value": "262.5",
+                "b_copy_alt": "Goods & services tax",
+                "b_type": "variable_amount__excluded"
+              }
+            ],
+            "b_conditional_included_charges": [],
+            "b_charges_info": [
+              {
+                "excludes": [
+                  "Goods & services tax"
+                ],
+                "includes": []
+              }
+            ],
+            "b_sum_included_charges": [
+              {
+                "b_type": "subtotal",
+                "b_raw_value_user_currency_rounded": 0,
+                "b_value_user_currency_rounded": "Rs. 0",
+                "b_value_hotel_currency": "Rs. 0",
+                "b_value_user_currency": "Rs. 0",
+                "b_copy_alt": "Sum of all included charges",
+                "b_raw_value_user_currency": 0,
+                "b_raw_value_hotel_currency": 0,
+                "b_copy": "sum included"
+              }
+            ],
+            "b_sum_discounts": [
+              {
+                "b_raw_value_user_currency": 3500,
+                "b_copy": "Sum of discounts",
+                "b_copy_alt": "Sum of discounts",
+                "b_value_user_currency_rounded": "Rs. 3,500",
+                "b_raw_value_user_currency_rounded": 3500,
+                "b_value_user_currency": "Rs. 3,500",
+                "b_type": "discount_sum"
+              }
+            ],
+            "b_hide_breakdown": 0,
+            "b_charges_info_copy": {
+              "b_line_copy": "",
+              "b_is_all_included": 0,
+              "b_tooltip_copy": "Total"
+            },
+            "b_long_stays_monthly_rate_plan_discounted_price": 0,
+            "b_included_charges": [],
+            "b_price_display_config": [
+              {
+                "key": "use_nightly_prices",
+                "value": 1
+              },
+              {
+                "key": "use_nightly_as_dominant",
+                "value": 0
+              },
+              {
+                "key": "use_js_tracking",
+                "value": 1
+              }
+            ],
+            "b_subtotal_price": [
+              {
+                "b_copy_alt": "Subtotal Price",
+                "b_raw_value_user_currency": 5250,
+                "b_raw_value_hotel_currency": 5250,
+                "b_copy": "Total",
+                "b_type": "subtotal",
+                "b_raw_value_hotel_currency_rounded": 5250,
+                "b_value_hotel_currency": "Rs. 5,250",
+                "b_raw_value_user_currency_rounded": 5250,
+                "b_value_user_currency_rounded": "Rs. 5,250",
+                "b_value_user_currency": "Rs. 5,250"
+              }
+            ],
+            "b_all_discounts": [
+              {
+                "b_rule_name": "deals_basic_deal_composer",
+                "b_type": "Promotions",
+                "b_value_user_currency": "Rs. 3,500",
+                "b_value_user_currency_rounded": "Rs. 3,500",
+                "b_raw_value_user_currency_rounded": 3500,
+                "b_copy_alt": "You’re getting a reduced rate because this property is offering a discount.",
+                "b_copy": "Bonus savings",
+                "b_subtype": "basic-deal",
+                "b_raw_value_user_currency": 3500
+              }
+            ],
+            "b_aggregated_addons": [],
+            "b_addons": [],
+            "b_total_price": [
+              {
+                "b_copy_alt": "Total Price",
+                "b_copy": "Total",
+                "b_raw_value_hotel_currency": 5512.50000391155,
+                "b_raw_value_user_currency": 5512.50000391155,
+                "b_type": "total",
+                "b_value_user_currency": "Rs. 5,512.50",
+                "b_value_hotel_currency": "Rs. 5,512.50",
+                "b_value_user_currency_rounded": "Rs. 5,513"
+              }
+            ],
+            "b_subtotal_price_average": [
+              {
+                "b_copy_alt": "Subtotal Average Price",
+                "b_copy_rounded": "Rs. 5,250 × 1 night",
+                "b_raw_value_user_currency": 5250,
+                "b_copy": "Rs. 5,250 × 1 night",
+                "b_raw_value_hotel_currency": 5250,
+                "b_type": "subtotal_per_night",
+                "b_value_hotel_currency": "Rs. 5,250",
+                "b_raw_value_user_currency_rounded": 5250,
+                "b_value_user_currency_rounded": "Rs. 5,250",
+                "b_value_user_currency": "Rs. 5,250"
+              }
+            ],
+            "b_booking_sponsored_discounts": [],
+            "b_all_charges": [
+              {
+                "b_copy": "Goods & services tax",
+                "b_value_user_currency_rounded": "Rs. 263",
+                "b_value": "Rs. 262.50",
+                "b_raw_value": "262.5",
+                "b_copy_alt": "Goods & services tax",
+                "b_type": "variable_amount__excluded"
+              }
+            ],
+            "b_subtotal_price_before_total_level_discounts": [
+              {
+                "b_raw_value_hotel_currency": 5250,
+                "b_copy": "Total",
+                "b_raw_value_user_currency": 5250,
+                "b_copy_alt": "Subtotal Price Before Booking Sponsored Discounts",
+                "b_value_user_currency": "Rs. 5,250",
+                "b_raw_value_user_currency_rounded": 5250,
+                "b_value_hotel_currency": "Rs. 5,250",
+                "b_value_user_currency_rounded": "Rs. 5,250",
+                "b_type": "subtotal"
+              }
+            ],
+            "b_subtotal_price_average_before_total_level_discounts": [
+              {
+                "b_copy_alt": "Subtotal Average Price Before Booking Sponsored Discounts",
+                "b_copy_rounded": "Rs. 5,250 × 1 night",
+                "b_copy": "Rs. 5,250 × 1 night",
+                "b_raw_value_hotel_currency": 5250,
+                "b_raw_value_user_currency": 5250,
+                "b_type": "subtotal_per_night",
+                "b_value_user_currency": "Rs. 5,250",
+                "b_raw_value_user_currency_rounded": 5250,
+                "b_value_hotel_currency": "Rs. 5,250",
+                "b_value_user_currency_rounded": "Rs. 5,250"
+              }
+            ],
+            "b_vm_products": [
+              {
+                "b_type": "combined-discount",
+                "b_copy_alt": "You’re getting a reduced rate because this property is offering a discount.",
+                "b_variant": "constructive",
+                "b_icon": null,
+                "b_copy": "40% off"
+              }
+            ],
+            "b_other_benefits": [
+              {
+                "b_type": "combined-discount",
+                "b_copy_alt": "You’re getting a reduced rate because this property is offering a discount.",
+                "b_variant": "constructive",
+                "b_icon": null,
+                "b_copy": "40% off"
+              }
+            ],
+            "b_rate_level_discounts": [
+              {
+                "b_rule_name": "deals_basic_deal_composer",
+                "b_type": "Promotions",
+                "b_value_user_currency": "Rs. 3,500",
+                "b_value_user_currency_rounded": "Rs. 3,500",
+                "b_raw_value_user_currency_rounded": 3500,
+                "b_copy_alt": "You’re getting a reduced rate because this property is offering a discount.",
+                "b_copy": "Bonus savings",
+                "b_subtype": "basic-deal",
+                "b_raw_value_user_currency": 3500
+              }
+            ],
+            "b_sum_credit_rewards": [],
+            "b_average_per_night_net_price": [
+              {
+                "b_value_user_currency": "Rs. 5,250",
+                "b_raw_value_user_currency_rounded": 5250,
+                "b_value_user_currency_rounded": "Rs. 5,250",
+                "b_type": "net_price_per_night",
+                "b_copy": "",
+                "b_raw_value_user_currency": 5250,
+                "b_copy_alt": ""
+              }
+            ],
+            "b_extra_addons": [],
+            "b_prediscounted_price": [
+              {
+                "b_raw_value_user_currency": 8750,
+                "b_copy": "Original price",
+                "b_copy_alt": "You’re getting a discount because this property offers reduced rates on some rooms that match your search.",
+                "b_raw_value_user_currency_rounded": 8750,
+                "b_value_user_currency_rounded": "Rs. 8,750",
+                "b_value_user_currency": "Rs. 8,750",
+                "b_type": "prediscounted_price"
+              }
+            ],
+            "b_credit_rewards": [],
+            "b_original_price": [
+              {
+                "b_value_user_currency": "Rs. 8,750",
+                "b_raw_value_user_currency_rounded": 8750,
+                "b_value_user_currency_rounded": "Rs. 8,750",
+                "b_type": "prediscounted_price_before_insurance",
+                "b_copy": "",
+                "b_raw_value_user_currency": 8750,
+                "b_copy_alt": ""
+              }
+            ],
+            "b_net_room_price": [
+              {
+                "b_copy": "Rs. 5,250 × 1 night",
+                "b_value": "Rs. 5,250",
+                "b_value_per_night_rounded": "Rs. 5,250",
+                "b_copy_rounded": "Rs. 5,250 × 1 night",
+                "b_copy_alt": "1 room",
+                "b_value_user_currency_rounded": "Rs. 5,250",
+                "b_raw_value": "5250",
+                "b_type": "net_room_price"
+              }
+            ],
+            "b_sum_charges": [
+              {
+                "b_copy_alt": "Sum of all excluded charges",
+                "b_raw_value_hotel_currency": 262.500003911555,
+                "b_copy": "sum excluded",
+                "b_raw_value_user_currency": 262.5,
+                "b_type": "subtotal",
+                "b_value_user_currency": "Rs. 262.50",
+                "b_value_hotel_currency": "Rs. 262.50",
+                "b_raw_value_user_currency_rounded": 263,
+                "b_value_user_currency_rounded": "Rs. 263"
+              }
+            ],
+            "b_client_translations": {
+              "b_total_text": "",
+              "b_tooltip_footnote_text": [
+                "Rs. 5,250 is the average price per night. This excludes taxes and fees."
+              ],
+              "b_per_night_amount_prefix": "Per night",
+              "b_tooltip_total_text": "Total before taxes",
+              "b_amount_per_night_suffix": "per night"
+            },
+            "b_tpi_info": 0,
+            "b_sum_discounts_percentage": [
+              {
+                "b_copy_alt": "Discounts percentage",
+                "b_raw_value_user_currency": 40,
+                "b_copy": "Discounts percentage",
+                "b_type": "discount_percentage",
+                "b_raw_value_user_currency_rounded": 40,
+                "b_value_user_currency_rounded": "40%",
+                "b_value_user_currency": "40%"
+              }
+            ],
+            "b_nonmandatory_charges": [],
+            "b_excluded_charges_amount": 262.5,
+            "b_insurance_products": [],
+            "b_tax_exceptions": [],
+            "b_conditional_charges": [],
+            "b_long_stays_weekly_rate_plan_discounted_price": 0,
+            "b_prediscounted_price_average": [
+              {
+                "b_copy_rounded": "Rs. 8,750 × 1 night",
+                "b_copy_alt": "You’re getting a discount because this property offers reduced rates on some rooms that match your search.",
+                "b_raw_value_user_currency": 8750,
+                "b_copy": "Rs. 8,750 × 1 night",
+                "b_type": "prediscounted_price_per_night",
+                "b_value_user_currency_rounded": "Rs. 8,750",
+                "b_raw_value_user_currency_rounded": 8750,
+                "b_value_user_currency": "Rs. 8,750"
+              }
+            ]
+          },
+          "b_max_persons": 3,
+          "b_can_fit_them_all": 2,
+          "b_stay_prices": [
+            {
+              "b_local_price": 0,
+              "b_raw_price": "",
+              "b_cfar_raw_price": 0,
+              "b_cfar_price": 0,
+              "b_stays": 0,
+              "b_price": "",
+              "b_price_per_night": ""
+            },
+            {
+              "b_local_price": 5250,
+              "b_raw_price": 5250,
+              "b_cfar_raw_price": 0,
+              "b_price": "Rs. 5,250",
+              "b_price_per_night": "Rs. 5,250",
+              "b_cfar_price": 0,
+              "b_stays": 1
+            },
+            {
+              "b_raw_price": 10500,
+              "b_local_price": 10500,
+              "b_stays": 2,
+              "b_cfar_price": 0,
+              "b_price": "Rs. 10,500",
+              "b_price_per_night": "Rs. 10,500",
+              "b_cfar_raw_price": 0
+            },
+            {
+              "b_stays": 3,
+              "b_cfar_price": 0,
+              "b_price_per_night": "Rs. 15,750",
+              "b_price": "Rs. 15,750",
+              "b_cfar_raw_price": 0,
+              "b_raw_price": 15750,
+              "b_local_price": 15750
+            },
+            {
+              "b_price": "Rs. 21,000",
+              "b_price_per_night": "Rs. 21,000",
+              "b_stays": 4,
+              "b_cfar_price": 0,
+              "b_cfar_raw_price": 0,
+              "b_raw_price": 21000,
+              "b_local_price": 21000
+            },
+            {
+              "b_local_price": 26250,
+              "b_raw_price": 26250,
+              "b_cfar_price": 0,
+              "b_stays": 5,
+              "b_price": "Rs. 26,250",
+              "b_price_per_night": "Rs. 26,250",
+              "b_cfar_raw_price": 0
+            },
+            {
+              "b_local_price": 31500,
+              "b_raw_price": 31500,
+              "b_price": "Rs. 31,500",
+              "b_price_per_night": "Rs. 31,500",
+              "b_stays": 6,
+              "b_cfar_price": 0,
+              "b_cfar_raw_price": 0
+            },
+            {
+              "b_local_price": 36750,
+              "b_raw_price": 36750,
+              "b_cfar_raw_price": 0,
+              "b_stays": 7,
+              "b_cfar_price": 0,
+              "b_price": "Rs. 36,750",
+              "b_price_per_night": "Rs. 36,750"
+            }
+          ],
+          "b_is_cfar": 0,
+          "b_raw_price": "5250.00",
+          "b_rate_is_genius": 0,
+          "b_cancellation_type": "free_cancellation",
+          "b_block_id": "80392109_430056065_3_41_0_873442",
+          "b_paymentterms": {
+            "b_depositterms_id": 1,
+            "b_paymentterms_id": 42
+          },
+          "b_cfar_tc_link": "https://r-xx.bstatic.com/cdata/cfar/cancelforanyreason_v010825.pdf",
+          "b_mealplan_included_name": "breakfast",
+          "b_price": "Rs. 5,250"
+        }
+      ],
+      "b_roomtype_id": 7
+    },
+    {
+      "b_blocks": [
+        {
+          "b_cfar_tc_link": "https://r-xx.bstatic.com/cdata/cfar/cancelforanyreason_v010825.pdf",
+          "b_paymentterms": {
+            "b_depositterms_id": 1,
+            "b_paymentterms_id": 29
+          },
+          "b_price": "Rs. 3,360",
+          "b_mealplan_included_name": null,
+          "b_avg_price_per_night_eur": "30.42",
+          "b_nr_stays": 10,
+          "b_max_persons": 1,
+          "b_can_fit_them_all": 0,
+          "b_price_breakdown_simplified": {
+            "b_vm_products": [
+              {
+                "b_icon": null,
+                "b_copy": "40% off",
+                "b_variant": "constructive",
+                "b_type": "combined-discount",
+                "b_copy_alt": "You’re getting a reduced rate because this property is offering a discount."
+              }
+            ],
+            "b_subtotal_price_average_before_total_level_discounts": [
+              {
+                "b_value_user_currency_rounded": "Rs. 3,360",
+                "b_raw_value_user_currency_rounded": 3360,
+                "b_value_hotel_currency": "Rs. 3,360",
+                "b_value_user_currency": "Rs. 3,360",
+                "b_type": "subtotal_per_night",
+                "b_raw_value_user_currency": 3360,
+                "b_copy": "Rs. 3,360 × 1 night",
+                "b_raw_value_hotel_currency": 3360,
+                "b_copy_alt": "Subtotal Average Price Before Booking Sponsored Discounts",
+                "b_copy_rounded": "Rs. 3,360 × 1 night"
+              }
+            ],
+            "b_all_charges": [
+              {
+                "b_raw_value": "168",
+                "b_type": "variable_amount__excluded",
+                "b_copy_alt": "Goods & services tax",
+                "b_copy": "Goods & services tax",
+                "b_value": "Rs. 168",
+                "b_value_user_currency_rounded": "Rs. 168"
+              }
+            ],
+            "b_subtotal_price_before_total_level_discounts": [
+              {
+                "b_raw_value_user_currency": 3360,
+                "b_raw_value_hotel_currency": 3360,
+                "b_copy": "Total",
+                "b_copy_alt": "Subtotal Price Before Booking Sponsored Discounts",
+                "b_value_user_currency_rounded": "Rs. 3,360",
+                "b_raw_value_user_currency_rounded": 3360,
+                "b_value_hotel_currency": "Rs. 3,360",
+                "b_value_user_currency": "Rs. 3,360",
+                "b_type": "subtotal"
+              }
+            ],
+            "b_sum_credit_rewards": [],
+            "b_rate_level_discounts": [
+              {
+                "b_copy_alt": "You’re getting a reduced rate because this property is offering a discount.",
+                "b_raw_value_user_currency": 2240,
+                "b_subtype": "basic-deal",
+                "b_copy": "Bonus savings",
+                "b_type": "Promotions",
+                "b_rule_name": "deals_basic_deal_composer",
+                "b_raw_value_user_currency_rounded": 2240,
+                "b_value_user_currency_rounded": "Rs. 2,240",
+                "b_value_user_currency": "Rs. 2,240"
+              }
+            ],
+            "b_other_benefits": [
+              {
+                "b_icon": null,
+                "b_copy": "40% off",
+                "b_variant": "constructive",
+                "b_type": "combined-discount",
+                "b_copy_alt": "You’re getting a reduced rate because this property is offering a discount."
+              }
+            ],
+            "b_credit_rewards": [],
+            "b_prediscounted_price": [
+              {
+                "b_value_user_currency_rounded": "Rs. 5,600",
+                "b_raw_value_user_currency_rounded": 5600,
+                "b_value_user_currency": "Rs. 5,600",
+                "b_type": "prediscounted_price",
+                "b_raw_value_user_currency": 5600,
+                "b_copy": "Original price",
+                "b_copy_alt": "You’re getting a discount because this property offers reduced rates on some rooms that match your search."
+              }
+            ],
+            "b_extra_addons": [],
+            "b_average_per_night_net_price": [
+              {
+                "b_copy": "",
+                "b_raw_value_user_currency": 3360,
+                "b_copy_alt": "",
+                "b_value_user_currency": "Rs. 3,360",
+                "b_value_user_currency_rounded": "Rs. 3,360",
+                "b_raw_value_user_currency_rounded": 3360,
+                "b_type": "net_price_per_night"
+              }
+            ],
+            "b_client_translations": {
+              "b_tooltip_footnote_text": [
+                "Rs. 3,360 is the average price per night. This excludes taxes and fees."
+              ],
+              "b_total_text": "",
+              "b_per_night_amount_prefix": "Per night",
+              "b_amount_per_night_suffix": "per night",
+              "b_tooltip_total_text": "Total before taxes"
+            },
+            "b_sum_charges": [
+              {
+                "b_type": "subtotal",
+                "b_value_user_currency_rounded": "Rs. 168",
+                "b_raw_value_user_currency_rounded": 168,
+                "b_value_hotel_currency": "Rs. 168",
+                "b_value_user_currency": "Rs. 168",
+                "b_copy_alt": "Sum of all excluded charges",
+                "b_raw_value_user_currency": 168,
+                "b_raw_value_hotel_currency": 168.000002503395,
+                "b_copy": "sum excluded"
+              }
+            ],
+            "b_net_room_price": [
+              {
+                "b_copy_alt": "1 room",
+                "b_copy_rounded": "Rs. 3,360 × 1 night",
+                "b_value_per_night_rounded": "Rs. 3,360",
+                "b_value": "Rs. 3,360",
+                "b_copy": "Rs. 3,360 × 1 night",
+                "b_type": "net_room_price",
+                "b_raw_value": "3360",
+                "b_value_user_currency_rounded": "Rs. 3,360"
+              }
+            ],
+            "b_original_price": [
+              {
+                "b_copy_alt": "",
+                "b_copy": "",
+                "b_raw_value_user_currency": 5600,
+                "b_type": "prediscounted_price_before_insurance",
+                "b_value_user_currency": "Rs. 5,600",
+                "b_raw_value_user_currency_rounded": 5600,
+                "b_value_user_currency_rounded": "Rs. 5,600"
+              }
+            ],
+            "b_excluded_charges_amount": 168,
+            "b_nonmandatory_charges": [],
+            "b_sum_discounts_percentage": [
+              {
+                "b_copy_alt": "Discounts percentage",
+                "b_raw_value_user_currency": 40,
+                "b_copy": "Discounts percentage",
+                "b_type": "discount_percentage",
+                "b_value_user_currency_rounded": "40%",
+                "b_raw_value_user_currency_rounded": 40,
+                "b_value_user_currency": "40%"
+              }
+            ],
+            "b_tpi_info": 0,
+            "b_insurance_products": [],
+            "b_prediscounted_price_average": [
+              {
+                "b_copy_rounded": "Rs. 5,600 × 1 night",
+                "b_copy_alt": "You’re getting a discount because this property offers reduced rates on some rooms that match your search.",
+                "b_raw_value_user_currency": 5600,
+                "b_copy": "Rs. 5,600 × 1 night",
+                "b_type": "prediscounted_price_per_night",
+                "b_value_user_currency_rounded": "Rs. 5,600",
+                "b_raw_value_user_currency_rounded": 5600,
+                "b_value_user_currency": "Rs. 5,600"
+              }
+            ],
+            "b_long_stays_weekly_rate_plan_discounted_price": 0,
+            "b_conditional_charges": [],
+            "b_tax_exceptions": [],
+            "b_charges_info": [
+              {
+                "includes": [],
+                "excludes": [
+                  "Goods & services tax"
+                ]
+              }
+            ],
+            "b_excluded_charges": [
+              {
+                "b_raw_value": "168",
+                "b_type": "variable_amount__excluded",
+                "b_copy_alt": "Goods & services tax",
+                "b_copy": "Goods & services tax",
+                "b_value": "Rs. 168",
+                "b_value_user_currency_rounded": "Rs. 168"
+              }
+            ],
+            "b_conditional_included_charges": [],
+            "b_sum_included_charges": [
+              {
+                "b_copy_alt": "Sum of all included charges",
+                "b_raw_value_hotel_currency": 0,
+                "b_copy": "sum included",
+                "b_raw_value_user_currency": 0,
+                "b_type": "subtotal",
+                "b_value_user_currency": "Rs. 0",
+                "b_raw_value_user_currency_rounded": 0,
+                "b_value_hotel_currency": "Rs. 0",
+                "b_value_user_currency_rounded": "Rs. 0"
+              }
+            ],
+            "b_sum_discounts": [
+              {
+                "b_raw_value_user_currency": 2240,
+                "b_copy": "Sum of discounts",
+                "b_copy_alt": "Sum of discounts",
+                "b_raw_value_user_currency_rounded": 2240,
+                "b_value_user_currency_rounded": "Rs. 2,240",
+                "b_value_user_currency": "Rs. 2,240",
+                "b_type": "discount_sum"
+              }
+            ],
+            "b_hide_breakdown": 0,
+            "b_long_stays_monthly_rate_plan_discounted_price": 0,
+            "b_charges_info_copy": {
+              "b_tooltip_copy": "Total",
+              "b_line_copy": "",
+              "b_is_all_included": 0
+            },
+            "b_price_display_config": [
+              {
+                "value": 1,
+                "key": "use_nightly_prices"
+              },
+              {
+                "value": 0,
+                "key": "use_nightly_as_dominant"
+              },
+              {
+                "key": "use_js_tracking",
+                "value": 1
+              }
+            ],
+            "b_included_charges": [],
+            "b_subtotal_price": [
+              {
+                "b_raw_value_hotel_currency": 3360,
+                "b_copy": "Total",
+                "b_raw_value_user_currency": 3360,
+                "b_copy_alt": "Subtotal Price",
+                "b_value_user_currency": "Rs. 3,360",
+                "b_raw_value_user_currency_rounded": 3360,
+                "b_value_user_currency_rounded": "Rs. 3,360",
+                "b_value_hotel_currency": "Rs. 3,360",
+                "b_raw_value_hotel_currency_rounded": 3360,
+                "b_type": "subtotal"
+              }
+            ],
+            "b_all_discounts": [
+              {
+                "b_copy_alt": "You’re getting a reduced rate because this property is offering a discount.",
+                "b_raw_value_user_currency": 2240,
+                "b_subtype": "basic-deal",
+                "b_copy": "Bonus savings",
+                "b_type": "Promotions",
+                "b_rule_name": "deals_basic_deal_composer",
+                "b_raw_value_user_currency_rounded": 2240,
+                "b_value_user_currency_rounded": "Rs. 2,240",
+                "b_value_user_currency": "Rs. 2,240"
+              }
+            ],
+            "b_total_price": [
+              {
+                "b_type": "total",
+                "b_value_user_currency": "Rs. 3,528",
+                "b_value_hotel_currency": "Rs. 3,528",
+                "b_value_user_currency_rounded": "Rs. 3,528",
+                "b_copy_alt": "Total Price",
+                "b_raw_value_hotel_currency": 3528.0000025034,
+                "b_copy": "Total",
+                "b_raw_value_user_currency": 3528.0000025034
+              }
+            ],
+            "b_addons": [],
+            "b_aggregated_addons": [],
+            "b_booking_sponsored_discounts": [],
+            "b_subtotal_price_average": [
+              {
+                "b_type": "subtotal_per_night",
+                "b_raw_value_user_currency_rounded": 3360,
+                "b_value_hotel_currency": "Rs. 3,360",
+                "b_value_user_currency_rounded": "Rs. 3,360",
+                "b_value_user_currency": "Rs. 3,360",
+                "b_copy_alt": "Subtotal Average Price",
+                "b_copy_rounded": "Rs. 3,360 × 1 night",
+                "b_raw_value_user_currency": 3360,
+                "b_copy": "Rs. 3,360 × 1 night",
+                "b_raw_value_hotel_currency": 3360
+              }
+            ]
+          },
+          "b_is_cfar": 0,
+          "b_raw_price": "3360.00",
+          "b_rate_is_genius": 0,
+          "b_stay_prices": [
+            {
+              "b_stays": 0,
+              "b_cfar_price": 0,
+              "b_price": "",
+              "b_price_per_night": "",
+              "b_cfar_raw_price": 0,
+              "b_local_price": 0,
+              "b_raw_price": ""
+            },
+            {
+              "b_cfar_raw_price": 0,
+              "b_cfar_price": 0,
+              "b_stays": 1,
+              "b_price": "Rs. 3,360",
+              "b_price_per_night": "Rs. 3,360",
+              "b_raw_price": 3360,
+              "b_local_price": 3360
+            },
+            {
+              "b_price_per_night": "Rs. 6,720",
+              "b_price": "Rs. 6,720",
+              "b_cfar_price": 0,
+              "b_stays": 2,
+              "b_cfar_raw_price": 0,
+              "b_local_price": 6720,
+              "b_raw_price": 6720
+            },
+            {
+              "b_raw_price": 10080,
+              "b_local_price": 10080,
+              "b_price_per_night": "Rs. 10,080",
+              "b_price": "Rs. 10,080",
+              "b_stays": 3,
+              "b_cfar_price": 0,
+              "b_cfar_raw_price": 0
+            },
+            {
+              "b_local_price": 13440,
+              "b_raw_price": 13440,
+              "b_cfar_raw_price": 0,
+              "b_price_per_night": "Rs. 13,440",
+              "b_price": "Rs. 13,440",
+              "b_stays": 4,
+              "b_cfar_price": 0
+            },
+            {
+              "b_local_price": 16800,
+              "b_raw_price": 16800,
+              "b_cfar_raw_price": 0,
+              "b_price": "Rs. 16,800",
+              "b_price_per_night": "Rs. 16,800",
+              "b_stays": 5,
+              "b_cfar_price": 0
+            },
+            {
+              "b_raw_price": 20160,
+              "b_local_price": 20160,
+              "b_stays": 6,
+              "b_cfar_price": 0,
+              "b_price_per_night": "Rs. 20,160",
+              "b_price": "Rs. 20,160",
+              "b_cfar_raw_price": 0
+            },
+            {
+              "b_stays": 7,
+              "b_cfar_price": 0,
+              "b_price": "Rs. 23,520",
+              "b_price_per_night": "Rs. 23,520",
+              "b_cfar_raw_price": 0,
+              "b_local_price": 23520,
+              "b_raw_price": 23520
+            },
+            {
+              "b_price": "Rs. 26,880",
+              "b_price_per_night": "Rs. 26,880",
+              "b_cfar_price": 0,
+              "b_stays": 8,
+              "b_cfar_raw_price": 0,
+              "b_local_price": 26880,
+              "b_raw_price": 26880
+            },
+            {
+              "b_local_price": 30240,
+              "b_raw_price": 30240,
+              "b_cfar_raw_price": 0,
+              "b_price_per_night": "Rs. 30,240",
+              "b_price": "Rs. 30,240",
+              "b_cfar_price": 0,
+              "b_stays": 9
+            },
+            {
+              "b_raw_price": 33600,
+              "b_local_price": 33600,
+              "b_cfar_raw_price": 0,
+              "b_stays": 10,
+              "b_cfar_price": 0,
+              "b_price_per_night": "Rs. 33,600",
+              "b_price": "Rs. 33,600"
+            }
+          ],
+          "b_cancellation_type": "free_cancellation",
+          "b_block_id": "80392108_430056064_1_42_0"
+        },
+        {
+          "b_cfar_tc_link": "https://r-xx.bstatic.com/cdata/cfar/cancelforanyreason_v010825.pdf",
+          "b_paymentterms": {
+            "b_paymentterms_id": 42,
+            "b_depositterms_id": 1
+          },
+          "b_price": "Rs. 3,486",
+          "b_mealplan_included_name": "breakfast",
+          "b_avg_price_per_night_eur": "31.56",
+          "b_nr_stays": 10,
+          "b_max_persons": 1,
+          "b_can_fit_them_all": 0,
+          "b_price_breakdown_simplified": {
+            "b_all_discounts": [
+              {
+                "b_subtype": "basic-deal",
+                "b_copy": "Bonus savings",
+                "b_raw_value_user_currency": 2324,
+                "b_copy_alt": "You’re getting a reduced rate because this property is offering a discount.",
+                "b_value_user_currency": "Rs. 2,324",
+                "b_raw_value_user_currency_rounded": 2324,
+                "b_value_user_currency_rounded": "Rs. 2,324",
+                "b_rule_name": "deals_basic_deal_composer",
+                "b_type": "Promotions"
+              }
+            ],
+            "b_price_display_config": [
+              {
+                "value": 1,
+                "key": "use_nightly_prices"
+              },
+              {
+                "value": 0,
+                "key": "use_nightly_as_dominant"
+              },
+              {
+                "value": 1,
+                "key": "use_js_tracking"
+              }
+            ],
+            "b_included_charges": [],
+            "b_subtotal_price": [
+              {
+                "b_raw_value_user_currency_rounded": 3486,
+                "b_value_user_currency_rounded": "Rs. 3,486",
+                "b_value_hotel_currency": "Rs. 3,486",
+                "b_value_user_currency": "Rs. 3,486",
+                "b_type": "subtotal",
+                "b_raw_value_hotel_currency_rounded": 3486,
+                "b_raw_value_user_currency": 3486,
+                "b_raw_value_hotel_currency": 3486,
+                "b_copy": "Total",
+                "b_copy_alt": "Subtotal Price"
+              }
+            ],
+            "b_subtotal_price_average": [
+              {
+                "b_raw_value_hotel_currency": 3486,
+                "b_copy": "Rs. 3,486 × 1 night",
+                "b_raw_value_user_currency": 3486,
+                "b_copy_rounded": "Rs. 3,486 × 1 night",
+                "b_copy_alt": "Subtotal Average Price",
+                "b_value_user_currency": "Rs. 3,486",
+                "b_raw_value_user_currency_rounded": 3486,
+                "b_value_hotel_currency": "Rs. 3,486",
+                "b_value_user_currency_rounded": "Rs. 3,486",
+                "b_type": "subtotal_per_night"
+              }
+            ],
+            "b_booking_sponsored_discounts": [],
+            "b_aggregated_addons": [],
+            "b_addons": [],
+            "b_total_price": [
+              {
+                "b_copy_alt": "Total Price",
+                "b_raw_value_user_currency": 3660.30000259727,
+                "b_raw_value_hotel_currency": 3660.30000259727,
+                "b_copy": "Total",
+                "b_type": "total",
+                "b_value_hotel_currency": "Rs. 3,660.30",
+                "b_value_user_currency_rounded": "Rs. 3,660",
+                "b_value_user_currency": "Rs. 3,660.30"
+              }
+            ],
+            "b_sum_discounts": [
+              {
+                "b_copy": "Sum of discounts",
+                "b_raw_value_user_currency": 2324,
+                "b_copy_alt": "Sum of discounts",
+                "b_value_user_currency": "Rs. 2,324",
+                "b_value_user_currency_rounded": "Rs. 2,324",
+                "b_raw_value_user_currency_rounded": 2324,
+                "b_type": "discount_sum"
+              }
+            ],
+            "b_sum_included_charges": [
+              {
+                "b_type": "subtotal",
+                "b_value_user_currency": "Rs. 0",
+                "b_raw_value_user_currency_rounded": 0,
+                "b_value_hotel_currency": "Rs. 0",
+                "b_value_user_currency_rounded": "Rs. 0",
+                "b_copy_alt": "Sum of all included charges",
+                "b_raw_value_hotel_currency": 0,
+                "b_copy": "sum included",
+                "b_raw_value_user_currency": 0
+              }
+            ],
+            "b_excluded_charges": [
+              {
+                "b_raw_value": "174.3",
+                "b_copy_alt": "Goods & services tax",
+                "b_type": "variable_amount__excluded",
+                "b_copy": "Goods & services tax",
+                "b_value_user_currency_rounded": "Rs. 174",
+                "b_value": "Rs. 174.30"
+              }
+            ],
+            "b_conditional_included_charges": [],
+            "b_charges_info": [
+              {
+                "excludes": [
+                  "Goods & services tax"
+                ],
+                "includes": []
+              }
+            ],
+            "b_charges_info_copy": {
+              "b_tooltip_copy": "Total",
+              "b_is_all_included": 0,
+              "b_line_copy": ""
+            },
+            "b_long_stays_monthly_rate_plan_discounted_price": 0,
+            "b_hide_breakdown": 0,
+            "b_tpi_info": 0,
+            "b_sum_discounts_percentage": [
+              {
+                "b_value_user_currency_rounded": "40%",
+                "b_raw_value_user_currency_rounded": 40,
+                "b_value_user_currency": "40%",
+                "b_type": "discount_percentage",
+                "b_raw_value_user_currency": 40,
+                "b_copy": "Discounts percentage",
+                "b_copy_alt": "Discounts percentage"
+              }
+            ],
+            "b_nonmandatory_charges": [],
+            "b_excluded_charges_amount": 174.3,
+            "b_original_price": [
+              {
+                "b_copy_alt": "",
+                "b_raw_value_user_currency": 5810,
+                "b_copy": "",
+                "b_type": "prediscounted_price_before_insurance",
+                "b_raw_value_user_currency_rounded": 5810,
+                "b_value_user_currency_rounded": "Rs. 5,810",
+                "b_value_user_currency": "Rs. 5,810"
+              }
+            ],
+            "b_net_room_price": [
+              {
+                "b_copy_alt": "1 room",
+                "b_copy_rounded": "Rs. 3,486 × 1 night",
+                "b_value_per_night_rounded": "Rs. 3,486",
+                "b_value": "Rs. 3,486",
+                "b_copy": "Rs. 3,486 × 1 night",
+                "b_type": "net_room_price",
+                "b_raw_value": "3486",
+                "b_value_user_currency_rounded": "Rs. 3,486"
+              }
+            ],
+            "b_sum_charges": [
+              {
+                "b_type": "subtotal",
+                "b_value_user_currency": "Rs. 174.30",
+                "b_value_user_currency_rounded": "Rs. 174",
+                "b_raw_value_user_currency_rounded": 174,
+                "b_value_hotel_currency": "Rs. 174.30",
+                "b_copy_alt": "Sum of all excluded charges",
+                "b_raw_value_hotel_currency": 174.300002597272,
+                "b_copy": "sum excluded",
+                "b_raw_value_user_currency": 174.3
+              }
+            ],
+            "b_client_translations": {
+              "b_amount_per_night_suffix": "per night",
+              "b_tooltip_total_text": "Total before taxes",
+              "b_total_text": "",
+              "b_tooltip_footnote_text": [
+                "Rs. 3,486 is the average price per night. This excludes taxes and fees."
+              ],
+              "b_per_night_amount_prefix": "Per night"
+            },
+            "b_tax_exceptions": [],
+            "b_conditional_charges": [],
+            "b_long_stays_weekly_rate_plan_discounted_price": 0,
+            "b_prediscounted_price_average": [
+              {
+                "b_value_user_currency": "Rs. 5,810",
+                "b_value_user_currency_rounded": "Rs. 5,810",
+                "b_raw_value_user_currency_rounded": 5810,
+                "b_type": "prediscounted_price_per_night",
+                "b_copy": "Rs. 5,810 × 1 night",
+                "b_raw_value_user_currency": 5810,
+                "b_copy_alt": "You’re getting a discount because this property offers reduced rates on some rooms that match your search.",
+                "b_copy_rounded": "Rs. 5,810 × 1 night"
+              }
+            ],
+            "b_insurance_products": [],
+            "b_all_charges": [
+              {
+                "b_raw_value": "174.3",
+                "b_copy_alt": "Goods & services tax",
+                "b_type": "variable_amount__excluded",
+                "b_copy": "Goods & services tax",
+                "b_value_user_currency_rounded": "Rs. 174",
+                "b_value": "Rs. 174.30"
+              }
+            ],
+            "b_subtotal_price_before_total_level_discounts": [
+              {
+                "b_type": "subtotal",
+                "b_raw_value_user_currency_rounded": 3486,
+                "b_value_user_currency_rounded": "Rs. 3,486",
+                "b_value_hotel_currency": "Rs. 3,486",
+                "b_value_user_currency": "Rs. 3,486",
+                "b_copy_alt": "Subtotal Price Before Booking Sponsored Discounts",
+                "b_raw_value_user_currency": 3486,
+                "b_raw_value_hotel_currency": 3486,
+                "b_copy": "Total"
+              }
+            ],
+            "b_subtotal_price_average_before_total_level_discounts": [
+              {
+                "b_value_user_currency_rounded": "Rs. 3,486",
+                "b_raw_value_user_currency_rounded": 3486,
+                "b_value_hotel_currency": "Rs. 3,486",
+                "b_value_user_currency": "Rs. 3,486",
+                "b_type": "subtotal_per_night",
+                "b_raw_value_user_currency": 3486,
+                "b_raw_value_hotel_currency": 3486,
+                "b_copy": "Rs. 3,486 × 1 night",
+                "b_copy_rounded": "Rs. 3,486 × 1 night",
+                "b_copy_alt": "Subtotal Average Price Before Booking Sponsored Discounts"
+              }
+            ],
+            "b_vm_products": [
+              {
+                "b_copy_alt": "You’re getting a reduced rate because this property is offering a discount.",
+                "b_type": "combined-discount",
+                "b_copy": "40% off",
+                "b_icon": null,
+                "b_variant": "constructive"
+              }
+            ],
+            "b_average_per_night_net_price": [
+              {
+                "b_copy_alt": "",
+                "b_raw_value_user_currency": 3486,
+                "b_copy": "",
+                "b_type": "net_price_per_night",
+                "b_raw_value_user_currency_rounded": 3486,
+                "b_value_user_currency_rounded": "Rs. 3,486",
+                "b_value_user_currency": "Rs. 3,486"
+              }
+            ],
+            "b_extra_addons": [],
+            "b_prediscounted_price": [
+              {
+                "b_raw_value_user_currency_rounded": 5810,
+                "b_value_user_currency_rounded": "Rs. 5,810",
+                "b_value_user_currency": "Rs. 5,810",
+                "b_type": "prediscounted_price",
+                "b_raw_value_user_currency": 5810,
+                "b_copy": "Original price",
+                "b_copy_alt": "You’re getting a discount because this property offers reduced rates on some rooms that match your search."
+              }
+            ],
+            "b_credit_rewards": [],
+            "b_other_benefits": [
+              {
+                "b_copy_alt": "You’re getting a reduced rate because this property is offering a discount.",
+                "b_type": "combined-discount",
+                "b_copy": "40% off",
+                "b_icon": null,
+                "b_variant": "constructive"
+              }
+            ],
+            "b_rate_level_discounts": [
+              {
+                "b_subtype": "basic-deal",
+                "b_copy": "Bonus savings",
+                "b_raw_value_user_currency": 2324,
+                "b_copy_alt": "You’re getting a reduced rate because this property is offering a discount.",
+                "b_value_user_currency": "Rs. 2,324",
+                "b_raw_value_user_currency_rounded": 2324,
+                "b_value_user_currency_rounded": "Rs. 2,324",
+                "b_rule_name": "deals_basic_deal_composer",
+                "b_type": "Promotions"
+              }
+            ],
+            "b_sum_credit_rewards": []
+          },
+          "b_raw_price": "3486.00",
+          "b_rate_is_genius": 0,
+          "b_is_cfar": 0,
+          "b_stay_prices": [
+            {
+              "b_local_price": 0,
+              "b_raw_price": "",
+              "b_cfar_raw_price": 0,
+              "b_price": "",
+              "b_price_per_night": "",
+              "b_cfar_price": 0,
+              "b_stays": 0
+            },
+            {
+              "b_raw_price": 3486,
+              "b_local_price": 3486,
+              "b_cfar_raw_price": 0,
+              "b_price": "Rs. 3,486",
+              "b_price_per_night": "Rs. 3,486",
+              "b_stays": 1,
+              "b_cfar_price": 0
+            },
+            {
+              "b_raw_price": 6972,
+              "b_local_price": 6972,
+              "b_cfar_raw_price": 0,
+              "b_price_per_night": "Rs. 6,972",
+              "b_price": "Rs. 6,972",
+              "b_stays": 2,
+              "b_cfar_price": 0
+            },
+            {
+              "b_cfar_raw_price": 0,
+              "b_cfar_price": 0,
+              "b_stays": 3,
+              "b_price_per_night": "Rs. 10,458",
+              "b_price": "Rs. 10,458",
+              "b_local_price": 10458,
+              "b_raw_price": 10458
+            },
+            {
+              "b_raw_price": 13944,
+              "b_local_price": 13944,
+              "b_cfar_raw_price": 0,
+              "b_price_per_night": "Rs. 13,944",
+              "b_price": "Rs. 13,944",
+              "b_stays": 4,
+              "b_cfar_price": 0
+            },
+            {
+              "b_cfar_raw_price": 0,
+              "b_cfar_price": 0,
+              "b_stays": 5,
+              "b_price_per_night": "Rs. 17,430",
+              "b_price": "Rs. 17,430",
+              "b_raw_price": 17430,
+              "b_local_price": 17430
+            },
+            {
+              "b_local_price": 20916,
+              "b_raw_price": 20916,
+              "b_cfar_price": 0,
+              "b_stays": 6,
+              "b_price": "Rs. 20,916",
+              "b_price_per_night": "Rs. 20,916",
+              "b_cfar_raw_price": 0
+            },
+            {
+              "b_cfar_raw_price": 0,
+              "b_cfar_price": 0,
+              "b_stays": 7,
+              "b_price_per_night": "Rs. 24,402",
+              "b_price": "Rs. 24,402",
+              "b_local_price": 24402,
+              "b_raw_price": 24402
+            },
+            {
+              "b_raw_price": 27888,
+              "b_local_price": 27888,
+              "b_stays": 8,
+              "b_cfar_price": 0,
+              "b_price": "Rs. 27,888",
+              "b_price_per_night": "Rs. 27,888",
+              "b_cfar_raw_price": 0
+            },
+            {
+              "b_raw_price": 31374,
+              "b_local_price": 31374,
+              "b_cfar_raw_price": 0,
+              "b_price": "Rs. 31,374",
+              "b_price_per_night": "Rs. 31,374",
+              "b_stays": 9,
+              "b_cfar_price": 0
+            },
+            {
+              "b_cfar_raw_price": 0,
+              "b_stays": 10,
+              "b_cfar_price": 0,
+              "b_price": "Rs. 34,860",
+              "b_price_per_night": "Rs. 34,860",
+              "b_raw_price": 34860,
+              "b_local_price": 34860
+            }
+          ],
+          "b_block_id": "80392108_430056065_1_41_0_873442",
+          "b_cancellation_type": "free_cancellation"
+        }
+      ],
+      "b_id": 80392108,
+      "b_name": "Deluxe Single Room",
+      "b_has_room_inventory": 1,
+      "b_roomtype_id": 10
+    }
+  ],
+  "parsedRooms": [
+    {
+      "name": "Standard Double Room",
+      "description": "Air-conditioned rooms here will provide you with a cable TV. Featuring a shower, private bathrooms also come with free toiletries.",
+      "sizeM2": 24,
+      "capacityAdults": 2,
+      "maxOccupancy": 2,
+      "amenities": [
+        "Air conditioning",
+        "Ironing facilities",
+        "Fan",
+        "Private entrance",
+        "Soundproof",
+        "Tile/Marble floor",
+        "Carbon monoxide detector",
+        "Wake-up service/Alarm clock",
+        "Wake-up service",
+        "Clothes rack",
+        "Drying rack for clothing",
+        "Shower",
+        "Free toiletries",
+        "Toilet",
+        "Private bathroom",
+        "Breakfast in the room",
+        "Towels",
+        "Toilet paper",
+        "24-hour front desk",
+        "Telephone",
+        "Satellite channels",
+        "Flat-screen TV",
+        "Tea/Coffee maker",
+        "Refrigerator",
+        "Electric kettle",
+        "Dining table",
+        "City view",
+        "Desk",
+        "Sitting area",
+        "Fireplace",
+        "Dining area",
+        "Alarm clock",
+        "Wardrobe or closet",
+        "Linens",
+        "Upper floors accessible by elevator",
+        "Child safety socket covers",
+        "Single-room AC for guest accommodation",
+        "Hand sanitizer"
+      ],
+      "images": [
+        "https://cf.bstatic.com/xdata/images/hotel/max1024x768/568234754.jpg?k=44f284823f9a82ec4142f857f47416ffbff353ef5271858cec0e8226aab13ea3&o=",
+        "https://cf.bstatic.com/xdata/images/hotel/max1024x768/516892335.jpg?k=542ef38eb2469a4316141b8dbb9146e48640f1a24e2c4570e985a265ecaef348&o=",
+        "https://cf.bstatic.com/xdata/images/hotel/max1024x768/568235126.jpg?k=f245540d1e9a9a21a49f4a1f51c8f721f2dd85c9e6f4fb3ebdf971284fff0d52&o=",
+        "https://cf.bstatic.com/xdata/images/hotel/max1024x768/516893937.jpg?k=6c8df29d48144cc1e59cd462b3f035fc3d791cc920bfd882b9e279e0c28158d2&o=",
+        "https://cf.bstatic.com/xdata/images/hotel/max1024x768/518188835.jpg?k=6ff6e7eb3f4fa0293d6cdc45981f1553a11132b03034ab0c3b9a7c807a4d58a5&o="
+      ],
+      "price": 3570
+    },
+    {
+      "name": "Deluxe Single Room",
+      "description": "Guests will have a special experience as this single room features a fireplace. Offering free toiletries, this single room includes a private bathroom with a shower and slippers. The air-conditioned single room offers a flat-screen TV with satellite channels, a private entrance, soundproof walls, a tea and coffee maker as well as city views. The unit offers 1 bed.",
+      "sizeM2": 32,
+      "capacityAdults": 2,
+      "maxOccupancy": 2,
+      "amenities": [
+        "Air conditioning",
+        "Ironing facilities",
+        "Fan",
+        "Private entrance",
+        "Soundproof",
+        "Tile/Marble floor",
+        "Carbon monoxide detector",
+        "Wake-up service/Alarm clock",
+        "Wake-up service",
+        "Clothes rack",
+        "Drying rack for clothing",
+        "Shower",
+        "Free toiletries",
+        "Toilet",
+        "Private bathroom",
+        "Breakfast in the room",
+        "Towels",
+        "Toilet paper",
+        "24-hour front desk",
+        "Telephone",
+        "Satellite channels",
+        "Flat-screen TV",
+        "Tea/Coffee maker",
+        "Refrigerator",
+        "Electric kettle",
+        "Dining table",
+        "City view",
+        "Desk",
+        "Sitting area",
+        "Fireplace",
+        "Dining area",
+        "Alarm clock",
+        "Linens",
+        "Upper floors accessible by elevator",
+        "Child safety socket covers",
+        "Single-room AC for guest accommodation",
+        "Hand sanitizer"
+      ],
+      "images": [
+        "https://cf.bstatic.com/xdata/images/hotel/max1024x768/568234785.jpg?k=23895e650393c69556300ac74dbcbd24715f0b34c9dfea85a549c9ddd716225c&o=",
+        "https://cf.bstatic.com/xdata/images/hotel/max1024x768/516894528.jpg?k=6e661af6af8b07cbc66688bf2e866864c730c0006d5b99f0ae7d3e3f2eb08051&o=",
+        "https://cf.bstatic.com/xdata/images/hotel/max1024x768/516893349.jpg?k=e18b20cd1901e28dc514d34b154c67ae27b91c1a2ba9fe3553eb3b1c75b54cd5&o=",
+        "https://cf.bstatic.com/xdata/images/hotel/max1024x768/516893937.jpg?k=6c8df29d48144cc1e59cd462b3f035fc3d791cc920bfd882b9e279e0c28158d2&o=",
+        "https://cf.bstatic.com/xdata/images/hotel/max1024x768/568234851.jpg?k=909e0fe074d30c569f61430cbf7207fb0828724fa23df9e599f6d039801cfc77&o="
+      ],
+      "price": 3360
+    },
+    {
+      "name": "Classic Triple Room",
+      "description": "The fireplace is a top feature of this triple room. Featuring free toiletries, this triple room includes a private bathroom with a shower and slippers. The air-conditioned triple room features a flat-screen TV with satellite channels, a private entrance, soundproof walls, a tea and coffee maker as well as city views. The unit has 2 beds.",
+      "sizeM2": 32,
+      "capacityAdults": 3,
+      "maxOccupancy": 3,
+      "amenities": [
+        "Air conditioning",
+        "Ironing facilities",
+        "Fan",
+        "Private entrance",
+        "Soundproof",
+        "Tile/Marble floor",
+        "Carbon monoxide detector",
+        "Wake-up service/Alarm clock",
+        "Wake-up service",
+        "Clothes rack",
+        "Drying rack for clothing",
+        "Shower",
+        "Free toiletries",
+        "Toilet",
+        "Private bathroom",
+        "Breakfast in the room",
+        "Towels",
+        "Toilet paper",
+        "24-hour front desk",
+        "Telephone",
+        "Satellite channels",
+        "Flat-screen TV",
+        "Tea/Coffee maker",
+        "Refrigerator",
+        "Electric kettle",
+        "Dining table",
+        "City view",
+        "Desk",
+        "Sitting area",
+        "Fireplace",
+        "Dining area",
+        "Alarm clock",
+        "Wardrobe or closet",
+        "Linens",
+        "Upper floors accessible by elevator",
+        "Child safety socket covers",
+        "Single-room AC for guest accommodation",
+        "Hand sanitizer"
+      ],
+      "images": [
+        "https://cf.bstatic.com/xdata/images/hotel/max1024x768/568235117.jpg?k=33eeae93e93f638c0f14ce3046ffd9f78c5e50cc1a2ff01d597eaf0e5701834b&o=",
+        "https://cf.bstatic.com/xdata/images/hotel/max1024x768/516894519.jpg?k=98407aa95329c41bc5f1c3819a5e175e03ca6350eb37bdeebcc271f49692b7d2&o=",
+        "https://cf.bstatic.com/xdata/images/hotel/max1024x768/516893886.jpg?k=91e7d47d22ba10d45e882b3f9c02ac4859db1f28173c1a6906a71ac0cf5f712a&o=",
+        "https://cf.bstatic.com/xdata/images/hotel/max1024x768/516892298.jpg?k=7aadf834b091ea2bb70e4f96055b026b44ee33b91a74ff35445b33cd56a8d6eb&o=",
+        "https://cf.bstatic.com/xdata/images/hotel/max1024x768/516893349.jpg?k=e18b20cd1901e28dc514d34b154c67ae27b91c1a2ba9fe3553eb3b1c75b54cd5&o="
+      ],
+      "price": 5040
+    },
+    {
+      "name": "Deluxe Double Room",
+      "description": "Guests will have a special experience as this double room provides a fireplace. Offering free toiletries, this double room includes a private bathroom with a shower and slippers. The air-conditioned double room offers a flat-screen TV with satellite channels, a private entrance, soundproof walls, a tea and coffee maker as well as city views. The unit offers 1 bed.",
+      "sizeM2": 32,
+      "capacityAdults": 2,
+      "maxOccupancy": 2,
+      "amenities": [
+        "Air conditioning",
+        "Ironing facilities",
+        "Fan",
+        "Private entrance",
+        "Soundproof",
+        "Tile/Marble floor",
+        "Carbon monoxide detector",
+        "Wake-up service/Alarm clock",
+        "Wake-up service",
+        "Clothes rack",
+        "Drying rack for clothing",
+        "Shower",
+        "Free toiletries",
+        "Toilet",
+        "Private bathroom",
+        "Breakfast in the room",
+        "Towels",
+        "Toilet paper",
+        "24-hour front desk",
+        "Telephone",
+        "Satellite channels",
+        "Flat-screen TV",
+        "Tea/Coffee maker",
+        "Refrigerator",
+        "Electric kettle",
+        "Dining table",
+        "City view",
+        "Desk",
+        "Sitting area",
+        "Fireplace",
+        "Dining area",
+        "Alarm clock",
+        "Wardrobe or closet",
+        "Linens",
+        "Upper floors accessible by elevator",
+        "Child safety socket covers",
+        "Single-room AC for guest accommodation",
+        "Hand sanitizer"
+      ],
+      "images": [
+        "https://cf.bstatic.com/xdata/images/hotel/max1024x768/637553540.jpg?k=f250431dfaf0f330a6916e69a6de3ca430e0a84be84d1b7a913683cc10d13692&o=",
+        "https://cf.bstatic.com/xdata/images/hotel/max1024x768/516891905.jpg?k=4edb0075d8bd20e4d80e91e391baf6b9eb5b2a2e0b79b70f50220e7e0f087363&o=",
+        "https://cf.bstatic.com/xdata/images/hotel/max1024x768/518188852.jpg?k=d74024d8eacfa17fcfe34daeea8465b2d766fb2998f0f32142afbf82dae732ef&o=",
+        "https://cf.bstatic.com/xdata/images/hotel/max1024x768/568235204.jpg?k=e64a01837c6c7885e9718e79b5d9239b11ec9866848a06f1f21e9a0808efb18a&o=",
+        "https://cf.bstatic.com/xdata/images/hotel/max1024x768/568235228.jpg?k=92276e876e5080ff4d3ad56cfc13a0d4821ab66809a104d168051ef876ca01c3&o="
+      ],
+      "price": 3360
+    }
+  ]
+}

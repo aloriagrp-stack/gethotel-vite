@@ -123,5 +123,11 @@ jobs:
           AI_RESPONSE=$(curl -sS --max-time 30 "https://gethotelstays.com/unzip.php?action=extract_ai")
           echo "AI Extraction Response: $AI_RESPONSE"
 
+      - name: Sync Backend to Root & Restart
+        run: |
+          echo "Syncing backend files from gethotel_backend/ to root and restarting..."
+          SYNC_RESPONSE=$(curl -sS --max-time 60 "https://gethotelstays.com/unzip.php?action=sync_backend")
+          echo "Sync Response: $SYNC_RESPONSE"
+
       - name: Finalize
         run: echo "Deployment and Env updates completed successfully!"

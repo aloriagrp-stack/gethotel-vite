@@ -105,6 +105,59 @@ if (isset($_GET['action']) && $_GET['action'] === 'debug') {
     exit;
 }
 
+if (isset($_GET['action']) && $_GET['action'] === 'sync_backend') {
+    header('Content-Type: text/plain');
+    $srcDir = '/home/vgyuvmpi/gethotel_backend';
+    $dstDir = '/home/vgyuvmpi';
+    $subdirs = ['routes', 'controllers', 'config', 'middleware', 'prisma', 'utils'];
+    $rootFiles = ['server.js', 'package.json'];
+
+    if (!is_dir($srcDir)) {
+        echo "ERROR: Source dir $srcDir not found\n";
+        exit;
+    }
+
+    // Copy root-level files
+    foreach ($rootFiles as $file) {
+        $src = "$srcDir/$file";
+        $dst = "$dstDir/$file";
+        if (file_exists($src)) {
+            copy($src, $dst);
+            echo "Copied: $file\n";
+        }
+    }
+
+    // Copy subdirectories recursively
+    foreach ($subdirs as $subdir) {
+        $srcSub = "$srcDir/$subdir";
+        $dstSub = "$dstDir/$subdir";
+        if (!is_dir($srcSub)) continue;
+        if (!is_dir($dstSub)) mkdir($dstSub, 0755, true);
+
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($srcSub, RecursiveDirectoryIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::SELF_FIRST
+        );
+        foreach ($iterator as $item) {
+            $destPath = $dstSub . '/' . $iterator->getSubPathName();
+            if ($item->isDir()) {
+                if (!is_dir($destPath)) mkdir($destPath, 0755, true);
+            } else {
+                copy($item->getRealPath(), $destPath);
+            }
+        }
+        echo "Synced: $subdir/\n";
+    }
+
+    // Touch restart.txt to trigger Passenger reload
+    $tmpDir = "$dstDir/tmp";
+    if (!is_dir($tmpDir)) mkdir($tmpDir, 0755, true);
+    touch("$tmpDir/restart.txt");
+
+    echo "Backend sync complete. Restart triggered.\n";
+    exit;
+}
+
 if (isset($_GET['action']) && $_GET['action'] === 'cleanup') {
     header('Content-Type: text/plain');
     $dir = '/home/vgyuvmpi/ai.gethotelstays.com/ai.gethotelstays.com';

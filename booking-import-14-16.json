@@ -1,0 +1,79 @@
+[
+  {
+    "id": 14,
+    "source": "Booking.com",
+    "sourceUrl": "https://www.booking.com/hotel/in/good-luck-palace.en-gb.html",
+    "name": "Hotel Good Luck Palace",
+    "city": "Jaipur",
+    "address": "Amer Road, Near Ramgarh Mode, Govindpuri Plot No.121, 302016 Jaipur, India",
+    "description": "Comfortable Accommodations: Hotel Good Luck Palace in Jaipur offers family rooms with air-conditioning, private bathrooms, and free WiFi. Each room includes a work desk, TV, and free toiletries. Dining Options: Guests can enjoy a terrace restaurant serving buffet, a la carte, halal, and Asian breakfasts. The on-site restaurant provides a variety of dining experiences. Convenient Facilities: The hotel features a terrace, balcony with mountain and city views, free private parking, and a paid airport shuttle service. Additional amenities include a 24-hour front desk, room service, and a tour desk. Nearby Attractions: Jalmahal is a 12-minute walk away, while Jantar Mantar and City Palace are 3.5 km from the property. Other attractions include Amber Fort and Jaigarh Fort, each 6 km distant. Jaipur International Airport is 16 km away.",
+    "guestRating": 8.6,
+    "reviewCount": 176,
+    "amenities": [
+      "Airport shuttle",
+      "Room service",
+      "Non-smoking rooms",
+      "Free WiFi",
+      "Restaurant",
+      "Free parking",
+      "Family rooms",
+      "24-hour front desk",
+      "Very good breakfast"
+    ],
+    "images": [
+      "https://cf.bstatic.com/xdata/images/hotel/max1280x900/771263820.jpg?k=c1eb469da9f1ba94cf85385a64f8985e7fdf5530ba1da407ce57ef09eed9c0d8&o=",
+      "https://cf.bstatic.com/xdata/images/hotel/max1280x900/771264522.jpg?k=8be521cc2a05f5db90fa9e7a2856f46bf48e5f96aacda3bb93e895ad537a0725&o=",
+      "https://cf.bstatic.com/xdata/images/hotel/max1280x900/771266312.jpg?k=0a161a7fd4fe5c3297b448cfe37af2442039d7ee84b5387ec0e55f432b32f291&o=",
+      "https://cf.bstatic.com/xdata/images/hotel/max1280x900/771267607.jpg?k=1e2d1cb9573d5f19629ce791494ff739c18df5dbd5857f41cb5082a85100816c&o=",
+      "https://cf.bstatic.com/xdata/images/hotel/max1280x900/771267460.jpg?k=3f2fca511fa300bdbc3ed2c1e8526512eb14cdeb6f5c71032af7a438c08aa596&o=",
+      "https://cf.bstatic.com/xdata/images/hotel/max1280x900/771264605.jpg?k=f1a6a4e12e0c0df223031bf25272c040e53549093ba9f4dcc4b0dd3be0c73b5b&o=",
+      "https://cf.bstatic.com/xdata/images/hotel/max1280x900/771265079.jpg?k=17d39bedd9a812eb7533ea56ba1f010cb2b7b1aa6f799e89dc72fabc0d47f110&o=",
+      "https://cf.bstatic.com/xdata/images/hotel/max1280x900/771266632.jpg?k=12029ea4f28140414ca90d7f86f7b8713bf4be3656142a0b6df1fc2a8d665e9b&o="
+    ],
+    "rooms": [
+      {
+        "name": "Superior Double Room",
+        "bookingTotal": 7548,
+        "nights": 8,
+        "pricePerNight": 944
+      },
+      {
+        "name": "Superior Triple Room",
+        "bookingTotal": 8568,
+        "nights": 8,
+        "pricePerNight": 1071
+      }
+    ]
+  },
+  {
+    "id": 16,
+    "source": "Booking.com",
+    "sourceUrl": "https://www.booking.com/hotel/in/india-international-sitare.en-gb.html",
+    "name": "Hotel Amar International",
+    "city": "New Delhi",
+    "address": "2024, Street No.7, Chitra Gupta Road, Near R.K. Ashram Metro Station, Chuna Mandi, Paharganj, 110055 New Delhi, India",
+    "description": "Comfortable Accommodations: Hotel Amar International in New Delhi offers spacious family rooms with air-conditioning, private bathrooms, and soundproofing. Each room includes a TV, electric kettle, and free toiletries. Essential Facilities: Guests enjoy free WiFi, a paid shuttle service, lift, 24-hour front desk, housekeeping, room service, car hire, and a tour desk. Additional amenities include a fireplace, hairdryer, and minibar. Prime Location: Located 15 km from Delhi International Airport, the hotel is near attractions such as Gurudwara Bangla Sahib and Jantar Mantar, each 3 km away. Other points of interest include Red Fort and India Gate within 6 km. Guest Satisfaction: Guests appreciate the attentive staff, room cleanliness, and spacious rooms.",
+    "guestRating": 7.3,
+    "reviewCount": 291,
+    "amenities": [
+      "Free WiFi",
+      "Room service",
+      "Family rooms",
+      "Non-smoking rooms",
+      "Air conditioning",
+      "Soundproof rooms",
+      "24-hour front desk",
+      "Daily housekeeping",
+      "Car hire",
+      "Tour desk"
+    ],
+    "rooms": [
+      {
+        "name": "Standard Double or Twin Room",
+        "bookingTotal": 8658,
+        "nights": 8,
+        "pricePerNight": 1082
+      }
+    ]
+  }
+]

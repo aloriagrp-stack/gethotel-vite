@@ -449,6 +449,53 @@ const mountCriticalRoutes = (prefix) => {
     app.delete(`${prefix}/admin/hotels/:id`, protect, authorize('super_admin'), adminController.deleteHotel);
 };
 
+// AI chat routes mounted inline so they work even if routes/aiChatRoutes.js is stale on server
+const prisma = require('./config/db');
+app.get('/api/ai/debug-hotels', async (req, res) => {
+    try {
+        const total = await prisma.hotel.count();
+        const active = await prisma.hotel.count({ where: { isActive: true } });
+        const byCity = await prisma.hotel.groupBy({ by: ['city'], where: { isActive: true }, _count: { id: true } });
+        const sample = await prisma.hotel.findMany({ where: { isActive: true }, select: { id: true, name: true, city: true }, take: 10 });
+        return res.json({ success: true, totalHotels: total, activeHotels: active, byCity: byCity.map(c => ({ city: c.city, count: c._count.id })), sample });
+    } catch (err) {
+        console.error('[AI Debug Error]:', err.message);
+        return res.json({ success: false, message: err.message });
+    }
+});
+app.post('/api/ai/rooms', async (req, res) => {
+    const { hotelId } = req.body;
+    if (!hotelId) {
+        return res.json({ success: false, message: "hotelId is required", rooms: [], hotelName: '' });
+    }
+    try {
+        const hotel = await prisma.hotel.findUnique({
+            where: { id: hotelId },
+            select: {
+                id: true, name: true, city: true, thumbnail: true,
+                room: {
+                    where: { status: 'active' },
+                    select: { id: true, name: true, pricePerNight: true, maxOccupancy: true, images: true, description: true }
+                }
+            }
+        });
+        if (!hotel) {
+            return res.json({ success: false, message: "Hotel not found", rooms: [], hotelName: '' });
+        }
+        const rooms = (hotel.room || []).map(r => {
+            let parsedImages = [];
+            try {
+                parsedImages = Array.isArray(r.images) ? r.images : (typeof r.images === 'string' ? JSON.parse(r.images || "[]") : []);
+            } catch { parsedImages = []; }
+            return { id: r.id, name: r.name, pricePerNight: r.pricePerNight, maxOccupancy: r.maxOccupancy, images: parsedImages, description: r.description || '' };
+        });
+        return res.json({ success: true, rooms, hotelName: hotel.name, hotelCity: hotel.city, hotelThumbnail: hotel.thumbnail });
+    } catch (err) {
+        console.error('[AI Rooms Error]:', err.message);
+        return res.json({ success: false, message: err.message, rooms: [], hotelName: '' });
+    }
+});
+
 mountCriticalRoutes('/api');
 mountCriticalRoutes('');
 

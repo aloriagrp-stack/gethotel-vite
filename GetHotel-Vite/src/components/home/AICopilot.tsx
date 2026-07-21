@@ -409,11 +409,15 @@ export default function AICopilot() {
       {!isOpen && (
         <TriggerButton 
           onClick={() => {
+            const isProd = window.location.hostname === 'gethotelstays.com' || window.location.hostname.endsWith('.gethotelstays.com');
+            const targetUrl = isProd ? 'https://ai.gethotelstays.com' : 'http://localhost:5185';
+            const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+            
             if (!user) {
               alert("Login first");
-              navigate("/login");
+              navigate("/login?redirect=" + encodeURIComponent(targetUrl));
             } else {
-              setIsOpen(true);
+              window.location.href = token ? `${targetUrl}?token=${token}` : targetUrl;
             }
           }} 
         />
@@ -703,7 +707,7 @@ export default function AICopilot() {
                   </form>
                   
                   <div className="text-[10px] text-center text-slate-400 mt-2 select-none">
-                    StayBot may display inaccurate info. Double-check important details.
+                    GetHotelStays AI may display inaccurate info. Double-check important details.
                   </div>
                 </div>
               </footer>
