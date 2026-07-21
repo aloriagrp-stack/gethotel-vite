@@ -1849,6 +1849,72 @@ exports.chat = async (req, res) => {
 };
 
 /**
+ * @desc    Fetch rooms for a hotel directly from database (no LLM involved)
+ * @route   POST /api/ai/rooms
+ * @access  Public
+ */
+exports.getRooms = async (req, res) => {
+    const { hotelId } = req.body;
+    console.log('[AI Rooms] Request for hotelId:', hotelId);
+
+    if (!hotelId) {
+        return res.json({ success: false, message: "hotelId is required", rooms: [], hotelName: '' });
+    }
+
+    try {
+        const hotel = await prisma.hotel.findUnique({
+            where: { id: hotelId },
+            select: {
+                id: true, name: true, city: true, thumbnail: true,
+                room: {
+                    where: { status: 'active' },
+                    select: {
+                        id: true, name: true, pricePerNight: true,
+                        maxOccupancy: true, images: true, description: true
+                    }
+                }
+            }
+        });
+
+        if (!hotel) {
+            console.log('[AI Rooms] Hotel not found for ID:', hotelId);
+            return res.json({ success: false, message: "Hotel not found", rooms: [], hotelName: '' });
+        }
+
+        const rooms = (hotel.room || []).map(r => {
+            let parsedImages = [];
+            try {
+                parsedImages = Array.isArray(r.images) 
+                    ? r.images 
+                    : (typeof r.images === 'string' ? JSON.parse(r.images || "[]") : []);
+            } catch {
+                parsedImages = [];
+            }
+            return {
+                id: r.id,
+                name: r.name,
+                pricePerNight: r.pricePerNight,
+                maxOccupancy: r.maxOccupancy,
+                images: parsedImages,
+                description: r.description || ''
+            };
+        });
+
+        console.log(`[AI Rooms] Found ${rooms.length} rooms for ${hotel.name}`);
+        return res.json({
+            success: true,
+            rooms,
+            hotelName: hotel.name,
+            hotelCity: hotel.city,
+            hotelThumbnail: hotel.thumbnail
+        });
+    } catch (err) {
+        console.error('[AI Rooms Error]:', err.message);
+        return res.json({ success: false, message: err.message, rooms: [], hotelName: '' });
+    }
+};
+
+/**
  * @desc    Scrape hotel reviews from external OTA page and insert into database
  * @route   POST /api/admin/ai/import-reviews
  * @access  Private (Super Admin)

@@ -58,6 +58,8 @@ export const authApi = {
 export const aiApi = {
     chat: (messages: { role: string; content: string }[]) =>
         apiFetch('/ai/chat', { method: 'POST', body: JSON.stringify({ messages }) }),
+    getRooms: (hotelId: number) =>
+        apiFetch('/ai/rooms', { method: 'POST', body: JSON.stringify({ hotelId }) }),
 };
 
 export const bookingApi = {

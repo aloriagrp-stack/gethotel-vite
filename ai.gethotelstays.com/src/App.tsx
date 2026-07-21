@@ -450,45 +450,76 @@ export default function App() {
     if (textareaRef.current) textareaRef.current.style.height = "auto";
 
     try {
-      const history = sessionMessages.map((m, idx) => {
-        let content = m.text;
-        // If this is the latest query, append the vibe instruction & attached hotels dynamically
-        if (idx === sessionMessages.length - 1) {
-          if (aiVibe === 'Precise') {
-            content += "\n\n[Instruction: Keep your response precise, brief, factual, and list prices directly with minimal fluff.]";
-          } else if (aiVibe === 'Creative') {
-            content += "\n\n[Instruction: Be creative, descriptive, suggest detailed packages/itineraries, tell me about local tourist sights, culture, and make the travel recommendations sound exciting and luxurious.]";
-          }
-          if (composerAttachment) {
-            content += `\n\n[SELECTED HOTEL: ${composerAttachment.name} (ID: ${composerAttachment.id}, City: ${composerAttachment.city}, Price: ₹${composerAttachment.pricePerNight}/night)]`;
-          }
-        }
-        return { role: m.sender === 'ai' ? 'ai' : 'user', content };
-      });
-      const historyPayload = history.map(h => ({ role: h.role, content: h.content }));
-      const data = await aiApi.chat(historyPayload);
-      console.log('[AI Chat] Raw API Response:', data);
-      const reply = data.reply || "I'm not sure how to respond. Can you tell me more?";
-      
-      const aiMsg: Message = {
-        id: `a-${Date.now()}`,
-        sender: "ai",
-        text: reply,
-        responseType: data.responseType || 'general',
-        hotels: data.hotels || []
-      };
-      console.log('[AI Chat] Parsed Message:', aiMsg);
-      if (aiMsg.hotels) console.log('[AI Chat] Hotels count:', aiMsg.hotels.length, 'Rooms data:', aiMsg.hotels.some(h => h.rooms && h.rooms.length > 0));
+      const qLower = q.toLowerCase();
+      const isRoomQuery = /room|rooms|dikha|dikhao|suite|deluxe|premium|family|photo|photos|images|tasveer/.test(qLower);
 
-      if (data.action) {
-        aiMsg.action = data.action;
-        if (data.action.type === 'RAZORPAY_PAYMENT') {
-          setTimeout(() => {
-            triggerInChatRazorpay(data.action);
-          }, 2000);
+      let aiMsg: Message;
+
+      // ========== ROOMS PATH: Direct DB fetch, no LLM ==========
+      if (isRoomQuery && composerAttachment) {
+        console.log('[AI Chat] Room query + selected hotel → DETERMINISTIC DB fetch (no LLM)');
+        console.log('[AI Chat] Selected Hotel:', composerAttachment);
+        const roomRes = await aiApi.getRooms(composerAttachment.id);
+        console.log('[AI Chat] Room API Response:', roomRes);
+        console.log('[AI Chat] Fetched Rooms:', roomRes.rooms?.length || 0);
+
+        aiMsg = {
+          id: `a-${Date.now()}`,
+          sender: "ai",
+          text: roomRes.rooms?.length > 0
+            ? `Yeh rahe **${roomRes.hotelName}** ke available rooms: 🏨`
+            : `${roomRes.hotelName} ke liye filhaal koi rooms available nahi hain. 😕`,
+          responseType: 'rooms',
+          hotels: [{
+            id: composerAttachment.id,
+            name: roomRes.hotelName,
+            city: roomRes.hotelCity || composerAttachment.city,
+            thumbnail: roomRes.hotelThumbnail || composerAttachment.thumbnail,
+            pricePerNight: composerAttachment.pricePerNight,
+            starRating: composerAttachment.starRating,
+            guestRating: composerAttachment.guestRating,
+            reviewCount: composerAttachment.reviewCount,
+            rooms: roomRes.rooms || []
+          }]
+        };
+      } else {
+        // ========== NORMAL PATH: Gemini chat ==========
+        const history = sessionMessages.map((m, idx) => {
+          let content = m.text;
+          if (idx === sessionMessages.length - 1) {
+            if (aiVibe === 'Precise') {
+              content += "\n\n[Instruction: Keep your response precise, brief, factual, and list prices directly with minimal fluff.]";
+            } else if (aiVibe === 'Creative') {
+              content += "\n\n[Instruction: Be creative, descriptive, suggest detailed packages/itineraries, tell me about local tourist sights, culture, and make the travel recommendations sound exciting and luxurious.]";
+            }
+            if (composerAttachment) {
+              content += `\n\n[SELECTED HOTEL: ${composerAttachment.name} (ID: ${composerAttachment.id}, City: ${composerAttachment.city}, Price: ₹${composerAttachment.pricePerNight}/night)]`;
+            }
+          }
+          return { role: m.sender === 'ai' ? 'ai' : 'user', content };
+        });
+        const historyPayload = history.map(h => ({ role: h.role, content: h.content }));
+        const data = await aiApi.chat(historyPayload);
+        console.log('[AI Chat] Raw API Response:', data);
+
+        aiMsg = {
+          id: `a-${Date.now()}`,
+          sender: "ai",
+          text: data.reply || "I'm not sure how to respond. Can you tell me more?",
+          responseType: data.responseType || 'general',
+          hotels: data.hotels || []
+        };
+        console.log('[AI Chat] Parsed Message:', aiMsg);
+
+        if (data.action) {
+          aiMsg.action = data.action;
+          if (data.action.type === 'RAZORPAY_PAYMENT') {
+            setTimeout(() => triggerInChatRazorpay(data.action), 2000);
+          }
         }
       }
 
+      // ========== COMMON: save message to state & persist ==========
       const finalMessages = [...sessionMessages, aiMsg];
       setMessages(finalMessages);
 
@@ -502,7 +533,6 @@ export default function App() {
         localStorage.setItem("gethotel_ai_sessions", JSON.stringify(updatedSessions));
       }
 
-      // Clear composer attachment after message is sent
       setComposerAttachment(null);
     } catch (err: any) {
       console.error("[AI Chat Error]:", err.message);
