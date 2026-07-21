@@ -246,6 +246,18 @@ if (isset($_GET['action']) && $_GET['action'] === 'cleanup') {
 
 if (isset($_GET['action']) && $_GET['action'] === 'restart') {
     header('Content-Type: text/plain');
+
+    // Show running node processes before killing
+    if (isset($_GET['ps'])) {
+        echo "=== Node processes BEFORE restart ===\n";
+        if (function_exists('shell_exec')) {
+            echo @shell_exec('ps aux | grep -i node 2>/dev/null || echo "ps not available"') . "\n";
+        }
+        echo "=== gethotel_backend server.js size ===\n";
+        echo "Size: " . filesize('/home/vgyuvmpi/gethotel_backend/server.js') . " bytes\n";
+        echo "=== root server.js size ===\n";
+        echo "Size: " . filesize('/home/vgyuvmpi/server.js') . " bytes\n";
+    }
     
     $restartPaths = [
         '/home/vgyuvmpi/gethotel_backend/tmp/restart.txt',
@@ -273,6 +285,15 @@ if (isset($_GET['action']) && $_GET['action'] === 'restart') {
             }
         }
         echo "Backend node processes killed and reload requested successfully!\n";
+
+        // Show running node processes after killing
+        if (isset($_GET['ps'])) {
+            sleep(2);
+            echo "\n=== Node processes AFTER restart ===\n";
+            if (function_exists('shell_exec')) {
+                echo @shell_exec('ps aux | grep -i node 2>/dev/null || echo "ps not available"') . "\n";
+            }
+        }
     } catch (Throwable $e) {
         echo "Failed to execute restart: " . $e->getMessage() . "\n";
     }

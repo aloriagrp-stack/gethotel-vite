@@ -455,31 +455,50 @@ export default function App() {
 
       let aiMsg: Message;
 
-      // ========== ROOMS PATH: Direct DB fetch, no LLM ==========
+      // ========== ROOMS PATH: Show rooms from existing chat data, no API needed ==========
       if (isRoomQuery && composerAttachment) {
-        console.log('[AI Chat] Room query + selected hotel → DETERMINISTIC DB fetch (no LLM)');
+        console.log('[AI Chat] Room query + selected hotel → using cached room data');
         console.log('[AI Chat] Selected Hotel:', composerAttachment);
-        const roomRes = await aiApi.getRooms(composerAttachment.id);
-        console.log('[AI Chat] Room API Response:', roomRes);
-        console.log('[AI Chat] Fetched Rooms:', roomRes.rooms?.length || 0);
+
+        // Find room data from the message that produced this hotel card
+        const hotelWithRooms = messages.flatMap(m => (m.hotels || [])).find(h => h.id === composerAttachment.id);
+        const existingRooms = hotelWithRooms?.rooms || [];
+
+        // Try API call for fresh data, but fall back to cached data on failure
+        let rooms = existingRooms;
+        let hotelName = composerAttachment.name;
+        let hotelCity = composerAttachment.city;
+        let hotelThumbnail = composerAttachment.thumbnail;
+        try {
+          const roomRes = await aiApi.getRooms(composerAttachment.id);
+          if (roomRes?.rooms?.length > 0) {
+            rooms = roomRes.rooms;
+            hotelName = roomRes.hotelName || hotelName;
+            hotelCity = roomRes.hotelCity || hotelCity;
+            hotelThumbnail = roomRes.hotelThumbnail || hotelThumbnail;
+          }
+          console.log('[AI Chat] Room API Response:', roomRes);
+        } catch (err) {
+          console.log('[AI Chat] Room API failed, using cached rooms:', existingRooms.length);
+        }
 
         aiMsg = {
           id: `a-${Date.now()}`,
           sender: "ai",
-          text: roomRes.rooms?.length > 0
-            ? `Yeh rahe **${roomRes.hotelName}** ke available rooms: 🏨`
-            : `${roomRes.hotelName} ke liye filhaal koi rooms available nahi hain. 😕`,
+          text: rooms.length > 0
+            ? `Yeh rahe **${hotelName}** ke available rooms: 🏨`
+            : `${hotelName} ke liye filhaal koi rooms available nahi hain. 😕`,
           responseType: 'rooms',
           hotels: [{
             id: composerAttachment.id,
-            name: roomRes.hotelName,
-            city: roomRes.hotelCity || composerAttachment.city,
-            thumbnail: roomRes.hotelThumbnail || composerAttachment.thumbnail,
+            name: hotelName,
+            city: hotelCity,
+            thumbnail: hotelThumbnail,
             pricePerNight: composerAttachment.pricePerNight,
             starRating: composerAttachment.starRating,
             guestRating: composerAttachment.guestRating,
             reviewCount: composerAttachment.reviewCount,
-            rooms: roomRes.rooms || []
+            rooms
           }]
         };
       } else {
