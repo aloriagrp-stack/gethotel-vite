@@ -244,6 +244,23 @@ if (isset($_GET['action']) && $_GET['action'] === 'cleanup') {
     exit;
 }
 
+if (isset($_GET['action']) && $_GET['action'] === 'curl_test') {
+    header('Content-Type: text/plain');
+    if (function_exists('shell_exec')) {
+        echo "=== curl test: /api/ai/debug-hotels ===\n";
+        echo @shell_exec('curl -s -o /dev/null -w "HTTP_CODE: %{http_code}\n" "http://localhost:5000/api/ai/debug-hotels" 2>/dev/null || echo "curl failed"') . "\n";
+        echo @shell_exec('curl -s "http://localhost:5000/api/ai/debug-hotels" 2>/dev/null || echo "curl failed"') . "\n";
+        echo "\n=== curl test: /api/ai/rooms (POST) ===\n";
+        echo @shell_exec('curl -s -o /dev/null -w "HTTP_CODE: %{http_code}\n" -X POST -H "Content-Type: application/json" -d \'{"hotelId":1}\' "http://localhost:5000/api/ai/rooms" 2>/dev/null || echo "curl failed"') . "\n";
+        echo @shell_exec('curl -s -X POST -H "Content-Type: application/json" -d \'{"hotelId":1}\' "http://localhost:5000/api/ai/rooms" 2>/dev/null || echo "curl failed"') . "\n";
+        echo "\n=== curl test: /api/ai/chat (POST) ===\n";
+        echo @shell_exec('curl -s -o /dev/null -w "HTTP_CODE: %{http_code}\n" -X POST -H "Content-Type: application/json" -d \'{"messages":[{"role":"user","content":"delhi hotels"}]}\' "http://localhost:5000/api/ai/chat" 2>/dev/null || echo "curl failed"') . "\n";
+    } else {
+        echo "shell_exec disabled\n";
+    }
+    exit;
+}
+
 if (isset($_GET['action']) && $_GET['action'] === 'restart') {
     header('Content-Type: text/plain');
 
