@@ -475,31 +475,31 @@ export default function App() {
       const asksForRooms = qLower.includes("room") || qLower.includes("photo") || qLower.includes("detail") || qLower.includes("pic") || qLower.includes("tasveer") || qLower.includes("images") || qLower.includes("tasveere");
 
       if (asksForRooms) {
-        let targetHotels = aiMsg.hotels || [];
-        if (targetHotels.length === 0) {
-          // Fallback: search past messages for matching recommended hotels
-          const allPastHotels = sessionMessages.flatMap(m => m.hotels || []);
-          if (allPastHotels.length > 0) {
-            let matchedPastHotel = allPastHotels.find(h => qLower.includes(h.name.toLowerCase()) || qLower.includes(h.city.toLowerCase()));
-            // If no hotel name is explicitly mentioned in the query (e.g. "room photos?"),
-            // fallback to the most recently recommended hotel in the chat history
-            if (!matchedPastHotel) {
-              matchedPastHotel = allPastHotels[allPastHotels.length - 1];
-            }
-            if (matchedPastHotel) {
-              aiMsg.hotels = [matchedPastHotel];
-              targetHotels = [matchedPastHotel];
-            }
-          }
-        }
+        // Find the hotel that the user is asking about - look through ALL past messages first
+        const allPastHotels = sessionMessages.flatMap(m => m.hotels || []);
+        if (allPastHotels.length > 0) {
+          const matchedPastHotel = allPastHotels.find(h => qLower.includes(h.name.toLowerCase()) || qLower.includes(h.city.toLowerCase()))
+            || allPastHotels[allPastHotels.length - 1];
 
-        if (targetHotels.length > 0) {
-          const matchedHotel = targetHotels.find(h => qLower.includes(h.name.toLowerCase()) || qLower.includes(h.city.toLowerCase()));
-          if (matchedHotel) {
-            setExpandedHotelState({ messageId: aiMsg.id, hotelId: matchedHotel.id });
-          } else {
-            setExpandedHotelState({ messageId: aiMsg.id, hotelId: targetHotels[0].id });
+          if (matchedPastHotel) {
+            // Find which MESSAGE has this hotel data and expand rooms THERE
+            const hotelMessage = sessionMessages.find(m =>
+              m.hotels?.some(h => h.id === matchedPastHotel.id)
+            );
+            if (hotelMessage) {
+              setExpandedHotelState({ messageId: hotelMessage.id, hotelId: matchedPastHotel.id });
+            } else {
+              setExpandedHotelState({ messageId: aiMsg.id, hotelId: matchedPastHotel.id });
+            }
+            // Also attach data to new message so it also shows rooms
+            if (!aiMsg.hotels || aiMsg.hotels.length === 0) {
+              aiMsg.hotels = [matchedPastHotel];
+            }
           }
+        } else if (aiMsg.hotels && aiMsg.hotels.length > 0) {
+          const matchedHotel = aiMsg.hotels.find(h => qLower.includes(h.name.toLowerCase()) || qLower.includes(h.city.toLowerCase()))
+            || aiMsg.hotels[0];
+          setExpandedHotelState({ messageId: aiMsg.id, hotelId: matchedHotel.id });
         }
       } else {
         setExpandedHotelState(null);
