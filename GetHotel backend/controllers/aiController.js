@@ -1816,12 +1816,24 @@ exports.chat = async (req, res) => {
             console.error('[AI Chat] checkAndSendAiBookingEmail failed:', err);
         }
 
-        console.log(`[AI Chat] Success with Gemini. Extracted ${recommendedHotels.length} recommended hotels.`);
-        return res.json({ success: true, reply: finalReply, action: finalAction, hotels: recommendedHotels });
+        // Determine responseType for frontend rendering
+        const lastQuery = (lastMsg.content || '').toLowerCase();
+        const queryMentionsRooms = /room|rooms|photo|photos|pic|pics|dikha|dikhao|tasveer|images|suite|deluxe/g.test(lastQuery);
+        let responseType = 'general';
+        if (recommendedHotels.length > 0) {
+          if (queryMentionsRooms) {
+            responseType = 'rooms';
+          } else {
+            responseType = 'hotels';
+          }
+        }
+        console.log(`[AI Chat] responseType=${responseType}, hotels=${recommendedHotels.length}, queryMentionsRooms=${queryMentionsRooms}`);
+
+        return res.json({ success: true, reply: finalReply, action: finalAction, hotels: recommendedHotels, responseType });
     } catch (err) {
         lastError = err;
         console.error('[AI Chat] All attempts failed:', lastError?.message);
-        return res.json({ success: false, reply: "Sorry, I had an error generating the response.", hotels: [] });
+        return res.json({ success: false, reply: "Sorry, I had an error generating the response.", hotels: [], responseType: 'general' });
     }
 
     let userMessage = "Oops 😅 I had a small issue. Please try again in a moment.";
@@ -1831,7 +1843,8 @@ exports.chat = async (req, res) => {
 
     res.json({
         success: true,
-        reply: userMessage
+        reply: userMessage,
+        responseType: 'general'
     });
 };
 

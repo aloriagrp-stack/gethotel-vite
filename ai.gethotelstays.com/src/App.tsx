@@ -101,6 +101,7 @@ interface Message {
   id: string;
   sender: "user" | "ai";
   text: string;
+  responseType?: 'hotels' | 'rooms' | 'general';
   action?: {
     label: string;
     path: string;
@@ -144,7 +145,6 @@ export default function App() {
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
-  const [expandedHotelState, setExpandedHotelState] = useState<{ messageId: string; hotelId: number } | null>(null);
   const [composerAttachment, setComposerAttachment] = useState<HotelAttachment | null>(null);
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
   const [previewState, setPreviewState] = useState<{ images: string[]; activeIndex: number } | null>(null);
@@ -467,14 +467,18 @@ export default function App() {
       });
       const historyPayload = history.map(h => ({ role: h.role, content: h.content }));
       const data = await aiApi.chat(historyPayload);
+      console.log('[AI Chat] Raw API Response:', data);
       const reply = data.reply || "I'm not sure how to respond. Can you tell me more?";
       
       const aiMsg: Message = {
         id: `a-${Date.now()}`,
         sender: "ai",
         text: reply,
+        responseType: data.responseType || 'general',
         hotels: data.hotels || []
       };
+      console.log('[AI Chat] Parsed Message:', aiMsg);
+      if (aiMsg.hotels) console.log('[AI Chat] Hotels count:', aiMsg.hotels.length, 'Rooms data:', aiMsg.hotels.some(h => h.rooms && h.rooms.length > 0));
 
       if (data.action) {
         aiMsg.action = data.action;
@@ -483,41 +487,6 @@ export default function App() {
             triggerInChatRazorpay(data.action);
           }, 2000);
         }
-      }
-
-      // If user query asks for rooms/photos/pics, auto-expand; otherwise collapse
-      const qLower = q.toLowerCase();
-      const asksForRooms = qLower.includes("room") || qLower.includes("photo") || qLower.includes("detail") || qLower.includes("pic") || qLower.includes("tasveer") || qLower.includes("images") || qLower.includes("tasveere");
-
-      if (asksForRooms) {
-        // Find the hotel that the user is asking about - look through ALL past messages first
-        const allPastHotels = sessionMessages.flatMap(m => m.hotels || []);
-        if (allPastHotels.length > 0) {
-          const matchedPastHotel = allPastHotels.find(h => qLower.includes(h.name.toLowerCase()) || qLower.includes(h.city.toLowerCase()))
-            || allPastHotels[allPastHotels.length - 1];
-
-          if (matchedPastHotel) {
-            // Find which MESSAGE has this hotel data and expand rooms THERE
-            const hotelMessage = sessionMessages.find(m =>
-              m.hotels?.some(h => h.id === matchedPastHotel.id)
-            );
-            if (hotelMessage) {
-              setExpandedHotelState({ messageId: hotelMessage.id, hotelId: matchedPastHotel.id });
-            } else {
-              setExpandedHotelState({ messageId: aiMsg.id, hotelId: matchedPastHotel.id });
-            }
-            // Also attach data to new message so it also shows rooms
-            if (!aiMsg.hotels || aiMsg.hotels.length === 0) {
-              aiMsg.hotels = [matchedPastHotel];
-            }
-          }
-        } else if (aiMsg.hotels && aiMsg.hotels.length > 0) {
-          const matchedHotel = aiMsg.hotels.find(h => qLower.includes(h.name.toLowerCase()) || qLower.includes(h.city.toLowerCase()))
-            || aiMsg.hotels[0];
-          setExpandedHotelState({ messageId: aiMsg.id, hotelId: matchedHotel.id });
-        }
-      } else {
-        setExpandedHotelState(null);
       }
 
       const finalMessages = [...sessionMessages, aiMsg];
@@ -1089,214 +1058,139 @@ export default function App() {
                         </div>
                       )}
 
-                      {/* Render Interactive Hotel Cards Grid */}
-                      {msg.hotels && msg.hotels.length > 0 && (
-                        <div className="mt-4.5 select-none overflow-x-auto no-scrollbar scroll-smooth">
-                          <div className="flex gap-4.5 pb-2.5 min-w-max">
-                            {msg.hotels.map((h) => (
-                              <div
-                                key={h.id}
-                                onClick={() => handleCardClick(msg.id, h.id)}
-                                className={`w-[210px] h-[150px] rounded-3xl overflow-hidden relative shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group cursor-pointer ${
-                                  theme === 'dark' ? "bg-[#131316] border border-[#232329]" : "bg-white border border-slate-100"
-                                }`}
-                              >
-                                {/* Thumbnail Image */}
-                                <div className="w-full h-full overflow-hidden relative shrink-0">
-                                  {h.thumbnail ? (
-                                    <img
-                                      src={h.thumbnail}
-                                      alt={h.name}
-                                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                    />
-                                  ) : (
-                                    <div className="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
-                                      <span className="text-slate-400 text-xs">No preview</span>
-                                    </div>
-                                  )}
+                      {/* Type-based Renderer: hotels | rooms | general */}
+                      {(() => {
+                        const responseType = msg.responseType || 'general';
 
-                                  {/* Black Gradient Overlay */}
-                                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent z-1" />
-
-                                  {/* Details Overlay */}
-                                  <div className="absolute inset-0 flex flex-col justify-between p-3.5 z-2">
-                                    <div className="flex justify-end">
-                                      <div
-                                        onClick={(e) => { e.stopPropagation(); handleCardClick(msg.id, h.id); }}
-                                        className={`w-7 h-7 rounded-full backdrop-blur-md flex items-center justify-center transition-colors ${
-                                          composerAttachment?.id === h.id
-                                            ? "bg-brand-500/80 text-white"
-                                            : "bg-black/30 text-white/80 hover:bg-white/20"
-                                        }`}
-                                      >
-                                        {composerAttachment?.id === h.id ? (
-                                          <Check className="w-3.5 h-3.5" strokeWidth={3} />
-                                        ) : (
-                                          <Plus className="w-3.5 h-3.5" strokeWidth={2.5} />
-                                        )}
+                        // ==================== ROOM CARDS ====================
+                        if (responseType === 'rooms') {
+                          const allRooms = (msg.hotels || []).flatMap(h =>
+                            (h.rooms || []).map(r => ({ ...r, hotelName: h.name, hotelId: h.id }))
+                          );
+                          if (allRooms.length === 0) return null;
+                          console.log('[AI Chat] Rendering room cards:', allRooms.length, 'rooms');
+                          return (
+                            <div className="mt-4.5 space-y-4">
+                              {allRooms.map(r => {
+                                const roomImage = r.images && r.images.length > 0
+                                  ? r.images[0]
+                                  : "https://images.unsplash.com/photo-1611891487122-207579d67d98?auto=format&fit=crop&w=600&q=80";
+                                return (
+                                  <div key={r.id} className={`w-full rounded-3xl border overflow-hidden shadow-sm transition-all duration-300 ${
+                                    theme === 'dark' ? "bg-[#131316] border-[#232329]" : "bg-white border-slate-100"
+                                  }`}>
+                                    {/* Room Image */}
+                                    <div className="w-full h-[180px] overflow-hidden relative cursor-zoom-in"
+                                      onClick={() => setPreviewState({
+                                        images: r.images && r.images.length > 0 ? r.images : [roomImage],
+                                        activeIndex: 0
+                                      })}
+                                    >
+                                      <img src={roomImage} alt={r.name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+                                      <div className="absolute top-3 right-3 bg-black/50 backdrop-blur-md text-[10px] font-bold px-2.5 py-1 rounded-full text-white/90">
+                                        👥 {r.maxOccupancy} Guests
                                       </div>
                                     </div>
-
-                                    <div className="flex flex-col gap-0.5 text-white">
-                                      <div className="flex items-center gap-1 mb-0.5">
-                                        <span className="text-amber-400 text-[10px]">★</span>
-                                        <span className="text-[10px] font-bold text-white/90">{h.starRating} Star</span>
-                                        <span className="text-[9px] text-white/60">({h.reviewCount})</span>
-                                      </div>
-                                      <h4 className="text-[13px] font-bold leading-tight truncate w-[160px]" title={h.name}>
-                                        {h.name}
-                                      </h4>
-                                      <p className="text-[10px] text-white/70 font-semibold truncate">
-                                        {h.city}
-                                      </p>
-                                      
-                                      <div className="flex items-center justify-between mt-1">
-                                        <span className="text-[12px] font-bold">
-                                          {h.promotionalPrice ? (
-                                            <>
-                                              <span className="line-through text-white/50 text-[10px] mr-1.5">
-                                                ₹{h.pricePerNight.toLocaleString()}
-                                              </span>
-                                              <span className="text-emerald-400 font-extrabold">
-                                                ₹{h.promotionalPrice.toLocaleString()}
-                                              </span>
-                                            </>
+                                    {/* Room Info */}
+                                    <div className="p-4">
+                                      <div className="flex items-start justify-between gap-2">
+                                        <div className="flex-1 min-w-0">
+                                          <h4 className="text-[15px] font-extrabold truncate">{r.name}</h4>
+                                          <p className="text-[11px] text-slate-400 font-semibold truncate">{r.hotelName}</p>
+                                        </div>
+                                        <span className="text-[15px] font-extrabold shrink-0">
+                                          {r.promotionalPrice ? (
+                                            <><span className="line-through text-slate-400 text-[11px] mr-1">₹{r.pricePerNight.toLocaleString()}</span><span className="text-emerald-500">₹{r.promotionalPrice.toLocaleString()}</span></>
                                           ) : (
-                                            <span>₹{h.pricePerNight.toLocaleString()}</span>
+                                            <span>₹{r.pricePerNight.toLocaleString()}</span>
                                           )}
-                                          <span className="text-[9px] font-normal text-white/70">/night</span>
+                                          <span className="text-[9px] font-normal text-slate-500">/night</span>
                                         </span>
                                       </div>
+                                      <p className="text-[12px] text-slate-500 mt-1.5 leading-relaxed line-clamp-2">{r.description || "Beautifully furnished cozy travel space."}</p>
+                                      <button
+                                        onClick={() => handleSend(`I want to book the ${r.name} at ${r.hotelName}`)}
+                                        className="mt-3 w-full py-2.5 bg-brand-500 hover:bg-brand-600 active:scale-95 text-white text-[11px] font-bold uppercase tracking-wider rounded-xl transition-all shadow-sm cursor-pointer"
+                                      >
+                                        Book This Room
+                                      </button>
                                     </div>
                                   </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                                );
+                              })}
+                            </div>
+                          );
+                        }
 
-                      {/* Available Rooms Grid (Photos, descriptions, prices, booking triggers) */}
-                      {msg.hotels && msg.hotels.length > 0 && (() => {
-                        // Enrich hotel rooms from all messages if current hotel's rooms are empty
-                        const enrichedHotels = msg.hotels.map(h => {
-                          if (h.rooms && h.rooms.length > 0) return h;
-                          // Search all messages for rooms data for this hotel
-                          const allHotels = messages.flatMap(m => m.hotels || []);
-                          const matchedHotel = allHotels.find(ph => ph.id === h.id && ph.rooms && ph.rooms.length > 0);
-                          if (matchedHotel) {
-                            return { ...h, rooms: matchedHotel.rooms };
-                          }
-                          return h;
-                        });
-                        const hotelsWithRooms = enrichedHotels.filter(h => h.rooms && h.rooms.length > 0);
-                        if (hotelsWithRooms.length === 0) return null;
-                        return (
-                          <div className="mt-4 space-y-4 select-none">
-                            {hotelsWithRooms.map((h) => {
-                              const showRooms = (expandedHotelState?.messageId === msg.id && expandedHotelState?.hotelId === h.id) ||
-                                                (msg.hotels?.length === 1 && /room|rooms|dikha|dikhao|show|photo|pic/i.test(msg.text || ''));
-                              if (!showRooms) return null;
-
-                              return (
-                                <div key={`rooms-container-${h.id}`} className="space-y-3 animate-fade-in">
-                                  <div className="flex items-center justify-between px-1">
-                                    <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
-                                      Available Rooms at {h.name}
-                                    </h4>
-                                    <button
-                                      onClick={() => setExpandedHotelState(null)}
-                                      className="text-[10px] font-bold text-red-400 hover:text-red-500 transition-colors cursor-pointer"
-                                    >
-                                      Hide Rooms
-                                    </button>
-                                  </div>
-
-                                  <div className="overflow-x-auto no-scrollbar scroll-smooth">
-                                    <div className="flex gap-4 pb-2.5 min-w-max">
-                                      {h.rooms!.map((r) => {
-                                        const roomImage = r.images && r.images.length > 0
-                                          ? r.images[0]
-                                          : "https://images.unsplash.com/photo-1611891487122-207579d67d98?auto=format&fit=crop&w=600&q=80";
-
-                                        return (
+                        // ==================== HOTEL CARDS ====================
+                        if (responseType === 'hotels' && msg.hotels && msg.hotels.length > 0) {
+                          console.log('[AI Chat] Rendering hotel cards:', msg.hotels.length);
+                          return (
+                            <div className="mt-4.5 select-none overflow-x-auto no-scrollbar scroll-smooth">
+                              <div className="flex gap-4.5 pb-2.5 min-w-max">
+                                {msg.hotels.map((h) => (
+                                  <div
+                                    key={h.id}
+                                    onClick={() => handleCardClick(msg.id, h.id)}
+                                    className={`w-[210px] h-[150px] rounded-3xl overflow-hidden relative shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group cursor-pointer ${
+                                      theme === 'dark' ? "bg-[#131316] border border-[#232329]" : "bg-white border border-slate-100"
+                                    }`}
+                                  >
+                                    <div className="w-full h-full overflow-hidden relative shrink-0">
+                                      {h.thumbnail ? (
+                                        <img src={h.thumbnail} alt={h.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                      ) : (
+                                        <div className="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
+                                          <span className="text-slate-400 text-xs">No preview</span>
+                                        </div>
+                                      )}
+                                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent z-1" />
+                                      <div className="absolute inset-0 flex flex-col justify-between p-3.5 z-2">
+                                        <div className="flex justify-end">
                                           <div
-                                            key={r.id}
-                                            className={`w-[260px] rounded-3xl border overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 ${
-                                              theme === 'dark'
-                                                ? "bg-[#131316] border-[#232329]"
-                                                : "bg-white border-slate-100"
+                                            onClick={(e) => { e.stopPropagation(); handleCardClick(msg.id, h.id); }}
+                                            className={`w-7 h-7 rounded-full backdrop-blur-md flex items-center justify-center transition-colors ${
+                                              composerAttachment?.id === h.id
+                                                ? "bg-brand-500/80 text-white"
+                                                : "bg-black/30 text-white/80 hover:bg-white/20"
                                             }`}
                                           >
-                                            {/* Room Image */}
-                                            <div 
-                                              className="w-full h-[120px] overflow-hidden relative cursor-zoom-in"
-                                              onClick={() => setPreviewState({
-                                                images: r.images && r.images.length > 0 ? r.images : [roomImage],
-                                                activeIndex: 0
-                                              })}
-                                            >
-                                              <img
-                                                src={roomImage}
-                                                alt={r.name}
-                                                className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
-                                              />
-                                              <div className="absolute top-2.5 right-2.5 bg-black/40 backdrop-blur-md text-[10px] font-bold px-2.5 py-0.5 rounded-full text-white/90">
-                                                👥 Max {r.maxOccupancy} Guests
-                                              </div>
-                                            </div>
-
-                                            {/* Room Info */}
-                                            <div className="p-3.5 flex flex-col justify-between h-[110px]">
-                                              <div>
-                                                <h5 className={`text-[13px] font-bold truncate ${
-                                                  theme === 'dark' ? "text-slate-100" : "text-slate-800"
-                                                }`} title={r.name}>
-                                                  {r.name}
-                                                </h5>
-                                                <p className={`text-[10px] truncate mt-0.5 ${
-                                                  theme === 'dark' ? "text-slate-400" : "text-slate-500"
-                                                }`}>
-                                                  {r.description || "Beautifully furnished cozy travel space."}
-                                                </p>
-                                              </div>
-
-                                              <div className="flex items-center justify-between mt-2.5">
-                                                <span className={`text-[12px] font-extrabold ${
-                                                  theme === 'dark' ? "text-emerald-400" : "text-slate-800"
-                                                }`}>
-                                                  {r.promotionalPrice ? (
-                                                    <>
-                                                      <span className="line-through text-slate-400 text-[10px] mr-1.5 font-normal">
-                                                        ₹{r.pricePerNight.toLocaleString()}
-                                                      </span>
-                                                      <span className="text-emerald-500 font-extrabold">
-                                                        ₹{r.promotionalPrice.toLocaleString()}
-                                                      </span>
-                                                    </>
-                                                  ) : (
-                                                    <span>₹{r.pricePerNight.toLocaleString()}</span>
-                                                  )}
-                                                  <span className="text-[9px] font-normal text-slate-500">/night</span>
-                                                </span>
-                                                <button
-                                                  onClick={() => handleSend(`I want to book the ${r.name} at ${h.name}`)}
-                                                  className="px-3.5 py-1.5 bg-brand-500 hover:bg-brand-600 active:scale-95 text-white text-[10px] font-bold uppercase tracking-wider rounded-xl transition-all shadow-sm cursor-pointer"
-                                                >
-                                                  Book Room
-                                                </button>
-                                              </div>
-                                            </div>
+                                            {composerAttachment?.id === h.id ? (
+                                              <Check className="w-3.5 h-3.5" strokeWidth={3} />
+                                            ) : (
+                                              <Plus className="w-3.5 h-3.5" strokeWidth={2.5} />
+                                            )}
                                           </div>
-                                        );
-                                      })}
+                                        </div>
+                                        <div className="flex flex-col gap-0.5 text-white">
+                                          <div className="flex items-center gap-1 mb-0.5">
+                                            <span className="text-amber-400 text-[10px]">★</span>
+                                            <span className="text-[10px] font-bold text-white/90">{h.starRating} Star</span>
+                                            <span className="text-[9px] text-white/60">({h.reviewCount})</span>
+                                          </div>
+                                          <h4 className="text-[13px] font-bold leading-tight truncate w-[160px]" title={h.name}>{h.name}</h4>
+                                          <p className="text-[10px] text-white/70 font-semibold truncate">{h.city}</p>
+                                          <div className="flex items-center justify-between mt-1">
+                                            <span className="text-[12px] font-bold">
+                                              {h.promotionalPrice ? (
+                                                <><span className="line-through text-white/50 text-[10px] mr-1.5">₹{h.pricePerNight.toLocaleString()}</span><span className="text-emerald-400 font-extrabold">₹{h.promotionalPrice.toLocaleString()}</span></>
+                                              ) : (
+                                                <span>₹{h.pricePerNight.toLocaleString()}</span>
+                                              )}
+                                              <span className="text-[9px] font-normal text-white/70">/night</span>
+                                            </span>
+                                          </div>
+                                        </div>
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        );
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        return null;
                       })()}
                     </div>
                   )}
