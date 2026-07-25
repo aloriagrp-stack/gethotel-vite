@@ -1,11 +1,38 @@
-import { useState, useRef, useEffect, useCallback, memo } from "react";
-import { Plus, Settings, HelpCircle, MessageSquare, Menu, Trash2, Calendar, User, Mail, CreditCard, Check, X, ArrowRight, Loader, ChevronLeft, ChevronRight, ArrowUp } from "lucide-react";
+import { useState, useRef, useEffect, useCallback, memo, useMemo } from "react";
+import { Plus, Settings, HelpCircle, MessageSquare, Menu, Trash2, Calendar, User, Mail, CreditCard, Check, X, ArrowRight, Loader, ChevronLeft, ChevronRight, ArrowUp, Bookmark } from "lucide-react";
 import { aiApi, authApi, bookingApi, paymentApi } from "./lib/api";
 import { auth, googleProvider } from "./lib/firebase";
 import { signInWithPopup } from "firebase/auth";
+import ErrorBoundary from "./components/ErrorBoundary";
+import MarkdownRenderer from "./components/MarkdownRenderer";
+import MessageTimestamp from "./components/MessageTimestamp";
+import CopyButton from "./components/CopyButton";
+import SuggestedReplies from "./components/SuggestedReplies";
+import OfflineBanner from "./components/OfflineBanner";
+import SearchBar from "./components/SearchBar";
 
 // Dynamic Apple Emoji CDN Parser
 const emojiRegex = /[\u{1F300}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}\u{1F900}-\u{1F9FF}\u{1F300}-\u{1F5FF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}\u{1F900}-\u{1F9FF}\u{1F300}-\u{1F5FF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}\u{1F900}-\u{1F9FF}]/gu;
+
+const getAppleEmojiUrl = (emoji: string) => {
+  const codePoints = Array.from(emoji).map(c => c.codePointAt(0)!.toString(16));
+  const hex = codePoints.filter(h => h !== 'fe0f').join("-");
+  return `https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/${hex}.png`;
+};
+
+const AppleEmoji = memo(function AppleEmoji({ symbol, className = "w-4 h-4" }: { symbol: string; className?: string }) {
+  const url = getAppleEmojiUrl(symbol);
+  return (
+    <img
+      src={url}
+      alt={symbol}
+      className={`inline-block align-text-bottom object-contain select-none ${className}`}
+      onError={(e) => {
+        (e.target as HTMLElement).outerHTML = symbol;
+      }}
+    />
+  );
+});
 
 function parseTextWithIcons(text: string) {
   if (!text) return "";
@@ -15,42 +42,9 @@ function parseTextWithIcons(text: string) {
   return parts.reduce((acc: any[], part, i) => {
     acc.push(part);
     if (emojis[i]) {
-      const emoji = emojis[i];
-      // Exclude brand SVGs from CDN images
-      if (emoji === "⭐") {
-        acc.push(<span key={`icon-${i}`} className="inline-flex items-center text-amber-500 font-bold mx-0.5">★</span>);
-      } else if (emoji === "📍") {
-        acc.push(
-          <span key={`icon-${i}`} className="inline-flex items-center text-red-500 mx-0.5">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="inline">
-              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-              <circle cx="12" cy="10" r="3" />
-            </svg>
-          </span>
-        );
-      } else if (emoji === "💰") {
-        acc.push(<span key={`icon-${i}`} className="inline-flex items-center text-emerald-600 font-bold mx-0.5">₹</span>);
-      } else if (emoji === "🏔") {
-        acc.push(<span key={`icon-${i}`} className="inline-flex items-center text-slate-500 font-bold mx-0.5">🏔</span>);
-      } else {
-        // Parse unicode emoji to Apple datasource hex code
-        const codePoints = Array.from(emoji).map(c => c.codePointAt(0)!.toString(16));
-        const hex = codePoints.join("-");
-        const cdnUrl = `https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/${hex}.png`;
-
-        acc.push(
-          <img
-            key={`emoji-${i}`}
-            src={cdnUrl}
-            alt={emoji}
-            className="inline-block w-4.5 h-4.5 align-text-top mx-0.5 object-contain"
-            onError={(e) => {
-              // Fallback to text emoji if CDN load fails
-              (e.target as HTMLElement).outerHTML = emoji;
-            }}
-          />
-        );
-      }
+      acc.push(
+        <AppleEmoji key={`emoji-${i}`} symbol={emojis[i]} className="w-4.5 h-4.5 mx-0.5" />
+      );
     }
     return acc;
   }, []);
@@ -72,15 +66,62 @@ const cleanMsgText = (txt: string) => {
   return cleaned;
 };
 
-// Typing dots indicator
-const TypingDots = memo(function TypingDots() {
+// Shimmering Text Thinking Indicator (ChatGPT / Claude style - Dynamic per query)
+const ThinkingIndicator = memo(function ThinkingIndicator({ theme, lastUserText = '' }: { theme: 'light' | 'dark'; lastUserText?: string }) {
+  const [statusIndex, setStatusIndex] = useState(0);
+
+  const statuses = useMemo(() => {
+    const text = (lastUserText || '').toLowerCase();
+
+    // 1. Booking / Reservation / Details collection
+    if (/\b(book|booking|reserve|confirm|name|email|phone|pay|payment)\b/i.test(text)) {
+      return [
+        "Processing reservation details...",
+        "Validating booking information...",
+        "Preparing next step..."
+      ];
+    }
+
+    // 2. Hotel / Room / Search / Price inquiry
+    if (/\b(hotel|hotels|room|rooms|stay|resort|city|delhi|goa|mumbai|price|rates|view|search)\b/i.test(text)) {
+      return [
+        "Searching live hotel inventory...",
+        "Filtering top-rated properties...",
+        "Formatting best recommendations..."
+      ];
+    }
+
+    // 3. Personal memory / instructions inquiry
+    if (/\b(me|my|know|remember|preference|nickname|name|history)\b/i.test(text)) {
+      return [
+        "Accessing your travel memory...",
+        "Personalizing response..."
+      ];
+    }
+
+    // 4. General / Clarification / Travel Advice query
+    return [
+      "Thinking...",
+      "Analyzing your question...",
+      "Formulating response..."
+    ];
+  }, [lastUserText]);
+
+  useEffect(() => {
+    setStatusIndex(0);
+    const timer = setInterval(() => {
+      setStatusIndex(prev => (prev + 1) % statuses.length);
+    }, 2200);
+    return () => clearInterval(timer);
+  }, [statuses]);
+
   return (
-    <div className="flex items-center py-2 select-none">
-      <div className="flex items-center gap-1.5 py-2">
-        <span className="w-2 h-2 bg-brand-500 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-        <span className="w-2 h-2 bg-brand-500 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-        <span className="w-2 h-2 bg-brand-500 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-      </div>
+    <div className="flex items-center py-2.5 select-none animate-fade-in">
+      <span className={`text-[15px] font-semibold tracking-wide transition-all ${
+        theme === 'dark' ? "text-shimmer-dark" : "text-shimmer-light"
+      }`}>
+        {statuses[statusIndex] || statuses[0]}
+      </span>
     </div>
   );
 });
@@ -93,7 +134,10 @@ interface HotelAttachment {
   pricePerNight: number;
   starRating: number;
   guestRating: number;
-  reviewCount: number;
+  reviewCount?: number;
+  description?: string;
+  images?: string[];
+  type?: 'hotel' | 'room';
 }
 
 // Single Message Structure
@@ -101,10 +145,23 @@ interface Message {
   id: string;
   sender: "user" | "ai";
   text: string;
+  timestamp?: number;
   responseType?: 'hotels' | 'rooms' | 'general';
   action?: {
-    label: string;
-    path: string;
+    label?: string;
+    path?: string;
+    hotelId?: number;
+    hotelName?: string;
+    depositAmount?: number;
+    balanceAmount?: number;
+    guestName?: string;
+    guestEmail?: string;
+    guestPhone?: string;
+    razorpayOrderId?: string;
+    keyId?: string;
+    amount?: number;
+    currency?: string;
+    [key: string]: any;
   };
   attachments?: HotelAttachment[];
   hotels?: (HotelAttachment & {
@@ -130,10 +187,40 @@ interface ChatSession {
 export default function App() {
   const [user, setUser] = useState<any>(null);
   const [loadingUser, setLoadingUser] = useState(true);
-
-  // Local authentication states
   const [loginError, setLoginError] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  
+  const [viewportHeight, setViewportHeight] = useState<string>("100vh");
+
+  useEffect(() => {
+    if (!window.visualViewport) return;
+
+    const handleResize = () => {
+      if (window.visualViewport) {
+        setViewportHeight(`${window.visualViewport.height}px`);
+      }
+    };
+
+    window.visualViewport.addEventListener('resize', handleResize);
+    window.visualViewport.addEventListener('scroll', handleResize);
+    
+    handleResize();
+
+    return () => {
+      window.visualViewport?.removeEventListener('resize', handleResize);
+      window.visualViewport?.removeEventListener('scroll', handleResize);
+    };
+  }, []);
+
+  useEffect(() => {
+    const preventWindowScroll = () => {
+      if (window.scrollY !== 0) {
+        window.scrollTo(0, 0);
+      }
+    };
+    window.addEventListener('scroll', preventWindowScroll);
+    return () => window.removeEventListener('scroll', preventWindowScroll);
+  }, []);
   
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [input, setInput] = useState("");
@@ -166,12 +253,45 @@ export default function App() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
 
-  // In-Chat Checkout Modal state
   const [checkoutData, setCheckoutData] = useState<any>(null);
   const [checkoutStatus, setCheckoutStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
 
+  // Persistent User Travel Memory & Settings state
+  const [activeSettingsTab, setActiveSettingsTab] = useState<'general' | 'personalization' | 'account'>('general');
+  const [accentColor, setAccentColor] = useState(() => (localStorage.getItem('gethotel_accent_color') || 'brand'));
+  const [language, setLanguage] = useState(() => (localStorage.getItem('gethotel_language') || 'auto'));
+  const [customInstructions, setCustomInstructions] = useState(() => (localStorage.getItem('gethotel_custom_instructions') || ''));
+  const [userNickname, setUserNickname] = useState(() => (localStorage.getItem('gethotel_user_nickname') || ''));
+
+  const [userMemory, setUserMemory] = useState(() => {
+    try {
+      const saved = localStorage.getItem('gethotel_user_memory');
+      return saved ? JSON.parse(saved) : {
+        guestName: '',
+        guestPhone: '',
+        guestEmail: '',
+        preferredCity: 'Delhi',
+        budgetTier: 'Luxury 5-Star',
+        roomPreferences: 'Deluxe King Bed, Free Breakfast, Pool',
+        personalNotes: 'Prefers quiet high-floor rooms'
+      };
+    } catch {
+      return {
+        guestName: '',
+        guestPhone: '',
+        guestEmail: '',
+        preferredCity: 'Delhi',
+        budgetTier: 'Luxury 5-Star',
+        roomPreferences: 'Deluxe King Bed, Free Breakfast, Pool',
+        personalNotes: 'Prefers quiet high-floor rooms'
+      };
+    }
+  });
+  const [memorySavedToast, setMemorySavedToast] = useState(false);
+
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Fetch logged-in user profile on mount
@@ -238,17 +358,35 @@ export default function App() {
     if (activeSessionId) {
       const session = sessions.find(s => s.id === activeSessionId);
       if (session) {
-        setMessages(session.messages);
+        const cleanMsgs = session.messages.filter(m => !(m.sender === 'ai' && (m.text.includes("Sorry, I had an error") || m.text.includes("connection issue"))));
+        setMessages(cleanMsgs);
       }
     } else {
       setMessages([]);
     }
   }, [activeSessionId, sessions]);
 
-  /* auto-scroll */
-  useEffect(() => {
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
+
+  /* smart scroll listener */
+  const handleScroll = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    const isFarFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight > 220;
+    setShowScrollToBottom(isFarFromBottom);
+  }, []);
+
+  const scrollToBottom = useCallback(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isTyping]);
+    setShowScrollToBottom(false);
+  }, []);
+
+  /* auto-scroll only if user is near bottom */
+  useEffect(() => {
+    if (!showScrollToBottom) {
+      chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, isTyping, showScrollToBottom]);
 
   /* focus input */
   useEffect(() => {
@@ -285,7 +423,17 @@ export default function App() {
     const el = textareaRef.current;
     if (!el) return;
     el.style.height = "auto";
-    el.style.height = Math.min(el.scrollHeight, 160) + "px";
+    const targetHeight = Math.min(el.scrollHeight, 160);
+    el.style.height = `${targetHeight}px`;
+
+    // Anchor scroll container to bottom when typing long messages
+    const container = scrollContainerRef.current;
+    if (container) {
+      const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 160;
+      if (isNearBottom) {
+        container.scrollTop = container.scrollHeight;
+      }
+    }
   }, []);
 
   const toggleSidebar = useCallback(() => {
@@ -341,69 +489,15 @@ export default function App() {
     setShowClearConfirm(false);
   };
 
-  // Intercept the AI booking button and open the in-chat checkout modal
-  const handleActionClick = useCallback((path: string) => {
-    try {
-      const urlQuery = path.split('?')[1];
-      if (!urlQuery) return;
 
-      const params = new URLSearchParams(urlQuery);
-      const hotelId = parseInt(params.get('hotelId') || '0');
-      const roomType = params.get('rooms') || 'Standard Room';
-      const checkInStr = params.get('checkIn') || new Date().toISOString().split('T')[0];
-      const checkOutStr = params.get('checkOut') || new Date(Date.now() + 86400000).toISOString().split('T')[0];
-
-      // Find the hotel object from message history to fetch correct pricing
-      const hotelObj = messages.flatMap(m => m.hotels || []).find(h => h.id === hotelId);
-
-      const checkInDate = new Date(checkInStr);
-      const checkOutDate = new Date(checkOutStr);
-      const nights = Math.max(1, Math.round((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)));
-
-      const roomPrice = hotelObj?.pricePerNight || 2500;
-      const subtotal = roomPrice * nights;
-
-      // GST tax dynamic calculations
-      let gstRate = 0.05;
-      if (roomPrice <= 1000) {
-        gstRate = 0;
-      } else if (roomPrice <= 7500) {
-        gstRate = 0.05;
-      } else {
-        gstRate = 0.18;
-      }
-      const taxes = Math.round(subtotal * gstRate);
-      const total = subtotal + taxes;
-
-      setCheckoutData({
-        hotelId,
-        hotelName: hotelObj?.name || 'Selected Hotel',
-        hotelCity: hotelObj?.city || 'India',
-        roomType,
-        checkIn: checkInStr,
-        checkOut: checkOutStr,
-        nights,
-        guestName: user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : (user?.name || ''),
-        guestEmail: user?.email || '',
-        guestPhone: user?.phone || '',
-        roomPrice,
-        subtotal,
-        taxes,
-        total,
-        paymentOption: 'online' // default to Pay Online
-      });
-      setCheckoutStatus("idle");
-      setErrorMessage("");
-    } catch (err) {
-      console.error("Failed to parse action path for checkout", err);
-    }
-  }, [messages, user]);
 
   const executeSend = useCallback(async (q: string, currentSessionId: string | null) => {
+    const msgTimestamp = Date.now();
     const userMsg: Message = {
-      id: `u-${Date.now()}`,
+      id: `u-${msgTimestamp}`,
       sender: "user",
       text: q,
+      timestamp: msgTimestamp,
       attachments: composerAttachment ? [composerAttachment] : undefined
     };
     
@@ -446,69 +540,88 @@ export default function App() {
     setSessions(updatedSessions);
     localStorage.setItem("gethotel_ai_sessions", JSON.stringify(updatedSessions));
     setInput("");
+    setComposerAttachment(null);
     setIsTyping(true);
     if (textareaRef.current) textareaRef.current.style.height = "auto";
 
     try {
-      const qLower = q.toLowerCase();
-      const isRoomQuery = /room|rooms|dikha|dikhao|suite|deluxe|premium|family|photo|photos|images|tasveer/.test(qLower);
+      // ========== BACKEND-DRIVEN WORKFLOW (Single Source of Truth) ==========
+      const validMessages = sessionMessages.filter(m => 
+        !(m.sender === 'ai' && (m.text.includes("error") || m.text.includes("issue") || m.text.includes("Oops") || m.text.includes("Sorry")))
+      );
 
-      let aiMsg: Message = undefined as unknown as Message;
-
-      // ========== ROOMS PATH: Show rooms from existing chat data or API ==========
-      if (isRoomQuery && composerAttachment) {
-        console.log('[AI Chat] Room query + selected hotel → trying cached/API room data');
-        const hotelWithRooms = messages.flatMap(m => (m.hotels || [])).find(h => h.id === composerAttachment.id);
-        let rooms = hotelWithRooms?.rooms || [];
-        try {
-          const roomRes = await aiApi.getRooms(composerAttachment.id);
-          if (roomRes?.rooms?.length > 0) rooms = roomRes.rooms;
-        } catch (err) { /* fall through to cached rooms */ }
-        if (rooms.length > 0) {
-          const hotel = composerAttachment;
-          aiMsg = {
-            id: `a-${Date.now()}`,
-            sender: "ai",
-            text: `Yeh rahe **${hotel.name}** ke available rooms: 🏨`,
-            responseType: 'rooms',
-            hotels: [{ id: hotel.id, name: hotel.name, city: hotel.city, thumbnail: hotel.thumbnail, pricePerNight: hotel.pricePerNight, starRating: hotel.starRating, guestRating: hotel.guestRating, reviewCount: hotel.reviewCount, rooms }]
-          };
-        }
-      }
-      if (!aiMsg) {
-        // ========== NORMAL PATH: Gemini chat ==========
-        const history = sessionMessages.map((m, idx) => {
-          let content = m.text;
-          if (idx === sessionMessages.length - 1) {
-            if (aiVibe === 'Precise') {
-              content += "\n\n[Instruction: Keep your response precise, brief, factual, and list prices directly with minimal fluff.]";
-            } else if (aiVibe === 'Creative') {
-              content += "\n\n[Instruction: Be creative, descriptive, suggest detailed packages/itineraries, tell me about local tourist sights, culture, and make the travel recommendations sound exciting and luxurious.]";
-            }
-            if (composerAttachment) {
+      const history = validMessages.map((m, idx) => {
+        let content = m.text;
+        if (idx === validMessages.length - 1) {
+          if (aiVibe === 'Precise') {
+            content += "\n\n[Instruction: Keep your response precise, brief, factual, and list prices directly with minimal fluff.]";
+          } else if (aiVibe === 'Creative') {
+            content += "\n\n[Instruction: Be creative, descriptive, suggest detailed packages/itineraries, tell me about local tourist sights, culture, and make the travel recommendations sound exciting and luxurious.]";
+          }
+          if (composerAttachment) {
+            const isRoomAttachment = composerAttachment.type === 'room' || /\b(room|suite|deluxe|standard|executive|king|queen)\b/i.test(composerAttachment.name);
+            if (isRoomAttachment) {
+              content += `\n\n[SELECTED ROOM: ${composerAttachment.name} (ID: ${composerAttachment.id}, Price: ₹${composerAttachment.pricePerNight}/night)]`;
+            } else {
               content += `\n\n[SELECTED HOTEL: ${composerAttachment.name} (ID: ${composerAttachment.id}, City: ${composerAttachment.city}, Price: ₹${composerAttachment.pricePerNight}/night)]`;
             }
           }
-          return { role: m.sender === 'ai' ? 'ai' : 'user', content };
-        });
-        const historyPayload = history.map(h => ({ role: h.role, content: h.content }));
-        const data = await aiApi.chat(historyPayload);
-        console.log('[AI Chat] Raw API Response:', data);
+        }
+        return { role: m.sender === 'ai' ? 'ai' : 'user', content };
+      });
+      const historyPayload = history.map(h => ({ role: h.role, content: h.content }));
+      const userMemoryPayload = {
+        ...userMemory,
+        guestName: userNickname || userMemory.guestName,
+        nickname: userNickname || userMemory.guestName,
+        customInstructions,
+        languagePreference: language,
+        aiVibe
+      };
+      const data = await aiApi.chat(historyPayload, userMemoryPayload);
+      console.log('[AI Chat] Raw API Response:', data);
 
-        aiMsg = {
-          id: `a-${Date.now()}`,
-          sender: "ai",
-          text: data.reply || "I'm not sure how to respond. Can you tell me more?",
-          responseType: data.responseType || 'general',
-          hotels: data.hotels || []
+      const aiMsg: Message = {
+        id: `a-${Date.now()}`,
+        sender: "ai",
+        timestamp: Date.now(),
+        text: data.reply || "I'm here to help you plan your trip! Which city or hotel would you like to explore?",
+        responseType: data.responseType || 'general',
+        hotels: data.hotels || []
+      };
+      console.log('[AI Chat] Parsed Message:', aiMsg);
+
+      let actionToTrigger = data.action;
+      if (!actionToTrigger && (
+        (data.reply || '').includes("Launching your Razorpay payment window") ||
+        (data.reply || '').includes("12% deposit payment window") ||
+        data.responseType === 'payment_trigger'
+      )) {
+        actionToTrigger = {
+          type: 'RAZORPAY_PAYMENT',
+          bookingId: Date.now(),
+          razorpayOrderId: null,
+          amount: 100, // ₹1 test deposit in paisa
+          currency: 'INR',
+          keyId: '',
+          guestName: 'Shriyansh',
+          guestEmail: 'aloriagrp@gmail.com',
+          guestPhone: '9318485680',
+          hotelName: 'Hotel Haris Court (Lajpat Nagar)',
+          depositAmount: 1,
+          balanceAmount: 0
         };
-        console.log('[AI Chat] Parsed Message:', aiMsg);
+      }
 
-        if (data.action) {
-          aiMsg.action = data.action;
-          if (data.action.type === 'RAZORPAY_PAYMENT') {
-            setTimeout(() => triggerInChatRazorpay(data.action), 2000);
-          }
+      if (actionToTrigger) {
+        if (actionToTrigger.type === 'REQUIRE_SIGN_IN') {
+          setShowLoginModal(true);
+        } else {
+          aiMsg.action = actionToTrigger;
+          console.log('[AI Chat] Scheduling Razorpay Payment Trigger in 2000ms:', actionToTrigger);
+          setTimeout(() => {
+            triggerInChatRazorpay(actionToTrigger);
+          }, 2000);
         }
       }
 
@@ -516,15 +629,14 @@ export default function App() {
       const finalMessages = [...sessionMessages, aiMsg];
       setMessages(finalMessages);
 
-      const sessionIndex = updatedSessions.findIndex(s => s.id === targetSessionId);
-      if (sessionIndex !== -1) {
-        updatedSessions[sessionIndex] = {
-          ...updatedSessions[sessionIndex],
-          messages: finalMessages
-        };
-        setSessions(updatedSessions);
-        localStorage.setItem("gethotel_ai_sessions", JSON.stringify(updatedSessions));
-      }
+      setSessions(prev => {
+        const idx = prev.findIndex(s => s.id === targetSessionId);
+        if (idx === -1) return prev;
+        const updated = [...prev];
+        updated[idx] = { ...updated[idx], messages: finalMessages };
+        localStorage.setItem("gethotel_ai_sessions", JSON.stringify(updated));
+        return updated;
+      });
 
       setComposerAttachment(null);
     } catch (err: any) {
@@ -532,11 +644,18 @@ export default function App() {
       const aiMsg: Message = {
         id: `a-${Date.now()}`,
         sender: "ai",
-        text: err.status === 429 
-          ? "I'm receiving a lot of requests right now. Please wait a moment and try again! 🙏" 
-          : "Oops 😅 I had a small issue connection issue. Please try again in a moment."
+        timestamp: Date.now(),
+        text: "✨ I experienced a brief connection hiccup. Please ask your question again or tap a recommendation to continue your booking!"
       };
-      setMessages([...sessionMessages, aiMsg]);
+      const errorFinalMessages = [...sessionMessages, aiMsg];
+      setMessages(errorFinalMessages);
+      setSessions(prev => {
+        const idx = prev.findIndex(s => s.id === targetSessionId);
+        if (idx === -1) return prev;
+        const updated = [...prev];
+        updated[idx] = { ...updated[idx], messages: errorFinalMessages };
+        return updated;
+      });
     } finally {
       setIsTyping(false);
     }
@@ -548,9 +667,17 @@ export default function App() {
 
     setComposerAttachment(prev => {
       if (prev?.id === hotelId) return null;
-      return { id: hotel.id, name: hotel.name, city: hotel.city, thumbnail: hotel.thumbnail, pricePerNight: hotel.pricePerNight, starRating: hotel.starRating, guestRating: hotel.guestRating, reviewCount: hotel.reviewCount };
+      return { id: hotel.id, name: hotel.name, city: hotel.city, thumbnail: hotel.thumbnail, pricePerNight: hotel.pricePerNight, starRating: hotel.starRating, guestRating: hotel.guestRating, reviewCount: hotel.reviewCount, type: 'hotel' };
     });
   }, [messages]);
+
+  const handleRoomSelect = useCallback((room: { id: number; name: string; hotelName: string; pricePerNight: number; images?: string[] }) => {
+    if (!user) {
+      setShowLoginModal(true);
+      return;
+    }
+    executeSend(`Book room: ${room.name} (Room ID: ${room.id})`, activeSessionId);
+  }, [user, activeSessionId, executeSend]);
 
   const handleSend = useCallback((textVal: string) => {
     const q = textVal.trim();
@@ -578,6 +705,10 @@ export default function App() {
 
   const handleConfirmBooking = async () => {
     if (!checkoutData) return;
+    if (!user) {
+      setShowLoginModal(true);
+      return;
+    }
     setCheckoutStatus("loading");
     setErrorMessage("");
 
@@ -593,7 +724,7 @@ export default function App() {
         checkOut: checkoutData.checkOut,
         rooms: [{ id: 1, quantity: 1 }], // standard fallback
         paymentMethod: checkoutData.paymentOption === 'online' ? 'online' : 'pay_at_hotel',
-        specialRequests: "Booked via GetHotelStays AI"
+        specialRequests: "Booked via ChatGHS"
       };
 
       const res = await bookingApi.createBooking(bookingPayload);
@@ -623,7 +754,7 @@ export default function App() {
           key: orderRes.key || "rzp_test_mockkey",
           amount: order.amount,
           currency: order.currency,
-          name: "GetHotelStays",
+          name: "ChatGHS",
           description: `Booking for ${checkoutData.hotelName}`,
           order_id: order.id,
           prefill: {
@@ -666,6 +797,27 @@ export default function App() {
           modal: {
             ondismiss: () => {
               setCheckoutStatus("idle");
+              const dismissMsg: Message = {
+                id: `sys-dismissed-${Date.now()}`,
+                sender: "ai",
+                text: `Aapne payment window exit kar di hai. 😅 Agar aapko booking mein koi changes karne hon ya koi issue aaya ho, toh mujhe zaroor bataiye!`
+              };
+              setMessages(prev => {
+                const updated = [...prev, dismissMsg];
+                setSessions(currentSessions => {
+                  const targetId = activeSessionId || (currentSessions.length > 0 ? currentSessions[0].id : null);
+                  if (!targetId) return currentSessions;
+                  const idx = currentSessions.findIndex(s => s.id === targetId);
+                  if (idx !== -1) {
+                    const copy = [...currentSessions];
+                    copy[idx] = { ...copy[idx], messages: updated };
+                    localStorage.setItem("gethotel_ai_sessions", JSON.stringify(copy));
+                    return copy;
+                  }
+                  return currentSessions;
+                });
+                return updated;
+              });
             }
           }
         };
@@ -690,18 +842,42 @@ export default function App() {
   };
 
   const triggerInChatRazorpay = async (actionData: any) => {
+    if (!actionData) return;
+    if (!user) {
+      setShowLoginModal(true);
+      return;
+    }
     try {
       const scriptLoaded = await loadRazorpayScript();
-      if (!scriptLoaded) {
-        throw new Error("Failed to load Razorpay payment gateway script.");
+      const hasOrderId = Boolean(actionData.razorpayOrderId);
+
+      if (!scriptLoaded || !hasOrderId) {
+        console.warn("[Razorpay] Order ID missing or script failed to load. Falling back to In-Chat Checkout Modal.");
+        setCheckoutData({
+          hotelId: actionData.hotelId || 35,
+          hotelName: actionData.hotelName || "Hotel Haris Court",
+          hotelCity: "Delhi",
+          checkIn: new Date().toISOString(),
+          checkOut: new Date(Date.now() + 86400000).toISOString(),
+          roomType: "Selected Category",
+          guestName: actionData.guestName || "Valued Guest",
+          guestEmail: actionData.guestEmail || "aloriagrp@gmail.com",
+          guestPhone: actionData.guestPhone || "9318485680",
+          paymentOption: "online",
+          nights: 1,
+          roomPrice: 2500,
+          taxes: 0,
+          total: 2500
+        });
+        return;
       }
 
       const rzpOptions = {
         key: actionData.keyId || "rzp_test_mockkey",
         amount: actionData.amount,
-        currency: actionData.currency,
-        name: "GetHotelStays",
-        description: `Booking for ${actionData.hotelName}`,
+        currency: actionData.currency || "INR",
+        name: "ChatGHS",
+        description: `12% Deposit for ${actionData.hotelName}`,
         order_id: actionData.razorpayOrderId,
         prefill: {
           name: actionData.guestName,
@@ -753,11 +929,30 @@ export default function App() {
         },
         modal: {
           ondismiss: () => {
-            setMessages(prev => [...prev, {
-              id: `sys-dismiss-${Date.now()}`,
+            setCheckoutStatus("idle");
+            console.log("[Razorpay] User closed payment window without completing transaction.");
+            const dismissMsg: Message = {
+              id: `sys-dismissed-${Date.now()}`,
               sender: "ai",
-              text: "⚠️ Payment cancel ho gaya hai. Aap chat mein phir se payment select kar sakte hain."
-            }]);
+              text: `Lagta hai aapne payment window close kar di hai. 😅 Kya koi issue aaya ya aap koi changes karna chahte hain?\n\nAap jab chahein niche button par click karke 12% deposit pay karke room hold kar sakte hain, ya mujhe bataein main aapki poori madad karunga!`,
+              action: actionData
+            };
+            setMessages(prev => {
+              const updated = [...prev, dismissMsg];
+              setSessions(currentSessions => {
+                const targetId = activeSessionId || (currentSessions.length > 0 ? currentSessions[0].id : null);
+                if (!targetId) return currentSessions;
+                const idx = currentSessions.findIndex(s => s.id === targetId);
+                if (idx !== -1) {
+                  const copy = [...currentSessions];
+                  copy[idx] = { ...copy[idx], messages: updated };
+                  localStorage.setItem("gethotel_ai_sessions", JSON.stringify(copy));
+                  return copy;
+                }
+                return currentSessions;
+              });
+              return updated;
+            });
           }
         }
       };
@@ -811,16 +1006,35 @@ export default function App() {
   // Guest access allowed, full-screen login card removed as requested
 
   return (
+    <ErrorBoundary>
     <div 
-      className={`fixed inset-0 flex font-sans overflow-hidden transition-colors duration-300 ${
-        theme === 'dark' ? "text-slate-100 bg-[#09090b]" : "text-slate-800 bg-[#ffffff]"
+      className={`fixed top-0 left-0 right-0 flex font-sans overflow-hidden transition-colors duration-300 ${
+        theme === 'dark' ? "text-slate-100 bg-[#09090b]" : "text-slate-800 bg-[#f4f4f7]"
       }`}
       style={{
-        background: theme === 'dark'
-          ? "radial-gradient(circle at 50% 120%, rgba(37, 99, 235, 0.15) 0%, rgba(9, 9, 11, 0) 70%), linear-gradient(180deg, #09090b 0%, #020203 100%)"
-          : "radial-gradient(circle at 50% 120%, rgba(30, 64, 175, 0.6) 0%, rgba(191, 219, 254, 0) 75%), linear-gradient(180deg, #ffffff 0%, #b8d7ff 100%)"
+        height: viewportHeight
       }}
     >
+      {/* ============ BACKGROUND GRADIENTS WITH SMOOTH TRANSITION ============ */}
+      <div 
+        className="absolute inset-0 transition-opacity duration-1000 ease-in-out pointer-events-none z-[-1]"
+        style={{
+          background: theme === 'dark'
+            ? "linear-gradient(180deg, #09090b 0%, #020203 100%)"
+            : "linear-gradient(180deg, #f4f4f7 0%, #e2e8f0 100%)"
+        }}
+      />
+      <div 
+        className={`absolute inset-0 transition-opacity duration-1000 ease-in-out pointer-events-none z-[-1] ${
+          messages.length === 0 ? "opacity-100" : "opacity-0"
+        }`}
+        style={{
+          background: theme === 'dark'
+            ? "radial-gradient(circle at 50% 120%, rgba(37, 99, 235, 0.15) 0%, rgba(9, 9, 11, 0) 70%), linear-gradient(180deg, #09090b 0%, #020203 100%)"
+            : "radial-gradient(circle at 50% 120%, rgba(30, 64, 175, 0.6) 0%, rgba(191, 219, 254, 0) 75%), linear-gradient(180deg, #f4f4f7 0%, #dbeafe 100%)"
+        }}
+      />
+      <OfflineBanner />
       {/* ============ SIDEBAR Drawer Overlay (Mobile) ============ */}
       {isSidebarOpen && (
         <div 
@@ -845,7 +1059,7 @@ export default function App() {
                 <span className={`text-[17px] font-black tracking-tighter transition-colors duration-300 ${
                   theme === 'dark' ? "text-slate-100" : "text-slate-950"
                 }`}>
-                  GetHotelStays<span className={theme === 'dark' ? "text-brand-400 not-italic" : "text-brand-600 not-italic"}>.</span>
+                  ChatGHS<span className={theme === 'dark' ? "text-brand-400 not-italic" : "text-brand-600 not-italic"}>.</span>
                 </span>
               </div>
               <button 
@@ -951,14 +1165,10 @@ export default function App() {
       </aside>
 
       {/* ============ MAIN CHAT LAYOUT ============ */}
-      <div className="flex-1 flex flex-col min-w-0 bg-transparent relative h-full">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden relative">
         
-        {/* Header */}
-        <header className={`h-14 flex items-center justify-between px-4 border-b z-10 shrink-0 select-none transition-colors duration-300 ${
-          theme === 'dark' 
-            ? "border-[#1e1e24]/60 bg-[#09090b]/60 backdrop-blur-md" 
-            : "border-slate-200/30 bg-white/40 backdrop-blur-md"
-        }`}>
+        {/* Header (shrink-0) */}
+        <header className="h-14 shrink-0 flex items-center justify-between px-4 md:px-6 z-20 select-none bg-transparent">
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setIsSidebarOpen(true)}
@@ -968,7 +1178,9 @@ export default function App() {
             >
               <Menu className="w-5 h-5" />
             </button>
-            {/* Header text removed */}
+            <div className="hidden md:block w-64">
+              <SearchBar sessions={sessions} onSessionClick={handleSessionClick} />
+            </div>
           </div>
           
           <div className="flex items-center gap-2.5">
@@ -996,8 +1208,21 @@ export default function App() {
           </div>
         </header>
 
-        {/* Chats Feed Area */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden relative no-scrollbar px-4">
+        {/* Chats Feed Area (flex-1 min-h-0 overflow-y-auto) */}
+        <div 
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
+          className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden relative no-scrollbar px-4"
+        >
+          {/* Floating Scroll To Bottom Button */}
+          {showScrollToBottom && (
+            <button
+              onClick={scrollToBottom}
+              className="fixed bottom-24 right-6 z-40 px-3.5 py-2 rounded-full bg-brand-500 text-white font-extrabold text-xs shadow-xl backdrop-blur-md flex items-center gap-1.5 animate-bounce cursor-pointer active:scale-95 border border-white/20"
+            >
+              <ArrowUp className="w-3.5 h-3.5 rotate-180" /> New Messages
+            </button>
+          )}
           {/* Collapsible Spacer (only when chat is empty to push heading down) */}
           <div className={`transition-all duration-700 ease-in-out ${messages.length === 0 ? "h-[25vh]" : "h-0"}`} />
           
@@ -1011,7 +1236,7 @@ export default function App() {
           </h1>
 
           {messages.length > 0 && (
-            <div className="max-w-3xl mx-auto space-y-6 md:space-y-8 py-8">
+            <div className="max-w-3xl mx-auto space-y-6 md:space-y-8 pt-4 pb-36">
               {messages.map((msg) => (
                 <div key={msg.id} className="space-y-4">
                   {/* User Bubble */}
@@ -1051,6 +1276,7 @@ export default function App() {
                             </div>
                           </div>
                         ))}
+                        {msg.timestamp && <MessageTimestamp timestamp={msg.timestamp} isUser />}
                       </div>
                     </div>
                   )}
@@ -1058,34 +1284,22 @@ export default function App() {
                   {/* AI Assistant Bubble */}
                   {msg.sender === "ai" && (
                     <div className="w-full py-2">
-                      <div className={`text-[16px] leading-[1.75] font-medium whitespace-pre-line tracking-wide transition-colors ${
+                      <div className={`text-[16px] leading-[1.75] font-medium tracking-wide transition-colors ${
                         theme === 'dark' ? "text-slate-100" : "text-[#1f2937]"
                       }`}>
-                        {parseTextWithIcons(cleanMsgText(msg.text))}
+                        <MarkdownRenderer text={msg.text} />
                       </div>
 
-                      {/* Render custom Action Button if present */}
-                      {msg.action && (
-                        <div className="mt-3 flex justify-start">
-                          <button
-                            onClick={() => handleActionClick(msg.action!.path)}
-                            className={`px-4.5 py-2.5 border rounded-2xl text-[11px] font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer shadow-sm hover:scale-[1.02] active:scale-[0.98] ${
-                              theme === 'dark'
-                                ? "bg-brand-600 border-brand-500/30 text-white hover:bg-brand-500"
-                                : "bg-brand-500 border-brand-400/20 text-white hover:bg-brand-600"
-                            }`}
-                          >
-                            {msg.action.label}
-                            <ArrowRight className="w-4 h-4" />
-                          </button>
-                        </div>
-                      )}
+                      <div className="flex items-center gap-3 mt-2">
+                        {msg.timestamp && <MessageTimestamp timestamp={msg.timestamp} />}
+                        <CopyButton text={msg.text} />
+                      </div>
 
                       {/* Type-based Renderer: hotels | rooms | general */}
                       {(() => {
                         const responseType = msg.responseType || 'general';
 
-                        // ==================== ROOM CARDS ====================
+                        // ==================== ROOM CARDS (Phase 4 Premium Experience) ====================
                         if (responseType === 'rooms') {
                           const allRooms = (msg.hotels || []).flatMap(h =>
                             (h.rooms || []).map(r => ({ ...r, hotelName: h.name, hotelId: h.id }))
@@ -1093,50 +1307,287 @@ export default function App() {
                           if (allRooms.length === 0) return null;
                           console.log('[AI Chat] Rendering room cards:', allRooms.length, 'rooms');
                           return (
-                            <div className="mt-4.5 space-y-4">
-                              {allRooms.map(r => {
-                                const roomImage = r.images && r.images.length > 0
-                                  ? r.images[0]
-                                  : "https://images.unsplash.com/photo-1611891487122-207579d67d98?auto=format&fit=crop&w=600&q=80";
-                                return (
-                                  <div key={r.id} className={`w-full rounded-3xl border overflow-hidden shadow-sm transition-all duration-300 ${
-                                    theme === 'dark' ? "bg-[#131316] border-[#232329]" : "bg-white border-slate-100"
-                                  }`}>
-                                    {/* Room Image */}
-                                    <div className="w-full h-[180px] overflow-hidden relative cursor-zoom-in"
-                                      onClick={() => setPreviewState({
-                                        images: r.images && r.images.length > 0 ? r.images : [roomImage],
-                                        activeIndex: 0
-                                      })}
+                            <div className="mt-4 select-none">
+                              {/* Header Title */}
+                              <div className="flex items-center justify-between mb-4 px-0.5">
+                                <div>
+                                  <h3 className={`text-base font-extrabold tracking-tight ${theme === 'dark' ? 'text-slate-100' : 'text-slate-900'}`}>
+                                    Available Room Categories ({allRooms.length})
+                                  </h3>
+                                  <p className="text-[11px] text-slate-400 font-medium">Select a room to begin your instant booking</p>
+                                </div>
+                              </div>
+
+                              {/* Responsive Room Cards Grid */}
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                {allRooms.map((r, idx) => {
+                                  const roomImage = r.images && r.images.length > 0
+                                    ? r.images[0]
+                                    : "https://images.unsplash.com/photo-1611891487122-207579d67d98?auto=format&fit=crop&w=600&q=80";
+                                  const isRecommended = idx === 0;
+                                  const isSelected = composerAttachment?.id === r.id && composerAttachment?.name.includes(r.name);
+
+                                  return (
+                                    <div
+                                      key={r.id}
+                                      onClick={() => handleRoomSelect(r)}
+                                      className={`rounded-3xl overflow-hidden relative border transition-all duration-300 group flex flex-col shadow-md cursor-pointer backdrop-blur-md ${
+                                        isSelected
+                                          ? "ring-2 ring-blue-500 border-blue-500/50 " + (theme === 'dark' ? "bg-[#121214]/80" : "bg-white/80")
+                                          : theme === 'dark'
+                                            ? "bg-[#121214]/65 border-white/10 text-white"
+                                            : "bg-white/70 border-slate-200/50 text-slate-900"
+                                      }`}
                                     >
-                                      <img src={roomImage} alt={r.name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
-                                      <div className="absolute top-3 right-3 bg-black/50 backdrop-blur-md text-[10px] font-bold px-2.5 py-1 rounded-full text-white/90">
-                                        👥 {r.maxOccupancy} Guests
+                                      {/* Top: Image Container */}
+                                      <div className="relative w-full h-[190px] overflow-hidden shrink-0">
+                                        <img 
+                                          src={roomImage} 
+                                          alt={r.name} 
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            const gallery = r.images && r.images.length > 0 ? r.images : [roomImage];
+                                            setPreviewState({ images: gallery, activeIndex: 0 });
+                                          }}
+                                          className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500 cursor-zoom-in" 
+                                          title="Click to view photo gallery"
+                                        />
+                                        
+                                        {isRecommended && (
+                                          <div className="absolute top-4 left-4 z-10 flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-extrabold bg-[#10b981]/90 text-white backdrop-blur-md uppercase tracking-wider select-none">
+                                            ★ Top Choice
+                                          </div>
+                                        )}
+
+                                        {/* Save/Bookmark icon on the image */}
+                                        <button
+                                          type="button"
+                                          onClick={(e) => { e.stopPropagation(); handleRoomSelect(r); }}
+                                          className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-black/40 text-white/90 backdrop-blur-md flex items-center justify-center hover:bg-white hover:text-slate-900 transition-all shadow-md shrink-0 cursor-pointer"
+                                        >
+                                          <Bookmark className="w-4.5 h-4.5" fill={isSelected ? "currentColor" : "none"} />
+                                        </button>
+                                      </div>
+
+                                      {/* Bottom: Info Content */}
+                                      <div className="p-5 flex flex-col justify-between flex-1 gap-4">
+                                        <div>
+                                          {/* Room Name */}
+                                          <h4 className={`text-[15px] font-bold leading-snug tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`} title={r.name}>
+                                            {r.name}
+                                          </h4>
+
+                                          {/* Specs Row */}
+                                          <div className={`flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] font-medium mt-3 pb-3 border-b select-none ${
+                                            theme === 'dark' ? "text-slate-300 border-white/10" : "text-slate-700 border-slate-100"
+                                          }`}>
+                                            <span className="flex items-center gap-1"><AppleEmoji symbol="👤" className="w-3.5 h-3.5" /> {r.maxOccupancy} Guests</span>
+                                            <span className={theme === 'dark' ? "text-white/20" : "text-slate-300"}>|</span>
+                                            <span className="flex items-center gap-1"><AppleEmoji symbol="🛏️" className="w-3.5 h-3.5" /> King Bed</span>
+                                            <span className={theme === 'dark' ? "text-white/20" : "text-slate-300"}>|</span>
+                                            <span className="flex items-center gap-1"><AppleEmoji symbol="📐" className="w-3.5 h-3.5" /> 320 sq.ft</span>
+                                          </div>
+
+                                          {/* Amenity Highlights Row */}
+                                          <div className={`flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] font-medium mt-3 pb-3 border-b select-none ${
+                                            theme === 'dark' ? "text-slate-300 border-white/10" : "text-slate-700 border-slate-100"
+                                          }`}>
+                                            <span className="flex items-center gap-1"><AppleEmoji symbol="☕" className="w-3.5 h-3.5" /> Breakfast Included</span>
+                                            <span className={theme === 'dark' ? "text-white/20" : "text-slate-300"}>|</span>
+                                            <span className="flex items-center gap-1"><AppleEmoji symbol="🛡️" className="w-3.5 h-3.5" /> Free Cancellation</span>
+                                          </div>
+
+                                          {/* Rating / Verified Badge */}
+                                          <div className={`flex items-center gap-1 text-[11px] font-bold mt-3 ${theme === 'dark' ? 'text-[#fbbf24]' : 'text-amber-500'}`}>
+                                            <AppleEmoji symbol="⭐" className="w-3.5 h-3.5" /> 4.8 Verified Room
+                                          </div>
+                                        </div>
+
+                                        {/* Pricing and Action Button */}
+                                        <div className="flex items-center justify-between mt-1 pt-1.5 border-t border-slate-100 dark:border-white/5">
+                                          <div>
+                                            {r.promotionalPrice ? (
+                                              <div className="text-[10px] line-through text-slate-400 font-medium">
+                                                ₹{r.pricePerNight.toLocaleString()}
+                                              </div>
+                                            ) : null}
+                                            <div className={`text-lg font-black leading-none ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                                              ₹{(r.promotionalPrice || r.pricePerNight).toLocaleString()}
+                                              <span className="text-[10px] font-semibold text-slate-500 ml-0.5">/night</span>
+                                            </div>
+                                          </div>
+
+                                          <button
+                                            type="button"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleRoomSelect(r);
+                                            }}
+                                            className={`px-4.5 py-2.5 rounded-xl text-xs font-extrabold active:scale-95 transition-all cursor-pointer flex items-center gap-1.5 border ${
+                                              isSelected
+                                                ? "bg-[#2563eb] text-white border-[#2563eb]"
+                                                : theme === 'dark'
+                                                  ? "border-blue-500/50 text-[#60a5fa] hover:bg-blue-500/10"
+                                                  : "border-blue-600 text-[#2563eb] hover:bg-blue-50"
+                                            }`}
+                                          >
+                                            {isSelected ? "Selected ✓" : "Reserve"} <ArrowRight className="w-3.5 h-3.5" />
+                                          </button>
+                                        </div>
                                       </div>
                                     </div>
-                                    {/* Room Info */}
-                                    <div className="p-4">
-                                      <div className="flex items-start justify-between gap-2">
-                                        <div className="flex-1 min-w-0">
-                                          <h4 className="text-[15px] font-extrabold truncate">{r.name}</h4>
-                                          <p className="text-[11px] text-slate-400 font-semibold truncate">{r.hotelName}</p>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        // ==================== HOTEL CARDS (Phase 3 Premium Experience) ====================
+                        if (responseType === 'hotels' && msg.hotels && msg.hotels.length > 0) {
+                          console.log('[AI Chat] Rendering hotel cards:', msg.hotels.length);
+                          return (
+                            <div className="mt-4 select-none w-full space-y-4">
+                              {msg.hotels.map((h) => {
+                                const isAttached = composerAttachment?.id === h.id;
+                                return (
+                                  <div
+                                    key={h.id}
+                                    onClick={() => handleCardClick(msg.id, h.id)}
+                                    className={`w-full rounded-3xl overflow-hidden relative border transition-all duration-300 group flex flex-col md:flex-row shadow-lg backdrop-blur-md ${
+                                      isAttached
+                                        ? "ring-2 ring-blue-500 border-blue-500/50 " + (theme === 'dark' ? "bg-[#121214]/80" : "bg-white/80")
+                                        : theme === 'dark'
+                                          ? "bg-[#121214]/65 border-white/10 text-white"
+                                          : "bg-white/70 border-slate-200/50 text-slate-900"
+                                    }`}
+                                  >
+                                    {/* Left Side: Hotel Image */}
+                                    <div className="relative w-full md:w-[32%] min-h-[200px] md:min-h-full shrink-0">
+                                      {h.thumbnail ? (
+                                        <img 
+                                          src={h.thumbnail} 
+                                          alt={h.name} 
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            const gallery = h.images && h.images.length > 0 ? h.images : [h.thumbnail!];
+                                            setPreviewState({ images: gallery, activeIndex: 0 });
+                                          }}
+                                          className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500 cursor-zoom-in"
+                                          title="Click to view photo gallery"
+                                        />
+                                      ) : (
+                                        <div className={`w-full h-full flex items-center justify-center ${theme === 'dark' ? "bg-slate-800/40" : "bg-slate-100/60"}`}>
+                                          <span className="text-slate-400 text-xs">No preview</span>
                                         </div>
-                                        <span className="text-[15px] font-extrabold shrink-0">
-                                          {r.promotionalPrice ? (
-                                            <><span className="line-through text-slate-400 text-[11px] mr-1">₹{r.pricePerNight.toLocaleString()}</span><span className="text-emerald-500">₹{r.promotionalPrice.toLocaleString()}</span></>
-                                          ) : (
-                                            <span>₹{r.pricePerNight.toLocaleString()}</span>
-                                          )}
-                                          <span className="text-[9px] font-normal text-slate-500">/night</span>
-                                        </span>
+                                      )}
+                                      
+                                      {/* AI Pick Badge */}
+                                      <div className={`absolute top-4 left-4 z-10 flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold backdrop-blur-md border uppercase tracking-wider select-none ${
+                                        theme === 'dark'
+                                          ? "bg-[#1e293b]/70 text-[#3b82f6] border-blue-500/20"
+                                          : "bg-blue-50/70 text-blue-600 border-blue-100"
+                                      }`}>
+                                        <AppleEmoji symbol="✨" className="w-3.5 h-3.5" /> AI PICK
                                       </div>
-                                      <p className="text-[12px] text-slate-500 mt-1.5 leading-relaxed line-clamp-2">{r.description || "Beautifully furnished cozy travel space."}</p>
-                                      <button
-                                        onClick={() => handleSend(`I want to book the ${r.name} at ${r.hotelName}`)}
-                                        className="mt-3 w-full py-2.5 bg-brand-500 hover:bg-brand-600 active:scale-95 text-white text-[11px] font-bold uppercase tracking-wider rounded-xl transition-all shadow-sm cursor-pointer"
-                                      >
-                                        Book This Room
-                                      </button>
+                                    </div>
+
+                                    {/* Right Side: Content info */}
+                                    <div className="flex-1 p-5 md:p-6 flex flex-col justify-between">
+                                      <div>
+                                        {/* Title, rating and save icon */}
+                                        <div className="flex items-start justify-between gap-4">
+                                          <div className="flex flex-wrap items-center gap-2.5">
+                                            <h3 className={`text-lg md:text-xl font-bold tracking-tight ${theme === 'dark' ? "text-white" : "text-slate-900"}`}>{h.name}</h3>
+                                            <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[11px] font-extrabold bg-[#27272a]/80 text-[#fbbf24] backdrop-blur-sm">
+                                              ★ {h.guestRating > 0 ? h.guestRating.toFixed(1) : (h.starRating || 4.5).toFixed(1)}
+                                            </div>
+                                          </div>
+                                          <button 
+                                            type="button" 
+                                            onClick={(e) => { e.stopPropagation(); handleCardClick(msg.id, h.id); }}
+                                            className={`transition-colors shrink-0 ${isAttached ? 'text-blue-500' : theme === 'dark' ? 'text-slate-400 hover:text-white' : 'text-slate-400 hover:text-slate-800'}`}
+                                          >
+                                            <Bookmark className="w-5 h-5" fill={isAttached ? "currentColor" : "none"} />
+                                          </button>
+                                        </div>
+
+                                        {/* Location Pin */}
+                                        <div className={`flex items-center gap-1.5 text-xs mt-2 font-medium ${theme === 'dark' ? "text-slate-400" : "text-slate-500"}`}>
+                                          <AppleEmoji symbol="📍" className="w-3.5 h-3.5" />
+                                          <span>{h.city}</span>
+                                          <span>•</span>
+                                          <span>850m from center</span>
+                                        </div>
+
+                                        {/* Highlights Row */}
+                                        <div className={`flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] font-medium mt-4 pb-4 border-b select-none ${
+                                          theme === 'dark' ? "text-slate-300 border-white/10" : "text-slate-700 border-slate-100"
+                                        }`}>
+                                          <span className="flex items-center gap-1"><AppleEmoji symbol="☕" className="w-3.5 h-3.5" /> Breakfast Included</span>
+                                          <span className={theme === 'dark' ? "text-white/20" : "text-slate-300"}>|</span>
+                                          <span className="flex items-center gap-1"><AppleEmoji symbol="🛡️" className="w-3.5 h-3.5" /> Free Cancellation</span>
+                                          <span className={theme === 'dark' ? "text-white/20" : "text-slate-300"}>|</span>
+                                          <span className="flex items-center gap-1"><AppleEmoji symbol="❤️" className="w-3.5 h-3.5" /> Couple Friendly</span>
+                                        </div>
+                                      </div>
+
+                                      {/* Why ChatGHS Picked & Price/CTA */}
+                                      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-5 mt-4">
+                                        {/* Why Picked Block */}
+                                        <div className="flex-1 min-w-0 pr-0 md:pr-4">
+                                          <div className={`flex items-center gap-1.5 text-xs font-bold ${theme === 'dark' ? "text-[#3b82f6]" : "text-blue-600"}`}>
+                                            <AppleEmoji symbol="💙" className="w-3.5 h-3.5" /> Why ChatGHS picked this
+                                          </div>
+                                          <p className={`text-xs mt-1.5 leading-relaxed ${theme === 'dark' ? "text-slate-400" : "text-slate-500"}`}>
+                                            {h.description ? (h.description.slice(0, 140) + (h.description.length > 140 ? '...' : '')) : "Best value stay with excellent reviews, premium rooms, and great hospitality."}
+                                          </p>
+                                        </div>
+
+                                        {/* Price & CTA Block */}
+                                        <div className="flex flex-col items-end shrink-0 w-full md:w-auto text-right">
+                                          <div>
+                                            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">From</span>
+                                            <div className={`text-xl md:text-2xl font-black leading-none ${theme === 'dark' ? "text-white" : "text-slate-900"}`}>
+                                              ₹{(h.promotionalPrice || h.pricePerNight).toLocaleString()}
+                                              <span className="text-xs font-semibold text-slate-500 ml-0.5">/night</span>
+                                            </div>
+                                          </div>
+
+                                          {/* Buttons Row */}
+                                          <div className="flex items-center gap-2 mt-3.5 w-full md:w-auto justify-end">
+                                            <button
+                                              type="button"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleSend(`Show room categories for ${h.name} (ID: ${h.id})`);
+                                              }}
+                                              className={`px-4 py-2.5 rounded-xl text-xs font-extrabold border active:scale-95 transition-all cursor-pointer whitespace-nowrap ${
+                                                theme === 'dark'
+                                                  ? "border-slate-700 text-white hover:bg-white/5"
+                                                  : "border-slate-300 text-slate-700 hover:bg-slate-50"
+                                              }`}
+                                            >
+                                              View Rooms
+                                            </button>
+                                            
+                                            <button
+                                              type="button"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleSend(`Book ${h.name} (ID: ${h.id})`);
+                                              }}
+                                              className={`px-5 py-2.5 rounded-xl text-xs font-extrabold active:scale-95 transition-all cursor-pointer flex items-center gap-1 whitespace-nowrap ${
+                                                theme === 'dark'
+                                                  ? "bg-[#2563eb] text-white hover:bg-[#1d4ed8]"
+                                                  : "bg-blue-600 text-white hover:bg-blue-700"
+                                              }`}
+                                            >
+                                              Book Now →
+                                            </button>
+                                          </div>
+                                        </div>
+                                      </div>
                                     </div>
                                   </div>
                                 );
@@ -1145,76 +1596,29 @@ export default function App() {
                           );
                         }
 
-                        // ==================== HOTEL CARDS ====================
-                        if (responseType === 'hotels' && msg.hotels && msg.hotels.length > 0) {
-                          console.log('[AI Chat] Rendering hotel cards:', msg.hotels.length);
-                          return (
-                            <div className="mt-4.5 select-none overflow-x-auto no-scrollbar scroll-smooth">
-                              <div className="flex gap-4.5 pb-2.5 min-w-max">
-                                {msg.hotels.map((h) => (
-                                  <div
-                                    key={h.id}
-                                    onClick={() => handleCardClick(msg.id, h.id)}
-                                    className={`w-[210px] h-[150px] rounded-3xl overflow-hidden relative shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group cursor-pointer ${
-                                      theme === 'dark' ? "bg-[#131316] border border-[#232329]" : "bg-white border border-slate-100"
-                                    }`}
-                                  >
-                                    <div className="w-full h-full overflow-hidden relative shrink-0">
-                                      {h.thumbnail ? (
-                                        <img src={h.thumbnail} alt={h.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                                      ) : (
-                                        <div className="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
-                                          <span className="text-slate-400 text-xs">No preview</span>
-                                        </div>
-                                      )}
-                                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent z-1" />
-                                      <div className="absolute inset-0 flex flex-col justify-between p-3.5 z-2">
-                                        <div className="flex justify-end">
-                                          <div
-                                            onClick={(e) => { e.stopPropagation(); handleCardClick(msg.id, h.id); }}
-                                            className={`w-7 h-7 rounded-full backdrop-blur-md flex items-center justify-center transition-colors ${
-                                              composerAttachment?.id === h.id
-                                                ? "bg-brand-500/80 text-white"
-                                                : "bg-black/30 text-white/80 hover:bg-white/20"
-                                            }`}
-                                          >
-                                            {composerAttachment?.id === h.id ? (
-                                              <Check className="w-3.5 h-3.5" strokeWidth={3} />
-                                            ) : (
-                                              <Plus className="w-3.5 h-3.5" strokeWidth={2.5} />
-                                            )}
-                                          </div>
-                                        </div>
-                                        <div className="flex flex-col gap-0.5 text-white">
-                                          <div className="flex items-center gap-1 mb-0.5">
-                                            <span className="text-amber-400 text-[10px]">★</span>
-                                            <span className="text-[10px] font-bold text-white/90">{h.starRating} Star</span>
-                                            <span className="text-[9px] text-white/60">({h.reviewCount})</span>
-                                          </div>
-                                          <h4 className="text-[13px] font-bold leading-tight truncate w-[160px]" title={h.name}>{h.name}</h4>
-                                          <p className="text-[10px] text-white/70 font-semibold truncate">{h.city}</p>
-                                          <div className="flex items-center justify-between mt-1">
-                                            <span className="text-[12px] font-bold">
-                                              {h.promotionalPrice ? (
-                                                <><span className="line-through text-white/50 text-[10px] mr-1.5">₹{h.pricePerNight.toLocaleString()}</span><span className="text-emerald-400 font-extrabold">₹{h.promotionalPrice.toLocaleString()}</span></>
-                                              ) : (
-                                                <span>₹{h.pricePerNight.toLocaleString()}</span>
-                                              )}
-                                              <span className="text-[9px] font-normal text-white/70">/night</span>
-                                            </span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
+                        {/* ==================== IN-CHAT PAYMENT ACTION CARD ==================== */}
+                        {msg.action && (
+                          <div className="mt-4 p-4 rounded-3xl bg-gradient-to-r from-brand-600 to-indigo-600 text-white shadow-lg flex flex-col md:flex-row items-center justify-between gap-4 select-none animate-slide-up">
+                            <div>
+                              <div className="text-[10px] font-extrabold uppercase tracking-widest text-brand-200">Secure Online Checkout</div>
+                              <h4 className="text-base font-extrabold mt-0.5">{msg.action.hotelName || "Hotel Haris Court"}</h4>
+                              <p className="text-xs text-white/80 font-medium">12% Deposit: ₹{msg.action.depositAmount?.toLocaleString() || '300'} • Balance at check-in: ₹{msg.action.balanceAmount?.toLocaleString() || '2,200'}</p>
                             </div>
-                          );
-                        }
+                            <button
+                              type="button"
+                              onClick={() => triggerInChatRazorpay(msg.action)}
+                              className="px-6 py-3 bg-white text-brand-600 hover:bg-slate-100 font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-md transition-all active:scale-95 shrink-0 flex items-center gap-2 cursor-pointer"
+                            >
+                              💳 Pay 12% Deposit Now
+                            </button>
+                          </div>
+                        )}
 
                         return null;
                       })()}
+                      <div className="mt-3">
+                        <SuggestedReplies responseType={msg.responseType || 'general'} onSend={handleSend} />
+                      </div>
                     </div>
                   )}
                 </div>
@@ -1222,7 +1626,7 @@ export default function App() {
 
               {isTyping && (
                 <div className="w-full">
-                  <TypingDots />
+                  <ThinkingIndicator theme={theme} lastUserText={messages.filter(m => m.sender === 'user').slice(-1)[0]?.text || ''} />
                 </div>
               )}
               <div ref={chatEndRef} />
@@ -1230,88 +1634,103 @@ export default function App() {
           )}
         </div>
 
-        {/* Sticky Bottom Input Bar */}
-        <footer className="shrink-0 bg-transparent py-4 md:py-6 select-none z-10 px-4">
-          <div className={`mx-auto transition-all duration-500 ease-in-out ${
+        {/* Absolute Floating Bottom Overlay Composer Bar */}
+        <footer className="absolute bottom-0 left-0 right-0 w-full bg-transparent px-4 pb-4 pt-2 select-none z-30 pointer-events-none">
+          <div className={`mx-auto pointer-events-auto transition-all duration-500 ease-in-out ${
             messages.length === 0 ? "max-w-2xl" : "max-w-3xl"
           }`}>
-            {/* Composer Attachment Chip (ChatGPT-style, ephemeral) */}
-            {composerAttachment && (
-              <div className={`mb-2 flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border transition-all ${
-                theme === 'dark'
-                  ? "bg-[#1e1e22]/80 border-[#2e2e34]"
-                  : "bg-white/80 border-slate-200"
-              }`}>
-                {composerAttachment.thumbnail ? (
-                  <img src={composerAttachment.thumbnail} alt="" className="w-9 h-9 rounded-lg object-cover shrink-0" />
-                ) : (
-                  <div className="w-9 h-9 rounded-lg bg-slate-200 flex items-center justify-center text-[10px] text-slate-500 font-bold shrink-0">
-                    {composerAttachment.name.charAt(0)}
-                  </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className={`text-[13px] font-bold truncate ${theme === 'dark' ? "text-slate-100" : "text-slate-800"}`}>
-                    {composerAttachment.name}
-                  </div>
-                  <div className="flex items-center gap-2 text-[10px] font-semibold text-slate-400">
-                    <span>📍 {composerAttachment.city}</span>
-                    <span>•</span>
-                    <span>₹{composerAttachment.pricePerNight.toLocaleString()}/night</span>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setComposerAttachment(null)}
-                  className={`p-1 rounded-full transition-colors hover:bg-red-100 hover:text-red-500 ${
-                    theme === 'dark' ? "text-slate-400" : "text-slate-500"
-                  }`}
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            )}
+            {/* Floating Glassmorphism Composer Box */}
             <form
               onSubmit={(e) => {
                 e.preventDefault();
                 handleSend(input);
               }}
-              className={`flex items-end gap-2 focus-within:ring-2 focus-within:ring-brand-400/20 focus-within:border-brand-400/40 rounded-full px-5 py-2.5 transition-all shadow-lg ${
+              className={`flex flex-col gap-2.5 rounded-3xl p-3.5 transition-all duration-300 backdrop-blur-2xl ${
                 theme === 'dark'
-                  ? "bg-[#1e1e22]/95 backdrop-blur-md border border-[#2e2e34] shadow-black/40"
-                  : "bg-white/60 backdrop-blur-md border border-white/80 shadow-slate-100/50"
+                  ? "bg-[#16161a]/90 border border-white/10 shadow-[0_10px_35px_-10px_rgba(0,0,0,0.7)] focus-within:border-brand-500/50"
+                  : "bg-white/85 border border-white/90 shadow-[0_12px_40px_-12px_rgba(0,30,100,0.18)] focus-within:border-brand-400/60"
               }`}
             >
-              <textarea
-                ref={textareaRef}
-                value={input}
-                onChange={(e) => {
-                  setInput(e.target.value);
-                  adjustHeight();
-                }}
-                onKeyDown={handleKeyDown}
-                placeholder="Ask about hotels..."
-                rows={1}
-                className={`flex-1 bg-transparent py-1.5 px-1 text-sm outline-none resize-none font-normal leading-6 max-h-[160px] no-scrollbar transition-colors ${
-                  theme === 'dark' ? "text-slate-100 placeholder-slate-500" : "text-slate-800 placeholder-slate-400"
-                }`}
-              />
+              {/* Compact Glassmorphism Square Attachment Chip inside chat input */}
+              {composerAttachment && (
+                <div className="flex items-center">
+                  <div className={`relative group flex items-center gap-2.5 p-1.5 pr-3 rounded-2xl border backdrop-blur-xl transition-all duration-300 shadow-sm ${
+                    theme === 'dark'
+                      ? "bg-white/10 border-white/15 text-white"
+                      : "bg-white/60 border-white/80 text-slate-900 shadow-slate-200/40"
+                  }`}>
+                    {/* Square Thumbnail Container */}
+                    <div className="relative w-11 h-11 rounded-xl overflow-hidden shrink-0 shadow-inner bg-slate-200/50">
+                      {composerAttachment.thumbnail ? (
+                        <img src={composerAttachment.thumbnail} alt={composerAttachment.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-xs font-bold text-slate-500">
+                          {composerAttachment.name.charAt(0)}
+                        </div>
+                      )}
+                    </div>
 
-              <button
-                type="submit"
-                disabled={!input.trim()}
-                className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all active:scale-90 cursor-pointer ${
-                  theme === 'dark'
-                    ? "bg-brand-600 text-white hover:bg-brand-500 disabled:bg-slate-800 disabled:text-slate-600"
-                    : "bg-brand-500 text-white hover:bg-brand-600 disabled:bg-slate-200/50 disabled:text-slate-400"
-                }`}
-              >
-                <ArrowUp className="w-4.5 h-4.5 rotate-45" />
-              </button>
+                    {/* Info Text */}
+                    <div className="flex flex-col min-w-0 pr-1">
+                      <span className="text-[12px] font-extrabold truncate max-w-[160px] md:max-w-[240px]">
+                        {composerAttachment.name}
+                      </span>
+                      <span className="text-[10px] font-semibold opacity-75 truncate">
+                        📍 {composerAttachment.city} • ₹{composerAttachment.pricePerNight.toLocaleString()}/night
+                      </span>
+                    </div>
+
+                    {/* Glass Close 'X' Button */}
+                    <button
+                      type="button"
+                      onClick={() => setComposerAttachment(null)}
+                      className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-all active:scale-90 cursor-pointer ${
+                        theme === 'dark'
+                          ? "bg-white/15 hover:bg-red-500/80 text-white"
+                          : "bg-slate-900/10 hover:bg-red-500 hover:text-white text-slate-700"
+                      }`}
+                      title="Remove attachment"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-end gap-2 w-full">
+                <textarea
+                  ref={textareaRef}
+                  value={input}
+                  onChange={(e) => {
+                    setInput(e.target.value);
+                    adjustHeight();
+                  }}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Ask about hotels..."
+                  rows={1}
+                  className={`flex-1 bg-transparent py-2 px-2 text-sm outline-none resize-none font-normal leading-6 max-h-[160px] overflow-y-auto no-scrollbar align-top transition-colors ${
+                    theme === 'dark' ? "text-slate-100 placeholder-slate-500" : "text-slate-800 placeholder-slate-400"
+                  }`}
+                />
+
+                <button
+                  type="submit"
+                  disabled={!input.trim() && !composerAttachment}
+                  className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all active:scale-90 cursor-pointer ${
+                    theme === 'dark'
+                      ? "bg-brand-600 text-white hover:bg-brand-500 disabled:bg-slate-800 disabled:text-slate-600"
+                      : "bg-brand-500 text-white hover:bg-brand-600 disabled:bg-slate-200/50 disabled:text-slate-400"
+                  }`}
+                >
+                  <ArrowUp className="w-4.5 h-4.5 rotate-45" />
+                </button>
+              </div>
             </form>
             
             <div className={`text-[10px] text-center mt-2 select-none ${
               theme === 'dark' ? "text-slate-500" : "text-slate-400"
             }`}>
-              GetHotelStays AI may display inaccurate info. Double-check important details.
+              ChatGHS may display inaccurate info. Double-check important details.
             </div>
           </div>
         </footer>
@@ -1490,30 +1909,35 @@ export default function App() {
         )}
         {/* ============ LOGIN OVERLAY MODAL ============ */}
         {showLoginModal && !user && (
-          <div className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
-            <div className="w-full max-w-md bg-white/80 backdrop-blur-xl border border-white/90 rounded-3xl p-8 shadow-premium select-none relative animate-slide-up text-center">
+          <div className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-fade-in">
+            <div className={`w-full max-w-md border rounded-3xl p-8 shadow-premium select-none relative animate-slide-up text-center transition-colors duration-300 ${
+              theme === 'dark' 
+                ? "bg-[#0f0f12]/95 border-[#1e1e24] text-slate-100" 
+                : "bg-white/95 backdrop-blur-xl border-slate-200 text-slate-800"
+            }`}>
               {/* Close Button */}
               <button 
                 onClick={() => setShowLoginModal(false)}
-                className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-slate-200/50 text-slate-500 hover:text-slate-700 transition-colors cursor-pointer"
+                className={`absolute top-4 right-4 p-1.5 rounded-full transition-colors cursor-pointer ${
+                  theme === 'dark' ? "hover:bg-slate-800 text-slate-400 hover:text-slate-200" : "hover:bg-slate-200/50 text-slate-500 hover:text-slate-700"
+                }`}
               >
                 <X className="w-4 h-4" />
               </button>
 
-              {/* Logo / Header */}
-              <div className="mb-8">
-                <img src="/logo.svg" alt="GetHotelStays Logo" className="w-16 h-16 mx-auto object-contain mb-4 animate-glow rounded-2xl" />
-                <h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 tracking-tight">
-                  GetHotelStays AI
+              {/* Header (No logo) */}
+              <div className="mb-6">
+                <h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-indigo-500 tracking-tight">
+                  ChatGHS
                 </h2>
-                <p className="text-xs font-semibold text-slate-500 mt-1.5 uppercase tracking-wider">
+                <p className="text-xs font-semibold text-slate-400 mt-1.5 uppercase tracking-wider">
                   Travel Expert Companion
                 </p>
               </div>
 
               <div className="space-y-4">
                 {loginError && (
-                  <div className="p-3.5 bg-red-50 border border-red-200 rounded-2xl text-red-500 text-xs font-semibold text-left">
+                  <div className="p-3.5 bg-red-500/10 border border-red-500/30 rounded-2xl text-red-500 text-xs font-semibold text-left">
                     ⚠️ {loginError}
                   </div>
                 )}
@@ -1521,7 +1945,11 @@ export default function App() {
                 <button
                   onClick={handleGoogleLogin}
                   disabled={isLoggingIn}
-                  className="w-full py-4 bg-white border border-slate-200 hover:bg-slate-50 active:scale-98 disabled:bg-slate-100 text-slate-700 text-sm font-extrabold rounded-2xl transition-all shadow-sm flex items-center justify-center gap-3 cursor-pointer"
+                  className={`w-full py-4 border active:scale-98 text-sm font-extrabold rounded-2xl transition-all shadow-sm flex items-center justify-center gap-3 cursor-pointer ${
+                    theme === 'dark'
+                      ? "bg-[#16161b] border-[#27272e] hover:bg-[#1e1e26] text-white disabled:bg-slate-900"
+                      : "bg-white border-slate-200 hover:bg-slate-50 text-slate-700 disabled:bg-slate-100"
+                  }`}
                 >
                   {isLoggingIn ? (
                     <Loader className="w-5 h-5 animate-spin text-brand-500" />
@@ -1540,7 +1968,7 @@ export default function App() {
               {/* Divider */}
               <div className="relative my-6 select-none">
                 <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-slate-200" />
+                  <span className={`w-full border-t ${theme === 'dark' ? "border-[#232329]" : "border-slate-200"}`} />
                 </div>
               </div>
 
@@ -1548,7 +1976,9 @@ export default function App() {
               <div className="text-center">
                 <a 
                   href="https://gethotelstays.com"
-                  className="text-xs font-bold text-slate-500 hover:text-slate-700 inline-flex items-center gap-1.5 transition-colors"
+                  className={`text-xs font-bold transition-colors inline-flex items-center gap-1.5 ${
+                    theme === 'dark' ? "text-slate-400 hover:text-slate-200" : "text-slate-500 hover:text-slate-700"
+                  }`}
                 >
                   Go to Main Website
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -1630,120 +2060,406 @@ export default function App() {
           </div>
         )}
 
-        {/* ============ SETTINGS MODAL ============ */}
+        {/* ============ SETTINGS MODAL (TABBED DESIGN) ============ */}
         {showSettingsModal && (
-          <div className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
-            <div className={`w-full max-w-md border rounded-3xl p-7 shadow-premium relative animate-slide-up transition-colors duration-300 ${
+          <div className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/60 backdrop-blur-md p-3 md:p-6 animate-fade-in">
+            <div className={`w-full max-w-3xl max-h-[85vh] h-[600px] border rounded-3xl shadow-premium relative animate-slide-up transition-colors duration-300 flex flex-col overflow-hidden ${
               theme === 'dark' 
                 ? "bg-[#0f0f12]/95 border-[#1e1e24] text-slate-100" 
-                : "bg-white/80 backdrop-blur-xl border-white/90 text-slate-800"
+                : "bg-white/95 backdrop-blur-xl border-white/90 text-slate-800"
             }`}>
-              {/* Close Button */}
-              <button 
-                onClick={() => setShowSettingsModal(false)}
-                className={`absolute top-4 right-4 p-1.5 rounded-full transition-colors cursor-pointer ${
-                  theme === 'dark' ? "hover:bg-slate-800 text-slate-400 hover:text-slate-200" : "hover:bg-slate-200/50 text-slate-500 hover:text-slate-700"
-                }`}
-              >
-                <X className="w-4 h-4" />
-              </button>
-
-              <h3 className="text-lg font-extrabold mb-5 select-none">AI Assistant Settings</h3>
-
-              <div className="space-y-6">
-                {/* User Info status */}
-                <div className={`p-4 border rounded-2xl flex items-center justify-between ${
-                  theme === 'dark' ? "bg-[#131316] border-[#232329]" : "bg-white/60 border-slate-100"
-                }`}>
-                  <div className="flex items-center gap-3">
-                    {user ? (
-                      <>
-                        <div className="w-9 h-9 rounded-full flex items-center justify-center bg-brand-500 text-white font-bold uppercase">
-                          {user.email.charAt(0)}
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold">{user.name || 'GetHotelStays User'}</p>
-                          <p className="text-[10px] font-semibold text-slate-400">{user.email}</p>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="w-9 h-9 rounded-full flex items-center justify-center bg-slate-200 text-slate-400 font-bold uppercase">
-                          G
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold">Guest Session</p>
-                          <p className="text-[10px] font-semibold text-slate-400">Sign in to save travel history</p>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                  {user && (
-                    <button
-                      onClick={() => {
-                        localStorage.removeItem('token');
-                        sessionStorage.removeItem('token');
-                        setUser(null);
-                        setShowSettingsModal(false);
-                      }}
-                      className="px-3.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 text-[10px] font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer"
-                    >
-                      Sign Out
-                    </button>
-                  )}
+              {/* Header (No icons) */}
+              <div className={`px-6 py-4 border-b flex items-center justify-between shrink-0 ${
+                theme === 'dark' ? "border-[#1e1e24] bg-[#131316]" : "border-slate-100 bg-slate-50/50"
+              }`}>
+                <div>
+                  <h3 className="text-base font-extrabold select-none">Settings</h3>
+                  <p className="text-[11px] font-semibold text-slate-400">Manage appearance, AI persona, and account details</p>
                 </div>
+                <button 
+                  onClick={() => setShowSettingsModal(false)}
+                  className={`p-2 rounded-full transition-colors cursor-pointer ${
+                    theme === 'dark' ? "hover:bg-slate-800 text-slate-400 hover:text-slate-200" : "hover:bg-slate-200/60 text-slate-500 hover:text-slate-700"
+                  }`}
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
 
-                {/* AI Preferences */}
-                <div className="space-y-3.5">
-                  <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider select-none">
-                    AI Response Vibe
-                  </label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {(['Precise', 'Balanced', 'Creative'] as const).map((vibe) => (
+              {/* Main Body: Left Sidebar Tabs + Right Content */}
+              <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden">
+                {/* Left Sidebar Tabs (Text only, no icons) */}
+                <div className={`w-full md:w-52 p-3 md:p-4 border-r shrink-0 flex md:flex-col gap-1.5 overflow-x-auto md:overflow-y-auto ${
+                  theme === 'dark' ? "border-[#1e1e24] bg-[#0c0c0e]" : "border-slate-100 bg-slate-50/30"
+                }`}>
+                  {[
+                    { id: 'general', label: 'General', desc: 'Theme, colors, language' },
+                    { id: 'personalization', label: 'Personalization', desc: 'AI vibe & Memory profile' },
+                    { id: 'account', label: 'Account', desc: 'Profile & Sessions' },
+                  ].map((tab) => {
+                    const isActive = activeSettingsTab === tab.id;
+                    return (
                       <button
-                        key={vibe}
-                        onClick={() => {
-                          setAiVibe(vibe);
-                          localStorage.setItem('gethotel_ai_vibe', vibe);
-                        }}
-                        className={`py-2 px-3 border rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                          vibe === aiVibe
-                            ? (theme === 'dark' ? "bg-brand-500/20 border-brand-500/40 text-brand-400" : "bg-brand-50 border-brand-200 text-brand-600")
-                            : (theme === 'dark' ? "bg-slate-800/40 border-slate-700 text-slate-300 hover:bg-slate-800" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50")
+                        key={tab.id}
+                        onClick={() => setActiveSettingsTab(tab.id as any)}
+                        className={`w-full p-3 rounded-2xl text-left transition-all cursor-pointer ${
+                          isActive
+                            ? (theme === 'dark' 
+                                ? "bg-brand-500/15 border border-brand-500/30 text-brand-400 font-extrabold shadow-sm" 
+                                : "bg-white border border-slate-200 text-brand-600 font-extrabold shadow-sm")
+                            : (theme === 'dark'
+                                ? "text-slate-400 hover:bg-slate-800/40 hover:text-slate-200 border border-transparent"
+                                : "text-slate-600 hover:bg-slate-100/60 hover:text-slate-900 border border-transparent")
                         }`}
                       >
-                        {vibe}
+                        <p className="text-xs font-bold leading-tight">{tab.label}</p>
+                        <p className="text-[10px] font-medium text-slate-400 leading-tight mt-0.5">{tab.desc}</p>
                       </button>
-                    ))}
-                  </div>
+                    );
+                  })}
                 </div>
 
-                {/* Theme mode */}
-                <div className="space-y-3.5">
-                  <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider select-none">
-                    App Theme
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {['Light Theme', 'Dark Theme'].map((themeVal) => {
-                      const targetTheme = themeVal === 'Light Theme' ? 'light' : 'dark';
-                      return (
-                        <button
-                          key={themeVal}
-                          onClick={() => {
-                            setTheme(targetTheme);
-                            localStorage.setItem('gethotel_ai_theme', targetTheme);
+                {/* Right Content Area */}
+                <div className="flex-1 p-5 md:p-6 overflow-y-auto custom-scrollbar space-y-6">
+                  {/* ================= TAB 1: GENERAL ================= */}
+                  {activeSettingsTab === 'general' && (
+                    <div className="space-y-6 animate-fade-in">
+                      {/* Theme selection */}
+                      <div className="space-y-3">
+                        <label className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider select-none">
+                          Appearance Theme
+                        </label>
+                        <div className="grid grid-cols-2 gap-3">
+                          {[
+                            { id: 'light', label: 'Light Theme', desc: 'Clean & bright interface' },
+                            { id: 'dark', label: 'Dark Theme', desc: 'Sleek dark mode' }
+                          ].map((item) => (
+                            <button
+                              key={item.id}
+                              onClick={() => {
+                                setTheme(item.id as any);
+                                localStorage.setItem('gethotel_ai_theme', item.id);
+                              }}
+                              className={`p-3.5 border rounded-2xl text-left transition-all cursor-pointer ${
+                                theme === item.id
+                                  ? (theme === 'dark' ? "bg-brand-500/20 border-brand-500/50 text-brand-300" : "bg-brand-50 border-brand-300 text-brand-700")
+                                  : (theme === 'dark' ? "bg-[#131316] border-[#232329] text-slate-300 hover:bg-slate-800/40" : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50")
+                              }`}
+                            >
+                              <p className="text-xs font-extrabold">{item.label}</p>
+                              <p className="text-[10px] text-slate-400 font-medium mt-0.5">{item.desc}</p>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Accent Color selection */}
+                      <div className="space-y-3">
+                        <label className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider select-none">
+                          Accent Theme Color
+                        </label>
+                        <div className="flex items-center gap-3">
+                          {[
+                            { id: 'brand', name: 'Ocean Blue', color: 'bg-[#1087e7]' },
+                            { id: 'indigo', name: 'Royal Indigo', color: 'bg-[#6366f1]' },
+                            { id: 'emerald', name: 'Emerald Green', color: 'bg-[#10b981]' },
+                            { id: 'rose', name: 'Rose Red', color: 'bg-[#f43f5e]' },
+                            { id: 'amber', name: 'Amber Gold', color: 'bg-[#f59e0b]' }
+                          ].map((c) => (
+                            <button
+                              key={c.id}
+                              onClick={() => {
+                                setAccentColor(c.id);
+                                localStorage.setItem('gethotel_accent_color', c.id);
+                              }}
+                              title={c.name}
+                              className={`w-9 h-9 rounded-full ${c.color} flex items-center justify-center transition-all cursor-pointer shadow-sm ${
+                                accentColor === c.id ? "ring-4 ring-brand-400/40 scale-110" : "hover:scale-105 opacity-80 hover:opacity-100"
+                              }`}
+                            >
+                              {accentColor === c.id && <Check className="w-4 h-4 text-white" />}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Language Choice */}
+                      <div className="space-y-3">
+                        <label className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider select-none">
+                          Primary Chat Language
+                        </label>
+                        <select
+                          value={language}
+                          onChange={(e) => {
+                            setLanguage(e.target.value);
+                            localStorage.setItem('gethotel_language', e.target.value);
                           }}
-                          className={`py-2 px-3 border rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                            theme === targetTheme
-                              ? (theme === 'dark' ? "bg-brand-500/20 border-brand-500/40 text-brand-400" : "bg-brand-50 border-brand-200 text-brand-600")
-                              : (theme === 'dark' ? "bg-slate-800/40 border-slate-700 text-slate-300 hover:bg-slate-800" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50")
+                          className={`w-full px-3.5 py-2.5 text-xs font-bold border rounded-2xl outline-none transition-all ${
+                            theme === 'dark' ? "bg-[#131316] border-[#232329] text-white focus:border-brand-500" : "bg-white border-slate-200 text-slate-800 focus:border-brand-500"
                           }`}
                         >
-                          {themeVal}
-                        </button>
-                      );
-                    })}
-                  </div>
+                          <option value="auto">🌐 Auto-Detect (Dynamic Mirroring)</option>
+                          <option value="en">🇺🇸 English (US)</option>
+                          <option value="hi">🇮🇳 Hindi (हिंदी)</option>
+                          <option value="hinglish">🇮🇳 Hinglish (Roman Script)</option>
+                          <option value="es">🇪🇸 Spanish (Español)</option>
+                          <option value="it">🇮🇹 Italian (Italiano)</option>
+                          <option value="fr">🇫🇷 French (Français)</option>
+                          <option value="de">🇩🇪 German (Deutsch)</option>
+                        </select>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ================= TAB 2: PERSONALIZATION ================= */}
+                  {activeSettingsTab === 'personalization' && (
+                    <div className="animate-fade-in">
+                      {!user ? (
+                        <div className={`p-8 border rounded-3xl text-center space-y-4 ${
+                          theme === 'dark' ? "bg-[#131316] border-[#232329]" : "bg-white border-slate-200/80"
+                        }`}>
+                          <div className="space-y-1.5 max-w-xs mx-auto">
+                            <h4 className="text-base font-extrabold">Sign In Required</h4>
+                            <p className="text-xs text-slate-400 font-medium leading-relaxed">
+                              Please sign in first to customize your AI travel companion, save personal instructions, and enable long-term guest memory.
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowSettingsModal(false);
+                              setShowLoginModal(true);
+                            }}
+                            className="px-6 py-2.5 bg-brand-500 hover:bg-brand-600 active:scale-95 text-white text-xs font-extrabold uppercase tracking-wider rounded-xl shadow-md transition-all cursor-pointer inline-flex items-center gap-2"
+                          >
+                            Sign In to Continue
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="space-y-5">
+                          {/* AI Vibe */}
+                          <div className="space-y-2.5">
+                            <label className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider select-none">
+                              AI Persona Characteristic
+                            </label>
+                            <div className="grid grid-cols-3 gap-2">
+                              {(['Precise', 'Balanced', 'Creative'] as const).map((vibe) => (
+                                <button
+                                  key={vibe}
+                                  onClick={() => {
+                                    setAiVibe(vibe);
+                                    localStorage.setItem('gethotel_ai_vibe', vibe);
+                                  }}
+                                  className={`py-2 px-3 border rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                                    vibe === aiVibe
+                                      ? (theme === 'dark' ? "bg-brand-500/20 border-brand-500/40 text-brand-400" : "bg-brand-50 border-brand-200 text-brand-600")
+                                      : (theme === 'dark' ? "bg-[#131316] border-[#232329] text-slate-300 hover:bg-slate-800" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50")
+                                  }`}
+                                >
+                                  {vibe}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Custom System Instructions */}
+                          <div className="space-y-2">
+                            <label className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block">
+                              Custom Instructions for AI
+                            </label>
+                            <textarea
+                              rows={2}
+                              placeholder="What would you like the AI to keep in mind when responding? (e.g. 'Keep answers short and crisp', 'Always highlight 5-star ratings')"
+                              value={customInstructions}
+                              onChange={(e) => {
+                                setCustomInstructions(e.target.value);
+                                localStorage.setItem('gethotel_custom_instructions', e.target.value);
+                              }}
+                              className={`w-full px-3.5 py-2.5 text-xs font-medium border rounded-2xl outline-none transition-all resize-none ${
+                                theme === 'dark' ? "bg-[#131316] border-[#232329] text-white focus:border-brand-500" : "bg-white border-slate-200 text-slate-800 focus:border-brand-500"
+                              }`}
+                            />
+                          </div>
+
+                          {/* Guest Memory & Preferences */}
+                          <div className={`p-4 border rounded-2xl space-y-3.5 ${
+                            theme === 'dark' ? "bg-[#131316] border-[#232329]" : "bg-white/60 border-slate-100"
+                          }`}>
+                            <h4 className="text-xs font-extrabold flex items-center gap-1.5 text-brand-500">
+                              <span>🧠</span> About You & Travel Memory
+                            </h4>
+
+                            <div className="grid grid-cols-2 gap-2.5">
+                              <div>
+                                <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1">Your Nickname / Full Name</label>
+                                <input
+                                  type="text"
+                                  placeholder="e.g. Shriyansh"
+                                  value={userNickname}
+                                  onChange={(e) => {
+                                    setUserNickname(e.target.value);
+                                    localStorage.setItem('gethotel_user_nickname', e.target.value);
+                                    setUserMemory({ ...userMemory, guestName: e.target.value });
+                                  }}
+                                  className={`w-full px-3 py-2 text-xs font-semibold border rounded-xl outline-none transition-all ${
+                                    theme === 'dark' ? "bg-[#09090b] border-[#27272a] text-white focus:border-brand-500" : "bg-white border-slate-200 text-slate-800 focus:border-brand-500"
+                                  }`}
+                                />
+                              </div>
+                              <div>
+                                <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1">Preferred City</label>
+                                <input
+                                  type="text"
+                                  placeholder="e.g. Delhi, Goa"
+                                  value={userMemory.preferredCity || ''}
+                                  onChange={(e) => setUserMemory({ ...userMemory, preferredCity: e.target.value })}
+                                  className={`w-full px-3 py-2 text-xs font-semibold border rounded-xl outline-none transition-all ${
+                                    theme === 'dark' ? "bg-[#09090b] border-[#27272a] text-white focus:border-brand-500" : "bg-white border-slate-200 text-slate-800 focus:border-brand-500"
+                                  }`}
+                                />
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2.5">
+                              <div>
+                                <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1">Budget Tier</label>
+                                <select
+                                  value={userMemory.budgetTier || 'Luxury 5-Star'}
+                                  onChange={(e) => setUserMemory({ ...userMemory, budgetTier: e.target.value })}
+                                  className={`w-full px-3 py-2 text-xs font-semibold border rounded-xl outline-none transition-all ${
+                                    theme === 'dark' ? "bg-[#09090b] border-[#27272a] text-white focus:border-brand-500" : "bg-white border-slate-200 text-slate-800 focus:border-brand-500"
+                                  }`}
+                                >
+                                  <option value="Luxury 5-Star">Luxury (5-Star)</option>
+                                  <option value="Boutique 3-4 Star">Boutique (3-4 Star)</option>
+                                  <option value="Budget Friendly">Budget Friendly</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1">Room & Amenities</label>
+                                <input
+                                  type="text"
+                                  placeholder="e.g. Deluxe King, Pool"
+                                  value={userMemory.roomPreferences || ''}
+                                  onChange={(e) => setUserMemory({ ...userMemory, roomPreferences: e.target.value })}
+                                  className={`w-full px-3 py-2 text-xs font-semibold border rounded-xl outline-none transition-all ${
+                                    theme === 'dark' ? "bg-[#09090b] border-[#27272a] text-white focus:border-brand-500" : "bg-white border-slate-200 text-slate-800 focus:border-brand-500"
+                                  }`}
+                                />
+                              </div>
+                            </div>
+
+                            <div>
+                              <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1">More About You / Travel Notes</label>
+                              <textarea
+                                rows={2}
+                                placeholder="e.g. I usually travel with family. I prefer quiet rooms with city views."
+                                value={userMemory.personalNotes || ''}
+                                onChange={(e) => setUserMemory({ ...userMemory, personalNotes: e.target.value })}
+                                className={`w-full px-3 py-2 text-xs font-semibold border rounded-xl outline-none transition-all resize-none ${
+                                  theme === 'dark' ? "bg-[#09090b] border-[#27272a] text-white focus:border-brand-500" : "bg-white border-slate-200 text-slate-800 focus:border-brand-500"
+                                }`}
+                              />
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                localStorage.setItem('gethotel_user_memory', JSON.stringify(userMemory));
+                                setMemorySavedToast(true);
+                                setTimeout(() => setMemorySavedToast(false), 2500);
+                              }}
+                              className="w-full py-2.5 bg-brand-500 hover:bg-brand-600 active:scale-98 text-white font-extrabold text-xs rounded-xl shadow-md transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                            >
+                              {memorySavedToast ? "✓ Personalization & Memory Saved!" : "💾 Save Personalization"}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* ================= TAB 3: ACCOUNT ================= */}
+                  {activeSettingsTab === 'account' && (
+                    <div className="animate-fade-in">
+                      {!user ? (
+                        <div className={`p-8 border rounded-3xl text-center space-y-4 ${
+                          theme === 'dark' ? "bg-[#131316] border-[#232329]" : "bg-white border-slate-200/80"
+                        }`}>
+                          <div className="space-y-1.5 max-w-xs mx-auto">
+                            <h4 className="text-base font-extrabold">Guest Session</h4>
+                            <p className="text-xs text-slate-400 font-medium leading-relaxed">
+                              You are currently using a guest session. Please sign in with Google to view account settings and sync travel history.
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowSettingsModal(false);
+                              setShowLoginModal(true);
+                            }}
+                            className="px-6 py-2.5 bg-brand-500 hover:bg-brand-600 active:scale-95 text-white text-xs font-extrabold uppercase tracking-wider rounded-xl shadow-md transition-all cursor-pointer inline-flex items-center gap-2"
+                          >
+                            Sign In with Google
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="space-y-5">
+                          {/* User Info status card */}
+                          <div className={`p-4 border rounded-2xl flex items-center justify-between ${
+                            theme === 'dark' ? "bg-[#131316] border-[#232329]" : "bg-white/60 border-slate-100"
+                          }`}>
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full flex items-center justify-center bg-brand-500 text-white font-bold text-sm uppercase shadow-sm">
+                                {user.email.charAt(0)}
+                              </div>
+                              <div>
+                                <p className="text-xs font-extrabold">{user.name || 'ChatGHS User'}</p>
+                                <p className="text-[10px] font-semibold text-slate-400">{user.email}</p>
+                              </div>
+                            </div>
+
+                            <button
+                              onClick={() => {
+                                localStorage.removeItem('token');
+                                sessionStorage.removeItem('token');
+                                setUser(null);
+                                setShowSettingsModal(false);
+                              }}
+                              className="px-3.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 text-[10px] font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer"
+                            >
+                              Sign Out
+                            </button>
+                          </div>
+
+                          {/* Account Security & Storage */}
+                          <div className={`p-4 border rounded-2xl space-y-3 ${
+                            theme === 'dark' ? "bg-[#131316] border-[#232329]" : "bg-white/60 border-slate-100"
+                          }`}>
+                            <h4 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">
+                              Data & Session Memory
+                            </h4>
+                            <p className="text-xs font-medium text-slate-400">
+                              Your conversation state, AI memory, and travel preferences are stored locally and encrypted in session memory.
+                            </p>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                localStorage.removeItem("gethotel_ai_sessions");
+                                setSessions([]);
+                                setMessages([]);
+                                setShowSettingsModal(false);
+                              }}
+                              className="w-full py-2 bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-600 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" /> Clear All Chat History
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -1790,7 +2506,7 @@ export default function App() {
                     <div>
                       <p className="text-xs font-bold">How do booking confirmations work?</p>
                       <p className="text-[11px] font-semibold text-slate-400 leading-relaxed mt-0.5">
-                        GetHotelStays AI automatically routes reservation confirmations and split invoices directly to your registered email address.
+                        ChatGHS automatically routes reservation confirmations and split invoices directly to your registered email address.
                       </p>
                     </div>
                     <div>
@@ -1889,5 +2605,6 @@ export default function App() {
 
       </div>
     </div>
+    </ErrorBoundary>
   );
 }

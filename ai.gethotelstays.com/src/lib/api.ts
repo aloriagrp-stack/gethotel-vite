@@ -1,7 +1,11 @@
-// API configuration for ai.gethotelstays.com
-const API_URL = import.meta.env.MODE === 'production' 
-    ? 'https://gethotelstays.com/api' 
-    : (import.meta.env.VITE_API_URL || 'http://localhost:5000/api');
+const isLocal = typeof window !== 'undefined' && (
+    window.location.hostname === 'localhost' || 
+    window.location.hostname === '127.0.0.1' || 
+    window.location.hostname.startsWith('10.') || 
+    window.location.hostname.startsWith('192.168.') || 
+    window.location.hostname.startsWith('172.')
+);
+const API_URL = import.meta.env.VITE_API_URL || (isLocal ? `http://${window.location.hostname}:5000/api` : 'https://gethotelstays.com/api');
 
 export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
     const token = typeof window !== 'undefined' ? (sessionStorage.getItem('token') || localStorage.getItem('token')) : null;
@@ -56,8 +60,8 @@ export const authApi = {
 };
 
 export const aiApi = {
-    chat: (messages: { role: string; content: string }[]) =>
-        apiFetch('/ai/chat', { method: 'POST', body: JSON.stringify({ messages }) }),
+    chat: (messages: { role: string; content: string }[], userMemory?: any) =>
+        apiFetch('/ai/chat', { method: 'POST', body: JSON.stringify({ messages, userMemory }) }),
     getRooms: (hotelId: number) =>
         apiFetch('/ai/rooms', { method: 'POST', body: JSON.stringify({ hotelId }) }),
 };
