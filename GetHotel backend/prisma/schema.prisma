@@ -335,6 +335,7 @@ model user {
   notification          notification[]
   review                review[]
   staff                 staff[]
+  ai_conversations      ai_conversation[]
 }
 
 model payout {
@@ -380,4 +381,63 @@ model homepage_config {
   key       String   @unique
   value     String   @db.LongText
   updatedAt DateTime @updatedAt
+}
+
+model ai_conversation {
+  id        String   @id @db.VarChar(36)
+  userId    Int?
+  title     String?  @db.VarChar(255)
+  archived  Boolean  @default(false)
+  deleted   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     user?                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages ai_message[]
+  memory   ai_conversation_memory?
+
+  @@index([userId])
+  @@index([updatedAt])
+  @@index([userId, deleted, updatedAt])
+}
+
+model ai_message {
+  id             Int      @id @default(autoincrement())
+  conversationId String   @db.VarChar(36)
+  role           String   @db.VarChar(16)
+  content        String   @db.LongText
+  metadata       String?  @db.LongText
+  createdAt      DateTime @default(now())
+
+  conversation ai_conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+}
+
+model ai_conversation_memory {
+  id               Int             @id @default(autoincrement())
+  conversationId   String          @unique @db.VarChar(191)
+  workflowState    String          @db.VarChar(64)
+  nextRequiredSlot String?         @db.VarChar(64)
+  memoryJson       String          @db.LongText
+  lastIntent       String?         @db.VarChar(64)
+  lastAction       String?         @db.VarChar(64)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  conversation     ai_conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([workflowState])
+  @@index([updatedAt])
+}
+
+model ai_user_profile {
+  id              Int       @id @default(autoincrement())
+  userId          Int       @unique
+  preferencesJson String    @db.LongText
+  totalBookings   Int       @default(0)
+  lastLearnedAt   DateTime? @db.DateTime(3)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([userId])
 }

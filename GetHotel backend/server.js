@@ -85,7 +85,8 @@ app.use(cors({
             
             const isDevelopment = process.env.NODE_ENV === 'development';
             const isLocalhost = cleanOrigin.startsWith('http://localhost:') || cleanOrigin.startsWith('http://127.0.0.1:');
-            const isDevNetwork = isDevelopment && cleanOrigin.startsWith('http://');
+            const isLocalIP = cleanOrigin.startsWith('http://192.168.') || cleanOrigin.startsWith('http://10.') || cleanOrigin.startsWith('http://172.');
+            const isDevNetwork = isLocalIP || (isDevelopment && cleanOrigin.startsWith('http://'));
             
             if (isWhitelisted || isSameDomain || isLocalhost || isDevNetwork) {
                 callback(null, true);
@@ -439,6 +440,7 @@ const homepage = require('./routes/homepageRoutes');
 const ota = require('./routes/otaRoutes');
 const ai = require('./routes/aiRoutes');
 const aiChat = require('./routes/aiChatRoutes');
+const conversations = require('./routes/conversationRoutes');
 const { protect, authorize } = require('./middleware/auth');
 const authController = require('./controllers/authController');
 const adminController = require('./controllers/adminController');
@@ -541,6 +543,7 @@ const mount = (prefix) => {
     app.use(`${prefix}/analytics`, analytics);
     app.use(`${prefix}/homepage`, homepage);
     app.use(`${prefix}/ota`, ota);
+    app.use(`${prefix}/conversations`, conversations);
 };
 
 mount('/api');

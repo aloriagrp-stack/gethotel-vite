@@ -33,6 +33,25 @@ exports.protect = async (req, res, next) => {
     }
 };
 
+// Optional Auth middleware — attaches req.user if token is valid, but does not block guests
+exports.optionalAuth = async (req, res, next) => {
+    let token;
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        token = req.headers.authorization.split(' ')[1];
+    }
+    if (!token) {
+        req.user = null;
+        return next();
+    }
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = await prisma.user.findUnique({ where: { id: decoded.id } });
+    } catch {
+        req.user = null;
+    }
+    next();
+};
+
 // Grant access to specific roles
 exports.authorize = (...roles) => {
     return (req, res, next) => {

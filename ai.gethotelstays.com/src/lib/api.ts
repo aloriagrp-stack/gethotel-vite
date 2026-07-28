@@ -60,8 +60,8 @@ export const authApi = {
 };
 
 export const aiApi = {
-    chat: (messages: { role: string; content: string }[], userMemory?: any) =>
-        apiFetch('/ai/chat', { method: 'POST', body: JSON.stringify({ messages, userMemory }) }),
+    chat: (messages: { role: string; content: string }[], userMemory?: any, conversationId?: string) =>
+        apiFetch('/ai/chat', { method: 'POST', body: JSON.stringify({ messages, userMemory, conversationId }) }),
     getRooms: (hotelId: number) =>
         apiFetch('/ai/rooms', { method: 'POST', body: JSON.stringify({ hotelId }) }),
 };
@@ -73,4 +73,17 @@ export const bookingApi = {
 export const paymentApi = {
     createOrder: (bookingId: number) => apiFetch('/payments/create-order', { method: 'POST', body: JSON.stringify({ bookingId }) }),
     verifyPayment: (paymentData: any) => apiFetch('/payments/verify', { method: 'POST', body: JSON.stringify(paymentData) }),
+};
+
+export const conversationApi = {
+    list: () => apiFetch('/conversations'),
+    create: (title: string) => apiFetch('/conversations', { method: 'POST', body: JSON.stringify({ title }) }),
+    get: (id: string) => apiFetch(`/conversations/${id}`),
+    update: (id: string, data: { title?: string; archived?: boolean }) =>
+        apiFetch(`/conversations/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    delete: (id: string) => apiFetch(`/conversations/${id}`, { method: 'DELETE' }),
+    saveMessage: (conversationId: string, msg: { role: string; content: string; metadata?: any }) =>
+        apiFetch(`/conversations/${conversationId}/messages`, { method: 'POST', body: JSON.stringify(msg) }),
+    syncGuestConversations: (conversationIds: string[]) =>
+        apiFetch('/conversations/sync', { method: 'POST', body: JSON.stringify({ conversationIds }) }),
 };

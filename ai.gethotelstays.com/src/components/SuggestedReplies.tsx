@@ -4,6 +4,7 @@ interface Props {
   responseType?: string;
   hotels?: any[];
   onSend: (text: string) => void;
+  theme?: 'light' | 'dark';
 }
 
 const SUGGESTIONS: Record<string, string[]> = {
@@ -12,7 +13,7 @@ const SUGGESTIONS: Record<string, string[]> = {
   general: ["Show me hotels in Goa", "Best time to visit Manali", "Budget hotels in Delhi"],
 };
 
-const SuggestedReplies = memo(function SuggestedReplies({ responseType, onSend }: Props) {
+const SuggestedReplies = memo(function SuggestedReplies({ responseType, onSend, theme = 'light' }: Props) {
   const suggestions = SUGGESTIONS[responseType || 'general'] || SUGGESTIONS.general;
 
   return (
@@ -21,10 +22,11 @@ const SuggestedReplies = memo(function SuggestedReplies({ responseType, onSend }
         <button
           key={i}
           onClick={() => onSend(s)}
-          className="px-3 py-1.5 text-xs font-medium rounded-xl border border-slate-200 dark:border-slate-700 
-            text-slate-600 dark:text-slate-300 bg-white/50 dark:bg-slate-800/50 
-            hover:bg-brand-50 hover:border-brand-200 dark:hover:bg-brand-900/20 dark:hover:border-brand-700
-            hover:text-brand-600 dark:hover:text-brand-400 transition-all"
+          className={`px-3.5 py-2 text-xs font-semibold rounded-2xl border transition-all cursor-pointer shadow-sm select-none ${
+            theme === 'dark'
+              ? "bg-[#18181c] border-[#2e2e34] text-slate-200 hover:bg-[#222228] hover:border-slate-600"
+              : "bg-white/80 border-slate-200/90 text-slate-700 hover:bg-slate-100 hover:border-slate-300"
+          }`}
         >
           {s}
         </button>

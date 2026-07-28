@@ -36,3 +36,5 @@ Thumbs.db
 
 # Misc
 .cache/
+*.jsonl
+/GetHotel backend/logs/

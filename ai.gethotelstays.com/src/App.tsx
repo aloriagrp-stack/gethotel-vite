@@ -1,15 +1,16 @@
 import { useState, useRef, useEffect, useCallback, memo, useMemo } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { Plus, Settings, HelpCircle, MessageSquare, Menu, Trash2, Calendar, User, Mail, CreditCard, Check, X, ArrowRight, Loader, ChevronLeft, ChevronRight, ArrowUp, Bookmark } from "lucide-react";
-import { aiApi, authApi, bookingApi, paymentApi } from "./lib/api";
+import { aiApi, authApi, bookingApi, paymentApi, conversationApi } from "./lib/api";
 import { auth, googleProvider } from "./lib/firebase";
 import { signInWithPopup } from "firebase/auth";
 import ErrorBoundary from "./components/ErrorBoundary";
 import MarkdownRenderer from "./components/MarkdownRenderer";
-import MessageTimestamp from "./components/MessageTimestamp";
 import CopyButton from "./components/CopyButton";
-import SuggestedReplies from "./components/SuggestedReplies";
 import OfflineBanner from "./components/OfflineBanner";
 import SearchBar from "./components/SearchBar";
+import FlightCard from "./components/FlightCard";
+import TourPackageCard from "./components/TourPackageCard";
 
 // Dynamic Apple Emoji CDN Parser
 const emojiRegex = /[\u{1F300}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}\u{1F900}-\u{1F9FF}\u{1F300}-\u{1F5FF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}\u{1F900}-\u{1F9FF}\u{1F300}-\u{1F5FF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}\u{1F900}-\u{1F9FF}]/gu;
@@ -176,12 +177,14 @@ interface Message {
       images: string[];
     }[];
   })[];
+  flights?: any;
+  tourPackage?: any;
 }
 
-interface ChatSession {
+interface ConversationListItem {
   id: string;
   title: string;
-  messages: Message[];
+  updatedAt: string;
 }
 
 export default function App() {
@@ -239,17 +242,19 @@ export default function App() {
   // User preferences states
   const [theme, setTheme] = useState<'light' | 'dark'>(() => (localStorage.getItem('gethotel_ai_theme') as 'light' | 'dark') || 'light');
   const [aiVibe, setAiVibe] = useState<'Precise' | 'Balanced' | 'Creative'>(() => (localStorage.getItem('gethotel_ai_vibe') as 'Precise' | 'Balanced' | 'Creative') || 'Balanced');
+
+  // Sync dark class on documentElement for Tailwind & theme rules
+  useEffect(() => {
+    localStorage.setItem('gethotel_ai_theme', theme);
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+  }, [theme]);
   
-  const [sessions, setSessions] = useState<ChatSession[]>(() => {
-    try {
-      const stored = localStorage.getItem("gethotel_ai_sessions");
-      return stored ? JSON.parse(stored) : [];
-    } catch {
-      return [];
-    }
-  });
-  
-  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  // React Router
+  const { conversationId: urlConversationId } = useParams<{ conversationId: string }>();
+  const navigate = useNavigate();
+
+  const [conversationList, setConversationList] = useState<ConversationListItem[]>([]);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(urlConversationId || null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
 
@@ -336,6 +341,21 @@ export default function App() {
           setUser(profileData.data);
           setShowLoginModal(false);
           setLoginError("");
+
+          // Auto-sync guest conversations to user account
+          try {
+            const guestIds = JSON.parse(localStorage.getItem('gethotel_guest_conversation_ids') || '[]');
+            if (Array.isArray(guestIds) && guestIds.length > 0) {
+              await conversationApi.syncGuestConversations(guestIds);
+              localStorage.removeItem('gethotel_guest_conversation_ids');
+            }
+          } catch { /* ignore */ }
+
+          // Refresh conversation list from backend
+          try {
+            const listRes = await conversationApi.list();
+            if (listRes.success) setConversationList(listRes.conversations || []);
+          } catch { /* ignore */ }
         } else {
           setLoginError("Failed to load user profile after Google login.");
         }
@@ -353,18 +373,64 @@ export default function App() {
     }
   };
 
-  /* Load active session messages */
+  /* Load conversation list (for both signed-in and guest users) */
   useEffect(() => {
-    if (activeSessionId) {
-      const session = sessions.find(s => s.id === activeSessionId);
-      if (session) {
-        const cleanMsgs = session.messages.filter(m => !(m.sender === 'ai' && (m.text.includes("Sorry, I had an error") || m.text.includes("connection issue"))));
-        setMessages(cleanMsgs);
+    const fetchList = async () => {
+      if (user) {
+        try {
+          const res = await conversationApi.list();
+          if (res.success && res.conversations) {
+            setConversationList(res.conversations);
+            return;
+          }
+        } catch { /* ignore */ }
       }
-    } else {
+      
+      // Guest mode or fallback: load stored guest conversations
+      try {
+        const storedGuests = JSON.parse(localStorage.getItem('gethotel_guest_conversations_meta') || '[]');
+        setConversationList(storedGuests);
+      } catch {
+        setConversationList([]);
+      }
+    };
+
+    fetchList();
+  }, [user]);
+
+  /* Load conversation from URL on mount or URL change */
+  useEffect(() => {
+    if (!urlConversationId) {
+      setActiveConversationId(null);
       setMessages([]);
+      return;
     }
-  }, [activeSessionId, sessions]);
+    setActiveConversationId(urlConversationId);
+    conversationApi.get(urlConversationId)
+      .then(res => {
+        if (res.success && res.messages) {
+          const loadedMessages: Message[] = res.messages.map((m: any) => ({
+            id: `db-${m.id}`,
+            sender: m.role as 'user' | 'ai',
+            text: m.content,
+            timestamp: new Date(m.createdAt).getTime(),
+            ...(m.metadata?.responseType && { responseType: m.metadata.responseType }),
+            ...(m.metadata?.hotels && { hotels: m.metadata.hotels }),
+            ...(m.metadata?.flights && { flights: m.metadata.flights }),
+            ...(m.metadata?.tourPackage && { tourPackage: m.metadata.tourPackage }),
+            ...(m.metadata?.attachments && { attachments: m.metadata.attachments }),
+            ...(m.metadata?.action && { action: m.metadata.action }),
+          }));
+          setMessages(loadedMessages);
+        }
+      })
+      .catch(err => {
+        console.warn('[Conversation] Load failed:', err.message);
+        if (err.status === 403 || err.status === 404) {
+          navigate('/', { replace: true });
+        }
+      });
+  }, [urlConversationId, user, navigate]);
 
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
 
@@ -441,55 +507,73 @@ export default function App() {
   }, []);
 
   const handleSessionClick = useCallback((id: string) => {
-    setActiveSessionId(id);
+    navigate(`/c/${id}`);
     setComposerAttachment(null);
     if (window.innerWidth < 768) {
       setIsSidebarOpen(false);
     }
-  }, []);
+  }, [navigate]);
 
   const handleNewChat = useCallback(() => {
-    setActiveSessionId(null);
+    setActiveConversationId(null);
     setMessages([]);
     setInput("");
     setComposerAttachment(null);
+    navigate('/');
     if (window.innerWidth < 768) {
       setIsSidebarOpen(false);
     }
-  }, []);
+  }, [navigate]);
 
   const handleDeleteSession = useCallback((e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     setSessionToDelete(id);
   }, []);
 
-  const executeDeleteSession = useCallback(() => {
+  const executeDeleteSession = useCallback(async () => {
     if (!sessionToDelete) return;
     const id = sessionToDelete;
-    const updated = sessions.filter(s => s.id !== id);
-    setSessions(updated);
-    localStorage.setItem("gethotel_ai_sessions", JSON.stringify(updated));
-    if (activeSessionId === id) {
-      setActiveSessionId(null);
-      setMessages([]);
+    try {
+      if (user) {
+        await conversationApi.delete(id);
+      }
+      setConversationList(prev => prev.filter(c => c.id !== id));
+      try {
+        const storedMeta = JSON.parse(localStorage.getItem('gethotel_guest_conversations_meta') || '[]');
+        const updatedMeta = storedMeta.filter((c: any) => c.id !== id);
+        localStorage.setItem('gethotel_guest_conversations_meta', JSON.stringify(updatedMeta));
+      } catch { /* ignore */ }
+      if (activeConversationId === id || urlConversationId === id) {
+        setActiveConversationId(null);
+        setMessages([]);
+        navigate('/', { replace: true });
+      }
+    } catch (err) {
+      console.error('[Conversation] Delete error:', err);
+    } finally {
+      setSessionToDelete(null);
     }
-    setSessionToDelete(null);
-  }, [sessions, activeSessionId, sessionToDelete]);
+  }, [sessionToDelete, user, activeConversationId, urlConversationId, navigate]);
 
   const handleClearAllHistory = useCallback(() => {
     setShowClearConfirm(true);
   }, []);
 
-  const executeClearHistory = () => {
-    setSessions([]);
-    localStorage.removeItem("gethotel_ai_sessions");
-    setActiveSessionId(null);
-    setMessages([]);
-    setInput("");
-    setShowClearConfirm(false);
+  const executeClearHistory = async () => {
+    try {
+      if (user && conversationList.length > 0) {
+        await Promise.all(conversationList.map(c => conversationApi.delete(c.id)));
+      }
+      setConversationList([]);
+      setActiveConversationId(null);
+      setMessages([]);
+      setInput("");
+      setShowClearConfirm(false);
+      navigate('/', { replace: true });
+    } catch (err) {
+      console.error('[Conversation] Clear history error:', err);
+    }
   };
-
-
 
   const executeSend = useCallback(async (q: string, currentSessionId: string | null) => {
     const msgTimestamp = Date.now();
@@ -501,48 +585,57 @@ export default function App() {
       attachments: composerAttachment ? [composerAttachment] : undefined
     };
     
-    let targetSessionId = currentSessionId;
-    let updatedSessions = [...sessions];
-    let sessionMessages: Message[] = [];
+    let targetConversationId = currentSessionId;
 
-    if (!targetSessionId) {
-      targetSessionId = `s-${Date.now()}`;
-      sessionMessages = [userMsg];
-      const newSession: ChatSession = {
-        id: targetSessionId,
-        title: q.length > 35 ? q.slice(0, 35) + "..." : q,
-        messages: sessionMessages
-      };
-      updatedSessions = [newSession, ...updatedSessions];
-      setActiveSessionId(targetSessionId);
-    } else {
-      const sessionIndex = updatedSessions.findIndex(s => s.id === targetSessionId);
-      if (sessionIndex !== -1) {
-        sessionMessages = [...updatedSessions[sessionIndex].messages, userMsg];
-        updatedSessions[sessionIndex] = {
-          ...updatedSessions[sessionIndex],
-          messages: sessionMessages
-        };
-      } else {
-        targetSessionId = `s-${Date.now()}`;
-        sessionMessages = [userMsg];
-        const newSession: ChatSession = {
-          id: targetSessionId,
-          title: q.length > 35 ? q.slice(0, 35) + "..." : q,
-          messages: sessionMessages
-        };
-        updatedSessions = [newSession, ...updatedSessions];
-        setActiveSessionId(targetSessionId);
+    // 1. Create a DB Conversation if this is turn 1 (Supports logged-in & guest users!)
+    if (!targetConversationId) {
+      try {
+        const titleSnippet = q.length > 40 ? q.slice(0, 40) + "..." : q;
+        const convRes = await conversationApi.create(titleSnippet);
+        if (convRes.success && convRes.conversation?.id) {
+          targetConversationId = convRes.conversation.id;
+          setActiveConversationId(targetConversationId);
+          
+          const newConvItem = { id: targetConversationId!, title: titleSnippet, updatedAt: new Date().toISOString() };
+          setConversationList(prev => [newConvItem, ...prev.filter(c => c.id !== targetConversationId)]);
+          navigate(`/c/${targetConversationId}`, { replace: true });
+
+          // Always track conversation metadata & IDs in localStorage for instant sidebar restoration & auto-syncing
+          try {
+            const storedMeta = JSON.parse(localStorage.getItem('gethotel_guest_conversations_meta') || '[]');
+            const updatedMeta = [newConvItem, ...storedMeta.filter((c: any) => c.id !== targetConversationId)];
+            localStorage.setItem('gethotel_guest_conversations_meta', JSON.stringify(updatedMeta));
+
+            const guestIds = JSON.parse(localStorage.getItem('gethotel_guest_conversation_ids') || '[]');
+            if (!guestIds.includes(targetConversationId)) {
+              localStorage.setItem('gethotel_guest_conversation_ids', JSON.stringify([targetConversationId, ...guestIds]));
+            }
+          } catch { /* ignore */ }
+        }
+      } catch (convErr) {
+        console.error('[Conversation] Creation failed:', convErr);
       }
     }
 
+    const sessionMessages = [...messages, userMsg];
     setMessages(sessionMessages);
-    setSessions(updatedSessions);
-    localStorage.setItem("gethotel_ai_sessions", JSON.stringify(updatedSessions));
     setInput("");
     setComposerAttachment(null);
     setIsTyping(true);
     if (textareaRef.current) textareaRef.current.style.height = "auto";
+
+    // 2. Save User message to DB
+    if (targetConversationId) {
+      try {
+        await conversationApi.saveMessage(targetConversationId, {
+          role: 'user',
+          content: q,
+          metadata: composerAttachment ? { attachments: [composerAttachment] } : null
+        });
+      } catch (saveErr) {
+        console.warn('[Conversation] Failed to save user message to DB:', saveErr);
+      }
+    }
 
     try {
       // ========== BACKEND-DRIVEN WORKFLOW (Single Source of Truth) ==========
@@ -569,6 +662,7 @@ export default function App() {
         }
         return { role: m.sender === 'ai' ? 'ai' : 'user', content };
       });
+
       const historyPayload = history.map(h => ({ role: h.role, content: h.content }));
       const userMemoryPayload = {
         ...userMemory,
@@ -578,7 +672,8 @@ export default function App() {
         languagePreference: language,
         aiVibe
       };
-      const data = await aiApi.chat(historyPayload, userMemoryPayload);
+
+      const data = await aiApi.chat(historyPayload, userMemoryPayload, targetConversationId || undefined);
       console.log('[AI Chat] Raw API Response:', data);
 
       const aiMsg: Message = {
@@ -587,9 +682,10 @@ export default function App() {
         timestamp: Date.now(),
         text: data.reply || "I'm here to help you plan your trip! Which city or hotel would you like to explore?",
         responseType: data.responseType || 'general',
-        hotels: data.hotels || []
+        hotels: data.hotels || [],
+        ...(data.flights && { flights: data.flights }),
+        ...(data.tourPackage && { tourPackage: data.tourPackage })
       };
-      console.log('[AI Chat] Parsed Message:', aiMsg);
 
       let actionToTrigger = data.action;
       if (!actionToTrigger && (
@@ -625,19 +721,27 @@ export default function App() {
         }
       }
 
-      // ========== COMMON: save message to state & persist ==========
+      // 3. Save AI response message to DB
+      if (targetConversationId) {
+        try {
+          await conversationApi.saveMessage(targetConversationId, {
+            role: 'ai',
+            content: aiMsg.text,
+            metadata: {
+              responseType: aiMsg.responseType,
+              hotels: aiMsg.hotels,
+              flights: aiMsg.flights,
+              tourPackage: aiMsg.tourPackage,
+              action: aiMsg.action
+            }
+          });
+        } catch (saveAiErr) {
+          console.warn('[Conversation] Failed to save AI response to DB:', saveAiErr);
+        }
+      }
+
       const finalMessages = [...sessionMessages, aiMsg];
       setMessages(finalMessages);
-
-      setSessions(prev => {
-        const idx = prev.findIndex(s => s.id === targetSessionId);
-        if (idx === -1) return prev;
-        const updated = [...prev];
-        updated[idx] = { ...updated[idx], messages: finalMessages };
-        localStorage.setItem("gethotel_ai_sessions", JSON.stringify(updated));
-        return updated;
-      });
-
       setComposerAttachment(null);
     } catch (err: any) {
       console.error("[AI Chat Error]:", err.message);
@@ -647,19 +751,11 @@ export default function App() {
         timestamp: Date.now(),
         text: "✨ I experienced a brief connection hiccup. Please ask your question again or tap a recommendation to continue your booking!"
       };
-      const errorFinalMessages = [...sessionMessages, aiMsg];
-      setMessages(errorFinalMessages);
-      setSessions(prev => {
-        const idx = prev.findIndex(s => s.id === targetSessionId);
-        if (idx === -1) return prev;
-        const updated = [...prev];
-        updated[idx] = { ...updated[idx], messages: errorFinalMessages };
-        return updated;
-      });
+      setMessages([...sessionMessages, aiMsg]);
     } finally {
       setIsTyping(false);
     }
-  }, [sessions, aiVibe, composerAttachment]);
+  }, [user, messages, aiVibe, composerAttachment, userMemory, userNickname, customInstructions, language, navigate]);
 
   const handleCardClick = useCallback((_messageId: string, hotelId: number) => {
     const hotel = messages.flatMap(m => m.hotels || []).find(h => h.id === hotelId);
@@ -676,14 +772,31 @@ export default function App() {
       setShowLoginModal(true);
       return;
     }
-    executeSend(`Book room: ${room.name} (Room ID: ${room.id})`, activeSessionId);
-  }, [user, activeSessionId, executeSend]);
+    executeSend(`Book room: ${room.name} (Room ID: ${room.id})`, activeConversationId);
+  }, [user, activeConversationId, executeSend]);
 
   const handleSend = useCallback((textVal: string) => {
     const q = textVal.trim();
     if (!q) return;
-    executeSend(q, activeSessionId);
-  }, [activeSessionId, executeSend]);
+
+    // Enforce 5-message limit for unauthenticated (guest) users
+    if (!user) {
+      const guestUserMsgCount = messages.filter(m => m.sender === 'user').length;
+      if (guestUserMsgCount >= 5) {
+        setShowLoginModal(true);
+        const limitNotice: Message = {
+          id: `sys-guest-limit-${Date.now()}`,
+          sender: "ai",
+          timestamp: Date.now(),
+          text: "🔑 **Sign in required**: You have reached the guest limit of 5 messages. Please sign in to continue chatting and unlock unlimited AI travel assistance!"
+        };
+        setMessages(prev => [...prev, limitNotice]);
+        return;
+      }
+    }
+
+    executeSend(q, activeConversationId);
+  }, [user, messages, activeConversationId, executeSend]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -802,22 +915,13 @@ export default function App() {
                 sender: "ai",
                 text: `Aapne payment window exit kar di hai. 😅 Agar aapko booking mein koi changes karne hon ya koi issue aaya ho, toh mujhe zaroor bataiye!`
               };
-              setMessages(prev => {
-                const updated = [...prev, dismissMsg];
-                setSessions(currentSessions => {
-                  const targetId = activeSessionId || (currentSessions.length > 0 ? currentSessions[0].id : null);
-                  if (!targetId) return currentSessions;
-                  const idx = currentSessions.findIndex(s => s.id === targetId);
-                  if (idx !== -1) {
-                    const copy = [...currentSessions];
-                    copy[idx] = { ...copy[idx], messages: updated };
-                    localStorage.setItem("gethotel_ai_sessions", JSON.stringify(copy));
-                    return copy;
-                  }
-                  return currentSessions;
-                });
-                return updated;
-              });
+              setMessages(prev => [...prev, dismissMsg]);
+              if (user && activeConversationId) {
+                conversationApi.saveMessage(activeConversationId, {
+                  role: 'ai',
+                  content: dismissMsg.text
+                }).catch(() => {});
+              }
             }
           }
         };
@@ -877,11 +981,11 @@ export default function App() {
         amount: actionData.amount,
         currency: actionData.currency || "INR",
         name: "ChatGHS",
-        description: `12% Deposit for ${actionData.hotelName}`,
+        description: actionData.isFullPayment ? `Full Payment for ${actionData.hotelName}` : `12% Deposit for ${actionData.hotelName}`,
         order_id: actionData.razorpayOrderId,
         prefill: {
-          name: actionData.guestName,
-          email: actionData.guestEmail,
+          name: user?.name || actionData.guestName,
+          email: user?.email || actionData.guestEmail,
           contact: actionData.guestPhone || "9999999999"
         },
         theme: {
@@ -906,11 +1010,20 @@ export default function App() {
             setMessages(prev => prev.filter(m => m.id !== loadingMsgId));
 
             if (verifyRes.success) {
+              const confirmMsgText = `🎉 **BOOKING CONFIRMED!**\n\nAapki payment successfully verify ho gayi hai aur room reserve ho chuka hai!\n\n• **Booking ID**: #${actionData.bookingId}\n• **Hotel**: **${actionData.hotelName}**\n• **Amount Paid**: ₹${actionData.depositAmount ? actionData.depositAmount.toLocaleString() : 'Paid'}\n• **Balance at Check-in**: ₹${actionData.balanceAmount ? actionData.balanceAmount.toLocaleString() : '0'}\n\nLuxury ticket receipt aapke email **${user?.email || actionData.guestEmail}** par deliver kar di gayi hai! 📧✨`;
+
               setMessages(prev => [...prev, {
                 id: `sys-success-${Date.now()}`,
                 sender: "ai",
-                text: `🎉 Bahut bahut dhanyawad! Aapki payment verify ho gayi hai aur booking successfully confirm ho chuki hai! \n\nBooking ID: **#${actionData.bookingId}**\nHotel: **${actionData.hotelName}**\n\nLuxury ticket receipt aapke email **${actionData.guestEmail}** par deliver kar di gayi hai! 📧✨`
+                text: confirmMsgText
               }]);
+
+              if (user && activeConversationId) {
+                conversationApi.saveMessage(activeConversationId, {
+                  role: 'ai',
+                  content: confirmMsgText
+                }).catch(() => {});
+              }
             } else {
               setMessages(prev => [...prev, {
                 id: `sys-error-${Date.now()}`,
@@ -937,22 +1050,14 @@ export default function App() {
               text: `Lagta hai aapne payment window close kar di hai. 😅 Kya koi issue aaya ya aap koi changes karna chahte hain?\n\nAap jab chahein niche button par click karke 12% deposit pay karke room hold kar sakte hain, ya mujhe bataein main aapki poori madad karunga!`,
               action: actionData
             };
-            setMessages(prev => {
-              const updated = [...prev, dismissMsg];
-              setSessions(currentSessions => {
-                const targetId = activeSessionId || (currentSessions.length > 0 ? currentSessions[0].id : null);
-                if (!targetId) return currentSessions;
-                const idx = currentSessions.findIndex(s => s.id === targetId);
-                if (idx !== -1) {
-                  const copy = [...currentSessions];
-                  copy[idx] = { ...copy[idx], messages: updated };
-                  localStorage.setItem("gethotel_ai_sessions", JSON.stringify(copy));
-                  return copy;
-                }
-                return currentSessions;
-              });
-              return updated;
-            });
+            setMessages(prev => [...prev, dismissMsg]);
+            if (user && activeConversationId) {
+              conversationApi.saveMessage(activeConversationId, {
+                role: 'ai',
+                content: dismissMsg.text,
+                metadata: { action: actionData }
+              }).catch(() => {});
+            }
           }
         }
       };
@@ -1083,6 +1188,13 @@ export default function App() {
           )}
         </div>
 
+        {/* Search Bar (Above New Chat) */}
+        {isSidebarOpen && (
+          <div className="mb-3 shrink-0">
+            <SearchBar conversations={conversationList} onConversationClick={handleSessionClick} theme={theme} />
+          </div>
+        )}
+
         {/* New Chat Button */}
         <button
           onClick={handleNewChat}
@@ -1101,30 +1213,30 @@ export default function App() {
 
         {/* Recent Queries List */}
         <div className="flex-1 overflow-y-auto min-h-0 space-y-1.5 scrollbar-thin">
-          {isSidebarOpen && sessions.length > 0 && (
+          {isSidebarOpen && conversationList.length > 0 && (
             <>
               <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-2 mb-2 select-none">
-                Recent
+                Recent Chats
               </div>
-              {sessions.map((s) => (
+              {conversationList.map((c) => (
                 <button
-                  key={s.id}
-                  onClick={() => handleSessionClick(s.id)}
+                  key={c.id}
+                  onClick={() => handleSessionClick(c.id)}
                   className={`
                     w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] transition-colors text-left group cursor-pointer
-                    ${activeSessionId === s.id 
+                    ${(activeConversationId === c.id || urlConversationId === c.id) 
                       ? (theme === 'dark' ? "bg-brand-500/20 text-brand-300 border border-brand-500/40" : "bg-[#d3e3fd] text-[#041e49]") 
                       : (theme === 'dark' ? "text-slate-400 hover:bg-[#1e1e22]/50" : "text-slate-600 hover:bg-slate-200/60")
                     }
                   `}
-                  title={s.title}
+                  title={c.title}
                 >
                   <MessageSquare className="w-4 h-4 text-slate-400 shrink-0 group-hover:text-slate-500" />
-                  <span className="truncate flex-1">{s.title}</span>
+                  <span className="truncate flex-1">{c.title}</span>
                   <span 
-                    onClick={(e) => handleDeleteSession(e, s.id)}
+                    onClick={(e) => handleDeleteSession(e, c.id)}
                     className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-slate-300/40 text-slate-400 hover:text-red-500 transition-all"
-                    title="Delete Session"
+                    title="Delete Chat"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </span>
@@ -1138,7 +1250,7 @@ export default function App() {
         <div className={`pt-4 border-t shrink-0 space-y-1 ${
           theme === 'dark' ? "border-[#1e1e24]" : "border-slate-200/60"
         }`}>
-          {isSidebarOpen && sessions.length > 0 && (
+          {isSidebarOpen && conversationList.length > 0 && (
             <button 
               onClick={handleClearAllHistory}
               className="flex items-center gap-3 w-full rounded-xl text-red-500 hover:bg-red-50/20 px-3 py-2.5 text-xs transition-colors cursor-pointer"
@@ -1178,9 +1290,6 @@ export default function App() {
             >
               <Menu className="w-5 h-5" />
             </button>
-            <div className="hidden md:block w-64">
-              <SearchBar sessions={sessions} onSessionClick={handleSessionClick} />
-            </div>
           </div>
           
           <div className="flex items-center gap-2.5">
@@ -1217,10 +1326,16 @@ export default function App() {
           {/* Floating Scroll To Bottom Button */}
           {showScrollToBottom && (
             <button
+              type="button"
               onClick={scrollToBottom}
-              className="fixed bottom-24 right-6 z-40 px-3.5 py-2 rounded-full bg-brand-500 text-white font-extrabold text-xs shadow-xl backdrop-blur-md flex items-center gap-1.5 animate-bounce cursor-pointer active:scale-95 border border-white/20"
+              className={`fixed bottom-24 left-1/2 -translate-x-1/2 z-40 w-9 h-9 rounded-full backdrop-blur-md flex items-center justify-center shadow-xl active:scale-90 cursor-pointer transition-all border ${
+                theme === 'dark'
+                  ? "bg-[#1e1e22]/90 border-[#2e2e34] text-slate-200 hover:bg-[#28282d] hover:text-white"
+                  : "bg-white/90 border-slate-200 text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+              }`}
+              title="Scroll to latest messages"
             >
-              <ArrowUp className="w-3.5 h-3.5 rotate-180" /> New Messages
+              <ArrowUp className="w-4 h-4 rotate-180 shrink-0" />
             </button>
           )}
           {/* Collapsible Spacer (only when chat is empty to push heading down) */}
@@ -1276,7 +1391,6 @@ export default function App() {
                             </div>
                           </div>
                         ))}
-                        {msg.timestamp && <MessageTimestamp timestamp={msg.timestamp} isUser />}
                       </div>
                     </div>
                   )}
@@ -1290,12 +1404,31 @@ export default function App() {
                         <MarkdownRenderer text={msg.text} />
                       </div>
 
-                      <div className="flex items-center gap-3 mt-2">
-                        {msg.timestamp && <MessageTimestamp timestamp={msg.timestamp} />}
-                        <CopyButton text={msg.text} />
+                      <div className="flex items-center gap-3 mt-1.5">
+                        <CopyButton text={msg.text} theme={theme} />
                       </div>
 
-                      {/* Type-based Renderer: hotels | rooms | general */}
+                      {/* Type-based Renderer: flights | tourPackage | hotels | rooms | general */}
+                      {msg.flights && (
+                        <FlightCard
+                          flightData={msg.flights}
+                          theme={theme}
+                          onBookFlight={(f) => {
+                            executeSend(`Book flight: ${f.airline} (${f.flightNumber}) from ${f.origin} to ${f.destination} at ₹${f.price}`, activeConversationId);
+                          }}
+                        />
+                      )}
+
+                      {msg.tourPackage && (
+                        <TourPackageCard
+                          tourPackage={msg.tourPackage}
+                          theme={theme}
+                          onBookPackage={(t) => {
+                            executeSend(`Book customized ${t.durationDays}-day tour package for ${t.destination} at ₹${t.bundledTotalPrice}`, activeConversationId);
+                          }}
+                        />
+                      )}
+
                       {(() => {
                         const responseType = msg.responseType || 'general';
 
@@ -1443,158 +1576,247 @@ export default function App() {
                           );
                         }
 
-                        // ==================== HOTEL CARDS (Phase 3 Premium Experience) ====================
+                        // ==================== HOTEL CARDS (Responsive: Mobile Horizontal Carousel vs Desktop Cards) ====================
                         if (responseType === 'hotels' && msg.hotels && msg.hotels.length > 0) {
                           console.log('[AI Chat] Rendering hotel cards:', msg.hotels.length);
                           return (
-                            <div className="mt-4 select-none w-full space-y-4">
-                              {msg.hotels.map((h) => {
-                                const isAttached = composerAttachment?.id === h.id;
-                                return (
-                                  <div
-                                    key={h.id}
-                                    onClick={() => handleCardClick(msg.id, h.id)}
-                                    className={`w-full rounded-3xl overflow-hidden relative border transition-all duration-300 group flex flex-col md:flex-row shadow-lg backdrop-blur-md ${
-                                      isAttached
-                                        ? "ring-2 ring-blue-500 border-blue-500/50 " + (theme === 'dark' ? "bg-[#121214]/80" : "bg-white/80")
-                                        : theme === 'dark'
-                                          ? "bg-[#121214]/65 border-white/10 text-white"
-                                          : "bg-white/70 border-slate-200/50 text-slate-900"
-                                    }`}
-                                  >
-                                    {/* Left Side: Hotel Image */}
-                                    <div className="relative w-full md:w-[32%] min-h-[200px] md:min-h-full shrink-0">
-                                      {h.thumbnail ? (
-                                        <img 
-                                          src={h.thumbnail} 
-                                          alt={h.name} 
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            const gallery = h.images && h.images.length > 0 ? h.images : [h.thumbnail!];
-                                            setPreviewState({ images: gallery, activeIndex: 0 });
-                                          }}
-                                          className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500 cursor-zoom-in"
-                                          title="Click to view photo gallery"
-                                        />
-                                      ) : (
-                                        <div className={`w-full h-full flex items-center justify-center ${theme === 'dark' ? "bg-slate-800/40" : "bg-slate-100/60"}`}>
-                                          <span className="text-slate-400 text-xs">No preview</span>
-                                        </div>
-                                      )}
-                                      
-                                      {/* AI Pick Badge */}
-                                      <div className={`absolute top-4 left-4 z-10 flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold backdrop-blur-md border uppercase tracking-wider select-none ${
-                                        theme === 'dark'
-                                          ? "bg-[#1e293b]/70 text-[#3b82f6] border-blue-500/20"
-                                          : "bg-blue-50/70 text-blue-600 border-blue-100"
-                                      }`}>
-                                        <AppleEmoji symbol="✨" className="w-3.5 h-3.5" /> AI PICK
-                                      </div>
-                                    </div>
+                            <div className="mt-4 select-none w-full">
+                              
+                              {/* ---------------- MOBILE VIEW ONLY (Horizontal Scroll Carousel) ---------------- */}
+                              <div className="flex md:hidden overflow-x-auto gap-3.5 pb-2 pt-1 px-1 snap-x snap-mandatory no-scrollbar w-full">
+                                {msg.hotels.map((h) => {
+                                  const hotelPhoto = h.thumbnail || (h.images && h.images[0]) || "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80";
+                                  const hasDiscount = Boolean(h.promotionalPrice && h.promotionalPrice < h.pricePerNight);
+                                  const finalPrice = h.promotionalPrice || h.pricePerNight;
 
-                                    {/* Right Side: Content info */}
-                                    <div className="flex-1 p-5 md:p-6 flex flex-col justify-between">
-                                      <div>
-                                        {/* Title, rating and save icon */}
-                                        <div className="flex items-start justify-between gap-4">
-                                          <div className="flex flex-wrap items-center gap-2.5">
-                                            <h3 className={`text-lg md:text-xl font-bold tracking-tight ${theme === 'dark' ? "text-white" : "text-slate-900"}`}>{h.name}</h3>
-                                            <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[11px] font-extrabold bg-[#27272a]/80 text-[#fbbf24] backdrop-blur-sm">
-                                              ★ {h.guestRating > 0 ? h.guestRating.toFixed(1) : (h.starRating || 4.5).toFixed(1)}
-                                            </div>
+                                  return (
+                                    <div
+                                      key={h.id}
+                                      onClick={() => handleCardClick(msg.id, h.id)}
+                                      className="w-[210px] aspect-[4/5] shrink-0 snap-start relative rounded-2xl overflow-hidden shadow-xl border border-slate-200/50 dark:border-white/10 cursor-pointer group transition-transform active:scale-[0.97]"
+                                    >
+                                      {/* Photo Background */}
+                                      <img
+                                        src={hotelPhoto}
+                                        alt={h.name}
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                      />
+
+                                      {/* Top Rating Badge */}
+                                      <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between z-10">
+                                        <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-black/60 text-amber-400 backdrop-blur-md border border-white/10">
+                                          ★ {(h.guestRating > 0 ? h.guestRating : (h.starRating || 4.5)).toFixed(1)}
+                                        </div>
+                                        {hasDiscount && (
+                                          <div className="px-2 py-0.5 rounded-full text-[9px] font-black bg-red-600 text-white shadow-md uppercase tracking-wider">
+                                            Offer
                                           </div>
-                                          <button 
-                                            type="button" 
-                                            onClick={(e) => { e.stopPropagation(); handleCardClick(msg.id, h.id); }}
-                                            className={`transition-colors shrink-0 ${isAttached ? 'text-blue-500' : theme === 'dark' ? 'text-slate-400 hover:text-white' : 'text-slate-400 hover:text-slate-800'}`}
-                                          >
-                                            <Bookmark className="w-5 h-5" fill={isAttached ? "currentColor" : "none"} />
-                                          </button>
-                                        </div>
-
-                                        {/* Location Pin */}
-                                        <div className={`flex items-center gap-1.5 text-xs mt-2 font-medium ${theme === 'dark' ? "text-slate-400" : "text-slate-500"}`}>
-                                          <AppleEmoji symbol="📍" className="w-3.5 h-3.5" />
-                                          <span>{h.city}</span>
-                                          <span>•</span>
-                                          <span>850m from center</span>
-                                        </div>
-
-                                        {/* Highlights Row */}
-                                        <div className={`flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] font-medium mt-4 pb-4 border-b select-none ${
-                                          theme === 'dark' ? "text-slate-300 border-white/10" : "text-slate-700 border-slate-100"
-                                        }`}>
-                                          <span className="flex items-center gap-1"><AppleEmoji symbol="☕" className="w-3.5 h-3.5" /> Breakfast Included</span>
-                                          <span className={theme === 'dark' ? "text-white/20" : "text-slate-300"}>|</span>
-                                          <span className="flex items-center gap-1"><AppleEmoji symbol="🛡️" className="w-3.5 h-3.5" /> Free Cancellation</span>
-                                          <span className={theme === 'dark' ? "text-white/20" : "text-slate-300"}>|</span>
-                                          <span className="flex items-center gap-1"><AppleEmoji symbol="❤️" className="w-3.5 h-3.5" /> Couple Friendly</span>
-                                        </div>
+                                        )}
                                       </div>
 
-                                      {/* Why ChatGHS Picked & Price/CTA */}
-                                      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-5 mt-4">
-                                        {/* Why Picked Block */}
-                                        <div className="flex-1 min-w-0 pr-0 md:pr-4">
-                                          <div className={`flex items-center gap-1.5 text-xs font-bold ${theme === 'dark' ? "text-[#3b82f6]" : "text-blue-600"}`}>
-                                            <AppleEmoji symbol="💙" className="w-3.5 h-3.5" /> Why ChatGHS picked this
-                                          </div>
-                                          <p className={`text-xs mt-1.5 leading-relaxed ${theme === 'dark' ? "text-slate-400" : "text-slate-500"}`}>
-                                            {h.description ? (h.description.slice(0, 140) + (h.description.length > 140 ? '...' : '')) : "Best value stay with excellent reviews, premium rooms, and great hospitality."}
+                                      {/* Dark Bottom Gradient Overlay */}
+                                      <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-transparent pointer-events-none" />
+
+                                      {/* Bottom Content Area */}
+                                      <div className="absolute bottom-0 left-0 right-0 p-3 z-10 flex flex-col justify-end gap-1">
+                                        {/* Hotel Name */}
+                                        <h3 className="text-xs font-bold text-white leading-snug line-clamp-1">
+                                          {h.name}
+                                        </h3>
+
+                                        <div className="flex items-center justify-between gap-1.5">
+                                          {/* City Sub-heading */}
+                                          <p className="text-[11px] text-slate-300 font-medium truncate flex-1">
+                                            📍 {h.city}
                                           </p>
-                                        </div>
 
-                                        {/* Price & CTA Block */}
-                                        <div className="flex flex-col items-end shrink-0 w-full md:w-auto text-right">
-                                          <div>
-                                            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">From</span>
-                                            <div className={`text-xl md:text-2xl font-black leading-none ${theme === 'dark' ? "text-white" : "text-slate-900"}`}>
-                                              ₹{(h.promotionalPrice || h.pricePerNight).toLocaleString()}
-                                              <span className="text-xs font-semibold text-slate-500 ml-0.5">/night</span>
-                                            </div>
-                                          </div>
-
-                                          {/* Buttons Row */}
-                                          <div className="flex items-center gap-2 mt-3.5 w-full md:w-auto justify-end">
-                                            <button
-                                              type="button"
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleSend(`Show room categories for ${h.name} (ID: ${h.id})`);
-                                              }}
-                                              className={`px-4 py-2.5 rounded-xl text-xs font-extrabold border active:scale-95 transition-all cursor-pointer whitespace-nowrap ${
-                                                theme === 'dark'
-                                                  ? "border-slate-700 text-white hover:bg-white/5"
-                                                  : "border-slate-300 text-slate-700 hover:bg-slate-50"
-                                              }`}
-                                            >
-                                              View Rooms
-                                            </button>
-                                            
-                                            <button
-                                              type="button"
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleSend(`Book ${h.name} (ID: ${h.id})`);
-                                              }}
-                                              className={`px-5 py-2.5 rounded-xl text-xs font-extrabold active:scale-95 transition-all cursor-pointer flex items-center gap-1 whitespace-nowrap ${
-                                                theme === 'dark'
-                                                  ? "bg-[#2563eb] text-white hover:bg-[#1d4ed8]"
-                                                  : "bg-blue-600 text-white hover:bg-blue-700"
-                                              }`}
-                                            >
-                                              Book Now →
-                                            </button>
+                                          {/* Right Bottom: Price with Promotional Strikethrough */}
+                                          <div className="text-right shrink-0">
+                                            {hasDiscount && (
+                                              <span className="text-[9px] line-through text-slate-400 font-semibold mr-1">
+                                                ₹{h.pricePerNight.toLocaleString()}
+                                              </span>
+                                            )}
+                                            <span className="text-xs font-black text-white">
+                                              ₹{finalPrice.toLocaleString()}
+                                            </span>
+                                            <span className="text-[8px] font-medium text-slate-300 ml-0.5">/night</span>
                                           </div>
                                         </div>
                                       </div>
                                     </div>
-                                  </div>
-                                );
-                              })}
+                                  );
+                                })}
+                              </div>
+
+                              {/* ---------------- DESKTOP VIEW ONLY (Horizontal Full Cards) ---------------- */}
+                              <div className="hidden md:flex flex-col w-full space-y-4">
+                                {msg.hotels.map((h) => {
+                                  const isAttached = composerAttachment?.id === h.id;
+
+                                  return (
+                                    <div
+                                      key={h.id}
+                                      onClick={() => handleCardClick(msg.id, h.id)}
+                                      className={`w-full rounded-3xl overflow-hidden relative border transition-all duration-300 group flex flex-row shadow-lg backdrop-blur-md ${
+                                        isAttached
+                                          ? "ring-2 ring-blue-500 border-blue-500/50 " + (theme === 'dark' ? "bg-[#121214]/80" : "bg-white/80")
+                                          : theme === 'dark'
+                                            ? "bg-[#121214]/65 border-white/10 text-white"
+                                            : "bg-white/70 border-slate-200/50 text-slate-900"
+                                      }`}
+                                    >
+                                      {/* Left Side: Hotel Image */}
+                                      <div className="relative w-[32%] min-h-full shrink-0">
+                                        {h.thumbnail ? (
+                                          <img 
+                                            src={h.thumbnail} 
+                                            alt={h.name} 
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              const gallery = h.images && h.images.length > 0 ? h.images : [h.thumbnail!];
+                                              setPreviewState({ images: gallery, activeIndex: 0 });
+                                            }}
+                                            className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500 cursor-zoom-in"
+                                            title="Click to view photo gallery"
+                                          />
+                                        ) : (
+                                          <div className={`w-full h-full flex items-center justify-center ${theme === 'dark' ? "bg-slate-800/40" : "bg-slate-100/60"}`}>
+                                            <span className="text-slate-400 text-xs">No preview</span>
+                                          </div>
+                                        )}
+                                        
+                                        {/* AI Pick Badge */}
+                                        <div className={`absolute top-4 left-4 z-10 flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold backdrop-blur-md border uppercase tracking-wider select-none ${
+                                          theme === 'dark'
+                                            ? "bg-[#1e293b]/70 text-[#3b82f6] border-blue-500/20"
+                                            : "bg-blue-50/70 text-blue-600 border-blue-100"
+                                        }`}>
+                                          <AppleEmoji symbol="✨" className="w-3.5 h-3.5" /> AI PICK
+                                        </div>
+                                      </div>
+
+                                      {/* Right Side: Content info */}
+                                      <div className="flex-1 p-5 md:p-6 flex flex-col justify-between">
+                                        <div>
+                                          {/* Title, rating and save icon */}
+                                          <div className="flex items-start justify-between gap-4">
+                                            <div className="flex flex-wrap items-center gap-2.5">
+                                              <h3 className={`text-lg md:text-xl font-bold tracking-tight ${theme === 'dark' ? "text-white" : "text-slate-900"}`}>{h.name}</h3>
+                                              <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[11px] font-extrabold bg-[#27272a]/80 text-[#fbbf24] backdrop-blur-sm">
+                                                ★ {h.guestRating > 0 ? h.guestRating.toFixed(1) : (h.starRating || 4.5).toFixed(1)}
+                                              </div>
+                                            </div>
+                                            <button 
+                                              type="button" 
+                                              onClick={(e) => { e.stopPropagation(); handleCardClick(msg.id, h.id); }}
+                                              className={`transition-colors shrink-0 ${isAttached ? 'text-blue-500' : theme === 'dark' ? 'text-slate-400 hover:text-white' : 'text-slate-400 hover:text-slate-800'}`}
+                                            >
+                                              <Bookmark className="w-5 h-5" fill={isAttached ? "currentColor" : "none"} />
+                                            </button>
+                                          </div>
+
+                                          {/* Location Pin */}
+                                          <div className={`flex items-center gap-1.5 text-xs mt-2 font-medium ${theme === 'dark' ? "text-slate-400" : "text-slate-500"}`}>
+                                            <AppleEmoji symbol="📍" className="w-3.5 h-3.5" />
+                                            <span>{h.city}</span>
+                                            <span>•</span>
+                                            <span>850m from center</span>
+                                          </div>
+
+                                          {/* Highlights Row */}
+                                          <div className={`flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] font-medium mt-4 pb-4 border-b select-none ${
+                                            theme === 'dark' ? "text-slate-300 border-white/10" : "text-slate-700 border-slate-100"
+                                          }`}>
+                                            <span className="flex items-center gap-1"><AppleEmoji symbol="☕" className="w-3.5 h-3.5" /> Breakfast Included</span>
+                                            <span className={theme === 'dark' ? "text-white/20" : "text-slate-300"}>|</span>
+                                            <span className="flex items-center gap-1"><AppleEmoji symbol="🛡️" className="w-3.5 h-3.5" /> Free Cancellation</span>
+                                            <span className={theme === 'dark' ? "text-white/20" : "text-slate-300"}>|</span>
+                                            <span className="flex items-center gap-1"><AppleEmoji symbol="❤️" className="w-3.5 h-3.5" /> Couple Friendly</span>
+                                          </div>
+                                        </div>
+
+                                        {/* Why ChatGHS Picked & Price/CTA */}
+                                        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-5 mt-4">
+                                          {/* Why Picked Block */}
+                                          <div className="flex-1 min-w-0 pr-0 md:pr-4">
+                                            <div className={`flex items-center gap-1.5 text-xs font-bold ${theme === 'dark' ? "text-[#3b82f6]" : "text-blue-600"}`}>
+                                              <AppleEmoji symbol="💙" className="w-3.5 h-3.5" /> Why ChatGHS picked this
+                                            </div>
+                                            <p className={`text-xs mt-1.5 leading-relaxed ${theme === 'dark' ? "text-slate-400" : "text-slate-500"}`}>
+                                              {h.description ? (h.description.slice(0, 140) + (h.description.length > 140 ? '...' : '')) : "Best value stay with excellent reviews, premium rooms, and great hospitality."}
+                                            </p>
+                                          </div>
+
+                                          {/* Price & CTA Block */}
+                                          <div className="flex flex-col items-end shrink-0 w-full md:w-auto text-right">
+                                            <div>
+                                              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">From</span>
+                                              <div className={`text-xl md:text-2xl font-black leading-none ${theme === 'dark' ? "text-white" : "text-slate-900"}`}>
+                                                ₹{(h.promotionalPrice || h.pricePerNight).toLocaleString()}
+                                                <span className="text-xs font-semibold text-slate-500 ml-0.5">/night</span>
+                                              </div>
+                                            </div>
+
+                                            {/* Buttons Row */}
+                                            <div className="flex items-center gap-2 mt-3.5 w-full md:w-auto justify-end">
+                                              <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleSend(`Show room categories for ${h.name} (ID: ${h.id})`);
+                                                }}
+                                                className={`px-4 py-2.5 rounded-xl text-xs font-extrabold border active:scale-95 transition-all cursor-pointer whitespace-nowrap ${
+                                                  theme === 'dark'
+                                                    ? "border-slate-700 text-white hover:bg-[#1e1e22]"
+                                                    : "border-slate-300 text-slate-700 hover:bg-slate-50"
+                                                }`}
+                                              >
+                                                View Rooms
+                                              </button>
+                                              <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleSend(`I want to reserve ${h.name} (ID: ${h.id})`);
+                                                }}
+                                                className="px-4.5 py-2.5 rounded-xl text-xs font-extrabold bg-[#2563eb] hover:bg-blue-600 text-white active:scale-95 transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 shadow-sm"
+                                              >
+                                                Book Now <ArrowRight className="w-3.5 h-3.5" />
+                                              </button>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
                             </div>
                           );
                         }
+
+                        {/* ==================== IN-CHAT FLIGHT CARDS RENDERER ==================== */}
+                        {msg.flights && (
+                          <FlightCard
+                            flightData={msg.flights}
+                            theme={theme}
+                            onBookFlight={(f) => {
+                              handleSend(`I want to book ${f.airline} flight ${f.flightNumber} from ${f.originCity} to ${f.destinationCity}`);
+                            }}
+                          />
+                        )}
+
+                        {/* ==================== IN-CHAT TOUR PACKAGE CARDS RENDERER ==================== */}
+                        {msg.tourPackage && (
+                          <TourPackageCard
+                            tourPackage={msg.tourPackage}
+                            theme={theme}
+                            onBookPackage={(pkg) => {
+                              handleSend(`I want to book ${pkg.destination} tour package for ${pkg.durationDays} days`);
+                            }}
+                          />
+                        )}
 
                         {/* ==================== IN-CHAT PAYMENT ACTION CARD ==================== */}
                         {msg.action && (
@@ -1616,9 +1838,7 @@ export default function App() {
 
                         return null;
                       })()}
-                      <div className="mt-3">
-                        <SuggestedReplies responseType={msg.responseType || 'general'} onSend={handleSend} />
-                      </div>
+
                     </div>
                   )}
                 </div>
@@ -2446,9 +2666,7 @@ export default function App() {
                             <button
                               type="button"
                               onClick={() => {
-                                localStorage.removeItem("gethotel_ai_sessions");
-                                setSessions([]);
-                                setMessages([]);
+                                executeClearHistory();
                                 setShowSettingsModal(false);
                               }}
                               className="w-full py-2 bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-600 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
