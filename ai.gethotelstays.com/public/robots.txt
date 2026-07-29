@@ -1,5 +1,30 @@
+# Global Robots.txt for GetHotelStays AI (ChatGHS)
 User-agent: *
 Allow: /
 Disallow: /api/
 
+# Explicit Allow & GEO Optimization for AI Search Crawlers
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+# Sitemap & LLMs Protocol
 Sitemap: https://ai.gethotelstays.com/sitemap.xml
+Sitemap: https://gethotelstays.com/sitemap.xml
