@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLocale } from "@/context/LocaleContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Play, Calendar, MapPin, Users, Hotel, Clock, Plane } from "lucide-react";
+import { Sparkles, Play, Calendar, MapPin, Users, Hotel, Clock, Plane, Palmtree } from "lucide-react";
 import SmartSearchBar from "@/components/search/SmartSearchBar";
 import { useStayMode } from "@/context/StayModeContext";
 import { cn } from "@/lib/utils";
@@ -130,41 +130,55 @@ export default function Hero({ title, highlight, transitionInterval, stories }: 
 
                 {/* Interactive Search Bar Component */}
                 <div className="w-full">
-                    {/* Stay Mode & Flights Tabs */}
-                    <div className="flex items-center justify-center gap-2 md:gap-4 mb-6 w-full overflow-x-auto no-scrollbar py-1 px-4">
+                    {/* Stay Mode, Flights & Tour Packages Tabs */}
+                    <div className="flex items-center justify-center gap-2 md:gap-3 mb-6 w-full overflow-x-auto no-scrollbar py-1 px-4">
                         <button 
                             type="button"
                             onClick={() => setMode('nightly')}
                             className={cn(
-                                "px-3.5 py-2.5 md:px-6 md:py-3 rounded-full text-[10px] md:text-xs font-black transition-all duration-300 flex items-center gap-1.5 md:gap-2 border shadow-sm shrink-0",
+                                "px-3.5 py-2.5 md:px-5 md:py-2.5 rounded-full text-[10px] md:text-xs font-black transition-all duration-300 flex items-center gap-1.5 md:gap-2 border shadow-sm shrink-0 cursor-pointer",
                                 mode === 'nightly' 
-                                    ? "bg-slate-950 text-white border-slate-950 scale-105" 
+                                    ? "bg-slate-950 text-white border-slate-950 scale-105 shadow-md" 
                                     : "bg-white/80 backdrop-blur-md text-slate-600 border-slate-200/80 hover:bg-white hover:text-slate-950"
                             )}
                         >
-                            <Hotel className={cn("w-3 h-3.5 md:w-3.5 md:h-3.5", mode === 'nightly' ? "text-brand-400" : "text-slate-500")} />
+                            <Hotel className={cn("w-3.5 h-3.5 md:w-4 md:h-4", mode === 'nightly' ? "text-brand-400" : "text-slate-500")} />
                             <span>Full Day Stay</span>
                         </button>
+
                         <button 
                             type="button"
                             onClick={() => setMode('hourly')}
                             className={cn(
-                                "px-3.5 py-2.5 md:px-6 md:py-3 rounded-full text-[10px] md:text-xs font-black transition-all duration-300 flex items-center gap-1.5 md:gap-2 border shadow-sm shrink-0",
+                                "px-3.5 py-2.5 md:px-5 md:py-2.5 rounded-full text-[10px] md:text-xs font-black transition-all duration-300 flex items-center gap-1.5 md:gap-2 border shadow-sm shrink-0 cursor-pointer",
                                 mode === 'hourly' 
-                                    ? "bg-blue-600 text-white border-blue-600 scale-105" 
+                                    ? "bg-blue-600 text-white border-blue-600 scale-105 shadow-md" 
                                     : "bg-white/80 backdrop-blur-md text-slate-600 border-slate-200/80 hover:bg-white hover:text-blue-600"
                             )}
                         >
-                            <Clock className={cn("w-3 h-3.5 md:w-3.5 md:h-3.5", mode === 'hourly' ? "text-blue-200 animate-pulse" : "text-slate-500")} />
+                            <Clock className={cn("w-3.5 h-3.5 md:w-4 md:h-4", mode === 'hourly' ? "text-blue-200 animate-pulse" : "text-slate-500")} />
                             <span>Hourly Stay</span>
                         </button>
+
                         <button 
                             type="button"
                             onClick={() => navigate(`/${langCode}/flights`)}
-                            className="px-3.5 py-2.5 md:px-6 md:py-3 rounded-full text-[10px] md:text-xs font-black transition-all duration-300 flex items-center gap-1.5 md:gap-2 border shadow-sm bg-white/80 backdrop-blur-md text-slate-600 border-slate-200/80 hover:bg-white hover:text-slate-950 shrink-0"
+                            className="px-3.5 py-2.5 md:px-5 md:py-2.5 rounded-full text-[10px] md:text-xs font-black transition-all duration-300 flex items-center gap-1.5 md:gap-2 border shadow-sm bg-white/80 backdrop-blur-md text-slate-600 border-slate-200/80 hover:bg-white hover:text-slate-950 shrink-0 cursor-pointer"
                         >
-                            <Plane className="w-3 h-3.5 md:w-3.5 md:h-3.5 text-slate-500" />
+                            <Plane className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-500" />
                             <span>Flights</span>
+                        </button>
+
+                        <button 
+                            type="button"
+                            onClick={() => {
+                                const aiHost = window.location.hostname === 'localhost' ? 'http://localhost:5173' : 'https://ai.gethotelstays.com';
+                                window.open(`${aiHost}/?q=${encodeURIComponent('Show me luxury tour packages with itinerary, hotels, and sightseeing')}`, '_blank');
+                            }}
+                            className="px-3.5 py-2.5 md:px-5 md:py-2.5 rounded-full text-[10px] md:text-xs font-black transition-all duration-300 flex items-center gap-1.5 md:gap-2 border shadow-sm bg-gradient-to-r from-emerald-500/10 to-teal-500/10 backdrop-blur-md text-emerald-800 border-emerald-300/80 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 shrink-0 group cursor-pointer"
+                        >
+                            <Palmtree className="w-3.5 h-3.5 md:w-4 md:h-4 text-emerald-600 group-hover:text-white transition-colors" />
+                            <span>Tour Packages</span>
                         </button>
                     </div>
 
