@@ -180,6 +180,7 @@ interface Message {
   })[];
   flights?: any;
   tourPackage?: any;
+  cards?: any[];
 }
 
 interface ConversationListItem {
@@ -1435,10 +1436,21 @@ export default function App() {
                         const responseType = msg.responseType || 'general';
 
                         // ==================== ROOM CARDS (Phase 4 Premium Experience) ====================
-                        if (responseType === 'rooms') {
-                          const allRooms = (msg.hotels || []).flatMap(h =>
+                        if (responseType === 'rooms' || msg.cards?.some((c: any) => c.type === 'room')) {
+                          let allRooms = (msg.hotels || []).flatMap(h =>
                             ((h as any).rooms || (h as any).room || []).map((r: any) => ({ ...r, hotelName: h.name, hotelId: h.id }))
                           );
+                          if (allRooms.length === 0 && msg.cards) {
+                            allRooms = msg.cards.filter((c: any) => c.type === 'room').map((c: any) => ({
+                              ...(c.payload || {}),
+                              id: c.id,
+                              name: c.title || c.payload?.name || "Standard Room",
+                              hotelName: c.hotelName || "Hotel",
+                              hotelId: c.hotelId,
+                              pricePerNight: c.pricePerNight || 2499,
+                              maxOccupancy: c.payload?.maxOccupancy || 2
+                            }));
+                          }
                           if (allRooms.length === 0) return null;
                           console.log('[AI Chat] Rendering room cards:', allRooms.length, 'rooms');
                           return (
@@ -1449,7 +1461,7 @@ export default function App() {
                                   <h3 className={`text-base font-extrabold tracking-tight ${theme === 'dark' ? 'text-slate-100' : 'text-slate-900'}`}>
                                     Available Room Categories ({allRooms.length})
                                   </h3>
-                                  <p className="text-[11px] text-slate-400 font-medium">Select a room to begin your instant booking</p>
+                                  <p className="text-[11px] text-slate-400 font-medium">Select a room to view pricing with taxes and begin reservation</p>
                                 </div>
                               </div>
 
@@ -1461,6 +1473,9 @@ export default function App() {
                                     : "https://images.unsplash.com/photo-1611891487122-207579d67d98?auto=format&fit=crop&w=600&q=80";
                                   const isRecommended = idx === 0;
                                   const isSelected = composerAttachment?.id === r.id && composerAttachment?.name.includes(r.name);
+                                  const roomBasePrice = r.promotionalPrice || r.pricePerNight || 2499;
+                                  const gstPercent = roomBasePrice > 7500 ? 18 : (roomBasePrice > 1000 ? 12 : 0);
+                                  const gstAmount = Math.round(roomBasePrice * (gstPercent / 100));
 
                                   return (
                                     <div
@@ -1516,7 +1531,7 @@ export default function App() {
                                           <div className={`flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] font-medium mt-3 pb-3 border-b select-none ${
                                             theme === 'dark' ? "text-slate-300 border-white/10" : "text-slate-700 border-slate-100"
                                           }`}>
-                                            <span className="flex items-center gap-1"><AppleEmoji symbol="👤" className="w-3.5 h-3.5" /> {r.maxOccupancy} Guests</span>
+                                            <span className="flex items-center gap-1"><AppleEmoji symbol="👤" className="w-3.5 h-3.5" /> {r.maxOccupancy || 2} Guests</span>
                                             <span className={theme === 'dark' ? "text-white/20" : "text-slate-300"}>|</span>
                                             <span className="flex items-center gap-1"><AppleEmoji symbol="🛏️" className="w-3.5 h-3.5" /> King Bed</span>
                                             <span className={theme === 'dark' ? "text-white/20" : "text-slate-300"}>|</span>
@@ -1547,8 +1562,11 @@ export default function App() {
                                               </div>
                                             ) : null}
                                             <div className={`text-lg font-black leading-none ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                                              ₹{(r.promotionalPrice || r.pricePerNight).toLocaleString()}
+                                              ₹{roomBasePrice.toLocaleString()}
                                               <span className="text-[10px] font-semibold text-slate-500 ml-0.5">/night</span>
+                                            </div>
+                                            <div className="text-[10px] font-extrabold text-emerald-500 mt-1 flex items-center gap-1">
+                                              <span>+ ₹{gstAmount.toLocaleString()} ({gstPercent}% GST)</span>
                                             </div>
                                           </div>
 
