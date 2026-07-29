@@ -51,14 +51,16 @@ async function formatAiResponse({
     const isCollectingPersonalDetails = ['COLLECT_GUEST_NAME', 'COLLECT_PHONE', 'COLLECT_EMAIL', 'BOOKING_CONFIRMED'].includes(workflowState) ||
                                           /poora naam|full name|guest name|mobile number|email address|enter your name|share your email/i.test(reply);
 
+    const queryMentionsStays = /\b(hotel|hotels|resort|room|rooms|stay|stays|inn|suites|kamra|kamre|price|budget|book|jaipur|goa|udaipur|shimla|manali|delhi|mumbai|bangalore|pune|agra|varanasi)\b/i.test(lastQuery);
+
     let responseType = 'general';
     let outputHotels = [];
 
-    if (!isCollectingPersonalDetails && !isNonHotelQuery) {
+    if (!isCollectingPersonalDetails) {
         if (recommendedHotels.length > 0) {
             outputHotels = recommendedHotels;
             responseType = queryMentionsRooms ? 'rooms' : 'hotels';
-        } else if (dbHotels.length > 0) {
+        } else if (dbHotels.length > 0 && (queryMentionsStays || !isNonHotelQuery)) {
             outputHotels = dbHotels.slice(0, 5);
             responseType = queryMentionsRooms ? 'rooms' : 'hotels';
         }

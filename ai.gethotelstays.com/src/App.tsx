@@ -1577,7 +1577,7 @@ export default function App() {
                         }
 
                         // ==================== HOTEL CARDS (Responsive: Mobile Horizontal Carousel vs Desktop Cards) ====================
-                        if (responseType === 'hotels' && msg.hotels && msg.hotels.length > 0) {
+                        if ((responseType as string) !== 'rooms' && msg.hotels && msg.hotels.length > 0) {
                           console.log('[AI Chat] Rendering hotel cards:', msg.hotels.length);
                           return (
                             <div className="mt-4 select-none w-full">

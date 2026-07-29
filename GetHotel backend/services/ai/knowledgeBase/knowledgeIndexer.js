@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
 
-const DATASET_PATH = path.join(__dirname, '../datasets/openai_llama_travel_finetune.jsonl');
+const DATASETS_DIR = path.join(__dirname, '../datasets');
 const STORE_PATH = path.join(__dirname, 'knowledge_store.json');
 
 // Category Keyword Classifiers
@@ -29,7 +29,7 @@ function classifyCategory(query, text) {
 }
 
 async function indexKnowledgeBase() {
-    console.log('[KnowledgeIndexer] Starting In-Code 50k Dataset Indexing...');
+    console.log('[KnowledgeIndexer] Starting In-Code Multi-Dataset Indexing...');
 
     const store = {
         INDIA_TOUR: [],
@@ -39,46 +39,52 @@ async function indexKnowledgeBase() {
         GENERAL_CHAT: []
     };
 
-    if (!fs.existsSync(DATASET_PATH)) {
-        console.warn(`[KnowledgeIndexer] Dataset file not found at ${DATASET_PATH}. Skipping indexing.`);
+    if (!fs.existsSync(DATASETS_DIR)) {
+        console.warn(`[KnowledgeIndexer] Datasets directory not found at ${DATASETS_DIR}. Skipping indexing.`);
         return;
     }
 
-    const fileStream = fs.createReadStream(DATASET_PATH);
-    const rl = readline.createInterface({ input: fileStream, crlfDelay: Infinity });
-
+    const files = fs.readdirSync(DATASETS_DIR).filter(f => f.endsWith('.jsonl'));
     let count = 0;
-    for await (const line of rl) {
-        if (!line.trim()) continue;
-        try {
-            const parsed = JSON.parse(line);
-            let userText = '';
-            let aiText = '';
 
-            if (parsed.user && parsed.assistant) {
-                userText = parsed.user;
-                aiText = parsed.assistant;
-            } else if (parsed.messages && Array.isArray(parsed.messages)) {
-                userText = parsed.messages.find(m => m.role === 'user')?.content || '';
-                aiText = parsed.messages.find(m => m.role === 'assistant' || m.role === 'model')?.content || '';
-            }
+    for (const file of files) {
+        const filePath = path.join(DATASETS_DIR, file);
+        console.log(`[KnowledgeIndexer] Indexing file: ${file}...`);
+        const fileStream = fs.createReadStream(filePath);
+        const rl = readline.createInterface({ input: fileStream, crlfDelay: Infinity });
 
-            if (userText && aiText) {
-                const category = classifyCategory(userText, aiText);
-                // Keep compact samples (max 150 per category for ultra-fast 2ms lookup)
-                if (store[category].length < 150) {
-                    store[category].push({
-                        q: userText.trim(),
-                        a: aiText.trim()
-                    });
+        for await (const line of rl) {
+            if (!line.trim()) continue;
+            try {
+                const parsed = JSON.parse(line);
+                let userText = '';
+                let aiText = '';
+
+                if (parsed.user && parsed.assistant) {
+                    userText = parsed.user;
+                    aiText = parsed.assistant;
+                } else if (parsed.messages && Array.isArray(parsed.messages)) {
+                    userText = parsed.messages.find(m => m.role === 'user')?.content || '';
+                    aiText = parsed.messages.find(m => m.role === 'assistant' || m.role === 'model')?.content || '';
                 }
-                count++;
-            }
-        } catch { /* skip invalid lines */ }
+
+                if (userText && aiText) {
+                    const category = classifyCategory(userText, aiText);
+                    // Keep compact samples (max 250 per category for ultra-fast <1ms lookup)
+                    if (store[category].length < 250) {
+                        store[category].push({
+                            q: userText.trim(),
+                            a: aiText.trim()
+                        });
+                    }
+                    count++;
+                }
+            } catch { /* skip invalid lines */ }
+        }
     }
 
     fs.writeFileSync(STORE_PATH, JSON.stringify(store, null, 2));
-    console.log(`[KnowledgeIndexer] Successfully indexed ${count} total items into ${STORE_PATH}`);
+    console.log(`[KnowledgeIndexer] Successfully indexed ${count} total items from ${files.length} dataset files into ${STORE_PATH}`);
     console.log(`[KnowledgeIndexer] Category Counts:`, {
         INDIA_TOUR: store.INDIA_TOUR.length,
         FLIGHT_SEARCH: store.FLIGHT_SEARCH.length,
