@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback, memo, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Plus, Settings, HelpCircle, MessageSquare, Menu, Trash2, Calendar, User, Mail, CreditCard, Check, X, ArrowRight, Loader, ChevronLeft, ChevronRight, ArrowUp, Bookmark } from "lucide-react";
+import { Plus, Settings, HelpCircle, Menu, Trash2, Calendar, User, Mail, CreditCard, Check, X, ArrowRight, Loader, ChevronLeft, ChevronRight, ArrowUp, Bookmark } from "lucide-react";
 import { aiApi, authApi, bookingApi, paymentApi, conversationApi } from "./lib/api";
 import { auth, googleProvider } from "./lib/firebase";
 import { signInWithPopup } from "firebase/auth";
@@ -187,6 +187,8 @@ interface ConversationListItem {
   id: string;
   title: string;
   updatedAt: string;
+  chatNumber?: number;
+  displayTitle?: string;
 }
 
 export default function App() {
@@ -1221,30 +1223,39 @@ export default function App() {
               <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-2 mb-2 select-none">
                 Recent Chats
               </div>
-              {conversationList.map((c) => (
-                <button
-                  key={c.id}
-                  onClick={() => handleSessionClick(c.id)}
-                  className={`
-                    w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] transition-colors text-left group cursor-pointer
-                    ${(activeConversationId === c.id || urlConversationId === c.id) 
-                      ? (theme === 'dark' ? "bg-brand-500/20 text-brand-300 border border-brand-500/40" : "bg-[#d3e3fd] text-[#041e49]") 
-                      : (theme === 'dark' ? "text-slate-400 hover:bg-[#1e1e22]/50" : "text-slate-600 hover:bg-slate-200/60")
-                    }
-                  `}
-                  title={c.title}
-                >
-                  <MessageSquare className="w-4 h-4 text-slate-400 shrink-0 group-hover:text-slate-500" />
-                  <span className="truncate flex-1">{c.title}</span>
-                  <span 
-                    onClick={(e) => handleDeleteSession(e, c.id)}
-                    className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-slate-300/40 text-slate-400 hover:text-red-500 transition-all"
-                    title="Delete Chat"
+              {conversationList.map((c, idx) => {
+                const sessionNum = c.chatNumber || (conversationList.length - idx);
+                return (
+                  <button
+                    key={c.id}
+                    onClick={() => handleSessionClick(c.id)}
+                    className={`
+                      w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition-colors text-left group cursor-pointer
+                      ${(activeConversationId === c.id || urlConversationId === c.id) 
+                        ? (theme === 'dark' ? "bg-brand-500/20 text-brand-300 border border-brand-500/40 font-bold" : "bg-[#d3e3fd] text-[#041e49] font-bold") 
+                        : (theme === 'dark' ? "text-slate-400 hover:bg-[#1e1e22]/50" : "text-slate-600 hover:bg-slate-200/60")
+                      }
+                    `}
+                    title={c.title}
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </span>
-                </button>
-              ))}
+                    <div className={`px-1.5 py-0.5 rounded text-[10px] font-black shrink-0 ${
+                      (activeConversationId === c.id || urlConversationId === c.id)
+                        ? (theme === 'dark' ? "bg-brand-500/40 text-brand-200" : "bg-[#041e49]/15 text-[#041e49]")
+                        : (theme === 'dark' ? "bg-white/10 text-slate-400" : "bg-slate-200/70 text-slate-600")
+                    }`}>
+                      #{sessionNum}
+                    </div>
+                    <span className="truncate flex-1 font-medium">{c.displayTitle || c.title}</span>
+                    <span 
+                      onClick={(e) => handleDeleteSession(e, c.id)}
+                      className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-slate-300/40 text-slate-400 hover:text-red-500 transition-all shrink-0"
+                      title="Delete Chat"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </span>
+                  </button>
+                );
+              })}
             </>
           )}
         </div>
