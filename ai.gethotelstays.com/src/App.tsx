@@ -714,10 +714,6 @@ export default function App() {
           setShowLoginModal(true);
         } else {
           aiMsg.action = actionToTrigger;
-          console.log('[AI Chat] Scheduling Razorpay Payment Trigger in 2000ms:', actionToTrigger);
-          setTimeout(() => {
-            triggerInChatRazorpay(actionToTrigger);
-          }, 2000);
         }
       }
 
@@ -956,22 +952,26 @@ export default function App() {
       const hasOrderId = Boolean(actionData.razorpayOrderId);
 
       if (!scriptLoaded || !hasOrderId) {
-        console.warn("[Razorpay] Order ID missing or script failed to load. Falling back to In-Chat Checkout Modal.");
+        if (!actionData.hotelName || !actionData.hotelId) {
+          console.warn("[Razorpay] Order ID missing and no valid hotel selected. Ignoring payment popup.");
+          return;
+        }
+        console.warn("[Razorpay] Order ID missing or script failed to load. Falling back to In-Chat Checkout Modal for selected hotel.");
         setCheckoutData({
-          hotelId: actionData.hotelId || 35,
-          hotelName: actionData.hotelName || "Hotel Haris Court",
-          hotelCity: "Delhi",
+          hotelId: actionData.hotelId,
+          hotelName: actionData.hotelName,
+          hotelCity: actionData.hotelCity || "India",
           checkIn: new Date().toISOString(),
           checkOut: new Date(Date.now() + 86400000).toISOString(),
           roomType: "Selected Category",
-          guestName: actionData.guestName || "Valued Guest",
-          guestEmail: actionData.guestEmail || "aloriagrp@gmail.com",
-          guestPhone: actionData.guestPhone || "9318485680",
+          guestName: user?.name || actionData.guestName || "Valued Guest",
+          guestEmail: user?.email || actionData.guestEmail || "",
+          guestPhone: actionData.guestPhone || "",
           paymentOption: "online",
           nights: 1,
-          roomPrice: 2500,
+          roomPrice: actionData.depositAmount || 300,
           taxes: 0,
-          total: 2500
+          total: actionData.depositAmount || 300
         });
         return;
       }
