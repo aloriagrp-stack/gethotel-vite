@@ -1435,7 +1435,7 @@ export default function App() {
                         // ==================== ROOM CARDS (Phase 4 Premium Experience) ====================
                         if (responseType === 'rooms') {
                           const allRooms = (msg.hotels || []).flatMap(h =>
-                            (h.rooms || []).map(r => ({ ...r, hotelName: h.name, hotelId: h.id }))
+                            ((h as any).rooms || (h as any).room || []).map((r: any) => ({ ...r, hotelName: h.name, hotelId: h.id }))
                           );
                           if (allRooms.length === 0) return null;
                           console.log('[AI Chat] Rendering room cards:', allRooms.length, 'rooms');

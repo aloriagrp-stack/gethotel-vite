@@ -26,13 +26,31 @@ if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
  */
 async function processAiBookingConfirmation({ reply, userId, messages, memory }) {
     try {
-        // 1. Detect if booking is confirmed or payment is requested
         const lastUserContent = (messages && messages.length > 0 ? (messages[messages.length - 1].content || messages[messages.length - 1].text || '') : '').toLowerCase();
-        const isConfirmed = /booking\s+(?:confirm|summary|details|id)|confirm(?:ed)?|payment\s+link|secure\s+payment|12%\s+deposit|process(?:ing)?\s+your\s+payment|pay\s+online|launching|final|driver|safari/i.test(reply) ||
-                            /\b(online|pay|payment|deposit|12%|yes|sure|confirm|final|han|book|lock|done|ok|proceed)\b/i.test(lastUserContent);
-        if (!isConfirmed) return null;
 
-        logger.info('BookingOrch', 'Detected booking confirmation signal');
+        // Strict payment/checkout signal — only trigger when AI or user explicitly asks for payment or deposit
+        const isExplicitPaymentRequest = /12%\s+deposit|pay\s+online\s+now|checkout\s+link|razorpay|complete\s+your\s+payment/i.test(reply) ||
+                                        /pay\s+deposit|checkout\s+now|make\s+payment|book\s+now\s+id/i.test(lastUserContent);
+        if (!isExplicitPaymentRequest) return null;
+
+        logger.info('BookingOrch', 'Detected explicit booking payment signal');
+
+        // Parse Hotel ID from markdown link: [Name](/hotel/ID), /hotel/ID, or active memory
+        const hotelLinkMatch = reply.match(/\[([^\]]+)\]\(\/hotel\/(\d+)\)/) || reply.match(/\/hotel\/(\d+)/);
+        let hotelId = null;
+        let hotelName = 'GetHotel Partner';
+        if (hotelLinkMatch) {
+            hotelName = hotelLinkMatch[1] || 'GetHotel Partner';
+            hotelId = parseInt(hotelLinkMatch[2] || hotelLinkMatch[1]);
+        } else if (memory && memory.selectedHotelId) {
+            hotelId = parseInt(memory.selectedHotelId);
+        }
+
+        // If no explicit hotel ID is associated, DO NOT generate a random fallback payment card!
+        if (!hotelId) {
+            logger.debug('BookingOrch', 'No explicit hotel ID found for payment, skipping checkout action');
+            return null;
+        }
 
         // Authenticate guest — block anonymous reservations
         if (!userId) {
@@ -64,48 +82,6 @@ async function processAiBookingConfirmation({ reply, userId, messages, memory })
         if (!guestEmail) {
             logger.debug('BookingOrch', 'No email found in reply or history, skipping booking creation');
             return null;
-        }
-
-        // 3. Parse Hotel ID from markdown link: [Name](/hotel/ID) or plain /hotel/ID
-        const hotelLinkMatch = reply.match(/\[([^\]]+)\]\(\/hotel\/(\d+)\)/) || reply.match(/\/hotel\/(\d+)/);
-        let hotelId = null;
-        let hotelName = 'GetHotel Partner';
-        if (hotelLinkMatch) {
-            if (hotelLinkMatch[2]) {
-                hotelName = hotelLinkMatch[1];
-                hotelId = parseInt(hotelLinkMatch[2]);
-            } else {
-                hotelId = parseInt(hotelLinkMatch[1]);
-            }
-        }
-
-        // Scan history messages for hotel ID if not found in reply
-        if (!hotelId && messages) {
-            for (let i = messages.length - 1; i >= 0; i--) {
-                const content = messages[i].content || messages[i].text || '';
-                const histMatch = content.match(/\[([^\]]+)\]\(\/hotel\/(\d+)\)/) ||
-                                  content.match(/\/hotel\/(\d+)/) ||
-                                  content.match(/\b(?:id|hotelid)\s*[:=]?\s*(\d+)/i) ||
-                                  content.match(/\((\d+)\)/);
-                if (histMatch) {
-                    hotelId = parseInt(histMatch[2] || histMatch[1]);
-                    break;
-                }
-            }
-        }
-
-        // If hotelId is null, resolve fallback for custom tour packages or destination search
-        if (!hotelId) {
-            const fallbackHotel = await prisma.hotel.findFirst({
-                where: { isActive: true },
-                select: { id: true, name: true }
-            });
-            if (fallbackHotel) {
-                hotelId = fallbackHotel.id;
-            } else {
-                logger.warn('BookingOrch', 'No hotelId found and no active hotel in DB');
-                return null;
-            }
         }
 
         // Fetch hotel from database — resolve room-to-hotel fallback

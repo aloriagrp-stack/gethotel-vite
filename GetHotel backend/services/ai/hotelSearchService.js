@@ -191,7 +191,7 @@ async function searchHotelsInDatabase(messages) {
         return { status: 'no_results', hotels: [] };
     }
 
-    return { status: 'success', hotels: dbHotels };
+    return { status: 'success', hotels: sanitizeHotels(dbHotels) };
 }
 
 /**
