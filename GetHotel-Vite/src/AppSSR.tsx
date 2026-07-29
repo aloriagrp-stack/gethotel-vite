@@ -153,6 +153,7 @@ export default function AppSSR() {
                       <Route index element={<SuperAdminDashboard />} />
                       <Route path="requests" element={<SuperAdminDashboard />} />
                       <Route path="controlhub" element={<SuperAdminDashboard />} />
+                      <Route path="ai-chats" element={<SuperAdminDashboard />} />
                       <Route path="hotels" element={<SuperAdminDashboard />} />
                       <Route path="multi-room" element={<SuperAdminDashboard />} />
                       <Route path="ai-copilot" element={<SuperAdminDashboard />} />

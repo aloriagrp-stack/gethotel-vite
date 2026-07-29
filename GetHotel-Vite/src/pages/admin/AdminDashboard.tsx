@@ -12,7 +12,7 @@ import {
     CreditCard, TrendingUp, MoreVertical,
     ArrowUpRight, ArrowDownRight, Globe, ChevronRight, Loader2,
     Key, ShieldAlert, Eye, EyeOff, Star, MessageSquare, Trash2, Sparkles,
-    UserCheck, Mail, Phone, Calendar, LogIn, Shield, Copy, ExternalLink, RefreshCw, LayoutGrid, Percent
+    UserCheck, Mail, Phone, Calendar, LogIn, Shield, Copy, ExternalLink, RefreshCw, LayoutGrid, Percent, Bot
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "@/components/common/Image";
@@ -26,6 +26,7 @@ import AdminMultiRoomSetup from "./AdminMultiRoomSetup";
 import AdminPromotions from "./AdminPromotions";
 import AdminAICopilot from "./AdminAICopilot";
 import AdminReviewImporter from "./AdminReviewImporter";
+import AdminAIChats from "./AdminAIChats";
 
 // ─── Safe Date Formatter ────────────────────────────────────────────────────
 function formatDateSafe(rawDate: string | Date | null | undefined, opts?: Intl.DateTimeFormatOptions): string {
@@ -79,11 +80,14 @@ function StarRating({ rating }: { rating: number }) {
 
 export default function SuperAdminDashboard() {
     const [searchParams] = useSearchParams();
-    const tabParam = searchParams.get("tab") || "overview";
-    const [activeTab, setActiveTab] = useState(tabParam);
+    const location = useLocation();
+    let initialTab = searchParams.get("tab") || "overview";
+    if (location.pathname.includes('/admin/super/ai-chats')) {
+        initialTab = "ai-chats";
+    }
+    const [activeTab, setActiveTab] = useState(initialTab);
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
-    const location = useLocation();
 
     const [hotels, setHotels] = useState<any[]>([]);
     const [bookings, setBookings] = useState<any[]>([]);
@@ -126,12 +130,15 @@ export default function SuperAdminDashboard() {
 
     useEffect(() => {
         const path = location.pathname.split('/').pop();
+        const tabFromUrl = searchParams.get("tab");
         if (path && path !== 'super') {
             setActiveTab(path);
+        } else if (tabFromUrl) {
+            setActiveTab(tabFromUrl);
         } else {
-            setActiveTab(tabParam);
+            setActiveTab("overview");
         }
-    }, [location.pathname, tabParam]);
+    }, [location.pathname, searchParams]);
 
     const isTabLoaded = (tab = activeTab) => {
         const normalizedTab = tab === "partners" ? "users" : tab;
@@ -611,6 +618,8 @@ export default function SuperAdminDashboard() {
                     </div>
                 </>
             )}
+
+            {activeTab === "ai-chats" && <AdminAIChats />}
 
             {activeTab === "requests" && (
                 <div className="bg-white border border-slate-200 shadow-sm">

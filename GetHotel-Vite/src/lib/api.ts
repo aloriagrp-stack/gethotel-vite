@@ -159,6 +159,7 @@ export const adminApi = {
     getAllBookings: () => apiFetch('/admin/bookings'),
     getStats: () => apiFetch('/admin/stats'),
     getAnalytics: () => apiFetch('/admin/analytics'),
+    getAIChatAnalytics: (search?: string) => apiFetch(`/admin/ai-chats${search ? `?search=${encodeURIComponent(search)}` : ''}`),
     getHotelDetails: (id: string) => apiFetch(`/admin/hotels/${id}`),
     updateHotelMetrics: (id: string, data: any) => apiFetch(`/admin/hotels/${id}/metrics`, { method: 'PATCH', body: JSON.stringify(data) }),
     recalculateHotelMetrics: (id: string) => apiFetch(`/admin/hotels/${id}/recalculate`, { method: 'POST' }),
