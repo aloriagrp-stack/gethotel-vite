@@ -46,6 +46,8 @@ import CookiePolicy from "./pages/CookiePolicy";
 import CancellationPolicy from "./pages/CancellationPolicy";
 import PricingPolicy from "./pages/PricingPolicy";
 import ContactUs from "./pages/ContactUs";
+import TourPackages from "./pages/TourPackages";
+import TourPackageDetails from "./pages/TourPackageDetails";
 import NotFound from "./pages/NotFound";
 
 import AdminLayout from "./components/layout/AdminLayout";
@@ -99,6 +101,10 @@ export default function AppSSR() {
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Login />} />
                     <Route path="/hotels" element={<Hotels />} />
+                    <Route path="/packages" element={<TourPackages />} />
+                    <Route path="/packages/:id" element={<TourPackageDetails />} />
+                    <Route path="/tour-packages" element={<TourPackages />} />
+                    <Route path="/tour-packages/:id" element={<TourPackageDetails />} />
                     <Route path="/hotel/:id" element={<HotelDetails />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/wishlist" element={<Wishlist />} />
@@ -151,6 +157,7 @@ export default function AppSSR() {
                     </Route>
                     <Route path="/admin/super" element={<AdminLayout />}>
                       <Route index element={<SuperAdminDashboard />} />
+                      <Route path="tour-packages" element={<SuperAdminDashboard />} />
                       <Route path="requests" element={<SuperAdminDashboard />} />
                       <Route path="controlhub" element={<SuperAdminDashboard />} />
                       <Route path="ai-chats" element={<SuperAdminDashboard />} />

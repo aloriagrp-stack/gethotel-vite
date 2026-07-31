@@ -5,7 +5,7 @@ import {
     LayoutDashboard, Hotel, Users,
     BarChart3, Settings, LogOut,
     Bell, Search, Plus, Clock,
-    CreditCard, Loader2, Calendar, AlertCircle, LayoutTemplate, SlidersHorizontal, Star, RefreshCw, LayoutGrid, Globe, Sparkles, Bot,
+    CreditCard, Loader2, Calendar, AlertCircle, LayoutTemplate, SlidersHorizontal, Star, RefreshCw, LayoutGrid, Globe, Sparkles, Bot, Palmtree,
     ChevronLeft, ChevronRight, Menu, X, Percent
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -28,6 +28,7 @@ export default function AdminLayout() {
 
     const navItems = [
         { id: "overview", label: "Dashboard", icon: LayoutDashboard, href: "/admin/super" },
+        { id: "tour-packages", label: "Tour Packages Manager", icon: Palmtree, href: "/admin/super/tour-packages" },
         { id: "requests", label: "Partner Requests", icon: Clock, href: "/admin/super/requests" },
         { id: "controlhub", label: "Manager", icon: SlidersHorizontal, href: "/admin/super/controlhub" },
         { id: "ai-chats", label: "AI Chat Analytics", icon: Bot, href: "/admin/super/ai-chats" },

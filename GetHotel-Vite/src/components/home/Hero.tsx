@@ -130,19 +130,19 @@ export default function Hero({ title, highlight, transitionInterval, stories }: 
 
                 {/* Interactive Search Bar Component */}
                 <div className="w-full">
-                    {/* Stay Mode, Flights & Tour Packages Tabs */}
-                    <div className="flex items-center justify-center gap-2 md:gap-3 mb-6 w-full overflow-x-auto no-scrollbar py-1 px-4">
+                    {/* Stay Mode, Flights & Tour Packages Tabs — Responsive 2x2 Grid on Mobile (Upar-Niche) */}
+                    <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center gap-2 md:gap-3 mb-6 w-full max-w-lg sm:max-w-none mx-auto px-2 sm:px-4">
                         <button 
                             type="button"
                             onClick={() => setMode('nightly')}
                             className={cn(
-                                "px-3.5 py-2.5 md:px-5 md:py-2.5 rounded-full text-[10px] md:text-xs font-black transition-all duration-300 flex items-center gap-1.5 md:gap-2 border shadow-sm shrink-0 cursor-pointer",
+                                "w-full sm:w-auto px-3 py-2.5 md:px-5 md:py-2.5 rounded-full text-xs font-black transition-all duration-300 flex items-center justify-center gap-1.5 md:gap-2 border shadow-sm cursor-pointer",
                                 mode === 'nightly' 
-                                    ? "bg-slate-950 text-white border-slate-950 scale-105 shadow-md" 
-                                    : "bg-white/80 backdrop-blur-md text-slate-600 border-slate-200/80 hover:bg-white hover:text-slate-950"
+                                    ? "bg-slate-950 text-white border-slate-950 shadow-md scale-[1.02]" 
+                                    : "bg-white/90 backdrop-blur-md text-slate-700 border-slate-200/90 hover:bg-white hover:text-slate-950"
                             )}
                         >
-                            <Hotel className={cn("w-3.5 h-3.5 md:w-4 md:h-4", mode === 'nightly' ? "text-brand-400" : "text-slate-500")} />
+                            <Hotel className={cn("w-3.5 h-3.5 md:w-4 md:h-4", mode === 'nightly' ? "text-blue-400" : "text-slate-500")} />
                             <span>Full Day Stay</span>
                         </button>
 
@@ -150,10 +150,10 @@ export default function Hero({ title, highlight, transitionInterval, stories }: 
                             type="button"
                             onClick={() => setMode('hourly')}
                             className={cn(
-                                "px-3.5 py-2.5 md:px-5 md:py-2.5 rounded-full text-[10px] md:text-xs font-black transition-all duration-300 flex items-center gap-1.5 md:gap-2 border shadow-sm shrink-0 cursor-pointer",
+                                "w-full sm:w-auto px-3 py-2.5 md:px-5 md:py-2.5 rounded-full text-xs font-black transition-all duration-300 flex items-center justify-center gap-1.5 md:gap-2 border shadow-sm cursor-pointer",
                                 mode === 'hourly' 
-                                    ? "bg-blue-600 text-white border-blue-600 scale-105 shadow-md" 
-                                    : "bg-white/80 backdrop-blur-md text-slate-600 border-slate-200/80 hover:bg-white hover:text-blue-600"
+                                    ? "bg-blue-600 text-white border-blue-600 shadow-md scale-[1.02]" 
+                                    : "bg-white/90 backdrop-blur-md text-slate-700 border-slate-200/90 hover:bg-white hover:text-blue-600"
                             )}
                         >
                             <Clock className={cn("w-3.5 h-3.5 md:w-4 md:h-4", mode === 'hourly' ? "text-blue-200 animate-pulse" : "text-slate-500")} />
@@ -163,7 +163,7 @@ export default function Hero({ title, highlight, transitionInterval, stories }: 
                         <button 
                             type="button"
                             onClick={() => navigate(`/${langCode}/flights`)}
-                            className="px-3.5 py-2.5 md:px-5 md:py-2.5 rounded-full text-[10px] md:text-xs font-black transition-all duration-300 flex items-center gap-1.5 md:gap-2 border shadow-sm bg-white/80 backdrop-blur-md text-slate-600 border-slate-200/80 hover:bg-white hover:text-slate-950 shrink-0 cursor-pointer"
+                            className="w-full sm:w-auto px-3 py-2.5 md:px-5 md:py-2.5 rounded-full text-xs font-black transition-all duration-300 flex items-center justify-center gap-1.5 md:gap-2 border shadow-sm bg-white/90 backdrop-blur-md text-slate-700 border-slate-200/90 hover:bg-white hover:text-slate-950 cursor-pointer"
                         >
                             <Plane className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-500" />
                             <span>Flights</span>
@@ -171,13 +171,10 @@ export default function Hero({ title, highlight, transitionInterval, stories }: 
 
                         <button 
                             type="button"
-                            onClick={() => {
-                                const aiHost = window.location.hostname === 'localhost' ? 'http://localhost:5173' : 'https://ai.gethotelstays.com';
-                                window.open(`${aiHost}/?q=${encodeURIComponent('Show me luxury tour packages with itinerary, hotels, and sightseeing')}`, '_blank');
-                            }}
-                            className="px-3.5 py-2.5 md:px-5 md:py-2.5 rounded-full text-[10px] md:text-xs font-black transition-all duration-300 flex items-center gap-1.5 md:gap-2 border shadow-sm bg-gradient-to-r from-emerald-500/10 to-teal-500/10 backdrop-blur-md text-emerald-800 border-emerald-300/80 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 shrink-0 group cursor-pointer"
+                            onClick={() => navigate(`/${langCode}/packages`)}
+                            className="w-full sm:w-auto px-3 py-2.5 md:px-5 md:py-2.5 rounded-full text-xs font-black transition-all duration-300 flex items-center justify-center gap-1.5 md:gap-2 border shadow-sm bg-gradient-to-r from-blue-50 to-indigo-50 backdrop-blur-md text-blue-900 border-blue-200/90 hover:bg-blue-600 hover:text-white hover:border-blue-600 group cursor-pointer"
                         >
-                            <Palmtree className="w-3.5 h-3.5 md:w-4 md:h-4 text-emerald-600 group-hover:text-white transition-colors" />
+                            <Palmtree className="w-3.5 h-3.5 md:w-4 md:h-4 text-blue-600 group-hover:text-white transition-colors" />
                             <span>Tour Packages</span>
                         </button>
                     </div>

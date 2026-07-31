@@ -27,6 +27,7 @@ import AdminPromotions from "./AdminPromotions";
 import AdminAICopilot from "./AdminAICopilot";
 import AdminReviewImporter from "./AdminReviewImporter";
 import AdminAIChats from "./AdminAIChats";
+import AdminTourPackages from "./AdminTourPackages";
 
 // ─── Safe Date Formatter ────────────────────────────────────────────────────
 function formatDateSafe(rawDate: string | Date | null | undefined, opts?: Intl.DateTimeFormatOptions): string {
@@ -84,6 +85,9 @@ export default function SuperAdminDashboard() {
     let initialTab = searchParams.get("tab") || "overview";
     if (location.pathname.includes('/admin/super/ai-chats')) {
         initialTab = "ai-chats";
+    }
+    if (location.pathname.includes('/admin/super/tour-packages')) {
+        initialTab = "tour-packages";
     }
     const [activeTab, setActiveTab] = useState(initialTab);
     const { user, loading: authLoading } = useAuth();
@@ -620,6 +624,7 @@ export default function SuperAdminDashboard() {
             )}
 
             {activeTab === "ai-chats" && <AdminAIChats />}
+            {activeTab === "tour-packages" && <AdminTourPackages />}
 
             {activeTab === "requests" && (
                 <div className="bg-white border border-slate-200 shadow-sm">

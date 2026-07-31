@@ -55,6 +55,8 @@ const CookiePolicy = lazy(() => import("./pages/CookiePolicy"));
 const CancellationPolicy = lazy(() => import("./pages/CancellationPolicy"));
 const PricingPolicy = lazy(() => import("./pages/PricingPolicy"));
 const ContactUs = lazy(() => import("./pages/ContactUs"));
+const TourPackages = lazy(() => import("./pages/TourPackages"));
+const TourPackageDetails = lazy(() => import("./pages/TourPackageDetails"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const AdminLayout = lazy(() => import("./components/layout/AdminLayout"));
@@ -62,6 +64,7 @@ const PartnerLayout = lazy(() => import("./components/layout/PartnerLayout"));
 
 const SuperAdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const AdminHotelDetails = lazy(() => import("./pages/admin/AdminHotelDetails"));
+const AdminPackages = lazy(() => import("./pages/admin/AdminPackages"));
 
 const PartnerDashboard = lazy(() => import("./pages/partner-dashboard/Dashboard"));
 const PartnerBookings = lazy(() => import("./pages/partner-dashboard/Bookings"));
@@ -107,6 +110,8 @@ function LocalizedLayout() {
   return <Outlet />;
 }
 
+import { CartProvider } from "./context/CartContext";
+
 export default function App() {
   useEffect(() => {
     try {
@@ -120,10 +125,11 @@ export default function App() {
         <ScrollToTop />
         <GlobalTranslator />
         <AuthProvider>
-          <StayModeProvider>
-            <BookingProvider>
-              <WishlistProvider>
-                <ConditionalLayout>
+          <CartProvider>
+            <StayModeProvider>
+              <BookingProvider>
+                <WishlistProvider>
+                  <ConditionalLayout>
                   <Suspense fallback={<PageLoader />}>
                     <Routes>
                       {/* Root Redirector */}
@@ -136,6 +142,10 @@ export default function App() {
                         <Route path="register" element={<Login />} />
                         <Route path="hotels" element={<Hotels />} />
                         <Route path="flights" element={<Flights />} />
+                        <Route path="packages" element={<TourPackages />} />
+                        <Route path="packages/:id" element={<TourPackageDetails />} />
+                        <Route path="tour-packages" element={<TourPackages />} />
+                        <Route path="tour-packages/:id" element={<TourPackageDetails />} />
                         <Route path="hotel/:id" element={<HotelDetails />} />
                         <Route path="profile" element={<Profile />} />
                         <Route path="wishlist" element={<Wishlist />} />
@@ -190,6 +200,9 @@ export default function App() {
                         
                         <Route path="admin/super" element={<AdminLayout />}>
                           <Route index element={<SuperAdminDashboard />} />
+                          <Route path="tour-packages" element={<AdminPackages />} />
+                          <Route path="packages" element={<AdminPackages />} />
+                          <Route path="ai-chats" element={<SuperAdminDashboard />} />
                           <Route path="requests" element={<SuperAdminDashboard />} />
                           <Route path="controlhub" element={<SuperAdminDashboard />} />
                           <Route path="hotels" element={<SuperAdminDashboard />} />
@@ -218,7 +231,8 @@ export default function App() {
               </WishlistProvider>
             </BookingProvider>
           </StayModeProvider>
-        </AuthProvider>
+        </CartProvider>
+      </AuthProvider>
       </LocaleProvider>
     </ErrorBoundary>
   );

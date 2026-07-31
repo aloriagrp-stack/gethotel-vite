@@ -238,3 +238,12 @@ export const messageApi = {
     getHotelMessages: (hotelId: number) => apiFetch(`/messages/hotel/${hotelId}`),
     getMyMessages: () => apiFetch('/messages/my-messages'),
 };
+
+export const packageApi = {
+    getPackages: (params?: any) => apiFetch(`/packages${params ? '?' + new URLSearchParams(params).toString() : ''}`),
+    getPackage: (idOrSlug: string) => apiFetch(`/packages/${idOrSlug}`),
+    createPackage: (data: any) => apiFetch('/packages', { method: 'POST', body: JSON.stringify(data) }),
+    updatePackage: (id: string | number, data: any) => apiFetch(`/packages/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+    deletePackage: (id: string | number) => apiFetch(`/packages/${id}`, { method: 'DELETE' }),
+    uploadImage: (imageBase64: string) => apiFetch('/packages/upload-image', { method: 'POST', body: JSON.stringify({ image: imageBase64 }) }),
+};

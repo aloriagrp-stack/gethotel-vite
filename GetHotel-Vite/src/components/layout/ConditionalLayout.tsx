@@ -6,6 +6,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import BlueWavesBackground from "@/components/home/BlueWavesBackground";
 import CookieConsent from "@/components/common/CookieConsent";
+import FloatingCartPill from "@/components/common/FloatingCartPill";
 import { paymentApi } from "@/lib/api";
 
 export default function ConditionalLayout({
@@ -99,6 +100,7 @@ export default function ConditionalLayout({
             </div>
             {!isNoFooterPage && <Footer />}
             <CookieConsent />
+            <FloatingCartPill />
         </>
     );
 }
