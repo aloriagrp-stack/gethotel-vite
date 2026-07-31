@@ -1782,7 +1782,15 @@ export default function App() {
                                           {/* Price & CTA Block */}
                                           <div className="flex flex-col items-end shrink-0 w-full md:w-auto text-right">
                                             <div>
-                                              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">From</span>
+                                              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">From</span>
+                                              {h.promotionalPrice && h.promotionalPrice < h.pricePerNight && (
+                                                <div className="flex items-center gap-1.5 justify-end my-0.5">
+                                                  <span className="text-xs line-through text-slate-400 font-extrabold">₹{h.pricePerNight.toLocaleString()}</span>
+                                                  <span className="text-[9px] font-black bg-red-600 text-white px-1.5 py-0.5 rounded uppercase tracking-wide shadow-sm">
+                                                    {Math.round(((h.pricePerNight - h.promotionalPrice) / h.pricePerNight) * 100)}% OFF
+                                                  </span>
+                                                </div>
+                                              )}
                                               <div className={`text-xl md:text-2xl font-black leading-none ${theme === 'dark' ? "text-white" : "text-slate-900"}`}>
                                                 ₹{(h.promotionalPrice || h.pricePerNight).toLocaleString()}
                                                 <span className="text-xs font-semibold text-slate-500 ml-0.5">/night</span>
