@@ -459,6 +459,13 @@ const mountCriticalRoutes = (prefix) => {
     app.post(`${prefix}/auth/change-email/verify-otp`, protect, authController.verifyChangeEmailOTP);
     app.post(`${prefix}/hotels`, protect, authorize('hotel_admin', 'super_admin'), hotelController.createHotel);
     app.delete(`${prefix}/admin/hotels/:id`, protect, authorize('super_admin'), adminController.deleteHotel);
+    
+    // Explicit Package Import & Hero Config Routes for Live Server Compatibility
+    const packageController = require('./controllers/packageController');
+    app.get(`${prefix}/packages/hero-config`, packageController.getHeroConfig);
+    app.put(`${prefix}/packages/hero-config`, protect, authorize('admin', 'superadmin', 'super_admin'), packageController.updateHeroConfig);
+    app.post(`${prefix}/packages/import-json`, protect, authorize('admin', 'superadmin', 'super_admin'), packageController.importPackagesJson);
+    app.post(`${prefix}/packages/upload-image`, protect, authorize('admin', 'superadmin', 'super_admin', 'hotel_admin'), packageController.uploadImage);
 };
 
 // AI chat routes mounted inline so they work even if routes/aiChatRoutes.js is stale on server

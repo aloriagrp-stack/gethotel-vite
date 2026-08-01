@@ -56,4 +56,10 @@ router.post('/importer/import', hotelImporterController.importHotels);
 router.post('/importer/sync', hotelImporterController.syncNewHotels);
 router.post('/importer/verify-pairing', hotelImporterController.verifyPairingCode);
 
+// Package administration routes
+const packageController = require('../controllers/packageController');
+router.post('/packages/import-json', packageController.importPackagesJson);
+router.put('/packages/hero-config', packageController.updateHeroConfig);
+router.get('/packages/hero-config', packageController.getHeroConfig);
+
 module.exports = router;

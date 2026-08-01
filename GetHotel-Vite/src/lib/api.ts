@@ -246,9 +246,27 @@ export const packageApi = {
     updatePackage: (id: string | number, data: any) => apiFetch(`/packages/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     deletePackage: (id: string | number) => apiFetch(`/packages/${id}`, { method: 'DELETE' }),
     uploadImage: (imageBase64: string) => apiFetch('/packages/upload-image', { method: 'POST', body: JSON.stringify({ image: imageBase64 }) }),
-    importJson: (payload: { jsonText?: string; packages?: any[] }) => apiFetch('/packages/import-json', { method: 'POST', body: JSON.stringify(payload) }),
-    getHeroConfig: () => apiFetch('/packages/hero-config'),
-    updateHeroConfig: (data: any) => apiFetch('/packages/hero-config', { method: 'PUT', body: JSON.stringify(data) }),
+    importJson: async (payload: { jsonText?: string; packages?: any[] }) => {
+        try {
+            const res = await apiFetch('/packages/import-json', { method: 'POST', body: JSON.stringify(payload) });
+            if (res && (res.success || !res.message?.includes('not found'))) return res;
+        } catch (e) { /* try fallback */ }
+        return apiFetch('/admin/packages/import-json', { method: 'POST', body: JSON.stringify(payload) });
+    },
+    getHeroConfig: async () => {
+        try {
+            const res = await apiFetch('/packages/hero-config');
+            if (res && (res.success || !res.message?.includes('not found'))) return res;
+        } catch (e) { /* try fallback */ }
+        return apiFetch('/admin/packages/hero-config');
+    },
+    updateHeroConfig: async (data: any) => {
+        try {
+            const res = await apiFetch('/packages/hero-config', { method: 'PUT', body: JSON.stringify(data) });
+            if (res && (res.success || !res.message?.includes('not found'))) return res;
+        } catch (e) { /* try fallback */ }
+        return apiFetch('/admin/packages/hero-config', { method: 'PUT', body: JSON.stringify(data) });
+    },
 };
 
 export const hotelImporterApi = {
