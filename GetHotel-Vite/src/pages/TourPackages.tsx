@@ -165,7 +165,7 @@ export default function TourPackages() {
     const [searchQuery, setSearchQuery] = useState("");
     const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
 
-    // Fetch real tour packages from backend API
+    // Fetch real tour packages & hero config from backend API
     useEffect(() => {
         const fetchApiPackages = async () => {
             try {
@@ -175,6 +175,24 @@ export default function TourPackages() {
                 }
             } catch (err) {
                 console.error("Using default packages fallback:", err);
+            }
+
+            try {
+                const heroRes = await packageApi.getHeroConfig();
+                if (heroRes && heroRes.success && heroRes.data) {
+                    const hData = heroRes.data;
+                    if (Array.isArray(hData.heroImages) && hData.heroImages.length > 0) {
+                        const formattedBanners = hData.heroImages.map((imgUrl: string, idx: number) => ({
+                            title: hData.title || "Handcrafted Tour Packages",
+                            subtitle: hData.subtitle || "Unforgettable journeys designed for your dream vacation",
+                            tag: idx === 0 ? "Featured Deal" : "Trending Offer",
+                            image: imgUrl
+                        }));
+                        setBanners(formattedBanners);
+                    }
+                }
+            } catch (e) {
+                /* fallback to defaults */
             }
         };
         fetchApiPackages();

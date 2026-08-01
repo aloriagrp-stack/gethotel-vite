@@ -5,7 +5,7 @@ import SEOHead from "@/components/common/SEOHead";
 import {
     Palmtree, Plus, Edit, Trash2, Search, Check, X,
     Eye, EyeOff, MapPin, Clock, Star, Sparkles, Image, ArrowLeft,
-    Calendar, ShieldCheck, ChevronRight, Save, Upload, Loader2
+    Calendar, ShieldCheck, ChevronRight, Save, Upload, Loader2, FileCode, CheckCircle2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -24,7 +24,29 @@ export default function AdminPackages() {
     const [uploadingMain, setUploadingMain] = useState(false);
     const [uploadingGallery, setUploadingGallery] = useState(false);
 
-    // Form state
+    // JSON Import Modal States
+    const [isJsonModalOpen, setIsJsonModalOpen] = useState(false);
+    const [jsonInputText, setJsonInputText] = useState("");
+    const [isImportingJson, setIsImportingJson] = useState(false);
+    const [jsonValidation, setJsonValidation] = useState<{ isValid: boolean; count: number; message: string }>({
+        isValid: false,
+        count: 0,
+        message: ""
+    });
+
+    // Hero Section Manager Modal States
+    const [isHeroModalOpen, setIsHeroModalOpen] = useState(false);
+    const [heroConfig, setHeroConfig] = useState<{ title: string; subtitle: string; heroImages: string[] }>({
+        title: "Explore Handcrafted Tour Packages",
+        subtitle: "Unforgettable journeys designed for your dream vacation across India & global destinations",
+        heroImages: [
+            "https://images.unsplash.com/photo-1506461883276-594a12b11cf3?auto=format&fit=crop&w=1920&q=80"
+        ]
+    });
+    const [uploadingHero, setUploadingHero] = useState(false);
+    const [savingHero, setSavingHero] = useState(false);
+
+    // Form state for Single Package Editor
     const [formData, setFormData] = useState<any>({
         title: "",
         slug: "",
@@ -63,13 +85,189 @@ export default function AdminPackages() {
         }
     };
 
+    const fetchHeroConfig = async () => {
+        try {
+            const res = await packageApi.getHeroConfig();
+            if (res && res.success && res.data) {
+                setHeroConfig({
+                    title: res.data.title || "Explore Handcrafted Tour Packages",
+                    subtitle: res.data.subtitle || "Unforgettable journeys designed for your dream vacation",
+                    heroImages: Array.isArray(res.data.heroImages) ? res.data.heroImages : []
+                });
+            }
+        } catch (err) {
+            console.error("Failed to fetch hero config:", err);
+        }
+    };
+
     useEffect(() => {
         fetchPackages();
+        fetchHeroConfig();
     }, []);
 
     const showToast = (msg: string) => {
         setToastMessage(msg);
-        setTimeout(() => setToastMessage(""), 3000);
+        setTimeout(() => setToastMessage(""), 3500);
+    };
+
+    // Live JSON Validator
+    const handleJsonInputChange = (text: string) => {
+        setJsonInputText(text);
+        if (!text.trim()) {
+            setJsonValidation({ isValid: false, count: 0, message: "" });
+            return;
+        }
+
+        try {
+            const parsed = JSON.parse(text);
+            let count = 0;
+            if (Array.isArray(parsed)) {
+                count = parsed.length;
+            } else if (parsed && typeof parsed === 'object') {
+                if (Array.isArray(parsed.packages)) count = parsed.packages.length;
+                else if (Array.isArray(parsed.tours)) count = parsed.tours.length;
+                else if (parsed.title || parsed.name) count = 1;
+            }
+
+            if (count > 0) {
+                setJsonValidation({ isValid: true, count, message: `Valid JSON format! (${count} Tour Package(s) detected)` });
+            } else {
+                setJsonValidation({ isValid: false, count: 0, message: "Valid JSON syntax, but no 'title' or package array found." });
+            }
+        } catch (e: any) {
+            setJsonValidation({ isValid: false, count: 0, message: "Syntax Error: " + e.message });
+        }
+    };
+
+    // File Picker for JSON file
+    const handleJsonFileUpload = (file: File) => {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const content = e.target?.result as string;
+            if (content) {
+                handleJsonInputChange(content);
+            }
+        };
+        reader.readAsText(file);
+    };
+
+    // Paste Sample AI Prompt & JSON Format
+    const handlePasteSampleJson = () => {
+        const sample = JSON.stringify([
+            {
+                "title": "Kashmir Paradise 6D5N Snow & Houseboat Escapade",
+                "destination": "Srinagar, Gulmarg & Pahalgam, Kashmir",
+                "duration": "6 Days / 5 Nights",
+                "price": 24999,
+                "originalPrice": 32999,
+                "discountPercent": "24% OFF",
+                "badge": "Bestseller",
+                "rating": 4.95,
+                "reviewsCount": 142,
+                "includedStay": "4-Star Houseboat & Luxury Resort",
+                "transport": "Private SUV Mountain Transfers",
+                "image": "https://images.unsplash.com/photo-1566837945700-30057527ade0?auto=format&fit=crop&w=1200&q=80",
+                "overview": "Experience Paradise on Earth with luxury houseboat stay in Dal Lake, Shikara ride, and Gondola cable car ride in snow-capped Gulmarg.",
+                "inclusions": [
+                    "4-Star Houseboat & Resort Stay",
+                    "Daily Breakfast & Gourmet Dinner",
+                    "Shikara Ride at Dal Lake",
+                    "Gondola Cable Car Ride in Gulmarg",
+                    "Airport Pickup & Drop in SUV"
+                ],
+                "itinerary": [
+                    { "day": "Day 1", "title": "Srinagar Arrival & Houseboat Check-in", "desc": "Welcome reception and evening Shikara ride on Dal Lake." },
+                    { "day": "Day 2", "title": "Srinagar to Gulmarg Snow Excursion", "desc": "Enjoy Gondola cable car ride to Phase 1 & 2 in snow peak mountain." },
+                    { "day": "Day 3", "title": "Gulmarg to Pahalgam Valley of Shepherds", "desc": "Visit Aru Valley & Betaab Valley with local pony ride." }
+                ]
+            }
+        ], null, 2);
+        handleJsonInputChange(sample);
+    };
+
+    // Import JSON Submit Handler
+    const handleImportJsonSubmit = async () => {
+        if (!jsonInputText.trim() || !jsonValidation.isValid) return;
+        setIsImportingJson(true);
+
+        try {
+            const res = await packageApi.importJson({ jsonText: jsonInputText });
+            if (res && res.success) {
+                showToast(`✓ ${res.message || "Tour Packages imported successfully!"}`);
+                setIsJsonModalOpen(false);
+                setJsonInputText("");
+                setJsonValidation({ isValid: false, count: 0, message: "" });
+                fetchPackages();
+            } else {
+                alert(res?.message || "Failed to import packages via JSON.");
+            }
+        } catch (err: any) {
+            alert("Error importing JSON: " + err.message);
+        } finally {
+            setIsImportingJson(false);
+        }
+    };
+
+    // Local Hero Section Image File Upload Handler (NO manual link typing!)
+    const handleHeroLocalImageUpload = async (files: FileList | null) => {
+        if (!files || files.length === 0) return;
+        setUploadingHero(true);
+
+        try {
+            const uploadedUrls: string[] = [];
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const base64 = await new Promise<string>((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target?.result as string);
+                    reader.readAsDataURL(file);
+                });
+
+                if (base64) {
+                    const res = await packageApi.uploadImage(base64);
+                    if (res && res.success && res.url) {
+                        uploadedUrls.push(res.url);
+                    }
+                }
+            }
+
+            if (uploadedUrls.length > 0) {
+                setHeroConfig((prev) => ({
+                    ...prev,
+                    heroImages: [...prev.heroImages, ...uploadedUrls]
+                }));
+                showToast(`✓ ${uploadedUrls.length} local hero image(s) uploaded successfully!`);
+            }
+        } catch (e: any) {
+            alert("Failed to upload hero image: " + e.message);
+        } finally {
+            setUploadingHero(false);
+        }
+    };
+
+    const handleRemoveHeroImage = (index: number) => {
+        setHeroConfig((prev) => ({
+            ...prev,
+            heroImages: prev.heroImages.filter((_, i) => i !== index)
+        }));
+    };
+
+    const handleSaveHeroConfig = async () => {
+        setSavingHero(true);
+        try {
+            const res = await packageApi.updateHeroConfig(heroConfig);
+            if (res && res.success) {
+                showToast("✓ Tour Hero Section Banner & Local Images updated!");
+                setIsHeroModalOpen(false);
+            } else {
+                alert(res?.message || "Failed to update Hero Section.");
+            }
+        } catch (err: any) {
+            alert("Error saving Hero config: " + err.message);
+        } finally {
+            setSavingHero(false);
+        }
     };
 
     // Smart Price & Automatic Discount Calculator
@@ -104,23 +302,19 @@ export default function AdminPackages() {
                 if (res && res.success && res.url) {
                     if (type === "main") {
                         setFormData((prev: any) => ({ ...prev, image: res.url }));
-                        showToast("✓ Main cover image uploaded!");
                     } else {
                         setFormData((prev: any) => {
-                            const existing = typeof prev.gallery === "string" && prev.gallery
-                                ? prev.gallery.split(",").map((s: string) => s.trim()).filter(Boolean)
-                                : (prev.gallery || []);
-                            const updated = [...existing, res.url].join(", ");
-                            return { ...prev, gallery: updated };
+                            const currentGal = Array.isArray(prev.gallery) ? prev.gallery : [];
+                            return { ...prev, gallery: [...currentGal, res.url] };
                         });
-                        showToast("✓ Gallery image added!");
                     }
+                    showToast("✓ Image uploaded and optimized as WebP!");
                 }
             } catch (err: any) {
                 alert("Image upload failed: " + err.message);
             } finally {
-                if (type === "main") setUploadingMain(false);
-                else setUploadingGallery(false);
+                setUploadingMain(false);
+                setUploadingGallery(false);
             }
         };
         reader.readAsDataURL(file);
@@ -141,18 +335,17 @@ export default function AdminPackages() {
             badge: "Bestseller",
             includedStay: "4-Star Hotel Stay",
             transport: "Private AC Cab Included",
-            image: "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80",
-            gallery: "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80, https://images.unsplash.com/photo-1603262110263-fb0112e7cc33?auto=format&fit=crop&w=1200&q=80",
-            overview: "Immerse yourself in a luxurious holiday experience with handpicked stays, transfers, and sightseeing.",
-            inclusions: ["4-Star Hotel Stay with Breakfast", "Private AC Cab Transfers", "Guided Sightseeing Tour"],
+            image: "",
+            gallery: [],
+            overview: "",
+            inclusions: ["4-Star Hotel Stay with Breakfast", "Airport Transfers Included", "Guided Sightseeing Tour"],
             itinerary: [
-                { day: "Day 1", title: "Arrival & Resort Check-in", desc: "Pickup from airport/station, transfer to resort, and relax." },
-                { day: "Day 2", title: "Full Day Guided Tour", desc: "Explore main heritage sights and local attractions." }
+                { day: "Day 1", title: "Arrival & Hotel Check-in", desc: "Welcome reception and check-in to your resort." },
+                { day: "Day 2", title: "Guided City Sightseeing", desc: "Full day sightseeing tour with private guide." }
             ],
             isActive: true
         });
         setViewMode("form");
-        window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
     const handleOpenEdit = (pkg: any) => {
@@ -161,8 +354,8 @@ export default function AdminPackages() {
             title: pkg.title || "",
             slug: pkg.slug || "",
             destination: pkg.destination || "",
-            duration: pkg.duration || "",
-            price: pkg.price || 0,
+            duration: pkg.duration || "5 Days / 4 Nights",
+            price: pkg.price || 15000,
             originalPrice: pkg.originalPrice || 0,
             discountPercent: pkg.discountPercent || "",
             rating: pkg.rating || 4.8,
@@ -171,32 +364,26 @@ export default function AdminPackages() {
             includedStay: pkg.includedStay || "",
             transport: pkg.transport || "",
             image: pkg.image || "",
-            gallery: Array.isArray(pkg.gallery) ? pkg.gallery.join(", ") : (pkg.gallery || ""),
+            gallery: Array.isArray(pkg.gallery) ? pkg.gallery : [],
             overview: pkg.overview || "",
             inclusions: Array.isArray(pkg.inclusions) ? pkg.inclusions : [],
             itinerary: Array.isArray(pkg.itinerary) ? pkg.itinerary : [],
-            isActive: pkg.isActive ?? true
+            isActive: pkg.isActive !== false
         });
         setViewMode("form");
-        window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
-    const handleSavePackage = async (e: React.FormEvent) => {
+    const handleSubmitForm = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.title || !formData.destination || !formData.price) {
-            alert("Please fill in all required fields (Title, Destination, Price).");
+            alert("Please fill in Title, Destination, and Price");
             return;
         }
 
         setIsSubmitting(true);
         try {
-            const galleryArray = typeof formData.gallery === "string" 
-                ? formData.gallery.split(",").map((s: string) => s.trim()).filter(Boolean)
-                : (formData.gallery || []);
-
             const payload = {
                 ...formData,
-                gallery: galleryArray,
                 price: parseFloat(formData.price),
                 originalPrice: formData.originalPrice ? parseFloat(formData.originalPrice) : null,
                 rating: parseFloat(formData.rating || 4.8),
@@ -287,10 +474,11 @@ export default function AdminPackages() {
         }));
     };
 
-    const filteredPackages = packages.filter(p => 
-        p.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.destination?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filteredPackages = packages.filter(pkg => {
+        if (!searchQuery.trim()) return true;
+        const q = searchQuery.toLowerCase();
+        return (pkg.title || "").toLowerCase().includes(q) || (pkg.destination || "").toLowerCase().includes(q);
+    });
 
     return (
         <div className="p-4 sm:p-8 space-y-6 font-sans text-slate-900 max-w-6xl mx-auto">
@@ -320,20 +508,38 @@ export default function AdminPackages() {
                         <div className="space-y-1">
                             <div className="flex items-center gap-2 text-blue-600 font-bold text-xs uppercase tracking-wider">
                                 <Palmtree className="w-4 h-4 text-blue-600" />
-                                <span>Tour Packages</span>
+                                <span>Tour Packages Manager</span>
                             </div>
                             <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
                                 Package Directory ({packages.length})
                             </h1>
                         </div>
 
-                        <button
-                            onClick={handleOpenCreate}
-                            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm hover:shadow transition-all flex items-center gap-2 cursor-pointer"
-                        >
-                            <Plus className="w-4 h-4" />
-                            <span>Create New Package</span>
-                        </button>
+                        <div className="flex flex-wrap items-center gap-2.5">
+                            <button
+                                onClick={() => setIsHeroModalOpen(true)}
+                                className="px-4 py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm transition-all flex items-center gap-2 cursor-pointer"
+                            >
+                                <Image className="w-4 h-4 text-blue-400" />
+                                <span>Hero Banner</span>
+                            </button>
+
+                            <button
+                                onClick={() => setIsJsonModalOpen(true)}
+                                className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm transition-all flex items-center gap-2 cursor-pointer"
+                            >
+                                <Sparkles className="w-4 h-4 text-emerald-200" />
+                                <span>Import via JSON</span>
+                            </button>
+
+                            <button
+                                onClick={handleOpenCreate}
+                                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm transition-all flex items-center gap-2 cursor-pointer"
+                            >
+                                <Plus className="w-4 h-4" />
+                                <span>Create Package</span>
+                            </button>
+                        </div>
                     </div>
 
                     {/* Search Bar */}
@@ -356,89 +562,97 @@ export default function AdminPackages() {
                             <Palmtree className="w-10 h-10 text-slate-300 mx-auto" />
                             <h3 className="text-sm font-bold uppercase text-slate-700">No Tour Packages Found</h3>
                             <p className="text-xs text-slate-500 max-w-sm mx-auto font-medium">
-                                Click "Create New Package" to add your first tour package!
+                                Click "Import via JSON" or "Create Package" to add your tour packages!
                             </p>
-                            <button
-                                onClick={handleOpenCreate}
-                                className="px-5 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-blue-700 transition-all inline-flex items-center gap-2 cursor-pointer"
-                            >
-                                <Plus className="w-4 h-4" />
-                                <span>Add First Package</span>
-                            </button>
+                            <div className="flex items-center justify-center gap-3">
+                                <button
+                                    onClick={() => setIsJsonModalOpen(true)}
+                                    className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-emerald-700 transition-all inline-flex items-center gap-1.5 cursor-pointer"
+                                >
+                                    <Sparkles className="w-3.5 h-3.5" />
+                                    <span>Import via JSON</span>
+                                </button>
+
+                                <button
+                                    onClick={handleOpenCreate}
+                                    className="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-blue-700 transition-all inline-flex items-center gap-1.5 cursor-pointer"
+                                >
+                                    <Plus className="w-3.5 h-3.5" />
+                                    <span>Add First Package</span>
+                                </button>
+                            </div>
                         </div>
                     ) : (
                         <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm divide-y divide-slate-100 overflow-hidden">
                             {filteredPackages.map((pkg) => (
-                                <div key={pkg.id} className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-slate-50/70 transition-colors">
-                                    <div className="flex items-center gap-4 min-w-0">
+                                <div key={pkg.id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/60 transition-colors">
+                                    <div className="flex items-start gap-4">
                                         <img
-                                            src={pkg.image || "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=200&q=80"}
+                                            src={pkg.image || "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=400&q=80"}
                                             alt={pkg.title}
-                                            className="w-16 h-14 rounded-xl object-cover shrink-0 border border-slate-200/80"
+                                            className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover border border-slate-200 shrink-0 bg-slate-100"
                                         />
-                                        <div className="space-y-0.5 min-w-0">
+                                        <div className="space-y-1">
                                             <div className="flex items-center gap-2 flex-wrap">
-                                                <span className="text-[10px] font-bold px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md border border-blue-100">
+                                                <span className="px-2.5 py-0.5 bg-blue-50 text-blue-700 text-[10px] font-black rounded-md uppercase tracking-wider border border-blue-100">
                                                     {pkg.badge || "Package"}
                                                 </span>
-                                                {!pkg.isActive && (
-                                                    <span className="text-[10px] font-bold px-2 py-0.5 bg-red-50 text-red-600 rounded-md border border-red-100">
-                                                        Hidden
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <h3 className="text-sm font-bold text-slate-900 truncate">
-                                                {pkg.title}
-                                            </h3>
-                                            <div className="flex items-center gap-2 text-[11px] font-semibold text-slate-500 flex-wrap">
-                                                <span className="flex items-center gap-1 text-slate-700">
-                                                    <MapPin className="w-3 h-3 text-blue-600" />
+                                                <span className="text-xs text-slate-500 font-semibold flex items-center gap-1">
+                                                    <MapPin className="w-3 h-3 text-slate-400" />
                                                     {pkg.destination}
                                                 </span>
-                                                <span>•</span>
+                                            </div>
+
+                                            <h3 className="font-bold text-sm sm:text-base text-slate-900">
+                                                {pkg.title}
+                                            </h3>
+
+                                            <div className="flex items-center gap-3 text-xs text-slate-500 font-medium">
                                                 <span className="flex items-center gap-1">
-                                                    <Clock className="w-3 h-3 text-blue-600" />
+                                                    <Clock className="w-3.5 h-3.5 text-slate-400" />
                                                     {pkg.duration}
                                                 </span>
+                                                <span>•</span>
+                                                <span className="font-black text-slate-900">
+                                                    ₹{pkg.price?.toLocaleString("en-IN")}
+                                                </span>
+                                                {pkg.discountPercent && (
+                                                    <span className="text-emerald-600 font-bold text-[10px] bg-emerald-50 px-1.5 py-0.5 rounded">
+                                                        {pkg.discountPercent}
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center justify-between sm:justify-end gap-5 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
-                                        <div className="text-left sm:text-right">
-                                            <span className="text-base font-extrabold text-blue-600 block">₹{pkg.price?.toLocaleString()}</span>
-                                            {pkg.originalPrice && (
-                                                <span className="text-[10px] font-semibold text-slate-400 line-through">₹{pkg.originalPrice?.toLocaleString()}</span>
-                                            )}
-                                        </div>
+                                    <div className="flex items-center gap-2 self-end sm:self-center">
+                                        <button
+                                            onClick={() => handleToggleStatus(pkg)}
+                                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                                                pkg.isActive
+                                                    ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200"
+                                                    : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                                            }`}
+                                        >
+                                            {pkg.isActive ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                                            <span>{pkg.isActive ? "Active" : "Hidden"}</span>
+                                        </button>
 
-                                        <div className="flex items-center gap-1.5">
-                                            <button
-                                                onClick={() => handleToggleStatus(pkg)}
-                                                title={pkg.isActive ? "Hide Package" : "Publish Package"}
-                                                className={`w-8 h-8 rounded-lg border flex items-center justify-center transition-colors cursor-pointer ${
-                                                    pkg.isActive ? "bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100" : "bg-slate-100 text-slate-400 border-slate-200 hover:bg-slate-200"
-                                                }`}
-                                            >
-                                                {pkg.isActive ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                                            </button>
+                                        <button
+                                            onClick={() => handleOpenEdit(pkg)}
+                                            className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                                            title="Edit Package"
+                                        >
+                                            <Edit className="w-4 h-4" />
+                                        </button>
 
-                                            <button
-                                                onClick={() => handleOpenEdit(pkg)}
-                                                title="Edit Package"
-                                                className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 border border-blue-200 flex items-center justify-center hover:bg-blue-100 transition-colors cursor-pointer"
-                                            >
-                                                <Edit className="w-4 h-4" />
-                                            </button>
-
-                                            <button
-                                                onClick={() => handleDeletePackage(pkg.id, pkg.title)}
-                                                title="Delete Package"
-                                                className="w-8 h-8 rounded-lg bg-red-50 text-red-600 border border-red-200 flex items-center justify-center hover:bg-red-100 transition-colors cursor-pointer"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        </div>
+                                        <button
+                                            onClick={() => handleDeletePackage(pkg.id, pkg.title)}
+                                            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                                            title="Delete Package"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
                                     </div>
                                 </div>
                             ))}
@@ -448,314 +662,525 @@ export default function AdminPackages() {
             )}
 
             {/* ========================================================= */}
-            {/* VIEW MODE 2: IN-PAGE MINIMAL EDITOR VIEW (NO MODALS / POPUPS!) */}
+            {/* MODAL 1: IMPORT TOUR VIA JSON MODAL */}
             {/* ========================================================= */}
-            {viewMode === "form" && (
-                <form onSubmit={handleSavePackage} className="space-y-6 pb-20">
-                    {/* Header Bar */}
-                    <div className="flex items-center justify-between bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm sticky top-4 z-40">
-                        <div className="flex items-center gap-3">
-                            <button
-                                type="button"
-                                onClick={() => setViewMode("list")}
-                                className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 transition-colors cursor-pointer shrink-0"
-                            >
-                                <ArrowLeft className="w-4 h-4" />
-                            </button>
-                            <div>
-                                <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider block">
-                                    {editingPackage ? "Edit Package Mode" : "New Package Creator"}
-                                </span>
-                                <h1 className="text-lg font-black text-slate-900">
-                                    {editingPackage ? (editingPackage.title || "Edit Package") : "Create Tour Package"}
-                                </h1>
+            {isJsonModalOpen && (
+                <div className="fixed inset-0 z-[250] bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-5 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                            <div className="flex items-center gap-2.5">
+                                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
+                                    <Sparkles className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h2 className="text-base font-black text-slate-900">Import Tour Packages via JSON</h2>
+                                    <p className="text-xs text-slate-500 font-medium">Paste AI-generated JSON or upload a .json file</p>
+                                </div>
                             </div>
+                            <button
+                                onClick={() => setIsJsonModalOpen(false)}
+                                className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center cursor-pointer"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
                         </div>
 
-                        <div className="flex items-center gap-3">
+                        {/* Prompt Assistant Tip */}
+                        <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-4 space-y-2">
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs font-bold text-emerald-900 flex items-center gap-1.5">
+                                    <Sparkles className="w-4 h-4 text-emerald-600" />
+                                    <span>AI Prompt Assistant</span>
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={handlePasteSampleJson}
+                                    className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-bold transition-all cursor-pointer"
+                                >
+                                    Paste Sample JSON
+                                </button>
+                            </div>
+                            <p className="text-xs text-emerald-800 font-medium leading-relaxed">
+                                You can ask ChatGPT/Claude: <em>"Generate a JSON array of 5 exotic Indian tour packages with title, destination, duration, price, overview, inclusions, itinerary array."</em>
+                            </p>
+                        </div>
+
+                        {/* File upload or Text input */}
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                                    Paste JSON String or Upload File
+                                </label>
+                                <label className="cursor-pointer text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1">
+                                    <Upload className="w-3.5 h-3.5" />
+                                    <span>Upload .json File</span>
+                                    <input
+                                        type="file"
+                                        accept=".json,application/json"
+                                        onChange={(e) => e.target.files?.[0] && handleJsonFileUpload(e.target.files[0])}
+                                        className="hidden"
+                                    />
+                                </label>
+                            </div>
+
+                            <textarea
+                                rows={10}
+                                value={jsonInputText}
+                                onChange={(e) => handleJsonInputChange(e.target.value)}
+                                placeholder="Paste your tour package JSON here..."
+                                className="w-full p-4 bg-slate-950 font-mono text-xs text-emerald-400 rounded-2xl border border-slate-800 outline-none resize-none focus:border-emerald-500"
+                            />
+                        </div>
+
+                        {/* Live Validation Indicator */}
+                        {jsonInputText.trim() && (
+                            <div className={`p-3 rounded-xl text-xs font-bold flex items-center gap-2 ${
+                                jsonValidation.isValid
+                                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                    : "bg-red-50 text-red-600 border border-red-200"
+                            }`}>
+                                {jsonValidation.isValid ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <X className="w-4 h-4 shrink-0" />}
+                                <span>{jsonValidation.message}</span>
+                            </div>
+                        )}
+
+                        <div className="flex items-center justify-end gap-3 border-t border-slate-100 pb-1">
                             <button
-                                type="button"
-                                onClick={() => setViewMode("list")}
-                                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer hidden sm:block"
+                                onClick={() => setIsJsonModalOpen(false)}
+                                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold cursor-pointer"
                             >
                                 Cancel
                             </button>
                             <button
-                                type="submit"
-                                disabled={isSubmitting}
-                                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl uppercase tracking-wider shadow transition-all flex items-center gap-2 cursor-pointer"
+                                onClick={handleImportJsonSubmit}
+                                disabled={!jsonValidation.isValid || isImportingJson}
+                                className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 cursor-pointer"
                             >
-                                <Save className="w-4 h-4" />
-                                <span>{isSubmitting ? "Saving..." : (editingPackage ? "Save Changes" : "Publish Package")}</span>
+                                {isImportingJson ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                                <span>{isImportingJson ? "Importing..." : `Import ${jsonValidation.count || ''} Tours Now`}</span>
                             </button>
                         </div>
                     </div>
+                </div>
+            )}
 
-                    {/* Section 1: Basic Information */}
+            {/* ========================================================= */}
+            {/* MODAL 2: HERO BANNER & LOCAL IMAGE MANAGER MODAL */}
+            {/* ========================================================= */}
+            {isHeroModalOpen && (
+                <div className="fixed inset-0 z-[250] bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-5 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                            <div className="flex items-center gap-2.5">
+                                <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
+                                    <Image className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h2 className="text-base font-black text-slate-900">Manage Tour Hero Section & Local Images</h2>
+                                    <p className="text-xs text-slate-500 font-medium">Upload local files directly from your device</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setIsHeroModalOpen(false)}
+                                className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center cursor-pointer"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        {/* Title & Subtitle Inputs */}
+                        <div className="space-y-4">
+                            <div>
+                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                                    Hero Section Main Title
+                                </label>
+                                <input
+                                    type="text"
+                                    value={heroConfig.title}
+                                    onChange={(e) => setHeroConfig(prev => ({ ...prev, title: e.target.value }))}
+                                    placeholder="Explore Handcrafted Tour Packages"
+                                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 outline-none focus:border-blue-600"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                                    Hero Subtitle / Tagline
+                                </label>
+                                <input
+                                    type="text"
+                                    value={heroConfig.subtitle}
+                                    onChange={(e) => setHeroConfig(prev => ({ ...prev, subtitle: e.target.value }))}
+                                    placeholder="Unforgettable journeys designed for your dream vacation..."
+                                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 outline-none focus:border-blue-600"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Local File Image Upload Box (Strictly Local Upload - NO link typing!) */}
+                        <div className="space-y-3 border-t border-slate-100 pt-4">
+                            <div className="flex items-center justify-between">
+                                <label className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                                    <Upload className="w-4 h-4 text-blue-600" />
+                                    <span>Upload Local Banner Images</span>
+                                </label>
+                                <span className="text-[11px] text-slate-400 font-semibold">({heroConfig.heroImages.length} images)</span>
+                            </div>
+
+                            <label className="border-2 border-dashed border-slate-200 hover:border-blue-500 bg-slate-50 hover:bg-blue-50/50 p-6 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all">
+                                {uploadingHero ? (
+                                    <div className="flex items-center gap-2 text-xs font-bold text-blue-600">
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                        <span>Converting & Uploading Local Images to WebP...</span>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <Upload className="w-8 h-8 text-blue-500" />
+                                        <span className="text-xs font-bold text-slate-800">Click to Select Local Images from Device</span>
+                                        <span className="text-[11px] text-slate-400">Supports PNG, JPG, WebP (Converted automatically to high-res WebP)</span>
+                                    </>
+                                )}
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    multiple
+                                    onChange={(e) => handleHeroLocalImageUpload(e.target.files)}
+                                    className="hidden"
+                                />
+                            </label>
+
+                            {/* Uploaded Hero Images Gallery Grid */}
+                            {heroConfig.heroImages.length > 0 && (
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
+                                    {heroConfig.heroImages.map((imgUrl, idx) => (
+                                        <div key={idx} className="relative group rounded-xl overflow-hidden aspect-[16/9] border border-slate-200 bg-slate-100">
+                                            <img src={imgUrl} alt={`Hero Banner ${idx}`} className="w-full h-full object-cover" />
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRemoveHeroImage(idx)}
+                                                className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-red-600 text-white flex items-center justify-center shadow-lg hover:bg-red-700 transition-all cursor-pointer"
+                                                title="Remove Image"
+                                            >
+                                                <X className="w-3.5 h-3.5" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-4">
+                            <button
+                                onClick={() => setIsHeroModalOpen(false)}
+                                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold cursor-pointer"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSaveHeroConfig}
+                                disabled={savingHero}
+                                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 cursor-pointer"
+                            >
+                                {savingHero ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                                <span>{savingHero ? "Saving..." : "Save Hero Section"}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ========================================================= */}
+            {/* VIEW MODE 2: FORM / PACKAGE EDITOR VIEW */}
+            {/* ========================================================= */}
+            {viewMode === "form" && (
+                <form onSubmit={handleSubmitForm} className="space-y-6">
+                    {/* Header */}
+                    <div className="flex items-center justify-between bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
+                        <div className="flex items-center gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setViewMode("list")}
+                                className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition-colors cursor-pointer"
+                            >
+                                <ArrowLeft className="w-4 h-4" />
+                            </button>
+                            <div>
+                                <h1 className="text-xl font-black text-slate-900 tracking-tight">
+                                    {editingPackage ? `Edit: ${editingPackage.title}` : "Create New Tour Package"}
+                                </h1>
+                                <p className="text-xs text-slate-500 font-medium">Configure package itinerary, pricing, and inclusions</p>
+                            </div>
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl uppercase tracking-wider shadow-sm hover:shadow transition-all flex items-center gap-2 cursor-pointer"
+                        >
+                            <Save className="w-4 h-4" />
+                            <span>{isSubmitting ? "Saving..." : (editingPackage ? "Save Changes" : "Publish Package")}</span>
+                        </button>
+                    </div>
+
+                    {/* Section 1: Basic Tour Information */}
                     <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-                        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 pb-3 flex items-center gap-2">
+                        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2 border-b border-slate-100 pb-3">
                             <Palmtree className="w-4 h-4 text-blue-600" />
-                            <span>1. Basic Details</span>
+                            <span>1. Basic Tour Details</span>
                         </h2>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-slate-700">Package Title *</label>
+                            <div>
+                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                                    Package Title *
+                                </label>
                                 <input
                                     type="text"
                                     required
                                     value={formData.title}
                                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                    placeholder="e.g. Royal Rajasthan Heritage Trail"
-                                    className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-blue-600 outline-none transition-all"
+                                    placeholder="e.g. Royal Rajasthan Heritage & Fort Trail"
+                                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 outline-none focus:border-blue-600"
                                 />
                             </div>
 
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-slate-700">Destination *</label>
+                            <div>
+                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                                    Destination Covered *
+                                </label>
                                 <input
                                     type="text"
                                     required
                                     value={formData.destination}
                                     onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
                                     placeholder="e.g. Jaipur • Udaipur • Jodhpur"
-                                    className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-blue-600 outline-none transition-all"
+                                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-blue-600"
                                 />
                             </div>
 
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-slate-700">Duration *</label>
+                            <div>
+                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                                    Duration *
+                                </label>
                                 <input
                                     type="text"
                                     required
                                     value={formData.duration}
                                     onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                                    placeholder="e.g. 6 Days / 5 Nights"
-                                    className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-blue-600 outline-none transition-all"
+                                    placeholder="e.g. 5 Days / 4 Nights"
+                                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-blue-600"
                                 />
                             </div>
 
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-slate-700">Badge Label</label>
+                            <div>
+                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                                    Badge / Tag
+                                </label>
                                 <input
                                     type="text"
                                     value={formData.badge}
                                     onChange={(e) => setFormData({ ...formData, badge: e.target.value })}
-                                    placeholder="e.g. Bestseller, Trending, Hot Deal"
-                                    className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-blue-600 outline-none transition-all"
+                                    placeholder="e.g. Bestseller, Trending, Flat 25% OFF"
+                                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-blue-600"
                                 />
                             </div>
                         </div>
                     </div>
 
-                    {/* Section 2: Pricing */}
+                    {/* Section 2: Pricing & Stay Features */}
                     <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-                        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 pb-3 flex items-center gap-2">
-                            <span>₹</span>
-                            <span>2. Pricing & Smart Discounts</span>
+                        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2 border-b border-slate-100 pb-3">
+                            <ShieldCheck className="w-4 h-4 text-blue-600" />
+                            <span>2. Pricing & Stay Features</span>
                         </h2>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-slate-700">Original / Base Price (₹)</label>
-                                <input
-                                    type="number"
-                                    value={formData.originalPrice}
-                                    onChange={(e) => handlePriceChange("originalPrice", e.target.value)}
-                                    placeholder="e.g. 1000"
-                                    className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-blue-600 outline-none transition-all"
-                                />
-                            </div>
-
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-slate-700">Selling / Offer Price (₹) *</label>
+                            <div>
+                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                                    Selling Price (₹) *
+                                </label>
                                 <input
                                     type="number"
                                     required
                                     value={formData.price}
                                     onChange={(e) => handlePriceChange("price", e.target.value)}
-                                    placeholder="e.g. 500"
-                                    className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-blue-600 outline-none transition-all font-bold text-blue-600"
+                                    placeholder="15000"
+                                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-black text-slate-900 outline-none focus:border-blue-600"
                                 />
                             </div>
 
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-slate-700">Discount Tag (Auto-Calculated)</label>
+                            <div>
+                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                                    Original Price (₹)
+                                </label>
+                                <input
+                                    type="number"
+                                    value={formData.originalPrice}
+                                    onChange={(e) => handlePriceChange("originalPrice", e.target.value)}
+                                    placeholder="19999"
+                                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-500 outline-none focus:border-blue-600"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                                    Discount Tag
+                                </label>
                                 <input
                                     type="text"
                                     value={formData.discountPercent}
                                     onChange={(e) => setFormData({ ...formData, discountPercent: e.target.value })}
-                                    placeholder="e.g. 50% OFF"
-                                    className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs font-bold text-emerald-600 focus:bg-white focus:border-blue-600 outline-none transition-all"
+                                    placeholder="e.g. 25% OFF"
+                                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-emerald-600 outline-none focus:border-blue-600"
                                 />
                             </div>
-
-                            {/* Live Savings Calculation Banner */}
-                            {parseFloat(formData.originalPrice) > parseFloat(formData.price) && parseFloat(formData.originalPrice) > 0 && (
-                                <div className="md:col-span-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between text-xs font-bold text-emerald-800">
-                                    <span className="flex items-center gap-1.5">
-                                        <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
-                                        <span>Auto Discount: <strong>{Math.round(((parseFloat(formData.originalPrice) - parseFloat(formData.price)) / parseFloat(formData.originalPrice)) * 100)}% OFF</strong></span>
-                                    </span>
-                                    <span className="bg-emerald-600 text-white text-[10px] uppercase font-black px-2.5 py-1 rounded-md">
-                                        Customer Saves ₹{(parseFloat(formData.originalPrice) - parseFloat(formData.price)).toLocaleString()}
-                                    </span>
-                                </div>
-                            )}
                         </div>
-                    </div>
-
-                    {/* Section 3: Media & Accommodation */}
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-                        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 pb-3 flex items-center gap-2">
-                            <Image className="w-4 h-4 text-blue-600" />
-                            <span>3. Images & Accommodation</span>
-                        </h2>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {/* Main Cover Image with Local Upload */}
-                            <div className="space-y-1.5 md:col-span-2">
-                                <div className="flex items-center justify-between flex-wrap gap-2">
-                                    <label className="text-xs font-bold text-slate-700">Main Cover Image *</label>
-                                    <label className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm">
-                                        {uploadingMain ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
-                                        <span>{uploadingMain ? "Uploading..." : "Upload From Computer"}</span>
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={(e) => e.target.files?.[0] && handleLocalImageUpload(e.target.files[0], "main")}
-                                            className="hidden"
-                                            disabled={uploadingMain}
-                                        />
-                                    </label>
-                                </div>
-                                <input
-                                    type="text"
-                                    required
-                                    value={formData.image}
-                                    onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                                    placeholder="Paste Image URL or click 'Upload From Computer' above..."
-                                    className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-blue-600 outline-none transition-all"
-                                />
-                                {formData.image && (
-                                    <div className="pt-1 flex items-center gap-3">
-                                        <img src={formData.image} alt="Cover Preview" className="w-24 h-16 rounded-xl object-cover border border-slate-200 shadow-sm" />
-                                        <span className="text-[10px] font-bold text-slate-400">Main Cover Image Preview</span>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Gallery Images with Local Upload */}
-                            <div className="space-y-1.5 md:col-span-2">
-                                <div className="flex items-center justify-between flex-wrap gap-2">
-                                    <label className="text-xs font-bold text-slate-700">Gallery Image URLs (Comma separated)</label>
-                                    <label className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm">
-                                        {uploadingGallery ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
-                                        <span>{uploadingGallery ? "Uploading..." : "Upload Local Gallery Files"}</span>
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            multiple
-                                            onChange={(e) => {
-                                                if (e.target.files) {
-                                                    Array.from(e.target.files).forEach(f => handleLocalImageUpload(f, "gallery"));
-                                                }
-                                            }}
-                                            className="hidden"
-                                            disabled={uploadingGallery}
-                                        />
-                                    </label>
-                                </div>
-                                <input
-                                    type="text"
-                                    value={formData.gallery}
-                                    onChange={(e) => setFormData({ ...formData, gallery: e.target.value })}
-                                    placeholder="Paste URLs separated by comma or click 'Upload Local Gallery Files'..."
-                                    className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-blue-600 outline-none transition-all"
-                                />
-                                {formData.gallery && (
-                                    <div className="pt-1 flex items-center gap-2 overflow-x-auto">
-                                        {(typeof formData.gallery === "string" ? formData.gallery.split(",").map((s: string) => s.trim()).filter(Boolean) : (formData.gallery || [])).map((imgUrl: string, idx: number) => (
-                                            <img key={idx} src={imgUrl} alt={`Gallery #${idx + 1}`} className="w-16 h-12 rounded-lg object-cover border border-slate-200 shrink-0 shadow-sm" />
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-slate-700">Included Stay</label>
+                            <div>
+                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                                    Included Hotel Stay
+                                </label>
                                 <input
                                     type="text"
                                     value={formData.includedStay}
                                     onChange={(e) => setFormData({ ...formData, includedStay: e.target.value })}
-                                    placeholder="e.g. 4-Star Heritage Resort"
-                                    className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-blue-600 outline-none transition-all"
+                                    placeholder="e.g. Beachfront 4-Star Resort"
+                                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-blue-600"
                                 />
                             </div>
 
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-slate-700">Transport Details</label>
+                            <div>
+                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                                    Transport Included
+                                </label>
                                 <input
                                     type="text"
                                     value={formData.transport}
                                     onChange={(e) => setFormData({ ...formData, transport: e.target.value })}
-                                    placeholder="e.g. Private AC Cab Included"
-                                    className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-blue-600 outline-none transition-all"
+                                    placeholder="e.g. Private AC Sedan Included"
+                                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-blue-600"
                                 />
                             </div>
                         </div>
                     </div>
 
-                    {/* Section 4: Package Overview */}
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-2">
-                        <label className="text-xs font-bold text-slate-700 block">Package Overview Description</label>
-                        <textarea
-                            rows={3}
-                            value={formData.overview}
-                            onChange={(e) => setFormData({ ...formData, overview: e.target.value })}
-                            placeholder="Provide a detailed description of the tour package experience..."
-                            className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-blue-600 outline-none transition-all resize-none"
-                        />
+                    {/* Section 3: Local Image Upload (Strictly Local Upload) */}
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+                        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2 border-b border-slate-100 pb-3">
+                            <Image className="w-4 h-4 text-blue-600" />
+                            <span>3. Package Images (Local File Upload)</span>
+                        </h2>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Main Cover Image */}
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block">
+                                    Main Cover Image
+                                </label>
+                                <label className="border-2 border-dashed border-slate-200 hover:border-blue-500 bg-slate-50 p-4 rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all h-32">
+                                    {uploadingMain ? (
+                                        <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+                                    ) : formData.image ? (
+                                        <img src={formData.image} alt="Cover" className="w-full h-full object-cover rounded-lg" />
+                                    ) : (
+                                        <>
+                                            <Upload className="w-6 h-6 text-slate-400" />
+                                            <span className="text-xs font-bold text-slate-700">Upload Main Image File</span>
+                                        </>
+                                    )}
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => e.target.files?.[0] && handleLocalImageUpload(e.target.files[0], "main")}
+                                        className="hidden"
+                                    />
+                                </label>
+                            </div>
+
+                            {/* Gallery Images */}
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block">
+                                    Gallery Images
+                                </label>
+                                <label className="border-2 border-dashed border-slate-200 hover:border-blue-500 bg-slate-50 p-4 rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all h-32">
+                                    {uploadingGallery ? (
+                                        <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+                                    ) : (
+                                        <>
+                                            <Upload className="w-6 h-6 text-slate-400" />
+                                            <span className="text-xs font-bold text-slate-700">Upload Gallery Image Files</span>
+                                        </>
+                                    )}
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => e.target.files?.[0] && handleLocalImageUpload(e.target.files[0], "gallery")}
+                                        className="hidden"
+                                    />
+                                </label>
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Section 5: Key Inclusions List */}
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
-                        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-                                <ShieldCheck className="w-4 h-4 text-blue-600" />
-                                <span>4. Key Inclusions</span>
-                            </h2>
-                            <button
-                                type="button"
-                                onClick={handleAddInclusion}
-                                className="px-3 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
-                            >
-                                <Plus className="w-3.5 h-3.5" />
-                                <span>Add Inclusion</span>
-                            </button>
+                    {/* Section 4: Package Overview & Inclusions */}
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+                        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2 border-b border-slate-100 pb-3">
+                            <FileCode className="w-4 h-4 text-blue-600" />
+                            <span>4. Overview & Key Inclusions</span>
+                        </h2>
+
+                        <div>
+                            <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                                Tour Overview & Highlights
+                            </label>
+                            <textarea
+                                rows={4}
+                                value={formData.overview}
+                                onChange={(e) => setFormData({ ...formData, overview: e.target.value })}
+                                placeholder="Write detailed overview of this tour package..."
+                                className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 outline-none focus:border-blue-600 resize-none"
+                            />
                         </div>
 
-                        {formData.inclusions.map((inc: string, idx: number) => (
-                            <div key={idx} className="flex items-center gap-2">
-                                <input
-                                    type="text"
-                                    value={inc}
-                                    onChange={(e) => handleInclusionChange(idx, e.target.value)}
-                                    placeholder={`Inclusion #${idx + 1}`}
-                                    className="flex-1 px-3.5 py-2 bg-slate-50/80 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-blue-600"
-                                />
+                        {/* Inclusions list */}
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                                    Key Inclusions
+                                </label>
                                 <button
                                     type="button"
-                                    onClick={() => handleRemoveInclusion(idx)}
-                                    className="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center hover:bg-red-100 transition-colors shrink-0 cursor-pointer"
+                                    onClick={handleAddInclusion}
+                                    className="px-2.5 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
                                 >
-                                    <X className="w-4 h-4" />
+                                    <Plus className="w-3.5 h-3.5" />
+                                    <span>Add Inclusion</span>
                                 </button>
                             </div>
-                        ))}
+
+                            {formData.inclusions.map((inc: string, idx: number) => (
+                                <div key={idx} className="flex items-center gap-2">
+                                    <input
+                                        type="text"
+                                        value={inc}
+                                        onChange={(e) => handleInclusionChange(idx, e.target.value)}
+                                        placeholder="e.g. 4-Star Hotel Stay with Breakfast"
+                                        className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveInclusion(idx)}
+                                        className="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center hover:bg-red-100 transition-colors shrink-0 cursor-pointer"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
                     </div>
 
-                    {/* Section 6: Day-by-Day Itinerary Builder */}
+                    {/* Section 5: Day-by-Day Itinerary */}
                     <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
                         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                             <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
@@ -808,7 +1233,7 @@ export default function AdminPackages() {
                         ))}
                     </div>
 
-                    {/* Bottom Action Bar (Clean relative layout inside content area - NO overlapping sidebar!) */}
+                    {/* Bottom Action Bar */}
                     <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
                         <button
                             type="button"

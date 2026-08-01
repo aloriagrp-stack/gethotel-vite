@@ -344,3 +344,178 @@ exports.uploadImage = async (req, res) => {
         return res.status(500).json({ success: false, message: err.message });
     }
 };
+
+// POST Bulk Import Tour Packages via JSON (Admin)
+exports.importPackagesJson = async (req, res) => {
+    try {
+        await ensureTableExists();
+        const { jsonText, packages } = req.body;
+        let items = [];
+
+        if (Array.isArray(packages) && packages.length > 0) {
+            items = packages;
+        } else if (jsonText) {
+            try {
+                const parsed = typeof jsonText === 'string' ? JSON.parse(jsonText) : jsonText;
+                if (Array.isArray(parsed)) {
+                    items = parsed;
+                } else if (parsed && typeof parsed === 'object') {
+                    if (Array.isArray(parsed.packages)) {
+                        items = parsed.packages;
+                    } else if (Array.isArray(parsed.tours)) {
+                        items = parsed.tours;
+                    } else if (parsed.title || parsed.name) {
+                        items = [parsed];
+                    }
+                }
+            } catch (e) {
+                return res.status(400).json({ success: false, message: "Invalid JSON format: " + e.message });
+            }
+        }
+
+        if (!items || items.length === 0) {
+            return res.status(400).json({ success: false, message: "No valid tour package objects found in JSON." });
+        }
+
+        let importedCount = 0;
+        const results = [];
+
+        for (const item of items) {
+            try {
+                const title = item.title || item.name || "Untitled Exotic Tour Package";
+                const destination = item.destination || item.city || "India";
+                const duration = item.duration || "5 Days / 4 Nights";
+                const price = parseFloat(item.price || item.cost || 15000);
+                const originalPrice = item.originalPrice || item.original_price ? parseFloat(item.originalPrice || item.original_price) : (price ? Math.round(price * 1.25) : null);
+                const discountPercent = item.discountPercent || item.discount_percent || (originalPrice ? `${Math.round(((originalPrice - price) / originalPrice) * 100)}% OFF` : "20% OFF");
+                
+                const pkgSlug = createPackageSlug(item.slug || title) + "-" + Date.now().toString().slice(-4);
+                
+                // Process images
+                let mainImage = item.image || item.coverImage || item.thumbnail || "";
+                if (mainImage && mainImage.startsWith("data:image")) {
+                    mainImage = await processBase64Image(mainImage);
+                }
+
+                let gallery = Array.isArray(item.gallery) ? item.gallery : (mainImage ? [mainImage] : []);
+                const processedGallery = [];
+                for (let gImg of gallery) {
+                    if (typeof gImg === 'string' && gImg.startsWith("data:image")) {
+                        const saved = await processBase64Image(gImg);
+                        processedGallery.push(saved);
+                    } else {
+                        processedGallery.push(gImg);
+                    }
+                }
+
+                const galleryJson = JSON.stringify(processedGallery);
+                const inclusionsJson = JSON.stringify(Array.isArray(item.inclusions) ? item.inclusions : ["Hotel Stay", "Sightseeing", "Transfers"]);
+                const itineraryJson = JSON.stringify(Array.isArray(item.itinerary) ? item.itinerary : []);
+
+                const insertQuery = `
+                    INSERT INTO tour_packages 
+                    (title, slug, destination, duration, price, original_price, discount_percent, rating, reviews_count, badge, included_stay, transport, image, gallery, overview, inclusions, itinerary, is_active)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                `;
+
+                await prisma.$executeRawUnsafe(
+                    insertQuery,
+                    title,
+                    pkgSlug,
+                    destination,
+                    duration,
+                    price,
+                    originalPrice,
+                    discountPercent,
+                    item.rating ? parseFloat(item.rating) : 4.8,
+                    item.reviewsCount ? parseInt(item.reviewsCount, 10) : 45,
+                    item.badge || "Bestseller",
+                    item.includedStay || item.stay || "4-Star Hotel Stay",
+                    item.transport || "Private AC Cab Included",
+                    mainImage,
+                    galleryJson,
+                    item.overview || item.description || `${title} covering ${destination}.`,
+                    inclusionsJson,
+                    itineraryJson,
+                    item.isActive !== undefined ? (item.isActive ? 1 : 0) : 1
+                );
+
+                importedCount++;
+                results.push({ title, status: "imported" });
+            } catch (e) {
+                console.warn("[Package JSON Import Error]:", e.message);
+            }
+        }
+
+        return res.json({
+            success: true,
+            message: `Successfully imported ${importedCount} tour package(s) via JSON!`,
+            count: importedCount,
+            results
+        });
+
+    } catch (err) {
+        console.error("Error in importPackagesJson:", err);
+        return res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// GET Tour Hero Section Config (Public)
+exports.getHeroConfig = async (req, res) => {
+    try {
+        const row = await prisma.homepage_config.findUnique({
+            where: { key: 'tour_hero_config' }
+        });
+
+        let config = {
+            title: "Explore Handcrafted Tour Packages",
+            subtitle: "Unforgettable journeys designed for your dream vacation across India & global destinations",
+            heroImages: [
+                "https://images.unsplash.com/photo-1506461883276-594a12b11cf3?auto=format&fit=crop&w=1920&q=80",
+                "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1920&q=80"
+            ]
+        };
+
+        if (row && row.value) {
+            try {
+                config = { ...config, ...JSON.parse(row.value) };
+            } catch (e) {
+                /* fallback to default */
+            }
+        }
+
+        return res.json({ success: true, data: config });
+    } catch (err) {
+        console.error("Error in getHeroConfig:", err);
+        return res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// PUT Update Tour Hero Section Config (Admin)
+exports.updateHeroConfig = async (req, res) => {
+    try {
+        const { title, subtitle, heroImages } = req.body;
+        const payload = {
+            title: title || "Explore Handcrafted Tour Packages",
+            subtitle: subtitle || "Unforgettable journeys designed for your dream vacation across India & global destinations",
+            heroImages: Array.isArray(heroImages) ? heroImages : []
+        };
+
+        const strValue = JSON.stringify(payload);
+        await prisma.homepage_config.upsert({
+            where: { key: 'tour_hero_config' },
+            update: { value: strValue },
+            create: { key: 'tour_hero_config', value: strValue }
+        });
+
+        return res.json({
+            success: true,
+            message: "Tour Hero Section Configuration updated successfully!",
+            data: payload
+        });
+    } catch (err) {
+        console.error("Error in updateHeroConfig:", err);
+        return res.status(500).json({ success: false, message: err.message });
+    }
+};
+
