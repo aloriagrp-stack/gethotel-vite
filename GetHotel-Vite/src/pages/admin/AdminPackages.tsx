@@ -287,37 +287,60 @@ export default function AdminPackages() {
         });
     };
 
-    // Local Image File Upload Handler
-    const handleLocalImageUpload = async (file: File, type: "main" | "gallery") => {
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            const base64 = e.target?.result as string;
-            if (!base64) return;
-            try {
-                if (type === "main") setUploadingMain(true);
-                else setUploadingGallery(true);
+    // Multi-Image Gallery Upload Handler (Min 1, Max 30 Images)
+    const handleLocalGalleryUpload = async (files: FileList | null) => {
+        if (!files || files.length === 0) return;
+        const currentGal = Array.isArray(formData.gallery) ? formData.gallery : [];
+        if (currentGal.length + files.length > 30) {
+            alert("Maximum 30 images allowed per tour package!");
+            return;
+        }
 
-                const res = await packageApi.uploadImage(base64);
-                if (res && res.success && res.url) {
-                    if (type === "main") {
-                        setFormData((prev: any) => ({ ...prev, image: res.url }));
-                    } else {
-                        setFormData((prev: any) => {
-                            const currentGal = Array.isArray(prev.gallery) ? prev.gallery : [];
-                            return { ...prev, gallery: [...currentGal, res.url] };
-                        });
+        setUploadingGallery(true);
+        try {
+            const uploadedUrls: string[] = [];
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const base64 = await new Promise<string>((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target?.result as string);
+                    reader.readAsDataURL(file);
+                });
+
+                if (base64) {
+                    const res = await packageApi.uploadImage(base64);
+                    if (res && res.success && res.url) {
+                        uploadedUrls.push(res.url);
                     }
-                    showToast("✓ Image uploaded and optimized as WebP!");
                 }
-            } catch (err: any) {
-                alert("Image upload failed: " + err.message);
-            } finally {
-                setUploadingMain(false);
-                setUploadingGallery(false);
             }
-        };
-        reader.readAsDataURL(file);
+
+            if (uploadedUrls.length > 0) {
+                setFormData((prev: any) => {
+                    const existingGal = Array.isArray(prev.gallery) ? prev.gallery : [];
+                    const updatedGal = [...existingGal, ...uploadedUrls];
+                    const mainImg = prev.image || updatedGal[0];
+                    return { ...prev, image: mainImg, gallery: updatedGal };
+                });
+                showToast(`✓ ${uploadedUrls.length} image(s) uploaded successfully!`);
+            }
+        } catch (err: any) {
+            alert("Failed to upload images: " + err.message);
+        } finally {
+            setUploadingGallery(false);
+        }
+    };
+
+    const handleRemoveGalleryImage = (index: number) => {
+        setFormData((prev: any) => {
+            const currentGal = Array.isArray(prev.gallery) ? prev.gallery : [];
+            const updatedGal = currentGal.filter((_: any, i: number) => i !== index);
+            let updatedMain = prev.image;
+            if (!updatedGal.includes(updatedMain)) {
+                updatedMain = updatedGal[0] || "";
+            }
+            return { ...prev, image: updatedMain, gallery: updatedGal };
+        });
     };
 
     const handleOpenCreate = () => {
@@ -1065,61 +1088,116 @@ export default function AdminPackages() {
                         </div>
                     </div>
 
-                    {/* Section 3: Local Image Upload (Strictly Local Upload) */}
+                    {/* Section 3: Package Images (Min 1, Max 30 Images) */}
                     <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-                        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2 border-b border-slate-100 pb-3">
-                            <Image className="w-4 h-4 text-blue-600" />
-                            <span>3. Package Images (Local File Upload)</span>
-                        </h2>
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                                <Image className="w-4 h-4 text-blue-600" />
+                                <span>3. Package Images (Min 1, Max 30 Photos)</span>
+                            </h2>
+                            <span className={`px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wider border ${
+                                (formData.gallery?.length || 0) >= 1 && (formData.gallery?.length || 0) <= 30
+                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                    : "bg-amber-50 text-amber-700 border-amber-200"
+                            }`}>
+                                {formData.gallery?.length || (formData.image ? 1 : 0)} / 30 Images
+                            </span>
+                        </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {/* Main Cover Image */}
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block">
-                                    Main Cover Image
-                                </label>
-                                <label className="border-2 border-dashed border-slate-200 hover:border-blue-500 bg-slate-50 p-4 rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all h-32">
-                                    {uploadingMain ? (
-                                        <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
-                                    ) : formData.image ? (
-                                        <img src={formData.image} alt="Cover" className="w-full h-full object-cover rounded-lg" />
-                                    ) : (
-                                        <>
-                                            <Upload className="w-6 h-6 text-slate-400" />
-                                            <span className="text-xs font-bold text-slate-700">Upload Main Image File</span>
-                                        </>
-                                    )}
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={(e) => e.target.files?.[0] && handleLocalImageUpload(e.target.files[0], "main")}
-                                        className="hidden"
-                                    />
-                                </label>
-                            </div>
+                        <div className="space-y-4">
+                            {/* Upload Area */}
+                            <label className="border-2 border-dashed border-slate-200 hover:border-blue-500 bg-slate-50 hover:bg-blue-50/50 p-6 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all">
+                                {uploadingGallery ? (
+                                    <div className="flex items-center gap-2 text-xs font-bold text-blue-600">
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                        <span>Uploading & Optimizing Local Images to WebP...</span>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <Upload className="w-8 h-8 text-blue-500" />
+                                        <span className="text-xs font-bold text-slate-800">Click to Select Local Images from Device</span>
+                                        <span className="text-[11px] text-slate-400 font-medium">Select single or multiple photos (Min 1, Max 30 photos per package)</span>
+                                    </>
+                                )}
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    multiple
+                                    onChange={(e) => handleLocalGalleryUpload(e.target.files)}
+                                    className="hidden"
+                                />
+                            </label>
 
-                            {/* Gallery Images */}
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block">
-                                    Gallery Images
-                                </label>
-                                <label className="border-2 border-dashed border-slate-200 hover:border-blue-500 bg-slate-50 p-4 rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all h-32">
-                                    {uploadingGallery ? (
-                                        <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
-                                    ) : (
-                                        <>
-                                            <Upload className="w-6 h-6 text-slate-400" />
-                                            <span className="text-xs font-bold text-slate-700">Upload Gallery Image Files</span>
-                                        </>
-                                    )}
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={(e) => e.target.files?.[0] && handleLocalImageUpload(e.target.files[0], "gallery")}
-                                        className="hidden"
-                                    />
-                                </label>
-                            </div>
+                            {/* Uploaded Gallery Thumbnails Grid */}
+                            {Array.isArray(formData.gallery) && formData.gallery.length > 0 ? (
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                                            Uploaded Photos ({formData.gallery.length})
+                                        </span>
+                                        <span className="text-[11px] text-slate-400 font-medium">Click star to set as main cover photo</span>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                                        {formData.gallery.map((imgUrl: string, idx: number) => {
+                                            const isMain = formData.image === imgUrl || (!formData.image && idx === 0);
+                                            return (
+                                                <div key={idx} className={`relative group rounded-xl overflow-hidden aspect-[4/3] border-2 bg-slate-100 transition-all ${
+                                                    isMain ? "border-blue-600 ring-2 ring-blue-600/30" : "border-slate-200 hover:border-slate-300"
+                                                }`}>
+                                                    <img src={imgUrl} alt={`Tour Photo ${idx + 1}`} className="w-full h-full object-cover" />
+                                                    
+                                                    {isMain && (
+                                                        <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 bg-blue-600 text-white text-[9px] font-black rounded uppercase tracking-wider shadow">
+                                                            Cover
+                                                        </span>
+                                                    )}
+
+                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                                        {!isMain && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setFormData((prev: any) => ({ ...prev, image: imgUrl }))}
+                                                                className="p-1.5 rounded-full bg-white/90 text-amber-500 hover:bg-white shadow transition-all cursor-pointer"
+                                                                title="Set as Cover Image"
+                                                            >
+                                                                <Star className="w-4 h-4 fill-amber-400" />
+                                                            </button>
+                                                        )}
+
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleRemoveGalleryImage(idx)}
+                                                            className="p-1.5 rounded-full bg-red-600 text-white hover:bg-red-700 shadow transition-all cursor-pointer"
+                                                            title="Delete Image"
+                                                        >
+                                                            <X className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            ) : formData.image ? (
+                                /* Fallback if single main image exists */
+                                <div className="space-y-2">
+                                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block">
+                                        Cover Photo (1 Photo)
+                                    </span>
+                                    <div className="relative group rounded-xl overflow-hidden max-w-xs aspect-[16/9] border-2 border-blue-600 bg-slate-100">
+                                        <img src={formData.image} alt="Cover" className="w-full h-full object-cover" />
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData((prev: any) => ({ ...prev, image: "", gallery: [] }))}
+                                            className="absolute top-2 right-2 p-1.5 rounded-full bg-red-600 text-white hover:bg-red-700 shadow transition-all cursor-pointer"
+                                            title="Delete Image"
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : null}
                         </div>
                     </div>
 
