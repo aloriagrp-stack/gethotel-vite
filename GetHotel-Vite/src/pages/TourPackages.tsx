@@ -3,7 +3,7 @@ import SEOHead from "@/components/common/SEOHead";
 import { Link } from "react-router-dom";
 import {
     MapPin, Clock, Check, Star, Hotel, Car, X, CheckCircle2,
-    Search, ChevronRight, Sparkles
+    Search, ChevronRight, Sparkles, ArrowRight, ShieldCheck, Filter
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -21,6 +21,7 @@ export function createPackageSlug(title: string): string {
 
 // Circle Story Avatars Data
 const DESTINATION_STORIES = [
+    { name: "All", image: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=200&q=80" },
     { name: "Goa", image: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=200&q=80" },
     { name: "Rajasthan", image: "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=200&q=80" },
     { name: "Kashmir", image: "https://images.unsplash.com/photo-1566837945700-30057527ade0?auto=format&fit=crop&w=200&q=80" },
@@ -29,29 +30,29 @@ const DESTINATION_STORIES = [
     { name: "Ladakh", image: "https://images.unsplash.com/photo-1581793745862-99fde7fa73d2?auto=format&fit=crop&w=200&q=80" }
 ];
 
-// Curved Banner Images
+// Fallback Banner Images
 const BANNER_IMAGES = [
     {
         title: "Kashmir Paradise: Snow & Houseboat Escapade",
         subtitle: "Luxury Houseboat stay in Dal Lake & Gondola cable car ride included",
         tag: "Flat 25% OFF",
-        image: "https://images.unsplash.com/photo-1566837945700-30057527ade0?auto=format&fit=crop&w=1400&q=80"
+        image: "https://images.unsplash.com/photo-1566837945700-30057527ade0?auto=format&fit=crop&w=1600&q=80"
     },
     {
         title: "Goa Tropical Beach Retreat & Watersports",
         subtitle: "Beachfront 4-Star Resort stay with Scuba Diving & Parasailing combo",
         tag: "Bestseller Deal",
-        image: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1400&q=80"
+        image: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1600&q=80"
     },
     {
         title: "Royal Rajasthan Heritage & Fort Trail",
         subtitle: "Explore Palaces of Jaipur, Udaipur & Jodhpur with Private AC Sedan",
         tag: "Special Offer",
-        image: "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1400&q=80"
+        image: "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1600&q=80"
     }
 ];
 
-// Clean Tour Packages Data with SEO Slugs
+// Fallback Tour Packages
 const POPULAR_PACKAGES = [
     {
         id: "pkg-1",
@@ -163,6 +164,8 @@ export default function TourPackages() {
     });
 
     const [searchQuery, setSearchQuery] = useState("");
+    const [selectedDestination, setSelectedDestination] = useState("All");
+    const [selectedFilterTag, setSelectedFilterTag] = useState("All");
     const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
 
     // Fetch real tour packages & hero config from backend API
@@ -183,8 +186,8 @@ export default function TourPackages() {
                     const hData = heroRes.data;
                     if (Array.isArray(hData.heroImages) && hData.heroImages.length > 0) {
                         const formattedBanners = hData.heroImages.map((imgUrl: string, idx: number) => ({
-                            title: hData.title || "Handcrafted Tour Packages",
-                            subtitle: hData.subtitle || "Unforgettable journeys designed for your dream vacation",
+                            title: hData.title || "Explore Handcrafted Tour Packages",
+                            subtitle: hData.subtitle || "Unforgettable luxury & budget holiday packages across India & global destinations",
                             tag: idx === 0 ? "Featured Deal" : "Trending Offer",
                             image: imgUrl
                         }));
@@ -192,63 +195,110 @@ export default function TourPackages() {
                     }
                 }
             } catch (e) {
-                /* fallback to defaults */
+                /* fallback */
             }
         };
         fetchApiPackages();
     }, []);
 
-    // Auto-advance banner carousel
+    // Auto-advance hero carousel
     useEffect(() => {
         if (!banners || banners.length === 0) return;
         const timer = setInterval(() => {
             setCurrentBannerIndex((prev) => (prev + 1) % banners.length);
-        }, 4500);
+        }, 5000);
         return () => clearInterval(timer);
     }, [banners]);
 
-    // Filter packages matching search query
+    // Filter packages matching search query, selected destination & filter tag
     const filteredPackages = packages.filter(pkg => {
-        if (!searchQuery.trim()) return true;
-        const q = searchQuery.toLowerCase();
-        return (pkg.title || "").toLowerCase().includes(q) || (pkg.destination || "").toLowerCase().includes(q) || (pkg.badge || "").toLowerCase().includes(q);
+        const title = (pkg.title || "").toLowerCase();
+        const dest = (pkg.destination || "").toLowerCase();
+        const badge = (pkg.badge || "").toLowerCase();
+
+        // 1. Search Query Filter
+        if (searchQuery.trim()) {
+            const q = searchQuery.toLowerCase();
+            if (!title.includes(q) && !dest.includes(q) && !badge.includes(q)) {
+                return false;
+            }
+        }
+
+        // 2. Circle Destination Story Filter
+        if (selectedDestination !== "All") {
+            const d = selectedDestination.toLowerCase();
+            if (!title.includes(d) && !dest.includes(d)) {
+                return false;
+            }
+        }
+
+        // 3. Filter Tag Pills
+        if (selectedFilterTag !== "All") {
+            const tag = selectedFilterTag.toLowerCase();
+            if (!badge.includes(tag)) return false;
+        }
+
+        return true;
     });
 
     const activeBanner = banners[currentBannerIndex] || BANNER_IMAGES[0];
 
     return (
-        <div className="min-h-screen bg-white pb-20 font-sans text-slate-900">
+        <div className="min-h-screen bg-slate-50/50 pb-24 font-sans text-slate-900">
             <SEOHead
-                title="Tour Packages | Holiday Packages in India | GetHotelStays"
-                description="Explore handpicked tour packages across Goa, Rajasthan, Kashmir, Himachal, Kerala and Ladakh with verified hotel stays and private cabs."
+                title="Handcrafted Tour Packages | GetHotelStays"
+                description="Explore handpicked holiday & tour packages across Goa, Rajasthan, Kashmir, Himachal, Kerala and Ladakh with verified hotel stays and private cabs."
             />
 
-            <div className="max-w-3xl mx-auto px-4 pt-2 pb-10">
-                {/* Curved Mini Hero Image Banner Slider */}
+            {/* Main Widescreen Desktop Container */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 space-y-8">
+                
+                {/* 1. HERO WIDESCREEN BANNER SLIDER */}
                 {banners && banners.length > 0 && (
-                    <div className="mb-4 relative overflow-hidden rounded-[24px] md:rounded-[28px] border border-slate-200/90 shadow-sm aspect-[16/7] md:aspect-[21/8] bg-slate-100 group">
+                    <div className="relative overflow-hidden rounded-3xl border border-slate-200/80 shadow-md aspect-[21/9] sm:aspect-[24/8] md:aspect-[28/9] bg-slate-950 group">
                         <AnimatePresence mode="wait">
                             <motion.img
                                 key={currentBannerIndex}
                                 src={activeBanner.image}
-                                alt="Tour Package Banner"
-                                initial={{ opacity: 0, scale: 1.04 }}
+                                alt="Tour Banner"
+                                initial={{ opacity: 0, scale: 1.05 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0 }}
-                                transition={{ duration: 0.5 }}
-                                className="w-full h-full object-cover"
+                                transition={{ duration: 0.6 }}
+                                className="w-full h-full object-cover opacity-85"
                             />
                         </AnimatePresence>
 
-                        {/* Carousel Navigation Dots */}
-                        <div className="absolute bottom-2.5 right-3.5 flex items-center gap-1.5 z-10 bg-slate-950/40 backdrop-blur-md px-2 py-1 rounded-full border border-white/20">
+                        {/* Rich Dark Gradient Overlay for Maximum Legibility */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent z-10" />
+
+                        {/* Banner Content Text */}
+                        <div className="absolute bottom-6 sm:bottom-10 left-6 sm:left-10 right-6 sm:right-10 z-20 space-y-2 text-white">
+                            <div className="flex items-center gap-2">
+                                <span className="px-3 py-1 bg-blue-600/90 backdrop-blur-md text-white text-[10px] sm:text-xs font-black uppercase tracking-wider rounded-lg border border-white/20 shadow-sm inline-flex items-center gap-1.5">
+                                    <Sparkles className="w-3.5 h-3.5 text-blue-200" />
+                                    <span>{activeBanner.tag || "Featured Holiday"}</span>
+                                </span>
+                            </div>
+
+                            <h1 className="text-xl sm:text-3xl md:text-4xl font-black tracking-tight drop-shadow-md text-white max-w-3xl leading-tight">
+                                {activeBanner.title}
+                            </h1>
+
+                            <p className="text-xs sm:text-sm text-slate-200 font-medium max-w-2xl line-clamp-2 drop-shadow">
+                                {activeBanner.subtitle}
+                            </p>
+                        </div>
+
+                        {/* Navigation Dots */}
+                        <div className="absolute bottom-4 right-6 z-20 flex items-center gap-1.5 bg-slate-950/50 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20">
                             {banners.map((_, idx) => (
                                 <button
                                     key={idx}
                                     onClick={() => setCurrentBannerIndex(idx)}
                                     className={cn(
-                                        "w-1.5 h-1.5 rounded-full transition-all cursor-pointer",
-                                        currentBannerIndex === idx ? "bg-blue-400 w-3.5" : "bg-white/60"
+                                        "h-2 rounded-full transition-all cursor-pointer",
+                                        currentBannerIndex === idx ? "bg-blue-400 w-5" : "bg-white/50 w-2 hover:bg-white"
                                     )}
                                 />
                             ))}
@@ -256,44 +306,54 @@ export default function TourPackages() {
                     </div>
                 )}
 
-                {/* STICKY SEARCH BAR + INSTAGRAM STORY-STYLE CIRCULAR FILTERS */}
-                <div className="sticky top-14 md:top-16 z-30 bg-white/95 backdrop-blur-md py-2.5 mb-4 border-b border-slate-100/90 shadow-sm transition-all -mx-4 px-4 space-y-3">
-                    {/* Search Input */}
-                    <div className="relative">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                        <input
-                            type="text"
-                            placeholder="Type destination e.g. Goa, Jaipur, Kashmir, Manali..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-11 pr-10 py-3 bg-white border border-slate-300 rounded-2xl text-xs font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-sm"
-                        />
-                        {searchQuery && (
-                            <button
-                                onClick={() => setSearchQuery("")}
-                                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1"
-                            >
-                                <X className="w-4 h-4" />
-                            </button>
-                        )}
+                {/* 2. MINIMAL SEARCH & INSTAGRAM-STYLE DESTINATION STORY FILTERS */}
+                <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-5">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="space-y-1">
+                            <h2 className="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
+                                <MapPin className="w-5 h-5 text-blue-600" />
+                                <span>Explore Popular Destinations</span>
+                            </h2>
+                            <p className="text-xs text-slate-500 font-medium">Select a destination or search to filter tour packages</p>
+                        </div>
+
+                        {/* Minimal Search Bar */}
+                        <div className="relative w-full md:w-80">
+                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <input
+                                type="text"
+                                placeholder="Search Goa, Kashmir, Jaipur..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-10 pr-9 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white transition-all shadow-xs"
+                            />
+                            {searchQuery && (
+                                <button
+                                    onClick={() => setSearchQuery("")}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
+                                >
+                                    <X className="w-3.5 h-3.5" />
+                                </button>
+                            )}
+                        </div>
                     </div>
 
-                    {/* Instagram/Story-Style Circular Destination Avatars */}
-                    <div className="flex items-center gap-3.5 overflow-x-auto no-scrollbar py-1 touch-pan-x">
+                    {/* Circular Destination Story Pills */}
+                    <div className="flex items-center gap-4 overflow-x-auto no-scrollbar py-1">
                         {DESTINATION_STORIES.map((item) => {
-                            const isActive = searchQuery.toLowerCase() === item.name.toLowerCase();
+                            const isSelected = selectedDestination === item.name;
                             return (
                                 <button
                                     key={item.name}
-                                    onClick={() => setSearchQuery(isActive ? "" : item.name)}
-                                    className="flex flex-col items-center gap-1 group shrink-0 cursor-pointer"
+                                    onClick={() => setSelectedDestination(item.name)}
+                                    className="flex flex-col items-center gap-1.5 group shrink-0 cursor-pointer"
                                 >
                                     <div className={`p-0.5 rounded-full transition-all ${
-                                        isActive
-                                            ? "bg-gradient-to-tr from-blue-600 via-indigo-500 to-sky-400 scale-105 shadow-md"
-                                            : "bg-slate-200 group-hover:bg-slate-400"
+                                        isSelected
+                                            ? "bg-gradient-to-tr from-blue-600 via-indigo-500 to-sky-400 scale-105 shadow-md ring-2 ring-blue-500/20"
+                                            : "bg-slate-200 group-hover:bg-blue-400"
                                     }`}>
-                                        <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white bg-slate-100">
+                                        <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-white bg-slate-100">
                                             <img
                                                 src={item.image}
                                                 alt={item.name}
@@ -301,8 +361,8 @@ export default function TourPackages() {
                                             />
                                         </div>
                                     </div>
-                                    <span className={`text-[10px] font-bold tracking-tight ${
-                                        isActive ? "text-blue-600 font-black" : "text-slate-600"
+                                    <span className={`text-xs font-bold ${
+                                        isSelected ? "text-blue-600 font-extrabold" : "text-slate-700"
                                     }`}>
                                         {item.name}
                                     </span>
@@ -310,67 +370,155 @@ export default function TourPackages() {
                             );
                         })}
                     </div>
+
+                    {/* Quick Filter Tag Badges */}
+                    <div className="flex items-center gap-2 pt-2 border-t border-slate-100 flex-wrap">
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1 mr-1">
+                            <Filter className="w-3.5 h-3.5 text-slate-400" />
+                            <span>Filter Tag:</span>
+                        </span>
+                        {["All", "Bestseller", "Trending", "Super Saver", "Top Rated"].map((tag) => (
+                            <button
+                                key={tag}
+                                onClick={() => setSelectedFilterTag(tag)}
+                                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                                    selectedFilterTag === tag
+                                        ? "bg-blue-600 text-white shadow-sm"
+                                        : "bg-slate-100 hover:bg-slate-200 text-slate-600"
+                                }`}
+                            >
+                                {tag}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
-                {/* 2-COLUMN GRID: SQUARE CARDS WITH BRAND ROYAL BLUE HIGHLIGHTS */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+                {/* 3. TOUR PACKAGE CARDS (SPACIOUS 3-COLUMN DESKTOP GRID) */}
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <h2 className="text-base font-black text-slate-900 tracking-tight flex items-center gap-2">
+                            <span>Available Packages ({filteredPackages.length})</span>
+                        </h2>
+                        {selectedDestination !== "All" && (
+                            <button
+                                onClick={() => { setSelectedDestination("All"); setSearchQuery(""); setSelectedFilterTag("All"); }}
+                                className="text-xs font-bold text-blue-600 hover:underline"
+                            >
+                                Clear All Filters
+                            </button>
+                        )}
+                    </div>
+
                     {filteredPackages.length === 0 ? (
-                        <div className="col-span-full py-16 text-center text-slate-400 space-y-2 bg-slate-50 rounded-3xl border border-slate-200/80">
-                            <Search className="w-8 h-8 mx-auto text-slate-300" />
-                            <p className="text-xs font-bold text-slate-700">No tour packages found</p>
-                            <p className="text-[11px] text-slate-400">Try searching for Goa, Kashmir, Jaipur or Ladakh</p>
+                        <div className="bg-white rounded-3xl p-16 text-center border border-slate-200/80 space-y-4 shadow-sm">
+                            <Search className="w-10 h-10 text-slate-300 mx-auto" />
+                            <h3 className="text-base font-bold text-slate-800">No Tour Packages Found</h3>
+                            <p className="text-xs text-slate-500 max-w-md mx-auto">
+                                Try clearing search filters or selecting another destination avatar.
+                            </p>
+                            <button
+                                onClick={() => { setSelectedDestination("All"); setSearchQuery(""); setSelectedFilterTag("All"); }}
+                                className="px-5 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-blue-700 transition-all inline-flex items-center gap-2 cursor-pointer"
+                            >
+                                <span>View All Packages</span>
+                            </button>
                         </div>
                     ) : (
-                        filteredPackages.map((pkg) => {
-                            const packageSlug = pkg.slug || createPackageSlug(pkg.title) || pkg.id;
-                            return (
-                                <Link
-                                    key={pkg.id}
-                                    to={`/packages/${packageSlug}`}
-                                    className="group relative rounded-2xl md:rounded-3xl overflow-hidden aspect-square border border-slate-200/90 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-end bg-slate-950"
-                                >
-                                    {/* Full Background Image */}
-                                    <img
-                                        src={pkg.image}
-                                        alt={pkg.title}
-                                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                    />
-
-                                    {/* Feathered Smooth Glass Blur Overlay — Pure CSS Gradient Mask for 0% Divider Line */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+                            {filteredPackages.map((pkg) => {
+                                const packageSlug = pkg.slug || createPackageSlug(pkg.title) || pkg.id;
+                                return (
                                     <div
-                                        className="absolute inset-0 backdrop-blur-md bg-slate-950/70 z-10 pointer-events-none transition-all duration-300"
-                                        style={{
-                                            maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 100%)',
-                                            WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 100%)'
-                                        }}
-                                    />
+                                        key={pkg.id}
+                                        className="group bg-white rounded-3xl border border-slate-200/80 hover:border-blue-500/40 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col justify-between"
+                                    >
+                                        {/* Cover Image Container */}
+                                        <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
+                                            <img
+                                                src={pkg.image || "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=800&q=80"}
+                                                alt={pkg.title}
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                            />
 
-                                    {/* Top Badge */}
-                                    <span className="absolute top-2.5 left-2.5 px-2 py-0.5 bg-blue-600/90 backdrop-blur-md text-white text-[9px] font-black uppercase tracking-wider rounded-md border border-white/20 z-20 shadow-sm">
-                                        {pkg.badge || "Featured"}
-                                    </span>
+                                            {/* Top Badge */}
+                                            <span className="absolute top-3 left-3 px-3 py-1 bg-blue-600/90 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-wider rounded-lg border border-white/20 shadow-sm">
+                                                {pkg.badge || "Bestseller"}
+                                            </span>
 
-                                    {/* Card Text Content Overlay */}
-                                    <div className="relative z-20 p-3 text-white flex flex-col justify-end">
-                                        <h3 className="text-xs font-bold leading-snug line-clamp-1 group-hover:text-blue-300 transition-colors drop-shadow-sm">
-                                            {pkg.title}
-                                        </h3>
-
-                                        <div className="flex items-center gap-1 text-[10px] text-slate-300 font-medium mt-0.5 line-clamp-1 opacity-90">
-                                            <MapPin className="w-3 h-3 text-blue-400 shrink-0" />
-                                            <span className="truncate">{pkg.destination}</span>
+                                            {/* Rating Badge */}
+                                            <div className="absolute top-3 right-3 px-2.5 py-1 bg-slate-950/70 backdrop-blur-md text-white text-xs font-bold rounded-lg border border-white/20 shadow-sm flex items-center gap-1">
+                                                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                                                <span>{pkg.rating || 4.8}</span>
+                                                <span className="text-[10px] text-slate-300">({pkg.reviewsCount || 45})</span>
+                                            </div>
                                         </div>
 
-                                        <div className="flex items-baseline justify-between pt-1.5 mt-1 border-t border-white/15">
-                                            <span className="text-[9px] font-bold text-slate-300">{pkg.duration}</span>
-                                            <span className="text-xs md:text-sm font-black text-blue-400">
-                                                ₹{pkg.price?.toLocaleString()}
-                                            </span>
+                                        {/* Card Body */}
+                                        <div className="p-5 sm:p-6 space-y-4 flex-1 flex flex-col justify-between">
+                                            <div className="space-y-2">
+                                                {/* Destination */}
+                                                <div className="flex items-center gap-1.5 text-xs text-blue-600 font-bold uppercase tracking-wider">
+                                                    <MapPin className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                                                    <span className="line-clamp-1">{pkg.destination}</span>
+                                                </div>
+
+                                                {/* Title */}
+                                                <h3 className="font-extrabold text-base text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-2 leading-snug">
+                                                    {pkg.title}
+                                                </h3>
+
+                                                {/* Specifications Pills */}
+                                                <div className="pt-2 flex flex-wrap gap-2 text-[11px] font-semibold text-slate-600">
+                                                    <span className="px-2.5 py-1 bg-slate-100 rounded-lg flex items-center gap-1">
+                                                        <Clock className="w-3 h-3 text-slate-400" />
+                                                        {pkg.duration}
+                                                    </span>
+
+                                                    {pkg.includedStay && (
+                                                        <span className="px-2.5 py-1 bg-slate-100 rounded-lg flex items-center gap-1 line-clamp-1">
+                                                            <Hotel className="w-3 h-3 text-slate-400" />
+                                                            {pkg.includedStay}
+                                                        </span>
+                                                    )}
+
+                                                    {pkg.transport && (
+                                                        <span className="px-2.5 py-1 bg-slate-100 rounded-lg flex items-center gap-1 line-clamp-1">
+                                                            <Car className="w-3 h-3 text-slate-400" />
+                                                            {pkg.transport}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* Footer Price & Action */}
+                                            <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
+                                                <div>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-lg font-black text-slate-900">
+                                                            ₹{pkg.price?.toLocaleString("en-IN")}
+                                                        </span>
+                                                        {pkg.originalPrice && pkg.originalPrice > pkg.price && (
+                                                            <span className="text-xs text-slate-400 line-through font-semibold">
+                                                                ₹{pkg.originalPrice?.toLocaleString("en-IN")}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <span className="text-[10px] text-slate-400 font-medium">Per person • Taxes included</span>
+                                                </div>
+
+                                                <Link
+                                                    to={`/packages/${packageSlug}`}
+                                                    className="px-4 py-2.5 bg-slate-900 hover:bg-blue-600 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 group-hover:shadow-md cursor-pointer shrink-0"
+                                                >
+                                                    <span>View Package</span>
+                                                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                                                </Link>
+                                            </div>
                                         </div>
                                     </div>
-                                </Link>
-                            );
-                        })
+                                );
+                            })}
+                        </div>
                     )}
                 </div>
             </div>
