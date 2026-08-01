@@ -31,6 +31,7 @@ export const AdminHotelImporter: React.FC = () => {
     const [agentUrl, setAgentUrl] = useState('http://localhost:4000/api/export');
     const [pairingCode, setPairingCode] = useState('ghs-export-key-2024');
     const [isConnected, setIsConnected] = useState(false);
+    const [isClientMode, setIsClientMode] = useState(false);
     const [connectionStatusMsg, setConnectionStatusMsg] = useState('');
 
     const [stats, setStats] = useState<any>(null);
@@ -58,37 +59,69 @@ export const AdminHotelImporter: React.FC = () => {
         setLoading(true);
         try {
             const statsRes = await hotelImporterApi.getStats();
-            if (statsRes.success) {
+            if (statsRes.success && statsRes.isConnected !== false) {
                 setStats(statsRes);
-                setIsConnected(statsRes.isConnected !== false);
+                setIsConnected(true);
+                setIsClientMode(false);
                 setAgentUrl(statsRes.agentUrl || agentUrl);
                 setPairingCode(statsRes.pairingCode || pairingCode);
-                setConnectionStatusMsg(statsRes.isConnected !== false ? 'Connected & Paired' : 'Exporter Agent Offline or Disconnected');
+                setConnectionStatusMsg('🟢 Connected & Paired');
+
+                const hotelsRes = await hotelImporterApi.getHotels({
+                    page,
+                    limit: 25,
+                    city: cityFilter,
+                    since: sinceDate
+                });
+
+                if (hotelsRes.success) {
+                    setHotels(hotelsRes.hotels || []);
+                    setTotalPages(hotelsRes.totalPages || 1);
+                    setTotalCount(hotelsRes.total || (hotelsRes.hotels || []).length);
+                } else {
+                    setHotels([]);
+                }
+            } else if (isClientMode) {
+                await loadClientHotels();
             } else {
                 setIsConnected(false);
                 setConnectionStatusMsg(statsRes.message || 'Agent Disconnected');
-            }
-
-            const hotelsRes = await hotelImporterApi.getHotels({
-                page,
-                limit: 25,
-                city: cityFilter,
-                since: sinceDate
-            });
-
-            if (hotelsRes.success) {
-                setHotels(hotelsRes.hotels || []);
-                setTotalPages(hotelsRes.totalPages || 1);
-                setTotalCount(hotelsRes.total || (hotelsRes.hotels || []).length);
-            } else {
                 setHotels([]);
             }
         } catch (err: any) {
-            setIsConnected(false);
-            setConnectionStatusMsg('Agent Offline / Connection Error');
-            setHotels([]);
+            if (isClientMode) {
+                await loadClientHotels();
+            } else {
+                setIsConnected(false);
+                setConnectionStatusMsg('Agent Offline / Connection Error');
+                setHotels([]);
+            }
         } finally {
             setLoading(false);
+        }
+    };
+
+    const loadClientHotels = async () => {
+        try {
+            const cleanUrl = agentUrl.trim().replace(/\/$/, '');
+            const targetUrl = cleanUrl.endsWith('/api/export') ? `${cleanUrl}/hotels` : `${cleanUrl}/api/export/hotels`;
+            const fullUrl = `${targetUrl}?api_key=${encodeURIComponent(pairingCode)}&page=${page}&limit=25${cityFilter ? `&city=${encodeURIComponent(cityFilter)}` : ''}${sinceDate ? `&since=${encodeURIComponent(sinceDate)}` : ''}`;
+
+            const res = await fetch(fullUrl, {
+                headers: { 'x-api-key': pairingCode }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setHotels(data.hotels || []);
+                setTotalPages(data.totalPages || 1);
+                setTotalCount(data.total || (data.hotels || []).length);
+                setIsConnected(true);
+                setConnectionStatusMsg('🟢 Connected via Direct Browser Mode');
+            }
+        } catch (e: any) {
+            setIsConnected(false);
+            setConnectionStatusMsg('🔴 Client Direct Fetch Error: Verify URL & Pairing Code');
+            setHotels([]);
         }
     };
 
@@ -98,6 +131,7 @@ export const AdminHotelImporter: React.FC = () => {
         setConnectionStatusMsg('Testing connection & verifying pairing code...');
 
         try {
+            // Step 1: Try Server-Side Pairing Verification via Backend
             const res = await hotelImporterApi.verifyPairing({
                 agentUrl,
                 pairingCode
@@ -105,16 +139,77 @@ export const AdminHotelImporter: React.FC = () => {
 
             if (res.success) {
                 setIsConnected(true);
+                setIsClientMode(false);
                 setConnectionStatusMsg('🟢 Pairing Successful! Importer Connected.');
                 setStats(res);
                 loadData();
-            } else {
-                setIsConnected(false);
-                setConnectionStatusMsg(`🔴 ${res.message}`);
+                setVerifying(false);
+                return;
             }
         } catch (err: any) {
+            /* Fallthrough to Client Direct Verification */
+        }
+
+        // Step 2: Try Client-Side Direct Fetch from Browser (For Localhost Exporter on Live Site)
+        try {
+            const cleanBase = agentUrl.trim().replace(/\/$/, '');
+            const hostBase = cleanBase.replace(/\/api\/export\/?$/, '');
+
+            const verifyCandidates = [
+                `${hostBase}/api/pairing-verify`,
+                `${hostBase}/pairing-verify`,
+                `${cleanBase}/pairing-verify`,
+                `${cleanBase}/stats?api_key=${encodeURIComponent(pairingCode)}`
+            ];
+
+            let clientVerified = false;
+            let clientData = null;
+
+            for (const endpoint of verifyCandidates) {
+                try {
+                    let r;
+                    if (endpoint.includes('pairing-verify')) {
+                        r = await fetch(endpoint, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ pairingCode })
+                        });
+                    } else {
+                        r = await fetch(endpoint, {
+                            headers: { 'x-api-key': pairingCode }
+                        });
+                    }
+
+                    if (r.ok) {
+                        const json = await r.json();
+                        if (json && (json.success === true || json.status === 'success' || json.total !== undefined || json.totalHotels !== undefined)) {
+                            clientVerified = true;
+                            clientData = json;
+                            break;
+                        }
+                    }
+                } catch (e) {
+                    /* ignore single candidate failure */
+                }
+            }
+
+            if (clientVerified) {
+                setIsConnected(true);
+                setIsClientMode(true);
+                setStats(clientData);
+                setConnectionStatusMsg('🟢 Pairing Verified via Direct Client Mode!');
+                await loadClientHotels();
+            } else {
+                setIsConnected(false);
+                setConnectionStatusMsg(
+                    window.location.hostname !== 'localhost' && agentUrl.includes('localhost')
+                        ? '🔴 Pairing Failed: Live website cannot connect to localhost on server. Use a Public Tunnel URL (e.g. ngrok/localtunnel) or enter a public Exporter URL.'
+                        : '🔴 Pairing Failed: Invalid Code or Exporter Offline.'
+                );
+            }
+        } catch (e: any) {
             setIsConnected(false);
-            setConnectionStatusMsg(`🔴 Pairing Failed: Invalid Code or Exporter Offline.`);
+            setConnectionStatusMsg('🔴 Pairing Failed: Exporter Agent Offline or Invalid Code.');
         } finally {
             setVerifying(false);
         }
