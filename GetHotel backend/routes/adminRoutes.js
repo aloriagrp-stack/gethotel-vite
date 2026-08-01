@@ -7,6 +7,7 @@ const {
     bulkUpdatePromotions, bulkDeletePromotions
 } = require('../controllers/adminController');
 const { getAnalytics } = require('../controllers/analyticsController');
+const { getAIChatAnalytics } = require('../controllers/adminAiChatController');
 const { updateHomepageConfig, toggleTrending, toggleFeatured, updateTrendingBulk } = require('../controllers/homepageController');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -18,6 +19,7 @@ router.use(authorize('super_admin'));
 
 router.get('/stats', getStats);
 router.get('/analytics', getAnalytics);
+router.get('/ai-chats', getAIChatAnalytics);
 router.get('/users', getUsers);
 router.get('/hotels', getAllHotels);
 router.post('/hotels/bulk', createBulkHotels);
@@ -45,5 +47,13 @@ router.put('/payouts/:id/approve', approvePayout);
 // Reviews administration routes
 router.get('/reviews', getGlobalReviews);
 router.delete('/reviews/:id', deleteReview);
+
+// Hotel Agent Importer administration routes
+const hotelImporterController = require('../controllers/hotelImporterController');
+router.get('/importer/stats', hotelImporterController.getImporterStats);
+router.get('/importer/hotels', hotelImporterController.getExportHotels);
+router.post('/importer/import', hotelImporterController.importHotels);
+router.post('/importer/sync', hotelImporterController.syncNewHotels);
+router.post('/importer/verify-pairing', hotelImporterController.verifyPairingCode);
 
 module.exports = router;

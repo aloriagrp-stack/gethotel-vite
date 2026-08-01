@@ -88,6 +88,13 @@ NO UNSOLICITED HOTEL SALES PITCH RULE (CRITICAL):
 HOURLY STAYS / MICRO-STAYS RULE:
 - For transit rooms or layovers (3hr, 6hr, 12hr stays), recommend DB rooms where hourly stays are enabled and mention the 3hr/6hr/12hr rate options naturally.
 
+TAX & GST CALCULATION RULES (MANDATORY):
+- ALWAYS explain and calculate the Tax & GST breakdown when discussing pricing or booking totals:
+  • Stays up to ₹1,000 / night: 0% GST (Tax Exempt)
+  • Stays ₹1,001 to ₹7,500 / night: 12% GST
+  • Stays above ₹7,500 / night: 18% GST
+- When presenting room prices, always mention both the base price and the tax component clearly (e.g. "Base rate ₹2,500 + 12% GST (₹300) = ₹2,800/night total").
+
 STRICT LANGUAGE POLICY:
 - Match the user's language and script naturally (Hinglish -> natural Hinglish; English -> clean English; Hindi -> Devanagari script).`;
 
@@ -172,7 +179,21 @@ function buildUserQueryWithContext(userQuery, dbHotels = [], orchestrationContex
             reviewCount: h.reviewCount,
             pricePerNight: h.pricePerNight,
             promotionalPrice: h.promotionalPrice,
-            description: h.description
+            description: h.description,
+            rooms: (h.rooms || []).map(r => {
+                const basePrice = r.promotionalPrice || r.pricePerNight || h.pricePerNight;
+                const gstPercent = basePrice > 7500 ? 18 : (basePrice > 1000 ? 12 : 0);
+                const gstAmount = Math.round(basePrice * (gstPercent / 100));
+                return {
+                    id: r.id,
+                    name: r.name,
+                    basePricePerNight: basePrice,
+                    gstPercent: `${gstPercent}%`,
+                    gstAmount: gstAmount,
+                    totalWithTax: basePrice + gstAmount,
+                    maxOccupancy: r.maxOccupancy
+                };
+            })
         }));
         hotelContext = `\n\nHOTELS_DATA (real database inventory results):\n${JSON.stringify(sanitized, null, 2)}\n\nSTRICT GROUNDING RULE: You are NEVER allowed to invent or mention any hotel name, price, star rating, or room that is NOT in the HOTELS_DATA array above. Only refer to the hotels listed above in bold font.`;
     } else if (orchestrationContext && (orchestrationContext.intent === 'HOTEL_SEARCH' || orchestrationContext.intent === 'ROOM_SEARCH')) {

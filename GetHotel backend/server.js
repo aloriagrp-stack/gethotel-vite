@@ -441,6 +441,8 @@ const ota = require('./routes/otaRoutes');
 const ai = require('./routes/aiRoutes');
 const aiChat = require('./routes/aiChatRoutes');
 const conversations = require('./routes/conversationRoutes');
+const packages = require('./routes/packageRoutes');
+const hotelImporter = require('./routes/hotelImporterRoutes');
 const { protect, authorize } = require('./middleware/auth');
 const authController = require('./controllers/authController');
 const adminController = require('./controllers/adminController');
@@ -544,6 +546,7 @@ const mount = (prefix) => {
     app.use(`${prefix}/homepage`, homepage);
     app.use(`${prefix}/ota`, ota);
     app.use(`${prefix}/conversations`, conversations);
+    app.use(`${prefix}/packages`, packages);
 };
 
 mount('/api');

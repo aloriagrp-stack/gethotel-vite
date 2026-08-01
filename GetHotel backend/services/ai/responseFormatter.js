@@ -27,15 +27,29 @@ async function formatAiResponse({
     }
 
     let recommendedHotels = [];
-    if (hotelIds.length > 0) {
-        recommendedHotels = await fetchHotelsByIds(hotelIds);
-    } else if (dbHotels.length > 0 && ['HOTEL_SEARCH', 'ROOM_SEARCH', 'HOURLY_STAY_SEARCH'].includes(intent)) {
-        // Match hotels by exact name or key name words mentioned in AI reply
+    const lastQuery = (lastUserQuery || '').toLowerCase();
+
+    // Check if user query mentions an explicit hotel ID e.g. "(ID: 18)" or "hotel/18" or "view rooms for Toshali"
+    const explicitIdMatch = lastQuery.match(/\b(?:id[:\s]*|hotel\/)(\d+)\b/i);
+    if (explicitIdMatch) {
+        const targetId = parseInt(explicitIdMatch[1], 10);
+        const matched = dbHotels.filter(h => h.id === targetId);
+        if (matched.length > 0) {
+            recommendedHotels = matched;
+        } else {
+            const fetched = await fetchHotelsByIds([targetId]);
+            if (fetched.length > 0) recommendedHotels = fetched;
+        }
+    }
+
+    if (recommendedHotels.length === 0 && dbHotels.length > 0) {
+        // Match hotels by exact name or key name words mentioned in AI reply or user query
+        const combinedText = (reply + ' ' + lastQuery).toLowerCase();
         recommendedHotels = dbHotels.filter(h => {
-            const fullNameMatch = new RegExp(h.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i').test(reply);
+            const fullNameMatch = new RegExp(h.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i').test(combinedText);
             if (fullNameMatch) return true;
             const keyWords = h.name.toLowerCase().split(/\s+/).filter(w => w.length > 3 && !['hotel', 'resort', 'stay', 'inn', 'suites', 'trend'].includes(w));
-            return keyWords.length > 0 && keyWords.every(w => reply.toLowerCase().includes(w));
+            return keyWords.length > 0 && keyWords.every(w => combinedText.includes(w));
         });
         // If fuzzy match found nothing, fallback to dbHotels
         if (recommendedHotels.length === 0) {
@@ -43,11 +57,14 @@ async function formatAiResponse({
         }
     }
 
-    const lastQuery = (lastUserQuery || '').toLowerCase();
-    const queryMentionsRooms = /\b(room|rooms|kamra|kamre)\b/i.test(lastQuery);
+    const queryMentionsRooms = /\b(room|rooms|kamra|kamre|deluxe|suite|executive|king|queen|double|single|category|categories|option|options|tariff|rate|rates|price|types|view rooms|show rooms|room categories)\b/i.test(lastQuery) ||
+                                intent === 'ROOM_SEARCH' ||
+                                workflowState === 'SELECT_ROOM' ||
+                                Boolean(explicitIdMatch) ||
+                                (recommendedHotels.length === 1 && !/\b(hotels|list|all|other)\b/i.test(lastQuery));
 
     // Suppress room/hotel card rendering if collecting guest details OR if intent is non-hotel (Tours, General Chat)
-    const isNonHotelQuery = ['INDIA_TOUR_PLANNER', 'GENERAL_CHAT'].includes(intent);
+    const isNonHotelQuery = ['INDIA_TOUR_PLANNER'].includes(intent);
     const isCollectingPersonalDetails = ['COLLECT_GUEST_NAME', 'COLLECT_PHONE', 'COLLECT_EMAIL', 'BOOKING_CONFIRMED'].includes(workflowState) ||
                                           /poora naam|full name|guest name|mobile number|email address|enter your name|share your email/i.test(reply);
 
@@ -59,10 +76,10 @@ async function formatAiResponse({
     if (!isCollectingPersonalDetails) {
         if (recommendedHotels.length > 0) {
             outputHotels = recommendedHotels;
-            responseType = queryMentionsRooms ? 'rooms' : 'hotels';
+            responseType = (queryMentionsRooms || intent === 'ROOM_SEARCH' || Boolean(explicitIdMatch)) ? 'rooms' : 'hotels';
         } else if (dbHotels.length > 0 && (queryMentionsStays || !isNonHotelQuery)) {
             outputHotels = dbHotels.slice(0, 5);
-            responseType = queryMentionsRooms ? 'rooms' : 'hotels';
+            responseType = (queryMentionsRooms || intent === 'ROOM_SEARCH') ? 'rooms' : 'hotels';
         }
     }
 

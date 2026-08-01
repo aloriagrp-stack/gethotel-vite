@@ -26,6 +26,10 @@ exports.listConversations = async (req, res) => {
         const limit = Math.min(parseInt(req.query.limit) || 50, 100);
         const offset = parseInt(req.query.offset) || 0;
 
+        const totalUserConversations = await prisma.ai_conversation.count({
+            where: { userId, deleted: false }
+        });
+
         const conversations = await prisma.ai_conversation.findMany({
             where: {
                 userId,
@@ -43,7 +47,13 @@ exports.listConversations = async (req, res) => {
             skip: offset
         });
 
-        return res.json({ success: true, conversations });
+        const formattedConversations = conversations.map((conv, idx) => ({
+            ...conv,
+            chatNumber: totalUserConversations - (offset + idx),
+            displayTitle: conv.title || `Chat #${totalUserConversations - (offset + idx)}`
+        }));
+
+        return res.json({ success: true, conversations: formattedConversations, total: totalUserConversations });
     } catch (err) {
         console.error('[ConversationCtrl] List error:', err.message);
         return res.status(500).json({ success: false, message: 'Failed to load conversations.' });

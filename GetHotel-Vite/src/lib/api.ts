@@ -247,3 +247,16 @@ export const packageApi = {
     deletePackage: (id: string | number) => apiFetch(`/packages/${id}`, { method: 'DELETE' }),
     uploadImage: (imageBase64: string) => apiFetch('/packages/upload-image', { method: 'POST', body: JSON.stringify({ image: imageBase64 }) }),
 };
+
+export const hotelImporterApi = {
+    getStats: () => apiFetch('/admin/importer/stats'),
+    getHotels: (params?: { page?: number; limit?: number; since?: string; city?: string }) => {
+        const query = params ? '?' + new URLSearchParams(Object.entries(params).filter(([_, v]) => v !== undefined && v !== null && v !== '').map(([k, v]) => [k, String(v)])).toString() : '';
+        return apiFetch(`/admin/importer/hotels${query}`);
+    },
+    importHotels: (payload: { hotelIds?: string[]; hotelsToImport?: any[] }) => apiFetch('/admin/importer/import', { method: 'POST', body: JSON.stringify(payload) }),
+    syncHotels: (since?: string) => apiFetch('/admin/importer/sync', { method: 'POST', body: JSON.stringify({ since }) }),
+    verifyPairing: (data: { agentUrl?: string; pairingCode?: string }) => apiFetch('/admin/importer/verify-pairing', { method: 'POST', body: JSON.stringify(data) }),
+};
+
+

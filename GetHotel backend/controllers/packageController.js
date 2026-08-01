@@ -1,0 +1,346 @@
+const prisma = require('../config/db');
+
+// Ensure table exists on first load
+const ensureTableExists = async () => {
+    try {
+        await prisma.$executeRawUnsafe(`
+            CREATE TABLE IF NOT EXISTS tour_packages (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                title VARCHAR(255) NOT NULL,
+                slug VARCHAR(255) NOT NULL UNIQUE,
+                destination VARCHAR(255) NOT NULL,
+                duration VARCHAR(100) NOT NULL,
+                price DECIMAL(10,2) NOT NULL,
+                original_price DECIMAL(10,2) DEFAULT NULL,
+                discount_percent VARCHAR(50) DEFAULT NULL,
+                rating DECIMAL(3,1) DEFAULT 4.8,
+                reviews_count INT DEFAULT 45,
+                badge VARCHAR(50) DEFAULT 'Bestseller',
+                included_stay VARCHAR(255) DEFAULT NULL,
+                transport VARCHAR(255) DEFAULT NULL,
+                image TEXT DEFAULT NULL,
+                gallery LONGTEXT DEFAULT NULL,
+                overview LONGTEXT DEFAULT NULL,
+                inclusions LONGTEXT DEFAULT NULL,
+                itinerary LONGTEXT DEFAULT NULL,
+                is_active TINYINT(1) DEFAULT 1,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            );
+        `);
+    } catch (err) {
+        console.error('[PackageController] Table initialization error:', err.message);
+    }
+};
+
+// Initialize table
+ensureTableExists();
+
+// Helper to generate clean SEO Slugs
+function createPackageSlug(title) {
+    if (!title) return "tour-package-" + Date.now();
+    return title
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, "")
+        .trim()
+        .replace(/\s+/g, "-");
+}
+
+// Format package DB row to JSON object
+function formatPackage(row) {
+    if (!row) return null;
+    return {
+        id: row.id,
+        title: row.title,
+        slug: row.slug,
+        destination: row.destination,
+        duration: row.duration,
+        price: parseFloat(row.price),
+        originalPrice: row.original_price ? parseFloat(row.original_price) : null,
+        discountPercent: row.discount_percent || null,
+        rating: parseFloat(row.rating || 4.8),
+        reviewsCount: parseInt(row.reviews_count || 45, 10),
+        badge: row.badge || "Bestseller",
+        includedStay: row.included_stay || "",
+        transport: row.transport || "",
+        image: row.image || "",
+        gallery: typeof row.gallery === "string" ? JSON.parse(row.gallery || "[]") : (row.gallery || []),
+        overview: row.overview || "",
+        inclusions: typeof row.inclusions === "string" ? JSON.parse(row.inclusions || "[]") : (row.inclusions || []),
+        itinerary: typeof row.itinerary === "string" ? JSON.parse(row.itinerary || "[]") : (row.itinerary || []),
+        isActive: Boolean(row.is_active),
+        createdAt: row.created_at,
+        updatedAt: row.updated_at
+    };
+}
+
+// GET all tour packages
+exports.getAllPackages = async (req, res) => {
+    try {
+        await ensureTableExists();
+        const { search, destination, includeInactive } = req.query;
+
+        let query = "SELECT * FROM tour_packages WHERE 1=1";
+        const params = [];
+
+        if (!includeInactive || includeInactive === "false") {
+            query += " AND is_active = 1";
+        }
+
+        if (destination) {
+            query += " AND (destination LIKE ? OR title LIKE ?)";
+            params.push(`%${destination}%`, `%${destination}%`);
+        }
+
+        if (search) {
+            query += " AND (title LIKE ? OR destination LIKE ? OR overview LIKE ?)";
+            params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+        }
+
+        query += " ORDER BY id DESC";
+
+        const rows = await prisma.$queryRawUnsafe(query, ...params);
+        const packages = (rows || []).map(formatPackage);
+
+        return res.json({
+            success: true,
+            data: packages,
+            count: packages.length
+        });
+    } catch (err) {
+        console.error("Error in getAllPackages:", err);
+        return res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// GET single tour package by ID or Slug
+exports.getPackageByIdOrSlug = async (req, res) => {
+    try {
+        await ensureTableExists();
+        const { id } = req.params;
+
+        const isNumeric = /^\d+$/.test(id);
+        let query = isNumeric ? "SELECT * FROM tour_packages WHERE id = ? LIMIT 1" : "SELECT * FROM tour_packages WHERE slug = ? LIMIT 1";
+        const rows = await prisma.$queryRawUnsafe(query, isNumeric ? parseInt(id, 10) : id);
+
+        if (!rows || rows.length === 0) {
+            return res.status(404).json({ success: false, message: "Tour package not found" });
+        }
+
+        return res.json({
+            success: true,
+            data: formatPackage(rows[0])
+        });
+    } catch (err) {
+        console.error("Error in getPackageByIdOrSlug:", err);
+        return res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// POST create new tour package (Admin)
+exports.createPackage = async (req, res) => {
+    try {
+        await ensureTableExists();
+        const {
+            title,
+            slug,
+            destination,
+            duration,
+            price,
+            originalPrice,
+            discountPercent,
+            rating,
+            reviewsCount,
+            badge,
+            includedStay,
+            transport,
+            image,
+            gallery,
+            overview,
+            inclusions,
+            itinerary,
+            isActive
+        } = req.body;
+
+        if (!title || !destination || !duration || !price) {
+            return res.status(400).json({ success: false, message: "Title, destination, duration, and price are required" });
+        }
+
+        const pkgSlug = slug ? createPackageSlug(slug) : createPackageSlug(title);
+        const galleryJson = JSON.stringify(Array.isArray(gallery) ? gallery : (image ? [image] : []));
+        const inclusionsJson = JSON.stringify(Array.isArray(inclusions) ? inclusions : []);
+        const itineraryJson = JSON.stringify(Array.isArray(itinerary) ? itinerary : []);
+
+        const insertQuery = `
+            INSERT INTO tour_packages 
+            (title, slug, destination, duration, price, original_price, discount_percent, rating, reviews_count, badge, included_stay, transport, image, gallery, overview, inclusions, itinerary, is_active)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+
+        await prisma.$executeRawUnsafe(
+            insertQuery,
+            title,
+            pkgSlug,
+            destination,
+            duration,
+            parseFloat(price),
+            originalPrice ? parseFloat(originalPrice) : null,
+            discountPercent || null,
+            rating ? parseFloat(rating) : 4.8,
+            reviewsCount ? parseInt(reviewsCount, 10) : 45,
+            badge || "Bestseller",
+            includedStay || "",
+            transport || "",
+            image || "",
+            galleryJson,
+            overview || "",
+            inclusionsJson,
+            itineraryJson,
+            isActive !== undefined ? (isActive ? 1 : 0) : 1
+        );
+
+        const newRows = await prisma.$queryRawUnsafe("SELECT * FROM tour_packages WHERE slug = ? LIMIT 1", pkgSlug);
+
+        return res.status(201).json({
+            success: true,
+            message: "Tour package created successfully",
+            data: formatPackage(newRows[0])
+        });
+    } catch (err) {
+        console.error("Error in createPackage:", err);
+        return res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// PUT update tour package (Admin)
+exports.updatePackage = async (req, res) => {
+    try {
+        await ensureTableExists();
+        const { id } = req.params;
+        const {
+            title,
+            slug,
+            destination,
+            duration,
+            price,
+            originalPrice,
+            discountPercent,
+            rating,
+            reviewsCount,
+            badge,
+            includedStay,
+            transport,
+            image,
+            gallery,
+            overview,
+            inclusions,
+            itinerary,
+            isActive
+        } = req.body;
+
+        const checkRows = await prisma.$queryRawUnsafe("SELECT * FROM tour_packages WHERE id = ? LIMIT 1", parseInt(id, 10));
+        if (!checkRows || checkRows.length === 0) {
+            return res.status(404).json({ success: false, message: "Tour package not found" });
+        }
+
+        const existing = checkRows[0];
+        const pkgSlug = slug ? createPackageSlug(slug) : (title ? createPackageSlug(title) : existing.slug);
+        const galleryJson = gallery !== undefined ? JSON.stringify(gallery) : existing.gallery;
+        const inclusionsJson = inclusions !== undefined ? JSON.stringify(inclusions) : existing.inclusions;
+        const itineraryJson = itinerary !== undefined ? JSON.stringify(itinerary) : existing.itinerary;
+
+        const updateQuery = `
+            UPDATE tour_packages SET
+                title = ?,
+                slug = ?,
+                destination = ?,
+                duration = ?,
+                price = ?,
+                original_price = ?,
+                discount_percent = ?,
+                rating = ?,
+                reviews_count = ?,
+                badge = ?,
+                included_stay = ?,
+                transport = ?,
+                image = ?,
+                gallery = ?,
+                overview = ?,
+                inclusions = ?,
+                itinerary = ?,
+                is_active = ?
+            WHERE id = ?
+        `;
+
+        await prisma.$executeRawUnsafe(
+            updateQuery,
+            title !== undefined ? title : existing.title,
+            pkgSlug,
+            destination !== undefined ? destination : existing.destination,
+            duration !== undefined ? duration : existing.duration,
+            price !== undefined ? parseFloat(price) : existing.price,
+            originalPrice !== undefined ? (originalPrice ? parseFloat(originalPrice) : null) : existing.original_price,
+            discountPercent !== undefined ? discountPercent : existing.discount_percent,
+            rating !== undefined ? parseFloat(rating) : existing.rating,
+            reviewsCount !== undefined ? parseInt(reviewsCount, 10) : existing.reviews_count,
+            badge !== undefined ? badge : existing.badge,
+            includedStay !== undefined ? includedStay : existing.included_stay,
+            transport !== undefined ? transport : existing.transport,
+            image !== undefined ? image : existing.image,
+            galleryJson,
+            overview !== undefined ? overview : existing.overview,
+            inclusionsJson,
+            itineraryJson,
+            isActive !== undefined ? (isActive ? 1 : 0) : existing.is_active,
+            parseInt(id, 10)
+        );
+
+        const updatedRows = await prisma.$queryRawUnsafe("SELECT * FROM tour_packages WHERE id = ? LIMIT 1", parseInt(id, 10));
+
+        return res.json({
+            success: true,
+            message: "Tour package updated successfully",
+            data: formatPackage(updatedRows[0])
+        });
+    } catch (err) {
+        console.error("Error in updatePackage:", err);
+        return res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// DELETE tour package (Admin)
+exports.deletePackage = async (req, res) => {
+    try {
+        await ensureTableExists();
+        const { id } = req.params;
+
+        await prisma.$executeRawUnsafe("DELETE FROM tour_packages WHERE id = ?", parseInt(id, 10));
+
+        return res.json({
+            success: true,
+            message: "Tour package deleted successfully"
+        });
+    } catch (err) {
+        console.error("Error in deletePackage:", err);
+        return res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// Upload image file endpoint (Admin)
+const { processBase64Image } = require('../middleware/imageUpload');
+exports.uploadImage = async (req, res) => {
+    try {
+        const { image } = req.body;
+        if (!image) {
+            return res.status(400).json({ success: false, message: "Image base64 data required" });
+        }
+        const uploadedPath = await processBase64Image(image);
+        return res.json({
+            success: true,
+            url: uploadedPath
+        });
+    } catch (err) {
+        console.error("Image upload error:", err);
+        return res.status(500).json({ success: false, message: err.message });
+    }
+};

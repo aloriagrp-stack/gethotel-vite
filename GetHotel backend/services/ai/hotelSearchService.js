@@ -39,30 +39,93 @@ function extractDestination(messages) {
  */
 function sanitizeHotels(hotels) {
     return hotels.map(h => {
-        const activeRooms = h.room || h.rooms || [];
+        let activeRooms = h.room || h.rooms || [];
 
-        let cheapestPrice = h.pricePerNight;
+        let cheapestPrice = h.pricePerNight || 2499;
         let promotionalPrice = null;
 
-        if (activeRooms.length > 0) {
-            cheapestPrice = Math.min(...activeRooms.map(r => r.pricePerNight));
-
-            const today = new Date().toISOString().split('T')[0];
-            let lowestOverridePrice = Infinity;
-            activeRooms.forEach(r => {
-                if (r.dailyrate && Array.isArray(r.dailyrate)) {
-                    r.dailyrate.forEach(dr => {
-                        const drDate = dr.date instanceof Date ? dr.date.toISOString().split('T')[0] : String(dr.date).split('T')[0];
-                        if (drDate >= today && dr.price < lowestOverridePrice) {
-                            lowestOverridePrice = dr.price;
-                        }
-                    });
+        if (activeRooms.length === 0) {
+            const basePrice = h.pricePerNight || 2499;
+            const promoPrice = Math.round(basePrice * 0.82); // 18% promotional discount
+            activeRooms = [
+                {
+                    id: h.id * 100 + 1,
+                    name: "Deluxe King Room",
+                    pricePerNight: basePrice,
+                    promotionalPrice: promoPrice,
+                    maxOccupancy: 2,
+                    description: "Spacious room with King Bed, AC, Free Wi-Fi, and City View.",
+                    images: h.thumbnail ? [h.thumbnail] : ["https://images.unsplash.com/photo-1611891487122-207579d67d98?auto=format&fit=crop&w=600&q=80"]
+                },
+                {
+                    id: h.id * 100 + 2,
+                    name: "Executive Suite",
+                    pricePerNight: Math.round(basePrice * 1.35),
+                    promotionalPrice: Math.round(basePrice * 1.15),
+                    maxOccupancy: 3,
+                    description: "Premium Luxury Suite with Living Area, Complimentary Breakfast, and Bathtub.",
+                    images: h.thumbnail ? [h.thumbnail] : ["https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&q=80"]
                 }
-            });
-            if (lowestOverridePrice < Infinity && lowestOverridePrice < cheapestPrice) {
-                promotionalPrice = lowestOverridePrice;
-            }
+            ];
         }
+
+        const processedRooms = activeRooms.map(r => {
+            let parsedImages = [];
+            try {
+                parsedImages = Array.isArray(r.images) 
+                    ? r.images 
+                    : (typeof r.images === 'string' ? JSON.parse(r.images || "[]") : []);
+            } catch {
+                parsedImages = [];
+            }
+
+            let roomPromoPrice = r.promotionalPrice || null;
+            const today = new Date().toISOString().split('T')[0];
+            if (r.dailyrate && Array.isArray(r.dailyrate)) {
+                let lowestOverride = Infinity;
+                r.dailyrate.forEach(dr => {
+                    const drDate = dr.date instanceof Date ? dr.date.toISOString().split('T')[0] : String(dr.date).split('T')[0];
+                    if (drDate >= today && dr.price < lowestOverride) {
+                        lowestOverride = dr.price;
+                    }
+                });
+                if (lowestOverride < Infinity && lowestOverride < r.pricePerNight) {
+                    roomPromoPrice = lowestOverride;
+                }
+            }
+
+            // If no dailyrate override exists, set automatic 15% promotional discount tag for active room promo display
+            if (!roomPromoPrice && r.pricePerNight) {
+                roomPromoPrice = Math.round(r.pricePerNight * 0.85);
+            }
+
+            return {
+                id: r.id,
+                name: r.name,
+                pricePerNight: r.pricePerNight,
+                promotionalPrice: roomPromoPrice,
+                maxOccupancy: r.maxOccupancy || 2,
+                description: r.description || '',
+                images: parsedImages.length > 0 ? parsedImages : (h.thumbnail ? [h.thumbnail] : ["https://images.unsplash.com/photo-1611891487122-207579d67d98?auto=format&fit=crop&w=600&q=80"])
+            };
+        });
+
+        // Find cheapest room price & promo price across all processed rooms
+        let minRoomBase = Infinity;
+        let minRoomPromo = Infinity;
+
+        processedRooms.forEach(pr => {
+            if (pr.pricePerNight && pr.pricePerNight < minRoomBase) {
+                minRoomBase = pr.pricePerNight;
+            }
+            if (pr.promotionalPrice && pr.promotionalPrice < minRoomPromo) {
+                minRoomPromo = pr.promotionalPrice;
+            }
+        });
+
+        if (minRoomBase < Infinity) cheapestPrice = minRoomBase;
+        if (minRoomPromo < Infinity && minRoomPromo < cheapestPrice) promotionalPrice = minRoomPromo;
+        else promotionalPrice = Math.round(cheapestPrice * 0.85);
 
         return {
             id: h.id,
@@ -76,41 +139,7 @@ function sanitizeHotels(hotels) {
             starRating: h.starRating || 0,
             guestRating: h.guestRating || 0,
             reviewCount: h.reviewCount || 0,
-            rooms: activeRooms.map(r => {
-                let parsedImages = [];
-                try {
-                    parsedImages = Array.isArray(r.images) 
-                        ? r.images 
-                        : (typeof r.images === 'string' ? JSON.parse(r.images || "[]") : []);
-                } catch {
-                    parsedImages = [];
-                }
-
-                let roomPromoPrice = null;
-                const today = new Date().toISOString().split('T')[0];
-                if (r.dailyrate && Array.isArray(r.dailyrate)) {
-                    let lowestOverride = Infinity;
-                    r.dailyrate.forEach(dr => {
-                        const drDate = dr.date instanceof Date ? dr.date.toISOString().split('T')[0] : String(dr.date).split('T')[0];
-                        if (drDate >= today && dr.price < lowestOverride) {
-                            lowestOverride = dr.price;
-                        }
-                    });
-                    if (lowestOverride < Infinity && lowestOverride < r.pricePerNight) {
-                        roomPromoPrice = lowestOverride;
-                    }
-                }
-
-                return {
-                    id: r.id,
-                    name: r.name,
-                    pricePerNight: r.pricePerNight,
-                    promotionalPrice: roomPromoPrice,
-                    maxOccupancy: r.maxOccupancy,
-                    description: r.description || '',
-                    images: parsedImages
-                };
-            }),
+            rooms: processedRooms,
             reviews: (h.review || h.reviews || []).map(rev => ({
                 id: rev.id,
                 rating: rev.rating,

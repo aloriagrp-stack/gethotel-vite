@@ -188,5 +188,6 @@ const responseImageResolver = (req, res, next) => {
 module.exports = {
     requestImageProcessor,
     responseImageResolver,
-    recursiveProcessBase64
+    recursiveProcessBase64,
+    processBase64Image
 };
