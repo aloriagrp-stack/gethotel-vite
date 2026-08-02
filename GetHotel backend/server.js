@@ -462,10 +462,18 @@ const mountCriticalRoutes = (prefix) => {
     
     // Explicit Package Import & Hero Config Routes for Live Server Compatibility
     const packageController = require('./controllers/packageController');
+    const hotelImporterController = require('./controllers/hotelImporterController');
     app.get(`${prefix}/packages/hero-config`, packageController.getHeroConfig);
     app.put(`${prefix}/packages/hero-config`, protect, authorize('admin', 'superadmin', 'super_admin'), packageController.updateHeroConfig);
     app.post(`${prefix}/packages/import-json`, protect, authorize('admin', 'superadmin', 'super_admin'), packageController.importPackagesJson);
     app.post(`${prefix}/packages/upload-image`, protect, authorize('admin', 'superadmin', 'super_admin', 'hotel_admin'), packageController.uploadImage);
+
+    // Explicit Hotel Importer Agent Routes
+    app.get(`${prefix}/admin/importer/stats`, protect, authorize('admin', 'superadmin', 'super_admin'), hotelImporterController.getImporterStats);
+    app.get(`${prefix}/admin/importer/hotels`, protect, authorize('admin', 'superadmin', 'super_admin'), hotelImporterController.getExportHotels);
+    app.post(`${prefix}/admin/importer/import`, protect, authorize('admin', 'superadmin', 'super_admin'), hotelImporterController.importHotels);
+    app.post(`${prefix}/admin/importer/sync`, protect, authorize('admin', 'superadmin', 'super_admin'), hotelImporterController.syncNewHotels);
+    app.post(`${prefix}/admin/importer/verify-pairing`, protect, authorize('admin', 'superadmin', 'super_admin'), hotelImporterController.verifyPairingCode);
 };
 
 // AI chat routes mounted inline so they work even if routes/aiChatRoutes.js is stale on server
@@ -546,6 +554,7 @@ const mount = (prefix) => {
     app.use(`${prefix}/partner`, partner);
     app.use(`${prefix}/admin/ai`, ai);
     app.use(`${prefix}/ai`, aiChat);
+    app.use(`${prefix}/admin/importer`, hotelImporter);
     app.use(`${prefix}/admin`, admin);
     app.use(`${prefix}/notifications`, notifications);
     app.use(`${prefix}/messages`, messages);
