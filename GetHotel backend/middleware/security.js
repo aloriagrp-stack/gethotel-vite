@@ -229,7 +229,8 @@ exports.csrfHandler = (req, res, next) => {
     const mutatingMethods = ['POST', 'PUT', 'DELETE', 'PATCH'];
     if (mutatingMethods.includes(req.method)) {
         // Skip check if path is in exclusions
-        const isExcluded = csrfExcludedPaths.some(excludedPath => req.originalUrl.includes(excludedPath));
+        const urlStr = (req.originalUrl || req.url || '').toLowerCase();
+        const isExcluded = csrfExcludedPaths.some(excludedPath => urlStr.includes(excludedPath.toLowerCase()));
         if (isExcluded) {
             return next();
         }
