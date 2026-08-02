@@ -235,13 +235,14 @@ export const AdminHotelImporter: React.FC = () => {
 
     const handleImportSelected = async () => {
         if (selectedIds.size === 0) return;
-        await runBatchImport(Array.from(selectedIds));
+        const selectedObjects = hotels.filter(h => selectedIds.has(h.id));
+        await runBatchImport(Array.from(selectedIds), selectedObjects);
     };
 
     const handleImportAll = async () => {
         const allIds = hotels.map(h => h.id);
         if (allIds.length === 0) return;
-        await runBatchImport(allIds);
+        await runBatchImport(allIds, hotels);
     };
 
     const handleSingleImport = async (hotel: ExportHotel) => {
