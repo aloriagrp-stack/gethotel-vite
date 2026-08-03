@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "GetHotelStays - Hotel Scraper & Importer Agent",
+  "version": "1.0.0",
+  "description": "Extract hotel details, room categories, rate plans, and up to 30 gallery photos from MakeMyTrip & OTAs for GHS Auto-Importer.",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "GHS Hotel Scraper Agent"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

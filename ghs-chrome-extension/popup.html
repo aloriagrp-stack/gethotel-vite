@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GetHotelStays Scraper Agent</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    body {
+      width: 380px;
+      background: #0b0f19;
+      color: #f8fafc;
+      padding: 16px;
+      user-select: none;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: 12px;
+      margin-bottom: 14px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .logo-badge {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff;
+      font-weight: 800;
+      font-size: 13px;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+    .title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+    .status-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 20px;
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .btn {
+      width: 100%;
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      color: white;
+      border: none;
+      padding: 11px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+    }
+    .btn:hover {
+      opacity: 0.95;
+      transform: translateY(-1px);
+    }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .preview-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 12px;
+      margin-top: 14px;
+    }
+    .preview-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .preview-sub {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-bottom: 10px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .stat-box {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 8px;
+      text-align: center;
+    }
+    .stat-val {
+      font-size: 15px;
+      font-weight: 800;
+      color: #38bdf8;
+    }
+    .stat-lbl {
+      font-size: 9px;
+      color: #64748b;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+    .input-group {
+      margin-bottom: 10px;
+    }
+    .input-label {
+      font-size: 10px;
+      color: #94a3b8;
+      font-weight: 600;
+      margin-bottom: 4px;
+      display: block;
+      text-transform: uppercase;
+    }
+    .input-field {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 8px 10px;
+      color: #f8fafc;
+      font-size: 12px;
+      outline: none;
+    }
+    .input-field:focus {
+      border-color: #6366f1;
+    }
+    .alert-box {
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 11px;
+      margin-top: 10px;
+      display: none;
+    }
+    .alert-success {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .alert-error {
+      background: rgba(244, 63, 94, 0.15);
+      color: #fb7185;
+      border: 1px solid rgba(244, 63, 94, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="brand">
+      <span class="logo-badge">GHS</span>
+      <span class="title">Hotel Scraper Agent</span>
+    </div>
+    <span class="status-badge">🟢 AGENT READY</span>
+  </div>
+
+  <button id="scrapeBtn" class="btn">
+    <span>⚡</span> Scrape Current Hotel Page
+  </button>
+
+  <div id="alertBox" class="alert-box"></div>
+
+  <div id="previewCard" class="preview-card" style="display: none;">
+    <div id="hotelName" class="preview-title">Hotel Name</div>
+    <div id="hotelLoc" class="preview-sub">Location, City</div>
+
+    <div class="stat-grid">
+      <div class="stat-box">
+        <div id="statPhotos" class="stat-val">0</div>
+        <div class="stat-lbl">Photos (Max 30)</div>
+      </div>
+      <div class="stat-box">
+        <div id="statRooms" class="stat-val">0</div>
+        <div class="stat-lbl">Room Types</div>
+      </div>
+      <div class="stat-box">
+        <div id="statStars" class="stat-val">4★</div>
+        <div class="stat-lbl">Stars</div>
+      </div>
+    </div>
+
+    <!-- Credentials Override Form -->
+    <div class="input-group">
+      <label class="input-label">Hotel Login Email</label>
+      <input type="email" id="hotelEmail" class="input-field" placeholder="auto-generated or enter custom email">
+    </div>
+    <div class="input-group">
+      <label class="input-label">Phone Number</label>
+      <input type="text" id="hotelPhone" class="input-field" placeholder="+91 9876543210">
+    </div>
+    <div class="input-group">
+      <label class="input-label">Login Password</label>
+      <input type="text" id="hotelPassword" class="input-field" placeholder="AutoPass@123">
+    </div>
+
+    <button id="exportBtn" class="btn" style="background: linear-gradient(135deg, #059669, #10b981); margin-top: 10px;">
+      <span>📤</span> Export to GHS Super Admin
+    </button>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
