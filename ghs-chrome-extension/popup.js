@@ -92,27 +92,42 @@ document.addEventListener('DOMContentLoaded', () => {
     currentExtractedData.phone = hotelPhoneInp.value || currentExtractedData.phone;
     currentExtractedData.password = hotelPasswordInp.value || currentExtractedData.password;
 
+    let sentLive = false;
+    let sentLocal = false;
+
+    // 1. Post to GHS Live Cloud Server
     try {
-      // POST to Exporter Agent on localhost:4000
-      const response = await fetch('http://localhost:4000/api/export/scraped-hotel', {
+      const liveRes = await fetch('https://gethotelstays.com/api/admin/importer/scraped-hotel', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(currentExtractedData)
       });
+      const liveData = await liveRes.json();
+      if (liveRes.ok && liveData.success) sentLive = true;
+    } catch (e) {
+      console.warn('[Extension Notice] Could not reach gethotelstays.com live server:', e.message);
+    }
 
-      const resData = await response.json();
-
-      if (response.ok && resData.success) {
-        showAlert('🎉 Success! Hotel exported to Exporter Agent. Open GHS Super Admin to import.', 'success');
-      } else {
-        showAlert(`Export Failed: ${resData.message || 'Server error'}`, 'error');
-      }
-    } catch (err) {
-      console.warn('[Extension Notice] Localhost exporter unreachable, storing in Chrome Sync Storage...');
-      // Fallback: Store in Chrome local storage so Super Admin Importer page can pick it up directly
-      chrome.storage.local.set({ [`scraped_hotel_${Date.now()}`]: currentExtractedData }, () => {
-        showAlert('Saved to GHS Storage! Open GHS Admin Importer to import.', 'success');
+    // 2. Post to Local Exporter Agent (if running)
+    try {
+      const localRes = await fetch('http://localhost:4000/api/export/scraped-hotel?api_key=ghs-export-key-2024', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-api-key': 'ghs-export-key-2024'
+        },
+        body: JSON.stringify(currentExtractedData)
       });
+      const localData = await localRes.json();
+      if (localRes.ok && localData.success) sentLocal = true;
+    } catch (e) {
+      console.warn('[Extension Notice] Localhost exporter unreachable:', e.message);
+    }
+
+    if (sentLive || sentLocal) {
+      showAlert('🎉 Success! Hotel exported to GHS Super Admin Importer. Open Importer page to 1-Click Import.', 'success');
+    } else {
+      showAlert('Export Failed: Could not reach GHS server or local agent.', 'error');
     } finally {
       exportBtn.disabled = false;
       exportBtn.innerHTML = '<span>📤</span> Export to GHS Super Admin';

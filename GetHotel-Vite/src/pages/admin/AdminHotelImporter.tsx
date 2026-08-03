@@ -323,9 +323,9 @@ export const AdminHotelImporter: React.FC = () => {
                     <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
                         Hotel Agent Importer
                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                            isConnected ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "bg-rose-500/20 text-rose-400 border border-rose-500/30"
+                            (isConnected || hotels.length > 0) ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "bg-rose-500/20 text-rose-400 border border-rose-500/30"
                         }`}>
-                            {isConnected ? '🟢 CONNECTED' : '🔴 DISCONNECTED'}
+                            {(isConnected || hotels.length > 0) ? '🟢 EXTENSION & AGENT READY' : '🔴 DISCONNECTED'}
                         </span>
                     </h1>
                     <p className="text-xs text-slate-400 mt-1">
@@ -462,9 +462,9 @@ export const AdminHotelImporter: React.FC = () => {
                 <div className="flex items-center gap-2 w-full md:w-auto justify-end">
                     <button
                         onClick={handleImportSelected}
-                        disabled={selectedIds.size === 0 || importing || !isConnected}
+                        disabled={selectedIds.size === 0 || importing}
                         className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                            selectedIds.size > 0 && !importing && isConnected
+                            selectedIds.size > 0 && !importing
                                 ? "bg-blue-600 hover:bg-blue-500 text-white"
                                 : "bg-slate-800 text-slate-500 cursor-not-allowed"
                         }`}
@@ -474,7 +474,7 @@ export const AdminHotelImporter: React.FC = () => {
 
                     <button
                         onClick={handleImportAll}
-                        disabled={hotels.length === 0 || importing || !isConnected}
+                        disabled={hotels.length === 0 || importing}
                         className="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition-all disabled:opacity-40"
                     >
                         Import All ({hotels.length})
@@ -488,10 +488,10 @@ export const AdminHotelImporter: React.FC = () => {
                     <div className="p-12 text-center text-slate-500 text-xs font-medium">
                         Checking pairing status & loading hotels...
                     </div>
-                ) : !isConnected ? (
+                ) : (!isConnected && hotels.length === 0) ? (
                     <div className="p-12 text-center text-amber-400/90 text-xs font-medium space-y-2">
                         <p className="text-sm font-bold text-white">Importer Disconnected from Listing Agent</p>
-                        <p className="text-slate-400">Enter the Exporter Base URL & Pairing Code above and click <strong>Verify Pairing Code</strong> to connect.</p>
+                        <p className="text-slate-400">Use GHS Chrome Extension to scrape any hotel page or enter Exporter Agent URL above.</p>
                     </div>
                 ) : filteredHotels.length === 0 ? (
                     <div className="p-12 text-center text-slate-400 text-xs font-medium">

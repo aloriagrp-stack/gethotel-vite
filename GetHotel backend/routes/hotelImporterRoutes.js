@@ -3,7 +3,11 @@ const router = express.Router();
 const hotelImporterController = require('../controllers/hotelImporterController');
 const { protect, authorize } = require('../middleware/auth');
 
-// All importer endpoints require Admin / Super Admin authorization
+// Public/Extension Endpoint: Chrome Extension posts scraped hotels directly here
+router.post('/scraped-hotel', hotelImporterController.saveScrapedHotel);
+router.get('/scraped-hotels', hotelImporterController.getScrapedHotels);
+
+// All other importer endpoints require Admin / Super Admin authorization
 router.use(protect);
 router.use(authorize('admin', 'super_admin', 'superadmin'));
 
