@@ -209,7 +209,9 @@ const csrfExcludedPaths = [
     '/api/ai/debug-hotels',
     '/ai/debug-hotels',
     '/api/admin/importer',
-    '/admin/importer'
+    '/admin/importer',
+    '/scraped-hotel',
+    '/scraped-hotels'
 ];
 
 exports.csrfHandler = (req, res, next) => {
