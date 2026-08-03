@@ -26,7 +26,7 @@
     let city = 'Delhi';
     let state = 'Delhi';
     let country = 'India';
-    let starRating = 4;
+    let starRating = 3;
     let description = '';
     let coverImageUrl = '';
     let galleryImages = [];
@@ -38,14 +38,15 @@
       const locText = document.querySelector('span[data-testid="location"], p.locDetails, .header-view__address, .locMapText')?.innerText?.trim() || '';
       address = locText || 'Delhi, India';
       
-      // Parse city from address
-      if (locText.toLowerCase().includes('delhi')) city = 'Delhi';
-      else if (locText.toLowerCase().includes('mumbai')) city = 'Mumbai';
-      else if (locText.toLowerCase().includes('goa')) city = 'Goa';
-      else if (locText.toLowerCase().includes('jaipur')) city = 'Jaipur';
-      else if (locText.toLowerCase().includes('manali')) city = 'Manali';
-      else if (locText.toLowerCase().includes('shimla')) city = 'Shimla';
-      else if (locText.toLowerCase().includes('udaipur')) city = 'Udaipur';
+      // Parse city from address or URL
+      const fullLoc = (locText + ' ' + url).toLowerCase();
+      if (fullLoc.includes('delhi')) city = 'Delhi';
+      else if (fullLoc.includes('mumbai')) city = 'Mumbai';
+      else if (fullLoc.includes('goa')) city = 'Goa';
+      else if (fullLoc.includes('jaipur')) city = 'Jaipur';
+      else if (fullLoc.includes('manali')) city = 'Manali';
+      else if (fullLoc.includes('shimla')) city = 'Shimla';
+      else if (fullLoc.includes('udaipur')) city = 'Udaipur';
 
     } else if (isBooking) {
       hotelName = document.querySelector('h2.pp-header__title, h2.hp__hotel-name, h1')?.innerText?.trim() || '';
@@ -55,15 +56,22 @@
       address = document.querySelector('.address, .location, [class*="address"]')?.innerText?.trim() || 'India';
     }
 
-    // Fallback name clean
     if (!hotelName) hotelName = document.title.split('-')[0].split('|')[0].trim() || 'Scraped Hotel';
 
-    // --- 2. STAR RATING ---
-    const starEl = document.querySelector('[class*="star"], [data-testid*="star"]');
-    if (starEl) {
-      const starText = starEl.innerText || starEl.getAttribute('aria-label') || '';
-      const match = starText.match(/(\d+)/);
-      if (match) starRating = Math.min(5, Math.max(1, parseInt(match[1])));
+    // --- 2. ACCURATE STAR RATING PARSER ---
+    const pageText = document.body.innerText || '';
+    const starMatch = pageText.match(/(\d)\s*Star\s*(Hotel|Property|Resort|Accommodation)?/i);
+    
+    if (starMatch) {
+      const val = parseInt(starMatch[1]);
+      if (val >= 1 && val <= 5) starRating = val;
+    } else {
+      // Check MMT star rating icon containers
+      const mmtStarContainer = document.querySelector('.hotelHeader__starRating, [class*="starRating"], [class*="ratingStar"]');
+      if (mmtStarContainer) {
+        const svgCount = mmtStarContainer.querySelectorAll('svg, i, span').length;
+        if (svgCount >= 1 && svgCount <= 5) starRating = svgCount;
+      }
     }
 
     // --- 3. DESCRIPTION ---
@@ -77,7 +85,6 @@
     allImgEls.forEach((img) => {
       let src = img.src || img.getAttribute('data-src') || img.getAttribute('data-original') || img.getAttribute('srcset') || '';
       if (typeof src === 'string' && src.includes('http')) {
-        // High-res cleanup for MMT / OTAs
         src = src.split('?')[0].replace(/w_\d+,h_\d+/, 'w_1200,h_800').replace(/w_\d+/, 'w_1200');
         if (
           !src.includes('logo') &&
@@ -85,6 +92,7 @@
           !src.includes('avatar') &&
           !src.includes('map') &&
           !src.includes('svg') &&
+          !src.includes('badge') &&
           (src.includes('jpg') || src.includes('jpeg') || src.includes('png') || src.includes('webp'))
         ) {
           rawImageSet.add(src);
@@ -96,16 +104,40 @@
     coverImageUrl = allImagesArray[0] || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80';
     galleryImages = allImagesArray.slice(0, 30); // Max 30 photos
 
-    // --- 5. ROOM CATEGORIES, ROOM IMAGES & RATE PLANS ---
-    const roomContainers = document.querySelectorAll(
-      '[data-testid*="room"], [class*="roomCategory"], [class*="roomCard"], [class*="room-container"], .roomContainer, .roomDetail'
-    );
+    // --- 5. COMPREHENSIVE ROOM CATEGORIES & RATE PLANS PARSER ---
+    // Strategy A: Find room card blocks
+    let roomCardSelectors = [
+      '[class*="roomCard"]',
+      '[class*="RoomCard"]',
+      '[class*="roomRow"]',
+      '[class*="RoomRow"]',
+      '[class*="roomType"]',
+      '[class*="RoomType"]',
+      '[class*="roomCategory"]',
+      '[data-testid*="room"]',
+      '.roomDetailCard',
+      '.rmType'
+    ];
+
+    let roomContainers = document.querySelectorAll(roomCardSelectors.join(', '));
+    const processedRoomNames = new Set();
 
     if (roomContainers.length > 0) {
       roomContainers.forEach((container, idx) => {
-        const rNameEl = container.querySelector('h2, h3, h4, [class*="roomName"], [class*="roomTitle"], .roomTypeTitle');
-        const rName = rNameEl?.innerText?.trim();
-        if (!rName || rName.length < 3 || rName.toLowerCase().includes('select') || rName.toLowerCase().includes('choose')) return;
+        const rNameEl = container.querySelector('h2, h3, h4, [class*="roomName"], [class*="RoomName"], [class*="roomTitle"], [class*="rmHeaderTitle"], .roomTypeTitle');
+        let rName = rNameEl?.innerText?.trim();
+        
+        if (!rName || rName.length < 3) return;
+
+        // Clean room name
+        rName = rName.split('\n')[0].replace(/₹.*/, '').replace(/\d+.*off/i, '').trim();
+        
+        const ignoreKeywords = ['select', 'choose', 'overview', 'amenities', 'location', 'review', 'policy', 'filter', 'sort'];
+        if (ignoreKeywords.some(k => rName.toLowerCase().includes(k))) return;
+
+        const normalizedKey = rName.toLowerCase();
+        if (processedRoomNames.has(normalizedKey)) return; // Avoid duplicates
+        processedRoomNames.add(normalizedKey);
 
         // Room photos
         const roomImgSet = new Set();
@@ -118,7 +150,7 @@
         const rImages = Array.from(roomImgSet).slice(0, 5);
 
         // Price extraction
-        const priceEl = container.querySelector('[class*="price"], [class*="amount"], .roomPrice, .font22');
+        const priceEl = container.querySelector('[class*="price"], [class*="Price"], [class*="amount"], .roomPrice, .font22');
         let basePrice = 2499;
         if (priceEl) {
           const pMatch = priceEl.innerText.replace(/,/g, '').match(/\d+/);
@@ -132,7 +164,7 @@
         if (ratePlanEls.length > 0) {
           ratePlanEls.forEach((planEl) => {
             const pTxt = planEl.innerText?.trim();
-            if (pTxt && (pTxt.toLowerCase().includes('breakfast') || pTxt.toLowerCase().includes('cancellation') || pTxt.toLowerCase().includes('pay at') || pTxt.toLowerCase().includes('only'))) {
+            if (pTxt && (pTxt.toLowerCase().includes('breakfast') || pTxt.toLowerCase().includes('cancellation') || pTxt.toLowerCase().includes('pay at') || pTxt.toLowerCase().includes('free'))) {
               ratePlans.push({
                 title: pTxt.slice(0, 80),
                 price: basePrice,
@@ -150,7 +182,7 @@
           });
           ratePlans.push({
             title: 'Room with Complimentary Breakfast',
-            price: Math.round(basePrice * 1.18),
+            price: Math.round(basePrice * 1.15),
             features: ['Buffet Breakfast Included', 'Free High-Speed Wi-Fi', 'Free Cancellation']
           });
         }
@@ -161,14 +193,38 @@
           maxAdults: 2,
           maxChildren: 1,
           basePrice,
-          images: rImages.length > 0 ? rImages : [galleryImages[idx % galleryImages.length] || coverImageUrl],
+          images: rImages.length > 0 ? rImages : galleryImages.slice(idx * 2, (idx * 2) + 4),
           amenities: ['Air Conditioning', 'Free Wi-Fi', 'Flat Screen TV', 'Ensuite Bathroom', 'Electric Kettle'],
           ratePlans
         });
       });
     }
 
-    // Default Fallback Room Categories if DOM parser didn't find specific room divs
+    // Strategy B: Fallback - Extract from Room Section Headings directly on MMT/Booking
+    if (roomTypes.length === 0 || roomTypes.length < 2) {
+      const roomSectionHeadings = document.querySelectorAll('#RoomTypes h3, #RoomTypes h4, [class*="rmHeaderTitle"], [class*="roomTypeTitle"]');
+      roomSectionHeadings.forEach((hEl, idx) => {
+        const title = hEl.innerText?.split('\n')[0]?.trim();
+        if (title && title.length > 3 && !processedRoomNames.has(title.toLowerCase())) {
+          processedRoomNames.add(title.toLowerCase());
+          roomTypes.push({
+            name: title,
+            description: `Comfortable ${title} featuring air conditioning, comfortable bedding, free Wi-Fi, and private bathroom.`,
+            maxAdults: 2,
+            maxChildren: 1,
+            basePrice: 2499 + (idx * 500),
+            images: galleryImages.slice(idx * 2, (idx * 2) + 3),
+            amenities: ['Air Conditioning', 'Free Wi-Fi', 'Flat Screen TV', 'Ensuite Bathroom'],
+            ratePlans: [
+              { title: 'Standard Room Rate', price: 2499 + (idx * 500), features: ['Free Wi-Fi', 'Pay 12% Online'] },
+              { title: 'Breakfast Included Rate', price: Math.round((2499 + (idx * 500)) * 1.15), features: ['Complimentary Breakfast', 'Free Wi-Fi'] }
+            ]
+          });
+        }
+      });
+    }
+
+    // Ultimate Fallback if DOM parser found 0 rooms
     if (roomTypes.length === 0) {
       roomTypes = [
         {
@@ -185,15 +241,15 @@
           ]
         },
         {
-          name: 'Executive Suite',
-          description: `Premium Executive Suite featuring extra living area, king bed, city view, mini-fridge, and luxury bath amenities.`,
+          name: 'Executive Room',
+          description: `Premium Executive Room featuring extra living area, king bed, city view, mini-fridge, and luxury bath amenities.`,
           maxAdults: 3,
           maxChildren: 1,
-          basePrice: 3999,
+          basePrice: 3499,
           images: galleryImages.slice(3, 6),
           amenities: ['Air Conditioning', 'Free Wi-Fi', 'Smart TV', 'Living Area', 'Mini Bar', 'Ensuite Bathroom'],
           ratePlans: [
-            { title: 'Executive Plan (Breakfast Included)', price: 3999, features: ['Free Breakfast', 'Free Cancellation', 'Welcome Drink'] }
+            { title: 'Executive Plan (Breakfast Included)', price: 3499, features: ['Free Breakfast', 'Free Cancellation', 'Welcome Drink'] }
           ]
         }
       ];
