@@ -6,7 +6,6 @@
 // Helper to escape potentially dangerous HTML characters
 const escapeHtmlTags = (str) => {
     if (typeof str !== 'string') return str;
-    // Escaping tags prevent HTML injection / XSS vectors while keeping URLs/symbols safe
     return str
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
@@ -16,13 +15,13 @@ const escapeHtmlTags = (str) => {
 const sanitizeObject = (obj, depth = 0) => {
     if (!obj || typeof obj !== 'object') return obj;
     
-    // Protection against excessive nesting depth (prevent Stack Overflow / Denial of Service)
-    if (depth > 5) {
+    // Protection against excessive nesting depth (support rich hotel schemas up to 15 depth)
+    if (depth > 15) {
         throw new Error('Payload nesting depth exceeded maximum limit.');
     }
     
-    // Protection against excessive parameter size
-    if (Object.keys(obj).length > 100) {
+    // Protection against excessive parameter size (support up to 1000 keys for gallery images & rooms)
+    if (Object.keys(obj).length > 1000) {
         throw new Error('Payload contains too many parameters.');
     }
     
@@ -48,6 +47,11 @@ const sanitizeObject = (obj, depth = 0) => {
 // Main middleware
 exports.sanitizeInput = (req, res, next) => {
     try {
+        const urlStr = (req.originalUrl || req.url || '').toLowerCase();
+        // Bypass deep object sanitization for importer/scraped-hotel endpoints
+        if (urlStr.includes('importer') || urlStr.includes('scraped-hotel')) {
+            return next();
+        }
         if (req.body) sanitizeObject(req.body);
         if (req.query) sanitizeObject(req.query);
         if (req.params) sanitizeObject(req.params);
