@@ -245,9 +245,9 @@ exports.csrfHandler = (req, res, next) => {
             return next();
         }
 
-        // Bypass CSRF for same-origin/localhost/network requests
+        // Bypass CSRF for same-origin/localhost/network/extension requests
         const origin = (req.headers.origin || req.headers.referer || '').trim().toLowerCase();
-        const isSameOrigin = origin.includes('gethotelstays.com') || origin.includes('localhost') || origin.includes('127.0.0.1') || origin.startsWith('http://192.168.');
+        const isSameOrigin = origin.includes('gethotelstays.com') || origin.includes('localhost') || origin.includes('127.0.0.1') || origin.startsWith('http://192.168.') || origin.startsWith('chrome-extension://');
         if (isSameOrigin) {
             return next();
         }
