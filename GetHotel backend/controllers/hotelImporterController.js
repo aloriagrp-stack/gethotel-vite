@@ -200,26 +200,28 @@ exports.verifyPairingCode = async (req, res) => {
     }
 };
 
-// Storage for hotels received directly from GHS Chrome Extension
-const SCRAPED_HOTELS_FILE = path.join(__dirname, '..', 'config', 'scraped_extension_hotels.json');
+// Storage for hotels received directly from GHS Chrome Extension (saved in uploads directory for cPanel write permissions)
+const SCRAPED_HOTELS_FILE = path.join(UPLOADS_DIR, 'scraped_extension_hotels.json');
 
 function readScrapedHotels() {
     try {
-        const configDir = path.dirname(SCRAPED_HOTELS_FILE);
-        if (!fs.existsSync(configDir)) fs.mkdirSync(configDir, { recursive: true });
+        if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
         if (fs.existsSync(SCRAPED_HOTELS_FILE)) {
             return JSON.parse(fs.readFileSync(SCRAPED_HOTELS_FILE, 'utf8'));
         }
-    } catch (e) {}
+    } catch (e) {
+        console.warn('[Importer] Error reading scraped hotels file:', e.message);
+    }
     return [];
 }
 
 function writeScrapedHotels(hotels) {
     try {
-        const configDir = path.dirname(SCRAPED_HOTELS_FILE);
-        if (!fs.existsSync(configDir)) fs.mkdirSync(configDir, { recursive: true });
+        if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
         fs.writeFileSync(SCRAPED_HOTELS_FILE, JSON.stringify(hotels, null, 2), 'utf8');
-    } catch (e) {}
+    } catch (e) {
+        console.error('[Importer] Error writing scraped hotels file:', e.message);
+    }
 }
 
 /**
