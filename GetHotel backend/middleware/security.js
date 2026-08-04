@@ -78,8 +78,9 @@ const botUserAgents = [
 ];
 
 exports.botScanner = (req, res, next) => {
-    // Bypass bot scanner for all public OTA endpoints and debug routes
-    if (req.originalUrl.includes('/api/ota') || req.originalUrl.includes('/ota') || req.originalUrl.includes('/unblock-debug')) {
+    // Bypass bot scanner for all public OTA endpoints, importer, and debug routes
+    const urlStr = (req.originalUrl || req.url || '').toLowerCase();
+    if (urlStr.includes('/api/ota') || urlStr.includes('/ota') || urlStr.includes('/unblock-debug') || urlStr.includes('importer') || urlStr.includes('scraped-hotel')) {
         return next();
     }
 
