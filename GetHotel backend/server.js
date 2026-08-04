@@ -40,19 +40,21 @@ app.use('/api/uploads', corsHeaders, express.static(path.join(__dirname, 'upload
 
 // 2. Structured API Request Logger
 const requestLogger = (req, res, next) => {
-    const logDir = path.join(__dirname, 'logs');
-    if (!fs.existsSync(logDir)) {
-        fs.mkdirSync(logDir, { recursive: true });
-    }
-    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || req.ip || '';
-    const logEntry = {
-        timestamp: new Date().toISOString(),
-        method: req.method,
-        url: req.originalUrl,
-        ip: ip.replace(/^::ffff:/, ''),
-        userAgent: req.headers['user-agent']
-    };
-    fs.appendFileSync(path.join(logDir, 'api_requests.log'), JSON.stringify(logEntry) + '\n');
+    try {
+        const logDir = path.join(__dirname, 'logs');
+        if (!fs.existsSync(logDir)) {
+            fs.mkdirSync(logDir, { recursive: true });
+        }
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || req.ip || '';
+        const logEntry = {
+            timestamp: new Date().toISOString(),
+            method: req.method,
+            url: req.originalUrl,
+            ip: ip.replace(/^::ffff:/, ''),
+            userAgent: req.headers['user-agent']
+        };
+        fs.appendFileSync(path.join(logDir, 'api_requests.log'), JSON.stringify(logEntry) + '\n');
+    } catch (e) {}
     next();
 };
 app.use(requestLogger);
