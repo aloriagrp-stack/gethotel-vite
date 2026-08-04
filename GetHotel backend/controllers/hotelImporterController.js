@@ -286,6 +286,22 @@ exports.getScrapedHotels = async (req, res) => {
 };
 
 /**
+ * DELETE /api/admin/importer/scraped-hotel/:id
+ * Removes a scraped hotel item from queue
+ */
+exports.deleteScrapedHotel = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const hotels = readScrapedHotels();
+        const filtered = hotels.filter(h => h.id !== id && h.name.toLowerCase().trim() !== id.toLowerCase().trim());
+        writeScrapedHotels(filtered);
+        res.json({ success: true, message: 'Hotel deleted from queue successfully' });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Failed to delete hotel', error: err.message });
+    }
+};
+
+/**
  * GET /api/admin/importer/stats
  * Returns Listing Agent stats + GHS imported status summary
  */

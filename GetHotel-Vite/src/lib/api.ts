@@ -469,6 +469,7 @@ export const hotelImporterApi = {
         return apiFetch(`/admin/importer/hotels${query}`);
     },
     importHotels: (payload: { hotelIds?: string[]; hotelsToImport?: any[] }) => apiFetch('/admin/importer/import', { method: 'POST', body: JSON.stringify(payload) }),
+    deleteHotel: (id: string) => apiFetch(`/admin/importer/scraped-hotel/${encodeURIComponent(id)}`, { method: 'DELETE' }),
     syncHotels: (since?: string) => apiFetch('/admin/importer/sync', { method: 'POST', body: JSON.stringify({ since }) }),
     verifyPairing: (data: { agentUrl?: string; pairingCode?: string }) => apiFetch('/admin/importer/verify-pairing', { method: 'POST', body: JSON.stringify(data) }),
 };
