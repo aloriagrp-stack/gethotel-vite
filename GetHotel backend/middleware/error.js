@@ -3,7 +3,7 @@ const path = require('path');
 
 const errorHandler = (err, req, res, next) => {
     let statusCode = err.status || err.statusCode || 500;
-    let message = 'An unexpected server error occurred.';
+    let message = err.message || 'An unexpected server error occurred.';
 
     // 1. JWT Errors
     if (err.name === 'TokenExpiredError') {
@@ -26,9 +26,6 @@ const errorHandler = (err, req, res, next) => {
         } else {
             message = 'A database integrity violation occurred.';
         }
-    } else if (err.message && !err.message.includes('Prisma') && statusCode !== 500) {
-        // Safe validation or business logic error messages can be returned directly
-        message = err.message;
     }
 
     // 3. Structured Logging to logs/errors.log
