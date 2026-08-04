@@ -1,4 +1,5 @@
-// GetHotel Backend Server
+// GetHotel Backend Server - Production Build v2.9
+// Last Updated: 2026-08-04 - Full Scraped Importer Synchronization Enabled
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
