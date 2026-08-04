@@ -104,6 +104,21 @@ app.use(cors({
 
 app.use(express.json({ limit: '15mb' })); // Restricted payload limit (15MB)
 app.use(express.urlencoded({ limit: '15mb', extended: true }));
+
+// Direct Chrome Extension Scraped Hotel Handler (Top priority bypass)
+const directImporterHandler = async (req, res) => {
+    try {
+        const hotelImporterController = require('./controllers/hotelImporterController');
+        await hotelImporterController.saveScrapedHotel(req, res);
+    } catch (err) {
+        console.error('[DIRECT IMPORTER ERROR]:', err);
+        res.status(500).json({ success: false, message: 'Direct Importer Error: ' + err.message, stack: err.stack });
+    }
+};
+
+app.post('/api/admin/importer/scraped-hotel', directImporterHandler);
+app.post('/admin/importer/scraped-hotel', directImporterHandler);
+
 app.use(cookieParser());
 app.use(sanitizeInput); // escape dangerous HTML tags and block query pollution
 app.use(hpp()); // Prevent HTTP parameter pollution
