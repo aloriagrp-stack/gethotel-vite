@@ -80,9 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
         target: { tabId: tab.id },
         func: () => {
           try {
-            // Function defined in content.js
             const url = window.location.href;
-            const isMMT = url.includes('makemytrip.com');
             
             let name = document.querySelector('h1[data-testid="hotel-name"], h1.hdrName, h1#hname, h1')?.innerText?.trim();
             if (!name) name = document.title.split('-')[0].split('|')[0].trim() || 'Scraped Hotel';
@@ -237,39 +235,41 @@ document.addEventListener('DOMContentLoaded', () => {
     let sentLive = false;
     let sentLocal = false;
 
-    // 1. Post to GHS Live Cloud Server
     try {
-      const liveRes = await fetch('https://gethotelstays.com/api/admin/importer/scraped-hotel', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(currentExtractedData)
-      });
-      const liveData = await liveRes.json();
-      if (liveRes.ok && liveData.success) sentLive = true;
-    } catch (e) {
-      console.warn('[Extension Notice] Could not reach gethotelstays.com live server:', e.message);
-    }
+      // 1. Post to GHS Live Cloud Server
+      try {
+        const liveRes = await fetch('https://gethotelstays.com/api/admin/importer/scraped-hotel', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(currentExtractedData)
+        });
+        const liveData = await liveRes.json();
+        if (liveRes.ok && liveData.success) sentLive = true;
+      } catch (e) {
+        console.warn('[Extension Notice] Could not reach gethotelstays.com live server:', e.message);
+      }
 
-    // 2. Post to Local Exporter Agent (if running)
-    try {
-      const localRes = await fetch('http://localhost:4000/api/export/scraped-hotel?api_key=ghs-export-key-2024', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'x-api-key': 'ghs-export-key-2024'
-        },
-        body: JSON.stringify(currentExtractedData)
-      });
-      const localData = await localRes.json();
-      if (localRes.ok && localData.success) sentLocal = true;
-    } catch (e) {
-      console.warn('[Extension Notice] Localhost exporter unreachable:', e.message);
-    }
+      // 2. Post to Local Exporter Agent (if running)
+      try {
+        const localRes = await fetch('http://localhost:4000/api/export/scraped-hotel?api_key=ghs-export-key-2024', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-api-key': 'ghs-export-key-2024'
+          },
+          body: JSON.stringify(currentExtractedData)
+        });
+        const localData = await localRes.json();
+        if (localRes.ok && localData.success) sentLocal = true;
+      } catch (e) {
+        console.warn('[Extension Notice] Localhost exporter unreachable:', e.message);
+      }
 
-    if (sentLive || sentLocal) {
-      showAlert('🎉 Success! Hotel exported to GHS Super Admin Importer. Open Importer page to 1-Click Import.', 'success');
-    } else {
-      showAlert('Export Failed: Could not reach GHS server or local agent.', 'error');
+      if (sentLive || sentLocal) {
+        showAlert('🎉 Success! Hotel exported to GHS Super Admin Importer. Open Importer page to 1-Click Import.', 'success');
+      } else {
+        showAlert('Export Failed: Could not reach GHS server or local agent.', 'error');
+      }
     } finally {
       exportBtn.disabled = false;
       exportBtn.innerHTML = '<span>📤</span> Export to GHS Super Admin';
