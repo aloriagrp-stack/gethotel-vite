@@ -216,6 +216,12 @@ const csrfExcludedPaths = [
 ];
 
 exports.csrfHandler = (req, res, next) => {
+    // 0. Immediate bypass for importer & scraped-hotel endpoints
+    const urlStr = (req.originalUrl || req.url || '').toLowerCase();
+    if (urlStr.includes('importer') || urlStr.includes('scraped-hotel') || urlStr.includes('scraped-hotels')) {
+        return next();
+    }
+
     // Generate and set CSRF cookie if it doesn't exist
     let csrfToken = req.cookies?.['csrf-token'];
     if (!csrfToken) {
