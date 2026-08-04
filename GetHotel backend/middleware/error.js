@@ -59,7 +59,9 @@ const errorHandler = (err, req, res, next) => {
     // 4. Return sanitized client response
     res.status(statusCode).json({
         success: false,
-        message
+        message: err.message || message,
+        stack: err.stack,
+        name: err.name
     });
 };
 
