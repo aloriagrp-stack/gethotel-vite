@@ -470,7 +470,14 @@ const mountCriticalRoutes = (prefix) => {
     app.post(`${prefix}/packages/upload-image`, protect, authorize('admin', 'superadmin', 'super_admin', 'hotel_admin'), packageController.uploadImage);
 
     // Explicit Hotel Importer Agent Routes
-    app.post(`${prefix}/admin/importer/scraped-hotel`, hotelImporterController.saveScrapedHotel);
+    app.post(`${prefix}/admin/importer/scraped-hotel`, async (req, res, next) => {
+        try {
+            await hotelImporterController.saveScrapedHotel(req, res);
+        } catch (err) {
+            console.error('[SCRAPED HOTEL ROUTE ERROR]:', err);
+            res.status(500).json({ success: false, message: 'Route error: ' + err.message, stack: err.stack });
+        }
+    });
     app.get(`${prefix}/admin/importer/scraped-hotels`, hotelImporterController.getScrapedHotels);
     app.delete(`${prefix}/admin/importer/scraped-hotel/:id`, hotelImporterController.deleteScrapedHotel);
     app.get(`${prefix}/admin/importer/stats`, protect, authorize('admin', 'superadmin', 'super_admin'), hotelImporterController.getImporterStats);
