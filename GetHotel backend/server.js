@@ -87,8 +87,9 @@ app.use(cors({
             const isLocalhost = cleanOrigin.startsWith('http://localhost:') || cleanOrigin.startsWith('http://127.0.0.1:');
             const isLocalIP = cleanOrigin.startsWith('http://192.168.') || cleanOrigin.startsWith('http://10.') || cleanOrigin.startsWith('http://172.');
             const isDevNetwork = isLocalIP || (isDevelopment && cleanOrigin.startsWith('http://'));
+            const isChromeExtension = cleanOrigin.startsWith('chrome-extension://');
             
-            if (isWhitelisted || isSameDomain || isLocalhost || isDevNetwork) {
+            if (isWhitelisted || isSameDomain || isLocalhost || isDevNetwork || isChromeExtension) {
                 callback(null, true);
             } else {
                 console.error(`[CORS Blocked] origin=${origin}, cleanOrigin=${cleanOrigin}, whitelist=`, whitelist);

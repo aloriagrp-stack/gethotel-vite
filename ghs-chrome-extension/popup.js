@@ -237,6 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       // 1. Post to GHS Live Cloud Server
+      let liveError = '';
       try {
         const liveRes = await fetch('https://gethotelstays.com/api/admin/importer/scraped-hotel', {
           method: 'POST',
@@ -244,8 +245,13 @@ document.addEventListener('DOMContentLoaded', () => {
           body: JSON.stringify(currentExtractedData)
         });
         const liveData = await liveRes.json();
-        if (liveRes.ok && liveData.success) sentLive = true;
+        if (liveRes.ok && liveData.success) {
+          sentLive = true;
+        } else {
+          liveError = liveData.message || `HTTP ${liveRes.status}`;
+        }
       } catch (e) {
+        liveError = e.message;
         console.warn('[Extension Notice] Could not reach gethotelstays.com live server:', e.message);
       }
 
@@ -266,9 +272,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       if (sentLive || sentLocal) {
-        showAlert('🎉 Success! Hotel exported to GHS Super Admin Importer. Open Importer page to 1-Click Import.', 'success');
+        showAlert(`🎉 Success! Exported "${currentExtractedData.name}" to GHS Super Admin Importer. Click Refresh on Importer Page to import!`, 'success');
       } else {
-        showAlert('Export Failed: Could not reach GHS server or local agent.', 'error');
+        showAlert(`Export Failed: ${liveError || 'Could not reach GHS server'}`, 'error');
       }
     } finally {
       exportBtn.disabled = false;
