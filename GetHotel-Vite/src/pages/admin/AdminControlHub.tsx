@@ -70,7 +70,16 @@ export default function AdminControlHub({ hotels, loading = false }: AdminContro
     ];
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="space-y-8 animate-in fade-in duration-500 text-white">
+            {/* Header Title */}
+            <div className="flex flex-col gap-1">
+                <h2 className="text-xl font-black uppercase tracking-wider text-white flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" />
+                    ControlHub
+                </h2>
+                <p className="text-xs text-neutral-400 font-medium">Monitoring platform statistics and property requests.</p>
+            </div>
+
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {stats.map((stat) => {
@@ -82,39 +91,36 @@ export default function AdminControlHub({ hotels, loading = false }: AdminContro
                             type="button"
                             onClick={() => setSubTab(stat.type as any)}
                             className={cn(
-                                "p-6 border text-left transition-all group relative cursor-pointer outline-none",
+                                "p-6 border text-left transition-all group relative cursor-pointer outline-none rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)]",
                                 isActive 
-                                    ? "bg-slate-900 border-slate-900 text-white shadow-xl shadow-slate-900/10 scale-[1.02]" 
-                                    : "bg-white border-slate-200 text-slate-900 hover:border-slate-350 hover:shadow-md"
+                                    ? "bg-[#181818] border-neutral-400 text-white scale-[1.02]" 
+                                    : "bg-[#0c0c0c] border-[#1c1c1c] border-t-[#2d2d2d] text-neutral-300 hover:border-[#2d2d2d]"
                             )}
                         >
                             <div className="flex justify-between items-start mb-6">
                                 <div className={cn(
-                                    "w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110",
+                                    "w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 border border-[#282828]",
                                     isActive
-                                        ? "bg-white/10 text-white"
-                                        : stat.color === 'blue' ? "bg-blue-50 text-blue-600" :
-                                          stat.color === 'purple' ? "bg-purple-50 text-purple-600" :
-                                          "bg-emerald-50 text-emerald-600"
+                                        ? "bg-[#222222] text-white"
+                                        : stat.color === 'blue' ? "bg-blue-950/60 text-blue-400" :
+                                          stat.color === 'purple' ? "bg-purple-950/60 text-purple-400" :
+                                          "bg-emerald-950/60 text-emerald-400"
                                 )}>
                                     <Icon className="w-5 h-5" />
                                 </div>
                                 <span className={cn(
-                                    "text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded",
-                                    isActive ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500"
+                                    "text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-lg border",
+                                    isActive ? "bg-[#222222] border-neutral-600 text-white" : "bg-[#141414] border-[#262626] text-neutral-400"
                                 )}>
                                     Filter View
                                 </span>
                             </div>
                             <div>
-                                <p className={cn(
-                                    "font-black text-[10px] uppercase tracking-[0.15em] mb-1",
-                                    isActive ? "text-slate-400" : "text-slate-400"
-                                )}>
+                                <p className="font-bold text-[10px] uppercase tracking-widest mb-1 text-neutral-400">
                                     {stat.label}
                                 </p>
-                                <h3 className="text-4xl font-black tracking-tighter italic">
-                                    {stat.count} <span className="text-xs font-normal not-italic tracking-normal text-slate-500 ml-1">Properties</span>
+                                <h3 className="text-4xl font-black tracking-tight">
+                                    {stat.count} <span className="text-xs font-medium tracking-normal text-neutral-500 ml-1">Properties</span>
                                 </h3>
                             </div>
                         </button>
@@ -123,41 +129,41 @@ export default function AdminControlHub({ hotels, loading = false }: AdminContro
             </div>
 
             {/* Filter and Table area */}
-            <div className="bg-white border border-slate-200 shadow-sm rounded-sm">
-                <div className="px-6 py-5 border-b border-slate-100 bg-slate-50/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] overflow-hidden">
+                <div className="px-6 py-5 border-b border-[#1f1f1f] bg-[#0e0e0e] flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+                        <h3 className="text-sm font-bold text-white uppercase tracking-wider">
                             {subTab === "nightly" ? "Nightly Only (Full Day) Hotels" :
                              subTab === "hourly" ? "Hourly Only Hotels" : "Hybrid Stays (Both Nightly & Hourly)"}
                         </h3>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">
+                        <p className="text-[10px] font-bold text-neutral-500 uppercase mt-1">
                             {displayedHotels.length} properties showing in this view
                         </p>
                     </div>
 
                     <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
                         <input
                             type="text"
                             placeholder="Search current list..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-sm w-64 focus:outline-none focus:border-slate-400 font-medium text-xs shadow-sm"
+                            className="pl-10 pr-4 py-2 bg-[#141414] border border-[#282828] rounded-xl w-64 focus:outline-none focus:border-neutral-500 font-medium text-xs text-white placeholder:text-neutral-600 shadow-inner"
                         />
                     </div>
                 </div>
 
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
-                        <thead className="bg-slate-50 border-b border-slate-200">
+                        <thead className="bg-[#0e0e0e] border-b border-[#1f1f1f]">
                             <tr>
-                                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Hotel Details</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Rooms Breakdown</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Pricing</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Hotel Details</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Rooms Breakdown</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Pricing</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100">
+                        <tbody className="divide-y divide-[#181818]">
                             {displayedHotels.map((hotel) => {
                                 const rooms = hotel.room || hotel.rooms || [];
                                 const hourlyCount = rooms.filter((r: any) => r.isHourlyEnabled || r.is_hourly_enabled).length;
@@ -167,11 +173,11 @@ export default function AdminControlHub({ hotels, loading = false }: AdminContro
                                     <tr 
                                         key={hotel.id} 
                                         onClick={() => router(`/admin/super/hotels/${hotel.id}`)}
-                                        className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
+                                        className="hover:bg-[#121212] transition-none cursor-pointer group"
                                     >
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
+                                                <div className="w-12 h-12 bg-[#161616] border border-[#282828] rounded-xl flex items-center justify-center overflow-hidden shrink-0">
                                                     {hotel.thumbnail ? (
                                                         <Image 
                                                             src={hotel.thumbnail} 
@@ -181,14 +187,14 @@ export default function AdminControlHub({ hotels, loading = false }: AdminContro
                                                             className="object-cover w-full h-full group-hover:scale-110 transition-transform" 
                                                         />
                                                     ) : (
-                                                        <Hotel className="w-5 h-5 text-slate-400" />
+                                                        <Hotel className="w-5 h-5 text-neutral-400" />
                                                     )}
                                                 </div>
                                                 <div>
-                                                    <p className="text-xs font-bold text-slate-900 group-hover:text-brand-600 transition-colors">
+                                                    <p className="text-xs font-bold text-white group-hover:text-emerald-400 transition-colors">
                                                         {hotel.name}
                                                     </p>
-                                                    <p className="text-[10px] text-slate-400 font-bold uppercase mt-0.5">
+                                                    <p className="text-[10px] text-neutral-500 font-bold uppercase mt-0.5">
                                                         {hotel.city}, {hotel.address}
                                                     </p>
                                                 </div>
@@ -196,19 +202,19 @@ export default function AdminControlHub({ hotels, loading = false }: AdminContro
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col gap-1">
-                                                <span className="text-[10px] font-bold text-slate-600">
-                                                    Total Rooms: <b className="text-slate-900 font-black">{rooms.length}</b>
+                                                <span className="text-[10px] font-bold text-neutral-300">
+                                                    Total Rooms: <b className="text-white font-extrabold">{rooms.length}</b>
                                                 </span>
                                                 <div className="flex gap-2 mt-1">
                                                     <span className={cn(
-                                                        "px-2 py-0.5 text-[8px] font-black uppercase rounded-full",
-                                                        nightlyCount > 0 ? "bg-blue-50 text-blue-700 border border-blue-100" : "bg-slate-50 text-slate-300"
+                                                        "px-2.5 py-0.5 text-[8px] font-bold uppercase rounded-lg border",
+                                                        nightlyCount > 0 ? "bg-blue-950/80 border-blue-800/40 text-blue-400" : "bg-[#141414] border-[#262626] text-neutral-600"
                                                     )}>
                                                         {nightlyCount} Nightly
                                                     </span>
                                                     <span className={cn(
-                                                        "px-2 py-0.5 text-[8px] font-black uppercase rounded-full",
-                                                        hourlyCount > 0 ? "bg-purple-50 text-purple-700 border border-purple-100" : "bg-slate-50 text-slate-300"
+                                                        "px-2.5 py-0.5 text-[8px] font-bold uppercase rounded-lg border",
+                                                        hourlyCount > 0 ? "bg-purple-950/80 border-purple-800/40 text-purple-400" : "bg-[#141414] border-[#262626] text-neutral-600"
                                                     )}>
                                                         {hourlyCount} Hourly
                                                     </span>
@@ -217,18 +223,18 @@ export default function AdminControlHub({ hotels, loading = false }: AdminContro
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col">
-                                                <span className="text-xs font-black text-slate-900">
-                                                    ₹{hotel.pricePerNight?.toLocaleString()} <span className="text-[9px] font-normal text-slate-450">/night</span>
+                                                <span className="text-xs font-bold text-emerald-400 font-mono">
+                                                    ₹{hotel.pricePerNight?.toLocaleString()} <span className="text-[9px] font-normal text-neutral-400 font-sans">/night</span>
                                                 </span>
                                                 {hourlyCount > 0 && (
-                                                    <span className="text-[10px] font-bold text-purple-600 mt-0.5">
+                                                    <span className="text-[10px] font-bold text-purple-400 mt-0.5">
                                                         Hourly stays active
                                                     </span>
                                                 )}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            <button className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-brand-600 border border-transparent group-hover:border-brand-200 px-3 py-1.5 transition-all">
+                                            <button className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 group-hover:text-white border border-[#2a2a2a] bg-[#141414] group-hover:bg-[#1f1f1f] px-3.5 py-1.5 rounded-lg transition-all shadow-sm">
                                                 Manage Hotel
                                             </button>
                                         </td>
@@ -238,8 +244,8 @@ export default function AdminControlHub({ hotels, loading = false }: AdminContro
                             {displayedHotels.length === 0 && (
                                 <tr>
                                     <td colSpan={4} className="py-24 text-center">
-                                        <ShieldAlert className="w-8 h-8 text-slate-350 mx-auto mb-3" />
-                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">
+                                        <ShieldAlert className="w-8 h-8 text-neutral-600 mx-auto mb-3" />
+                                        <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-[0.2em]">
                                             No properties found in this category
                                         </p>
                                     </td>

@@ -428,8 +428,8 @@ export default function AdminHomepageEditor() {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-[50vh]">
-                <Loader2 className="w-8 h-8 animate-spin text-brand-600" />
+            <div className="flex items-center justify-center min-h-[50vh] bg-[#050505] text-white">
+                <Loader2 className="w-8 h-8 animate-spin text-neutral-400" />
             </div>
         );
     }

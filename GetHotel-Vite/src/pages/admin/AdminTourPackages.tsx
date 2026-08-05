@@ -238,15 +238,15 @@ export default function AdminTourPackages() {
     };
 
     return (
-        <div className="space-y-8 pb-12 font-sans text-slate-900">
-            {/* Top Bar */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <div className="space-y-8 pb-12 font-sans text-neutral-100">
+            {/* Top Bar - Pure Black Skeuomorphic */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#0c0c0c] p-6 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)]">
                 <div>
-                    <h2 className="text-2xl font-black text-slate-900 flex items-center gap-2">
-                        <Palmtree className="w-6 h-6 text-emerald-600" />
+                    <h2 className="text-2xl font-black text-white flex items-center gap-2 tracking-tight">
+                        <Palmtree className="w-6 h-6 text-emerald-400" />
                         Super Admin Tour Packages Manager
                     </h2>
-                    <p className="text-xs text-slate-500 mt-1 font-medium">
+                    <p className="text-xs text-neutral-400 mt-1 font-semibold">
                         Create, edit & manage all tour packages, prices, overview, itinerary & hero banners live.
                     </p>
                 </div>
@@ -257,48 +257,48 @@ export default function AdminTourPackages() {
                         setEditingPackage(null);
                         setIsAddModalOpen(true);
                     }}
-                    className="px-5 py-2.5 bg-slate-950 hover:bg-slate-800 text-white font-bold text-xs rounded-xl flex items-center gap-2 transition-all cursor-pointer shadow-sm shrink-0"
+                    className="px-5 py-3 bg-neutral-100 hover:bg-white text-black font-bold text-xs rounded-xl flex items-center gap-2 transition-all cursor-pointer shadow-lg shrink-0 uppercase tracking-wider"
                 >
-                    <Plus className="w-4 h-4" />
+                    <Plus className="w-4 h-4 text-black" />
                     <span>Add New Tour Package</span>
                 </button>
             </div>
 
             {/* Success Status Toast */}
             {statusMessage && (
-                <div className="p-4 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-bold flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <div className="p-4 bg-emerald-950/80 text-emerald-300 border border-emerald-800/40 rounded-xl text-xs font-bold flex items-center gap-2 backdrop-blur-sm">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                     <span>{statusMessage}</span>
                 </div>
             )}
 
             {/* SECTION 1: HERO BANNER SLIDER MANAGEMENT */}
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div className="bg-[#0c0c0c] p-6 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] space-y-4">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                            <ImageIcon className="w-4 h-4 text-emerald-600" />
+                        <h3 className="text-base font-bold text-white flex items-center gap-2">
+                            <ImageIcon className="w-4 h-4 text-emerald-400" />
                             Hero Banner Slides ({banners.length}/5)
                         </h3>
-                        <p className="text-xs text-slate-500">Curved banner images shown at top of `/packages` page.</p>
+                        <p className="text-xs text-neutral-400 mt-0.5">Curved banner images shown at top of `/packages` page.</p>
                     </div>
                 </div>
 
                 {/* Banner Images Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     {banners.map((banner, index) => (
-                        <div key={banner.id} className="relative h-28 rounded-xl overflow-hidden border border-slate-200 group">
+                        <div key={banner.id} className="relative h-28 rounded-xl overflow-hidden border border-[#262626] group shadow-inner">
                             <img src={banner.image} alt="" className="w-full h-full object-cover" />
-                            <div className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2">
+                            <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2">
                                 <button
                                     onClick={() => handleDeleteBanner(banner.id)}
-                                    className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors cursor-pointer"
+                                    className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-500 transition-colors cursor-pointer shadow-md"
                                     title="Delete Slide"
                                 >
                                     <Trash2 className="w-4 h-4" />
                                 </button>
                             </div>
-                            <span className="absolute bottom-2 left-2 bg-slate-900/80 text-white text-[10px] font-bold px-2 py-0.5 rounded">
+                            <span className="absolute bottom-2 left-2 bg-black/90 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-md border border-[#333333]">
                                 Slide #{index + 1}
                             </span>
                         </div>
@@ -313,11 +313,11 @@ export default function AdminTourPackages() {
                         placeholder="Paste image URL for new banner slide..."
                         value={newBannerUrl}
                         onChange={(e) => setNewBannerUrl(e.target.value)}
-                        className="flex-1 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-slate-900 focus:outline-none"
+                        className="flex-1 px-4 py-2.5 bg-[#141414] border border-[#282828] rounded-xl text-xs font-medium text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-500 font-mono"
                     />
                     <button
                         type="submit"
-                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-colors cursor-pointer shrink-0"
+                        className="px-5 py-2.5 bg-neutral-100 hover:bg-white text-black font-bold text-xs rounded-xl transition-all cursor-pointer shrink-0 uppercase tracking-wider"
                     >
                         Add Banner
                     </button>
@@ -325,52 +325,52 @@ export default function AdminTourPackages() {
             </div>
 
             {/* SECTION 2: ACTIVE TOUR PACKAGES LIST */}
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-                    <h3 className="text-base font-bold text-slate-900">
+            <div className="bg-[#0c0c0c] rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] overflow-hidden">
+                <div className="p-5 border-b border-[#1f1f1f] bg-[#0e0e0e] flex items-center justify-between">
+                    <h3 className="text-base font-bold text-white">
                         Active Tour Packages ({packages.length})
                     </h3>
                 </div>
 
-                <div className="divide-y divide-slate-100">
+                <div className="divide-y divide-[#181818]">
                     {packages.map((pkg) => (
-                        <div key={pkg.id} className="p-4 flex items-center justify-between gap-4 hover:bg-slate-50/60 transition-colors">
+                        <div key={pkg.id} className="p-4 flex items-center justify-between gap-4 hover:bg-[#121212] transition-colors">
                             <div className="flex items-center gap-4 min-w-0">
                                 <img
                                     src={pkg.image}
                                     alt=""
-                                    className="w-16 h-16 rounded-xl object-cover shrink-0 border border-slate-200"
+                                    className="w-16 h-16 rounded-xl object-cover shrink-0 border border-[#282828] shadow-inner"
                                 />
                                 <div className="min-w-0">
-                                    <h4 className="text-xs font-bold text-slate-900 truncate">{pkg.title}</h4>
-                                    <p className="text-[11px] text-slate-500 font-medium flex items-center gap-1 mt-0.5">
-                                        <MapPin className="w-3 h-3 text-emerald-600 shrink-0" />
+                                    <h4 className="text-xs font-bold text-white truncate">{pkg.title}</h4>
+                                    <p className="text-[11px] text-neutral-400 font-medium flex items-center gap-1 mt-0.5">
+                                        <MapPin className="w-3 h-3 text-emerald-400 shrink-0" />
                                         <span>{pkg.destination}</span>
                                     </p>
-                                    <div className="flex items-center gap-2 mt-1">
-                                        <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">{pkg.duration}</span>
-                                        <span className="text-[10px] font-black uppercase text-white bg-slate-900 px-2 py-0.5 rounded">{pkg.badge}</span>
+                                    <div className="flex items-center gap-2 mt-1.5">
+                                        <span className="text-[10px] font-semibold text-neutral-300 bg-[#161616] border border-[#262626] px-2.5 py-0.5 rounded-lg">{pkg.duration}</span>
+                                        <span className="text-[10px] font-bold uppercase text-white bg-neutral-800 border border-neutral-700 px-2.5 py-0.5 rounded-lg">{pkg.badge}</span>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="flex items-center gap-4 shrink-0">
                                 <div className="text-right">
-                                    <span className="text-sm font-black text-slate-950 block">₹{pkg.price?.toLocaleString()}</span>
-                                    <span className="text-[10px] text-slate-400 line-through">₹{pkg.originalPrice?.toLocaleString()}</span>
+                                    <span className="text-sm font-black text-white block">₹{pkg.price?.toLocaleString()}</span>
+                                    <span className="text-[10px] text-neutral-500 line-through">₹{pkg.originalPrice?.toLocaleString()}</span>
                                 </div>
 
                                 <div className="flex items-center gap-1">
                                     <button
                                         onClick={() => openEditModal(pkg)}
-                                        className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                                        className="p-2 text-neutral-300 hover:bg-[#1f1f1f] rounded-lg transition-colors cursor-pointer border border-[#282828]"
                                         title="Edit Package"
                                     >
                                         <Edit className="w-4 h-4" />
                                     </button>
                                     <button
                                         onClick={() => handleDeletePackage(pkg.id)}
-                                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                                        className="p-2 text-red-400 hover:bg-red-950/60 rounded-lg transition-colors cursor-pointer border border-red-900/40"
                                         title="Delete Package"
                                     >
                                         <Trash2 className="w-4 h-4" />
@@ -385,163 +385,163 @@ export default function AdminTourPackages() {
             {/* FULL EDIT / CREATE TOUR PACKAGE MODAL */}
             <AnimatePresence>
                 {isAddModalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-xl overflow-hidden"
+                            className="bg-[#0c0c0c] rounded-2xl shadow-2xl border border-[#1c1c1c] border-t-[#2d2d2d] w-full max-w-xl overflow-hidden text-white"
                         >
-                            <div className="p-5 bg-slate-950 text-white flex items-center justify-between">
-                                <h3 className="text-sm font-bold">
+                            <div className="p-5 bg-[#0e0e0e] border-b border-[#1f1f1f] flex items-center justify-between">
+                                <h3 className="text-sm font-bold text-white uppercase tracking-wider">
                                     {editingPackage ? "Edit Tour Package Details" : "Create New Tour Package"}
                                 </h3>
                                 <button
                                     onClick={() => setIsAddModalOpen(false)}
-                                    className="w-7 h-7 rounded-full bg-white/10 text-slate-300 hover:bg-white/20 flex items-center justify-center cursor-pointer"
+                                    className="w-7 h-7 rounded-full bg-[#181818] border border-[#2a2a2a] text-neutral-400 hover:text-white flex items-center justify-center cursor-pointer"
                                 >
                                     <X className="w-4 h-4" />
                                 </button>
                             </div>
 
-                            <form onSubmit={handleSavePackage} className="p-5 space-y-3.5 text-xs font-medium max-h-[82vh] overflow-y-auto">
+                            <form onSubmit={handleSavePackage} className="p-5 space-y-4 text-xs font-medium max-h-[82vh] overflow-y-auto">
                                 <div>
-                                    <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Package Title</label>
+                                    <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">Package Title</label>
                                     <input
                                         type="text"
                                         required
                                         placeholder="e.g. Royal Rajasthan Heritage & Fort Trail"
                                         value={formData.title}
                                         onChange={e => setFormData({ ...formData, title: e.target.value })}
-                                        className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-900 focus:outline-none"
+                                        className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-white focus:outline-none focus:border-neutral-500 font-mono"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Destinations Covered</label>
+                                    <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">Destinations Covered</label>
                                     <input
                                         type="text"
                                         required
                                         placeholder="e.g. Jaipur • Udaipur • Jodhpur"
                                         value={formData.destination}
                                         onChange={e => setFormData({ ...formData, destination: e.target.value })}
-                                        className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-900 focus:outline-none"
+                                        className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-white focus:outline-none focus:border-neutral-500 font-mono"
                                     />
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
-                                        <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Duration</label>
+                                        <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">Duration</label>
                                         <input
                                             type="text"
                                             required
                                             placeholder="e.g. 5 Days / 4 Nights"
                                             value={formData.duration}
                                             onChange={e => setFormData({ ...formData, duration: e.target.value })}
-                                            className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-900 focus:outline-none"
+                                            className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-white focus:outline-none focus:border-neutral-500 font-mono"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Badge Label</label>
+                                        <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">Badge Label</label>
                                         <select
                                             value={formData.badge}
                                             onChange={e => setFormData({ ...formData, badge: e.target.value })}
-                                            className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-900 focus:outline-none bg-white"
+                                            className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-white focus:outline-none focus:border-neutral-500 font-mono"
                                         >
-                                            <option>Bestseller</option>
-                                            <option>Trending</option>
-                                            <option>Popular</option>
-                                            <option>Super Saver</option>
-                                            <option>Top Rated</option>
-                                            <option>Bucket List</option>
+                                            <option className="bg-black text-white">Bestseller</option>
+                                            <option className="bg-black text-white">Trending</option>
+                                            <option className="bg-black text-white">Popular</option>
+                                            <option className="bg-black text-white">Super Saver</option>
+                                            <option className="bg-black text-white">Top Rated</option>
+                                            <option className="bg-black text-white">Bucket List</option>
                                         </select>
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
-                                        <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Offer Rate Per Guest (₹)</label>
+                                        <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">Offer Rate Per Guest (₹)</label>
                                         <input
                                             type="number"
                                             required
                                             value={formData.price}
                                             onChange={e => setFormData({ ...formData, price: Number(e.target.value) })}
-                                            className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-900 focus:outline-none"
+                                            className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-white focus:outline-none focus:border-neutral-500 font-mono"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Original Price (₹)</label>
+                                        <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">Original Price (₹)</label>
                                         <input
                                             type="number"
                                             required
                                             value={formData.originalPrice}
                                             onChange={e => setFormData({ ...formData, originalPrice: Number(e.target.value) })}
-                                            className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-900 focus:outline-none"
+                                            className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-white focus:outline-none focus:border-neutral-500 font-mono"
                                         />
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Cover Image URL</label>
+                                    <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">Cover Image URL</label>
                                     <input
                                         type="url"
                                         required
                                         placeholder="https://images.unsplash.com/..."
                                         value={formData.image}
                                         onChange={e => setFormData({ ...formData, image: e.target.value })}
-                                        className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-900 focus:outline-none"
+                                        className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-white focus:outline-none focus:border-neutral-500 font-mono"
                                     />
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
-                                        <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Included Stay</label>
+                                        <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">Included Stay</label>
                                         <input
                                             type="text"
                                             placeholder="e.g. 4-Star Resort"
                                             value={formData.includedStay}
                                             onChange={e => setFormData({ ...formData, includedStay: e.target.value })}
-                                            className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-900 focus:outline-none"
+                                            className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-white focus:outline-none focus:border-neutral-500 font-mono"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Transport Details</label>
+                                        <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">Transport Details</label>
                                         <input
                                             type="text"
                                             placeholder="e.g. Private Sedan Cab"
                                             value={formData.transport}
                                             onChange={e => setFormData({ ...formData, transport: e.target.value })}
-                                            className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-900 focus:outline-none"
+                                            className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-white focus:outline-none focus:border-neutral-500 font-mono"
                                         />
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Package Overview</label>
+                                    <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">Package Overview</label>
                                     <textarea
                                         rows={3}
                                         placeholder="Write a brief overview describing the highlights of this tour package..."
                                         value={formData.overview}
                                         onChange={e => setFormData({ ...formData, overview: e.target.value })}
-                                        className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-900 focus:outline-none resize-none"
+                                        className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-white focus:outline-none focus:border-neutral-500 resize-none font-mono"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Package Inclusions (One per line)</label>
+                                    <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">Package Inclusions (One per line)</label>
                                     <textarea
                                         rows={3}
                                         placeholder="4-Star Resort Stay with Breakfast&#10;Private Cab for Sightseeing&#10;Airport Pick & Drop"
                                         value={formData.inclusions}
                                         onChange={e => setFormData({ ...formData, inclusions: e.target.value })}
-                                        className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-900 focus:outline-none font-mono text-[11px] resize-none"
+                                        className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-white focus:outline-none font-mono text-[11px] resize-none"
                                     />
                                 </div>
 
                                 <div className="pt-3">
                                     <button
                                         type="submit"
-                                        className="w-full py-3 bg-slate-950 hover:bg-slate-800 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-colors cursor-pointer shadow-md"
+                                        className="w-full py-3 bg-neutral-100 hover:bg-white text-black font-bold text-xs uppercase tracking-wider rounded-xl transition-colors cursor-pointer shadow-md"
                                     >
                                         {editingPackage ? "Save All Package Changes" : "Publish Complete Tour Package"}
                                     </button>

@@ -348,19 +348,19 @@ export default function AdminBulkOnboarder({ onSuccess }: AdminBulkOnboarderProp
     const totalFailures = historyLogs.filter(h => h.status === 'failed').length;
 
     return (
-        <div className="space-y-10 max-w-7xl mx-auto p-4">
+        <div className="space-y-10 max-w-7xl mx-auto p-2 text-white font-sans">
             
             {/* Panel Card */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 
                 {/* Left Column: Flow Controller */}
-                <div className="lg:col-span-5 bg-white border border-slate-200 rounded-xl shadow-xs p-6 space-y-6">
+                <div className="lg:col-span-5 bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] p-6 space-y-6">
                     <div className="space-y-1">
-                        <h4 className="text-xs font-black uppercase text-slate-900 tracking-wider flex items-center gap-2">
-                            <Sparkles className="w-4 h-4 text-brand-600 animate-pulse" />
+                        <h4 className="text-xs font-bold uppercase text-white tracking-wider flex items-center gap-2">
+                            <Sparkles className="w-4 h-4 text-emerald-400 animate-pulse" />
                             <span>AI Bulk Hotel Onboarding</span>
                         </h4>
-                        <p className="text-[10px] font-bold text-slate-400 leading-normal uppercase tracking-wider">
+                        <p className="text-[10px] font-bold text-neutral-400 leading-normal uppercase tracking-wider">
                             {"Two-Stage Process: Upload JSON -> AI Preview & Review -> Confirm Database Write"}
                         </p>
                     </div>
@@ -374,10 +374,10 @@ export default function AdminBulkOnboarder({ onSuccess }: AdminBulkOnboarderProp
                                 onDrop={handleDrop}
                                 onClick={() => !processing && fileInputRef.current?.click()}
                                 className={cn(
-                                    "border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300 min-h-[180px]",
+                                    "border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300 min-h-[180px]",
                                     isDragging 
-                                        ? "border-brand-600 bg-brand-50/10 scale-102" 
-                                        : "border-slate-200 bg-slate-50 hover:bg-slate-100/50 hover:border-slate-350",
+                                        ? "border-emerald-400 bg-emerald-950/20 scale-[1.02]" 
+                                        : "border-[#262626] bg-[#141414] hover:bg-[#181818] hover:border-neutral-500",
                                     processing && "opacity-60 cursor-not-allowed pointer-events-none"
                                 )}
                             >
@@ -389,34 +389,34 @@ export default function AdminBulkOnboarder({ onSuccess }: AdminBulkOnboarderProp
                                     accept=".json"
                                     className="hidden"
                                 />
-                                <Upload className="w-10 h-10 text-slate-400 mb-3" />
-                                <span className="text-xs font-black text-slate-900 uppercase">Drag & Drop Hotel JSONs</span>
-                                <span className="text-[9px] text-slate-400 font-bold uppercase mt-1">or click to browse local files</span>
+                                <Upload className="w-10 h-10 text-neutral-500 mb-3" />
+                                <span className="text-xs font-bold text-white uppercase">Drag & Drop Hotel JSONs</span>
+                                <span className="text-[9px] text-neutral-500 font-bold uppercase mt-1">or click to browse local files</span>
                             </div>
 
                             {/* Queue File List */}
                             {selectedFiles.length > 0 && (
-                                <div className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                <div className="space-y-3 bg-[#141414] p-4 rounded-2xl border border-[#262626]">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-[9px] font-black uppercase text-slate-400 tracking-wider">
+                                        <span className="text-[9px] font-bold uppercase text-neutral-400 tracking-wider">
                                             Upload Queue ({selectedFiles.length} of 10)
                                         </span>
                                         <button
                                             onClick={clearAllFiles}
                                             disabled={processing}
-                                            className="text-[9px] font-black text-red-500 hover:text-red-700 uppercase tracking-wider disabled:opacity-50 cursor-pointer"
+                                            className="text-[9px] font-bold text-red-400 hover:text-red-300 uppercase tracking-wider disabled:opacity-50 cursor-pointer"
                                         >
                                             Clear All
                                         </button>
                                     </div>
                                     <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                                         {selectedFiles.map(({ file, id }) => (
-                                            <div key={id} className="flex items-center justify-between p-2.5 bg-white border border-slate-200/50 rounded-lg shadow-2xs">
+                                            <div key={id} className="flex items-center justify-between p-2.5 bg-[#0c0c0c] border border-[#262626] rounded-xl">
                                                 <div className="flex items-center gap-2 min-w-0">
-                                                    <FileJson className="w-4 h-4 text-brand-600 shrink-0" />
+                                                    <FileJson className="w-4 h-4 text-emerald-400 shrink-0" />
                                                     <div className="min-w-0">
-                                                        <p className="text-[10px] font-extrabold text-slate-900 truncate">{file.name}</p>
-                                                        <p className="text-[8px] text-slate-400 font-bold uppercase mt-0.5">
+                                                        <p className="text-[10px] font-bold text-white truncate">{file.name}</p>
+                                                        <p className="text-[8px] text-neutral-500 font-bold uppercase mt-0.5">
                                                             {(file.size / 1024).toFixed(1)} KB
                                                         </p>
                                                     </div>
@@ -424,7 +424,7 @@ export default function AdminBulkOnboarder({ onSuccess }: AdminBulkOnboarderProp
                                                 <button
                                                     onClick={() => removeFile(id)}
                                                     disabled={processing}
-                                                    className="p-1 hover:bg-slate-100 text-slate-400 hover:text-red-500 rounded-full transition-colors disabled:opacity-50 cursor-pointer"
+                                                    className="p-1 hover:bg-[#1a1a1a] text-neutral-500 hover:text-red-400 rounded-full transition-colors disabled:opacity-50 cursor-pointer"
                                                 >
                                                     <Trash2 className="w-3.5 h-3.5" />
                                                 </button>
@@ -438,16 +438,16 @@ export default function AdminBulkOnboarder({ onSuccess }: AdminBulkOnboarderProp
                             <button
                                 onClick={handleGeneratePreview}
                                 disabled={processing || selectedFiles.length === 0}
-                                className="w-full py-3.5 bg-slate-900 text-white rounded-lg font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-black disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed transition-all cursor-pointer shadow-md active:scale-98"
+                                className="w-full py-3.5 bg-neutral-100 text-black rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-white disabled:bg-[#181818] disabled:text-neutral-600 disabled:border disabled:border-[#262626] disabled:cursor-not-allowed transition-all cursor-pointer shadow-md active:scale-98"
                             >
                                 {processing ? (
                                     <>
-                                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                                        <RefreshCw className="w-3.5 h-3.5 animate-spin text-black" />
                                         <span>AI Parsing Files...</span>
                                     </>
                                 ) : (
                                     <>
-                                        <Eye className="w-3.5 h-3.5" />
+                                        <Eye className="w-3.5 h-3.5 text-black" />
                                         <span>Generate AI Onboarding Preview ({selectedFiles.length})</span>
                                     </>
                                 )}
@@ -457,9 +457,9 @@ export default function AdminBulkOnboarder({ onSuccess }: AdminBulkOnboarderProp
 
                     {activePanel === "preview" && (
                         <div className="space-y-4">
-                            <div className="bg-brand-50/20 p-4 border border-brand-100 rounded-xl space-y-2">
-                                <h5 className="text-[11px] font-black text-brand-900 uppercase">Reviewing {previewHotels.length} Properties</h5>
-                                <p className="text-[10px] text-slate-500 font-bold leading-normal uppercase">
+                            <div className="bg-[#141414] p-4 border border-[#262626] rounded-2xl space-y-2">
+                                <h5 className="text-[11px] font-bold text-emerald-400 uppercase">Reviewing {previewHotels.length} Properties</h5>
+                                <p className="text-[10px] text-neutral-400 font-medium leading-normal uppercase">
                                     Check the cards on the right. Modify approval selections, copy credentials, then confirm database migration.
                                 </p>
                             </div>
@@ -470,14 +470,14 @@ export default function AdminBulkOnboarder({ onSuccess }: AdminBulkOnboarderProp
                                         setActivePanel("upload");
                                         setPreviewHotels([]);
                                     }}
-                                    className="flex-1 py-3 border border-slate-200 hover:bg-slate-50 rounded-lg text-slate-700 text-[10px] font-black uppercase tracking-wider transition-colors cursor-pointer"
+                                    className="flex-1 py-3 border border-[#2a2a2a] bg-[#181818] hover:bg-[#222222] rounded-xl text-white text-[10px] font-bold uppercase tracking-wider transition-colors cursor-pointer"
                                 >
                                     Go Back
                                 </button>
                                 <button
                                     onClick={handleConfirmOnboard}
                                     disabled={processing || checkedHotelIndices.length === 0}
-                                    className="flex-2 py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer shadow-sm disabled:opacity-50"
+                                    className="flex-2 py-3 bg-neutral-100 hover:bg-white text-black rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer shadow-sm disabled:opacity-50"
                                 >
                                     {processing ? (
                                         <span className="flex items-center justify-center gap-1.5">
@@ -494,10 +494,10 @@ export default function AdminBulkOnboarder({ onSuccess }: AdminBulkOnboarderProp
 
                     {activePanel === "results" && (
                         <div className="space-y-4">
-                            <div className="bg-emerald-50/20 p-4 border border-emerald-100 rounded-xl space-y-2 text-center">
-                                <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" />
-                                <h5 className="text-xs font-black text-emerald-950 uppercase mt-2">Registration Cycle Finished</h5>
-                                <p className="text-[10px] text-slate-500 font-bold leading-normal uppercase">
+                            <div className="bg-emerald-950/60 p-4 border border-emerald-800/40 rounded-2xl space-y-2 text-center">
+                                <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
+                                <h5 className="text-xs font-bold text-white uppercase mt-2">Registration Cycle Finished</h5>
+                                <p className="text-[10px] text-neutral-400 font-medium leading-normal uppercase">
                                     Approved profiles are now live inside the database. Credentials report is ready for download.
                                 </p>
                             </div>
@@ -508,7 +508,7 @@ export default function AdminBulkOnboarder({ onSuccess }: AdminBulkOnboarderProp
                                     setResults([]);
                                     setPreviewHotels([]);
                                 }}
-                                className="w-full py-3.5 bg-slate-900 hover:bg-black text-white rounded-lg text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer text-center"
+                                className="w-full py-3.5 bg-neutral-100 hover:bg-white text-black rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer text-center"
                             >
                                 Start New Batch Onboarding
                             </button>
@@ -517,9 +517,9 @@ export default function AdminBulkOnboarder({ onSuccess }: AdminBulkOnboarderProp
 
                     {/* Progress Steps Terminal */}
                     {progressSteps.length > 0 && (
-                        <div className="border-t border-slate-100 pt-4 space-y-3">
-                            <span className="text-[9px] font-black uppercase text-slate-400 tracking-wider block">AI extraction log console:</span>
-                            <div className="bg-slate-900 text-slate-200 p-4 rounded-xl font-mono text-[9px] leading-relaxed space-y-1.5 shadow-inner max-h-48 overflow-y-auto">
+                        <div className="border-t border-[#1f1f1f] pt-4 space-y-3">
+                            <span className="text-[9px] font-bold uppercase text-neutral-400 tracking-wider block">AI extraction log console:</span>
+                            <div className="bg-[#121212] border border-[#242424] text-neutral-200 p-4 rounded-xl font-mono text-[9px] leading-relaxed space-y-1.5 shadow-inner max-h-48 overflow-y-auto">
                                 {progressSteps.map((step, idx) => (
                                     <div key={idx} className={cn(
                                         "transition-opacity duration-300",
@@ -533,25 +533,25 @@ export default function AdminBulkOnboarder({ onSuccess }: AdminBulkOnboarderProp
                     )}
 
                     {onboardError && (
-                        <div className="p-4 bg-red-50 border border-red-100 text-red-700 text-[10px] font-bold rounded-lg leading-normal flex items-start gap-2.5">
-                            <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
+                        <div className="p-4 bg-red-950/60 border border-red-800/40 text-red-300 text-[10px] font-bold rounded-xl leading-normal flex items-start gap-2.5">
+                            <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
                             <span>{onboardError}</span>
                         </div>
                     )}
                 </div>
 
                 {/* Right Column: Cards Panel & Results Review */}
-                <div className="lg:col-span-7 bg-white border border-slate-200 rounded-xl shadow-xs p-6 min-h-[400px] flex flex-col">
+                <div className="lg:col-span-7 bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] p-6 min-h-[400px] flex flex-col">
                     
                     {/* Header */}
-                    <div className="pb-4 border-b border-slate-100 mb-6 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                    <div className="pb-4 border-b border-[#1f1f1f] mb-6 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                         <div>
-                            <h4 className="text-xs font-black uppercase text-slate-900 tracking-wider">
+                            <h4 className="text-xs font-bold uppercase text-white tracking-wider">
                                 {activePanel === "upload" && "Bulk Onboard Queue Dashboard"}
                                 {activePanel === "preview" && "Step 2: AI Normalization Preview & Approval"}
                                 {activePanel === "results" && "Step 3: Registration Summary & Credentials"}
                             </h4>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">
+                            <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mt-0.5">
                                 {activePanel === "upload" && "Add JSON configurations to proceed"}
                                 {activePanel === "preview" && "Verify generated passwords and duplicates before inserting"}
                                 {activePanel === "results" && "Completed profiles and transaction results"}
@@ -561,7 +561,7 @@ export default function AdminBulkOnboarder({ onSuccess }: AdminBulkOnboarderProp
                         {activePanel === "results" && results.filter(r => r.success && !r.skipped).length > 0 && (
                             <button
                                 onClick={downloadCredentialsTxt}
-                                className="text-[9px] font-black uppercase tracking-wider bg-slate-900 hover:bg-black text-white px-3 py-1.5 rounded-sm active:scale-95 transition-all flex items-center gap-1 cursor-pointer"
+                                className="text-[9px] font-bold uppercase tracking-wider bg-neutral-100 hover:bg-white text-black px-3.5 py-1.5 rounded-xl active:scale-95 transition-all flex items-center gap-1 cursor-pointer"
                             >
                                 Download Credentials TXT
                                 <ArrowUpRight className="w-3.5 h-3.5" />
@@ -571,7 +571,7 @@ export default function AdminBulkOnboarder({ onSuccess }: AdminBulkOnboarderProp
                         {activePanel === "preview" && (
                             <button
                                 onClick={toggleSelectAllReady}
-                                className="text-[9px] font-black uppercase tracking-wider border border-slate-200 hover:bg-slate-50 text-slate-700 px-3 py-1.5 rounded-sm active:scale-95 transition-all cursor-pointer"
+                                className="text-[9px] font-bold uppercase tracking-wider border border-[#2a2a2a] bg-[#181818] hover:bg-[#222222] text-white px-3 py-1.5 rounded-xl active:scale-95 transition-all cursor-pointer"
                             >
                                 {checkedHotelIndices.length === previewHotels.filter(h => h.success && !h.skipped).length 
                                     ? "Deselect All" 
@@ -583,12 +583,12 @@ export default function AdminBulkOnboarder({ onSuccess }: AdminBulkOnboarderProp
                     {/* Content panels based on active state */}
                     {activePanel === "upload" && (
                         <div className="flex-1 flex flex-col items-center justify-center text-center p-6 space-y-3">
-                            <div className="w-12 h-12 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center">
-                                <FileJson className="w-6 h-6 text-slate-300" />
+                            <div className="w-12 h-12 bg-[#141414] border border-[#262626] rounded-2xl flex items-center justify-center">
+                                <FileJson className="w-6 h-6 text-neutral-500" />
                             </div>
                             <div className="space-y-1">
-                                <h5 className="text-[11px] font-black uppercase text-slate-900 tracking-wider">No files uploaded yet</h5>
-                                <p className="text-[10px] font-bold text-slate-400 leading-normal max-w-sm">
+                                <h5 className="text-[11px] font-bold uppercase text-white tracking-wider">No files uploaded yet</h5>
+                                <p className="text-[10px] font-bold text-neutral-400 leading-normal max-w-sm">
                                     Drag and drop your hotel JSONs on the left. The AI will parse them, check for existing records, and let you review them before registration.
                                 </p>
                             </div>
@@ -606,14 +606,14 @@ export default function AdminBulkOnboarder({ onSuccess }: AdminBulkOnboarderProp
                                     <div 
                                         key={idx}
                                         className={cn(
-                                            "border rounded-xl transition-all duration-350 overflow-hidden",
+                                            "border rounded-2xl transition-all duration-300 overflow-hidden",
                                             isReady 
                                                 ? isChecked 
-                                                    ? "border-emerald-250 bg-emerald-50/5" 
-                                                    : "border-slate-200 bg-white"
+                                                    ? "border-emerald-800/40 bg-emerald-950/20" 
+                                                    : "border-[#262626] bg-[#141414]"
                                                 : item.skipped 
-                                                    ? "border-amber-200 bg-amber-50/5" 
-                                                    : "border-red-200 bg-red-50/5"
+                                                    ? "border-amber-800/40 bg-amber-950/20" 
+                                                    : "border-red-800/40 bg-red-950/20"
                                         )}
                                     >
                                         {/* Card Header */}
@@ -624,19 +624,19 @@ export default function AdminBulkOnboarder({ onSuccess }: AdminBulkOnboarderProp
                                                         type="checkbox"
                                                         checked={isChecked}
                                                         onChange={() => toggleHotelChecked(idx)}
-                                                        className="w-4 h-4 accent-emerald-600 rounded cursor-pointer shrink-0"
+                                                        className="w-4 h-4 accent-emerald-400 rounded cursor-pointer shrink-0"
                                                     />
                                                 ) : (
-                                                    <div className="w-4 h-4 shrink-0 rounded bg-slate-100 flex items-center justify-center">
-                                                        <X className="w-2.5 h-2.5 text-slate-400" />
+                                                    <div className="w-4 h-4 shrink-0 rounded bg-[#222222] flex items-center justify-center">
+                                                        <X className="w-2.5 h-2.5 text-neutral-500" />
                                                     </div>
                                                 )}
                                                 
                                                 <div className="min-w-0">
-                                                    <h5 className="text-[11px] font-black text-slate-900 uppercase truncate">
+                                                    <h5 className="text-[11px] font-bold text-white uppercase truncate">
                                                         {item.hotelName || item.fileName}
                                                     </h5>
-                                                    <span className="text-[8px] text-slate-400 font-bold uppercase tracking-wider">
+                                                    <span className="text-[8px] text-neutral-400 font-bold uppercase tracking-wider">
                                                         File: {item.fileName}
                                                     </span>
                                                 </div>
@@ -645,12 +645,12 @@ export default function AdminBulkOnboarder({ onSuccess }: AdminBulkOnboarderProp
                                             <div className="flex items-center gap-3">
                                                 <span 
                                                     className={cn(
-                                                        "px-2.5 py-0.5 text-[8px] font-black uppercase tracking-wider rounded-full shadow-2xs border text-white",
+                                                        "px-2.5 py-0.5 text-[8px] font-bold uppercase tracking-wider rounded-lg border text-white",
                                                         isReady 
-                                                            ? "bg-emerald-600 border-emerald-700" 
+                                                            ? "bg-emerald-950/80 border-emerald-800/40 text-emerald-400" 
                                                             : item.skipped 
-                                                            ? "bg-amber-500 border-amber-600" 
-                                                            : "bg-red-600 border-red-700"
+                                                            ? "bg-amber-950/80 border-amber-800/40 text-amber-400" 
+                                                            : "bg-red-950/80 border-red-800/40 text-red-400"
                                                     )}
                                                 >
                                                     {isReady ? "Ready to Onboard" : item.skipped ? "Duplicate Warning" : "Failed Parse"}
@@ -658,7 +658,7 @@ export default function AdminBulkOnboarder({ onSuccess }: AdminBulkOnboarderProp
 
                                                 <button
                                                     onClick={() => setExpandedCardIdx(isExpanded ? null : idx)}
-                                                    className="p-1 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:text-slate-600 cursor-pointer"
+                                                    className="p-1 hover:bg-[#222222] rounded-full transition-colors text-neutral-400 hover:text-white cursor-pointer"
                                                 >
                                                     {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                                                 </button>
@@ -667,12 +667,12 @@ export default function AdminBulkOnboarder({ onSuccess }: AdminBulkOnboarderProp
 
                                         {/* Expanded details */}
                                         {isExpanded && (
-                                            <div className="px-4 pb-4 border-t border-slate-100 pt-3 space-y-4 text-[10px] bg-slate-50/30">
+                                            <div className="px-4 pb-4 border-t border-[#1f1f1f] pt-3 space-y-4 text-[10px] bg-[#0c0c0c]">
                                                 
                                                 {/* Error banner inside card */}
                                                 {!item.success && (
-                                                    <div className="p-3 bg-red-50 border border-red-100 rounded-lg text-red-700 flex items-start gap-2">
-                                                        <AlertCircle className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
+                                                    <div className="p-3 bg-red-950/60 border border-red-800/40 rounded-xl text-red-300 flex items-start gap-2">
+                                                        <AlertCircle className="w-3.5 h-3.5 text-red-400 shrink-0 mt-0.5" />
                                                         <span className="font-bold">{item.message}</span>
                                                     </div>
                                                 )}
@@ -681,20 +681,20 @@ export default function AdminBulkOnboarder({ onSuccess }: AdminBulkOnboarderProp
                                                     <>
                                                         {/* Duplicate description banner */}
                                                         {item.skipped && (
-                                                            <div className="p-3 bg-amber-50 border border-amber-100 rounded-lg text-amber-800 flex items-start gap-2">
-                                                                <AlertCircle className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
+                                                            <div className="p-3 bg-amber-950/60 border border-amber-800/40 rounded-xl text-amber-300 flex items-start gap-2">
+                                                                <AlertCircle className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
                                                                 <span className="font-bold">{item.message}</span>
                                                             </div>
                                                         )}
 
                                                         {/* Hotel Description summary */}
                                                         <div className="space-y-1">
-                                                            <span className="font-black uppercase text-slate-400 text-[8px] tracking-wider block">Property details:</span>
-                                                            <div className="p-3 bg-white border border-slate-150 rounded-lg leading-relaxed text-slate-700 space-y-1">
-                                                                <p className="font-extrabold text-slate-900">{item.hotel?.name}</p>
-                                                                <p className="text-[9px] text-slate-400">{item.hotel?.tagline}</p>
+                                                            <span className="font-bold uppercase text-neutral-500 text-[8px] tracking-wider block">Property details:</span>
+                                                            <div className="p-3 bg-[#141414] border border-[#262626] rounded-xl leading-relaxed text-neutral-300 space-y-1">
+                                                                <p className="font-bold text-white">{item.hotel?.name}</p>
+                                                                <p className="text-[9px] text-neutral-400">{item.hotel?.tagline}</p>
                                                                 <p className="mt-1">{item.hotel?.description}</p>
-                                                                <p className="text-[9px] font-black text-brand-600 mt-2 uppercase">
+                                                                <p className="text-[9px] font-bold text-emerald-400 mt-2 uppercase">
                                                                     City: {item.hotel?.city} | Address: {item.hotel?.address}
                                                                 </p>
                                                             </div>
@@ -702,44 +702,44 @@ export default function AdminBulkOnboarder({ onSuccess }: AdminBulkOnboarderProp
 
                                                         {/* Credentials section */}
                                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                                            <div className="p-3 bg-white border border-slate-150 rounded-lg space-y-1">
-                                                                <span className="font-black text-slate-400 text-[8px] uppercase tracking-wider block">Admin Credentials:</span>
+                                                            <div className="p-3 bg-[#141414] border border-[#262626] rounded-xl space-y-1">
+                                                                <span className="font-bold text-neutral-400 text-[8px] uppercase tracking-wider block">Admin Credentials:</span>
                                                                 <div className="space-y-1 mt-1 text-[9px]">
-                                                                    <div className="flex items-center justify-between gap-2 border-b border-slate-50 pb-1">
-                                                                        <span className="text-slate-400 uppercase font-bold">Email:</span>
+                                                                    <div className="flex items-center justify-between gap-2 border-b border-[#1f1f1f] pb-1">
+                                                                        <span className="text-neutral-500 uppercase font-bold">Email:</span>
                                                                         <div className="flex items-center gap-1">
-                                                                            <span className="font-extrabold text-slate-800">{item.partner?.email}</span>
-                                                                            <button onClick={() => copyToClipboard(item.partner?.email || "")} className="p-0.5 hover:bg-slate-100 text-slate-400 hover:text-slate-600 rounded">
+                                                                            <span className="font-bold text-white">{item.partner?.email}</span>
+                                                                            <button onClick={() => copyToClipboard(item.partner?.email || "")} className="p-0.5 hover:bg-[#222222] text-neutral-400 hover:text-white rounded">
                                                                                 <Copy className="w-3 h-3" />
                                                                             </button>
                                                                         </div>
                                                                     </div>
-                                                                    <div className="flex items-center justify-between gap-2 border-b border-slate-50 pb-1">
-                                                                        <span className="text-slate-400 uppercase font-bold">Password:</span>
+                                                                    <div className="flex items-center justify-between gap-2 border-b border-[#1f1f1f] pb-1">
+                                                                        <span className="text-neutral-500 uppercase font-bold">Password:</span>
                                                                         <div className="flex items-center gap-1">
-                                                                            <span className="font-extrabold text-slate-800">{item.partner?.password}</span>
-                                                                            <button onClick={() => copyToClipboard(item.partner?.password || "")} className="p-0.5 hover:bg-slate-100 text-slate-400 hover:text-slate-600 rounded">
+                                                                            <span className="font-bold text-white">{item.partner?.password}</span>
+                                                                            <button onClick={() => copyToClipboard(item.partner?.password || "")} className="p-0.5 hover:bg-[#222222] text-neutral-400 hover:text-white rounded">
                                                                                 <Copy className="w-3 h-3" />
                                                                             </button>
                                                                         </div>
                                                                     </div>
                                                                     {item.partner?.phone && (
                                                                         <div className="flex items-center justify-between gap-2">
-                                                                            <span className="text-slate-400 uppercase font-bold">Phone:</span>
-                                                                            <span className="font-extrabold text-slate-800">{item.partner?.phone}</span>
+                                                                            <span className="text-neutral-500 uppercase font-bold">Phone:</span>
+                                                                            <span className="font-bold text-white">{item.partner?.phone}</span>
                                                                         </div>
                                                                     )}
                                                                 </div>
                                                             </div>
 
                                                             {/* Rooms Summary list */}
-                                                            <div className="p-3 bg-white border border-slate-150 rounded-lg space-y-1.5">
-                                                                <span className="font-black text-slate-400 text-[8px] uppercase tracking-wider block">Room categories ({item.rooms?.length}):</span>
+                                                            <div className="p-3 bg-[#141414] border border-[#262626] rounded-xl space-y-1.5">
+                                                                <span className="font-bold text-neutral-400 text-[8px] uppercase tracking-wider block">Room categories ({item.rooms?.length}):</span>
                                                                 <div className="space-y-1 max-h-24 overflow-y-auto text-[9px] pr-1">
                                                                     {item.rooms?.map((r, rIdx) => (
-                                                                        <div key={rIdx} className="flex justify-between items-center py-1 border-b border-slate-50 last:border-0">
-                                                                            <span className="font-bold text-slate-800 truncate max-w-28">{r.name}</span>
-                                                                            <span className="font-black text-brand-600 shrink-0">₹{r.pricePerNight}</span>
+                                                                        <div key={rIdx} className="flex justify-between items-center py-1 border-b border-[#1f1f1f] last:border-0">
+                                                                            <span className="font-bold text-neutral-200 truncate max-w-28">{r.name}</span>
+                                                                            <span className="font-bold text-emerald-400 shrink-0">₹{r.pricePerNight}</span>
                                                                         </div>
                                                                     ))}
                                                                 </div>
@@ -747,7 +747,6 @@ export default function AdminBulkOnboarder({ onSuccess }: AdminBulkOnboarderProp
                                                         </div>
                                                     </>
                                                 )}
-
                                             </div>
                                         )}
                                     </div>
@@ -766,31 +765,31 @@ export default function AdminBulkOnboarder({ onSuccess }: AdminBulkOnboarderProp
                                     <div 
                                         key={idx}
                                         className={cn(
-                                            "border p-4 rounded-xl shadow-2xs relative overflow-hidden transition-all duration-300 hover:shadow-xs",
+                                            "border p-4 rounded-2xl relative overflow-hidden transition-all duration-300",
                                             isSuccess 
-                                                ? "bg-emerald-50/10 border-emerald-100" 
+                                                ? "bg-emerald-950/30 border-emerald-800/40" 
                                                 : isSkipped 
-                                                ? "bg-amber-50/10 border-amber-150" 
-                                                : "bg-red-50/10 border-red-100"
+                                                ? "bg-amber-950/30 border-amber-800/40" 
+                                                : "bg-red-950/30 border-red-800/40"
                                         )}
                                     >
-                                        <div className="flex items-start justify-between pb-2 border-b border-slate-100 mb-2">
+                                        <div className="flex items-start justify-between pb-2 border-b border-[#1f1f1f] mb-2">
                                             <div>
-                                                <h5 className="text-[11px] font-black text-slate-900 uppercase">
+                                                <h5 className="text-[11px] font-bold text-white uppercase">
                                                     {result.hotelName || result.fileName}
                                                 </h5>
-                                                <p className="text-[8px] text-slate-400 font-bold uppercase mt-0.5">
+                                                <p className="text-[8px] text-neutral-400 font-bold uppercase mt-0.5">
                                                     File: {result.fileName}
                                                 </p>
                                             </div>
                                             <span 
                                                 className={cn(
-                                                    "px-2.5 py-0.5 text-[8px] font-black uppercase tracking-wider rounded-full shadow-2xs border text-white",
+                                                    "px-2.5 py-0.5 text-[8px] font-bold uppercase tracking-wider rounded-lg border text-white",
                                                     isSuccess 
-                                                        ? "bg-emerald-600 border-emerald-700" 
+                                                        ? "bg-emerald-950/80 border-emerald-800/40 text-emerald-400" 
                                                         : isSkipped 
-                                                        ? "bg-amber-500 border-amber-600" 
-                                                        : "bg-red-600 border-red-700"
+                                                        ? "bg-amber-950/80 border-amber-800/40 text-amber-400" 
+                                                        : "bg-red-950/80 border-red-800/40 text-red-400"
                                                 )}
                                             >
                                                 {isSuccess ? "Success" : isSkipped ? "Duplicate" : "Failed"}
@@ -798,24 +797,24 @@ export default function AdminBulkOnboarder({ onSuccess }: AdminBulkOnboarderProp
                                         </div>
 
                                         {isSuccess ? (
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-white border border-slate-200/50 rounded-lg text-[10px] mt-2">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-[#141414] border border-[#262626] rounded-xl text-[10px] mt-2">
                                                 <div className="flex items-center gap-2">
-                                                    <Mail className="w-3.5 h-3.5 text-slate-400" />
+                                                    <Mail className="w-3.5 h-3.5 text-neutral-400" />
                                                     <div>
-                                                        <span className="text-[8px] font-bold text-slate-400 uppercase tracking-wide block">Email</span>
-                                                        <span className="font-extrabold text-slate-800 select-all">{result.email}</span>
+                                                        <span className="text-[8px] font-bold text-neutral-500 uppercase tracking-wide block">Email</span>
+                                                        <span className="font-bold text-white select-all">{result.email}</span>
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-2">
-                                                    <Key className="w-3.5 h-3.5 text-slate-400" />
+                                                    <Key className="w-3.5 h-3.5 text-neutral-400" />
                                                     <div>
-                                                        <span className="text-[8px] font-bold text-slate-400 uppercase tracking-wide block">Password</span>
-                                                        <span className="font-extrabold text-slate-800 select-all">{result.password}</span>
+                                                        <span className="text-[8px] font-bold text-neutral-500 uppercase tracking-wide block">Password</span>
+                                                        <span className="font-bold text-white select-all">{result.password}</span>
                                                     </div>
                                                 </div>
                                             </div>
                                         ) : (
-                                            <p className="text-[9px] text-slate-600 font-semibold mt-2">{result.message}</p>
+                                            <p className="text-[9px] text-neutral-300 font-semibold mt-2">{result.message}</p>
                                         )}
                                     </div>
                                 );
@@ -827,50 +826,50 @@ export default function AdminBulkOnboarder({ onSuccess }: AdminBulkOnboarderProp
             </div>
 
             {/* History Logs Panel */}
-            <div className="bg-white border border-slate-200 rounded-xl shadow-xs p-6 space-y-6">
-                <div className="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-slate-100 gap-4">
+            <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] p-6 space-y-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-[#1f1f1f] gap-4">
                     <div>
-                        <h4 className="text-xs font-black uppercase text-slate-900 tracking-wider flex items-center gap-2">
-                            <History className="w-4 h-4 text-slate-500" />
+                        <h4 className="text-xs font-bold uppercase text-white tracking-wider flex items-center gap-2">
+                            <History className="w-4 h-4 text-emerald-400" />
                             <span>Bulk Onboarding Transaction Logs</span>
                         </h4>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">
+                        <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mt-0.5">
                             Audit logs of all previous AI hotel imports
                         </p>
                     </div>
 
                     {/* Stats */}
-                    <div className="flex gap-4 text-[10px] font-bold uppercase tracking-wider bg-slate-50 border border-slate-100 rounded-lg p-2.5 self-start">
-                        <span className="text-emerald-600 font-extrabold">✓ {totalSuccessfulOnboarded} Added</span>
-                        <span className="text-slate-300">|</span>
-                        <span className="text-amber-500 font-extrabold">⚠️ {totalSkippedDuplicates} Skipped</span>
-                        <span className="text-slate-300">|</span>
-                        <span className="text-red-500 font-extrabold">❌ {totalFailures} Failed</span>
+                    <div className="flex gap-4 text-[10px] font-bold uppercase tracking-wider bg-[#141414] border border-[#262626] rounded-xl p-2.5 self-start">
+                        <span className="text-emerald-400 font-bold">✓ {totalSuccessfulOnboarded} Added</span>
+                        <span className="text-neutral-600">|</span>
+                        <span className="text-amber-400 font-bold">⚠️ {totalSkippedDuplicates} Skipped</span>
+                        <span className="text-neutral-600">|</span>
+                        <span className="text-red-400 font-bold">❌ {totalFailures} Failed</span>
                     </div>
 
                     {/* Search filter */}
                     <div className="relative w-full max-w-xs">
-                        <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <Search className="w-3.5 h-3.5 text-neutral-500 absolute left-3 top-1/2 -translate-y-1/2" />
                         <input
                             type="text"
                             placeholder="Filter by hotel, email, or status..."
                             value={historySearch}
                             onChange={(e) => setHistorySearch(e.target.value)}
-                            className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-md text-[10px] font-bold uppercase tracking-wider placeholder:text-slate-400 focus:outline-none focus:border-brand-500"
+                            className="w-full pl-9 pr-4 py-2 bg-[#141414] border border-[#262626] rounded-xl text-[10px] font-bold uppercase text-white tracking-wider placeholder:text-neutral-600 focus:outline-none focus:border-neutral-500"
                         />
                     </div>
                 </div>
 
                 {historyLoading ? (
-                    <div className="flex items-center justify-center p-12 text-slate-400 text-[10px] font-black uppercase tracking-widest gap-2">
-                        <RefreshCw className="w-4 h-4 animate-spin text-brand-600" />
+                    <div className="flex items-center justify-center p-12 text-neutral-400 text-[10px] font-bold uppercase tracking-widest gap-2">
+                        <RefreshCw className="w-4 h-4 animate-spin text-emerald-400" />
                         Loading History Logs...
                     </div>
                 ) : filteredHistory.length > 0 ? (
                     <div className="overflow-x-auto">
                         <table className="w-full border-collapse text-left text-[10px]">
                             <thead>
-                                <tr className="border-b border-slate-100 text-slate-400 font-black uppercase tracking-wider bg-slate-50/50">
+                                <tr className="border-b border-[#1f1f1f] text-neutral-500 font-bold uppercase tracking-wider bg-[#0e0e0e]">
                                     <th className="py-3 px-4">Date/Time</th>
                                     <th className="py-3 px-4">File Name</th>
                                     <th className="py-3 px-4">Hotel Name</th>
@@ -880,38 +879,38 @@ export default function AdminBulkOnboarder({ onSuccess }: AdminBulkOnboarderProp
                                     <th className="py-3 px-4 text-center">Status</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
+                            <tbody className="divide-y divide-[#181818] font-medium text-neutral-300">
                                 {filteredHistory.map((log, idx) => (
-                                    <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
-                                        <td className="py-3 px-4 whitespace-nowrap text-slate-400">
+                                    <tr key={idx} className="hover:bg-[#121212] transition-colors">
+                                        <td className="py-3 px-4 whitespace-nowrap text-neutral-500">
                                             <div className="flex items-center gap-1.5">
                                                 <Calendar className="w-3.5 h-3.5 shrink-0" />
                                                 <span>{new Date(log.timestamp).toLocaleString()}</span>
                                             </div>
                                         </td>
-                                        <td className="py-3 px-4 font-bold text-slate-900 max-w-xs truncate">{log.fileName}</td>
-                                        <td className="py-3 px-4 font-black uppercase text-slate-800">{log.hotelName}</td>
-                                        <td className="py-3 px-4 font-extrabold text-slate-600 select-all">{log.email || "-"}</td>
+                                        <td className="py-3 px-4 font-bold text-white max-w-xs truncate">{log.fileName}</td>
+                                        <td className="py-3 px-4 font-bold uppercase text-white">{log.hotelName}</td>
+                                        <td className="py-3 px-4 font-bold text-neutral-300 select-all">{log.email || "-"}</td>
                                         <td className="py-3 px-4">
                                             {log.password ? (
                                                 <div className="flex items-center gap-1">
-                                                    <span className="font-extrabold text-slate-600 bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded select-all font-mono text-[9px]">{log.password}</span>
-                                                    <button onClick={() => copyToClipboard(log.password || "")} className="p-0.5 text-slate-400 hover:text-slate-600">
+                                                    <span className="font-bold text-white bg-[#141414] border border-[#262626] px-2 py-0.5 rounded select-all font-mono text-[9px]">{log.password}</span>
+                                                    <button onClick={() => copyToClipboard(log.password || "")} className="p-0.5 text-neutral-400 hover:text-white">
                                                         <Copy className="w-3 h-3" />
                                                     </button>
                                                 </div>
                                             ) : "-"}
                                         </td>
-                                        <td className="py-3 px-4 text-center font-black text-brand-600">{log.roomsCount}</td>
+                                        <td className="py-3 px-4 text-center font-bold text-emerald-400">{log.roomsCount}</td>
                                         <td className="py-3 px-4 text-center">
                                             <span 
                                                 className={cn(
-                                                    "px-2 py-0.5 text-[8px] font-black uppercase tracking-wider rounded-md border",
+                                                    "px-2.5 py-0.5 text-[8px] font-bold uppercase tracking-wider rounded-lg border",
                                                     log.status === 'success' 
-                                                        ? "bg-emerald-50 border-emerald-200 text-emerald-700" 
+                                                        ? "bg-emerald-950/80 border-emerald-800/40 text-emerald-400" 
                                                         : log.status === 'duplicate_skipped' 
-                                                        ? "bg-amber-50 border-amber-200 text-amber-700" 
-                                                        : "bg-red-50 border-red-200 text-red-700"
+                                                        ? "bg-amber-950/80 border-amber-800/40 text-amber-400" 
+                                                        : "bg-red-950/80 border-red-800/40 text-red-400"
                                                 )}
                                             >
                                                 {log.status === 'success' ? "Success" : log.status === 'duplicate_skipped' ? "Duplicate" : "Failed"}
@@ -923,8 +922,8 @@ export default function AdminBulkOnboarder({ onSuccess }: AdminBulkOnboarderProp
                         </table>
                     </div>
                 ) : (
-                    <div className="text-center py-12 text-slate-400 text-[10px] font-black uppercase tracking-wider space-y-1">
-                        <History className="w-8 h-8 text-slate-200 mx-auto" />
+                    <div className="text-center py-12 text-neutral-500 text-[10px] font-bold uppercase tracking-wider space-y-1">
+                        <History className="w-8 h-8 text-neutral-600 mx-auto" />
                         <p className="mt-2">No onboarding transactions found matching the filter</p>
                     </div>
                 )}
@@ -932,7 +931,7 @@ export default function AdminBulkOnboarder({ onSuccess }: AdminBulkOnboarderProp
 
             {/* Micro-Notification Toast */}
             {copiedText && (
-                <div className="fixed bottom-6 right-6 bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest px-4 py-2.5 rounded-lg shadow-lg z-[999] flex items-center gap-2">
+                <div className="fixed bottom-6 right-6 bg-[#181818] border border-[#333333] text-white text-[9px] font-bold uppercase tracking-widest px-4 py-2.5 rounded-xl shadow-2xl z-[999] flex items-center gap-2">
                     <Check className="w-3.5 h-3.5 text-emerald-400" />
                     Copied to Clipboard!
                 </div>

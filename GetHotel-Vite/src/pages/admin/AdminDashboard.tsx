@@ -10,7 +10,7 @@ import {
     Bell, Search, Plus, Filter,
     CheckCircle2, XCircle, Clock,
     CreditCard, TrendingUp, MoreVertical,
-    ArrowUpRight, ArrowDownRight, Globe, ChevronRight, Loader2,
+    ArrowUpRight, ArrowDownRight, Globe, ChevronRight, Loader2, ArrowRight,
     Key, ShieldAlert, Eye, EyeOff, Star, MessageSquare, Trash2, Sparkles,
     UserCheck, Mail, Phone, Calendar, LogIn, Shield, Copy, ExternalLink, RefreshCw, LayoutGrid, Percent, Bot
 } from "lucide-react";
@@ -26,8 +26,14 @@ import AdminMultiRoomSetup from "./AdminMultiRoomSetup";
 import AdminPromotions from "./AdminPromotions";
 import AdminAICopilot from "./AdminAICopilot";
 import AdminReviewImporter from "./AdminReviewImporter";
+import AdminDestinationAnalytics from "./AdminDestinationAnalytics";
 import AdminAIChats from "./AdminAIChats";
 import AdminTourPackages from "./AdminTourPackages";
+import AdminSettings from "./AdminSettings";
+import AdminNotifications from "./AdminNotifications";
+import AdminDisputes from "./AdminDisputes";
+import AdminRequests from "./AdminRequests";
+import AdminBookings from "./AdminBookings";
 
 // ─── Safe Date Formatter ────────────────────────────────────────────────────
 function formatDateSafe(rawDate: string | Date | null | undefined, opts?: Intl.DateTimeFormatOptions): string {
@@ -184,8 +190,8 @@ export default function SuperAdminDashboard() {
                 return;
             }
 
-            // Only set loading screen if the tab's data hasn't been loaded at all yet
-            if (!isTabLoaded(tab)) {
+            // Pre-fetch data silently without showing full-screen flicker loader once initial load is done
+            if (Object.keys(loadedSections).length === 0) {
                 setLoading(true);
             }
 
@@ -211,7 +217,6 @@ export default function SuperAdminDashboard() {
                     setLoadedSections(prev => ({ ...prev, partners: true }));
                 }));
                 requests.push(adminApi.getUsers().then((userRes) => {
-                    // Filter only regular customers (role = 'user')
                     setCustomers((userRes.data || []).filter((u: any) => u.role === 'user'));
                     setLoadedSections(prev => ({ ...prev, customers: true }));
                 }));
@@ -423,35 +428,36 @@ export default function SuperAdminDashboard() {
 
     if (isInitialLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-slate-50">
-                <Loader2 className="w-10 h-10 animate-spin text-brand-600" />
+            <div className="min-h-screen flex items-center justify-center bg-[#050505] text-white">
+                <Loader2 className="w-10 h-10 animate-spin text-neutral-400" />
             </div>
         );
     }
 
     return (
         <div className={cn(activeTab === "ai-copilot" ? "p-0 h-screen overflow-hidden flex flex-col" : "p-8", "min-w-0")}>
-            {activeTab !== "ai-copilot" && (
-                <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 border-b border-slate-200 pb-8">
+            {activeTab !== "ai-copilot" && activeTab !== "destination-analytics" && activeTab !== "destinations" && (
+                <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 border-b border-[#1f1f1f] pb-6">
                     <div>
-                        <h2 className="text-2xl font-bold text-slate-900 uppercase tracking-tight">
+                        <h2 className="text-2xl font-black text-white uppercase tracking-tight flex items-center gap-3 font-sans">
+                            <span className="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981]" />
                             {activeTab === 'overview' ? 'System Overview' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
                         </h2>
-                        <p className="text-slate-500 text-xs font-medium">Monitoring platform statistics and property requests.</p>
+                        <p className="text-neutral-500 text-xs font-semibold mt-1">Monitoring platform statistics and property requests.</p>
                     </div>
                     <div className="flex items-center gap-3">
                         <div className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
                             <input
                                 type="text"
                                 placeholder="Search..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-sm w-64 focus:outline-none focus:border-slate-400 font-medium text-xs shadow-sm"
+                                className="pl-10 pr-4 py-2.5 bg-[#111111] border border-[#262626] rounded-xl w-64 focus:outline-none focus:border-neutral-500 font-medium text-xs text-white placeholder:text-neutral-600 shadow-[inset_0_1px_3px_rgba(0,0,0,0.8)]"
                             />
                         </div>
-                        <button className="p-2 bg-white border border-slate-200 rounded-sm hover:bg-slate-50 relative shadow-sm">
-                            <Bell className="w-4 h-4 text-slate-600" />
+                        <button className="p-2.5 bg-[#141414] hover:bg-[#1f1f1f] border border-[#262626] rounded-xl relative shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_2px_4px_rgba(0,0,0,0.6)] transition-all cursor-pointer">
+                            <Bell className="w-4 h-4 text-neutral-300" />
                         </button>
                     </div>
                 </header>
@@ -459,40 +465,46 @@ export default function SuperAdminDashboard() {
 
             {loading && !isTabLoaded() ? (
                 <div className="min-h-[400px] flex items-center justify-center bg-transparent">
-                    <Loader2 className="w-10 h-10 animate-spin text-brand-600" />
+                    <Loader2 className="w-10 h-10 animate-spin text-white" />
                 </div>
             ) : (
                 <>
                     {activeTab === "stats" && <AdminStats />}
                     {activeTab === "finance" && <AdminFinance />}
                     {activeTab === "homepage" && <AdminHomepageEditor />}
+                    {activeTab === "settings" && <AdminSettings />}
+                    {activeTab === "notifications" && <AdminNotifications />}
+                    {activeTab === "disputes" && <AdminDisputes />}
+                    {activeTab === "requests" && <AdminRequests />}
+                    {activeTab === "bookings" && <AdminBookings />}
                     {activeTab === "promotions" && <AdminPromotions hotels={hotels} onRefresh={() => fetchDashboardData('hotels', true)} />}
                     {activeTab === "controlhub" && <AdminControlHub hotels={hotels} loading={loading} />}
                     {activeTab === "multi-room" && <AdminMultiRoomSetup hotels={hotels} />}
                     {activeTab === "addPartner" && <AdminAddPartner hotels={hotels} partners={partners} setPartners={setPartners} />}
                     {activeTab === "ai-copilot" && <AdminAICopilot hotels={hotels} loadingHotels={!loadedSections.hotels} />}
+                    {(activeTab === "destination-analytics" || activeTab === "destinations") && <AdminDestinationAnalytics />}
 
                     {activeTab === "overview" && (
                 <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
                         {stats.map((stat) => {
                             const Icon = stat.icon;
                             return (
-                                <div key={stat.label} className="bg-white p-6 border border-slate-200 shadow-sm hover:shadow-md transition-all group">
+                                <div key={stat.label} className="bg-[#0c0c0c] p-6 border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.9)] hover:border-neutral-700 transition-all group">
                                     <div className="flex justify-between items-start mb-6">
-                                        <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                                            <Icon className="w-5 h-5 text-slate-400 group-hover:text-brand-600" />
+                                        <div className="w-10 h-10 bg-[#161616] border border-[#282828] rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform shadow-inner">
+                                            <Icon className="w-5 h-5 text-neutral-400 group-hover:text-white" />
                                         </div>
                                         <span className={cn(
-                                            "text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest",
-                                            stat.isUp ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"
+                                            "text-[10px] font-bold px-2.5 py-1 rounded-lg uppercase tracking-wider border shadow-sm",
+                                            stat.isUp ? "bg-emerald-950/60 border-emerald-800/40 text-emerald-400" : "bg-red-950/60 border-red-800/40 text-red-400"
                                         )}>
                                             {stat.trend}
                                         </span>
                                     </div>
                                     <div>
-                                        <p className="text-slate-400 font-black text-[10px] uppercase tracking-[0.2em] mb-1">{stat.label}</p>
-                                        <h3 className="text-3xl font-black text-slate-900 tracking-tighter italic">{stat.value}</h3>
+                                        <p className="text-neutral-500 font-bold text-[10px] uppercase tracking-[0.2em] mb-1">{stat.label}</p>
+                                        <h3 className="text-3xl font-black text-white tracking-tight">{stat.value}</h3>
                                     </div>
                                 </div>
                             );
@@ -501,52 +513,62 @@ export default function SuperAdminDashboard() {
 
                     {/* Conversion Intelligence & Destination Insights */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                        <div className="lg:col-span-2 bg-slate-900 text-white p-8 rounded-sm shadow-xl relative overflow-hidden group">
+                        <div className="lg:col-span-2 bg-[#0c0c0c] text-white p-8 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] relative overflow-hidden group">
                             <TrendingUp className="absolute -right-8 -bottom-8 w-48 h-48 text-white/5 transform rotate-12 group-hover:rotate-0 transition-transform duration-1000" />
                             <div className="relative z-10">
-                                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-8 pb-4 border-b border-white/5 flex items-center gap-2">
-                                    <BarChart3 className="w-4 h-4" /> Conversion Intelligence
+                                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400 mb-8 pb-4 border-b border-[#1f1f1f] flex items-center gap-2">
+                                    <BarChart3 className="w-4 h-4 text-emerald-400" /> Conversion Intelligence
                                 </h3>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                                     <div>
-                                        <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Search → Booking</p>
-                                        <p className="text-2xl font-black italic">{statsData?.conversionRate || '0'}%</p>
+                                        <p className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Search → Booking</p>
+                                        <p className="text-2xl font-black">{statsData?.conversionRate || '0'}%</p>
                                         <p className="text-[9px] text-emerald-400 font-bold mt-1">Healthy</p>
                                     </div>
                                     <div>
-                                        <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Abandoned Checkout</p>
-                                        <p className="text-2xl font-black italic">{statsData?.abandonedRate || '0'}%</p>
+                                        <p className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Abandoned Checkout</p>
+                                        <p className="text-2xl font-black">{statsData?.abandonedRate || '0'}%</p>
                                         <p className="text-[9px] text-red-400 font-bold mt-1">Stable</p>
                                     </div>
                                     <div>
-                                        <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Repeat Guest %</p>
-                                        <p className="text-2xl font-black italic">{statsData?.repeatGuestRate || '0'}%</p>
+                                        <p className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Repeat Guest %</p>
+                                        <p className="text-2xl font-black">{statsData?.repeatGuestRate || '0'}%</p>
                                         <p className="text-[9px] text-blue-400 font-bold mt-1">Growing</p>
                                     </div>
                                     <div>
-                                        <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Avg. Booking Value</p>
-                                        <p className="text-2xl font-black italic">₹{(statsData?.avgBookingValue || 0).toLocaleString()}</p>
-                                        <p className="text-[9px] text-slate-400 font-bold mt-1">Per stay</p>
+                                        <p className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Avg. Booking Value</p>
+                                        <p className="text-2xl font-black">₹{(statsData?.avgBookingValue || 0).toLocaleString()}</p>
+                                        <p className="text-[9px] text-neutral-500 font-bold mt-1">Per stay</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-white border border-slate-200 p-8 shadow-sm">
-                            <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest mb-6 flex items-center gap-2">
-                                <Globe className="w-4 h-4 text-blue-600" /> Top Destinations
-                            </h3>
+                        <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl p-8 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)]">
+                            <div className="flex items-center justify-between mb-6 pb-2 border-b border-[#1f1f1f]">
+                                <h3 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
+                                    <Globe className="w-4 h-4 text-emerald-400" /> Top Destinations
+                                </h3>
+                                <button
+                                    onClick={() => router('/admin/super/destination-analytics')}
+                                    className="p-1.5 px-2.5 rounded-xl bg-[#141414] hover:bg-[#1f1f1f] border border-[#262626] text-neutral-400 hover:text-white transition-all cursor-pointer shadow-sm group/btn flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider"
+                                    title="View Detailed Destination & Geographic Analytics"
+                                >
+                                    <span>Analytics</span>
+                                    <ArrowRight className="w-3.5 h-3.5 text-emerald-400 group-hover/btn:translate-x-0.5 transition-transform" />
+                                </button>
+                            </div>
                             <div className="space-y-4">
                                 {(statsData?.topDestinations || []).length > 0 ? (
                                     statsData.topDestinations.map((dest: any, idx: number) => {
-                                        const colors = ["bg-blue-600", "bg-emerald-600", "bg-amber-600", "bg-slate-900"];
+                                        const colors = ["bg-white", "bg-emerald-500", "bg-amber-500", "bg-neutral-600"];
                                         return (
                                             <div key={dest.city} className="space-y-1.5">
                                                 <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
-                                                    <span>{dest.city}</span>
-                                                    <span className="text-slate-400">{dest.percentage}%</span>
+                                                    <span className="text-neutral-200">{dest.city}</span>
+                                                    <span className="text-neutral-500">{dest.percentage}%</span>
                                                 </div>
-                                                <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden">
+                                                <div className="h-1.5 w-full bg-[#161616] border border-[#222222] rounded-full overflow-hidden shadow-inner">
                                                     <div className={cn("h-full rounded-full", colors[idx % colors.length])} style={{ width: `${dest.percentage}%` }} />
                                                 </div>
                                             </div>
@@ -562,33 +584,33 @@ export default function SuperAdminDashboard() {
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div className="lg:col-span-2 bg-white border border-slate-200 shadow-sm overflow-hidden">
-                            <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-                                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Pending Approvals</h3>
+                        <div className="lg:col-span-2 bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] overflow-hidden">
+                            <div className="px-6 py-4 border-b border-[#1f1f1f] bg-[#0e0e0e] flex items-center justify-between">
+                                <h3 className="text-sm font-bold text-white uppercase tracking-wider">Pending Approvals</h3>
                                 <button
                                     onClick={() => router('/admin/super/requests')}
-                                    className="text-[10px] font-bold text-brand-600 uppercase tracking-widest border border-brand-200 px-3 py-1 hover:bg-brand-50 transition-all"
+                                    className="text-[10px] font-bold text-neutral-300 uppercase tracking-widest border border-[#2e2e2e] bg-[#141414] px-3.5 py-1.5 rounded-lg hover:bg-[#1f1f1f] transition-all cursor-pointer shadow-sm"
                                 >
                                     View All Requests
                                 </button>
                             </div>
-                            <div className="divide-y divide-slate-100">
+                            <div className="divide-y divide-[#181818]">
                                 {partnerRequests?.filter((r: any) => r.status === "pending").slice(0, 5).map((req: any) => (
-                                    <div key={req.id} className="px-6 py-4 flex items-center justify-between hover:bg-slate-50 transition-none">
+                                    <div key={req.id} className="px-6 py-4 flex items-center justify-between hover:bg-[#121212] transition-none">
                                         <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 border border-slate-200 bg-slate-100 flex items-center justify-center shrink-0">
-                                                <Hotel className="w-5 h-5 text-slate-400" />
+                                            <div className="w-10 h-10 border border-[#282828] bg-[#161616] rounded-xl flex items-center justify-center shrink-0 shadow-inner">
+                                                <Hotel className="w-5 h-5 text-neutral-400" />
                                             </div>
                                             <div className="text-left">
-                                                <h4 className="font-bold text-slate-900 text-sm truncate w-48">{req.hotelName}</h4>
-                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">Requested on {formatDateSafe(req.createdAt)}</p>
+                                                <h4 className="font-bold text-white text-sm truncate w-48">{req.hotelName}</h4>
+                                                <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-tight">Requested on {formatDateSafe(req.createdAt)}</p>
                                             </div>
                                         </div>
                                         <div className="flex gap-2">
                                             <button
                                                 onClick={() => handleApproveRequest(req.id)}
                                                 disabled={actionLoading === req.id}
-                                                className="px-4 py-1.5 bg-brand-600 text-white text-[10px] font-bold uppercase rounded-sm hover:bg-brand-700 disabled:opacity-50"
+                                                className="px-4 py-2 bg-neutral-100 text-black font-bold text-[10px] uppercase rounded-xl hover:bg-white disabled:opacity-50 shadow-md cursor-pointer"
                                             >
                                                 {actionLoading === req.id ? '...' : 'Approve'}
                                             </button>
@@ -596,25 +618,25 @@ export default function SuperAdminDashboard() {
                                     </div>
                                 ))}
                                 {(!partnerRequests || partnerRequests.filter((r: any) => r.status === "pending").length === 0) && (
-                                    <div className="py-20 text-center">
-                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">No pending approvals</p>
+                                    <div className="py-16 text-center">
+                                        <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-[0.2em]">No pending approvals</p>
                                     </div>
                                 )}
                             </div>
                         </div>
 
                         <div className="space-y-6">
-                            <div className="bg-white border border-slate-200 shadow-sm p-6">
-                                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-6 pb-2 border-b border-slate-100">System Actions</h3>
-                                <div className="space-y-2">
+                            <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] p-6">
+                                <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-6 pb-2 border-b border-[#1f1f1f]">System Actions</h3>
+                                <div className="space-y-3">
                                     <button
                                         onClick={() => router('/admin/super/requests')}
-                                        className="w-full py-3 bg-brand-600 text-white font-bold text-[10px] uppercase tracking-widest rounded-sm hover:bg-brand-700 transition-none flex items-center justify-center gap-2"
+                                        className="w-full py-3 bg-neutral-100 hover:bg-white text-black font-bold text-[10px] uppercase tracking-widest rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
                                     >
-                                        <Plus className="w-3 h-3" /> View Requests
+                                        <Plus className="w-3.5 h-3.5 text-black" /> View Requests
                                     </button>
-                                    <button className="w-full py-3 border border-slate-200 text-slate-600 font-bold text-[10px] uppercase tracking-widest rounded-sm hover:bg-slate-50 transition-none flex items-center justify-center gap-2">
-                                        <Globe className="w-3 h-3" /> Platform Logs
+                                    <button className="w-full py-3 bg-[#141414] border border-[#282828] text-neutral-300 font-bold text-[10px] uppercase tracking-widest rounded-xl hover:bg-[#1f1f1f] transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer">
+                                        <Globe className="w-3.5 h-3.5 text-neutral-400" /> Platform Logs
                                     </button>
                                 </div>
                             </div>
@@ -627,66 +649,66 @@ export default function SuperAdminDashboard() {
             {activeTab === "tour-packages" && <AdminTourPackages />}
 
             {activeTab === "requests" && (
-                <div className="bg-white border border-slate-200 shadow-sm">
-                    <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] overflow-hidden">
+                    <div className="px-6 py-4 border-b border-[#1f1f1f] flex items-center justify-between bg-[#0e0e0e]">
                         <div>
-                            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Property Requests</h3>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">Review and approve new hotel partners</p>
+                            <h3 className="text-sm font-bold text-white uppercase tracking-wider">Property Requests</h3>
+                            <p className="text-[10px] font-bold text-neutral-500 uppercase mt-1">Review and approve new hotel partners</p>
                         </div>
                         <div className="flex items-center gap-4">
                             {selectedIds.length > 0 && (
-                                <div className="flex items-center gap-2 pr-4 border-r border-slate-200">
-                                    <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">{selectedIds.length} Selected</span>
+                                <div className="flex items-center gap-2 pr-4 border-r border-[#222222]">
+                                    <span className="text-[10px] font-black text-white uppercase tracking-widest">{selectedIds.length} Selected</span>
                                     <button
                                         onClick={() => setBulkModal({ show: true, type: 'approve' })}
-                                        className="px-4 py-1.5 bg-emerald-600 text-white text-[9px] font-black uppercase tracking-widest hover:bg-emerald-700 shadow-lg shadow-emerald-50"
+                                        className="px-4 py-1.5 bg-emerald-600 text-white text-[9px] font-black uppercase tracking-widest hover:bg-emerald-500 rounded-lg shadow-lg"
                                     >
                                         Bulk Approve
                                     </button>
                                     <button
                                         onClick={() => setBulkModal({ show: true, type: 'decline' })}
-                                        className="px-4 py-1.5 bg-red-600 text-white text-[9px] font-black uppercase tracking-widest hover:bg-red-700 shadow-lg shadow-red-50"
+                                        className="px-4 py-1.5 bg-red-600 text-white text-[9px] font-black uppercase tracking-widest hover:bg-red-500 rounded-lg shadow-lg"
                                     >
                                         Bulk Decline
                                     </button>
                                 </div>
                             )}
-                            <span className="px-3 py-1 bg-amber-100 text-amber-700 text-[9px] font-black uppercase rounded-full">
+                            <span className="px-3 py-1 bg-amber-950/80 border border-amber-800/40 text-amber-400 text-[9px] font-bold uppercase rounded-full">
                                 {partnerRequests.filter(r => r.status === 'pending').length} Pending
                             </span>
                         </div>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
-                            <thead className="bg-slate-50 border-b border-slate-100">
+                            <thead className="bg-[#0e0e0e] border-b border-[#1f1f1f]">
                                 <tr>
                                     <th className="px-6 py-4 w-10">
                                         <input
                                             type="checkbox"
-                                            className="w-4 h-4 rounded-sm border-slate-300 text-brand-600 focus:ring-brand-600 cursor-pointer"
+                                            className="w-4 h-4 rounded border-[#333333] bg-[#141414] text-white focus:ring-neutral-500 cursor-pointer"
                                             checked={selectedIds.length === partnerRequests.filter(r => r.status === 'pending').length && selectedIds.length > 0}
                                             onChange={handleSelectAll}
                                         />
                                     </th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Hotel Info</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Owner Details</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Location</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Hotel Info</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Owner Details</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Location</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Status</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100">
+                            <tbody className="divide-y divide-[#181818]">
                                 {smartFilter(partnerRequests, searchQuery, ['hotelName', 'userName', 'userEmail', 'city', 'hotelUsername', 'address'])
                                     .map((req) => (
                                         <tr key={req.id} className={cn(
-                                            "hover:bg-slate-50 transition-none",
-                                            selectedIds.includes(req.id) ? "bg-slate-50/80" : ""
+                                            "hover:bg-[#121212] transition-none",
+                                            selectedIds.includes(req.id) ? "bg-[#181818]" : ""
                                         )}>
                                             <td className="px-6 py-4">
                                                 {req.status === 'pending' && (
                                                     <input
                                                         type="checkbox"
-                                                        className="w-4 h-4 rounded-sm border-slate-300 text-brand-600 focus:ring-brand-600 cursor-pointer"
+                                                        className="w-4 h-4 rounded border-[#333333] bg-[#141414] text-white focus:ring-neutral-500 cursor-pointer"
                                                         checked={selectedIds.includes(req.id)}
                                                         onChange={() => toggleSelect(req.id)}
                                                     />
@@ -694,29 +716,29 @@ export default function SuperAdminDashboard() {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 bg-slate-100 flex items-center justify-center border border-slate-200">
-                                                        <Hotel className="w-5 h-5 text-slate-400" />
+                                                    <div className="w-10 h-10 bg-[#161616] flex items-center justify-center border border-[#282828] rounded-xl shrink-0">
+                                                        <Hotel className="w-5 h-5 text-neutral-400" />
                                                     </div>
                                                     <div>
-                                                        <p className="text-xs font-bold text-slate-900">{req.hotelName}</p>
-                                                        <p className="text-[9px] text-slate-400 font-bold uppercase tracking-tight">@{req.hotelUsername}</p>
+                                                        <p className="text-xs font-bold text-white">{req.hotelName}</p>
+                                                        <p className="text-[9px] text-neutral-500 font-bold uppercase tracking-tight">@{req.hotelUsername}</p>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div>
-                                                    <p className="text-xs font-bold text-slate-700">{req.userName}</p>
-                                                    <p className="text-[10px] text-slate-400 font-medium">{req.userEmail}</p>
-                                                    <p className="text-[10px] text-slate-400 font-medium">{req.userPhone}</p>
+                                                    <p className="text-xs font-bold text-neutral-300">{req.userName}</p>
+                                                    <p className="text-[10px] text-neutral-500 font-medium">{req.userEmail}</p>
+                                                    <p className="text-[10px] text-neutral-500 font-medium">{req.userPhone}</p>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-tight">
+                                            <td className="px-6 py-4 text-[10px] font-bold text-neutral-400 uppercase tracking-tight">
                                                 {req.city}, {req.address}
                                             </td>
                                             <td className="px-6 py-4">
                                                 <span className={cn(
-                                                    "px-2.5 py-1 text-[9px] font-black uppercase rounded-sm",
-                                                    req.status === 'pending' ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700"
+                                                    "px-2.5 py-1 text-[9px] font-bold uppercase rounded-lg border",
+                                                    req.status === 'pending' ? "bg-amber-950/80 border-amber-800/40 text-amber-400" : "bg-emerald-950/80 border-emerald-800/40 text-emerald-400"
                                                 )}>
                                                     {req.status}
                                                 </span>
@@ -725,7 +747,7 @@ export default function SuperAdminDashboard() {
                                                 <div className="flex justify-end gap-2">
                                                     <button
                                                         onClick={() => setRequestDetailModal({ show: true, request: req })}
-                                                        className="p-2 bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all rounded-sm"
+                                                        className="p-2 bg-[#181818] text-neutral-300 hover:bg-[#222222] transition-all rounded-lg border border-[#2a2a2a]"
                                                         title="View Details"
                                                     >
                                                         <Eye className="w-4 h-4" />
@@ -736,7 +758,7 @@ export default function SuperAdminDashboard() {
                                                             <button
                                                                 onClick={() => handleApproveRequest(req.id)}
                                                                 disabled={actionLoading === req.id}
-                                                                className="px-4 py-2 bg-emerald-600 text-white text-[9px] font-black uppercase tracking-widest hover:bg-emerald-700 shadow-lg shadow-emerald-100 disabled:opacity-50 flex items-center gap-2"
+                                                                className="px-4 py-2 bg-emerald-600 text-white text-[9px] font-bold uppercase tracking-widest hover:bg-emerald-500 rounded-lg shadow-lg disabled:opacity-50 flex items-center gap-2"
                                                             >
                                                                 {actionLoading === req.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
                                                                 Approve
@@ -745,7 +767,7 @@ export default function SuperAdminDashboard() {
                                                             <button
                                                                 onClick={() => handleDeclineRequest(req.id)}
                                                                 disabled={actionLoading === req.id}
-                                                                className="px-4 py-2 bg-red-500 text-white text-[9px] font-black uppercase tracking-widest hover:bg-red-600 shadow-lg shadow-red-100 disabled:opacity-50 flex items-center gap-2"
+                                                                className="px-4 py-2 bg-red-600 text-white text-[9px] font-bold uppercase tracking-widest hover:bg-red-500 rounded-lg shadow-lg disabled:opacity-50 flex items-center gap-2"
                                                             >
                                                                 {actionLoading === req.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <XCircle className="w-3 h-3" />}
                                                                 Decline
@@ -773,14 +795,14 @@ export default function SuperAdminDashboard() {
             {activeTab === "users" && (
                 <div>
                     {/* Sub-tab switcher */}
-                    <div className="flex gap-1 mb-6 bg-slate-100 p-1 rounded-sm w-fit">
+                    <div className="flex gap-1.5 mb-6 bg-[#0c0c0c] border border-[#1f1f1f] p-1.5 rounded-xl w-fit shadow-inner">
                         <button
                             onClick={() => setUsersSubTab("partners")}
                             className={cn(
-                                "px-5 py-2 text-[10px] font-black uppercase tracking-widest transition-all rounded-sm",
+                                "px-5 py-2 text-[10px] font-bold uppercase tracking-widest transition-all rounded-lg cursor-pointer",
                                 usersSubTab === "partners"
-                                    ? "bg-white text-slate-900 shadow-sm"
-                                    : "text-slate-400 hover:text-slate-600"
+                                    ? "bg-neutral-100 text-black shadow-md"
+                                    : "text-neutral-400 hover:text-white"
                             )}
                         >
                             Partners ({partners.length})
@@ -788,10 +810,10 @@ export default function SuperAdminDashboard() {
                         <button
                             onClick={() => setUsersSubTab("customers")}
                             className={cn(
-                                "px-5 py-2 text-[10px] font-black uppercase tracking-widest transition-all rounded-sm",
+                                "px-5 py-2 text-[10px] font-bold uppercase tracking-widest transition-all rounded-lg cursor-pointer",
                                 usersSubTab === "customers"
-                                    ? "bg-white text-slate-900 shadow-sm"
-                                    : "text-slate-400 hover:text-slate-600"
+                                    ? "bg-neutral-100 text-black shadow-md"
+                                    : "text-neutral-400 hover:text-white"
                             )}
                         >
                             Customers ({customers.length})
@@ -800,37 +822,37 @@ export default function SuperAdminDashboard() {
 
                     {/* Partners Sub-Tab */}
                     {usersSubTab === "partners" && (
-                        <div className="bg-white border border-slate-200 shadow-sm">
-                            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Partner Management</h3>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{partners.length} Total Partners</p>
+                        <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] overflow-hidden">
+                            <div className="px-6 py-4 border-b border-[#1f1f1f] bg-[#0e0e0e] flex items-center justify-between">
+                                <h3 className="text-sm font-bold text-white uppercase tracking-wider">Partner Management</h3>
+                                <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">{partners.length} Total Partners</p>
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left">
-                                    <thead className="bg-slate-50 border-b border-slate-100">
+                                    <thead className="bg-[#0e0e0e] border-b border-[#1f1f1f]">
                                         <tr>
-                                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Partner Details</th>
-                                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Assigned Hotel</th>
-                                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Joined On</th>
-                                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                                            <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Partner Details</th>
+                                            <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Assigned Hotel</th>
+                                            <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Joined On</th>
+                                            <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest text-right">Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-slate-100">
+                                    <tbody className="divide-y divide-[#181818]">
                                         {smartFilter(partners, searchQuery, ['name', 'email', 'id', 'hotel.0.name'])
                                             .map((partner) => (
-                                            <tr key={partner.id} className="hover:bg-slate-50 transition-none">
+                                            <tr key={partner.id} className="hover:bg-[#121212] transition-none">
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-9 h-9 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center border border-slate-200 shrink-0">
+                                                        <div className="w-9 h-9 rounded-full bg-[#161616] overflow-hidden flex items-center justify-center border border-[#282828] shrink-0">
                                                             {partner.profileImage ? (
                                                                 <img src={partner.profileImage} alt={partner.name} className="w-full h-full object-cover" />
                                                             ) : (
-                                                                <Users className="w-4 h-4 text-slate-400" />
+                                                                <Users className="w-4 h-4 text-neutral-400" />
                                                             )}
                                                         </div>
                                                         <div>
-                                                            <p className="text-xs font-bold text-slate-900">{partner.name}</p>
-                                                            <p className="text-[10px] text-slate-400 font-medium">{partner.email}</p>
+                                                            <p className="text-xs font-bold text-white">{partner.name}</p>
+                                                            <p className="text-[10px] text-neutral-500 font-medium">{partner.email}</p>
                                                         </div>
                                                     </div>
                                                 </td>
@@ -838,26 +860,26 @@ export default function SuperAdminDashboard() {
                                                     {partner.hotel && partner.hotel.length > 0 ? (
                                                         <div className="flex flex-col gap-0.5">
                                                             <div className="flex items-center gap-1.5">
-                                                                <Hotel className="w-3.5 h-3.5 text-brand-600 shrink-0" />
-                                                                <span className="text-[10px] font-bold text-slate-800 line-clamp-1">{partner.hotel[0].name}</span>
+                                                                <Hotel className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                                                                <span className="text-[10px] font-bold text-neutral-200 line-clamp-1">{partner.hotel[0].name}</span>
                                                             </div>
                                                             {partner.hotel.length > 1 && (
-                                                                <span className="text-[9px] font-bold text-slate-400 pl-5 uppercase tracking-wide">
+                                                                <span className="text-[9px] font-bold text-neutral-500 pl-5 uppercase tracking-wide">
                                                                     + {partner.hotel.length - 1} other properties
                                                                 </span>
                                                             )}
                                                         </div>
                                                     ) : (
-                                                        <span className="text-[9px] font-bold text-slate-300 italic">No Hotel Assigned</span>
+                                                        <span className="text-[9px] font-bold text-neutral-600 italic">No Hotel Assigned</span>
                                                     )}
                                                 </td>
-                                                <td className="px-6 py-4 text-[10px] font-medium text-slate-500">
+                                                <td className="px-6 py-4 text-[10px] font-medium text-neutral-500">
                                                     {formatDateSafe(partner.createdAt)}
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
                                                     <button
                                                         onClick={() => setResetModal({ show: true, partner })}
-                                                        className="px-4 py-2 bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest hover:bg-black flex items-center gap-2 ml-auto"
+                                                        className="px-4 py-2 bg-[#181818] text-white text-[9px] font-bold uppercase tracking-widest hover:bg-[#222222] border border-[#2a2a2a] flex items-center gap-2 ml-auto rounded-lg"
                                                     >
                                                         <Key className="w-3 h-3" /> Reset Password
                                                     </button>
@@ -872,62 +894,62 @@ export default function SuperAdminDashboard() {
 
                     {/* Customers Sub-Tab */}
                     {usersSubTab === "customers" && (
-                        <div className="bg-white border border-slate-200 shadow-sm">
-                            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                        <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] overflow-hidden">
+                            <div className="px-6 py-4 border-b border-[#1f1f1f] bg-[#0e0e0e] flex items-center justify-between">
                                 <div>
-                                    <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Customer Management</h3>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{customers.length} Registered Customers</p>
+                                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">Customer Management</h3>
+                                    <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mt-0.5">{customers.length} Registered Customers</p>
                                 </div>
                                 <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-500" />
                                     <input
                                         type="text"
                                         placeholder="Search customers..."
                                         value={customerSearchQuery}
                                         onChange={e => setCustomerSearchQuery(e.target.value)}
-                                        className="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-sm w-56 focus:outline-none focus:border-slate-400 font-medium text-xs"
+                                        className="pl-9 pr-4 py-2 bg-[#141414] border border-[#282828] rounded-xl w-56 focus:outline-none focus:border-neutral-500 font-medium text-xs text-white placeholder:text-neutral-600"
                                     />
                                 </div>
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left">
-                                    <thead className="bg-slate-50 border-b border-slate-100">
+                                    <thead className="bg-[#0e0e0e] border-b border-[#1f1f1f]">
                                         <tr>
-                                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Customer</th>
-                                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Login Provider</th>
-                                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Joined On</th>
-                                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                                            <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Customer</th>
+                                            <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Login Provider</th>
+                                            <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Joined On</th>
+                                            <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest text-right">Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-slate-100">
+                                    <tbody className="divide-y divide-[#181818]">
                                         {smartFilter(customers, customerSearchQuery || searchQuery, ['name', 'email', 'phone'])
                                             .map((customer) => {
                                                 const provider = detectLoginProvider(customer);
                                                 return (
-                                                    <tr key={customer.id} className="hover:bg-slate-50 transition-none cursor-pointer" onClick={() => { setCustomerModal({ show: true, customer }); setShowPasswordHash(false); }}>
+                                                    <tr key={customer.id} className="hover:bg-[#121212] transition-none cursor-pointer" onClick={() => { setCustomerModal({ show: true, customer }); setShowPasswordHash(false); }}>
                                                         <td className="px-6 py-4">
                                                             <div className="flex items-center gap-3">
-                                                                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-brand-100 to-brand-200 overflow-hidden flex items-center justify-center border border-slate-200 shrink-0">
+                                                                <div className="w-9 h-9 rounded-full bg-[#161616] overflow-hidden flex items-center justify-center border border-[#282828] shrink-0">
                                                                     {customer.profileImage ? (
                                                                         <img src={customer.profileImage} alt={customer.name} className="w-full h-full object-cover" />
                                                                     ) : (
-                                                                        <span className="text-[11px] font-black text-brand-700">
+                                                                        <span className="text-[11px] font-bold text-white">
                                                                             {customer.name?.charAt(0)?.toUpperCase() || "?"}
                                                                         </span>
                                                                     )}
                                                                 </div>
                                                                 <div>
-                                                                    <p className="text-xs font-bold text-slate-900">{customer.name}</p>
-                                                                    <p className="text-[10px] text-slate-400 font-medium">{customer.email}</p>
+                                                                    <p className="text-xs font-bold text-white">{customer.name}</p>
+                                                                    <p className="text-[10px] text-neutral-500 font-medium">{customer.email}</p>
                                                                 </div>
                                                             </div>
                                                         </td>
                                                         <td className="px-6 py-4">
                                                             <span className={cn(
-                                                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm text-[9px] font-black uppercase tracking-widest",
+                                                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-widest border",
                                                                 provider === "Google"
-                                                                    ? "bg-blue-50 text-blue-700"
-                                                                    : "bg-slate-100 text-slate-600"
+                                                                    ? "bg-blue-950/60 border-blue-800/40 text-blue-400"
+                                                                    : "bg-[#141414] border-[#262626] text-neutral-300"
                                                             )}>
                                                                 {provider === "Google" ? (
                                                                     <svg className="w-3 h-3" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
@@ -937,13 +959,13 @@ export default function SuperAdminDashboard() {
                                                                 {provider}
                                                             </span>
                                                         </td>
-                                                        <td className="px-6 py-4 text-[10px] font-medium text-slate-500">
+                                                        <td className="px-6 py-4 text-[10px] font-medium text-neutral-500">
                                                             {formatDateSafe(customer.createdAt)}
                                                         </td>
                                                         <td className="px-6 py-4 text-right">
                                                             <button
                                                                 onClick={e => { e.stopPropagation(); setCustomerModal({ show: true, customer }); setShowPasswordHash(false); }}
-                                                                className="px-3 py-2 bg-slate-100 text-slate-700 text-[9px] font-black uppercase tracking-widest hover:bg-slate-200 flex items-center gap-1.5 ml-auto rounded-sm"
+                                                                className="px-3.5 py-2 bg-[#181818] text-white text-[9px] font-bold uppercase tracking-widest hover:bg-[#222222] border border-[#2a2a2a] flex items-center gap-1.5 ml-auto rounded-lg"
                                                             >
                                                                 <Eye className="w-3 h-3" /> View Profile
                                                             </button>
@@ -951,13 +973,6 @@ export default function SuperAdminDashboard() {
                                                     </tr>
                                                 );
                                             })}
-                                        {customers.length === 0 && (
-                                            <tr>
-                                                <td colSpan={4} className="py-20 text-center">
-                                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">No customers found</p>
-                                                </td>
-                                            </tr>
-                                        )}
                                     </tbody>
                                 </table>
                             </div>
@@ -969,14 +984,14 @@ export default function SuperAdminDashboard() {
             {activeTab === "bookings" && (
                 <div>
                     {/* Sub-tab switcher */}
-                    <div className="flex gap-1 mb-6 bg-slate-100 p-1 rounded-sm w-fit">
+                    <div className="flex gap-1.5 mb-6 bg-[#0c0c0c] border border-[#1f1f1f] p-1.5 rounded-xl w-fit shadow-inner">
                         <button
                             onClick={() => setBookingsSubTab("fullDay")}
                             className={cn(
-                                "px-5 py-2 text-[10px] font-black uppercase tracking-widest transition-all rounded-sm",
+                                "px-5 py-2 text-[10px] font-bold uppercase tracking-widest transition-all rounded-lg cursor-pointer",
                                 bookingsSubTab === "fullDay"
-                                    ? "bg-white text-slate-900 shadow-sm"
-                                    : "text-slate-400 hover:text-slate-600"
+                                    ? "bg-neutral-100 text-black shadow-md"
+                                    : "text-neutral-400 hover:text-white"
                             )}
                         >
                             Full Day Bookings ({bookings.filter(b => {
@@ -988,10 +1003,10 @@ export default function SuperAdminDashboard() {
                         <button
                             onClick={() => setBookingsSubTab("hourly")}
                             className={cn(
-                                "px-5 py-2 text-[10px] font-black uppercase tracking-widest transition-all rounded-sm",
+                                "px-5 py-2 text-[10px] font-bold uppercase tracking-widest transition-all rounded-lg cursor-pointer",
                                 bookingsSubTab === "hourly"
-                                    ? "bg-white text-slate-900 shadow-sm"
-                                    : "text-slate-400 hover:text-slate-600"
+                                    ? "bg-neutral-100 text-black shadow-md"
+                                    : "text-neutral-400 hover:text-white"
                             )}
                         >
                             Hourly Bookings ({bookings.filter(b => {
@@ -1002,35 +1017,28 @@ export default function SuperAdminDashboard() {
                         </button>
                     </div>
 
-                    <div className="bg-white border border-slate-200 shadow-sm">
-                        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+                    <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] overflow-hidden">
+                        <div className="px-6 py-4 border-b border-[#1f1f1f] bg-[#0e0e0e] flex items-center justify-between">
+                            <h3 className="text-sm font-bold text-white uppercase tracking-wider">
                                 {bookingsSubTab === "hourly" ? "Hourly Reservations" : "Full Day Reservations"}
                             </h3>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase">
-                                {(() => {
-                                    const hourlyCount = bookings.filter(b => {
-                                        if (!b.checkIn || !b.checkOut) return false;
-                                        const durationHours = (new Date(b.checkOut).getTime() - new Date(b.checkIn).getTime()) / (1000 * 60 * 60);
-                                        return b.room?.isHourlyEnabled && durationHours < 24;
-                                    }).length;
-                                    return bookingsSubTab === "hourly" ? hourlyCount : (bookings.length - hourlyCount);
-                                })()} Records Found
+                            <p className="text-[10px] font-bold text-neutral-500 uppercase">
+                                Records Found
                             </p>
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
-                                <thead className="bg-slate-50 border-b border-slate-100">
+                                <thead className="bg-[#0e0e0e] border-b border-[#1f1f1f]">
                                     <tr>
-                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Booking ID</th>
-                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Guest</th>
-                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Property</th>
-                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Stay Details</th>
-                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
-                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Revenue</th>
+                                        <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Booking ID</th>
+                                        <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Guest</th>
+                                        <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Property</th>
+                                        <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Stay Details</th>
+                                        <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Status</th>
+                                        <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest text-right">Revenue</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-100">
+                                <tbody className="divide-y divide-[#181818]">
                                     {(() => {
                                         const hourlyBookings = bookings.filter(b => {
                                             if (!b.checkIn || !b.checkOut) return false;
@@ -1066,54 +1074,54 @@ export default function SuperAdminDashboard() {
                                             const isHourly = booking.room?.isHourlyEnabled && ((new Date(booking.checkOut).getTime() - new Date(booking.checkIn).getTime()) / (1000 * 60 * 60)) < 24;
                                             const stayDetails = isHourly ? (
                                                 <div>
-                                                    <span className="px-1.5 py-0.5 text-[8px] font-black uppercase rounded-sm bg-purple-100 text-purple-700 border border-purple-200">Hourly Stay</span>
-                                                    <p className="text-[10px] text-slate-500 font-bold mt-1">{formatDateTimeSafe(booking.checkIn)}</p>
-                                                    <p className="text-[9px] text-slate-400 font-bold uppercase">
+                                                    <span className="px-2 py-0.5 text-[8px] font-bold uppercase rounded-lg bg-purple-950/80 border border-purple-800/40 text-purple-400">Hourly Stay</span>
+                                                    <p className="text-[10px] text-neutral-400 font-semibold mt-1">{formatDateTimeSafe(booking.checkIn)}</p>
+                                                    <p className="text-[9px] text-neutral-500 font-bold uppercase">
                                                         Duration: {Math.round((new Date(booking.checkOut).getTime() - new Date(booking.checkIn).getTime()) / (1000 * 60 * 60))} Hours
                                                     </p>
-                                                    <p className="text-[9px] text-brand-600 font-bold uppercase mt-1">Arrival: {booking.arrivalTime || "Not specified"}</p>
+                                                    <p className="text-[9px] text-emerald-400 font-bold uppercase mt-1">Arrival: {booking.arrivalTime || "Not specified"}</p>
                                                 </div>
                                             ) : (
                                                 <div>
-                                                    <span className="px-1.5 py-0.5 text-[8px] font-black uppercase rounded-sm bg-sky-100 text-sky-700 border border-sky-200">Full Day Stay</span>
-                                                    <p className="text-[10px] text-slate-500 font-bold mt-1">
+                                                    <span className="px-2 py-0.5 text-[8px] font-bold uppercase rounded-lg bg-blue-950/80 border border-blue-800/40 text-blue-400">Full Day Stay</span>
+                                                    <p className="text-[10px] text-neutral-400 font-semibold mt-1">
                                                         {formatDateSafe(booking.checkIn)} to {formatDateSafe(booking.checkOut)}
                                                     </p>
-                                                    <p className="text-[9px] text-slate-400 font-bold uppercase">
+                                                    <p className="text-[9px] text-neutral-500 font-bold uppercase">
                                                         Duration: {Math.max(1, Math.round((new Date(booking.checkOut).getTime() - new Date(booking.checkIn).getTime()) / (1000 * 60 * 60 * 24)))} Night(s)
                                                     </p>
-                                                    <p className="text-[9px] text-brand-600 font-bold uppercase mt-1">Arrival: {booking.arrivalTime || "Not specified"}</p>
+                                                    <p className="text-[9px] text-emerald-400 font-bold uppercase mt-1">Arrival: {booking.arrivalTime || "Not specified"}</p>
                                                 </div>
                                             );
 
                                             return (
-                                                <tr key={booking.id} className="hover:bg-slate-50 transition-none">
-                                                    <td className="px-6 py-4 text-xs font-black text-slate-900">#BK-{booking.id}</td>
+                                                <tr key={booking.id} className="hover:bg-[#121212] transition-none">
+                                                    <td className="px-6 py-4 text-xs font-bold text-white">#BK-{booking.id}</td>
                                                     <td className="px-6 py-4">
                                                         <div>
-                                                            <p className="text-xs font-bold text-slate-700">{booking.guestFirstName} {booking.guestLastName}</p>
-                                                            <p className="text-[9px] text-slate-400 font-bold uppercase">{booking.guestEmail}</p>
+                                                            <p className="text-xs font-bold text-neutral-200">{booking.guestFirstName} {booking.guestLastName}</p>
+                                                            <p className="text-[9px] text-neutral-500 font-bold uppercase">{booking.guestEmail}</p>
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4">
-                                                        <p className="text-xs font-bold text-slate-900">{booking.hotel?.name || 'N/A'}</p>
-                                                        <p className="text-[9px] text-slate-400 font-bold uppercase">{booking.room?.name || 'N/A'}</p>
+                                                        <p className="text-xs font-bold text-white">{booking.hotel?.name || 'N/A'}</p>
+                                                        <p className="text-[9px] text-neutral-500 font-bold uppercase">{booking.room?.name || 'N/A'}</p>
                                                     </td>
                                                     <td className="px-6 py-4">
                                                         {stayDetails}
                                                     </td>
                                                     <td className="px-6 py-4">
                                                         <span className={cn(
-                                                            "px-2 py-0.5 text-[9px] font-black uppercase rounded-sm border shadow-sm",
-                                                            booking.status === 'confirmed' ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
-                                                            booking.status === 'pending' ? "bg-amber-50 text-amber-700 border-amber-100" :
-                                                            booking.status === 'cancelled' ? "bg-red-50 text-red-700 border-red-100" : "bg-slate-50 text-slate-400 border-slate-100"
+                                                            "px-2.5 py-1 text-[9px] font-bold uppercase rounded-lg border",
+                                                            booking.status === 'confirmed' ? "bg-emerald-950/80 border-emerald-800/40 text-emerald-400" :
+                                                            booking.status === 'pending' ? "bg-amber-950/80 border-amber-800/40 text-amber-400" :
+                                                            booking.status === 'cancelled' ? "bg-red-950/80 border-red-800/40 text-red-400" : "bg-[#141414] text-neutral-500 border-[#262626]"
                                                         )}>
                                                             {booking.status}
                                                         </span>
                                                     </td>
-                                                    <td className="px-6 py-4 text-right text-xs font-black text-slate-900">
-                                                        ₹{booking.totalPrice.toLocaleString()}
+                                                    <td className="px-6 py-4 text-right text-xs font-bold text-white">
+                                                        ₹{booking.totalPrice?.toLocaleString()}
                                                     </td>
                                                 </tr>
                                             );
@@ -1127,44 +1135,44 @@ export default function SuperAdminDashboard() {
             )}
 
             {activeTab === "hotels" && (
-                <div className="bg-white border border-slate-200 shadow-sm">
-                    <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                        <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Property Management</h3>
+                <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] overflow-hidden">
+                    <div className="px-6 py-4 border-b border-[#1f1f1f] bg-[#0e0e0e] flex items-center justify-between">
+                        <h3 className="text-sm font-bold text-white uppercase tracking-wider">Property Management</h3>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
-                            <thead className="bg-slate-50 border-b border-slate-100">
+                            <thead className="bg-[#0e0e0e] border-b border-[#1f1f1f]">
                                 <tr>
-                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Hotel Name</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Location</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Price</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Hotel Name</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Location</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Price</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100">
+                            <tbody className="divide-y divide-[#181818]">
                                 {smartFilter(hotels, searchQuery, ['name', 'city', 'hotelUsername', 'address', 'id'])
                                     .map((hotel) => (
                                         <tr
                                             key={hotel.id}
                                             onClick={() => router(`/admin/super/hotels/${hotel.id}`)}
-                                            className="hover:bg-slate-50 transition-none cursor-pointer group"
+                                            className="hover:bg-[#121212] transition-none cursor-pointer group"
                                         >
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden">
+                                                    <div className="w-9 h-9 bg-[#161616] border border-[#282828] rounded-xl flex items-center justify-center overflow-hidden shrink-0">
                                                         {hotel.thumbnail ? (
-                                                            <Image src={hotel.thumbnail} alt={hotel.name} width={32} height={32} className="object-cover w-full h-full group-hover:scale-110 transition-transform" />
+                                                            <Image src={hotel.thumbnail} alt={hotel.name} width={36} height={36} className="object-cover w-full h-full group-hover:scale-110 transition-transform" />
                                                         ) : (
-                                                            <Hotel className="w-4 h-4 text-slate-400" />
+                                                            <Hotel className="w-4 h-4 text-neutral-400" />
                                                         )}
                                                     </div>
-                                                    <span className="text-xs font-bold text-slate-900 group-hover:text-brand-600 transition-colors">{hotel.name}</span>
+                                                    <span className="text-xs font-bold text-white group-hover:text-emerald-400 transition-colors">{hotel.name}</span>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 text-xs font-medium text-slate-500">{hotel.city}</td>
-                                            <td className="px-6 py-4 text-xs font-bold text-slate-900">₹{hotel.pricePerNight}</td>
-                                            <td className="px-6 py-4 text-xs font-bold text-slate-900 text-right">
-                                                <button className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-brand-600 transition-colors">
+                                            <td className="px-6 py-4 text-xs font-medium text-neutral-400">{hotel.city}</td>
+                                            <td className="px-6 py-4 text-xs font-bold text-emerald-400">₹{hotel.pricePerNight}</td>
+                                            <td className="px-6 py-4 text-xs font-bold text-neutral-400 text-right">
+                                                <button className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 group-hover:text-white transition-colors cursor-pointer">
                                                     View Details
                                                 </button>
                                             </td>
@@ -1180,14 +1188,14 @@ export default function SuperAdminDashboard() {
             {activeTab === "reviews" && (
                 <div>
                     {/* Sub-tab switcher */}
-                    <div className="flex gap-1 mb-6 bg-slate-100 p-1 rounded-sm w-fit">
+                    <div className="flex gap-1.5 mb-6 bg-[#0c0c0c] border border-[#1f1f1f] p-1.5 rounded-xl w-fit shadow-inner">
                         <button
                             onClick={() => setReviewsSubTab("list")}
                             className={cn(
-                                "px-5 py-2 text-[10px] font-black uppercase tracking-widest transition-all rounded-sm",
+                                "px-5 py-2 text-[10px] font-bold uppercase tracking-widest transition-all rounded-lg cursor-pointer",
                                 reviewsSubTab === "list"
-                                    ? "bg-white text-slate-900 shadow-sm"
-                                    : "text-slate-400 hover:text-slate-600"
+                                    ? "bg-neutral-100 text-black shadow-md"
+                                    : "text-neutral-400 hover:text-white"
                             )}
                         >
                             All Reviews ({globalReviews.length})
@@ -1195,10 +1203,10 @@ export default function SuperAdminDashboard() {
                         <button
                             onClick={() => setReviewsSubTab("import")}
                             className={cn(
-                                "px-5 py-2 text-[10px] font-black uppercase tracking-widest transition-all rounded-sm",
+                                "px-5 py-2 text-[10px] font-bold uppercase tracking-widest transition-all rounded-lg cursor-pointer",
                                 reviewsSubTab === "import"
-                                    ? "bg-white text-slate-900 shadow-sm"
-                                    : "text-slate-400 hover:text-slate-600"
+                                    ? "bg-neutral-100 text-black shadow-md"
+                                    : "text-neutral-400 hover:text-white"
                             )}
                         >
                             Import Reviews (AI)
@@ -1206,90 +1214,90 @@ export default function SuperAdminDashboard() {
                     </div>
 
                     {reviewsSubTab === "list" ? (
-                        <div className="bg-white border border-slate-200 shadow-sm">
-                            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                        <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] overflow-hidden">
+                            <div className="px-6 py-4 border-b border-[#1f1f1f] bg-[#0e0e0e] flex items-center justify-between">
                                 <div>
-                                    <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Global Reviews</h3>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase mt-0.5">{globalReviews.length} Total Reviews</p>
+                                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">Global Reviews</h3>
+                                    <p className="text-[10px] font-bold text-neutral-500 uppercase mt-0.5">{globalReviews.length} Total Reviews</p>
                                 </div>
                                 <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-500" />
                                     <input
                                         type="text"
                                         placeholder="Search reviews..."
                                         value={reviewSearchQuery}
                                         onChange={e => setReviewSearchQuery(e.target.value)}
-                                        className="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-sm w-56 focus:outline-none focus:border-slate-400 font-medium text-xs"
+                                        className="pl-9 pr-4 py-2 bg-[#141414] border border-[#282828] rounded-xl w-56 focus:outline-none focus:border-neutral-500 font-medium text-xs text-white placeholder:text-neutral-600"
                                     />
                                 </div>
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left">
-                                    <thead className="bg-slate-50 border-b border-slate-100">
+                                    <thead className="bg-[#0e0e0e] border-b border-[#1f1f1f]">
                                         <tr>
-                                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Reviewer</th>
-                                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Hotel</th>
-                                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Rating</th>
-                                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Stay Type</th>
-                                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Comment</th>
-                                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Date</th>
-                                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                                            <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Reviewer</th>
+                                            <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Hotel</th>
+                                            <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Rating</th>
+                                            <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Stay Type</th>
+                                            <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Comment</th>
+                                            <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Date</th>
+                                            <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest text-right">Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-slate-100">
+                                    <tbody className="divide-y divide-[#181818]">
                                         {smartFilter(globalReviews, reviewSearchQuery || searchQuery, ['user.name', 'user.email', 'hotel.name', 'hotel.city', 'comment'])
                                             .map((review) => (
                                             <tr
                                                 key={review.id}
-                                                className="hover:bg-slate-50 transition-none cursor-pointer"
+                                                className="hover:bg-[#121212] transition-none cursor-pointer"
                                                 onClick={() => setReviewModal({ show: true, review })}
                                             >
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 overflow-hidden flex items-center justify-center border border-slate-200 shrink-0">
+                                                        <div className="w-8 h-8 rounded-full bg-[#161616] overflow-hidden flex items-center justify-center border border-[#282828] shrink-0">
                                                             {review.user?.profileImage ? (
                                                                 <img src={review.user.profileImage} alt={review.user.name} className="w-full h-full object-cover" />
                                                             ) : (
-                                                                <span className="text-[10px] font-black text-slate-500">
+                                                                <span className="text-[10px] font-bold text-white">
                                                                     {review.user?.name?.charAt(0)?.toUpperCase() || "?"}
                                                                 </span>
                                                             )}
                                                         </div>
                                                         <div>
-                                                            <p className="text-xs font-bold text-slate-900">{review.user?.name || "Unknown"}</p>
-                                                            <p className="text-[10px] text-slate-400 font-medium">{review.user?.email}</p>
+                                                            <p className="text-xs font-bold text-white">{review.user?.name || "Unknown"}</p>
+                                                            <p className="text-[10px] text-neutral-500 font-medium">{review.user?.email}</p>
                                                         </div>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <p className="text-xs font-bold text-slate-900">{review.hotel?.name || "N/A"}</p>
-                                                    <p className="text-[10px] text-slate-400">{review.hotel?.city}</p>
+                                                    <p className="text-xs font-bold text-white">{review.hotel?.name || "N/A"}</p>
+                                                    <p className="text-[10px] text-neutral-500">{review.hotel?.city}</p>
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex flex-col gap-1">
                                                         <StarRating rating={review.rating} />
-                                                        <span className="text-[10px] font-black text-amber-600">{review.rating}/5</span>
+                                                        <span className="text-[10px] font-bold text-amber-400">{review.rating}/5</span>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <span className={cn(
-                                                        "px-2 py-0.5 text-[9px] font-black uppercase rounded-sm",
-                                                        review.stayType === 'hourly' ? "bg-purple-100 text-purple-700" : "bg-sky-100 text-sky-700"
+                                                        "px-2.5 py-1 text-[9px] font-bold uppercase rounded-lg border",
+                                                        review.stayType === 'hourly' ? "bg-purple-950/80 border-purple-800/40 text-purple-400" : "bg-blue-950/80 border-blue-800/40 text-blue-400"
                                                     )}>
                                                         {review.stayType}
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 max-w-[200px]">
-                                                    <p className="text-xs text-slate-600 truncate">{review.comment || "—"}</p>
+                                                    <p className="text-xs text-neutral-400 truncate">{review.comment || "—"}</p>
                                                 </td>
-                                                <td className="px-6 py-4 text-[10px] text-slate-500 font-medium whitespace-nowrap">
+                                                <td className="px-6 py-4 text-[10px] text-neutral-500 font-medium whitespace-nowrap">
                                                     {formatDateSafe(review.createdAt)}
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
                                                     <button
                                                         onClick={e => { e.stopPropagation(); handleDeleteReview(review.id); }}
                                                         disabled={actionLoading === review.id}
-                                                        className="p-2 bg-red-50 text-red-500 hover:bg-red-100 transition-all rounded-sm disabled:opacity-50"
+                                                        className="p-2 bg-red-950/60 border border-red-800/40 text-red-400 hover:bg-red-900 transition-all rounded-lg disabled:opacity-50"
                                                         title="Delete Review"
                                                     >
                                                         {actionLoading === review.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}

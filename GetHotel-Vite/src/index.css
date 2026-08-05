@@ -582,3 +582,9 @@ body {
     top: 0px !important;
     position: static !important;
 }
+
+/* Guarantee zero white flash for admin portal */
+body:has(.admin-portal-wrapper) {
+    background-color: #050505 !important;
+    color: #ffffff !important;
+}

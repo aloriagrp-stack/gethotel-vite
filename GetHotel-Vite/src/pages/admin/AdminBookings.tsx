@@ -108,8 +108,8 @@ export default function SuperAdminBookingsPage() {
                         <tbody className="divide-y divide-slate-100">
                             {loading ? (
                                 <tr>
-                                    <td colSpan={7} className="py-32 text-center">
-                                        <Loader2 className="w-10 h-10 animate-spin text-slate-300 mx-auto" />
+                                    <td colSpan={7} className="py-32 text-center bg-[#050505]">
+                                        <Loader2 className="w-10 h-10 animate-spin text-neutral-400 mx-auto" />
                                     </td>
                                 </tr>
                             ) : filteredBookings.map((b) => (

@@ -4,7 +4,7 @@ import {
     Search, Hotel, Edit3, Save, X, Plus, Trash2, Loader2, Info, Check, AlertTriangle,
     Sliders, Users, IndianRupee, Image, ShieldAlert, Eye, Calendar
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, safeParse } from "@/lib/utils";
 
 interface HotelSummary {
     id: number;
@@ -472,26 +472,26 @@ export default function AdminMultiRoomSetup({ hotels }: { hotels: HotelSummary[]
     );
 
     return (
-        <div className="space-y-4 animate-in fade-in duration-300">
-            {/* Top Selector Panel */}
-            <div className="bg-white border border-slate-200 shadow-sm p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-sm">
+        <div className="space-y-4 font-sans text-neutral-100">
+            {/* Top Selector Panel - Pure Black Skeuomorphic */}
+            <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-2xl">
                 <div className="text-left">
-                    <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider">Multi-Room Bulk Setup</h3>
-                    <p className="text-[8.5px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">Multi-Room Bulk Setup</h3>
+                    <p className="text-[10px] font-medium text-neutral-400 uppercase tracking-widest mt-0.5">
                         Inline spreadsheet-like batch editor for property room inventories
                     </p>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+                <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
                     <div className="relative">
-                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-500" />
                         <input
                             type="text"
                             placeholder="Filter rooms..."
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
                             disabled={loading}
-                            className="pl-8 pr-3 py-1 w-full sm:w-40 bg-slate-50 border border-slate-200 rounded-sm focus:outline-none focus:border-slate-400 font-bold text-[10px] shadow-sm transition-all"
+                            className="pl-9 pr-3 py-2 w-full sm:w-48 bg-[#141414] border border-[#262626] rounded-xl focus:outline-none focus:border-neutral-500 font-mono text-xs text-white placeholder:text-neutral-600 transition-all"
                         />
                     </div>
 
@@ -502,11 +502,11 @@ export default function AdminMultiRoomSetup({ hotels }: { hotels: HotelSummary[]
                                 setSelectedHotelId(Number(e.target.value));
                             }}
                             disabled={loading || isEditing}
-                            className="w-full sm:w-56 pl-3 pr-8 py-1 bg-slate-50 border border-slate-200 rounded-sm font-black text-[10px] uppercase tracking-wider focus:outline-none focus:border-slate-400 cursor-pointer shadow-sm disabled:opacity-50"
+                            className="w-full sm:w-64 pl-3.5 pr-8 py-2 bg-[#141414] border border-[#262626] rounded-xl font-mono text-xs text-white uppercase tracking-wider focus:outline-none focus:border-neutral-500 cursor-pointer disabled:opacity-50"
                         >
-                            <option value="" disabled>Choose Property...</option>
+                            <option value="" disabled className="bg-black text-white">Choose Property...</option>
                             {hotels.map(h => (
-                                <option key={h.id} value={h.id}>
+                                <option key={h.id} value={h.id} className="bg-black text-white">
                                     {h.name} ({h.city})
                                 </option>
                             ))}
@@ -518,24 +518,24 @@ export default function AdminMultiRoomSetup({ hotels }: { hotels: HotelSummary[]
             {/* Logs Display */}
             {saveLog.type && (
                 <div className={cn(
-                    "p-3 border text-[10px] font-bold flex items-start gap-2 rounded-sm shadow-sm animate-in fade-in duration-200",
-                    saveLog.type === "success" ? "bg-emerald-50 border-emerald-100 text-emerald-800" : "bg-red-50 border-red-100 text-red-800"
+                    "p-3.5 border text-xs font-bold flex items-start gap-2.5 rounded-xl shadow-md",
+                    saveLog.type === "success" ? "bg-emerald-950/80 border-emerald-800/40 text-emerald-300" : "bg-red-950/80 border-red-800/40 text-red-300"
                 )}>
                     {saveLog.type === "success" ? (
-                        <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                        <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                     ) : (
-                        <AlertTriangle className="w-3.5 h-3.5 text-red-600 shrink-0 mt-0.5" />
+                        <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
                     )}
                     <span className="leading-relaxed">{saveLog.message}</span>
                 </div>
             )}
 
             {/* Main Editor Component with High-Density Category Tabs */}
-            <div className="bg-white border border-slate-200 shadow-sm rounded-sm overflow-hidden flex flex-col">
+            <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] rounded-2xl overflow-hidden flex flex-col">
                 
                 {/* Horizontal Scrollable Category Tabs Bar */}
-                <div className="border-b border-slate-200 bg-slate-50/50 px-3 pt-2">
-                    <div className="flex gap-0.5 overflow-x-auto scrollbar-none flex-nowrap -mb-px">
+                <div className="border-b border-[#1f1f1f] bg-[#0e0e0e] px-4 pt-3">
+                    <div className="flex gap-1 overflow-x-auto scrollbar-none flex-nowrap -mb-px">
                         {TABS.map(tab => {
                             const Icon = tab.icon;
                             return (
@@ -543,13 +543,13 @@ export default function AdminMultiRoomSetup({ hotels }: { hotels: HotelSummary[]
                                     key={tab.id}
                                     onClick={() => setCurrentTab(tab.id)}
                                     className={cn(
-                                        "px-3 py-2 text-[9px] font-black uppercase tracking-widest whitespace-nowrap border-b-2 transition-all flex items-center gap-1.5",
+                                        "px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap border-b-2 transition-all flex items-center gap-2 cursor-pointer",
                                         currentTab === tab.id
-                                            ? "border-slate-900 text-slate-900 bg-white rounded-t-sm shadow-sm"
-                                            : "border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-200"
+                                            ? "border-white text-white bg-[#141414] rounded-t-xl"
+                                            : "border-transparent text-neutral-500 hover:text-neutral-300"
                                     )}
                                 >
-                                    <Icon className="w-3 h-3" />
+                                    <Icon className="w-3.5 h-3.5" />
                                     {tab.label}
                                 </button>
                             );
@@ -559,218 +559,194 @@ export default function AdminMultiRoomSetup({ hotels }: { hotels: HotelSummary[]
 
                 {/* High Density CSV Spreadsheet Table */}
                 <div className="overflow-x-auto w-full">
-                    <table className="w-full text-left border-collapse divide-y divide-slate-100 min-w-[1300px]">
-                        <thead className="bg-slate-50 border-b border-slate-100">
+                    <table className="w-full text-left border-collapse divide-y divide-[#181818] min-w-[1300px]">
+                        <thead className="bg-[#0e0e0e] border-b border-[#1f1f1f]">
                             <tr>
                                 {/* Pinned room name column */}
-                                <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 min-w-[170px]">Room Name</th>
+                                <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] min-w-[170px]">Room Name</th>
                                 
                                 {currentTab === "general" && (
                                     <>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 w-28">Status</th>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 min-w-[200px]">Description</th>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 w-24 text-center">Inventory</th>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 min-w-[200px]">Amenities</th>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 min-w-[200px]">Highlights</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] w-28">Status</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] min-w-[200px]">Description</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] w-24 text-center">Inventory</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] min-w-[200px]">Amenities</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] min-w-[200px]">Highlights</th>
                                     </>
                                 )}
 
                                 {currentTab === "occupancy-location" && (
                                     <>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 w-36">Bed Configuration</th>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 w-24 text-center">Size (sq. ft)</th>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 w-24 text-center">Max Occupancy</th>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 w-20 text-center">Adults</th>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 w-20 text-center">Children</th>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 w-20 text-center">Infants</th>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 w-32">View Type</th>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 w-24 text-center">Floor</th>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 w-24 text-center">Corner Room</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] w-36">Bed Configuration</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] w-24 text-center">Size (sq. ft)</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] w-24 text-center">Max Occupancy</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] w-20 text-center">Adults</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] w-20 text-center">Children</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] w-20 text-center">Infants</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] w-32">View Type</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] w-24 text-center">Floor</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] w-24 text-center">Corner Room</th>
                                     </>
                                 )}
 
                                 {currentTab === "pricing" && (
                                     <>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 w-28 text-center">Price per Night</th>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 w-24 text-center">Hourly Enabled</th>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 min-w-[200px]">Hourly Rates (JSON)</th>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 w-28 text-center">Extra Bed Charge</th>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 w-28 text-center">Security Deposit</th>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 w-24 text-center">Refundable</th>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 w-24 text-center">Tax Included</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] w-28 text-center">Price per Night</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] w-24 text-center">Hourly Enabled</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] min-w-[200px]">Hourly Rates (JSON)</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] w-28 text-center">Extra Bed Charge</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] w-28 text-center">Security Deposit</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] w-24 text-center">Refundable</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] w-24 text-center">Tax Included</th>
                                     </>
                                 )}
 
                                 {currentTab === "rate-plans" && (
                                     <>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 w-28 text-center">EP Price (Room Only)</th>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 w-28 text-center">CP Price (Breakfast)</th>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 w-28 text-center">MAP Price (Breakfast+1)</th>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 w-28 text-center">AP Price (All Meals)</th>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 min-w-[200px]">Cancellation Policy</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] w-28 text-center">EP Price (Room Only)</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] w-28 text-center">CP Price (Breakfast)</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] w-28 text-center">MAP Price (Breakfast+1)</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] w-28 text-center">AP Price (All Meals)</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] min-w-[200px]">Cancellation Policy</th>
                                     </>
                                 )}
 
                                 {currentTab === "booking-rules" && (
                                     <>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 w-24 text-center">Min Stay</th>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 w-24 text-center">Max Stay</th>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 w-28 text-center">Instant Booking</th>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 w-28 text-center">Advance Days</th>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 w-28 text-center">Advance Payment (%)</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] w-24 text-center">Min Stay</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] w-24 text-center">Max Stay</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] w-28 text-center">Instant Booking</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] w-28 text-center">Advance Days</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] w-28 text-center">Advance Payment (%)</th>
                                     </>
                                 )}
 
                                 {currentTab === "media" && (
                                     <>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 min-w-[320px]">Room Images (Min 1, Max 20)</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] min-w-[320px]">Room Images (Min 1, Max 20)</th>
                                     </>
                                 )}
 
                                 {currentTab === "search-visibility" && (
                                     <>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 min-w-[200px]">Tags</th>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 w-24 text-center">Featured</th>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 w-24 text-center">Display Priority</th>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 min-w-[170px]">SEO Title</th>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 min-w-[200px]">SEO Description</th>
-                                        <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider border-r border-slate-200/50 min-w-[130px]">Slug</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] min-w-[200px]">Tags</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] w-24 text-center">Featured</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] w-24 text-center">Display Priority</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] min-w-[170px]">SEO Title</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] min-w-[200px]">SEO Description</th>
+                                        <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider border-r border-[#1f1f1f] min-w-[130px]">Slug</th>
                                     </>
                                 )}
 
-                                {isEditing && <th className="px-3 py-2.5 text-[8.5px] font-black text-slate-400 uppercase tracking-wider text-center w-16">Remove</th>}
+                                {isEditing && <th className="px-3.5 py-3 text-[9px] font-bold text-neutral-400 uppercase tracking-wider text-center w-16">Remove</th>}
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 font-sans">
+                        <tbody className="divide-y divide-[#181818] text-xs font-medium">
                             {loading ? (
                                 <tr>
-                                    <td colSpan={10} className="py-12 text-center">
+                                    <td colSpan={10} className="py-16 text-center">
                                         <div className="flex flex-col items-center justify-center gap-2">
-                                            <Loader2 className="w-6 h-6 animate-spin text-brand-600" />
-                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Fetching room models...</span>
+                                            <Loader2 className="w-7 h-7 animate-spin text-emerald-400" />
+                                            <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Fetching room models...</span>
                                         </div>
                                     </td>
                                 </tr>
                             ) : filteredRooms.length === 0 ? (
                                 <tr>
-                                    <td colSpan={10} className="py-12 text-center text-slate-400">
-                                        <Hotel className="w-10 h-10 text-slate-200 mx-auto mb-2" />
-                                        <p className="text-[9px] font-black uppercase tracking-widest">No Room Categories Configured</p>
-                                        {isEditing && (
-                                            <button
-                                                onClick={handleAddRow}
-                                                className="mt-2.5 px-3 py-1.5 bg-slate-900 hover:bg-black text-white text-[8px] font-black uppercase tracking-widest rounded-sm"
-                                            >
-                                                Add First Room
-                                            </button>
-                                        )}
+                                    <td colSpan={10} className="py-16 text-center text-xs font-bold text-neutral-500 uppercase tracking-wider italic">
+                                        No room inventories setup for this property yet. Click "Edit All Rooms" to add room categories.
                                     </td>
                                 </tr>
                             ) : (
-                                filteredRooms.map((room) => {
-                                    const isNew = room.id < 0;
-                                    const imgList = room.images || [];
+                                filteredRooms.map(room => {
+                                    const roomImages = room.images || [];
                                     return (
-                                        <tr 
-                                            key={room.id} 
-                                            className={cn(
-                                                "hover:bg-slate-50/50 transition-colors",
-                                                isNew ? "bg-blue-50/10" : ""
-                                            )}
-                                        >
-                                            {/* Pinned Room Name */}
-                                            <td className="px-3 py-1.5 border-r border-slate-100">
+                                        <tr key={room.id} className="hover:bg-[#121212] transition-colors">
+                                            {/* Room Name */}
+                                            <td className="px-3.5 py-2.5 border-r border-[#181818]">
                                                 {isEditing ? (
                                                     <input
                                                         type="text"
                                                         value={room.name}
                                                         onChange={e => handleCellChange(room.id, "name", e.target.value)}
-                                                        className="w-full bg-white border border-slate-200 px-2 py-0.5 text-[10.5px] font-bold text-slate-800 focus:border-slate-400 outline-none rounded-sm transition-all"
+                                                        className="w-full bg-[#141414] border border-[#262626] px-2.5 py-1 text-xs font-bold text-white focus:border-neutral-500 outline-none rounded-lg"
                                                     />
                                                 ) : (
-                                                    <div className="flex items-center gap-1">
-                                                        <span className="text-[10.5px] font-bold text-slate-800">{room.name}</span>
-                                                        {isNew && (
-                                                            <span className="px-1 py-0.2 rounded-sm bg-blue-100 text-blue-800 text-[6.5px] font-black uppercase tracking-wider">NEW</span>
-                                                        )}
-                                                    </div>
+                                                    <span className="font-bold text-white">{room.name}</span>
                                                 )}
                                             </td>
 
-                                            {/* Tab 1: General Fields */}
                                             {currentTab === "general" && (
                                                 <>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818]">
                                                         {isEditing ? (
                                                             <select
                                                                 value={room.status}
                                                                 onChange={e => handleCellChange(room.id, "status", e.target.value)}
-                                                                className="w-full bg-white border border-slate-200 px-2 py-0.5 text-[10.5px] font-bold text-slate-800 focus:border-slate-400 outline-none rounded-sm cursor-pointer"
+                                                                className="w-full bg-[#141414] border border-[#262626] px-2 py-1 text-[11px] font-bold text-white focus:border-neutral-500 outline-none rounded-lg uppercase"
                                                             >
-                                                                <option value="active">Active</option>
-                                                                <option value="inactive">Inactive</option>
-                                                                <option value="draft">Draft</option>
-                                                                <option value="maintenance">Maintenance</option>
+                                                                <option value="active" className="bg-black text-white">Active</option>
+                                                                <option value="maintenance" className="bg-black text-white">Maintenance</option>
+                                                                <option value="inactive" className="bg-black text-white">Inactive</option>
                                                             </select>
                                                         ) : (
                                                             <span className={cn(
-                                                                "px-1.5 py-0.2 rounded-sm text-[7.5px] font-black uppercase tracking-wider border",
-                                                                room.status === 'active' ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
-                                                                room.status === 'maintenance' ? "bg-amber-50 text-amber-700 border-amber-100" :
-                                                                "bg-slate-100 text-slate-500 border-slate-200"
+                                                                "px-2 py-0.5 rounded-md text-[10px] font-bold uppercase border",
+                                                                room.status === "active" ? "bg-emerald-950/80 text-emerald-400 border-emerald-800/40" : "bg-red-950/80 text-red-400 border-red-800/40"
                                                             )}>
                                                                 {room.status}
                                                             </span>
                                                         )}
                                                     </td>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818]">
                                                         {isEditing ? (
                                                             <input
                                                                 type="text"
                                                                 value={room.description}
                                                                 onChange={e => handleCellChange(room.id, "description", e.target.value)}
-                                                                className="w-full bg-white border border-slate-200 px-2 py-0.5 text-[10.5px] font-medium text-slate-700 focus:border-slate-400 outline-none rounded-sm"
+                                                                placeholder="Short description..."
+                                                                className="w-full bg-[#141414] border border-[#262626] px-2 py-1 text-[11px] font-medium text-white focus:border-neutral-500 outline-none rounded-lg"
                                                             />
                                                         ) : (
-                                                            <p className="text-[10px] text-slate-500 truncate max-w-[180px]" title={room.description}>{room.description || "—"}</p>
+                                                            <p className="text-[11px] text-neutral-400 truncate max-w-[200px]" title={room.description}>{room.description || "—"}</p>
                                                         )}
                                                     </td>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100 text-center">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818] text-center">
                                                         {isEditing ? (
                                                             <input
                                                                 type="number"
                                                                 value={room.totalInventory}
                                                                 onChange={e => handleCellChange(room.id, "totalInventory", Number(e.target.value))}
-                                                                className="w-16 bg-white border border-slate-200 px-1 py-0.5 text-[10.5px] font-bold text-slate-800 focus:border-slate-400 outline-none rounded-sm text-center"
+                                                                className="w-16 bg-[#141414] border border-[#262626] px-1 py-1 text-xs font-bold text-white focus:border-neutral-500 outline-none rounded-lg text-center font-mono"
                                                             />
                                                         ) : (
-                                                            <span className="text-[10.5px] font-bold text-slate-800">{room.totalInventory} U</span>
+                                                            <span className="font-bold text-white">{room.totalInventory} U</span>
                                                         )}
                                                     </td>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818]">
                                                         {isEditing ? (
                                                             <input
                                                                 type="text"
                                                                 value={room.amenities}
                                                                 onChange={e => handleCellChange(room.id, "amenities", e.target.value)}
-                                                                placeholder="e.g. Wifi, AC, TV"
-                                                                className="w-full bg-white border border-slate-200 px-2 py-0.5 text-[10.5px] font-medium text-slate-700 focus:border-slate-400 outline-none rounded-sm"
+                                                                placeholder="AC, WiFi, TV..."
+                                                                className="w-full bg-[#141414] border border-[#262626] px-2 py-1 text-[11px] font-medium text-white focus:border-neutral-500 outline-none rounded-lg"
                                                             />
                                                         ) : (
-                                                            <p className="text-[10px] text-slate-500 truncate max-w-[180px]" title={room.amenities}>{room.amenities || "—"}</p>
+                                                            <span className="text-[11px] text-neutral-400 truncate max-w-[180px] block" title={room.amenities}>{room.amenities || "—"}</span>
                                                         )}
                                                     </td>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818]">
                                                         {isEditing ? (
                                                             <input
                                                                 type="text"
                                                                 value={room.highlights}
                                                                 onChange={e => handleCellChange(room.id, "highlights", e.target.value)}
-                                                                placeholder="e.g. Balcony, Pool View"
-                                                                className="w-full bg-white border border-slate-200 px-2 py-0.5 text-[10.5px] font-medium text-slate-700 focus:border-slate-400 outline-none rounded-sm"
+                                                                placeholder="Balcony, Lake View..."
+                                                                className="w-full bg-[#141414] border border-[#262626] px-2 py-1 text-[11px] font-medium text-white focus:border-neutral-500 outline-none rounded-lg"
                                                             />
                                                         ) : (
-                                                            <p className="text-[10px] text-slate-500 truncate max-w-[180px]" title={room.highlights}>{room.highlights || "—"}</p>
+                                                            <span className="text-[11px] text-neutral-400 truncate max-w-[180px] block" title={room.highlights}>{room.highlights || "—"}</span>
                                                         )}
                                                     </td>
                                                 </>
@@ -1151,13 +1127,16 @@ export default function AdminMultiRoomSetup({ hotels }: { hotels: HotelSummary[]
                                             )}
 
                                             {/* Tab 6: Media Fields (With local multiple image uploader gallery) */}
-                                            {currentTab === "media" && (
-                                                <>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100">
+                                            {currentTab === "media" && (() => {
+                                                const imgList: string[] = Array.isArray(room.images)
+                                                    ? room.images
+                                                    : (typeof room.images === 'string' ? safeParse(room.images, []) : []);
+                                                return (
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818]">
                                                         {isEditing ? (
                                                             <div className="flex items-center gap-1.5 py-0.5 max-w-[320px] overflow-x-auto scrollbar-none flex-nowrap">
-                                                                {imgList.map((url, idx) => (
-                                                                    <div key={idx} className="relative shrink-0 w-8 h-8 border border-slate-200 rounded overflow-hidden group">
+                                                                {imgList.map((url: string, idx: number) => (
+                                                                    <div key={idx} className="relative shrink-0 w-8 h-8 border border-[#282828] rounded overflow-hidden group">
                                                                         <img src={url} alt="Room" className="w-full h-full object-cover" />
                                                                         <button
                                                                             type="button"
@@ -1173,8 +1152,8 @@ export default function AdminMultiRoomSetup({ hotels }: { hotels: HotelSummary[]
                                                                     </div>
                                                                 ))}
                                                                 {imgList.length < 20 && (
-                                                                    <label className="flex items-center justify-center w-8 h-8 border border-dashed border-slate-300 hover:border-slate-500 rounded bg-slate-50 hover:bg-slate-100 cursor-pointer transition-colors shrink-0">
-                                                                        <Plus className="w-3.5 h-3.5 text-slate-400" />
+                                                                    <label className="flex items-center justify-center w-8 h-8 border border-dashed border-[#333333] hover:border-neutral-400 rounded bg-[#141414] hover:bg-[#1a1a1a] cursor-pointer transition-colors shrink-0">
+                                                                        <Plus className="w-3.5 h-3.5 text-neutral-400" />
                                                                         <input
                                                                             type="file"
                                                                             multiple
@@ -1188,27 +1167,27 @@ export default function AdminMultiRoomSetup({ hotels }: { hotels: HotelSummary[]
                                                         ) : (
                                                             <div className="flex items-center gap-1 overflow-x-auto max-w-[280px] scrollbar-none py-0.5 flex-nowrap">
                                                                 {imgList.length === 0 ? (
-                                                                    <span className="text-[10px] text-slate-400 font-bold italic">No images</span>
+                                                                    <span className="text-[10px] text-neutral-500 font-bold italic">No images</span>
                                                                 ) : (
-                                                                    imgList.slice(0, 4).map((url, index) => (
+                                                                    imgList.slice(0, 4).map((url: string, index: number) => (
                                                                         <img
                                                                             key={index}
                                                                             src={url}
                                                                             alt="Room preview"
-                                                                            className="w-7 h-7 object-cover rounded border border-slate-200 shrink-0"
+                                                                            className="w-7 h-7 object-cover rounded border border-[#282828] shrink-0"
                                                                         />
                                                                     ))
                                                                 )}
                                                                 {imgList.length > 4 && (
-                                                                    <span className="px-1 py-0.5 bg-slate-100 text-slate-600 rounded text-[7.5px] font-black uppercase shrink-0">
+                                                                    <span className="px-1 py-0.5 bg-[#181818] text-neutral-300 rounded text-[7.5px] font-bold uppercase shrink-0">
                                                                         +{imgList.length - 4}
                                                                     </span>
                                                                 )}
                                                             </div>
                                                         )}
                                                     </td>
-                                                </>
-                                            )}
+                                                );
+                                            })()}
 
                                             {/* Tab 7: Search Visibility & SEO Fields */}
                                             {currentTab === "search-visibility" && (

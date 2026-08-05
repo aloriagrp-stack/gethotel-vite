@@ -504,8 +504,8 @@ export default function AdminPackages() {
     });
 
     return (
-        <div className="p-4 sm:p-8 space-y-6 font-sans text-slate-900 max-w-6xl mx-auto">
-            <SEOHead title="Manage Tour Packages | Admin Dashboard" description="Manage all tour packages, itineraries, inclusions and prices." noIndex />
+        <div className="p-4 sm:p-8 space-y-6 font-sans text-neutral-100 max-w-6xl mx-auto">
+            <SEOHead title="Manage Tour Packages | Super Admin" description="Manage all tour packages, itineraries, inclusions and prices." noIndex />
 
             {/* Toast Notification */}
             <AnimatePresence>
@@ -514,7 +514,7 @@ export default function AdminPackages() {
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
-                        className="fixed top-6 right-6 z-[300] px-5 py-3 bg-slate-900 text-white text-xs font-bold rounded-xl shadow-2xl flex items-center gap-2"
+                        className="fixed top-6 right-6 z-[300] px-5 py-3 bg-[#181818] border border-[#2a2a2a] text-white text-xs font-bold rounded-xl shadow-2xl flex items-center gap-2"
                     >
                         <span>{toastMessage}</span>
                     </motion.div>
@@ -526,14 +526,14 @@ export default function AdminPackages() {
             {/* ========================================================= */}
             {viewMode === "list" && (
                 <div className="space-y-6">
-                    {/* Header */}
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
+                    {/* Header - Pure Black Skeuomorphic */}
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-[#0c0c0c] p-6 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)]">
                         <div className="space-y-1">
-                            <div className="flex items-center gap-2 text-blue-600 font-bold text-xs uppercase tracking-wider">
-                                <Palmtree className="w-4 h-4 text-blue-600" />
+                            <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs uppercase tracking-wider">
+                                <Palmtree className="w-4 h-4 text-emerald-400" />
                                 <span>Tour Packages Manager</span>
                             </div>
-                            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
                                 Package Directory ({packages.length})
                             </h1>
                         </div>
@@ -541,7 +541,7 @@ export default function AdminPackages() {
                         <div className="flex flex-wrap items-center gap-2.5">
                             <button
                                 onClick={() => setIsHeroModalOpen(true)}
-                                className="px-4 py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm transition-all flex items-center gap-2 cursor-pointer"
+                                className="px-4 py-2.5 bg-[#161616] hover:bg-[#202020] border border-[#282828] text-white rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm transition-all flex items-center gap-2 cursor-pointer"
                             >
                                 <Image className="w-4 h-4 text-blue-400" />
                                 <span>Hero Banner</span>
@@ -549,17 +549,17 @@ export default function AdminPackages() {
 
                             <button
                                 onClick={() => setIsJsonModalOpen(true)}
-                                className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm transition-all flex items-center gap-2 cursor-pointer"
+                                className="px-4 py-2.5 bg-[#161616] hover:bg-[#202020] border border-[#282828] text-emerald-400 rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm transition-all flex items-center gap-2 cursor-pointer"
                             >
-                                <Sparkles className="w-4 h-4 text-emerald-200" />
+                                <Sparkles className="w-4 h-4 text-emerald-400" />
                                 <span>Import via JSON</span>
                             </button>
 
                             <button
                                 onClick={handleOpenCreate}
-                                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm transition-all flex items-center gap-2 cursor-pointer"
+                                className="px-5 py-2.5 bg-neutral-100 hover:bg-white text-black rounded-xl font-bold text-xs uppercase tracking-wider shadow-md transition-all flex items-center gap-2 cursor-pointer"
                             >
-                                <Plus className="w-4 h-4" />
+                                <Plus className="w-4 h-4 text-black" />
                                 <span>Create Package</span>
                             </button>
                         </div>
@@ -567,13 +567,13 @@ export default function AdminPackages() {
 
                     {/* Search Bar */}
                     <div className="relative">
-                        <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
+                        <Search className="w-4 h-4 text-neutral-500 absolute left-4 top-1/2 -translate-y-1/2" />
                         <input
                             type="text"
                             placeholder="Search by package title or destination..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200/80 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 focus:border-blue-600 outline-none shadow-sm transition-all"
+                            className="w-full pl-11 pr-4 py-3.5 bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl text-xs sm:text-sm font-semibold text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-all font-mono"
                         />
                     </div>
 
@@ -581,16 +581,16 @@ export default function AdminPackages() {
                     {loading ? (
                         <Loader variant="inline" text="Loading tour packages..." />
                     ) : filteredPackages.length === 0 ? (
-                        <div className="bg-white rounded-2xl p-12 text-center border border-slate-200/80 space-y-4">
-                            <Palmtree className="w-10 h-10 text-slate-300 mx-auto" />
-                            <h3 className="text-sm font-bold uppercase text-slate-700">No Tour Packages Found</h3>
-                            <p className="text-xs text-slate-500 max-w-sm mx-auto font-medium">
+                        <div className="bg-[#0c0c0c] rounded-2xl p-12 text-center border border-[#1c1c1c] border-t-[#2d2d2d] shadow-2xl space-y-4">
+                            <Palmtree className="w-10 h-10 text-neutral-600 mx-auto" />
+                            <h3 className="text-sm font-bold uppercase text-white tracking-wider">No Tour Packages Found</h3>
+                            <p className="text-xs text-neutral-400 max-w-sm mx-auto font-medium">
                                 Click "Import via JSON" or "Create Package" to add your tour packages!
                             </p>
                             <div className="flex items-center justify-center gap-3">
                                 <button
                                     onClick={() => setIsJsonModalOpen(true)}
-                                    className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-emerald-700 transition-all inline-flex items-center gap-1.5 cursor-pointer"
+                                    className="px-4 py-2.5 bg-[#181818] border border-[#2a2a2a] text-emerald-400 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-[#222222] transition-all inline-flex items-center gap-1.5 cursor-pointer"
                                 >
                                     <Sparkles className="w-3.5 h-3.5" />
                                     <span>Import via JSON</span>
@@ -598,7 +598,7 @@ export default function AdminPackages() {
 
                                 <button
                                     onClick={handleOpenCreate}
-                                    className="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-blue-700 transition-all inline-flex items-center gap-1.5 cursor-pointer"
+                                    className="px-4 py-2.5 bg-neutral-100 text-black rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-white transition-all inline-flex items-center gap-1.5 cursor-pointer"
                                 >
                                     <Plus className="w-3.5 h-3.5" />
                                     <span>Add First Package</span>
@@ -606,41 +606,41 @@ export default function AdminPackages() {
                             </div>
                         </div>
                     ) : (
-                        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm divide-y divide-slate-100 overflow-hidden">
+                        <div className="bg-[#0c0c0c] rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] divide-y divide-[#181818] overflow-hidden">
                             {filteredPackages.map((pkg) => (
-                                <div key={pkg.id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/60 transition-colors">
+                                <div key={pkg.id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-[#121212] transition-colors">
                                     <div className="flex items-start gap-4">
                                         <img
                                             src={pkg.image || "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=400&q=80"}
                                             alt={pkg.title}
-                                            className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover border border-slate-200 shrink-0 bg-slate-100"
+                                            className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover border border-[#282828] shrink-0 bg-[#161616] shadow-inner"
                                         />
-                                        <div className="space-y-1">
+                                        <div className="space-y-1.5">
                                             <div className="flex items-center gap-2 flex-wrap">
-                                                <span className="px-2.5 py-0.5 bg-blue-50 text-blue-700 text-[10px] font-black rounded-md uppercase tracking-wider border border-blue-100">
+                                                <span className="px-2.5 py-0.5 bg-[#141414] text-neutral-300 text-[10px] font-bold rounded-md uppercase tracking-wider border border-[#262626]">
                                                     {pkg.badge || "Package"}
                                                 </span>
-                                                <span className="text-xs text-slate-500 font-semibold flex items-center gap-1">
-                                                    <MapPin className="w-3 h-3 text-slate-400" />
+                                                <span className="text-xs text-neutral-400 font-semibold flex items-center gap-1">
+                                                    <MapPin className="w-3 h-3 text-emerald-400" />
                                                     {pkg.destination}
                                                 </span>
                                             </div>
 
-                                            <h3 className="font-bold text-sm sm:text-base text-slate-900">
+                                            <h3 className="font-bold text-sm sm:text-base text-white">
                                                 {pkg.title}
                                             </h3>
 
-                                            <div className="flex items-center gap-3 text-xs text-slate-500 font-medium">
+                                            <div className="flex items-center gap-3 text-xs text-neutral-400 font-medium">
                                                 <span className="flex items-center gap-1">
-                                                    <Clock className="w-3.5 h-3.5 text-slate-400" />
+                                                    <Clock className="w-3.5 h-3.5 text-neutral-500" />
                                                     {pkg.duration}
                                                 </span>
                                                 <span>•</span>
-                                                <span className="font-black text-slate-900">
+                                                <span className="font-black text-white">
                                                     ₹{pkg.price?.toLocaleString("en-IN")}
                                                 </span>
                                                 {pkg.discountPercent && (
-                                                    <span className="text-emerald-600 font-bold text-[10px] bg-emerald-50 px-1.5 py-0.5 rounded">
+                                                    <span className="text-emerald-400 font-bold text-[10px] bg-emerald-950/80 border border-emerald-800/40 px-2 py-0.5 rounded">
                                                         {pkg.discountPercent}
                                                     </span>
                                                 )}
@@ -651,10 +651,10 @@ export default function AdminPackages() {
                                     <div className="flex items-center gap-2 self-end sm:self-center">
                                         <button
                                             onClick={() => handleToggleStatus(pkg)}
-                                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer border ${
                                                 pkg.isActive
-                                                    ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200"
-                                                    : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                                                    ? "bg-emerald-950/80 text-emerald-400 border-emerald-800/40"
+                                                    : "bg-[#141414] text-neutral-500 border-[#262626]"
                                             }`}
                                         >
                                             {pkg.isActive ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
@@ -663,7 +663,7 @@ export default function AdminPackages() {
 
                                         <button
                                             onClick={() => handleOpenEdit(pkg)}
-                                            className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                                            className="p-2 text-neutral-300 hover:text-white hover:bg-[#1f1f1f] border border-[#282828] rounded-lg transition-colors cursor-pointer"
                                             title="Edit Package"
                                         >
                                             <Edit className="w-4 h-4" />
@@ -671,7 +671,7 @@ export default function AdminPackages() {
 
                                         <button
                                             onClick={() => handleDeletePackage(pkg.id, pkg.title)}
-                                            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                                            className="p-2 text-red-400 hover:bg-red-950/60 border border-red-900/40 rounded-lg transition-colors cursor-pointer"
                                             title="Delete Package"
                                         >
                                             <Trash2 className="w-4 h-4" />
@@ -688,42 +688,42 @@ export default function AdminPackages() {
             {/* MODAL 1: IMPORT TOUR VIA JSON MODAL */}
             {/* ========================================================= */}
             {isJsonModalOpen && (
-                <div className="fixed inset-0 z-[250] bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-5 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
-                        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                <div className="fixed inset-0 z-[250] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+                    <div className="bg-[#0c0c0c] rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-5 shadow-2xl border border-[#1c1c1c] border-t-[#2d2d2d] text-white max-h-[90vh] overflow-y-auto">
+                        <div className="flex items-center justify-between border-b border-[#1f1f1f] pb-4">
                             <div className="flex items-center gap-2.5">
-                                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
+                                <div className="w-10 h-10 rounded-xl bg-[#161616] text-emerald-400 flex items-center justify-center border border-[#282828]">
                                     <Sparkles className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <h2 className="text-base font-black text-slate-900">Import Tour Packages via JSON</h2>
-                                    <p className="text-xs text-slate-500 font-medium">Paste AI-generated JSON or upload a .json file</p>
+                                    <h2 className="text-base font-bold text-white uppercase tracking-wider">Import Tour Packages via JSON</h2>
+                                    <p className="text-xs text-neutral-400 font-medium">Paste AI-generated JSON or upload a .json file</p>
                                 </div>
                             </div>
                             <button
                                 onClick={() => setIsJsonModalOpen(false)}
-                                className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center cursor-pointer"
+                                className="w-8 h-8 rounded-full bg-[#181818] border border-[#2a2a2a] text-neutral-400 hover:text-white flex items-center justify-center cursor-pointer"
                             >
                                 <X className="w-4 h-4" />
                             </button>
                         </div>
 
                         {/* Prompt Assistant Tip */}
-                        <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-4 space-y-2">
+                        <div className="bg-[#141414] border border-[#262626] rounded-2xl p-4 space-y-2">
                             <div className="flex items-center justify-between">
-                                <span className="text-xs font-bold text-emerald-900 flex items-center gap-1.5">
-                                    <Sparkles className="w-4 h-4 text-emerald-600" />
+                                <span className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+                                    <Sparkles className="w-4 h-4 text-emerald-400" />
                                     <span>AI Prompt Assistant</span>
                                 </span>
                                 <button
                                     type="button"
                                     onClick={handlePasteSampleJson}
-                                    className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-bold transition-all cursor-pointer"
+                                    className="px-3 py-1 bg-[#1e1e1e] hover:bg-[#282828] border border-[#333333] text-emerald-400 rounded-lg text-[11px] font-bold transition-all cursor-pointer"
                                 >
                                     Paste Sample JSON
                                 </button>
                             </div>
-                            <p className="text-xs text-emerald-800 font-medium leading-relaxed">
+                            <p className="text-xs text-neutral-400 font-medium leading-relaxed">
                                 You can ask ChatGPT/Claude: <em>"Generate a JSON array of 5 exotic Indian tour packages with title, destination, duration, price, overview, inclusions, itinerary array."</em>
                             </p>
                         </div>
@@ -731,11 +731,11 @@ export default function AdminPackages() {
                         {/* File upload or Text input */}
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
-                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                                <label className="text-xs font-bold uppercase tracking-wider text-neutral-400">
                                     Paste JSON String or Upload File
                                 </label>
-                                <label className="cursor-pointer text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1">
-                                    <Upload className="w-3.5 h-3.5" />
+                                <label className="cursor-pointer text-xs font-bold text-neutral-300 hover:text-white flex items-center gap-1">
+                                    <Upload className="w-3.5 h-3.5 text-emerald-400" />
                                     <span>Upload .json File</span>
                                     <input
                                         type="file"
@@ -751,7 +751,7 @@ export default function AdminPackages() {
                                 value={jsonInputText}
                                 onChange={(e) => handleJsonInputChange(e.target.value)}
                                 placeholder="Paste your tour package JSON here..."
-                                className="w-full p-4 bg-slate-950 font-mono text-xs text-emerald-400 rounded-2xl border border-slate-800 outline-none resize-none focus:border-emerald-500"
+                                className="w-full p-4 bg-[#070707] font-mono text-xs text-emerald-400 rounded-2xl border border-[#222222] outline-none resize-none focus:border-neutral-500"
                             />
                         </div>
 
@@ -759,25 +759,25 @@ export default function AdminPackages() {
                         {jsonInputText.trim() && (
                             <div className={`p-3 rounded-xl text-xs font-bold flex items-center gap-2 ${
                                 jsonValidation.isValid
-                                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                                    : "bg-red-50 text-red-600 border border-red-200"
+                                    ? "bg-emerald-950/80 text-emerald-400 border border-emerald-800/40"
+                                    : "bg-red-950/80 text-red-400 border border-red-800/40"
                             }`}>
                                 {jsonValidation.isValid ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <X className="w-4 h-4 shrink-0" />}
                                 <span>{jsonValidation.message}</span>
                             </div>
                         )}
 
-                        <div className="flex items-center justify-end gap-3 border-t border-slate-100 pb-1">
+                        <div className="flex items-center justify-end gap-3 border-t border-[#1f1f1f] pt-3">
                             <button
                                 onClick={() => setIsJsonModalOpen(false)}
-                                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold cursor-pointer"
+                                className="px-4 py-2 bg-[#181818] border border-[#2a2a2a] text-neutral-300 rounded-xl text-xs font-bold cursor-pointer"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleImportJsonSubmit}
                                 disabled={!jsonValidation.isValid || isImportingJson}
-                                className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 cursor-pointer"
+                                className="px-6 py-2 bg-neutral-100 hover:bg-white text-black disabled:opacity-50 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 cursor-pointer"
                             >
                                 {isImportingJson ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
                                 <span>{isImportingJson ? "Importing..." : `Import ${jsonValidation.count || ''} Tours Now`}</span>
@@ -791,21 +791,21 @@ export default function AdminPackages() {
             {/* MODAL 2: HERO BANNER & LOCAL IMAGE MANAGER MODAL */}
             {/* ========================================================= */}
             {isHeroModalOpen && (
-                <div className="fixed inset-0 z-[250] bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-5 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
-                        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                <div className="fixed inset-0 z-[250] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+                    <div className="bg-[#0c0c0c] rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-5 shadow-2xl border border-[#1c1c1c] border-t-[#2d2d2d] text-white max-h-[90vh] overflow-y-auto">
+                        <div className="flex items-center justify-between border-b border-[#1f1f1f] pb-4">
                             <div className="flex items-center gap-2.5">
-                                <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
+                                <div className="w-10 h-10 rounded-xl bg-[#161616] text-blue-400 flex items-center justify-center border border-[#282828]">
                                     <Image className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <h2 className="text-base font-black text-slate-900">Manage Tour Hero Section & Local Images</h2>
-                                    <p className="text-xs text-slate-500 font-medium">Upload local files directly from your device</p>
+                                    <h2 className="text-base font-bold text-white uppercase tracking-wider">Manage Tour Hero Section & Local Images</h2>
+                                    <p className="text-xs text-neutral-400 font-medium">Upload local files directly from your device</p>
                                 </div>
                             </div>
                             <button
                                 onClick={() => setIsHeroModalOpen(false)}
-                                className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center cursor-pointer"
+                                className="w-8 h-8 rounded-full bg-[#181818] border border-[#2a2a2a] text-neutral-400 hover:text-white flex items-center justify-center cursor-pointer"
                             >
                                 <X className="w-4 h-4" />
                             </button>
@@ -814,7 +814,7 @@ export default function AdminPackages() {
                         {/* Title & Subtitle Inputs */}
                         <div className="space-y-4">
                             <div>
-                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                                <label className="text-xs font-bold uppercase tracking-wider text-neutral-400 block mb-1.5">
                                     Hero Section Main Title
                                 </label>
                                 <input
@@ -822,12 +822,12 @@ export default function AdminPackages() {
                                     value={heroConfig.title}
                                     onChange={(e) => setHeroConfig(prev => ({ ...prev, title: e.target.value }))}
                                     placeholder="Explore Handcrafted Tour Packages"
-                                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 outline-none focus:border-blue-600"
+                                    className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-xs font-bold text-white outline-none focus:border-neutral-500 font-mono"
                                 />
                             </div>
 
                             <div>
-                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                                <label className="text-xs font-bold uppercase tracking-wider text-neutral-400 block mb-1.5">
                                     Hero Subtitle / Tagline
                                 </label>
                                 <input
@@ -835,32 +835,32 @@ export default function AdminPackages() {
                                     value={heroConfig.subtitle}
                                     onChange={(e) => setHeroConfig(prev => ({ ...prev, subtitle: e.target.value }))}
                                     placeholder="Unforgettable journeys designed for your dream vacation..."
-                                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 outline-none focus:border-blue-600"
+                                    className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-xs font-semibold text-neutral-300 outline-none focus:border-neutral-500 font-mono"
                                 />
                             </div>
                         </div>
 
-                        {/* Local File Image Upload Box (Strictly Local Upload - NO link typing!) */}
-                        <div className="space-y-3 border-t border-slate-100 pt-4">
+                        {/* Local File Image Upload Box */}
+                        <div className="space-y-3 border-t border-[#1f1f1f] pt-4">
                             <div className="flex items-center justify-between">
-                                <label className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                                    <Upload className="w-4 h-4 text-blue-600" />
+                                <label className="text-xs font-bold uppercase tracking-wider text-neutral-300 flex items-center gap-1.5">
+                                    <Upload className="w-4 h-4 text-emerald-400" />
                                     <span>Upload Local Banner Images</span>
                                 </label>
-                                <span className="text-[11px] text-slate-400 font-semibold">({heroConfig.heroImages.length} images)</span>
+                                <span className="text-[11px] text-neutral-500 font-semibold">({heroConfig.heroImages.length} images)</span>
                             </div>
 
-                            <label className="border-2 border-dashed border-slate-200 hover:border-blue-500 bg-slate-50 hover:bg-blue-50/50 p-6 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all">
+                            <label className="border-2 border-dashed border-[#282828] hover:border-neutral-500 bg-[#141414] p-6 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all">
                                 {uploadingHero ? (
-                                    <div className="flex items-center gap-2 text-xs font-bold text-blue-600">
+                                    <div className="flex items-center gap-2 text-xs font-bold text-emerald-400">
                                         <Loader2 className="w-5 h-5 animate-spin" />
                                         <span>Converting & Uploading Local Images to WebP...</span>
                                     </div>
                                 ) : (
                                     <>
-                                        <Upload className="w-8 h-8 text-blue-500" />
-                                        <span className="text-xs font-bold text-slate-800">Click to Select Local Images from Device</span>
-                                        <span className="text-[11px] text-slate-400">Supports PNG, JPG, WebP (Converted automatically to high-res WebP)</span>
+                                        <Upload className="w-8 h-8 text-neutral-400" />
+                                        <span className="text-xs font-bold text-white">Click to Select Local Images from Device</span>
+                                        <span className="text-[11px] text-neutral-500">Supports PNG, JPG, WebP (Converted automatically to high-res WebP)</span>
                                     </>
                                 )}
                                 <input
@@ -876,7 +876,7 @@ export default function AdminPackages() {
                             {heroConfig.heroImages.length > 0 && (
                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
                                     {heroConfig.heroImages.map((imgUrl, idx) => (
-                                        <div key={idx} className="relative group rounded-xl overflow-hidden aspect-[16/9] border border-slate-200 bg-slate-100">
+                                        <div key={idx} className="relative group rounded-xl overflow-hidden aspect-[16/9] border border-[#282828] bg-[#161616]">
                                             <img src={imgUrl} alt={`Hero Banner ${idx}`} className="w-full h-full object-cover" />
                                             <button
                                                 type="button"
@@ -892,17 +892,17 @@ export default function AdminPackages() {
                             )}
                         </div>
 
-                        <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-4">
+                        <div className="flex items-center justify-end gap-3 border-t border-[#1f1f1f] pt-4">
                             <button
                                 onClick={() => setIsHeroModalOpen(false)}
-                                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold cursor-pointer"
+                                className="px-4 py-2 bg-[#181818] border border-[#2a2a2a] text-neutral-300 rounded-xl text-xs font-bold cursor-pointer"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleSaveHeroConfig}
                                 disabled={savingHero}
-                                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 cursor-pointer"
+                                className="px-6 py-2 bg-neutral-100 hover:bg-white text-black rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 cursor-pointer"
                             >
                                 {savingHero ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                                 <span>{savingHero ? "Saving..." : "Save Hero Section"}</span>
@@ -918,43 +918,43 @@ export default function AdminPackages() {
             {viewMode === "form" && (
                 <form onSubmit={handleSubmitForm} className="space-y-6">
                     {/* Header */}
-                    <div className="flex items-center justify-between bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
+                    <div className="flex items-center justify-between bg-[#0c0c0c] p-6 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)]">
                         <div className="flex items-center gap-3">
                             <button
                                 type="button"
                                 onClick={() => setViewMode("list")}
-                                className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition-colors cursor-pointer"
+                                className="w-9 h-9 rounded-xl bg-[#181818] border border-[#2a2a2a] text-neutral-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
                             >
                                 <ArrowLeft className="w-4 h-4" />
                             </button>
                             <div>
-                                <h1 className="text-xl font-black text-slate-900 tracking-tight">
+                                <h1 className="text-xl font-black text-white tracking-tight">
                                     {editingPackage ? `Edit: ${editingPackage.title}` : "Create New Tour Package"}
                                 </h1>
-                                <p className="text-xs text-slate-500 font-medium">Configure package itinerary, pricing, and inclusions</p>
+                                <p className="text-xs text-neutral-400 font-medium">Configure package itinerary, pricing, and inclusions</p>
                             </div>
                         </div>
 
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl uppercase tracking-wider shadow-sm hover:shadow transition-all flex items-center gap-2 cursor-pointer"
+                            className="px-6 py-2.5 bg-neutral-100 hover:bg-white text-black text-xs font-bold rounded-xl uppercase tracking-wider shadow-md transition-all flex items-center gap-2 cursor-pointer"
                         >
-                            <Save className="w-4 h-4" />
+                            <Save className="w-4 h-4 text-black" />
                             <span>{isSubmitting ? "Saving..." : (editingPackage ? "Save Changes" : "Publish Package")}</span>
                         </button>
                     </div>
 
                     {/* Section 1: Basic Tour Information */}
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-                        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2 border-b border-slate-100 pb-3">
-                            <Palmtree className="w-4 h-4 text-blue-600" />
+                    <div className="bg-[#0c0c0c] p-6 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] space-y-4">
+                        <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-400 flex items-center gap-2 border-b border-[#1f1f1f] pb-3">
+                            <Palmtree className="w-4 h-4 text-emerald-400" />
                             <span>1. Basic Tour Details</span>
                         </h2>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                                <label className="text-xs font-bold uppercase tracking-wider text-neutral-400 block mb-1.5">
                                     Package Title *
                                 </label>
                                 <input
@@ -963,12 +963,12 @@ export default function AdminPackages() {
                                     value={formData.title}
                                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                     placeholder="e.g. Royal Rajasthan Heritage & Fort Trail"
-                                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 outline-none focus:border-blue-600"
+                                    className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-xs font-bold text-white outline-none focus:border-neutral-500 font-mono"
                                 />
                             </div>
 
                             <div>
-                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                                <label className="text-xs font-bold uppercase tracking-wider text-neutral-400 block mb-1.5">
                                     Destination Covered *
                                 </label>
                                 <input
@@ -977,12 +977,12 @@ export default function AdminPackages() {
                                     value={formData.destination}
                                     onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
                                     placeholder="e.g. Jaipur • Udaipur • Jodhpur"
-                                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-blue-600"
+                                    className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-xs font-semibold text-white outline-none focus:border-neutral-500 font-mono"
                                 />
                             </div>
 
                             <div>
-                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                                <label className="text-xs font-bold uppercase tracking-wider text-neutral-400 block mb-1.5">
                                     Duration *
                                 </label>
                                 <input
@@ -991,12 +991,12 @@ export default function AdminPackages() {
                                     value={formData.duration}
                                     onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
                                     placeholder="e.g. 5 Days / 4 Nights"
-                                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-blue-600"
+                                    className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-xs font-semibold text-white outline-none focus:border-neutral-500 font-mono"
                                 />
                             </div>
 
                             <div>
-                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                                <label className="text-xs font-bold uppercase tracking-wider text-neutral-400 block mb-1.5">
                                     Badge / Tag
                                 </label>
                                 <input
@@ -1004,22 +1004,22 @@ export default function AdminPackages() {
                                     value={formData.badge}
                                     onChange={(e) => setFormData({ ...formData, badge: e.target.value })}
                                     placeholder="e.g. Bestseller, Trending, Flat 25% OFF"
-                                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-blue-600"
+                                    className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-xs font-semibold text-white outline-none focus:border-neutral-500 font-mono"
                                 />
                             </div>
                         </div>
                     </div>
 
                     {/* Section 2: Pricing & Stay Features */}
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-                        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2 border-b border-slate-100 pb-3">
-                            <ShieldCheck className="w-4 h-4 text-blue-600" />
+                    <div className="bg-[#0c0c0c] p-6 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] space-y-4">
+                        <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-400 flex items-center gap-2 border-b border-[#1f1f1f] pb-3">
+                            <ShieldCheck className="w-4 h-4 text-emerald-400" />
                             <span>2. Pricing & Stay Features</span>
                         </h2>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
-                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                                <label className="text-xs font-bold uppercase tracking-wider text-neutral-400 block mb-1.5">
                                     Selling Price (₹) *
                                 </label>
                                 <input
@@ -1028,12 +1028,12 @@ export default function AdminPackages() {
                                     value={formData.price}
                                     onChange={(e) => handlePriceChange("price", e.target.value)}
                                     placeholder="15000"
-                                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-black text-slate-900 outline-none focus:border-blue-600"
+                                    className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-xs font-black text-white outline-none focus:border-neutral-500 font-mono"
                                 />
                             </div>
 
                             <div>
-                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                                <label className="text-xs font-bold uppercase tracking-wider text-neutral-400 block mb-1.5">
                                     Original Price (₹)
                                 </label>
                                 <input
@@ -1041,12 +1041,12 @@ export default function AdminPackages() {
                                     value={formData.originalPrice}
                                     onChange={(e) => handlePriceChange("originalPrice", e.target.value)}
                                     placeholder="19999"
-                                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-500 outline-none focus:border-blue-600"
+                                    className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-xs font-bold text-neutral-400 outline-none focus:border-neutral-500 font-mono"
                                 />
                             </div>
 
                             <div>
-                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                                <label className="text-xs font-bold uppercase tracking-wider text-neutral-400 block mb-1.5">
                                     Discount Tag
                                 </label>
                                 <input
@@ -1054,14 +1054,14 @@ export default function AdminPackages() {
                                     value={formData.discountPercent}
                                     onChange={(e) => setFormData({ ...formData, discountPercent: e.target.value })}
                                     placeholder="e.g. 25% OFF"
-                                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-emerald-600 outline-none focus:border-blue-600"
+                                    className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-xs font-bold text-emerald-400 outline-none focus:border-neutral-500 font-mono"
                                 />
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                                <label className="text-xs font-bold uppercase tracking-wider text-neutral-400 block mb-1.5">
                                     Included Hotel Stay
                                 </label>
                                 <input
@@ -1069,12 +1069,12 @@ export default function AdminPackages() {
                                     value={formData.includedStay}
                                     onChange={(e) => setFormData({ ...formData, includedStay: e.target.value })}
                                     placeholder="e.g. Beachfront 4-Star Resort"
-                                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-blue-600"
+                                    className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-xs font-semibold text-white outline-none focus:border-neutral-500 font-mono"
                                 />
                             </div>
 
                             <div>
-                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                                <label className="text-xs font-bold uppercase tracking-wider text-neutral-400 block mb-1.5">
                                     Transport Included
                                 </label>
                                 <input
@@ -1082,41 +1082,37 @@ export default function AdminPackages() {
                                     value={formData.transport}
                                     onChange={(e) => setFormData({ ...formData, transport: e.target.value })}
                                     placeholder="e.g. Private AC Sedan Included"
-                                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-blue-600"
+                                    className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-xs font-semibold text-white outline-none focus:border-neutral-500 font-mono"
                                 />
                             </div>
                         </div>
                     </div>
 
-                    {/* Section 3: Package Images (Min 1, Max 30 Images) */}
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-                        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-                                <Image className="w-4 h-4 text-blue-600" />
+                    {/* Section 3: Package Images */}
+                    <div className="bg-[#0c0c0c] p-6 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] space-y-4">
+                        <div className="flex items-center justify-between border-b border-[#1f1f1f] pb-3">
+                            <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-400 flex items-center gap-2">
+                                <Image className="w-4 h-4 text-emerald-400" />
                                 <span>3. Package Images (Min 1, Max 30 Photos)</span>
                             </h2>
-                            <span className={`px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wider border ${
-                                (formData.gallery?.length || 0) >= 1 && (formData.gallery?.length || 0) <= 30
-                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                    : "bg-amber-50 text-amber-700 border-amber-200"
-                            }`}>
+                            <span className="px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider border bg-[#141414] border-[#262626] text-neutral-300">
                                 {formData.gallery?.length || (formData.image ? 1 : 0)} / 30 Images
                             </span>
                         </div>
 
                         <div className="space-y-4">
                             {/* Upload Area */}
-                            <label className="border-2 border-dashed border-slate-200 hover:border-blue-500 bg-slate-50 hover:bg-blue-50/50 p-6 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all">
+                            <label className="border-2 border-dashed border-[#282828] hover:border-neutral-500 bg-[#141414] p-6 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all">
                                 {uploadingGallery ? (
-                                    <div className="flex items-center gap-2 text-xs font-bold text-blue-600">
+                                    <div className="flex items-center gap-2 text-xs font-bold text-emerald-400">
                                         <Loader2 className="w-5 h-5 animate-spin" />
                                         <span>Uploading & Optimizing Local Images to WebP...</span>
                                     </div>
                                 ) : (
                                     <>
-                                        <Upload className="w-8 h-8 text-blue-500" />
-                                        <span className="text-xs font-bold text-slate-800">Click to Select Local Images from Device</span>
-                                        <span className="text-[11px] text-slate-400 font-medium">Select single or multiple photos (Min 1, Max 30 photos per package)</span>
+                                        <Upload className="w-8 h-8 text-neutral-400" />
+                                        <span className="text-xs font-bold text-white">Click to Select Local Images from Device</span>
+                                        <span className="text-[11px] text-neutral-500 font-medium">Select single or multiple photos (Min 1, Max 30 photos per package)</span>
                                     </>
                                 )}
                                 <input
@@ -1132,33 +1128,33 @@ export default function AdminPackages() {
                             {Array.isArray(formData.gallery) && formData.gallery.length > 0 ? (
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                                        <span className="text-xs font-bold uppercase tracking-wider text-neutral-400">
                                             Uploaded Photos ({formData.gallery.length})
                                         </span>
-                                        <span className="text-[11px] text-slate-400 font-medium">Click star to set as main cover photo</span>
+                                        <span className="text-[11px] text-neutral-500 font-medium">Click star to set as main cover photo</span>
                                     </div>
 
                                     <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3">
                                         {formData.gallery.map((imgUrl: string, idx: number) => {
                                             const isMain = formData.image === imgUrl || (!formData.image && idx === 0);
                                             return (
-                                                <div key={idx} className={`relative group rounded-xl overflow-hidden aspect-[4/3] border-2 bg-slate-100 transition-all ${
-                                                    isMain ? "border-blue-600 ring-2 ring-blue-600/30" : "border-slate-200 hover:border-slate-300"
+                                                <div key={idx} className={`relative group rounded-xl overflow-hidden aspect-[4/3] border-2 bg-[#141414] transition-all ${
+                                                    isMain ? "border-emerald-500 ring-2 ring-emerald-500/30" : "border-[#282828]"
                                                 }`}>
                                                     <img src={imgUrl} alt={`Tour Photo ${idx + 1}`} className="w-full h-full object-cover" />
                                                     
                                                     {isMain && (
-                                                        <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 bg-blue-600 text-white text-[9px] font-black rounded uppercase tracking-wider shadow">
+                                                        <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 bg-emerald-600 text-white text-[9px] font-bold rounded uppercase tracking-wider shadow">
                                                             Cover
                                                         </span>
                                                     )}
 
-                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                                         {!isMain && (
                                                             <button
                                                                 type="button"
                                                                 onClick={() => setFormData((prev: any) => ({ ...prev, image: imgUrl }))}
-                                                                className="p-1.5 rounded-full bg-white/90 text-amber-500 hover:bg-white shadow transition-all cursor-pointer"
+                                                                className="p-1.5 rounded-full bg-white text-amber-500 shadow transition-all cursor-pointer"
                                                                 title="Set as Cover Image"
                                                             >
                                                                 <Star className="w-4 h-4 fill-amber-400" />
@@ -1180,12 +1176,11 @@ export default function AdminPackages() {
                                     </div>
                                 </div>
                             ) : formData.image ? (
-                                /* Fallback if single main image exists */
                                 <div className="space-y-2">
-                                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block">
+                                    <span className="text-xs font-bold uppercase tracking-wider text-neutral-400 block">
                                         Cover Photo (1 Photo)
                                     </span>
-                                    <div className="relative group rounded-xl overflow-hidden max-w-xs aspect-[16/9] border-2 border-blue-600 bg-slate-100">
+                                    <div className="relative group rounded-xl overflow-hidden max-w-xs aspect-[16/9] border-2 border-emerald-500 bg-[#141414]">
                                         <img src={formData.image} alt="Cover" className="w-full h-full object-cover" />
                                         <button
                                             type="button"
@@ -1202,14 +1197,14 @@ export default function AdminPackages() {
                     </div>
 
                     {/* Section 4: Package Overview & Inclusions */}
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-                        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2 border-b border-slate-100 pb-3">
-                            <FileCode className="w-4 h-4 text-blue-600" />
+                    <div className="bg-[#0c0c0c] p-6 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] space-y-4">
+                        <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-400 flex items-center gap-2 border-b border-[#1f1f1f] pb-3">
+                            <FileCode className="w-4 h-4 text-emerald-400" />
                             <span>4. Overview & Key Inclusions</span>
                         </h2>
 
                         <div>
-                            <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                            <label className="text-xs font-bold uppercase tracking-wider text-neutral-400 block mb-1.5">
                                 Tour Overview & Highlights
                             </label>
                             <textarea
@@ -1217,22 +1212,22 @@ export default function AdminPackages() {
                                 value={formData.overview}
                                 onChange={(e) => setFormData({ ...formData, overview: e.target.value })}
                                 placeholder="Write detailed overview of this tour package..."
-                                className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 outline-none focus:border-blue-600 resize-none"
+                                className="w-full p-3.5 bg-[#141414] border border-[#262626] rounded-xl text-xs font-medium text-white outline-none focus:border-neutral-500 resize-none font-mono"
                             />
                         </div>
 
                         {/* Inclusions list */}
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
-                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                                <label className="text-xs font-bold uppercase tracking-wider text-neutral-400">
                                     Key Inclusions
                                 </label>
                                 <button
                                     type="button"
                                     onClick={handleAddInclusion}
-                                    className="px-2.5 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                                    className="px-3 py-1 bg-[#181818] border border-[#2a2a2a] text-neutral-300 hover:text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
                                 >
-                                    <Plus className="w-3.5 h-3.5" />
+                                    <Plus className="w-3.5 h-3.5 text-emerald-400" />
                                     <span>Add Inclusion</span>
                                 </button>
                             </div>
@@ -1244,12 +1239,12 @@ export default function AdminPackages() {
                                         value={inc}
                                         onChange={(e) => handleInclusionChange(idx, e.target.value)}
                                         placeholder="e.g. 4-Star Hotel Stay with Breakfast"
-                                        className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none"
+                                        className="flex-1 px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-xs font-semibold text-white outline-none font-mono"
                                     />
                                     <button
                                         type="button"
                                         onClick={() => handleRemoveInclusion(idx)}
-                                        className="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center hover:bg-red-100 transition-colors shrink-0 cursor-pointer"
+                                        className="w-9 h-9 rounded-xl bg-red-950/60 text-red-400 border border-red-800/40 flex items-center justify-center hover:bg-red-900 transition-colors shrink-0 cursor-pointer"
                                     >
                                         <X className="w-4 h-4" />
                                     </button>
@@ -1259,43 +1254,43 @@ export default function AdminPackages() {
                     </div>
 
                     {/* Section 5: Day-by-Day Itinerary */}
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
-                        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-                                <Calendar className="w-4 h-4 text-blue-600" />
+                    <div className="bg-[#0c0c0c] p-6 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] space-y-4">
+                        <div className="flex items-center justify-between border-b border-[#1f1f1f] pb-3">
+                            <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-400 flex items-center gap-2">
+                                <Calendar className="w-4 h-4 text-emerald-400" />
                                 <span>5. Day-by-Day Itinerary</span>
                             </h2>
                             <button
                                 type="button"
                                 onClick={handleAddItineraryDay}
-                                className="px-3 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                                className="px-3 py-1 bg-[#181818] border border-[#2a2a2a] text-neutral-300 hover:text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
                             >
-                                <Plus className="w-3.5 h-3.5" />
+                                <Plus className="w-3.5 h-3.5 text-emerald-400" />
                                 <span>Add Day</span>
                             </button>
                         </div>
 
                         {formData.itinerary.map((dayItem: any, idx: number) => (
-                            <div key={idx} className="p-4 bg-slate-50/80 border border-slate-200/80 rounded-xl space-y-2 relative">
+                            <div key={idx} className="p-4 bg-[#141414] border border-[#262626] rounded-xl space-y-2.5 relative">
                                 <div className="flex items-center justify-between gap-2">
                                     <input
                                         type="text"
                                         value={dayItem.day}
                                         onChange={(e) => handleItineraryChange(idx, "day", e.target.value)}
                                         placeholder="Day 1"
-                                        className="w-20 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-extrabold text-blue-600 outline-none"
+                                        className="w-24 px-3 py-2 bg-[#0c0c0c] border border-[#282828] rounded-lg text-xs font-extrabold text-emerald-400 outline-none font-mono"
                                     />
                                     <input
                                         type="text"
                                         value={dayItem.title}
                                         onChange={(e) => handleItineraryChange(idx, "title", e.target.value)}
                                         placeholder="Day Activity Title"
-                                        className="flex-1 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-900 outline-none"
+                                        className="flex-1 px-3.5 py-2 bg-[#0c0c0c] border border-[#282828] rounded-lg text-xs font-semibold text-white outline-none font-mono"
                                     />
                                     <button
                                         type="button"
                                         onClick={() => handleRemoveItineraryDay(idx)}
-                                        className="w-7 h-7 rounded-lg bg-red-50 text-red-600 flex items-center justify-center hover:bg-red-100 shrink-0 cursor-pointer"
+                                        className="w-8 h-8 rounded-lg bg-red-950/60 text-red-400 border border-red-800/40 flex items-center justify-center hover:bg-red-900 shrink-0 cursor-pointer"
                                     >
                                         <X className="w-3.5 h-3.5" />
                                     </button>
@@ -1305,18 +1300,18 @@ export default function AdminPackages() {
                                     value={dayItem.desc}
                                     onChange={(e) => handleItineraryChange(idx, "desc", e.target.value)}
                                     placeholder="Activity description for this day..."
-                                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-700 outline-none resize-none"
+                                    className="w-full px-3.5 py-2 bg-[#0c0c0c] border border-[#282828] rounded-lg text-xs font-medium text-neutral-300 outline-none resize-none font-mono"
                                 />
                             </div>
                         ))}
                     </div>
 
                     {/* Bottom Action Bar */}
-                    <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                    <div className="bg-[#0c0c0c] p-5 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] flex items-center justify-between">
                         <button
                             type="button"
                             onClick={() => setViewMode("list")}
-                            className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer"
+                            className="px-5 py-2.5 bg-[#181818] border border-[#2a2a2a] hover:bg-[#222222] text-neutral-300 text-xs font-bold rounded-xl transition-all cursor-pointer"
                         >
                             Cancel & Return
                         </button>
@@ -1324,9 +1319,9 @@ export default function AdminPackages() {
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl uppercase tracking-wider shadow hover:shadow-md transition-all flex items-center gap-2 cursor-pointer"
+                            className="px-6 py-2.5 bg-neutral-100 hover:bg-white text-black text-xs font-bold rounded-xl uppercase tracking-wider shadow-md transition-all flex items-center gap-2 cursor-pointer"
                         >
-                            <Save className="w-4 h-4" />
+                            <Save className="w-4 h-4 text-black" />
                             <span>{isSubmitting ? "Saving..." : (editingPackage ? "Save Changes" : "Publish Package")}</span>
                         </button>
                     </div>

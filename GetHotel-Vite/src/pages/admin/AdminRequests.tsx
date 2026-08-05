@@ -125,9 +125,9 @@ export default function PartnerRequestsPage() {
                 </div>
 
                 {pageLoading ? (
-                    <div className="flex flex-col items-center justify-center py-20 bg-white rounded-[40px] border border-slate-100 shadow-sm">
-                        <Loader2 className="w-10 h-10 text-brand-600 animate-spin mb-4" />
-                        <p className="text-slate-400 font-bold">Loading requests...</p>
+                    <div className="flex flex-col items-center justify-center py-20 bg-[#0c0c0c] rounded-2xl border border-[#1f1f1f] shadow-sm">
+                        <Loader2 className="w-10 h-10 text-neutral-400 animate-spin mb-4" />
+                        <p className="text-neutral-400 font-bold">Loading requests...</p>
                     </div>
                 ) : filteredReqs.length === 0 ? (
                     <div className="text-center py-20 bg-white rounded-[40px] border border-slate-100 shadow-sm">

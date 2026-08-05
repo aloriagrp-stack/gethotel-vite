@@ -13,7 +13,7 @@ import ScrollToTop from "./components/common/ScrollToTop";
 import Loader from "./components/common/Loader";
 
 const PageLoader = () => (
-  <div className="min-h-[60vh] flex items-center justify-center bg-transparent">
+  <div className="min-h-screen w-full flex items-center justify-center bg-[#050505] text-white">
     <Loader variant="inline" />
   </div>
 );
@@ -220,6 +220,8 @@ export default function App() {
                           <Route path="disputes" element={<SuperAdminDashboard />} />
                           <Route path="notifications" element={<SuperAdminDashboard />} />
                           <Route path="settings" element={<SuperAdminDashboard />} />
+                          <Route path="destination-analytics" element={<SuperAdminDashboard />} />
+                          <Route path="top-destinations" element={<SuperAdminDashboard />} />
                           <Route path="homepage" element={<SuperAdminDashboard />} />
                         </Route>
                         
