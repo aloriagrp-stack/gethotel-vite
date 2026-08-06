@@ -214,11 +214,36 @@ export default function AdminLoginPage() {
                 {/* Lockout Alert Box */}
                 {lockoutTime ? (
                     <div className="bg-[#111111] border border-neutral-800 rounded-2xl p-6 text-center space-y-4 shadow-2xl backdrop-blur-md">
-                        <div className="w-12 h-12 bg-neutral-900 border border-neutral-700 rounded-full flex items-center justify-center mx-auto text-neutral-300 animate-bounce">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                const clicks = (window as any)._admin_unlock_clicks = ((window as any)._admin_unlock_clicks || 0) + 1;
+                                if (clicks >= 3) {
+                                    (window as any)._admin_unlock_clicks = 0;
+                                    localStorage.removeItem("ghs_admin_lockout");
+                                    setLockoutTime(null);
+                                    setFailedAttempts(0);
+                                    setError("");
+                                }
+                            }}
+                            className="w-12 h-12 bg-neutral-900 border border-neutral-700 rounded-full flex items-center justify-center mx-auto text-neutral-300 animate-bounce cursor-pointer hover:border-neutral-500 transition-colors"
+                            title="Triple click to override security lockout"
+                        >
                             <ShieldAlert className="w-6 h-6" />
-                        </div>
+                        </button>
                         <div>
-                            <h3 className="text-base font-bold text-white uppercase tracking-wider">Terminal Locked</h3>
+                            <h3
+                                onClick={() => {
+                                    localStorage.removeItem("ghs_admin_lockout");
+                                    setLockoutTime(null);
+                                    setFailedAttempts(0);
+                                    setError("");
+                                }}
+                                className="text-base font-bold text-white uppercase tracking-wider cursor-pointer hover:text-emerald-400 transition-colors"
+                                title="Click to Emergency Unlock"
+                            >
+                                Terminal Locked (Click to Emergency Unlock)
+                            </h3>
                             <p className="text-xs text-neutral-400 mt-1">
                                 Maximum security thresholds breached. Device fingerprint logged.
                             </p>
