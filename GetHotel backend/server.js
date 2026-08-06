@@ -476,8 +476,13 @@ const mountCriticalRoutes = (prefix) => {
     app.post(`${prefix}/auth/change-password/verify-otp`, protect, authController.verifyChangePasswordOTP);
     app.post(`${prefix}/auth/change-email/send-otp`, protect, authController.sendChangeEmailOTP);
     app.post(`${prefix}/auth/change-email/verify-otp`, protect, authController.verifyChangeEmailOTP);
-    app.post(`${prefix}/hotels`, protect, authorize('hotel_admin', 'super_admin'), hotelController.createHotel);
-    app.delete(`${prefix}/admin/hotels/:id`, protect, authorize('super_admin'), adminController.deleteHotel);
+    const roomController = require('./controllers/roomController');
+    app.post(`${prefix}/hotels`, protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), hotelController.createHotel);
+    app.put(`${prefix}/hotels/:id`, protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), hotelController.updateHotel);
+    app.post(`${prefix}/hotels/:id`, protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), hotelController.updateHotel);
+    app.put(`${prefix}/hotels/:hotelId/rooms/:roomId`, protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), roomController.updateRoom);
+    app.post(`${prefix}/hotels/:hotelId/rooms/:roomId`, protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), roomController.updateRoom);
+    app.delete(`${prefix}/admin/hotels/:id`, protect, authorize('super_admin', 'superadmin', 'admin'), adminController.deleteHotel);
     
     // Explicit Package Import & Hero Config Routes for Live Server Compatibility
     const packageController = require('./controllers/packageController');
