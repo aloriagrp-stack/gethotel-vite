@@ -1372,6 +1372,18 @@ export default function AdminPackages() {
                             Cancel & Return
                         </button>
 
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="px-6 py-2.5 bg-neutral-100 hover:bg-white text-black text-xs font-bold rounded-xl uppercase tracking-wider shadow-md transition-all flex items-center gap-2 cursor-pointer"
+                        >
+                            <Save className="w-4 h-4 text-black" />
+                            <span>{isSubmitting ? "Saving..." : (editingPackage ? "Save Changes" : "Publish Package")}</span>
+                        </button>
+                    </div>
+                </form>
+            )}
+
             {/* DESTINATION STORY CIRCLES MANAGER MODAL */}
             <AnimatePresence>
                 {isDestModalOpen && (

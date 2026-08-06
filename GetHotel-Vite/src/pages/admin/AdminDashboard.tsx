@@ -12,7 +12,7 @@ import {
     CreditCard, TrendingUp, MoreVertical,
     ArrowUpRight, ArrowDownRight, Globe, ChevronRight, Loader2, ArrowRight,
     Key, ShieldAlert, Eye, EyeOff, Star, MessageSquare, Trash2, Sparkles,
-    UserCheck, Mail, Phone, Calendar, LogIn, Shield, Copy, ExternalLink, RefreshCw, LayoutGrid, Percent, Bot
+    UserCheck, Mail, Phone, Calendar, LogIn, Shield, Copy, ExternalLink, RefreshCw, LayoutGrid, Percent, Bot, Palmtree
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "@/components/common/Image";
