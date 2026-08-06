@@ -74,6 +74,8 @@ jobs:
             "GetHotel backend/" ./gethotel_backend/
           bye
           LFTPEOF
+          echo "Triggering live Node.js process restart..."
+          curl -s "https://gethotelstays.com/api/ai/restart?token=gethotel_maint_2026" || true
           echo "Backend full mirror deploy + restart completed!"
 
       - name: Zip Main Frontend Build

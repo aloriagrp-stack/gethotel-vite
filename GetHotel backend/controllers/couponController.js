@@ -33,7 +33,7 @@ exports.createCoupon = async (req, res, next) => {
         // Authorization check
         const hotel = await prisma.hotel.findUnique({ where: { id: hotelId } });
         if (!hotel) return res.status(404).json({ success: false, message: 'Hotel not found' });
-        if (hotel.userId !== req.user.id && req.user.role !== 'super_admin') {
+        if (hotel.userId !== req.user.id && !['super_admin', 'superadmin', 'admin', 'hotel_admin', 'partner'].includes(req.user.role)) {
             return res.status(403).json({ success: false, message: 'Not authorized' });
         }
 
@@ -73,7 +73,7 @@ exports.updateCoupon = async (req, res, next) => {
         // Authorization check
         const hotel = await prisma.hotel.findUnique({ where: { id: hotelId } });
         if (!hotel) return res.status(404).json({ success: false, message: 'Hotel not found' });
-        if (hotel.userId !== req.user.id && req.user.role !== 'super_admin') {
+        if (hotel.userId !== req.user.id && !['super_admin', 'superadmin', 'admin', 'hotel_admin', 'partner'].includes(req.user.role)) {
             return res.status(403).json({ success: false, message: 'Not authorized' });
         }
 
@@ -119,7 +119,7 @@ exports.toggleCouponStatus = async (req, res, next) => {
         // Authorization check
         const hotel = await prisma.hotel.findUnique({ where: { id: hotelId } });
         if (!hotel) return res.status(404).json({ success: false, message: 'Hotel not found' });
-        if (hotel.userId !== req.user.id && req.user.role !== 'super_admin') {
+        if (hotel.userId !== req.user.id && !['super_admin', 'superadmin', 'admin', 'hotel_admin', 'partner'].includes(req.user.role)) {
             return res.status(403).json({ success: false, message: 'Not authorized' });
         }
 
@@ -151,7 +151,7 @@ exports.deleteCoupon = async (req, res, next) => {
         // Authorization check
         const hotel = await prisma.hotel.findUnique({ where: { id: hotelId } });
         if (!hotel) return res.status(404).json({ success: false, message: 'Hotel not found' });
-        if (hotel.userId !== req.user.id && req.user.role !== 'super_admin') {
+        if (hotel.userId !== req.user.id && !['super_admin', 'superadmin', 'admin', 'hotel_admin', 'partner'].includes(req.user.role)) {
             return res.status(403).json({ success: false, message: 'Not authorized' });
         }
 
