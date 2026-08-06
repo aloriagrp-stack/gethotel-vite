@@ -270,7 +270,11 @@ exports.login = async (req, res, next) => {
 
         sendTokenResponse(user, 200, res);
     } catch (err) {
-        res.status(400).json({ success: false, message: err.message });
+        console.error('[LOGIN ERROR]:', err);
+        const safeMessage = (err.message && (err.message.includes('prisma') || err.message.includes('Can\'t reach database') || err.message.includes('invocation') || err.message.includes('D:\\') || err.message.includes('controllers')))
+            ? 'Database connection unavailable. Please start or verify local MySQL server.'
+            : (err.message || 'Authentication failed.');
+        res.status(500).json({ success: false, message: safeMessage });
     }
 };
 

@@ -5,7 +5,8 @@ import SEOHead from "@/components/common/SEOHead";
 import {
     Palmtree, Plus, Edit, Trash2, Search, Check, X,
     Eye, EyeOff, MapPin, Clock, Star, Sparkles, Image, ArrowLeft,
-    Calendar, ShieldCheck, ChevronRight, Save, Upload, Loader2, FileCode, CheckCircle2
+    Calendar, ShieldCheck, ChevronRight, Save, Upload, Loader2, FileCode, CheckCircle2,
+    CircleDot, Tag, Filter
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -45,6 +46,45 @@ export default function AdminPackages() {
     });
     const [uploadingHero, setUploadingHero] = useState(false);
     const [savingHero, setSavingHero] = useState(false);
+
+    // Destination Circles Manager Modal States
+    const [isDestModalOpen, setIsDestModalOpen] = useState(false);
+    const [destinations, setDestinations] = useState<any[]>(() => {
+        const saved = localStorage.getItem("ghs_admin_tour_destinations");
+        return saved ? JSON.parse(saved) : [
+            { id: "dest-1", name: "All", image: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=200&q=80" },
+            { id: "dest-2", name: "Goa", image: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=200&q=80" },
+            { id: "dest-3", name: "Rajasthan", image: "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=200&q=80" },
+            { id: "dest-4", name: "Kashmir", image: "https://images.unsplash.com/photo-1566837945700-30057527ade0?auto=format&fit=crop&w=200&q=80" },
+            { id: "dest-5", name: "Manali", image: "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=200&q=80" },
+            { id: "dest-6", name: "Kerala", image: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=200&q=80" },
+            { id: "dest-7", name: "Ladakh", image: "https://images.unsplash.com/photo-1581793745862-99fde7fa73d2?auto=format&fit=crop&w=200&q=80" }
+        ];
+    });
+    const [editingDest, setEditingDest] = useState<any>(null);
+    const [destFormData, setDestFormData] = useState({ name: "", image: "" });
+
+    // Filter Tag Line Manager Modal States
+    const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+    const [filterConfig, setFilterConfig] = useState<{ showFilterLine: boolean; filterTags: string[] }>(() => {
+        const saved = localStorage.getItem("ghs_admin_tour_filter_config");
+        return saved ? JSON.parse(saved) : {
+            showFilterLine: true,
+            filterTags: ["All", "Bestseller", "Trending", "Super Saver", "Top Rated"]
+        };
+    });
+    const [newTagInput, setNewTagInput] = useState("");
+
+    // Persist Destination Circles & Filter Config to LocalStorage & dispatch window event
+    useEffect(() => {
+        localStorage.setItem("ghs_admin_tour_destinations", JSON.stringify(destinations));
+        window.dispatchEvent(new Event("ghs_tour_settings_updated"));
+    }, [destinations]);
+
+    useEffect(() => {
+        localStorage.setItem("ghs_admin_tour_filter_config", JSON.stringify(filterConfig));
+        window.dispatchEvent(new Event("ghs_tour_settings_updated"));
+    }, [filterConfig]);
 
     // Form state for Single Package Editor
     const [formData, setFormData] = useState<any>({
@@ -539,6 +579,22 @@ export default function AdminPackages() {
                         </div>
 
                         <div className="flex flex-wrap items-center gap-2.5">
+                            <button
+                                onClick={() => setIsDestModalOpen(true)}
+                                className="px-4 py-2.5 bg-[#161616] hover:bg-[#202020] border border-[#282828] text-sky-400 rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm transition-all flex items-center gap-2 cursor-pointer"
+                            >
+                                <CircleDot className="w-4 h-4 text-sky-400" />
+                                <span>Destination Circles</span>
+                            </button>
+
+                            <button
+                                onClick={() => setIsFilterModalOpen(true)}
+                                className="px-4 py-2.5 bg-[#161616] hover:bg-[#202020] border border-[#282828] text-indigo-400 rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm transition-all flex items-center gap-2 cursor-pointer"
+                            >
+                                <Tag className="w-4 h-4 text-indigo-400" />
+                                <span>Filter Line Settings</span>
+                            </button>
+
                             <button
                                 onClick={() => setIsHeroModalOpen(true)}
                                 className="px-4 py-2.5 bg-[#161616] hover:bg-[#202020] border border-[#282828] text-white rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm transition-all flex items-center gap-2 cursor-pointer"
@@ -1316,17 +1372,267 @@ export default function AdminPackages() {
                             Cancel & Return
                         </button>
 
-                        <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className="px-6 py-2.5 bg-neutral-100 hover:bg-white text-black text-xs font-bold rounded-xl uppercase tracking-wider shadow-md transition-all flex items-center gap-2 cursor-pointer"
+            {/* DESTINATION STORY CIRCLES MANAGER MODAL */}
+            <AnimatePresence>
+                {isDestModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="bg-[#0c0c0c] rounded-2xl shadow-2xl border border-[#1c1c1c] border-t-[#2d2d2d] w-full max-w-2xl overflow-hidden text-white"
                         >
-                            <Save className="w-4 h-4 text-black" />
-                            <span>{isSubmitting ? "Saving..." : (editingPackage ? "Save Changes" : "Publish Package")}</span>
-                        </button>
+                            <div className="p-5 bg-[#0e0e0e] border-b border-[#1f1f1f] flex items-center justify-between">
+                                <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                                    <CircleDot className="w-4 h-4 text-sky-400" />
+                                    <span>Manage Popular Destination Circles ({destinations.length})</span>
+                                </h3>
+                                <button
+                                    onClick={() => { setIsDestModalOpen(false); setEditingDest(null); setDestFormData({ name: "", image: "" }); }}
+                                    className="w-7 h-7 rounded-full bg-[#181818] border border-[#2a2a2a] text-neutral-400 hover:text-white flex items-center justify-center cursor-pointer"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
+
+                            <div className="p-5 space-y-6 max-h-[80vh] overflow-y-auto">
+                                {/* Grid of current circle destinations */}
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                    {destinations.map((dest) => (
+                                        <div key={dest.id} className="p-3 bg-[#121212] border border-[#222] rounded-xl flex flex-col items-center gap-2 relative group hover:border-sky-500/50 transition-all">
+                                            <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white/20">
+                                                <img src={dest.image} alt={dest.name} className="w-full h-full object-cover" />
+                                            </div>
+                                            <span className="text-xs font-bold text-white truncate max-w-full">{dest.name}</span>
+                                            <div className="flex items-center gap-1">
+                                                <button
+                                                    onClick={() => { setEditingDest(dest); setDestFormData({ name: dest.name, image: dest.image }); }}
+                                                    className="p-1 bg-[#202020] text-neutral-300 hover:text-white rounded border border-[#333] cursor-pointer"
+                                                    title="Edit Destination"
+                                                >
+                                                    <Edit className="w-3 h-3" />
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        if (confirm(`Delete destination "${dest.name}"?`)) {
+                                                            setDestinations(prev => prev.filter(d => d.id !== dest.id));
+                                                            showToast(`✓ Destination "${dest.name}" deleted!`);
+                                                        }
+                                                    }}
+                                                    className="p-1 bg-red-950/60 text-red-400 hover:text-red-300 rounded border border-red-900/40 cursor-pointer"
+                                                    title="Delete Destination"
+                                                >
+                                                    <Trash2 className="w-3 h-3" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Create / Edit Form inside Modal */}
+                                <form
+                                    onSubmit={(e) => {
+                                        e.preventDefault();
+                                        if (!destFormData.name.trim() || !destFormData.image.trim()) return;
+
+                                        if (editingDest) {
+                                            setDestinations(prev => prev.map(d => d.id === editingDest.id ? {
+                                                ...d,
+                                                name: destFormData.name.trim(),
+                                                image: destFormData.image.trim()
+                                            } : d));
+                                            showToast(`✓ Destination "${destFormData.name}" updated!`);
+                                        } else {
+                                            const newD = {
+                                                id: `dest-${Date.now()}`,
+                                                name: destFormData.name.trim(),
+                                                image: destFormData.image.trim()
+                                            };
+                                            setDestinations(prev => [...prev, newD]);
+                                            showToast(`✓ Destination "${destFormData.name}" added!`);
+                                        }
+                                        setEditingDest(null);
+                                        setDestFormData({ name: "", image: "" });
+                                    }}
+                                    className="p-4 bg-[#141414] border border-[#262626] rounded-xl space-y-3"
+                                >
+                                    <h4 className="text-xs font-bold text-sky-400 uppercase tracking-wider">
+                                        {editingDest ? `Edit Destination "${editingDest.name}"` : "Add New Destination Circle"}
+                                    </h4>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <div>
+                                            <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1">Destination Name</label>
+                                            <input
+                                                type="text"
+                                                required
+                                                placeholder="e.g. Goa, Manali, Shimla..."
+                                                value={destFormData.name}
+                                                onChange={(e) => setDestFormData({ ...destFormData, name: e.target.value })}
+                                                className="w-full px-3 py-2 bg-[#0c0c0c] border border-[#282828] rounded-xl text-xs font-mono text-white focus:outline-none focus:border-sky-500"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1">Circle Image URL</label>
+                                            <input
+                                                type="url"
+                                                required
+                                                placeholder="https://images.unsplash.com/..."
+                                                value={destFormData.image}
+                                                onChange={(e) => setDestFormData({ ...destFormData, image: e.target.value })}
+                                                className="w-full px-3 py-2 bg-[#0c0c0c] border border-[#282828] rounded-xl text-xs font-mono text-white focus:outline-none focus:border-sky-500"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-2 pt-1">
+                                        <button
+                                            type="submit"
+                                            className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-xl uppercase tracking-wider cursor-pointer"
+                                        >
+                                            {editingDest ? "Update Circle" : "Add Destination Circle"}
+                                        </button>
+
+                                        {editingDest && (
+                                            <button
+                                                type="button"
+                                                onClick={() => { setEditingDest(null); setDestFormData({ name: "", image: "" }); }}
+                                                className="px-3 py-2 bg-[#222] text-neutral-400 hover:text-white rounded-xl text-xs font-bold"
+                                            >
+                                                Cancel Edit
+                                            </button>
+                                        )}
+                                    </div>
+                                </form>
+                            </div>
+                        </motion.div>
                     </div>
-                </form>
-            )}
+                )}
+            </AnimatePresence>
+
+            {/* FILTER TAG LINE SETTINGS MODAL */}
+            <AnimatePresence>
+                {isFilterModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="bg-[#0c0c0c] rounded-2xl shadow-2xl border border-[#1c1c1c] border-t-[#2d2d2d] w-full max-w-lg overflow-hidden text-white"
+                        >
+                            <div className="p-5 bg-[#0e0e0e] border-b border-[#1f1f1f] flex items-center justify-between">
+                                <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                                    <Tag className="w-4 h-4 text-indigo-400" />
+                                    <span>Filter Tag Line Settings</span>
+                                </h3>
+                                <button
+                                    onClick={() => setIsFilterModalOpen(false)}
+                                    className="w-7 h-7 rounded-full bg-[#181818] border border-[#2a2a2a] text-neutral-400 hover:text-white flex items-center justify-center cursor-pointer"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
+
+                            <div className="p-5 space-y-5 text-xs font-medium">
+                                {/* Toggle Filter Line Visibility */}
+                                <div className="p-4 bg-[#121212] border border-[#222] rounded-xl flex items-center justify-between">
+                                    <div>
+                                        <h4 className="font-bold text-white flex items-center gap-2">
+                                            {filterConfig.showFilterLine ? <Eye className="w-4 h-4 text-emerald-400" /> : <EyeOff className="w-4 h-4 text-neutral-500" />}
+                                            <span>Filter Bar Line Visibility</span>
+                                        </h4>
+                                        <p className="text-[11px] text-neutral-400 mt-0.5">
+                                            {filterConfig.showFilterLine ? "Filter bar is VISIBLE on public page." : "Filter bar is HIDDEN on public page."}
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={() => {
+                                            const updated = !filterConfig.showFilterLine;
+                                            setFilterConfig(prev => ({ ...prev, showFilterLine: updated }));
+                                            showToast(updated ? "✓ Filter tag bar is now Visible!" : "✓ Filter tag bar is now Hidden!");
+                                        }}
+                                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                                            filterConfig.showFilterLine
+                                                ? "bg-emerald-950 text-emerald-300 border-emerald-700/50 hover:bg-emerald-900"
+                                                : "bg-neutral-800 text-neutral-400 border-neutral-700 hover:text-white"
+                                        }`}
+                                    >
+                                        {filterConfig.showFilterLine ? "Visible" : "Hidden"}
+                                    </button>
+                                </div>
+
+                                {/* Active Filter Tags List */}
+                                <div className="space-y-3">
+                                    <h4 className="text-xs font-bold text-neutral-300 uppercase tracking-wider">
+                                        Active Filter Tags ({filterConfig.filterTags.length})
+                                    </h4>
+
+                                    <div className="flex flex-wrap gap-2">
+                                        {filterConfig.filterTags.map((tag) => (
+                                            <div
+                                                key={tag}
+                                                className="px-3 py-1.5 bg-[#181818] border border-[#2b2b2b] rounded-xl text-xs font-bold text-white flex items-center gap-2"
+                                            >
+                                                <span>{tag}</span>
+                                                {tag !== "All" && (
+                                                    <button
+                                                        onClick={() => {
+                                                            setFilterConfig(prev => ({
+                                                                ...prev,
+                                                                filterTags: prev.filterTags.filter(t => t !== tag)
+                                                            }));
+                                                            showToast(`✓ Tag "${tag}" deleted.`);
+                                                        }}
+                                                        className="text-neutral-500 hover:text-red-400 cursor-pointer"
+                                                        title="Delete Tag"
+                                                    >
+                                                        <X className="w-3.5 h-3.5" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Add New Filter Tag Form */}
+                                <form
+                                    onSubmit={(e) => {
+                                        e.preventDefault();
+                                        const t = newTagInput.trim();
+                                        if (!t) return;
+                                        if (filterConfig.filterTags.includes(t)) {
+                                            alert("Tag already exists.");
+                                            return;
+                                        }
+                                        setFilterConfig(prev => ({
+                                            ...prev,
+                                            filterTags: [...prev.filterTags, t]
+                                        }));
+                                        setNewTagInput("");
+                                        showToast(`✓ Tag "${t}" added!`);
+                                    }}
+                                    className="flex gap-2 pt-2 border-t border-[#1f1f1f]"
+                                >
+                                    <input
+                                        type="text"
+                                        required
+                                        placeholder="Add new filter tag (e.g. Honeymoon, Luxury)..."
+                                        value={newTagInput}
+                                        onChange={(e) => setNewTagInput(e.target.value)}
+                                        className="flex-1 px-3.5 py-2.5 bg-[#141414] border border-[#282828] rounded-xl text-xs text-white font-mono placeholder:text-neutral-600 focus:outline-none focus:border-indigo-500"
+                                    />
+                                    <button
+                                        type="submit"
+                                        className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl uppercase tracking-wider cursor-pointer"
+                                    >
+                                        Add Tag
+                                    </button>
+                                </form>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

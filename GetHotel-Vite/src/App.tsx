@@ -65,6 +65,7 @@ const PartnerLayout = lazy(() => import("./components/layout/PartnerLayout"));
 const SuperAdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const AdminHotelDetails = lazy(() => import("./pages/admin/AdminHotelDetails"));
 const AdminPackages = lazy(() => import("./pages/admin/AdminPackages"));
+const AdminTourPackages = lazy(() => import("./pages/admin/AdminTourPackages"));
 const AdminHotelImporter = lazy(() => import("./pages/admin/AdminHotelImporter").then(m => ({ default: m.AdminHotelImporter })));
 
 
@@ -202,9 +203,9 @@ export default function App() {
                         
                         <Route path="admin/super" element={<AdminLayout />}>
                           <Route index element={<SuperAdminDashboard />} />
-                          <Route path="tour-packages" element={<AdminPackages />} />
+                          <Route path="tour-packages" element={<AdminTourPackages />} />
                           <Route path="hotel-importer" element={<AdminHotelImporter />} />
-                          <Route path="packages" element={<AdminPackages />} />
+                          <Route path="packages" element={<AdminTourPackages />} />
                           <Route path="ai-chats" element={<SuperAdminDashboard />} />
                           <Route path="requests" element={<SuperAdminDashboard />} />
                           <Route path="controlhub" element={<SuperAdminDashboard />} />

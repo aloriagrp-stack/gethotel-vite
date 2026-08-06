@@ -164,6 +164,34 @@ export default function TourPackages() {
         return saved ? JSON.parse(saved) : BANNER_IMAGES;
     });
 
+    const [destinationStories, setDestinationStories] = useState<any[]>(() => {
+        const saved = localStorage.getItem("ghs_admin_tour_destinations");
+        return saved ? JSON.parse(saved) : DESTINATION_STORIES;
+    });
+
+    const [filterConfig, setFilterConfig] = useState<{ showFilterLine: boolean; filterTags: string[] }>(() => {
+        const saved = localStorage.getItem("ghs_admin_tour_filter_config");
+        return saved ? JSON.parse(saved) : { showFilterLine: true, filterTags: ["All", "Bestseller", "Trending", "Super Saver", "Top Rated"] };
+    });
+
+    // Listen to live settings changes from Super Admin
+    useEffect(() => {
+        const loadSettings = () => {
+            const savedDest = localStorage.getItem("ghs_admin_tour_destinations");
+            if (savedDest) setDestinationStories(JSON.parse(savedDest));
+
+            const savedFilter = localStorage.getItem("ghs_admin_tour_filter_config");
+            if (savedFilter) setFilterConfig(JSON.parse(savedFilter));
+        };
+
+        window.addEventListener("ghs_tour_settings_updated", loadSettings);
+        window.addEventListener("storage", loadSettings);
+        return () => {
+            window.removeEventListener("ghs_tour_settings_updated", loadSettings);
+            window.removeEventListener("storage", loadSettings);
+        };
+    }, []);
+
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedDestination, setSelectedDestination] = useState("All");
     const [selectedFilterTag, setSelectedFilterTag] = useState("All");
@@ -336,63 +364,40 @@ export default function TourPackages() {
                     </div>
                 )}
 
-                {/* 2. MINIMAL SEARCH & INSTAGRAM-STYLE DESTINATION STORY FILTERS (Frameless Boxless Layout) */}
-                <div className="space-y-4 py-2">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div className="space-y-0.5">
-                            <h2 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-                                <MapPin className="w-5 h-5 text-blue-600" />
-                                <span>Explore Popular Destinations</span>
-                            </h2>
-                            <p className="text-xs text-slate-500 font-medium">Select a destination or search to filter tour packages</p>
-                        </div>
-
-                        {/* Minimal Search Bar */}
-                        <div className="relative w-full md:w-80">
-                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                            <input
-                                type="text"
-                                placeholder="Search Goa, Kashmir, Jaipur..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-10 pr-9 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600 shadow-sm transition-all"
-                            />
-                            {searchQuery && (
-                                <button
-                                    onClick={() => setSearchQuery("")}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
-                                >
-                                    <X className="w-3.5 h-3.5" />
-                                </button>
-                            )}
-                        </div>
+                {/* 2. INSTAGRAM-STYLE DESTINATION STORY FILTERS */}
+                <div className="space-y-5 py-3">
+                    <div className="space-y-1">
+                        <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
+                            Explore Popular Destinations
+                        </h2>
+                        <p className="text-sm sm:text-base text-slate-500 font-medium">Select a destination to filter tour packages</p>
                     </div>
 
-                    {/* Circular Destination Story Pills */}
-                    <div className="flex items-center gap-4 overflow-x-auto no-scrollbar py-1">
-                        {DESTINATION_STORIES.map((item) => {
+                    {/* Circular Destination Story Cards (Large & Prominent) */}
+                    <div className="flex items-center gap-5 sm:gap-6 overflow-x-auto no-scrollbar py-2">
+                        {destinationStories.map((item) => {
                             const isSelected = selectedDestination === item.name;
                             return (
                                 <button
-                                    key={item.name}
+                                    key={item.id || item.name}
                                     onClick={() => setSelectedDestination(item.name)}
-                                    className="flex flex-col items-center gap-1.5 group shrink-0 cursor-pointer"
+                                    className="flex flex-col items-center gap-2 group shrink-0 cursor-pointer"
                                 >
-                                    <div className={`p-0.5 rounded-full transition-all ${
+                                    <div className={`p-1 rounded-full transition-all duration-300 ${
                                         isSelected
-                                            ? "bg-gradient-to-tr from-blue-600 via-indigo-500 to-sky-400 scale-105 shadow-md ring-2 ring-blue-500/20"
-                                            : "bg-slate-200 group-hover:bg-blue-400"
+                                            ? "bg-gradient-to-tr from-blue-500 via-indigo-600 to-sky-400 scale-105 shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_0_20px_rgba(59,130,246,0.6)] ring-4 ring-sky-400/40"
+                                            : "bg-slate-200 group-hover:bg-blue-500 group-hover:scale-105"
                                     }`}>
-                                        <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-white bg-white shadow-xs">
+                                        <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full overflow-hidden border-3 border-white bg-white shadow-sm">
                                             <img
                                                 src={item.image}
                                                 alt={item.name}
-                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                                             />
                                         </div>
                                     </div>
-                                    <span className={`text-xs font-bold ${
-                                        isSelected ? "text-blue-600 font-extrabold" : "text-slate-700"
+                                    <span className={`text-sm sm:text-base font-bold transition-colors ${
+                                        isSelected ? "text-blue-600 font-extrabold" : "text-slate-700 group-hover:text-blue-600"
                                     }`}>
                                         {item.name}
                                     </span>
@@ -401,26 +406,28 @@ export default function TourPackages() {
                         })}
                     </div>
 
-                    {/* Quick Filter Tag Badges */}
-                    <div className="flex items-center gap-2 pt-2 border-t border-slate-200/60 flex-wrap">
-                        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1 mr-1">
-                            <Filter className="w-3.5 h-3.5 text-slate-400" />
-                            <span>Filter Tag:</span>
-                        </span>
-                        {["All", "Bestseller", "Trending", "Super Saver", "Top Rated"].map((tag) => (
-                            <button
-                                key={tag}
-                                onClick={() => setSelectedFilterTag(tag)}
-                                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                                    selectedFilterTag === tag
-                                        ? "bg-blue-600 text-white shadow-sm"
-                                        : "bg-white border border-slate-200 hover:bg-slate-100 text-slate-600"
-                                }`}
-                            >
-                                {tag}
-                            </button>
-                        ))}
-                    </div>
+                    {/* Quick Filter Tag Badges (Controlled by Super Admin Settings) */}
+                    {filterConfig.showFilterLine && Array.isArray(filterConfig.filterTags) && filterConfig.filterTags.length > 0 && (
+                        <div className="flex items-center gap-2 pt-2 border-t border-slate-200/60 flex-wrap">
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1 mr-1">
+                                <Filter className="w-3.5 h-3.5 text-slate-400" />
+                                <span>Filter Tag:</span>
+                            </span>
+                            {filterConfig.filterTags.map((tag) => (
+                                <button
+                                    key={tag}
+                                    onClick={() => setSelectedFilterTag(tag)}
+                                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                                        selectedFilterTag === tag
+                                            ? "bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-500 text-white shadow-[inset_0_1px_2px_rgba(255,255,255,0.6),0_4px_15px_rgba(37,99,235,0.4)] border border-white/30 backdrop-blur-xl"
+                                            : "bg-white border border-slate-200 hover:bg-slate-100 text-slate-600"
+                                    }`}
+                                >
+                                    {tag}
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 {/* 3. AESTHETIC TOUR PACKAGE CARDS (3-COLUMN LUXURY GRID) */}
@@ -468,145 +475,117 @@ export default function TourPackages() {
                                 const isWishlisted = Boolean(wishlist[pkg.id]);
 
                                 return (
-                                    <div
+                                    <Link
                                         key={pkg.id}
-                                        className="group bg-white rounded-3xl border border-slate-200/90 hover:border-blue-500/40 shadow-sm hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-500 overflow-hidden flex flex-col justify-between"
+                                        to={`/packages/${packageSlug}`}
+                                        className="group relative rounded-3xl overflow-hidden aspect-[4/5] sm:aspect-[3/4] border border-slate-200/60 shadow-md hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-500 flex flex-col justify-between bg-slate-950 cursor-pointer"
                                     >
-                                        {/* Cover Image Container */}
-                                        <div className="relative aspect-[16/10] overflow-hidden bg-slate-950">
-                                            <AnimatePresence mode="wait">
-                                                <motion.img
-                                                    key={activeImgIdx}
-                                                    src={displayImg}
-                                                    alt={pkg.title}
-                                                    initial={{ opacity: 0.8 }}
-                                                    animate={{ opacity: 1 }}
-                                                    exit={{ opacity: 0.8 }}
-                                                    transition={{ duration: 0.3 }}
-                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                                                />
-                                            </AnimatePresence>
+                                        {/* Background Image across entire card */}
+                                        <AnimatePresence mode="wait">
+                                            <motion.img
+                                                key={activeImgIdx}
+                                                src={displayImg}
+                                                alt={pkg.title}
+                                                initial={{ opacity: 0.8 }}
+                                                animate={{ opacity: 1 }}
+                                                exit={{ opacity: 0.8 }}
+                                                transition={{ duration: 0.3 }}
+                                                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 z-0"
+                                            />
+                                        </AnimatePresence>
 
-                                            {/* Gradient Mask for legibility */}
-                                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/50 via-transparent to-black/20 z-10 pointer-events-none" />
-
-                                            {/* Top Left Badge: Vibrant Gradient Pill */}
-                                            <span className="absolute top-3 left-3 px-3 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[10px] font-black uppercase tracking-wider rounded-xl border border-white/20 shadow-md z-20">
+                                        {/* Top Overlay Controls: Badge, Rating & Wishlist */}
+                                        <div className="relative z-20 p-4 flex items-center justify-between gap-2">
+                                            {/* Top Left Badge: Liquid Glass Sheen */}
+                                            <span className="px-3.5 py-1.5 bg-gradient-to-r from-blue-600/90 via-indigo-600/90 to-sky-500/90 backdrop-blur-2xl text-white text-[10px] font-black uppercase tracking-wider rounded-2xl border border-white/40 shadow-[inset_0_1px_2px_rgba(255,255,255,0.7),0_4px_15px_rgba(37,99,235,0.4)]">
                                                 {pkg.badge || "Bestseller"}
                                             </span>
 
-                                            {/* Top Right Wishlist & Rating */}
-                                            <div className="absolute top-3 right-3 flex items-center gap-1.5 z-20">
-                                                {/* Rating Pill */}
-                                                <div className="px-2.5 py-1 bg-slate-950/75 backdrop-blur-md text-white text-xs font-bold rounded-xl border border-white/20 shadow-md flex items-center gap-1">
+                                            {/* Top Right Rating & Wishlist */}
+                                            <div className="flex items-center gap-2">
+                                                <div className="px-3 py-1 bg-slate-950/75 backdrop-blur-md text-white text-xs font-extrabold rounded-2xl border border-white/20 shadow-lg flex items-center gap-1">
                                                     <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                                                     <span>{pkg.rating || 4.8}</span>
                                                     <span className="text-[10px] text-slate-300">({pkg.reviewsCount || 45})</span>
                                                 </div>
 
-                                                {/* Wishlist Button */}
                                                 <button
                                                     onClick={(e) => toggleWishlist(e, pkg.id)}
-                                                    className="w-8 h-8 rounded-xl bg-slate-950/75 backdrop-blur-md text-white flex items-center justify-center border border-white/20 shadow-md hover:bg-white hover:text-red-500 transition-all cursor-pointer"
+                                                    className="w-9 h-9 rounded-2xl bg-slate-950/75 backdrop-blur-md text-white flex items-center justify-center border border-white/20 shadow-lg hover:bg-white hover:text-red-500 transition-all cursor-pointer"
                                                 >
                                                     <Heart className={`w-4 h-4 transition-colors ${isWishlisted ? "fill-red-500 text-red-500" : ""}`} />
                                                 </button>
                                             </div>
-
-                                            {/* Multi-Photo Swiper Arrows & Photo Counter (if gallery has > 1 photos) */}
-                                            {photosList.length > 1 && (
-                                                <>
-                                                    <button
-                                                        onClick={(e) => handlePrevImage(e, pkg.id, photosList.length)}
-                                                        className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-slate-950/60 text-white backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 hover:bg-blue-600 cursor-pointer"
-                                                    >
-                                                        <ChevronLeft className="w-4 h-4" />
-                                                    </button>
-                                                    <button
-                                                        onClick={(e) => handleNextImage(e, pkg.id, photosList.length)}
-                                                        className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-slate-950/60 text-white backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 hover:bg-blue-600 cursor-pointer"
-                                                    >
-                                                        <ChevronRight className="w-4 h-4" />
-                                                    </button>
-
-                                                    <div className="absolute bottom-2.5 right-3 z-20 px-2 py-0.5 bg-slate-950/70 backdrop-blur-md text-white text-[10px] font-bold rounded-md border border-white/10 flex items-center gap-1">
-                                                        <ImageIcon className="w-3 h-3 text-sky-400" />
-                                                        <span>{activeImgIdx + 1}/{photosList.length}</span>
-                                                    </div>
-                                                </>
-                                            )}
                                         </div>
 
-                                        {/* Card Body */}
-                                        <div className="p-5 sm:p-6 space-y-4 flex-1 flex flex-col justify-between">
-                                            <div className="space-y-2">
-                                                {/* Destination Header */}
-                                                <div className="flex items-center gap-1.5 text-xs text-blue-600 font-extrabold uppercase tracking-wider">
-                                                    <MapPin className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                                                    <span className="line-clamp-1">{pkg.destination}</span>
+                                        {/* Gallery Navigation Arrows */}
+                                        {photosList.length > 1 && (
+                                            <>
+                                                <button
+                                                    onClick={(e) => handlePrevImage(e, pkg.id, photosList.length)}
+                                                    className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-950/70 text-white backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 hover:bg-blue-600 cursor-pointer border border-white/20"
+                                                >
+                                                    <ChevronLeft className="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    onClick={(e) => handleNextImage(e, pkg.id, photosList.length)}
+                                                    className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-950/70 text-white backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 hover:bg-blue-600 cursor-pointer border border-white/20"
+                                                >
+                                                    <ChevronRight className="w-4 h-4" />
+                                                </button>
+                                            </>
+                                        )}
+
+                                        {/* Floating Glassmorphism Pill Tab at Card Bottom (Bright White Liquid Glass) */}
+                                        <div className="relative z-20 m-3 sm:m-4 p-4 sm:p-5 rounded-[28px] bg-white/30 backdrop-blur-2xl border border-white/70 shadow-[inset_0_1px_2px_rgba(255,255,255,0.9),0_12px_40px_rgba(0,0,0,0.18)] space-y-3 group-hover:bg-white/45 group-hover:border-white transition-all duration-300">
+                                            {/* Destination & Title */}
+                                            <div className="space-y-1">
+                                                <div className="flex items-center justify-between text-[11px] font-extrabold uppercase tracking-wider text-blue-800">
+                                                    <div className="flex items-center gap-1.5 line-clamp-1">
+                                                        <MapPin className="w-3.5 h-3.5 text-blue-700 shrink-0" />
+                                                        <span>{pkg.destination}</span>
+                                                    </div>
+                                                    {pkg.discountPercent && (
+                                                        <span className="px-2 py-0.5 bg-emerald-600 text-white border border-white/50 rounded-lg text-[9px] font-black shadow-xs">
+                                                            {pkg.discountPercent}
+                                                        </span>
+                                                    )}
                                                 </div>
 
-                                                {/* Package Title */}
-                                                <h3 className="font-black text-base sm:text-lg text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-2 leading-snug tracking-tight">
+                                                <h3 className="font-black text-base sm:text-lg text-slate-950 leading-tight line-clamp-2 tracking-tight group-hover:text-blue-900 transition-colors">
                                                     {pkg.title}
                                                 </h3>
-
-                                                {/* Soft Amenity Spec Chips */}
-                                                <div className="pt-2 flex flex-wrap gap-2 text-[11px] font-bold">
-                                                    <span className="px-2.5 py-1 bg-sky-50 text-sky-800 border border-sky-100 rounded-lg flex items-center gap-1">
-                                                        <Clock className="w-3 h-3 text-sky-600" />
-                                                        {pkg.duration}
-                                                    </span>
-
-                                                    {pkg.includedStay && (
-                                                        <span className="px-2.5 py-1 bg-indigo-50 text-indigo-800 border border-indigo-100 rounded-lg flex items-center gap-1 line-clamp-1">
-                                                            <Hotel className="w-3 h-3 text-indigo-600" />
-                                                            {pkg.includedStay}
-                                                        </span>
-                                                    )}
-
-                                                    {pkg.transport && (
-                                                        <span className="px-2.5 py-1 bg-emerald-50 text-emerald-800 border border-emerald-100 rounded-lg flex items-center gap-1 line-clamp-1">
-                                                            <Car className="w-3 h-3 text-emerald-600" />
-                                                            {pkg.transport}
-                                                        </span>
-                                                    )}
-                                                </div>
                                             </div>
 
-                                            {/* Footer Price & Action */}
-                                            <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
-                                                <div>
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-xl font-black text-slate-900 tracking-tight">
-                                                            ₹{pkg.price?.toLocaleString("en-IN")}
-                                                        </span>
-                                                        {pkg.originalPrice && pkg.originalPrice > pkg.price && (
-                                                            <span className="text-xs text-slate-400 line-through font-semibold">
-                                                                ₹{pkg.originalPrice?.toLocaleString("en-IN")}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    <div className="flex items-center gap-1.5 mt-0.5">
-                                                        <span className="text-[10px] text-slate-400 font-semibold">Per person • Taxes included</span>
-                                                        {pkg.discountPercent && (
-                                                            <span className="text-[9px] font-black text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded">
-                                                                {pkg.discountPercent}
-                                                            </span>
-                                                        )}
-                                                    </div>
+                                            {/* Duration & Price Footer Row */}
+                                            <div className="pt-2.5 border-t border-slate-900/10 flex items-center justify-between gap-3">
+                                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-950/85 backdrop-blur-md rounded-xl text-xs font-extrabold text-white border border-slate-800 shadow-xs">
+                                                    <Clock className="w-3.5 h-3.5 text-sky-300 shrink-0" />
+                                                    <span>{pkg.duration}</span>
                                                 </div>
 
-                                                <Link
-                                                    to={`/packages/${packageSlug}`}
-                                                    className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-md hover:shadow-lg transition-all flex items-center gap-1.5 group-hover:translate-x-0.5 cursor-pointer shrink-0"
-                                                >
-                                                    <span>Explore</span>
-                                                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                                                </Link>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="text-right">
+                                                        <div className="flex items-center gap-1.5">
+                                                            <span className="text-lg sm:text-xl font-black text-slate-950 tracking-tight">
+                                                                ₹{pkg.price?.toLocaleString("en-IN")}
+                                                            </span>
+                                                            {pkg.originalPrice && pkg.originalPrice > pkg.price && (
+                                                                <span className="text-xs text-slate-600 line-through font-semibold">
+                                                                    ₹{pkg.originalPrice?.toLocaleString("en-IN")}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Liquid Glass Blue Arrow Button */}
+                                                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 via-indigo-600 to-sky-500 border border-white/60 text-white flex items-center justify-center shrink-0 shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_4px_15px_rgba(37,99,235,0.5)] group-hover:scale-110 group-hover:shadow-[inset_0_1px_2px_rgba(255,255,255,0.9),0_0_25px_rgba(59,130,246,0.8)] transition-all">
+                                                        <ArrowRight className="w-4 h-4" />
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    </Link>
                                 );
                             })}
                         </div>

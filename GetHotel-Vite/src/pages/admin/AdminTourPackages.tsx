@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import {
     Palmtree, Plus, Trash2, Edit, Save, X, Search, MapPin,
-    Clock, Check, Image as ImageIcon, Star, CheckCircle2, RefreshCw, AlertCircle
+    Clock, Check, Image as ImageIcon, Star, CheckCircle2, RefreshCw, AlertCircle,
+    Eye, EyeOff, Tag, Sliders, CircleDot, Layers
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -81,23 +82,64 @@ const INITIAL_BANNERS = [
     }
 ];
 
+const INITIAL_DESTINATIONS = [
+    { id: "dest-1", name: "All", image: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=200&q=80" },
+    { id: "dest-2", name: "Goa", image: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=200&q=80" },
+    { id: "dest-3", name: "Rajasthan", image: "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=200&q=80" },
+    { id: "dest-4", name: "Kashmir", image: "https://images.unsplash.com/photo-1566837945700-30057527ade0?auto=format&fit=crop&w=200&q=80" },
+    { id: "dest-5", name: "Manali", image: "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=200&q=80" },
+    { id: "dest-6", name: "Kerala", image: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=200&q=80" },
+    { id: "dest-7", name: "Ladakh", image: "https://images.unsplash.com/photo-1581793745862-99fde7fa73d2?auto=format&fit=crop&w=200&q=80" }
+];
+
+const INITIAL_FILTER_CONFIG = {
+    showFilterLine: true,
+    filterTags: ["All", "Bestseller", "Trending", "Super Saver", "Top Rated"]
+};
+
 export default function AdminTourPackages() {
+    // Active Management Sub-Tab
+    const [subTab, setSubTab] = useState<"packages" | "banners" | "destinations" | "filters">("packages");
+
+    // Packages State
     const [packages, setPackages] = useState<any[]>(() => {
         const saved = localStorage.getItem("ghs_admin_tour_packages");
         return saved ? JSON.parse(saved) : INITIAL_PACKAGES;
     });
 
+    // Hero Banners State
     const [banners, setBanners] = useState<any[]>(() => {
         const saved = localStorage.getItem("ghs_admin_tour_banners");
         return saved ? JSON.parse(saved) : INITIAL_BANNERS;
     });
 
+    // Destination Circle Cards State
+    const [destinations, setDestinations] = useState<any[]>(() => {
+        const saved = localStorage.getItem("ghs_admin_tour_destinations");
+        return saved ? JSON.parse(saved) : INITIAL_DESTINATIONS;
+    });
+
+    // Filter Line Config State
+    const [filterConfig, setFilterConfig] = useState<{ showFilterLine: boolean; filterTags: string[] }>(() => {
+        const saved = localStorage.getItem("ghs_admin_tour_filter_config");
+        return saved ? JSON.parse(saved) : INITIAL_FILTER_CONFIG;
+    });
+
+    // UI & Modal States
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [editingPackage, setEditingPackage] = useState<any>(null);
     const [newBannerUrl, setNewBannerUrl] = useState("");
     const [statusMessage, setStatusMessage] = useState("");
 
-    // Full Form inputs for tour package creation/edit
+    // Destination Circle Edit / Create Modal State
+    const [isDestModalOpen, setIsDestModalOpen] = useState(false);
+    const [editingDest, setEditingDest] = useState<any>(null);
+    const [destFormData, setDestFormData] = useState({ name: "", image: "" });
+
+    // New Filter Tag State
+    const [newTagInput, setNewTagInput] = useState("");
+
+    // Form inputs for tour package creation/edit
     const [formData, setFormData] = useState({
         title: "",
         destination: "",
@@ -113,19 +155,33 @@ export default function AdminTourPackages() {
         itinerary: ""
     });
 
+    // Persistence Effects
     useEffect(() => {
         localStorage.setItem("ghs_admin_tour_packages", JSON.stringify(packages));
+        window.dispatchEvent(new Event("ghs_tour_settings_updated"));
     }, [packages]);
 
     useEffect(() => {
         localStorage.setItem("ghs_admin_tour_banners", JSON.stringify(banners));
+        window.dispatchEvent(new Event("ghs_tour_settings_updated"));
     }, [banners]);
+
+    useEffect(() => {
+        localStorage.setItem("ghs_admin_tour_destinations", JSON.stringify(destinations));
+        window.dispatchEvent(new Event("ghs_tour_settings_updated"));
+    }, [destinations]);
+
+    useEffect(() => {
+        localStorage.setItem("ghs_admin_tour_filter_config", JSON.stringify(filterConfig));
+        window.dispatchEvent(new Event("ghs_tour_settings_updated"));
+    }, [filterConfig]);
 
     const showNotification = (msg: string) => {
         setStatusMessage(msg);
         setTimeout(() => setStatusMessage(""), 3000);
     };
 
+    // ─── TOUR PACKAGES HANDLERS ──────────────────────────────────────────────
     const handleSavePackage = (e: React.FormEvent) => {
         e.preventDefault();
         const generatedSlug = formData.title
@@ -134,7 +190,6 @@ export default function AdminTourPackages() {
             .trim()
             .replace(/\s+/g, "-");
 
-        // Format inclusions as array
         const formattedInclusions = typeof formData.inclusions === "string"
             ? formData.inclusions.split("\n").filter(i => i.trim().length > 0)
             : formData.inclusions;
@@ -175,32 +230,6 @@ export default function AdminTourPackages() {
         }
     };
 
-    const handleAddBanner = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!newBannerUrl.trim()) return;
-        if (banners.length >= 5) {
-            alert("Maximum 5 hero banner images allowed.");
-            return;
-        }
-        const newB = {
-            id: `b-${Date.now()}`,
-            image: newBannerUrl.trim(),
-            title: "Tour Package Hero Banner"
-        };
-        setBanners(prev => [...prev, newB]);
-        setNewBannerUrl("");
-        showNotification("Hero banner image added!");
-    };
-
-    const handleDeleteBanner = (id: string) => {
-        if (banners.length <= 1) {
-            alert("At least 1 hero banner image is required.");
-            return;
-        }
-        setBanners(prev => prev.filter(b => b.id !== id));
-        showNotification("Hero banner image removed.");
-    };
-
     const resetForm = () => {
         setFormData({
             title: "",
@@ -237,31 +266,147 @@ export default function AdminTourPackages() {
         setIsAddModalOpen(true);
     };
 
+    // ─── HERO BANNERS HANDLERS ───────────────────────────────────────────────
+    const handleAddBanner = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newBannerUrl.trim()) return;
+        if (banners.length >= 5) {
+            alert("Maximum 5 hero banner images allowed.");
+            return;
+        }
+        const newB = {
+            id: `b-${Date.now()}`,
+            image: newBannerUrl.trim(),
+            title: "Tour Package Hero Banner"
+        };
+        setBanners(prev => [...prev, newB]);
+        setNewBannerUrl("");
+        showNotification("Hero banner image added!");
+    };
+
+    const handleDeleteBanner = (id: string) => {
+        if (banners.length <= 1) {
+            alert("At least 1 hero banner image is required.");
+            return;
+        }
+        setBanners(prev => prev.filter(b => b.id !== id));
+        showNotification("Hero banner image removed.");
+    };
+
+    // ─── DESTINATION STORY CIRCLES HANDLERS ──────────────────────────────────
+    const handleSaveDestination = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!destFormData.name.trim() || !destFormData.image.trim()) return;
+
+        if (editingDest) {
+            setDestinations(prev => prev.map(d => d.id === editingDest.id ? {
+                ...d,
+                name: destFormData.name.trim(),
+                image: destFormData.image.trim()
+            } : d));
+            showNotification(`Destination "${destFormData.name}" updated!`);
+        } else {
+            const newDest = {
+                id: `dest-${Date.now()}`,
+                name: destFormData.name.trim(),
+                image: destFormData.image.trim()
+            };
+            setDestinations(prev => [...prev, newDest]);
+            showNotification(`New Destination "${destFormData.name}" added!`);
+        }
+        setIsDestModalOpen(false);
+        setEditingDest(null);
+        setDestFormData({ name: "", image: "" });
+    };
+
+    const openEditDestModal = (dest: any) => {
+        setEditingDest(dest);
+        setDestFormData({ name: dest.name, image: dest.image });
+        setIsDestModalOpen(true);
+    };
+
+    const handleDeleteDestination = (id: string, name: string) => {
+        if (confirm(`Delete destination story "${name}"?`)) {
+            setDestinations(prev => prev.filter(d => d.id !== id));
+            showNotification(`Destination "${name}" deleted.`);
+        }
+    };
+
+    // ─── FILTER LINE CONFIG HANDLERS ──────────────────────────────────────────
+    const toggleFilterLineVisibility = () => {
+        setFilterConfig(prev => ({ ...prev, showFilterLine: !prev.showFilterLine }));
+        showNotification(filterConfig.showFilterLine ? "Filter tag line hidden." : "Filter tag line is now visible!");
+    };
+
+    const handleAddFilterTag = (e: React.FormEvent) => {
+        e.preventDefault();
+        const tag = newTagInput.trim();
+        if (!tag) return;
+        if (filterConfig.filterTags.includes(tag)) {
+            alert("This filter tag already exists.");
+            return;
+        }
+        setFilterConfig(prev => ({
+            ...prev,
+            filterTags: [...prev.filterTags, tag]
+        }));
+        setNewTagInput("");
+        showNotification(`Filter tag "${tag}" added!`);
+    };
+
+    const handleDeleteFilterTag = (tagToDelete: string) => {
+        if (tagToDelete === "All") {
+            alert('The "All" filter tag cannot be deleted.');
+            return;
+        }
+        setFilterConfig(prev => ({
+            ...prev,
+            filterTags: prev.filterTags.filter(t => t !== tagToDelete)
+        }));
+        showNotification(`Filter tag "${tagToDelete}" deleted.`);
+    };
+
     return (
         <div className="space-y-8 pb-12 font-sans text-neutral-100">
-            {/* Top Bar - Pure Black Skeuomorphic */}
+            {/* Top Header Bar */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#0c0c0c] p-6 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)]">
                 <div>
                     <h2 className="text-2xl font-black text-white flex items-center gap-2 tracking-tight">
                         <Palmtree className="w-6 h-6 text-emerald-400" />
-                        Super Admin Tour Packages Manager
+                        Super Admin Tour Packages & Settings Manager
                     </h2>
                     <p className="text-xs text-neutral-400 mt-1 font-semibold">
-                        Create, edit & manage all tour packages, prices, overview, itinerary & hero banners live.
+                        Manage packages, hero banners, popular destination circles & filter line settings live.
                     </p>
                 </div>
 
-                <button
-                    onClick={() => {
-                        resetForm();
-                        setEditingPackage(null);
-                        setIsAddModalOpen(true);
-                    }}
-                    className="px-5 py-3 bg-neutral-100 hover:bg-white text-black font-bold text-xs rounded-xl flex items-center gap-2 transition-all cursor-pointer shadow-lg shrink-0 uppercase tracking-wider"
-                >
-                    <Plus className="w-4 h-4 text-black" />
-                    <span>Add New Tour Package</span>
-                </button>
+                {subTab === "packages" && (
+                    <button
+                        onClick={() => {
+                            resetForm();
+                            setEditingPackage(null);
+                            setIsAddModalOpen(true);
+                        }}
+                        className="px-5 py-3 bg-neutral-100 hover:bg-white text-black font-bold text-xs rounded-xl flex items-center gap-2 transition-all cursor-pointer shadow-lg shrink-0 uppercase tracking-wider"
+                    >
+                        <Plus className="w-4 h-4 text-black" />
+                        <span>Add New Tour Package</span>
+                    </button>
+                )}
+
+                {subTab === "destinations" && (
+                    <button
+                        onClick={() => {
+                            setEditingDest(null);
+                            setDestFormData({ name: "", image: "" });
+                            setIsDestModalOpen(true);
+                        }}
+                        className="px-5 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl flex items-center gap-2 transition-all cursor-pointer shadow-lg shrink-0 uppercase tracking-wider"
+                    >
+                        <Plus className="w-4 h-4 text-white" />
+                        <span>Add Destination Circle</span>
+                    </button>
+                )}
             </div>
 
             {/* Success Status Toast */}
@@ -272,9 +417,120 @@ export default function AdminTourPackages() {
                 </div>
             )}
 
-            {/* SECTION 1: HERO BANNER SLIDER MANAGEMENT */}
-            <div className="bg-[#0c0c0c] p-6 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] space-y-4">
-                <div className="flex items-center justify-between">
+            {/* MANAGEMENT SUB-TAB NAVIGATION BAR */}
+            <div className="flex items-center gap-2 bg-[#0c0c0c] p-2 rounded-2xl border border-[#1c1c1c] overflow-x-auto no-scrollbar">
+                <button
+                    onClick={() => setSubTab("packages")}
+                    className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
+                        subTab === "packages"
+                            ? "bg-neutral-100 text-black shadow-md"
+                            : "text-neutral-400 hover:text-white hover:bg-[#181818]"
+                    }`}
+                >
+                    <Palmtree className="w-4 h-4" />
+                    <span>Tour Packages ({packages.length})</span>
+                </button>
+
+                <button
+                    onClick={() => setSubTab("banners")}
+                    className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
+                        subTab === "banners"
+                            ? "bg-neutral-100 text-black shadow-md"
+                            : "text-neutral-400 hover:text-white hover:bg-[#181818]"
+                    }`}
+                >
+                    <ImageIcon className="w-4 h-4" />
+                    <span>Hero Banners ({banners.length})</span>
+                </button>
+
+                <button
+                    onClick={() => setSubTab("destinations")}
+                    className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
+                        subTab === "destinations"
+                            ? "bg-neutral-100 text-black shadow-md"
+                            : "text-neutral-400 hover:text-white hover:bg-[#181818]"
+                    }`}
+                >
+                    <CircleDot className="w-4 h-4" />
+                    <span>Destination Circles ({destinations.length})</span>
+                </button>
+
+                <button
+                    onClick={() => setSubTab("filters")}
+                    className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
+                        subTab === "filters"
+                            ? "bg-neutral-100 text-black shadow-md"
+                            : "text-neutral-400 hover:text-white hover:bg-[#181818]"
+                    }`}
+                >
+                    <Tag className="w-4 h-4" />
+                    <span>Filter Line Settings</span>
+                </button>
+            </div>
+
+            {/* TAB 1: TOUR PACKAGES LIST */}
+            {subTab === "packages" && (
+                <div className="bg-[#0c0c0c] rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] overflow-hidden">
+                    <div className="p-5 border-b border-[#1f1f1f] bg-[#0e0e0e] flex items-center justify-between">
+                        <h3 className="text-base font-bold text-white">
+                            Active Tour Packages ({packages.length})
+                        </h3>
+                    </div>
+
+                    <div className="divide-y divide-[#181818]">
+                        {packages.map((pkg) => (
+                            <div key={pkg.id} className="p-4 flex items-center justify-between gap-4 hover:bg-[#121212] transition-colors">
+                                <div className="flex items-center gap-4 min-w-0">
+                                    <img
+                                        src={pkg.image}
+                                        alt=""
+                                        className="w-16 h-16 rounded-xl object-cover shrink-0 border border-[#282828] shadow-inner"
+                                    />
+                                    <div className="min-w-0">
+                                        <h4 className="text-xs font-bold text-white truncate">{pkg.title}</h4>
+                                        <p className="text-[11px] text-neutral-400 font-medium flex items-center gap-1 mt-0.5">
+                                            <MapPin className="w-3 h-3 text-emerald-400 shrink-0" />
+                                            <span>{pkg.destination}</span>
+                                        </p>
+                                        <div className="flex items-center gap-2 mt-1.5">
+                                            <span className="text-[10px] font-semibold text-neutral-300 bg-[#161616] border border-[#262626] px-2.5 py-0.5 rounded-lg">{pkg.duration}</span>
+                                            <span className="text-[10px] font-bold uppercase text-white bg-neutral-800 border border-neutral-700 px-2.5 py-0.5 rounded-lg">{pkg.badge}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-4 shrink-0">
+                                    <div className="text-right">
+                                        <span className="text-sm font-black text-white block">₹{pkg.price?.toLocaleString()}</span>
+                                        <span className="text-[10px] text-neutral-500 line-through">₹{pkg.originalPrice?.toLocaleString()}</span>
+                                    </div>
+
+                                    <div className="flex items-center gap-1">
+                                        <button
+                                            onClick={() => openEditModal(pkg)}
+                                            className="p-2 text-neutral-300 hover:bg-[#1f1f1f] rounded-lg transition-colors cursor-pointer border border-[#282828]"
+                                            title="Edit Package"
+                                        >
+                                            <Edit className="w-4 h-4" />
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeletePackage(pkg.id)}
+                                            className="p-2 text-red-400 hover:bg-red-950/60 rounded-lg transition-colors cursor-pointer border border-red-900/40"
+                                            title="Delete Package"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* TAB 2: HERO BANNER MANAGEMENT */}
+            {subTab === "banners" && (
+                <div className="bg-[#0c0c0c] p-6 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] space-y-6">
                     <div>
                         <h3 className="text-base font-bold text-white flex items-center gap-2">
                             <ImageIcon className="w-4 h-4 text-emerald-400" />
@@ -282,105 +538,250 @@ export default function AdminTourPackages() {
                         </h3>
                         <p className="text-xs text-neutral-400 mt-0.5">Curved banner images shown at top of `/packages` page.</p>
                     </div>
-                </div>
 
-                {/* Banner Images Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    {banners.map((banner, index) => (
-                        <div key={banner.id} className="relative h-28 rounded-xl overflow-hidden border border-[#262626] group shadow-inner">
-                            <img src={banner.image} alt="" className="w-full h-full object-cover" />
-                            <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2">
-                                <button
-                                    onClick={() => handleDeleteBanner(banner.id)}
-                                    className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-500 transition-colors cursor-pointer shadow-md"
-                                    title="Delete Slide"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
-                            </div>
-                            <span className="absolute bottom-2 left-2 bg-black/90 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-md border border-[#333333]">
-                                Slide #{index + 1}
-                            </span>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Add New Banner Form */}
-                <form onSubmit={handleAddBanner} className="flex gap-2 pt-2">
-                    <input
-                        type="url"
-                        required
-                        placeholder="Paste image URL for new banner slide..."
-                        value={newBannerUrl}
-                        onChange={(e) => setNewBannerUrl(e.target.value)}
-                        className="flex-1 px-4 py-2.5 bg-[#141414] border border-[#282828] rounded-xl text-xs font-medium text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-500 font-mono"
-                    />
-                    <button
-                        type="submit"
-                        className="px-5 py-2.5 bg-neutral-100 hover:bg-white text-black font-bold text-xs rounded-xl transition-all cursor-pointer shrink-0 uppercase tracking-wider"
-                    >
-                        Add Banner
-                    </button>
-                </form>
-            </div>
-
-            {/* SECTION 2: ACTIVE TOUR PACKAGES LIST */}
-            <div className="bg-[#0c0c0c] rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] overflow-hidden">
-                <div className="p-5 border-b border-[#1f1f1f] bg-[#0e0e0e] flex items-center justify-between">
-                    <h3 className="text-base font-bold text-white">
-                        Active Tour Packages ({packages.length})
-                    </h3>
-                </div>
-
-                <div className="divide-y divide-[#181818]">
-                    {packages.map((pkg) => (
-                        <div key={pkg.id} className="p-4 flex items-center justify-between gap-4 hover:bg-[#121212] transition-colors">
-                            <div className="flex items-center gap-4 min-w-0">
-                                <img
-                                    src={pkg.image}
-                                    alt=""
-                                    className="w-16 h-16 rounded-xl object-cover shrink-0 border border-[#282828] shadow-inner"
-                                />
-                                <div className="min-w-0">
-                                    <h4 className="text-xs font-bold text-white truncate">{pkg.title}</h4>
-                                    <p className="text-[11px] text-neutral-400 font-medium flex items-center gap-1 mt-0.5">
-                                        <MapPin className="w-3 h-3 text-emerald-400 shrink-0" />
-                                        <span>{pkg.destination}</span>
-                                    </p>
-                                    <div className="flex items-center gap-2 mt-1.5">
-                                        <span className="text-[10px] font-semibold text-neutral-300 bg-[#161616] border border-[#262626] px-2.5 py-0.5 rounded-lg">{pkg.duration}</span>
-                                        <span className="text-[10px] font-bold uppercase text-white bg-neutral-800 border border-neutral-700 px-2.5 py-0.5 rounded-lg">{pkg.badge}</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-4 shrink-0">
-                                <div className="text-right">
-                                    <span className="text-sm font-black text-white block">₹{pkg.price?.toLocaleString()}</span>
-                                    <span className="text-[10px] text-neutral-500 line-through">₹{pkg.originalPrice?.toLocaleString()}</span>
-                                </div>
-
-                                <div className="flex items-center gap-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        {banners.map((banner, index) => (
+                            <div key={banner.id} className="relative h-32 rounded-xl overflow-hidden border border-[#262626] group shadow-inner">
+                                <img src={banner.image} alt="" className="w-full h-full object-cover" />
+                                <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2">
                                     <button
-                                        onClick={() => openEditModal(pkg)}
-                                        className="p-2 text-neutral-300 hover:bg-[#1f1f1f] rounded-lg transition-colors cursor-pointer border border-[#282828]"
-                                        title="Edit Package"
-                                    >
-                                        <Edit className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                        onClick={() => handleDeletePackage(pkg.id)}
-                                        className="p-2 text-red-400 hover:bg-red-950/60 rounded-lg transition-colors cursor-pointer border border-red-900/40"
-                                        title="Delete Package"
+                                        onClick={() => handleDeleteBanner(banner.id)}
+                                        className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-500 transition-colors cursor-pointer shadow-md"
+                                        title="Delete Slide"
                                     >
                                         <Trash2 className="w-4 h-4" />
                                     </button>
                                 </div>
+                                <span className="absolute bottom-2 left-2 bg-black/90 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-md border border-[#333333]">
+                                    Slide #{index + 1}
+                                </span>
                             </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
+
+                    <form onSubmit={handleAddBanner} className="flex gap-2 pt-2">
+                        <input
+                            type="url"
+                            required
+                            placeholder="Paste image URL for new banner slide..."
+                            value={newBannerUrl}
+                            onChange={(e) => setNewBannerUrl(e.target.value)}
+                            className="flex-1 px-4 py-2.5 bg-[#141414] border border-[#282828] rounded-xl text-xs font-medium text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-500 font-mono"
+                        />
+                        <button
+                            type="submit"
+                            className="px-5 py-2.5 bg-neutral-100 hover:bg-white text-black font-bold text-xs rounded-xl transition-all cursor-pointer shrink-0 uppercase tracking-wider"
+                        >
+                            Add Banner
+                        </button>
+                    </form>
                 </div>
-            </div>
+            )}
+
+            {/* TAB 3: DESTINATION CIRCLES MANAGEMENT */}
+            {subTab === "destinations" && (
+                <div className="bg-[#0c0c0c] p-6 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] space-y-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h3 className="text-base font-bold text-white flex items-center gap-2">
+                                <CircleDot className="w-4 h-4 text-blue-400" />
+                                Popular Destination Story Circles ({destinations.length})
+                            </h3>
+                            <p className="text-xs text-neutral-400 mt-0.5">
+                                Add, edit, or delete circular destination avatars shown on `/packages`.
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Circles Grid */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7 gap-4">
+                        {destinations.map((dest) => (
+                            <div
+                                key={dest.id}
+                                className="bg-[#121212] border border-[#222222] rounded-2xl p-4 flex flex-col items-center gap-3 relative group hover:border-blue-500/50 transition-all"
+                            >
+                                <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-white/20 bg-black shadow-md">
+                                    <img src={dest.image} alt={dest.name} className="w-full h-full object-cover" />
+                                </div>
+
+                                <span className="text-xs font-bold text-white truncate max-w-full">{dest.name}</span>
+
+                                {/* Quick Actions Overlay */}
+                                <div className="flex items-center gap-1.5 mt-1">
+                                    <button
+                                        onClick={() => openEditDestModal(dest)}
+                                        className="p-1.5 bg-[#1f1f1f] text-neutral-300 hover:text-white rounded-lg border border-[#333] transition-colors cursor-pointer"
+                                        title="Edit Destination"
+                                    >
+                                        <Edit className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button
+                                        onClick={() => handleDeleteDestination(dest.id, dest.name)}
+                                        className="p-1.5 bg-red-950/60 text-red-400 hover:text-red-300 rounded-lg border border-red-900/40 transition-colors cursor-pointer"
+                                        title="Delete Destination"
+                                    >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* TAB 4: FILTER LINE SETTINGS */}
+            {subTab === "filters" && (
+                <div className="bg-[#0c0c0c] p-6 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] space-y-6">
+                    <div>
+                        <h3 className="text-base font-bold text-white flex items-center gap-2">
+                            <Tag className="w-4 h-4 text-emerald-400" />
+                            Filter Tag Line Settings
+                        </h3>
+                        <p className="text-xs text-neutral-400 mt-0.5">
+                            Control whether the filter tag line is displayed on `/packages` and manage active filter tags.
+                        </p>
+                    </div>
+
+                    {/* Toggle Visibility Card */}
+                    <div className="p-4 bg-[#121212] border border-[#222] rounded-xl flex items-center justify-between">
+                        <div className="space-y-0.5">
+                            <h4 className="text-xs font-bold text-white flex items-center gap-2">
+                                {filterConfig.showFilterLine ? <Eye className="w-4 h-4 text-emerald-400" /> : <EyeOff className="w-4 h-4 text-neutral-500" />}
+                                <span>Filter Tag Bar Visibility</span>
+                            </h4>
+                            <p className="text-[11px] text-neutral-400">
+                                {filterConfig.showFilterLine ? "Currently VISIBLE on public page." : "Currently HIDDEN from public page."}
+                            </p>
+                        </div>
+
+                        <button
+                            onClick={toggleFilterLineVisibility}
+                            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                                filterConfig.showFilterLine
+                                    ? "bg-emerald-950 text-emerald-300 border-emerald-700/50 hover:bg-emerald-900"
+                                    : "bg-neutral-800 text-neutral-400 border-neutral-700 hover:text-white"
+                            }`}
+                        >
+                            {filterConfig.showFilterLine ? "Visible (Click to Hide)" : "Hidden (Click to Show)"}
+                        </button>
+                    </div>
+
+                    {/* Manage Filter Tags */}
+                    <div className="space-y-3 pt-2 border-t border-[#1f1f1f]">
+                        <h4 className="text-xs font-bold text-neutral-300 uppercase tracking-wider">
+                            Active Filter Tags ({filterConfig.filterTags.length})
+                        </h4>
+
+                        <div className="flex flex-wrap gap-2">
+                            {filterConfig.filterTags.map((tag) => (
+                                <div
+                                    key={tag}
+                                    className="px-3 py-1.5 bg-[#181818] border border-[#2b2b2b] rounded-xl text-xs font-bold text-white flex items-center gap-2 group"
+                                >
+                                    <span>{tag}</span>
+                                    {tag !== "All" && (
+                                        <button
+                                            onClick={() => handleDeleteFilterTag(tag)}
+                                            className="text-neutral-500 hover:text-red-400 transition-colors cursor-pointer"
+                                            title="Delete Filter Tag"
+                                        >
+                                            <X className="w-3.5 h-3.5" />
+                                        </button>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Add Filter Tag Form */}
+                        <form onSubmit={handleAddFilterTag} className="flex gap-2 pt-2">
+                            <input
+                                type="text"
+                                required
+                                placeholder="Type new filter tag name (e.g. Honeymoon, Luxury)..."
+                                value={newTagInput}
+                                onChange={(e) => setNewTagInput(e.target.value)}
+                                className="flex-1 px-4 py-2.5 bg-[#141414] border border-[#282828] rounded-xl text-xs font-medium text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-500 font-mono"
+                            />
+                            <button
+                                type="submit"
+                                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shrink-0 uppercase tracking-wider"
+                            >
+                                Add Filter Tag
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* CREATE / EDIT DESTINATION CIRCLE MODAL */}
+            <AnimatePresence>
+                {isDestModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="bg-[#0c0c0c] rounded-2xl shadow-2xl border border-[#1c1c1c] border-t-[#2d2d2d] w-full max-w-md overflow-hidden text-white"
+                        >
+                            <div className="p-5 bg-[#0e0e0e] border-b border-[#1f1f1f] flex items-center justify-between">
+                                <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                                    {editingDest ? "Edit Destination Circle" : "Add Destination Circle"}
+                                </h3>
+                                <button
+                                    onClick={() => setIsDestModalOpen(false)}
+                                    className="w-7 h-7 rounded-full bg-[#181818] border border-[#2a2a2a] text-neutral-400 hover:text-white flex items-center justify-center cursor-pointer"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
+
+                            <form onSubmit={handleSaveDestination} className="p-5 space-y-4 text-xs font-medium">
+                                <div>
+                                    <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">Destination Name</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        placeholder="e.g. Goa, Manali, Shimla..."
+                                        value={destFormData.name}
+                                        onChange={e => setDestFormData({ ...destFormData, name: e.target.value })}
+                                        className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-white focus:outline-none focus:border-neutral-500 font-mono"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">Thumbnail Image URL</label>
+                                    <input
+                                        type="url"
+                                        required
+                                        placeholder="https://images.unsplash.com/..."
+                                        value={destFormData.image}
+                                        onChange={e => setDestFormData({ ...destFormData, image: e.target.value })}
+                                        className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-white focus:outline-none focus:border-neutral-500 font-mono"
+                                    />
+                                </div>
+
+                                {destFormData.image && (
+                                    <div className="flex flex-col items-center pt-2">
+                                        <span className="text-[10px] text-neutral-400 font-bold mb-1">Preview:</span>
+                                        <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-white/20">
+                                            <img src={destFormData.image} alt="Preview" className="w-full h-full object-cover" />
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="pt-3">
+                                    <button
+                                        type="submit"
+                                        className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-colors cursor-pointer shadow-md"
+                                    >
+                                        {editingDest ? "Update Destination Circle" : "Save Destination Circle"}
+                                    </button>
+                                </div>
+                            </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
 
             {/* FULL EDIT / CREATE TOUR PACKAGE MODAL */}
             <AnimatePresence>

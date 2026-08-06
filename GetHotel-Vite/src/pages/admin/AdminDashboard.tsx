@@ -404,6 +404,7 @@ export default function SuperAdminDashboard() {
 
     const TABS = [
         { id: "overview", label: "Overview", icon: LayoutDashboard },
+        { id: "tour-packages", label: "Tour Packages Manager", icon: Palmtree },
         { id: "users", label: "Users", icon: Users },
         { id: "hotels", label: "Properties", icon: Hotel },
         { id: "promotions", label: "Promotions & Coupons", icon: Percent },
@@ -482,6 +483,7 @@ export default function SuperAdminDashboard() {
                     {activeTab === "multi-room" && <AdminMultiRoomSetup hotels={hotels} />}
                     {activeTab === "addPartner" && <AdminAddPartner hotels={hotels} partners={partners} setPartners={setPartners} />}
                     {activeTab === "ai-copilot" && <AdminAICopilot hotels={hotels} loadingHotels={!loadedSections.hotels} />}
+                    {activeTab === "tour-packages" && <AdminTourPackages />}
                     {(activeTab === "destination-analytics" || activeTab === "destinations") && <AdminDestinationAnalytics />}
 
                     {activeTab === "overview" && (
