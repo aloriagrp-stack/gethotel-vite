@@ -43,49 +43,52 @@ router.get('/trending', getTrendingHotels);
 // Nested routes for coupons
 router.route('/:hotelId/coupons')
     .get(getCoupons)
-    .post(protect, authorize('hotel_admin', 'super_admin'), createCoupon);
+    .post(protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), createCoupon);
 
 router.route('/:hotelId/coupons/:id')
-    .put(protect, authorize('hotel_admin', 'super_admin'), updateCoupon)
-    .patch(protect, authorize('hotel_admin', 'super_admin'), toggleCouponStatus)
-    .delete(protect, authorize('hotel_admin', 'super_admin'), deleteCoupon);
+    .put(protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), updateCoupon)
+    .post(protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), updateCoupon)
+    .patch(protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), toggleCouponStatus)
+    .delete(protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), deleteCoupon);
 
 // Nested routes for staff
 router.route('/:hotelId/staff')
-    .get(protect, authorize('hotel_admin', 'super_admin'), getStaff)
-    .post(protect, authorize('hotel_admin', 'super_admin'), addStaff);
+    .get(protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), getStaff)
+    .post(protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), addStaff);
 
 router.route('/:hotelId/staff/:staffId')
-    .delete(protect, authorize('hotel_admin', 'super_admin'), removeStaff);
+    .delete(protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), removeStaff);
 
 // Nested routes for rooms
 router.route('/:hotelId/rooms')
     .get(getRooms)
-    .post(protect, authorize('hotel_admin', 'super_admin'), addRoom);
+    .post(protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), addRoom);
 
 router.route('/:hotelId/rooms/bulk')
-    .post(protect, authorize('hotel_admin', 'super_admin'), bulkUpdateRooms);
+    .post(protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), bulkUpdateRooms);
 
 router.route('/:hotelId/rooms/:roomId')
-    .put(protect, authorize('hotel_admin', 'super_admin'), updateRoom)
-    .delete(protect, authorize('hotel_admin', 'super_admin'), deleteRoom);
+    .put(protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), updateRoom)
+    .post(protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), updateRoom)
+    .delete(protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), deleteRoom);
 
 router.route('/')
     .get(getHotels)
-    .post(protect, authorize('hotel_admin', 'super_admin'), hotelValidation, createHotel);
+    .post(protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), hotelValidation, createHotel);
 
 router.route('/my-hotels')
-    .get(protect, authorize('hotel_admin', 'super_admin'), getMyHotels);
+    .get(protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), getMyHotels);
 
 router.route('/:id')
     .get(getHotel)
-    .put(protect, authorize('hotel_admin', 'super_admin'), updateHotel)
-    .delete(protect, authorize('hotel_admin', 'super_admin'), deleteHotel);
+    .put(protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), updateHotel)
+    .post(protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), updateHotel)
+    .delete(protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), deleteHotel);
 
 router.route('/:id/reviews')
     .post(protect, createReview);
 
 router.route('/:hotelId/reviews/:reviewId/reply')
-    .post(protect, authorize('hotel_admin', 'super_admin'), replyToReview);
+    .post(protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), replyToReview);
 
 module.exports = router;

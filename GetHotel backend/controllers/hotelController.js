@@ -578,8 +578,8 @@ exports.updateHotel = async (req, res, next) => {
             return res.status(404).json({ success: false, message: 'Hotel not found' });
         }
 
-        // Make sure user is hotel owner or super admin
-        if (hotel.userId !== req.user.id && req.user.role !== 'super_admin') {
+        // Make sure user is hotel owner or super admin / admin / hotel admin
+        if (hotel.userId !== req.user.id && !['super_admin', 'superadmin', 'admin', 'hotel_admin', 'partner'].includes(req.user.role)) {
             return res.status(403).json({ success: false, message: 'Not authorized to update this hotel' });
         }
 
