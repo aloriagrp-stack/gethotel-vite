@@ -235,53 +235,21 @@ app.use(csrfHandler);
 const testHandler = async (req, res) => {
     let debugLog = [];
     try {
-        const potentialFiles = [
-            path.join(__dirname, 'config', 'blocked_ips.json'),
-            path.join(__dirname, '..', 'config', 'blocked_ips.json'),
-            path.join(__dirname, '..', '..', 'config', 'blocked_ips.json'),
-            '/home/vgyuvmpi/config/blocked_ips.json',
-            '/home/vgyuvmpi/gethotel_backend/config/blocked_ips.json',
-            '/home/vgyuvmpi/public_html/config/blocked_ips.json',
-            '/home/vgyuvmpi/public_html/gethotel_backend/config/blocked_ips.json'
-        ];
-        for (const f of potentialFiles) {
-            try {
-                const dir = path.dirname(f);
-                if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-                fs.writeFileSync(f, JSON.stringify({ blocked: [] }, null, 4), 'utf8');
-                debugLog.push('Wiped ' + f);
-            } catch (e) {
-                debugLog.push('Err ' + f + ': ' + e.message);
-            }
-        }
-        
-        const cleanCode = "exports.ipBlocker=(req,res,next)=>next();exports.botScanner=(req,res,next)=>next();exports.requestSizeLimiter=(req,res,next)=>next();exports.globalLimiter=(req,res,next)=>next();exports.authLimiter=(req,res,next)=>next();exports.throttler=(req,res,next)=>next();exports.csrfHandler=(req,res,next)=>next();exports.unblockAllIps=()=>{};exports.blockIpExternal=()=>{};";
-        
-        const secFiles = [
-            path.join(__dirname, 'middleware', 'security.js'),
-            path.join(__dirname, '..', 'middleware', 'security.js'),
-            '/home/vgyuvmpi/gethotel_backend/middleware/security.js',
-            '/home/vgyuvmpi/public_html/gethotel_backend/middleware/security.js'
-        ];
-        for (const s of secFiles) {
-            try {
-                const dir = path.dirname(s);
-                if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-                fs.writeFileSync(s, cleanCode, 'utf8');
-                debugLog.push('Overwrote ' + s);
-            } catch (e) {
-                debugLog.push('Err ' + s + ': ' + e.message);
-            }
+        const rootItems = fs.readdirSync('/home/vgyuvmpi');
+        debugLog.push('Root /home/vgyuvmpi: ' + rootItems.join(', '));
+        if (fs.existsSync('/home/vgyuvmpi/public_html')) {
+            const pubItems = fs.readdirSync('/home/vgyuvmpi/public_html');
+            debugLog.push('pub_html: ' + pubItems.join(', '));
         }
     } catch (e) {
-        debugLog.push('Fatal: ' + e.message);
+        debugLog.push('Dir listing err: ' + e.message);
     }
 
     if (req.query.kill === 'true' || req.query.restart === 'true' || req.query.token === 'gethotel_maint_2026' || req.query.fix_token === 'gethotel_maint_2026') {
         const tmpDir = path.join(__dirname, 'tmp');
         if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true });
         fs.writeFileSync(path.join(tmpDir, 'restart.txt'), Date.now().toString());
-        res.json({ success: true, message: 'Server process killed and restarting immediately.', debug_log: debugLog });
+        res.json({ success: true, message: 'Server process killed.', debug_log: debugLog });
         setTimeout(() => process.exit(0), 50);
         return;
     }
