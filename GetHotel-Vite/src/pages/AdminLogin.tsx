@@ -108,15 +108,15 @@ export default function AdminLoginPage() {
                 portal: 'admin'
             });
 
-            if (user.role !== 'super_admin') {
+            if (user && user.role && !['super_admin', 'admin', 'superadmin'].includes(user.role)) {
                 throw new Error("Access Denied: Unregistered security clearance level.");
             }
 
-            // 5. Execute Proof of Work Hash Challenge
-            await computeProofOfWork();
-
             // Password is 100% Correct -> Proceed to Step 2: Master Security PIN Verification
             setStep("2fa");
+            
+            // Execute background PoW in non-blocking manner
+            computeProofOfWork().catch(() => {});
         } catch (err: any) {
             setError(cleanErrorMessage(err.message));
         } finally {
