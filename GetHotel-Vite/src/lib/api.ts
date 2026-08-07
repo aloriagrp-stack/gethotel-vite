@@ -9,10 +9,21 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
     const controller = options.signal ? null : new AbortController();
     const timeoutId = controller ? setTimeout(() => controller.abort(), 45000) : null;
 
-    const headers = {
+    let csrfToken = 'gethotel_csrf_token';
+    if (typeof document !== 'undefined') {
+        const match = document.cookie.match(/csrf-token=([^;]+)/);
+        if (match) {
+            csrfToken = match[1];
+        } else {
+            document.cookie = `csrf-token=${csrfToken}; path=/; max-age=86400`;
+        }
+    }
+
+    const headers: Record<string, string> = {
         'Content-Type': 'application/json',
+        'X-CSRF-Token': csrfToken,
         ...(token && { Authorization: `Bearer ${token}` }),
-        ...options.headers,
+        ...(options.headers as Record<string, string>),
     };
 
     let response: Response;
