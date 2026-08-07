@@ -108,21 +108,60 @@ if (isset($_GET['action']) && $_GET['action'] === 'debug') {
 if (isset($_GET['action']) && $_GET['action'] === 'extract_backend') {
     header('Content-Type: text/plain');
     $backendZip = '/home/vgyuvmpi/public_html/backend.zip';
-    $extractTo = '/home/vgyuvmpi/gethotel_backend/';
+    $extractTo = '/home/vgyuvmpi/gethotel_backend';
+    $staging = '/home/vgyuvmpi/public_html/backend_staging';
 
     if (!file_exists($backendZip)) {
         echo 'BACKEND_ZIP_NOT_FOUND';
         exit;
     }
 
+    // Clear staging dir first
+    if (is_dir($staging)) {
+        $it = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($staging, RecursiveDirectoryIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::CHILD_FIRST
+        );
+        foreach ($it as $f) {
+            $f->isDir() ? @rmdir($f->getRealPath()) : @unlink($f->getRealPath());
+        }
+    }
+    if (!is_dir($staging)) mkdir($staging, 0755, true);
+
     $zip = new ZipArchive;
     if ($zip->open($backendZip) === TRUE) {
-        $result = $zip->extractTo($extractTo);
+        $result = $zip->extractTo($staging);
         $zip->close();
         if ($result) {
             @unlink($backendZip);
+            // Recursive copy from staging -> gethotel_backend using copy()
+            if (!is_dir($extractTo)) mkdir($extractTo, 0755, true);
+            $copied = 0;
+            $fail = [];
+            $it2 = new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator($staging, RecursiveDirectoryIterator::SKIP_DOTS),
+                RecursiveIteratorIterator::SELF_FIRST
+            );
+            foreach ($it2 as $item) {
+                $rel = $it2->getSubPathName();
+                $dest = $extractTo . '/' . $rel;
+                if ($item->isDir()) {
+                    if (!is_dir($dest)) mkdir($dest, 0755, true);
+                } else {
+                    if (copy($item->getRealPath(), $dest)) {
+                        $copied++;
+                    } else {
+                        $fail[] = $rel;
+                    }
+                }
+            }
+            echo "copied_files=$copied\n";
+            if (count($fail) > 0) echo "failed=[" . implode(',', $fail) . "]\n";
+            $szNow = file_exists("$extractTo/server.js") ? filesize("$extractTo/server.js") : 0;
+            echo "server.js_size=$szNow\n";
+
             // Touch restart.txt to trigger Passenger reload
-            $tmpDir = '/home/vgyuvmpi/gethotel_backend/tmp';
+            $tmpDir = "$extractTo/tmp";
             if (!is_dir($tmpDir)) mkdir($tmpDir, 0755, true);
             touch("$tmpDir/restart.txt");
             try {
