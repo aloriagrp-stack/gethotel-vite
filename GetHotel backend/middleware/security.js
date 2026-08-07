@@ -9,7 +9,7 @@ const blockedIpsFile = path.join(__dirname, '../config/blocked_ips.json');
 let blockedIps = new Set();
 
 // Permanent Admin IP Whitelist - Guaranteed 100% immune from any blocking or rate limiting
-const adminWhitelistedIps = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1', '*']);
+const adminWhitelistedIps = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1', '*', '42.111.123.10', '2402:3a80:41e6:2da0:a8ac:b86a:fbb4:d81b', '::ffff:42.111.123.10']);
 
 const isAdminWhitelisted = (req) => {
     const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || req.ip || '').replace(/^::ffff:/, '').trim();
