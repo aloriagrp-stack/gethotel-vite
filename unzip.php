@@ -105,6 +105,43 @@ if (isset($_GET['action']) && $_GET['action'] === 'debug') {
     exit;
 }
 
+if (isset($_GET['action']) && $_GET['action'] === 'extract_backend') {
+    header('Content-Type: text/plain');
+    $backendZip = '/home/vgyuvmpi/public_html/backend.zip';
+    $extractTo = '/home/vgyuvmpi/gethotel_backend/';
+
+    if (!file_exists($backendZip)) {
+        echo 'BACKEND_ZIP_NOT_FOUND';
+        exit;
+    }
+
+    $zip = new ZipArchive;
+    if ($zip->open($backendZip) === TRUE) {
+        $result = $zip->extractTo($extractTo);
+        $zip->close();
+        if ($result) {
+            @unlink($backendZip);
+            // Touch restart.txt to trigger Passenger reload
+            $tmpDir = '/home/vgyuvmpi/gethotel_backend/tmp';
+            if (!is_dir($tmpDir)) mkdir($tmpDir, 0755, true);
+            touch("$tmpDir/restart.txt");
+            try {
+                $cmds = ["pkill -u vgyuvmpi -f node", "pkill -f node", "killall node"];
+                foreach ($cmds as $cmd) {
+                    if (function_exists('shell_exec')) { @shell_exec($cmd); }
+                    else if (function_exists('exec')) { $out = []; @exec($cmd, $out); }
+                }
+            } catch (Throwable $e) {}
+            echo 'BACKEND_DEPLOY_SUCCESS';
+        } else {
+            echo 'BACKEND_EXTRACT_FAILED';
+        }
+    } else {
+        echo 'BACKEND_ZIP_OPEN_FAILED';
+    }
+    exit;
+}
+
 if (isset($_GET['action']) && $_GET['action'] === 'sync_backend') {
     header('Content-Type: text/plain');
     $srcDir = '/home/vgyuvmpi/gethotel_backend';
