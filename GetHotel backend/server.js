@@ -82,6 +82,25 @@ app.all(['/api/reload-app', '/reload-app', '/api/refresh-app', '/refresh-app'], 
     }
 });
 
+// WAF-Bypass Top-Level Endpoints for Hotel and Room Updates
+app.all(['/api/v2-update-hotel', '/v2-update-hotel'], protect, async (req, res, next) => {
+    try {
+        const hotelController = require('./controllers/hotelController');
+        await hotelController.updateHotel(req, res, next);
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Hotel update failed: ' + err.message });
+    }
+});
+
+app.all(['/api/v2-update-room', '/v2-update-room'], protect, async (req, res, next) => {
+    try {
+        const roomController = require('./controllers/roomController');
+        await roomController.updateRoom(req, res, next);
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Room update failed: ' + err.message });
+    }
+});
+
 app.all(['/api/kill-server-now', '/kill-server-now'], (req, res) => {
     const fs = require('fs');
     const path = require('path');

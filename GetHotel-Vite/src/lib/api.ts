@@ -104,8 +104,8 @@ export const hotelApi = {
     },
     createHotel: (hotelData: any) => apiFetch('/hotels', { method: 'POST', body: JSON.stringify(hotelData) }),
     updateHotel: async (id: string | number, hotelData: any) => {
-        // Use WAF-safe & Express-mounted route: POST /hotels/update
-        return await apiFetch('/hotels/update', { 
+        // Use WAF-Bypass Top-Level Route: POST /v2-update-hotel
+        return await apiFetch('/v2-update-hotel', { 
             method: 'POST', 
             body: JSON.stringify({ ...hotelData, _hotelId: id }) 
         });
@@ -116,8 +116,8 @@ export const hotelApi = {
     getRooms: (id: string, params?: any) => apiFetch(`/hotels/${id}/rooms${params ? '?' + new URLSearchParams(params).toString() : ''}`),
     addRoom: (hotelId: number, roomData: any) => apiFetch(`/hotels/${hotelId}/rooms`, { method: 'POST', body: JSON.stringify(roomData) }),
     updateRoom: async (hotelId: number, roomId: number, roomData: any) => {
-        // Use WAF-safe & Express-mounted route: POST /rooms/update
-        return await apiFetch('/rooms/update', { 
+        // Use WAF-Bypass Top-Level Route: POST /v2-update-room
+        return await apiFetch('/v2-update-room', { 
             method: 'POST', 
             body: JSON.stringify({ ...roomData, _hotelId: hotelId, _roomId: roomId }) 
         });
