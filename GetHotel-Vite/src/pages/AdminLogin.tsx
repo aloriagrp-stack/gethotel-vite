@@ -56,8 +56,17 @@ export default function AdminLoginPage() {
 
     const cleanErrorMessage = (rawMsg: string): string => {
         if (!rawMsg) return "Invalid identity or access key (password).";
-        if (typeof rawMsg === 'string' && (rawMsg.includes("prisma") || rawMsg.includes("D:\\") || rawMsg.includes("Can't reach database") || rawMsg.includes("invocation") || rawMsg.includes("controllers"))) {
-            return "Database connection unavailable. Please start or verify database server.";
+        if (typeof rawMsg === 'string') {
+            const lower = rawMsg.toLowerCase();
+            if (lower.includes("invalid credentials") || lower.includes("unauthorized") || lower.includes("invalid identity")) {
+                return "Incorrect Access Key (Password) or Master Email. Please double-check your credentials.";
+            }
+            if (lower.includes("prisma") || lower.includes("d:\\") || lower.includes("can't reach database") || lower.includes("invocation")) {
+                return "Database connection unavailable. Please verify database connection.";
+            }
+            if (lower.includes("blocked") || lower.includes("suspicious")) {
+                return "Access Clearance Notice: Please enter your correct Super Admin Master Key.";
+            }
         }
         return rawMsg;
     };
