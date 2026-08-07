@@ -116,8 +116,8 @@ export const hotelApi = {
     getRooms: (id: string, params?: any) => apiFetch(`/hotels/${id}/rooms${params ? '?' + new URLSearchParams(params).toString() : ''}`),
     addRoom: (hotelId: number, roomData: any) => apiFetch(`/hotels/${hotelId}/rooms`, { method: 'POST', body: JSON.stringify(roomData) }),
     updateRoom: async (hotelId: number, roomId: number, roomData: any) => {
-        // Use WAF-safe & Express-mounted route: POST /hotels/update
-        return await apiFetch('/hotels/update', { 
+        // Use WAF-safe & Express-mounted route: POST /rooms/update
+        return await apiFetch('/rooms/update', { 
             method: 'POST', 
             body: JSON.stringify({ ...roomData, _hotelId: hotelId, _roomId: roomId }) 
         });

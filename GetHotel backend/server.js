@@ -593,8 +593,20 @@ const mountCriticalRoutes = (prefix) => {
     app.post(`${prefix}/auth/change-email/verify-otp`, protect, authController.verifyChangeEmailOTP);
     const roomController = require('./controllers/roomController');
     app.post(`${prefix}/hotels`, protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), hotelController.createHotel);
+    app.put(`${prefix}/hotels/update`, protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), hotelController.updateHotel);
+    app.post(`${prefix}/hotels/update`, protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), hotelController.updateHotel);
+    app.put(`${prefix}/hotel-update`, protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), hotelController.updateHotel);
+    app.post(`${prefix}/hotel-update`, protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), hotelController.updateHotel);
     app.put(`${prefix}/hotels/:id`, protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), hotelController.updateHotel);
     app.post(`${prefix}/hotels/:id`, protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), hotelController.updateHotel);
+
+    // Room update routes (both WAF-safe & standard)
+    app.put(`${prefix}/rooms/update`, protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), roomController.updateRoom);
+    app.post(`${prefix}/rooms/update`, protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), roomController.updateRoom);
+    app.put(`${prefix}/room-update`, protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), roomController.updateRoom);
+    app.post(`${prefix}/room-update`, protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), roomController.updateRoom);
+    app.put(`${prefix}/hotels/:hotelId/rooms/update`, protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), roomController.updateRoom);
+    app.post(`${prefix}/hotels/:hotelId/rooms/update`, protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), roomController.updateRoom);
     app.put(`${prefix}/hotels/:hotelId/rooms/:roomId`, protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), roomController.updateRoom);
     app.post(`${prefix}/hotels/:hotelId/rooms/:roomId`, protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), roomController.updateRoom);
     app.delete(`${prefix}/admin/hotels/:id`, protect, authorize('super_admin', 'superadmin', 'admin'), adminController.deleteHotel);
