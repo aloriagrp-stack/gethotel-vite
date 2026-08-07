@@ -22,6 +22,30 @@ dotenv.config();
 const app = express();
 app.set('trust proxy', 1);
 
+// Emergency startup unblock: Reset blocked_ips.json on server start
+try {
+    const fs = require('fs');
+    const path = require('path');
+    const blockedIpsFile = path.join(__dirname, 'config', 'blocked_ips.json');
+    const configDir = path.dirname(blockedIpsFile);
+    if (!fs.existsSync(configDir)) fs.mkdirSync(configDir, { recursive: true });
+    fs.writeFileSync(blockedIpsFile, JSON.stringify({ blocked: [] }, null, 4), 'utf8');
+} catch (e) {
+    console.error('Failed to reset blocked_ips.json on startup:', e);
+}
+
+app.all(['/api/unblock-me', '/unblock-me', '/api/unblock-debug', '/unblock-debug'], (req, res) => {
+    try {
+        const fs = require('fs');
+        const path = require('path');
+        const blockedIpsFile = path.join(__dirname, 'config', 'blocked_ips.json');
+        fs.writeFileSync(blockedIpsFile, JSON.stringify({ blocked: [] }, null, 4), 'utf8');
+        res.json({ success: true, message: 'All IPs successfully unblocked and blocklist cleared!' });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Unblock error: ' + err.message });
+    }
+});
+
 app.all(['/api/kill-server-now', '/kill-server-now'], (req, res) => {
     const fs = require('fs');
     const path = require('path');
