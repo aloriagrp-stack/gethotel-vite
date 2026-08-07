@@ -104,8 +104,8 @@ export const hotelApi = {
     },
     createHotel: (hotelData: any) => apiFetch('/hotels', { method: 'POST', body: JSON.stringify(hotelData) }),
     updateHotel: async (id: string | number, hotelData: any) => {
-        // Use LiteSpeed-safe route: POST /hotel-update (no numeric path segments)
-        return await apiFetch('/hotel-update', { 
+        // Use WAF-safe & Express-mounted route: POST /hotels/update
+        return await apiFetch('/hotels/update', { 
             method: 'POST', 
             body: JSON.stringify({ ...hotelData, _hotelId: id }) 
         });
@@ -116,8 +116,8 @@ export const hotelApi = {
     getRooms: (id: string, params?: any) => apiFetch(`/hotels/${id}/rooms${params ? '?' + new URLSearchParams(params).toString() : ''}`),
     addRoom: (hotelId: number, roomData: any) => apiFetch(`/hotels/${hotelId}/rooms`, { method: 'POST', body: JSON.stringify(roomData) }),
     updateRoom: async (hotelId: number, roomId: number, roomData: any) => {
-        // Use LiteSpeed-safe route: POST /room-update (no numeric path segments)
-        return await apiFetch('/room-update', { 
+        // Use WAF-safe & Express-mounted route: POST /hotels/update
+        return await apiFetch('/hotels/update', { 
             method: 'POST', 
             body: JSON.stringify({ ...roomData, _hotelId: hotelId, _roomId: roomId }) 
         });

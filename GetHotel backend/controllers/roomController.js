@@ -319,8 +319,10 @@ exports.addRoom = async (req, res, next) => {
 // @access  Private (Hotel Admin, Super Admin)
 exports.updateRoom = async (req, res, next) => {
     try {
-        const hotelId = parseInt(req.params.hotelId);
-        const roomId = parseInt(req.params.roomId);
+        const rawHotelId = req.params.hotelId || req.body._hotelId || req.body.hotelId;
+        const rawRoomId = req.params.roomId || req.body._roomId || req.body.roomId || req.body.id;
+        const hotelId = parseInt(String(rawHotelId || '0'));
+        const roomId = parseInt(String(rawRoomId || '0'));
         
         const hotel = await prisma.hotel.findUnique({
             where: { id: hotelId }

@@ -569,7 +569,8 @@ exports.createHotel = async (req, res, next) => {
 // @access  Private (Hotel Admin, Super Admin)
 exports.updateHotel = async (req, res, next) => {
     try {
-        const hotelId = parseInt(req.params.id);
+        const rawId = req.params.id || req.body._hotelId || req.body.hotelId || req.body.id;
+        const hotelId = parseInt(String(rawId || '0'));
         let hotel = await prisma.hotel.findUnique({
             where: { id: hotelId }
         });

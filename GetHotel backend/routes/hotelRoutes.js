@@ -79,6 +79,10 @@ router.route('/')
 router.route('/my-hotels')
     .get(protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), getMyHotels);
 
+router.route('/update')
+    .post(protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), updateHotel)
+    .put(protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), updateHotel);
+
 router.route('/:id')
     .get(getHotel)
     .put(protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), updateHotel)
