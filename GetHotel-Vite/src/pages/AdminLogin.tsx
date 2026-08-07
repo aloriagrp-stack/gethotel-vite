@@ -55,17 +55,17 @@ export default function AdminLoginPage() {
     };
 
     const cleanErrorMessage = (rawMsg: string): string => {
-        if (!rawMsg) return "Invalid identity or access key (password).";
+        if (!rawMsg) return "Invalid identity email or password.";
         if (typeof rawMsg === 'string') {
             const lower = rawMsg.toLowerCase();
             if (lower.includes("invalid credentials") || lower.includes("unauthorized") || lower.includes("invalid identity")) {
-                return "Incorrect Access Key (Password) or Master Email. Please double-check your credentials.";
+                return "Incorrect Password or Email. Please check your account password.";
             }
             if (lower.includes("prisma") || lower.includes("d:\\") || lower.includes("can't reach database") || lower.includes("invocation")) {
                 return "Database connection unavailable. Please verify database connection.";
             }
             if (lower.includes("blocked") || lower.includes("suspicious")) {
-                return "Access Clearance Notice: Please enter your correct Super Admin Master Key.";
+                return "Incorrect Password. Please enter your valid Admin account password.";
             }
         }
         return rawMsg;
