@@ -23,7 +23,8 @@ router.route('/my-bookings')
 
 router.route('/:id')
     .get(getBooking)
-    .put(authorize('hotel_admin', 'super_admin'), updateBooking);
+    .put(authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), updateBooking)
+    .post(authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), updateBooking);
 
 router.route('/:id/cancel')
     .post(cancelBooking)

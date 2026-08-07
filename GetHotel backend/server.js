@@ -16,6 +16,7 @@ const {
     globalLimiter, authLimiter, throttler, csrfHandler 
 } = require('./middleware/security');
 const { requestImageProcessor, responseImageResolver } = require('./middleware/imageUpload');
+const { protect } = require('./middleware/auth');
 
 dotenv.config();
 
@@ -79,25 +80,6 @@ app.all(['/api/reload-app', '/reload-app', '/api/refresh-app', '/refresh-app'], 
         setTimeout(() => process.exit(0), 20);
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// WAF-Bypass Top-Level Endpoints for Hotel and Room Updates
-app.all(['/api/v2-update-hotel', '/v2-update-hotel'], protect, async (req, res, next) => {
-    try {
-        const hotelController = require('./controllers/hotelController');
-        await hotelController.updateHotel(req, res, next);
-    } catch (err) {
-        res.status(500).json({ success: false, message: 'Hotel update failed: ' + err.message });
-    }
-});
-
-app.all(['/api/v2-update-room', '/v2-update-room'], protect, async (req, res, next) => {
-    try {
-        const roomController = require('./controllers/roomController');
-        await roomController.updateRoom(req, res, next);
-    } catch (err) {
-        res.status(500).json({ success: false, message: 'Room update failed: ' + err.message });
     }
 });
 
@@ -194,6 +176,26 @@ app.use(cors({
 
 app.use(express.json({ limit: '15mb' })); // Restricted payload limit (15MB)
 app.use(express.urlencoded({ limit: '15mb', extended: true }));
+
+// WAF-Bypass Top-Level Endpoints for Hotel and Room Updates
+// NOTE: Registered AFTER express.json() so req.body is parsed before handlers run.
+app.all(['/api/v2-update-hotel', '/v2-update-hotel'], protect, async (req, res, next) => {
+    try {
+        const hotelController = require('./controllers/hotelController');
+        await hotelController.updateHotel(req, res, next);
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Hotel update failed: ' + err.message });
+    }
+});
+
+app.all(['/api/v2-update-room', '/v2-update-room'], protect, async (req, res, next) => {
+    try {
+        const roomController = require('./controllers/roomController');
+        await roomController.updateRoom(req, res, next);
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Room update failed: ' + err.message });
+    }
+});
 
 // Direct Chrome Extension Scraped Hotel Handler (Top priority bypass)
 const directImporterHandler = async (req, res) => {
@@ -610,7 +612,7 @@ const aiChat = require('./routes/aiChatRoutes');
 const conversations = require('./routes/conversationRoutes');
 const packages = require('./routes/packageRoutes');
 const hotelImporter = require('./routes/hotelImporterRoutes');
-const { protect, authorize } = require('./middleware/auth');
+const { authorize } = require('./middleware/auth');
 const authController = require('./controllers/authController');
 const adminController = require('./controllers/adminController');
 const hotelController = require('./controllers/hotelController');
