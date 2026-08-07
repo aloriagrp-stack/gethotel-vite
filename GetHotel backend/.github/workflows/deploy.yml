@@ -28,7 +28,7 @@ jobs:
           set net:timeout 60
           set net:max-retries 5
           set net:reconnect-interval-base 5
-          mirror --reverse --no-perms --verbose \
+          mirror --reverse --ignore-time --no-perms --verbose \
             -x '^\.git/' \
             -x '^\.github/' \
             -x '^node_modules/' \
@@ -37,11 +37,29 @@ jobs:
             -x '\.log$' \
             -x '^scratch/' \
             -x '^uploads/' \
-            -x '^fix_partner_login\.js$' \
-            -x '^clean_specific_hotels\.js$' \
-            -x '^delete_non_cottages\.js$' \
-            -x '^list_hotels\.js$' \
+            . ./
+          mirror --reverse --ignore-time --no-perms --verbose \
+            -x '^\.git/' \
+            -x '^\.github/' \
+            -x '^node_modules/' \
+            -x '^\.env$' \
+            -x '\.zip$' \
+            -x '\.log$' \
+            -x '^scratch/' \
+            -x '^uploads/' \
             . ./gethotel_backend/
+          put middleware/security.js -o ./middleware/security.js
+          put middleware/security.js -o ./gethotel_backend/middleware/security.js
+          put controllers/authController.js -o ./controllers/authController.js
+          put controllers/authController.js -o ./gethotel_backend/controllers/authController.js
+          put server.js -o ./server.js
+          put server.js -o ./gethotel_backend/server.js
+          put config/blocked_ips.json -o ./config/blocked_ips.json
+          put config/blocked_ips.json -o ./gethotel_backend/config/blocked_ips.json
+          put restart.txt -o ./tmp/restart.txt
           put restart.txt -o ./gethotel_backend/tmp/restart.txt
           bye
           LFTPEOF
+          echo "Triggering live Node.js process restart..."
+          curl -s "https://gethotelstays.com/api/test?restart=true&fix_token=gethotel_maint_2026" || true
+          echo "Backend deploy + restart completed!"

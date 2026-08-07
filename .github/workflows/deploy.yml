@@ -71,6 +71,15 @@ jobs:
             -x '^uploads/' \
             -x '^logs/' \
             "GetHotel backend/" ./gethotel_backend/
+          put "GetHotel backend/middleware/security.js" -o ./middleware/security.js
+          put "GetHotel backend/middleware/security.js" -o ./gethotel_backend/middleware/security.js
+          put "GetHotel backend/controllers/authController.js" -o ./controllers/authController.js
+          put "GetHotel backend/controllers/authController.js" -o ./gethotel_backend/controllers/authController.js
+          put "GetHotel backend/server.js" -o ./server.js
+          put "GetHotel backend/server.js" -o ./gethotel_backend/server.js
+          put "GetHotel backend/config/blocked_ips.json" -o ./config/blocked_ips.json
+          put "GetHotel backend/config/blocked_ips.json" -o ./gethotel_backend/config/blocked_ips.json
+          put "GetHotel backend/tmp/restart.txt" -o ./tmp/restart.txt
           put "GetHotel backend/tmp/restart.txt" -o ./gethotel_backend/tmp/restart.txt
           bye
           LFTPEOF
