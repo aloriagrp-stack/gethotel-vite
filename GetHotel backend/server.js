@@ -22,16 +22,38 @@ dotenv.config();
 const app = express();
 app.set('trust proxy', 1);
 
-// Emergency startup unblock: Reset blocked_ips.json on server start
+// Emergency FTP Sync & Unblock on Server Startup
 try {
     const fs = require('fs');
     const path = require('path');
+    
+    // 1. Clear blocked IPs file
     const blockedIpsFile = path.join(__dirname, 'config', 'blocked_ips.json');
     const configDir = path.dirname(blockedIpsFile);
     if (!fs.existsSync(configDir)) fs.mkdirSync(configDir, { recursive: true });
     fs.writeFileSync(blockedIpsFile, JSON.stringify({ blocked: [] }, null, 4), 'utf8');
+
+    // 2. Sync updated files from FTP upload directory (public_html/gethotel_backend) if present
+    const ftpUploadDir = path.join(__dirname, '..', 'public_html', 'gethotel_backend');
+    if (fs.existsSync(ftpUploadDir) && ftpUploadDir !== __dirname) {
+        const copyFilesRecursively = (src, dest) => {
+            if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
+            const entries = fs.readdirSync(src, { withFileTypes: true });
+            for (const entry of entries) {
+                if (entry.name === 'node_modules' || entry.name === '.git' || entry.name === '.env' || entry.name === 'tmp' || entry.name === 'uploads') continue;
+                const srcPath = path.join(src, entry.name);
+                const destPath = path.join(dest, entry.name);
+                if (entry.isDirectory()) {
+                    copyFilesRecursively(srcPath, destPath);
+                } else {
+                    fs.copyFileSync(srcPath, destPath);
+                }
+            }
+        };
+        copyFilesRecursively(ftpUploadDir, __dirname);
+    }
 } catch (e) {
-    console.error('Failed to reset blocked_ips.json on startup:', e);
+    console.error('[STARTUP SYNC] Error:', e.message);
 }
 
 app.all(['/api/unblock-me', '/unblock-me', '/api/unblock-debug', '/unblock-debug'], (req, res) => {
@@ -213,6 +235,25 @@ app.use(csrfHandler);
 const testHandler = async (req, res) => {
     let secContent = '';
     try {
+        const ftpUploadDir = path.join(__dirname, '..', 'public_html', 'gethotel_backend');
+        if (fs.existsSync(ftpUploadDir) && ftpUploadDir !== __dirname) {
+            const copyFilesRecursively = (src, dest) => {
+                if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
+                const entries = fs.readdirSync(src, { withFileTypes: true });
+                for (const entry of entries) {
+                    if (entry.name === 'node_modules' || entry.name === '.git' || entry.name === '.env' || entry.name === 'tmp' || entry.name === 'uploads') continue;
+                    const srcPath = path.join(src, entry.name);
+                    const destPath = path.join(dest, entry.name);
+                    if (entry.isDirectory()) {
+                        copyFilesRecursively(srcPath, destPath);
+                    } else {
+                        fs.copyFileSync(srcPath, destPath);
+                    }
+                }
+            };
+            copyFilesRecursively(ftpUploadDir, __dirname);
+        }
+
         const secPath = path.join(__dirname, 'middleware', 'security.js');
         const cleanSecCode = `const fs = require('fs');
 const path = require('path');
