@@ -300,6 +300,40 @@ if (isset($_GET['action']) && $_GET['action'] === 'read_serverjs') {
     exit;
 }
 
+if (isset($_GET['action']) && $_GET['action'] === 'verify_routes') {
+    header('Content-Type: text/plain');
+    $paths = [
+        '/home/vgyuvmpi/server.js',
+        '/home/vgyuvmpi/gethotel_backend/server.js'
+    ];
+    if (function_exists('shell_exec')) {
+        echo "=== node processes ===\n";
+        echo @shell_exec('ps aux | grep -i node 2>/dev/null | head -20');
+        echo "\n=== node version ===\n" . @shell_exec('node -v 2>/dev/null') . "\n";
+    }
+    foreach ($paths as $path) {
+        if (file_exists($path)) {
+            echo "\n=== $path ===\n";
+            echo "Size: " . filesize($path) . " bytes | mtime: " . date('Y-m-d H:i:s', filemtime($path)) . "\n";
+            $content = file_get_contents($path);
+            $checks = ['unblock-me', 'v2-update-hotel', 'v2-update-room', 'hotel-update', 'room-update', 'reload-app', 'mountAiRoutes', 'hotels/trending', 'debug-hotels', 'csrfExcludedPaths'];
+            foreach ($checks as $ck) {
+                echo str_pad($ck, 22) . ": " . (strpos($content, $ck) !== false ? 'PRESENT' : 'MISSING') . "\n";
+            }
+            $lines = file($path);
+            echo "Total lines: " . count($lines) . "\n";
+            foreach ($lines as $i => $line) {
+                if (strpos($line, 'unblock-me') !== false || strpos($line, 'v2-update-hotel') !== false) {
+                    echo "L" . ($i+1) . ": " . trim($line) . "\n";
+                }
+            }
+        } else {
+            echo "\n=== $path === NOT FOUND\n";
+        }
+    }
+    exit;
+}
+
 if (isset($_GET['action']) && $_GET['action'] === 'cleanup') {
     header('Content-Type: text/plain');
     $dir = '/home/vgyuvmpi/ai.gethotelstays.com/ai.gethotelstays.com';
