@@ -103,12 +103,9 @@ export const hotelApi = {
     createHotel: (hotelData: any) => apiFetch('/hotels', { method: 'POST', body: JSON.stringify(hotelData) }),
     updateHotel: async (id: string | number, hotelData: any) => {
         try {
-            return await apiFetch(`/hotels/${id}`, { method: 'PUT', body: JSON.stringify(hotelData) });
+            return await apiFetch(`/hotels/${id}`, { method: 'POST', body: JSON.stringify(hotelData) });
         } catch (err: any) {
-            if (err?.message?.includes('non-JSON') || err?.message?.includes('405') || err?.message?.includes('404')) {
-                return await apiFetch(`/hotels/${id}`, { method: 'POST', body: JSON.stringify(hotelData) });
-            }
-            throw err;
+            return await apiFetch(`/hotels/${id}`, { method: 'PUT', body: JSON.stringify(hotelData) });
         }
     },
     deleteHotel: (id: string) => apiFetch(`/hotels/${id}`, { method: 'DELETE' }),
@@ -118,12 +115,9 @@ export const hotelApi = {
     addRoom: (hotelId: number, roomData: any) => apiFetch(`/hotels/${hotelId}/rooms`, { method: 'POST', body: JSON.stringify(roomData) }),
     updateRoom: async (hotelId: number, roomId: number, roomData: any) => {
         try {
-            return await apiFetch(`/hotels/${hotelId}/rooms/${roomId}`, { method: 'PUT', body: JSON.stringify(roomData) });
+            return await apiFetch(`/hotels/${hotelId}/rooms/${roomId}`, { method: 'POST', body: JSON.stringify(roomData) });
         } catch (err: any) {
-            if (err?.message?.includes('non-JSON') || err?.message?.includes('405') || err?.message?.includes('404')) {
-                return await apiFetch(`/hotels/${hotelId}/rooms/${roomId}`, { method: 'POST', body: JSON.stringify(roomData) });
-            }
-            throw err;
+            return await apiFetch(`/hotels/${hotelId}/rooms/${roomId}`, { method: 'PUT', body: JSON.stringify(roomData) });
         }
     },
     deleteRoom: (hotelId: number, roomId: number) => apiFetch(`/hotels/${hotelId}/rooms/${roomId}`, { method: 'DELETE' }),
