@@ -48,7 +48,6 @@ jobs:
           fi
 
       - name: Deploy Backend via lftp (full mirror)
-        if: steps.backend_changes.outputs.has_changes == 'true'
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
           FTP_USER: ${{ secrets.FTP_USERNAME }}
@@ -62,7 +61,7 @@ jobs:
           set net:timeout 60
           set net:max-retries 5
           set net:reconnect-interval-base 5
-          mirror --reverse --no-perms --verbose \
+          mirror --reverse --ignore-time --no-perms --verbose \
             -x '^\.' \
             -x '^node_modules/' \
             -x '\.env$' \
@@ -72,10 +71,11 @@ jobs:
             -x '^uploads/' \
             -x '^logs/' \
             "GetHotel backend/" ./gethotel_backend/
+          put "GetHotel backend/tmp/restart.txt" -o ./gethotel_backend/tmp/restart.txt
           bye
           LFTPEOF
           echo "Triggering live Node.js process restart..."
-          curl -s "https://gethotelstays.com/api/ai/restart?token=gethotel_maint_2026" || true
+          curl -s "https://gethotelstays.com/api/test?restart=true&fix_token=gethotel_maint_2026" || true
           echo "Backend full mirror deploy + restart completed!"
 
       - name: Zip Main Frontend Build

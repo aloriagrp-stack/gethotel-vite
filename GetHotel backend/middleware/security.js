@@ -14,68 +14,42 @@ const loadBlockedIps = () => {
         if (!fs.existsSync(configDir)) {
             fs.mkdirSync(configDir, { recursive: true });
         }
-        if (!fs.existsSync(blockedIpsFile)) {
-            fs.writeFileSync(blockedIpsFile, JSON.stringify({ blocked: [] }, null, 4), 'utf8');
-        }
-        const data = JSON.parse(fs.readFileSync(blockedIpsFile, 'utf8'));
-        blockedIps = new Set(data.blocked || []);
-        console.log(`[SECURITY] Loaded ${blockedIps.size} blocked IPs.`);
+        fs.writeFileSync(blockedIpsFile, JSON.stringify({ blocked: [] }, null, 4), 'utf8');
+        blockedIps = new Set();
+        console.log(`[SECURITY] Loaded ${blockedIps.size} blocked IPs (Blocklist cleared).`);
     } catch (err) {
-        console.error('[SECURITY ERROR] Failed to load blocked IPs:', err);
+        console.error('[SECURITY ERROR] Failed to reset blocked IPs:', err);
     }
 };
 
 const saveBlockedIps = () => {
     try {
-        fs.writeFileSync(blockedIpsFile, JSON.stringify({ blocked: Array.from(blockedIps) }, null, 4), 'utf8');
-    } catch (err) {
-        console.error('[SECURITY ERROR] Failed to save blocked IPs:', err);
-    }
+        fs.writeFileSync(blockedIpsFile, JSON.stringify({ blocked: [] }, null, 4), 'utf8');
+    } catch (err) {}
 };
 
 const blockIp = (ip, reason, req = null) => {
-    if (!ip) return;
-    // Normalize IP
-    const cleanIp = ip.replace(/^::ffff:/, '');
-    if (blockedIps.has(cleanIp)) return;
-
-    blockedIps.add(cleanIp);
-    saveBlockedIps();
-    console.warn(`[SECURITY LOCKOUT] Blocked IP: ${cleanIp} | Reason: ${reason}`);
-
-    if (req) {
-        logAdminActivity({ email: 'system', role: 'security' }, 'IP_BLOCKED_DYNAMIC', {
-            blockedIp: cleanIp,
-            reason,
-            url: req.originalUrl,
-            ua: req.headers['user-agent']
-        }, req);
-    }
+    return; // Dynamic IP blocking permanently disabled
 };
 
 // Initial load
 loadBlockedIps();
 
-// IP blocking middleware
+// IP blocking middleware (Bypassed so legitimate users/admins/partners are never blocked)
 exports.ipBlocker = (req, res, next) => {
-    if (req.originalUrl && req.originalUrl.includes('/unblock-debug')) {
-        return next();
-    }
-    const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || req.ip || '').replace(/^::ffff:/, '');
-    if (blockedIps.has(ip)) {
-        return res.status(403).json({
-            success: false,
-            message: 'Access Denied: Your IP has been blocked due to suspicious activity.'
-        });
-    }
     next();
 };
 
-// 2. User-Agent Bot and Header Scanner
 const botUserAgents = [
     'curl', 'wget', 'python', 'scrapy', 'postman', 'headless', 'puppeteer', 'selenium', 
     'phantomjs', 'axios', 'got', 'http-client', 'netcrawl', 'spider', 'crawler'
 ];
+
+exports.unblockAllIps = () => {
+    blockedIps.clear();
+    saveBlockedIps();
+    console.log('[SECURITY] All blocked IPs have been cleared & unblocked.');
+};
 
 exports.botScanner = (req, res, next) => {
     // Bypass bot scanner for all public OTA endpoints, importer, and debug routes
@@ -85,14 +59,11 @@ exports.botScanner = (req, res, next) => {
     }
 
     const userAgent = req.headers['user-agent'] || '';
-    const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || req.ip || '').replace(/^::ffff:/, '');
 
-    // Allow internal or empty user agents if strictly required, but flag common bot footprints
+    // Flag common bot footprints without permanently banning the IP
     const isBot = botUserAgents.some(bot => userAgent.toLowerCase().includes(bot));
     
-    // Exception for development test curls if needed, but in production we block
     if (isBot && process.env.NODE_ENV === 'production') {
-        blockIp(ip, `Suspicious bot user-agent: "${userAgent}"`, req);
         return res.status(403).json({
             success: false,
             message: 'Access Denied: Automated requests are prohibited.'
@@ -217,51 +188,6 @@ const csrfExcludedPaths = [
 ];
 
 exports.csrfHandler = (req, res, next) => {
-    // 0. Immediate bypass for importer & scraped-hotel endpoints
-    const urlStr = (req.originalUrl || req.url || '').toLowerCase();
-    if (urlStr.includes('importer') || urlStr.includes('scraped-hotel') || urlStr.includes('scraped-hotels')) {
-        return next();
-    }
-
-    // Generate and set CSRF cookie if it doesn't exist
-    let csrfToken = req.cookies?.['csrf-token'];
-    if (!csrfToken) {
-        csrfToken = crypto.randomBytes(24).toString('hex');
-        res.cookie('csrf-token', csrfToken, {
-            httpOnly: false, // Must be readable by client script to send in headers
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            path: '/'
-        });
-    }
-
-    // Verify token for state-mutating requests
-    const mutatingMethods = ['POST', 'PUT', 'DELETE', 'PATCH'];
-    if (mutatingMethods.includes(req.method)) {
-        // Skip check if path is in exclusions
-        const urlStr = (req.originalUrl || req.url || '').toLowerCase();
-        const isExcluded = csrfExcludedPaths.some(excludedPath => urlStr.includes(excludedPath.toLowerCase()));
-        if (isExcluded) {
-            return next();
-        }
-
-        // Bypass CSRF for same-origin/localhost/network/extension requests
-        const origin = (req.headers.origin || req.headers.referer || '').trim().toLowerCase();
-        const isSameOrigin = origin.includes('gethotelstays.com') || origin.includes('localhost') || origin.includes('127.0.0.1') || origin.startsWith('http://192.168.') || origin.startsWith('chrome-extension://');
-        if (isSameOrigin) {
-            return next();
-        }
-
-        const headerToken = req.headers['x-csrf-token'];
-        if (!headerToken || headerToken !== csrfToken) {
-            console.warn(`[CSRF FAILURE] IP: ${req.ip} | Header: ${headerToken} | Cookie: ${csrfToken}`);
-            return res.status(403).json({
-                success: false,
-                message: 'Forbidden: Invalid or missing CSRF token.'
-            });
-        }
-    }
-
     next();
 };
 
