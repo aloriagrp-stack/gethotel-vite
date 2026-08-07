@@ -18,36 +18,12 @@ export default function AdminLoginPage() {
     const { login } = useAuth();
     const router = useRouter();
 
-    // Check existing lockout state on mount
+    // Force clear any stale lockout state on mount
     useEffect(() => {
-        const storedLock = localStorage.getItem("ghs_admin_lockout");
-        if (storedLock) {
-            const unlockAt = parseInt(storedLock, 10);
-            if (unlockAt > Date.now()) {
-                setLockoutTime(unlockAt);
-            } else {
-                localStorage.removeItem("ghs_admin_lockout");
-            }
-        }
+        localStorage.removeItem("ghs_admin_lockout");
+        setLockoutTime(null);
+        setFailedAttempts(0);
     }, []);
-
-    // Countdown Timer for Lockout
-    const [remainingSeconds, setRemainingSeconds] = useState(0);
-    useEffect(() => {
-        if (!lockoutTime) return;
-        const interval = setInterval(() => {
-            const left = Math.ceil((lockoutTime - Date.now()) / 1000);
-            if (left <= 0) {
-                setLockoutTime(null);
-                setFailedAttempts(0);
-                localStorage.removeItem("ghs_admin_lockout");
-                clearInterval(interval);
-            } else {
-                setRemainingSeconds(left);
-            }
-        }, 1000);
-        return () => clearInterval(interval);
-    }, [lockoutTime]);
 
     // Proof-of-Work Challenge (Compute SHA-256 hash difficulty to eliminate automated bot brute force)
     const computeProofOfWork = async (): Promise<boolean> => {
@@ -133,17 +109,7 @@ export default function AdminLoginPage() {
             // Password is 100% Correct -> Proceed to Step 2: Master Security PIN Verification
             setStep("2fa");
         } catch (err: any) {
-            const attempts = failedAttempts + 1;
-            setFailedAttempts(attempts);
-
-            if (attempts >= 3) {
-                const lockUntil = Date.now() + 15 * 60 * 1000; // 15 Minute Lockout
-                setLockoutTime(lockUntil);
-                localStorage.setItem("ghs_admin_lockout", lockUntil.toString());
-                setError(`MAXIMUM SECURITY LOCKOUT ACTIVATED: 3 Failed Attempts. Terminal disabled for 15 minutes.`);
-            } else {
-                setError(`${cleanErrorMessage(err.message)} (${3 - attempts} attempt(s) remaining)`);
-            }
+            setError(cleanErrorMessage(err.message));
         } finally {
             setLoading(false);
         }
@@ -170,17 +136,7 @@ export default function AdminLoginPage() {
             // Successfully Verified PIN -> Redirect to Super Admin Dashboard
             router("/admin/super");
         } catch (err: any) {
-            const attempts = failedAttempts + 1;
-            setFailedAttempts(attempts);
-
-            if (attempts >= 3) {
-                const lockUntil = Date.now() + 15 * 60 * 1000; // 15 Minute Lockout
-                setLockoutTime(lockUntil);
-                localStorage.setItem("ghs_admin_lockout", lockUntil.toString());
-                setError(`MAXIMUM SECURITY LOCKOUT ACTIVATED: 3 Failed Attempts. Terminal disabled for 15 minutes.`);
-            } else {
-                setError(`${cleanErrorMessage(err.message)} (${3 - attempts} attempt(s) remaining)`);
-            }
+            setError(cleanErrorMessage(err.message));
         } finally {
             setLoading(false);
         }
@@ -211,53 +167,8 @@ export default function AdminLoginPage() {
                     </p>
                 </div>
 
-                {/* Lockout Alert Box */}
-                {lockoutTime ? (
-                    <div className="bg-[#111111] border border-neutral-800 rounded-2xl p-6 text-center space-y-4 shadow-2xl backdrop-blur-md">
-                        <button
-                            type="button"
-                            onClick={() => {
-                                const clicks = (window as any)._admin_unlock_clicks = ((window as any)._admin_unlock_clicks || 0) + 1;
-                                if (clicks >= 3) {
-                                    (window as any)._admin_unlock_clicks = 0;
-                                    localStorage.removeItem("ghs_admin_lockout");
-                                    setLockoutTime(null);
-                                    setFailedAttempts(0);
-                                    setError("");
-                                }
-                            }}
-                            className="w-12 h-12 bg-neutral-900 border border-neutral-700 rounded-full flex items-center justify-center mx-auto text-neutral-300 animate-bounce cursor-pointer hover:border-neutral-500 transition-colors"
-                            title="Triple click to override security lockout"
-                        >
-                            <ShieldAlert className="w-6 h-6" />
-                        </button>
-                        <div>
-                            <h3
-                                onClick={() => {
-                                    localStorage.removeItem("ghs_admin_lockout");
-                                    setLockoutTime(null);
-                                    setFailedAttempts(0);
-                                    setError("");
-                                }}
-                                className="text-base font-bold text-white uppercase tracking-wider cursor-pointer hover:text-emerald-400 transition-colors"
-                                title="Click to Emergency Unlock"
-                            >
-                                Terminal Locked (Click to Emergency Unlock)
-                            </h3>
-                            <p className="text-xs text-neutral-400 mt-1">
-                                Maximum security thresholds breached. Device fingerprint logged.
-                            </p>
-                        </div>
-                        <div className="bg-black/60 border border-neutral-800 py-3 rounded-xl">
-                            <div className="text-2xl font-mono font-bold text-white">
-                                {Math.floor(remainingSeconds / 60).toString().padStart(2, '0')}:{(remainingSeconds % 60).toString().padStart(2, '0')}
-                            </div>
-                            <div className="text-[10px] text-neutral-500 uppercase tracking-widest mt-0.5">Cooldown Active</div>
-                        </div>
-                    </div>
-                ) : (
-                    /* Active Login Form Container */
-                    <div className="space-y-6">
+                {/* Active Login Form Container */}
+                <div className="space-y-6">
                         {/* Error Message Display */}
                         {error && (
                             <div className="p-4 bg-neutral-900/90 border border-neutral-800 rounded-xl text-neutral-200 text-xs font-medium flex items-start gap-3 backdrop-blur-sm animate-shake">
@@ -405,7 +316,7 @@ export default function AdminLoginPage() {
                             </form>
                         )}
                     </div>
-                )}
+
 
                 {/* Footer Security Badges */}
                 <div className="mt-12 pt-6 border-t border-neutral-900 flex flex-col items-center gap-2 text-[10px] text-neutral-600 font-mono">
