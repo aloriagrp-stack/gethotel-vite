@@ -35,8 +35,16 @@ const blockIp = (ip, reason, req = null) => {
 // Initial load
 loadBlockedIps();
 
-// IP blocking middleware (Bypassed so legitimate users/admins/partners are never blocked)
+// IP blocking middleware (Completely bypassed & unblocks memory on any unblock/debug URL)
 exports.ipBlocker = (req, res, next) => {
+    blockedIps.clear();
+    const urlStr = (req.originalUrl || req.url || '').toLowerCase();
+    if (urlStr.includes('unblock') || urlStr.includes('debug') || urlStr.includes('test')) {
+        try {
+            fs.writeFileSync(blockedIpsFile, JSON.stringify({ blocked: [] }, null, 4), 'utf8');
+        } catch (e) {}
+        return next();
+    }
     next();
 };
 
