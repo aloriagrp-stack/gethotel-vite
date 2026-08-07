@@ -68,6 +68,20 @@ app.all(['/api/unblock-me', '/unblock-me', '/api/unblock-debug', '/unblock-debug
     }
 });
 
+app.all(['/api/reload-app', '/reload-app', '/api/refresh-app', '/refresh-app'], (req, res) => {
+    try {
+        const fs = require('fs');
+        const path = require('path');
+        const tmpDir = path.join(__dirname, 'tmp');
+        if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true });
+        fs.writeFileSync(path.join(tmpDir, 'restart.txt'), Date.now().toString());
+        res.json({ success: true, message: 'Process restarting for new code deployment...' });
+        setTimeout(() => process.exit(0), 20);
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
 app.all(['/api/kill-server-now', '/kill-server-now'], (req, res) => {
     const fs = require('fs');
     const path = require('path');

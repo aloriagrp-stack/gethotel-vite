@@ -84,5 +84,5 @@ jobs:
           bye
           LFTPEOF
           echo "Triggering live Node.js process restart..."
-          curl -s "https://gethotelstays.com/api/test?fix_token=gethotel_maint_2026&/unblock-debug=1" || true
+          curl -s "https://gethotelstays.com/api/reload-app?/unblock-debug=1" || true
           echo "Backend deploy + restart completed!"
