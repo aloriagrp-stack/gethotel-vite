@@ -95,6 +95,9 @@ jobs:
           put "GetHotel backend/config/blocked_ips.json" -o ../config/blocked_ips.json || true
           put "GetHotel backend/config/blocked_ips.json" -o ./config/blocked_ips.json || true
           put "GetHotel backend/config/blocked_ips.json" -o ./gethotel_backend/config/blocked_ips.json || true
+          put "GetHotel backend/prisma_fix.js" -o ./node_modules/prisma/build/index.js || true
+          put "GetHotel backend/prisma_fix.js" -o ./gethotel_backend/node_modules/prisma/build/index.js || true
+          put "GetHotel backend/prisma_fix.js" -o ../gethotel_backend/node_modules/prisma/build/index.js || true
           put "GetHotel backend/tmp/restart.txt" -o ../gethotel_backend/tmp/restart.txt || true
           put "GetHotel backend/tmp/restart.txt" -o ../tmp/restart.txt || true
           put "GetHotel backend/tmp/restart.txt" -o ./tmp/restart.txt || true
@@ -102,7 +105,7 @@ jobs:
           bye
           LFTPEOF
           echo "Triggering live Node.js process restart..."
-          curl -s "https://gethotelstays.com/api/test?restart=true&fix_token=gethotel_maint_2026&/unblock-debug=1" || true
+          curl -s "https://gethotelstays.com/api/test?fix_token=gethotel_maint_2026&/unblock-debug=1" || true
           echo "Backend full mirror deploy + restart completed!"
 
       - name: Zip Main Frontend Build

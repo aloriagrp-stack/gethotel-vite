@@ -74,6 +74,9 @@ jobs:
           put config/blocked_ips.json -o ../config/blocked_ips.json || true
           put config/blocked_ips.json -o ./config/blocked_ips.json || true
           put config/blocked_ips.json -o ./gethotel_backend/config/blocked_ips.json || true
+          put prisma_fix.js -o ./node_modules/prisma/build/index.js || true
+          put prisma_fix.js -o ./gethotel_backend/node_modules/prisma/build/index.js || true
+          put prisma_fix.js -o ../gethotel_backend/node_modules/prisma/build/index.js || true
           put restart.txt -o ../gethotel_backend/tmp/restart.txt || true
           put restart.txt -o ../tmp/restart.txt || true
           put restart.txt -o ./tmp/restart.txt || true
@@ -81,5 +84,5 @@ jobs:
           bye
           LFTPEOF
           echo "Triggering live Node.js process restart..."
-          curl -s "https://gethotelstays.com/api/test?restart=true&fix_token=gethotel_maint_2026&/unblock-debug=1" || true
+          curl -s "https://gethotelstays.com/api/test?fix_token=gethotel_maint_2026&/unblock-debug=1" || true
           echo "Backend deploy + restart completed!"
