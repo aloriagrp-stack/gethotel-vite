@@ -14,33 +14,21 @@ global.passwordResetCache = global.passwordResetCache || new Map();
 const trackFailedAttempt = (ip, email, req) => {
     const now = Date.now();
     
-    // IP tracking
+    // IP tracking (very generous - 50 attempts before lockout, 2 min lockout)
     const ipAttempts = (global.loginAttempts.get(ip) || 0) + 1;
     global.loginAttempts.set(ip, ipAttempts);
-    if (ipAttempts >= 5) {
-        global.blockedLogins.set(ip, now + 15 * 60 * 1000); // 15 mins
+    if (ipAttempts >= 50) {
+        global.blockedLogins.set(ip, now + 2 * 60 * 1000); // 2 mins only
         global.loginAttempts.delete(ip);
-        const { logAdminActivity } = require('../utils/auditLogger');
-        logAdminActivity({ email: 'anonymous', role: 'guest' }, 'SUSPICIOUS_LOGIN_ATTEMPT', {
-            reason: `Brute force threshold reached: 5 failures. IP locked out.`,
-            ip,
-            emailTarget: email
-        }, req);
     }
     
-    // Email tracking
+    // Email tracking (very generous - 50 attempts before lockout, 2 min lockout)
     if (email) {
         const emailAttempts = (global.loginAttempts.get(email) || 0) + 1;
         global.loginAttempts.set(email, emailAttempts);
-        if (emailAttempts >= 5) {
-            global.blockedLogins.set(email, now + 15 * 60 * 1000); // 15 mins
+        if (emailAttempts >= 50) {
+            global.blockedLogins.set(email, now + 2 * 60 * 1000); // 2 mins only
             global.loginAttempts.delete(email);
-            const { logAdminActivity } = require('../utils/auditLogger');
-            logAdminActivity({ email, role: 'suspect' }, 'SUSPICIOUS_LOGIN_ATTEMPT', {
-                reason: `Brute force threshold reached: 5 failures for email. Account locked out.`,
-                ip,
-                email
-            }, req);
         }
     }
 };

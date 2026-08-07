@@ -52,23 +52,7 @@ exports.unblockAllIps = () => {
 };
 
 exports.botScanner = (req, res, next) => {
-    // Bypass bot scanner for all public OTA endpoints, importer, and debug routes
-    const urlStr = (req.originalUrl || req.url || '').toLowerCase();
-    if (urlStr.includes('/api/ota') || urlStr.includes('/ota') || urlStr.includes('/unblock-debug') || urlStr.includes('importer') || urlStr.includes('scraped-hotel')) {
-        return next();
-    }
-
-    const userAgent = req.headers['user-agent'] || '';
-
-    // Flag common bot footprints without permanently banning the IP
-    const isBot = botUserAgents.some(bot => userAgent.toLowerCase().includes(bot));
-    
-    if (isBot && process.env.NODE_ENV === 'production') {
-        return res.status(403).json({
-            success: false,
-            message: 'Access Denied: Automated requests are prohibited.'
-        });
-    }
+    // Bot scanner disabled - all requests allowed through
     next();
 };
 
@@ -90,7 +74,7 @@ exports.requestSizeLimiter = (req, res, next) => {
 // 4. Rate Limiters using express-rate-limit
 exports.globalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 200, // Limit each IP to 200 requests per window
+    max: 5000, // Very generous limit
     standardHeaders: true,
     legacyHeaders: false,
     message: {
@@ -101,7 +85,7 @@ exports.globalLimiter = rateLimit({
 
 exports.authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 20, // Limit each IP to 20 login/register requests per window
+    max: 200, // Generous login limit
     standardHeaders: true,
     legacyHeaders: false,
     message: {
@@ -142,7 +126,7 @@ exports.throttler = (req, res, next) => {
     tracker.lastRequest = now;
 
     // Trigger throttling after 40 requests in 1 minute
-    if (tracker.count > 40) {
+    if (tracker.count > 500) {
         const delayMs = Math.min(5000, 500 * (tracker.count - 40));
         console.log(`[THROTTLER] Injecting ${delayMs}ms delay for IP: ${ip} (Count: ${tracker.count})`);
         return setTimeout(next, delayMs);
