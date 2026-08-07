@@ -34,21 +34,7 @@ jobs:
           npm install
           npm run build
 
-      - name: Check Backend Changes
-        id: backend_changes
-        run: |
-          CHANGED=$(git diff --name-only HEAD~10 HEAD -- "GetHotel backend/" | grep -v '\.log$' | grep -v '^GetHotel backend/tmp/' | grep -v '^GetHotel backend/logs/' || true)
-          if [ -z "$CHANGED" ]; then
-            echo "has_changes=false" >> $GITHUB_OUTPUT
-            echo "No backend changes detected, skipping backend deploy."
-          else
-            echo "has_changes=true" >> $GITHUB_OUTPUT
-            echo "Backend changes detected:"
-            echo "$CHANGED"
-          fi
-
       - name: Deploy Backend Zip to cPanel
-        if: steps.backend_changes.outputs.has_changes == 'true'
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
           FTP_USER: ${{ secrets.FTP_USERNAME }}
@@ -62,14 +48,7 @@ jobs:
           ls -la backend.zip
           echo "Uploading backend.zip to public_html..."
           lftp -u "$FTP_USER","$FTP_PASS" "$FTP_SERVER" -e "set ftp:ssl-allow no; set ftp:passive-mode yes; set net:timeout 60; set net:max-retries 3; put backend.zip -o ./public_html/backend.zip; bye"
-          echo "Triggering remote backend extraction..."
-          BACKEND_RESPONSE=$(curl -sS --max-time 60 "https://gethotelstays.com/unzip.php?action=extract_backend")
-          echo "Backend Response: $BACKEND_RESPONSE"
-          if [ "$BACKEND_RESPONSE" != "BACKEND_DEPLOY_SUCCESS" ]; then
-              echo "Warning: Backend extraction response unexpected: $BACKEND_RESPONSE"
-          else
-              echo "Backend deploy + restart completed!"
-          fi
+          echo "Backend zip uploaded. Extraction will be triggered after new unzip.php is live."
 
       - name: Zip Main Frontend Build
         run: |
@@ -117,6 +96,15 @@ jobs:
           echo "Extracting AI frontend..."
           AI_RESPONSE=$(curl -sS --max-time 30 "https://gethotelstays.com/unzip.php?action=extract_ai")
           echo "AI Extraction Response: $AI_RESPONSE"
+
+          echo "Extracting backend to /home/vgyuvmpi/gethotel_backend/..."
+          BACKEND_RESPONSE=$(curl -sS --max-time 90 "https://gethotelstays.com/unzip.php?action=extract_backend")
+          echo "Backend Extraction Response: $BACKEND_RESPONSE"
+          if [ "$BACKEND_RESPONSE" != "BACKEND_DEPLOY_SUCCESS" ]; then
+              echo "Warning: Backend extraction response unexpected: $BACKEND_RESPONSE"
+          else
+              echo "Backend deploy + restart completed!"
+          fi
 
       - name: Sync Backend to Root & Restart
         run: |
