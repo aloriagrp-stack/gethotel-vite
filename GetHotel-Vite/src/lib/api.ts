@@ -102,11 +102,11 @@ export const hotelApi = {
     },
     createHotel: (hotelData: any) => apiFetch('/hotels', { method: 'POST', body: JSON.stringify(hotelData) }),
     updateHotel: async (id: string | number, hotelData: any) => {
-        try {
-            return await apiFetch(`/hotels/${id}`, { method: 'POST', body: JSON.stringify(hotelData) });
-        } catch (err: any) {
-            return await apiFetch(`/hotels/${id}`, { method: 'PUT', body: JSON.stringify(hotelData) });
-        }
+        // Use LiteSpeed-safe route: POST /hotel-update (no numeric path segments)
+        return await apiFetch('/hotel-update', { 
+            method: 'POST', 
+            body: JSON.stringify({ ...hotelData, _hotelId: id }) 
+        });
     },
     deleteHotel: (id: string) => apiFetch(`/hotels/${id}`, { method: 'DELETE' }),
     createReview: (hotelId: number, reviewData: any) => apiFetch(`/hotels/${hotelId}/reviews`, { method: 'POST', body: JSON.stringify(reviewData) }),
@@ -114,11 +114,11 @@ export const hotelApi = {
     getRooms: (id: string, params?: any) => apiFetch(`/hotels/${id}/rooms${params ? '?' + new URLSearchParams(params).toString() : ''}`),
     addRoom: (hotelId: number, roomData: any) => apiFetch(`/hotels/${hotelId}/rooms`, { method: 'POST', body: JSON.stringify(roomData) }),
     updateRoom: async (hotelId: number, roomId: number, roomData: any) => {
-        try {
-            return await apiFetch(`/hotels/${hotelId}/rooms/${roomId}`, { method: 'POST', body: JSON.stringify(roomData) });
-        } catch (err: any) {
-            return await apiFetch(`/hotels/${hotelId}/rooms/${roomId}`, { method: 'PUT', body: JSON.stringify(roomData) });
-        }
+        // Use LiteSpeed-safe route: POST /room-update (no numeric path segments)
+        return await apiFetch('/room-update', { 
+            method: 'POST', 
+            body: JSON.stringify({ ...roomData, _hotelId: hotelId, _roomId: roomId }) 
+        });
     },
     deleteRoom: (hotelId: number, roomId: number) => apiFetch(`/hotels/${hotelId}/rooms/${roomId}`, { method: 'DELETE' }),
     bulkUpdateRooms: (hotelId: number, rooms: any[], deleteIds: number[]) => apiFetch(`/hotels/${hotelId}/rooms/bulk`, { method: 'POST', body: JSON.stringify({ rooms, deleteIds }) }),

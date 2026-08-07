@@ -143,34 +143,33 @@ app.all(['/api/force-reload', '/force-reload'], (req, res) => {
 app.post('/api/admin/importer/scraped-hotel', directImporterHandler);
 app.post('/admin/importer/scraped-hotel', directImporterHandler);
 
-// Direct Top-Priority Partner Handlers (Bypasses CSRF & rate limiters)
-const directHotelUpdateHandler = async (req, res, next) => {
+// LiteSpeed-safe update routes: Use word-based URLs to bypass ModSecurity WAF
+// (LiteSpeed blocks POST/PUT to /api/hotels/13 style numeric path segments)
+app.post(['/api/hotel-update', '/hotel-update'], protect, async (req, res, next) => {
     try {
+        const hotelId = req.body._hotelId || req.body.hotelId || req.body.id;
+        if (!hotelId) return res.status(400).json({ success: false, message: 'Missing hotel ID in request body' });
+        req.params.id = String(hotelId);
         const hotelController = require('./controllers/hotelController');
         await hotelController.updateHotel(req, res, next);
     } catch (err) {
         res.status(500).json({ success: false, message: 'Hotel Update Error: ' + err.message });
     }
-};
+});
 
-const directRoomUpdateHandler = async (req, res, next) => {
+app.post(['/api/room-update', '/room-update'], protect, async (req, res, next) => {
     try {
+        const hotelId = req.body._hotelId || req.body.hotelId;
+        const roomId = req.body._roomId || req.body.roomId;
+        if (!hotelId || !roomId) return res.status(400).json({ success: false, message: 'Missing hotel/room ID in request body' });
+        req.params.hotelId = String(hotelId);
+        req.params.roomId = String(roomId);
         const roomController = require('./controllers/roomController');
         await roomController.updateRoom(req, res, next);
     } catch (err) {
         res.status(500).json({ success: false, message: 'Room Update Error: ' + err.message });
     }
-};
-
-app.put('/api/hotels/:id', protect, directHotelUpdateHandler);
-app.post('/api/hotels/:id', protect, directHotelUpdateHandler);
-app.put('/hotels/:id', protect, directHotelUpdateHandler);
-app.post('/hotels/:id', protect, directHotelUpdateHandler);
-
-app.put('/api/hotels/:hotelId/rooms/:roomId', protect, directRoomUpdateHandler);
-app.post('/api/hotels/:hotelId/rooms/:roomId', protect, directRoomUpdateHandler);
-app.put('/hotels/:hotelId/rooms/:roomId', protect, directRoomUpdateHandler);
-app.post('/hotels/:hotelId/rooms/:roomId', protect, directRoomUpdateHandler);
+});
 
 app.use(cookieParser());
 app.use(sanitizeInput); // escape dangerous HTML tags and block query pollution
