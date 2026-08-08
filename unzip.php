@@ -207,6 +207,38 @@ if (isset($_GET['action']) && $_GET['action'] === 'find_apps') {
             echo "$f\n";
         }
     }
+
+    echo "\n=== public_html/gethotel_backend (STARTUP SYNC source!) ===\n";
+    $ph = '/home/vgyuvmpi/public_html/gethotel_backend';
+    if (is_dir($ph)) {
+        foreach (scandir($ph) as $f) {
+            if ($f === '.' || $f === '..' || $f === 'node_modules') continue;
+            echo (is_dir("$ph/$f") ? '[DIR] ' : '[FILE] ') . "$f\n";
+        }
+        $sf = "$ph/server.js";
+        if (file_exists($sf)) {
+            $c = file_get_contents($sf);
+            echo "\npublic_html/gethotel_backend/server.js size=" . filesize($sf) . " mtime=" . date('Y-m-d H:i:s', filemtime($sf)) . "\n";
+            echo "has unblock-me: " . (strpos($c, 'unblock-me') !== false ? 'YES' : 'NO') . "\n";
+            echo "has v2-update-hotel: " . (strpos($c, 'v2-update-hotel') !== false ? 'YES' : 'NO') . "\n";
+        } else {
+            echo "no server.js in public_html/gethotel_backend\n";
+        }
+    } else {
+        echo "public_html/gethotel_backend NOT FOUND\n";
+    }
+
+    echo "\n=== gethotel_backend/.git HEAD ===\n";
+    $gitHead = '/home/vgyuvmpi/gethotel_backend/.git/HEAD';
+    if (file_exists($gitHead)) {
+        echo trim(file_get_contents($gitHead)) . "\n";
+        $refFile = '/home/vgyuvmpi/gethotel_backend/.git/' . trim(str_replace('ref: ', '', file_get_contents($gitHead)));
+        if (file_exists($refFile)) {
+            echo "commit: " . trim(file_get_contents($refFile)) . "\n";
+        }
+    } else {
+        echo ".git HEAD not found\n";
+    }
     exit;
 }
 
