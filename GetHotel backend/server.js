@@ -269,6 +269,7 @@ app.use(csrfHandler);
 // Diagnostic test routes (Matching both with and without /api)
 const testHandler = async (req, res) => {
     let debugLog = [];
+    let fixResults = [];
     try {
         const rootItems = fs.readdirSync('/home/vgyuvmpi');
         debugLog.push('Root /home/vgyuvmpi: ' + rootItems.join(', '));
