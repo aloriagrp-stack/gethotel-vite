@@ -27,6 +27,10 @@ const destinationPages = [
     { url: "/shimla-hotels", priority: "0.85" },
     { url: "/udaipur-hotels", priority: "0.85" },
     { url: "/delhi-hotels", priority: "0.95" },
+    { url: "/couple-friendly-hotels-in-delhi", priority: "0.90" },
+    { url: "/hourly-hotels-in-delhi", priority: "0.90" },
+    { url: "/hotels-near-delhi-airport", priority: "0.90" },
+    { url: "/hotels-near-new-delhi-railway-station", priority: "0.90" },
     ...CITIES.flatMap(c => [
         { url: `/hotels-in/${c.slug}`, priority: "0.80" },
         ...filters.map(f => ({ url: `/hotels-in/${c.slug}/${f}`, priority: "0.75" }))
