@@ -53,7 +53,7 @@ const guestSchema = z.object({
 type GuestFormData = z.infer<typeof guestSchema>;
 
 // Payment modes
-type PaymentMode = "pay_now" | "pay_at_hotel" | "pay_full_online";
+type PaymentMode = "pay_deposit" | "pay_at_hotel" | "pay_full_online";
 
 const COUNTRY_LIST = [
     "India", "United States", "United Kingdom", "Australia", "Canada",
@@ -130,6 +130,13 @@ function BookingContent() {
 
     const [hotel, setHotel] = useState<any>(null);
     const [selectedRoom, setSelectedRoom] = useState<any>(null);
+    const [selectedRoomsData, setSelectedRoomsData] = useState<Array<{
+        room: any;
+        variantIdx: string;
+        quantity: number;
+        selectedVariant?: any;
+        pricePerNight: number;
+    }>>([]);
     const [loadingData, setLoadingData] = useState(true);
     const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -137,7 +144,7 @@ function BookingContent() {
     const [coupons, setCoupons] = useState<any[]>([]);
     const [couponCode, setCouponCode] = useState("");
     const [couponError, setCouponError] = useState("");
-    const [paymentMode, setPaymentMode] = useState<PaymentMode>("pay_at_hotel");
+    const [paymentMode, setPaymentMode] = useState<PaymentMode>("pay_deposit");
     const [showConfirmAnimation, setShowConfirmAnimation] = useState(false);
     const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
     const [showSkipButton, setShowSkipButton] = useState(false);
@@ -231,12 +238,20 @@ function BookingContent() {
                     thumbnail: "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80",
                     isPackage: true
                 });
-                setSelectedRoom({
+                const pkgRoom = {
                     id: packageId,
                     name: `${packageTitle} (${packageTravelers} Guests)`,
                     pricePerNight: packageTotalAmount,
                     selectedVariant: { price: packageTotalAmount, name: `${packageTravelers} Travelers Package` }
-                });
+                };
+                setSelectedRoom(pkgRoom);
+                setSelectedRoomsData([{
+                    room: pkgRoom,
+                    variantIdx: "0",
+                    quantity: 1,
+                    selectedVariant: pkgRoom.selectedVariant,
+                    pricePerNight: packageTotalAmount
+                }]);
                 setLoadingData(false);
                 return;
             }
@@ -251,41 +266,80 @@ function BookingContent() {
                 const hotelData = hotelRes.data;
                 setHotel(hotelData);
 
+                // Parse multiple selected rooms from searchParams (e.g. room_135_0=2)
+                const selectedRoomsInfo: { id: string; variantIdx?: string; quantity: number }[] = [];
+                searchParams.forEach((val, key) => {
+                    if (key.startsWith('room_')) {
+                        const rawId = key.replace('room_', '');
+                        const parts = rawId.split('_');
+                        const qty = parseInt(val, 10);
+                        if (qty > 0) {
+                            selectedRoomsInfo.push({
+                                id: parts[0],
+                                variantIdx: parts[1] || "0",
+                                quantity: qty
+                            });
+                        }
+                    }
+                });
+
                 let targetRoomId = roomId;
                 let targetVariantIndex = variantParam;
-                let foundRoom: any = null;
-
-                if (!targetRoomId) {
-                    let roomKey: string | null = null;
-                    searchParams.forEach((_, key) => {
-                        if (key.startsWith('room_')) {
-                            roomKey = key;
-                        }
+                if (selectedRoomsInfo.length === 0 && targetRoomId) {
+                    selectedRoomsInfo.push({
+                        id: String(targetRoomId),
+                        variantIdx: String(targetVariantIndex || "0"),
+                        quantity: 1
                     });
+                }
 
-                    if (roomKey) {
-                        const parts = (roomKey as string).split('_');
-                        targetRoomId = parts[1];
-                        targetVariantIndex = parts[2] || "0";
+                const params: any = {};
+                if (checkIn) params.checkIn = checkIn;
+                if (checkOut) params.checkOut = checkOut;
+                const roomsRes = await hotelApi.getRooms(hotelId, params);
+                const allRooms = roomsRes.data || hotelData?.room || hotelData?.rooms || [];
+
+                const loadedRoomsData: any[] = [];
+                for (const info of selectedRoomsInfo) {
+                    const foundRoom = allRooms.find((r: any) => String(r.id) === String(info.id));
+                    if (foundRoom) {
+                        const variants = safeParse(foundRoom.variants || foundRoom.room_variants, []);
+                        const vIndex = parseInt(info.variantIdx || "0");
+                        const selectedVariant = variants && variants[vIndex] ? variants[vIndex] : null;
+                        const roomPolicies = safeParse(foundRoom.roomPolicies || foundRoom.room_policies || foundRoom.policies, {});
+
+                        const basePrice = selectedVariant?.price ? parseFloat(selectedVariant.price) : (foundRoom.pricePerNight ?? hotelData?.pricePerNight ?? 0);
+                        const priceDiff = foundRoom.dynamicPricePerNight ? (foundRoom.dynamicPricePerNight - foundRoom.pricePerNight) : 0;
+
+                        loadedRoomsData.push({
+                            room: { ...foundRoom, roomPolicies },
+                            variantIdx: info.variantIdx || "0",
+                            quantity: info.quantity,
+                            selectedVariant,
+                            pricePerNight: basePrice + priceDiff
+                        });
                     }
                 }
 
-                if (targetRoomId) {
-                    const params: any = {};
-                    if (checkIn) params.checkIn = checkIn;
-                    if (checkOut) params.checkOut = checkOut;
-                    const roomsRes = await hotelApi.getRooms(hotelId, params);
-                    foundRoom = (roomsRes.data || []).find((r: any) => String(r.id) === String(targetRoomId));
+                if (loadedRoomsData.length === 0 && allRooms.length > 0) {
+                    const fallbackRoom = allRooms[0];
+                    const variants = safeParse(fallbackRoom.variants || fallbackRoom.room_variants, []);
+                    const selectedVariant = variants && variants[0] ? variants[0] : null;
+                    const basePrice = selectedVariant?.price ? parseFloat(selectedVariant.price) : (fallbackRoom.pricePerNight ?? hotelData?.pricePerNight ?? 0);
+                    const priceDiff = fallbackRoom.dynamicPricePerNight ? (fallbackRoom.dynamicPricePerNight - fallbackRoom.pricePerNight) : 0;
                     
-                    if (foundRoom) {
-                        const variants = safeParse(foundRoom.variants || foundRoom.room_variants, []);
-                        const vIndex = parseInt(targetVariantIndex || "0");
-                        if (variants && variants[vIndex]) {
-                            foundRoom.selectedVariant = variants[vIndex];
-                        }
-                        foundRoom.roomPolicies = safeParse(foundRoom.roomPolicies || foundRoom.room_policies || foundRoom.policies, {});
-                        setSelectedRoom(foundRoom);
-                    }
+                    loadedRoomsData.push({
+                        room: fallbackRoom,
+                        variantIdx: "0",
+                        quantity: 1,
+                        selectedVariant,
+                        pricePerNight: basePrice + priceDiff
+                    });
+                }
+
+                setSelectedRoomsData(loadedRoomsData);
+                if (loadedRoomsData.length > 0) {
+                    setSelectedRoom(loadedRoomsData[0].room);
                 }
 
                 const couponRes = await couponApi.getCoupons(hotelData.id);
@@ -297,10 +351,9 @@ function BookingContent() {
                     const d2 = new Date(checkOut);
                     const stayNights = isNaN(d1.getTime()) || isNaN(d2.getTime()) ? 1 : Math.max(1, Math.floor((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24)));
                     
-                    const resolvedRoom = foundRoom || hotelData?.room?.[0] || hotelData?.rooms?.[0];
-                    const roomBase = resolvedRoom?.selectedVariant?.price ? parseFloat(resolvedRoom.selectedVariant.price) : (resolvedRoom?.pricePerNight ?? hotelData?.pricePerNight ?? 0);
-                    const priceDiff = resolvedRoom?.dynamicPricePerNight ? (resolvedRoom.dynamicPricePerNight - resolvedRoom.pricePerNight) : 0;
-                    const calculatedBasePrice = (roomBase + priceDiff) * stayNights;
+                    const resolvedRoom = loadedRoomsData[0]?.room || hotelData?.room?.[0] || hotelData?.rooms?.[0];
+                    const roomBase = loadedRoomsData[0]?.pricePerNight || (resolvedRoom?.pricePerNight ?? hotelData?.pricePerNight ?? 0);
+                    const calculatedBasePrice = roomBase * stayNights;
 
                     const stayDetailsForAutoApply = {
                         checkIn,
@@ -373,10 +426,27 @@ function BookingContent() {
             const total = discountedSubtotal;
             const platformFee = Math.round(total * 0.12);
             const payAtHotel = total - platformFee;
-            return { baseSubtotal, discount, discountedSubtotal, taxes, total, platformFee, payAtHotel, gstRate: 0 };
+            return { baseSubtotal, discount, discountedSubtotal, taxes, total, platformFee, payAtHotel, gstRate: 0, totalRoomsCount: 1 };
         }
 
-        const baseSubtotal = (pricePerNight || 0) * nights;
+        let baseSubtotal = 0;
+        let totalRoomsCount = 0;
+
+        if (selectedRoomsData.length > 0) {
+            selectedRoomsData.forEach(item => {
+                let itemNightPrice = item.pricePerNight;
+                if (isHourly) {
+                    const hourlyRates = safeParse(item.room?.hourlyRates || item.room?.hourly_rates, {});
+                    itemNightPrice = hourlyRates[duration] || (item.room?.pricePerNight ? item.room.pricePerNight / 2 : 0);
+                }
+                const itemTotal = itemNightPrice * item.quantity * (isHourly ? 1 : nights);
+                baseSubtotal += itemTotal;
+                totalRoomsCount += item.quantity;
+            });
+        } else {
+            baseSubtotal = (pricePerNight || 0) * nights;
+            totalRoomsCount = 1;
+        }
         
         let discount = 0;
         if (appliedCoupon) {
@@ -390,11 +460,13 @@ function BookingContent() {
         
         const discountedSubtotal = Math.max(0, baseSubtotal - discount);
         
-        const pricePerNightAfterDiscount = discountedSubtotal / (nights || 1);
+        const totalRoomNights = (totalRoomsCount || 1) * (isHourly ? 1 : nights);
+        const averagePricePerRoomNight = discountedSubtotal / (totalRoomNights || 1);
+
         let gstRate = 0.05;
-        if (pricePerNightAfterDiscount <= 1000) {
+        if (averagePricePerRoomNight <= 1000) {
             gstRate = 0;
-        } else if (pricePerNightAfterDiscount <= 7500) {
+        } else if (averagePricePerRoomNight <= 7500) {
             gstRate = 0.05;
         } else {
             gstRate = 0.18;
@@ -402,10 +474,21 @@ function BookingContent() {
 
         const taxes = Math.round(discountedSubtotal * gstRate);
         const total = discountedSubtotal + taxes;
-        const platformFee = Math.round(total * 0.12); // 12% booking fee
-        const payAtHotel = total - platformFee;
+        const platformFee = Math.round(total * 0.12); // 12% Deposit Online
+        const payAtHotel = total - platformFee; // 88% Balance at Hotel
 
-        return { baseSubtotal, discount, discountedSubtotal, taxes, total, platformFee, payAtHotel, gstRate };
+        return { 
+            baseSubtotal, 
+            discount, 
+            discountedSubtotal, 
+            taxes, 
+            total, 
+            platformFee, 
+            payAtHotel, 
+            gstRate, 
+            totalRoomsCount, 
+            averagePricePerRoomNight 
+        };
     };
 
     const priceDetails = calculatePrice();
@@ -413,7 +496,13 @@ function BookingContent() {
     const getPayNowAmount = () => {
         if (paymentMode === "pay_at_hotel") return 0;
         if (paymentMode === "pay_full_online") return priceDetails.total;
-        return priceDetails.platformFee;
+        return priceDetails.platformFee; // pay_deposit
+    };
+
+    const getPayAtHotelAmount = () => {
+        if (paymentMode === "pay_at_hotel") return priceDetails.total;
+        if (paymentMode === "pay_full_online") return 0;
+        return priceDetails.payAtHotel; // pay_deposit
     };
 
     const { register, handleSubmit, formState: { errors } } = useForm<GuestFormData>({
@@ -442,7 +531,7 @@ function BookingContent() {
                 bookingStatus = 'held';
                 bookingPaymentStatus = 'paid';
                 amountPaid = priceDetails.total;
-            } else {
+            } else { // pay_deposit
                 bookingStatus = 'held';
                 bookingPaymentStatus = 'partial';
                 amountPaid = priceDetails.platformFee;
@@ -483,9 +572,17 @@ function BookingContent() {
                 return;
             }
 
+            const roomsPayload = selectedRoomsData.length > 0
+                ? selectedRoomsData.map(item => ({
+                    id: String(item.room.id),
+                    quantity: item.quantity,
+                    variantIdx: String(item.variantIdx || "0")
+                }))
+                : [{ id: String(selectedRoom?.id), quantity: 1, variantIdx: variantParam || "0" }];
+
             const bookingData: any = {
                 hotelId: parseInt(hotelId),
-                rooms: [{ id: String(selectedRoom?.id), quantity: 1, variantIdx: variantParam || "0" }],
+                rooms: roomsPayload,
                 checkIn,
                 checkOut,
                 totalGuests: guestsParam,
@@ -638,20 +735,23 @@ function BookingContent() {
                             <div className="relative h-48 sm:h-56 w-full bg-slate-100">
                                 <Image 
                                     src={isPackage ? "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80" : (selectedRoom ? (getImages(selectedRoom.images)[0] || selectedRoom.thumbnail) : (hotel?.thumbnail || "/placeholder-hotel.jpg"))} 
-                                    alt={isPackage ? packageTitle : (selectedRoom?.name || hotel?.name || "Hotel")} 
-                                    fill 
-                                    className="object-cover" 
+                                    alt={isPackage ? packageTitle : (hotel?.name || "Hotel")} 
+                                    className="w-full h-full object-cover" 
                                 />
+                                <div className="absolute top-3 left-3 flex items-center gap-1 px-3 py-1 bg-slate-900/80 backdrop-blur-md text-white rounded-full text-[10px] font-black tracking-widest uppercase">
+                                    <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                                    <span>{hotel?.starRating || hotel?.rating || "4.8"}</span>
+                                </div>
                             </div>
-                            <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-                                <div className="space-y-1">
-                                    <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest block">
-                                        {isPackage ? "Tour Package" : "Hotel Booking"}
+                            <div className="p-5 sm:p-6 space-y-6">
+                                <div>
+                                    <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest block mb-1">
+                                        {isPackage ? "Selected Tour Package" : "Selected Property"}
                                     </span>
                                     <h2 className="text-xl font-black text-slate-900 tracking-tight leading-tight uppercase">
                                         {isPackage ? packageTitle : (hotel?.name || "Loading...")}
                                     </h2>
-                                    <p className="text-[11px] text-slate-500 font-bold leading-relaxed flex items-center gap-1">
+                                    <p className="text-[11px] text-slate-500 font-bold leading-relaxed flex items-center gap-1 mt-1">
                                         <MapPin className="w-3.5 h-3.5 text-blue-600" />
                                         <span>{isPackage ? packageDestination : (hotel?.address || "Address loading...")}</span>
                                     </p>
@@ -660,51 +760,93 @@ function BookingContent() {
                                 <div className="pt-6 border-t border-slate-100 space-y-4">
                                     <div className="flex flex-col gap-1">
                                         <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">
-                                            {isPackage ? "Package Inclusions" : "Selected Room"}
+                                            {isPackage ? "Package Inclusions" : "Selected Rooms"}
                                         </span>
-                                        <h3 className="text-base font-black text-slate-900 tracking-tight leading-tight">
-                                            {isPackage ? `${packageTitle} (${packageTravelers} Guests)` : (selectedRoom?.name || "Room Selection")}
-                                        </h3>
+                                        {isPackage ? (
+                                            <h3 className="text-base font-black text-slate-900 tracking-tight leading-tight">
+                                                {packageTitle} ({packageTravelers} Guests)
+                                            </h3>
+                                        ) : selectedRoomsData.length > 0 ? (
+                                            <div className="space-y-2">
+                                                {selectedRoomsData.map((item, idx) => (
+                                                    <div key={idx} className="flex justify-between items-start text-xs font-bold text-slate-900 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                                        <div>
+                                                            <div className="font-black text-slate-900">{item.quantity} x {item.room?.name || "Room"}</div>
+                                                            {item.selectedVariant?.name && (
+                                                                <div className="text-[10px] text-slate-500 font-medium">{item.selectedVariant.name}</div>
+                                                            )}
+                                                        </div>
+                                                        <span className="text-xs font-black text-blue-600 shrink-0 ml-2">
+                                                            ₹{(item.pricePerNight * item.quantity * nights).toLocaleString()}
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <h3 className="text-base font-black text-slate-900 tracking-tight leading-tight">
+                                                {selectedRoom?.name || "Room Selection"}
+                                            </h3>
+                                        )}
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
                                             <Users className="w-4 h-4 text-blue-600" /> {isPackage ? packageTravelers : guestsParam} Guest(s)
                                         </div>
                                         <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                                            <Calendar className="w-4 h-4 text-blue-600" /> {isPackage ? formatDate(packageCheckIn) : (isHourly ? `${duration} Hrs` : `${nights} Night(s)`)}
+                                            <Calendar className="w-4 h-4 text-blue-600" /> {isPackage ? formatDate(packageCheckIn) : (isHourly ? `${duration} Hrs` : `${nights} Night(s) • ${priceDetails.totalRoomsCount} Room(s)`)}
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-xl border border-blue-100 text-blue-700">
-                                        <Check className="w-4 h-4" />
+                                        <Check className="w-4 h-4 shrink-0" />
                                         <span className="text-[10px] font-black uppercase tracking-widest">{mealPlanLabel}</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
+                        {/* Booking Summary Card */}
                         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6 space-y-4 sm:space-y-6">
                             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Booking Summary</h3>
-                            <div className="space-y-2 text-xs font-semibold">
+                            <div className="space-y-2.5 text-xs font-semibold">
                                 <div className="flex justify-between text-slate-600">
-                                    <span>Rate ({isPackage ? `${packageTravelers} Guests` : `${nights} Night(s)`})</span>
+                                    <span>Rate ({priceDetails.totalRoomsCount} Room(s) × {isPackage ? 'Package' : (isHourly ? `${duration} Hrs` : `${nights} Night(s)`)})</span>
                                     <span>₹{priceDetails.baseSubtotal.toLocaleString()}</span>
                                 </div>
                                 {priceDetails.discount > 0 && (
-                                    <div className="flex justify-between text-emerald-600">
+                                    <div className="flex justify-between text-emerald-600 font-bold">
                                         <span>Coupon Discount</span>
                                         <span>-₹{priceDetails.discount.toLocaleString()}</span>
                                     </div>
                                 )}
-                                {priceDetails.taxes > 0 && (
-                                    <div className="flex justify-between text-slate-600">
-                                        <span>Taxes & GST</span>
-                                        <span>₹{priceDetails.taxes.toLocaleString()}</span>
-                                    </div>
-                                )}
+                                <div className="flex justify-between text-slate-600 items-center">
+                                    <span className="flex items-center gap-1.5">
+                                        Taxes & GST 
+                                        {priceDetails.gstRate > 0 && (
+                                            <span className="text-[9px] px-1.5 py-0.5 bg-blue-50 text-blue-700 font-black rounded border border-blue-100">
+                                                {Math.round(priceDetails.gstRate * 100)}% GST
+                                            </span>
+                                        )}
+                                    </span>
+                                    <span>₹{priceDetails.taxes.toLocaleString()}</span>
+                                </div>
                                 <div className="flex justify-between items-baseline pt-3 border-t border-slate-100 text-slate-900 font-black">
                                     <span>Total Payable</span>
                                     <span className="text-xl text-blue-600">₹{priceDetails.total.toLocaleString()}</span>
                                 </div>
+
+                                {/* Dynamic Payment Breakdown */}
+                                {!isPackage && (
+                                    <div className="pt-3 border-t border-slate-100 space-y-2">
+                                        <div className="flex justify-between items-center text-xs font-bold text-slate-800">
+                                            <span>Amount to Pay Now</span>
+                                            <span className="text-blue-600 font-black text-sm">₹{getPayNowAmount().toLocaleString()}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center text-xs font-bold text-slate-800">
+                                            <span>Balance at Hotel</span>
+                                            <span className="text-slate-600 font-black">₹{getPayAtHotelAmount().toLocaleString()}</span>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -773,38 +915,78 @@ function BookingContent() {
                                         </p>
                                     </div>
                                 ) : (
-                                    /* HOTELS SUPPORT DEPOSIT & FLEXIBLE PAYMENT MODES */
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    /* HOTELS SUPPORT DEPOSIT, FULL ONLINE & PAY AT HOTEL MODES */
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                        {/* Option 1: 12% Deposit */}
                                         <button
                                             type="button"
-                                            onClick={() => setPaymentMode("pay_at_hotel")}
-                                            className={`p-4 rounded-2xl border-2 text-left transition-all cursor-pointer ${
-                                                paymentMode === "pay_at_hotel"
+                                            onClick={() => setPaymentMode("pay_deposit")}
+                                            className={`p-4 rounded-2xl border-2 text-left transition-all cursor-pointer flex flex-col justify-between ${
+                                                paymentMode === "pay_deposit"
                                                     ? "border-blue-600 bg-blue-50/60 shadow-sm"
                                                     : "border-slate-200 hover:border-slate-300"
                                             }`}
                                         >
-                                            <div className="flex items-center justify-between mb-1">
-                                                <span className="text-xs font-black text-slate-900 uppercase">Pay Deposit / On Travel</span>
-                                                {paymentMode === "pay_at_hotel" && <Check className="w-4 h-4 text-blue-600" />}
+                                            <div>
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <span className="text-xs font-black text-slate-900 uppercase">Pay 12% Deposit</span>
+                                                    {paymentMode === "pay_deposit" && <Check className="w-4 h-4 text-blue-600 shrink-0" />}
+                                                </div>
+                                                <p className="text-[11px] text-slate-500 font-medium leading-normal mb-3">
+                                                    Pay ₹{priceDetails.platformFee.toLocaleString()} now to reserve. Pay remaining balance at hotel.
+                                                </p>
                                             </div>
-                                            <p className="text-[11px] text-slate-500 font-medium">Reserve now, pay remaining amount on departure.</p>
+                                            <span className="text-[10px] font-black text-blue-700 uppercase bg-blue-100/70 px-2 py-1 rounded-lg w-fit">
+                                                Deposit ₹{priceDetails.platformFee.toLocaleString()}
+                                            </span>
                                         </button>
 
+                                        {/* Option 2: Pay Full Online */}
                                         <button
                                             type="button"
                                             onClick={() => setPaymentMode("pay_full_online")}
-                                            className={`p-4 rounded-2xl border-2 text-left transition-all cursor-pointer ${
+                                            className={`p-4 rounded-2xl border-2 text-left transition-all cursor-pointer flex flex-col justify-between ${
                                                 paymentMode === "pay_full_online"
                                                     ? "border-blue-600 bg-blue-50/60 shadow-sm"
                                                     : "border-slate-200 hover:border-slate-300"
                                             }`}
                                         >
-                                            <div className="flex items-center justify-between mb-1">
-                                                <span className="text-xs font-black text-slate-900 uppercase">Pay Full Online (Instant)</span>
-                                                {paymentMode === "pay_full_online" && <Check className="w-4 h-4 text-blue-600" />}
+                                            <div>
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <span className="text-xs font-black text-slate-900 uppercase">Pay Full Online</span>
+                                                    {paymentMode === "pay_full_online" && <Check className="w-4 h-4 text-blue-600 shrink-0" />}
+                                                </div>
+                                                <p className="text-[11px] text-slate-500 font-medium leading-normal mb-3">
+                                                    Instant online confirmation via UPI / Cards / Netbanking.
+                                                </p>
                                             </div>
-                                            <p className="text-[11px] text-slate-500 font-medium">Instant online confirmation via UPI/Cards/Netbanking.</p>
+                                            <span className="text-[10px] font-black text-emerald-700 uppercase bg-emerald-100/70 px-2 py-1 rounded-lg w-fit">
+                                                Pay ₹{priceDetails.total.toLocaleString()} Now
+                                            </span>
+                                        </button>
+
+                                        {/* Option 3: Pay at Hotel */}
+                                        <button
+                                            type="button"
+                                            onClick={() => setPaymentMode("pay_at_hotel")}
+                                            className={`p-4 rounded-2xl border-2 text-left transition-all cursor-pointer flex flex-col justify-between ${
+                                                paymentMode === "pay_at_hotel"
+                                                    ? "border-blue-600 bg-blue-50/60 shadow-sm"
+                                                    : "border-slate-200 hover:border-slate-300"
+                                            }`}
+                                        >
+                                            <div>
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <span className="text-xs font-black text-slate-900 uppercase">Pay at Hotel</span>
+                                                    {paymentMode === "pay_at_hotel" && <Check className="w-4 h-4 text-blue-600 shrink-0" />}
+                                                </div>
+                                                <p className="text-[11px] text-slate-500 font-medium leading-normal mb-3">
+                                                    Reserve now for ₹0 online. Pay total amount at hotel upon departure.
+                                                </p>
+                                            </div>
+                                            <span className="text-[10px] font-black text-slate-700 uppercase bg-slate-200/80 px-2 py-1 rounded-lg w-fit">
+                                                Pay ₹0 Now
+                                            </span>
                                         </button>
                                     </div>
                                 )}
@@ -822,7 +1004,13 @@ function BookingContent() {
                                         <span>Processing Booking...</span>
                                     </>
                                 ) : (
-                                    <span>Complete Booking • ₹{priceDetails.total.toLocaleString()}</span>
+                                    <span>
+                                        {isPackage || paymentMode === "pay_full_online"
+                                            ? `Complete Booking • Pay ₹${priceDetails.total.toLocaleString()} Online`
+                                            : paymentMode === "pay_deposit"
+                                            ? `Complete Booking • Pay ₹${priceDetails.platformFee.toLocaleString()} Deposit`
+                                            : `Reserve Room • Pay ₹${priceDetails.total.toLocaleString()} at Hotel`}
+                                    </span>
                                 )}
                             </button>
                         </form>

@@ -1,0 +1,194 @@
+================================================================================
+                    GETHOTELSTAYS.COM — COMPLETE PROJECT DOCUMENTATION
+================================================================================
+Generated Date : August 05, 2026
+System Name    : GetHotelStays Complete Enterprise Travel Ecosystem
+Architecture   : 5-Layer Decoupled Full-Stack Architecture
+Hosting        : cPanel (MilesWeb / neo.herosite.pro) + GitHub Actions CI/CD
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+1. OVERVIEW & SYSTEM ARCHITECTURE
+2. GETMOTEL-VITE (MAIN FRONTEND WEB APP)
+3. GETHOTEL BACKEND (NODE.JS + EXPRESS + PRISMA + MYSQL API)
+4. GHS CHROME EXTENSION (HOTEL SCRAPER & AUTO-IMPORTER AGENT)
+5. BLOGS.GETHOTELSTAYS.COM (ENTERPRISE SEO BLOG PLATFORM)
+6. AI.GETHOTELSTAYS.COM (AI TRAVEL ASSISTANT)
+7. DATABASE SCHEMA & DATA MODELS
+8. SECURITY, CORS, CSRF & RATE LIMITING ARCHITECTURE
+9. DEPLOYMENT & CI/CD PIPELINES
+
+================================================================================
+1. OVERVIEW & SYSTEM ARCHITECTURE
+================================================================================
+GetHotelStays.com is a modern, enterprise-grade travel and hotel booking 
+platform engineered for speed, high-conversion user experience, automated 
+hotel onboarding, dynamic pricing, and comprehensive partner/super-admin 
+management.
+
+The ecosystem consists of 5 tightly integrated components:
+- Main Web Application : React 18 + Vite + TypeScript + TailwindCSS
+- API Server           : Node.js + Express + Prisma ORM + MySQL
+- Chrome Extension     : Manifest V3 Hotel Scraper Agent (MakeMyTrip / OTAs)
+- Blog Engine          : High-Performance Pre-Rendered Static SEO/AEO/GEO Platform
+- AI Assistant Sub-App : Dedicated AI Chatbot for Conversational Hotel Booking
+
+================================================================================
+2. GETHOTEL-VITE (MAIN FRONTEND WEB APP)
+================================================================================
+Directory Path: GetHotel-Vite/
+Core Stack    : React, Vite, TypeScript, TailwindCSS, Lucide Icons, Framer Motion
+
+Key Features & Modules:
+-----------------------
+A) Customer / Guest Experience:
+   1. Home Page:
+      - Dynamic Search Bar (City, Check-in/Check-out dates, Guests & Rooms selector).
+      - Hero Carousel & Featured Hotel Cards with live pricing badges.
+      - Trending Destinations & City Carousels (Delhi, Goa, Mumbai, Jaipur, etc.).
+      - Interactive Filter Bar (Price Range, Star Rating, Amenities, Views).
+   2. Hotel Detail Page:
+      - High-Res Photo Gallery Modal & 360-Degree Virtual View.
+      - Room Categories Selector (Deluxe, Executive, Suite, Villa).
+      - Live Rate Plan Generator (Meal inclusions: Breakfast, MAP, AP, Taxes).
+      - Real-Time Price Breakdown (Base rate, extra bed, GST, total).
+      - Guest Reviews & Verified Star Rating Breakdown.
+      - Interactive Map & Nearby Landmark Guide.
+   3. Checkout & Payment Flow:
+      - Guest Details Form with Instant Phone OTP Validation.
+      - Promo Code & Discount Engine (Percentage & Flat discounts).
+      - Razorpay Payment Gateway Integration (Cards, UPI, NetBanking, Wallets).
+      - Instant Booking Confirmation Modal & Printable PDF Invoice Download.
+   4. User Account & Wishlist:
+      - Wishlist Manager (Save favorite hotels with 1-click heart icon).
+      - My Bookings Dashboard (View active, upcoming, and past stays).
+      - Profile Settings (Change password/email with secure OTP authentication).
+
+B) Super Admin Portal (/admin/super/):
+   1. Executive Analytics Dashboard: Total Revenue, Active Hotels, Booking Volume.
+   2. Hotel Scraper & Importer Agent (/admin/super/hotel-importer):
+      - 1-Click Import Queue for hotels extracted via GHS Chrome Extension.
+      - Batch import gallery photos, room types, rate plans, and amenities.
+   3. Hotel Manager: Full CRUD for hotels, room inventory, active toggles.
+   4. Tour Packages Manager: Handcrafted tour package builder & hero editor.
+   5. Promotions & Coupon Manager: Create/manage discount vouchers.
+   6. Multi-Room Setup & AI Onboarding: Batch room creation suite.
+
+C) Partner / Hotel Owner Dashboard (/partner-dashboard/):
+   1. Front Desk & Availability Matrix: Live calendar grid for room availability.
+   2. Inventory & Pricing Manager: Dynamic rate rules, seasonal tariffs, extra bed.
+   3. Channel Manager Sync: OTA integration endpoints for external inventory.
+
+================================================================================
+3. GETHOTEL BACKEND (NODE.JS + EXPRESS + PRISMA + MYSQL API)
+================================================================================
+Directory Path: GetHotel backend/
+Core Stack    : Node.js, Express, Prisma ORM, MySQL, JWT, Bcrypt, Razorpay SDK
+
+Key Controllers & Service Routes:
+---------------------------------
+- authController.js        : User register/login, JWT token issuance, OTP verification.
+- hotelController.js       : Public hotel search, filtering, detail fetching.
+- hotelImporterController.js: Extension payload receiver (/scraped-hotel), queue manager.
+- bookingController.js     : Order creation, room availability check, booking record.
+- paymentController.js     : Razorpay order generation & signature verification.
+- dailyRateController.js   : Seasonal rate overrides & calendar pricing.
+- packageController.js     : Tour package management & JSON importer.
+- adminController.js       : Platform statistics, user management, audit logging.
+- aiChatController.js      : AI room search and conversational endpoints.
+
+================================================================================
+4. GHS CHROME EXTENSION (HOTEL SCRAPER & AUTO-IMPORTER AGENT)
+================================================================================
+Directory Path: ghs-chrome-extension/
+Architecture   : Manifest V3 Chrome Extension (JavaScript + Custom Dark UI)
+
+Key Capabilities:
+-----------------
+1. Live Extraction Engine:
+   - Scrapes MakeMyTrip & OTA hotel detail pages in real-time.
+   - Extracts: Hotel Name, Star Rating, Address, City, State, Country.
+   - Gallery Photos: Scrapes up to 30 high-resolution photos.
+   - Room Categories: Parses room names, occupancies, amenities, and rate plans.
+2. Terminal Workings Visualizer:
+   - Real-time 6-step extraction terminal inside extension popup UI.
+3. Direct Cloud Importer Sync:
+   - 1-Click "Export to GHS Super Admin" posts payload directly to backend.
+   - Memory cache + file backup system ensures zero data loss.
+
+================================================================================
+5. BLOGS.GETHOTELSTAYS.COM (ENTERPRISE SEO BLOG PLATFORM)
+================================================================================
+Directory Path: blogs.gethotelstays.com/
+Architecture   : Static Pre-Rendered Enterprise SEO/AEO/GEO Blog Platform
+
+Key Highlights:
+---------------
+1. 28 Pre-Rendered Static Blog Pages:
+   - Includes Independence Day 2026 Special Travel Guides & City Guides.
+2. Clean HTML5 PushState Routing:
+   - Zero hash (#) symbols in URLs. Clean paths: blogs.gethotelstays.com/slug.html.
+3. Enterprise Schemas:
+   - Injects Article, FAQPage, BreadcrumbList, Organization, GEO entity schemas.
+4. Auto-Generated Assets:
+   - Automatic `sitemap.xml` (29 URLs) and `robots.txt` generator.
+5. Dedicated Admin Panel (/admin/):
+   - Protected by Passcode Gate: `shriyanshking`.
+   - Rich Post Editor with direct image URL & local file upload support.
+
+================================================================================
+6. AI.GETHOTELSTAYS.COM (AI TRAVEL ASSISTANT)
+================================================================================
+Directory Path: ai.gethotelstays.com/
+Architecture   : Dedicated AI Chat Frontend & Backend Integration
+
+Key Capabilities:
+-----------------
+- Natural language hotel discovery ("Find me a luxury resort in Goa under 5000").
+- Fetches real-time database room inventory via /api/ai/rooms.
+- Interactive room cards & direct booking links inside AI chat stream.
+
+================================================================================
+7. DATABASE SCHEMA & DATA MODELS (PRISMA + MYSQL)
+================================================================================
+Key Models:
+-----------
+- User     : Id, name, email, password, phone, role (super_admin, hotel_admin, user), createdAt.
+- Hotel    : Id, name, description, starRating, address, city, state, country, coverImageUrl, images, isActive, otaApiKey, otaEnabled.
+- Room     : Id, hotelId, name, pricePerNight, capacityAdults, capacityChildren, status, images, amenities, viewType.
+- Booking  : Id, bookingId, hotelId, roomId, userId, checkIn, checkOut, totalAmount, paymentStatus, razorpayOrderId, razorpayPaymentId.
+- DailyRate: Id, roomId, date, price, availableCount.
+- Package  : Id, title, duration, price, heroImage, itinerary, destinations.
+
+================================================================================
+8. SECURITY, CORS, CSRF & RATE LIMITING ARCHITECTURE
+================================================================================
+1. Hardened CORS Whitelist:
+   - Allows gethotelstays.com, ai.gethotelstays.com, localhost, and chrome-extension:// origins.
+2. Anti-Hacker Middleware (security.js):
+   - IP Blocker (blocked_ips.json dynamic lockout).
+   - Bot Scanner (blocks malicious scrapers/bots).
+   - Request Size Limiter (15MB payload cap).
+   - Double-Submit Cookie CSRF Protection (with extension & public API bypass).
+3. Input Sanitizer (sanitizeInput.js):
+   - Prevents XSS, prototype pollution, and deep nesting payload attacks.
+
+================================================================================
+9. DEPLOYMENT & CI/CD PIPELINES
+================================================================================
+1. Main Web App & Backend Deployment (.github/workflows/deploy.yml):
+   - Automatically builds Vite React frontend into frontend.zip.
+   - Mirrors backend files to cPanel server (/home/vgyuvmpi/gethotel_backend) via LFTP.
+   - Triggers Passenger Node process restart via tmp/restart.txt.
+
+2. Blogs Deployment (blogs.gethotelstays.com/.github/workflows/deploy.yml):
+   - Pre-renders static HTML pages & sitemap.
+   - Mirrors files directly to cPanel target folder via LFTP using credentials:
+     * Host     : neo.herosite.pro
+     * Username : vgyuvmpi@blogs.gethotelstays.com
+     * Secrets  : CPANEL_FTP_SERVER, CPANEL_FTP_USERNAME, CPANEL_FTP_PASSWORD.
+
+================================================================================
+                                END OF DOCUMENT
+================================================================================
