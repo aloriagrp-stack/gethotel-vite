@@ -105,6 +105,65 @@ if (isset($_GET['action']) && $_GET['action'] === 'debug') {
     exit;
 }
 
+if (isset($_GET['action']) && $_GET['action'] === 'find_apps') {
+    header('Content-Type: text/plain');
+    echo "=== nodevenv contents ===\n";
+    if (is_dir('/home/vgyuvmpi/nodevenv')) {
+        foreach (scandir('/home/vgyuvmpi/nodevenv') as $f) {
+            if ($f === '.' || $f === '..') continue;
+            $p = '/home/vgyuvmpi/nodevenv/' . $f;
+            echo (is_dir($p) ? '[DIR] ' : '[FILE] ') . "$f\n";
+        }
+    } else {
+        echo "nodevenv not found\n";
+    }
+
+    echo "\n=== .cpanel/apps* configs ===\n";
+    if (is_dir('/home/vgyuvmpi/.cpanel')) {
+        foreach (scandir('/home/vgyuvmpi/.cpanel') as $f) {
+            if (strpos($f, 'app') !== false || strpos($f, 'node') !== false || strpos($f, 'passenger') !== false) {
+                echo "[.cpanel] $f\n";
+            }
+        }
+    }
+
+    echo "\n=== otel_backend (possible old app dir) ===\n";
+    if (is_dir('/home/vgyuvmpi/otel_backend')) {
+        foreach (scandir('/home/vgyuvmpi/otel_backend') as $f) {
+            if ($f === '.' || $f === '..' || $f === 'node_modules') continue;
+            echo "$f\n";
+        }
+    } else {
+        echo "otel_backend not found\n";
+    }
+
+    echo "\n=== gethotel_backend top-level ===\n";
+    if (is_dir('/home/vgyuvmpi/gethotel_backend')) {
+        foreach (scandir('/home/vgyuvmpi/gethotel_backend') as $f) {
+            if ($f === '.' || $f === '..' || $f === 'node_modules' || $f === 'uploads' || $f === 'logs') continue;
+            echo (is_dir("/home/vgyuvmpi/gethotel_backend/$f") ? '[DIR] ' : '[FILE] ') . "$f\n";
+        }
+    }
+
+    echo "\n=== account root server.js size ===\n";
+    echo "root: " . (file_exists('/home/vgyuvmpi/server.js') ? filesize('/home/vgyuvmpi/server.js') : 'MISSING') . "\n";
+    echo "otel_backend: " . (file_exists('/home/vgyuvmpi/otel_backend/server.js') ? filesize('/home/vgyuvmpi/otel_backend/server.js') : 'MISSING') . "\n";
+    echo "gethotel_backend: " . (file_exists('/home/vgyuvmpi/gethotel_backend/server.js') ? filesize('/home/vgyuvmpi/gethotel_backend/server.js') : 'MISSING') . "\n";
+
+    echo "\n=== tmp/restart.txt files ===\n";
+    $checks = [
+        '/home/vgyuvmpi/tmp/restart.txt',
+        '/home/vgyuvmpi/gethotel_backend/tmp/restart.txt',
+        '/home/vgyuvmpi/otel_backend/tmp/restart.txt',
+        '/home/vgyuvmpi/restart.txt',
+        '/home/vgyuvmpi/gethotel_backend/restart.txt'
+    ];
+    foreach ($checks as $p) {
+        echo (file_exists($p) ? 'EXISTS mtime=' . date('Y-m-d H:i:s', filemtime($p)) : 'MISSING') . " : $p\n";
+    }
+    exit;
+}
+
 if (isset($_GET['action']) && $_GET['action'] === 'extract_backend') {
     header('Content-Type: text/plain');
     $backendZip = '/home/vgyuvmpi/public_html/backend.zip';
