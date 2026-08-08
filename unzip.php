@@ -161,6 +161,52 @@ if (isset($_GET['action']) && $_GET['action'] === 'find_apps') {
     foreach ($checks as $p) {
         echo (file_exists($p) ? 'EXISTS mtime=' . date('Y-m-d H:i:s', filemtime($p)) : 'MISSING') . " : $p\n";
     }
+
+    echo "\n=== gethotel_backend_old (alternate app root?) ===\n";
+    if (is_dir('/home/vgyuvmpi/gethotel_backend_old')) {
+        $d = '/home/vgyuvmpi/gethotel_backend_old';
+        foreach (scandir($d) as $f) {
+            if ($f === '.' || $f === '..' || $f === 'node_modules') continue;
+            echo (is_dir("$d/$f") ? '[DIR] ' : '[FILE] ') . "$f\n";
+        }
+        $sf = "$d/server.js";
+        if (file_exists($sf)) {
+            $c = file_get_contents($sf);
+            echo "\ngethotel_backend_old/server.js size=" . filesize($sf) . "\n";
+            echo "has unblock-me: " . (strpos($c, 'unblock-me') !== false ? 'YES' : 'NO') . "\n";
+            echo "has v2-update-hotel: " . (strpos($c, 'v2-update-hotel') !== false ? 'YES' : 'NO') . "\n";
+        }
+    } else {
+        echo "gethotel_backend_old not found\n";
+    }
+
+    echo "\n=== otel_backend/server.js route checks ===\n";
+    if (file_exists('/home/vgyuvmpi/otel_backend/server.js')) {
+        $c = file_get_contents('/home/vgyuvmpi/otel_backend/server.js');
+        echo "size=" . filesize('/home/vgyuvmpi/otel_backend/server.js') . "\n";
+        echo "has unblock-me: " . (strpos($c, 'unblock-me') !== false ? 'YES' : 'NO') . "\n";
+        echo "has v2-update-hotel: " . (strpos($c, 'v2-update-hotel') !== false ? 'YES' : 'NO') . "\n";
+        echo "has /api/test: " . (strpos($c, '/api/test') !== false ? 'YES' : 'NO') . "\n";
+    }
+
+    echo "\n=== stderr.log tail (gethotel_backend) ===\n";
+    $sl = '/home/vgyuvmpi/gethotel_backend/stderr.log';
+    if (file_exists($sl)) {
+        $lines = file($sl);
+        $tail = array_slice($lines, -60);
+        echo implode('', $tail);
+    } else {
+        echo "stderr.log not found\n";
+    }
+
+    echo "\n=== nodevenv/gethotel_backend contents ===\n";
+    $nv = '/home/vgyuvmpi/nodevenv/gethotel_backend';
+    if (is_dir($nv)) {
+        foreach (scandir($nv) as $f) {
+            if ($f === '.' || $f === '..') continue;
+            echo "$f\n";
+        }
+    }
     exit;
 }
 
