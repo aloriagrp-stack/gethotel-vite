@@ -236,8 +236,54 @@ if (isset($_GET['action']) && $_GET['action'] === 'find_apps') {
         if (file_exists($refFile)) {
             echo "commit: " . trim(file_get_contents($refFile)) . "\n";
         }
+        $cfg = '/home/vgyuvmpi/gethotel_backend/.git/config';
+        if (file_exists($cfg)) {
+            echo "=== .git/config remote ===\n" . file_get_contents($cfg) . "\n";
+        }
     } else {
         echo ".git HEAD not found\n";
+    }
+
+    echo "\n=== .htaccess files ===\n";
+    $htaccesses = [
+        '/home/vgyuvmpi/public_html/.htaccess',
+        '/home/vgyuvmpi/gethotel_backend/.htaccess',
+        '/home/vgyuvmpi/.htaccess'
+    ];
+    foreach ($htaccesses as $ht) {
+        echo "--- $ht " . (file_exists($ht) ? '' : '(MISSING)') . " ---\n";
+        if (file_exists($ht)) {
+            $c = file_get_contents($ht);
+            echo substr($c, 0, 2000) . "\n";
+        }
+    }
+
+    echo "\n=== node_modules dependency check (crash-on-boot risk) ===\n";
+    $nm = '/home/vgyuvmpi/gethotel_backend/node_modules';
+    if (is_dir($nm)) {
+        $needed = ['express', 'express-rate-limit', 'cors', 'helmet', 'dotenv', 'jsonwebtoken', 'bcryptjs', 'mysql2', '@prisma'];
+        foreach ($needed as $dep) {
+            echo str_pad($dep, 22) . ": " . (is_dir("$nm/$dep") ? 'EXISTS' : 'MISSING') . "\n";
+        }
+        $files = scandir($nm);
+        echo "total node_modules entries: " . count($files) . "\n";
+    } else {
+        echo "node_modules MISSING in gethotel_backend!\n";
+    }
+    $nm2 = '/home/vgyuvmpi/node_modules';
+    echo "account root node_modules: " . (is_dir($nm2) ? 'EXISTS (' . count(scandir($nm2)) . ' entries)' : 'MISSING') . "\n";
+
+    echo "\n=== nodevenv .lock file ===\n";
+    $lock = '/home/vgyuvmpi/nodevenv/gethotel_backend/.lock';
+    if (file_exists($lock)) {
+        echo file_get_contents($lock) . "\n";
+    } else {
+        echo "no .lock\n";
+    }
+
+    echo "\n=== passenger dirs ===\n";
+    foreach (['/home/vgyuvmpi/.passenger', '/home/vgyuvmpi/passenger_wsgi.py', '/home/vgyuvmpi/gethotel_backend/passenger_wsgi.py'] as $p) {
+        echo "$p: " . (file_exists($p) ? 'EXISTS' : 'no') . "\n";
     }
     exit;
 }
