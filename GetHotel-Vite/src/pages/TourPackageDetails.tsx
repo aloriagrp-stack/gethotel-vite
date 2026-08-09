@@ -32,7 +32,6 @@ const ALL_PACKAGES_DB: Record<string, any> = {
         destination: "Jaipur • Udaipur • Jodhpur",
         duration: "6 Days / 5 Nights",
         rating: 4.9,
-        reviewsCount: 142,
         price: 18499,
         originalPrice: 24999,
         discountPercent: "26% OFF",
@@ -62,13 +61,7 @@ const ALL_PACKAGES_DB: Record<string, any> = {
             { day: "Day 5", title: "Udaipur Lake Pichola & Palaces", desc: "City Palace tour, Saheliyon Ki Bari, and evening Lake Pichola boat cruise." },
             { day: "Day 6", title: "Departure from Udaipur", desc: "Breakfast at hotel and transfer to Udaipur Airport for onward journey." }
         ],
-        reviews: [
-            { id: "r1", name: "Vikramaditya S.", date: "Verified Traveler • July 2026", rating: 5.0, comment: "Unforgettable experience! The heritage haveli in Udaipur was breathtaking, and the private cab driver was super polite and punctual." },
-            { id: "r2", name: "Ananya & Rohan", date: "Verified Traveler • June 2026", rating: 5.0, comment: "Amer fort guided tour and Lake Pichola sunset boat ride were the highlights of our honeymoon trip. Seamless arrangements!" },
-            { id: "r3", name: "Priya Sharma", date: "Verified Traveler • May 2026", rating: 4.8, comment: "Very well managed itinerary. The hotels were top-notch and clean. Highly recommended for family vacations!" },
-            { id: "r4", name: "Rajesh Kumar", date: "Verified Traveler • April 2026", rating: 4.9, comment: "Super smooth coordination. We didn't have to worry about cab or hotel check-ins anywhere. Truly premium service!" },
-            { id: "r5", name: "Kavita Nair", date: "Verified Traveler • March 2026", rating: 5.0, comment: "The food at Jaipur hotel and boat ride in Udaipur were magnificent. Worth every single penny." }
-        ]
+        reviews: []
     },
     "goa-tropical-beach-retreat-watersports": {
         id: "pkg-2",
@@ -77,7 +70,6 @@ const ALL_PACKAGES_DB: Record<string, any> = {
         destination: "North Goa • South Goa",
         duration: "4 Days / 3 Nights",
         rating: 4.8,
-        reviewsCount: 210,
         price: 12999,
         originalPrice: 17999,
         discountPercent: "28% OFF",
@@ -105,11 +97,7 @@ const ALL_PACKAGES_DB: Record<string, any> = {
             { day: "Day 3", title: "Watersports & Mandovi River Cruise", desc: "Parasailing, Banana Ride, and evening Mandovi river luxury cruise with folk dance." },
             { day: "Day 4", title: "South Goa & Departure", desc: "Visit Basilica of Bom Jesus and Miramar beach before airport drop." }
         ],
-        reviews: [
-            { id: "rg1", name: "Karan Mehta", date: "Verified Traveler • July 2026", rating: 4.9, comment: "Scuba diving and river cruise experience was top class. Loved the resort pool!" },
-            { id: "rg2", name: "Divya Nair", date: "Verified Traveler • June 2026", rating: 4.8, comment: "Clean cab transfers, great resort location right on Baga beach. 10/10 trip!" },
-            { id: "rg3", name: "Amitabh Sen", date: "Verified Traveler • May 2026", rating: 5.0, comment: "Parasailing and beach resort stay was amazing. Best value for money!" }
-        ]
+        reviews: []
     },
     "kashmir-paradise-srinagar-gulmarg-pahalgam": {
         id: "pkg-3",
@@ -118,7 +106,6 @@ const ALL_PACKAGES_DB: Record<string, any> = {
         destination: "Srinagar • Gulmarg • Pahalgam",
         duration: "5 Days / 4 Nights",
         rating: 4.95,
-        reviewsCount: 188,
         price: 21999,
         originalPrice: 28999,
         discountPercent: "24% OFF",
@@ -147,11 +134,7 @@ const ALL_PACKAGES_DB: Record<string, any> = {
             { day: "Day 4", title: "Betaab & Aru Valley Excursion", desc: "Visit Betaab Valley, Aru Valley and Chandanwari pine forests." },
             { day: "Day 5", title: "Mughal Gardens & Departure", desc: "Visit Shalimar and Nishat Bagh in Srinagar before airport drop." }
         ],
-        reviews: [
-            { id: "rk1", name: "Aakash & Simran", date: "Verified Traveler • July 2026", rating: 5.0, comment: "Houseboat stay and Gulmarg Gondola ride were breathtaking! Thank you GetHotelStays for the best Kashmir memory." },
-            { id: "rk2", name: "Siddharth Joshi", date: "Verified Traveler • June 2026", rating: 4.9, comment: "Private SUV driver was extremely helpful in Pahalgam valley. Truly Paradise on Earth!" },
-            { id: "rk3", name: "Nisha Singhania", date: "Verified Traveler • May 2026", rating: 5.0, comment: "The scenery, snow Gondola ride, and Dal lake sunset were magical." }
-        ]
+        reviews: []
     }
 };
 
@@ -235,15 +218,12 @@ export default function TourPackageDetails() {
     // Use active packageData
     pkg = packageData;
 
-    // Compute Dynamic Reviews & Rating
-    const reviewsList = pkg.reviews || [
-        { id: "r1", name: "Rahul Verma", date: "Verified Traveler", rating: 5.0, comment: "Excellent package! Every hotel stay and driver pickup was right on time." },
-        { id: "r2", name: "Sneha Kapur", date: "Verified Traveler", rating: 4.9, comment: "Super smooth experience. Sightseeing itinerary was perfectly planned." }
-    ];
-    const reviewsCount = pkg.reviewsCount || reviewsList.length;
-    const calculatedRating = (
-        reviewsList.reduce((acc: number, r: any) => acc + (r.rating || 5), 0) / reviewsList.length
-    ).toFixed(1);
+    // Compute Dynamic Reviews & Rating — only real reviews, no fakes
+    const reviewsList = Array.isArray(pkg.reviews) ? pkg.reviews : [];
+    const reviewsCount = reviewsList.length;
+    const calculatedRating = reviewsList.length > 0
+        ? (reviewsList.reduce((acc: number, r: any) => acc + (r.rating || 5), 0) / reviewsList.length).toFixed(1)
+        : (pkg.rating || 0).toFixed(1);
 
     // Scroll listener: Hide floating bottom bar when booking card is in view!
     useEffect(() => {
@@ -375,9 +355,12 @@ export default function TourPackageDetails() {
                             alt={pkg.title}
                             className="w-full h-full object-cover"
                         />
-                        <span className="absolute top-4 left-4 px-3 py-1 bg-blue-600/90 backdrop-blur-md text-white text-xs font-black uppercase tracking-wider rounded-lg border border-white/20 shadow-sm z-10">
-                            {pkg.badge || "Bestseller"}
-                        </span>
+                        {/* Cutting-edge ribbon badge at top-left corner */}
+                        <div className="absolute top-0 left-0 z-10">
+                            <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 text-white text-[10px] font-black uppercase tracking-wider pl-3 pr-4 py-1.5 shadow-lg" style={{ clipPath: 'polygon(0 0, 100% 0, 90% 100%, 0 100%)' }}>
+                                {pkg.badge || "Bestseller"}
+                            </div>
+                        </div>
                         <div className="absolute bottom-4 right-4 bg-slate-950/70 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 z-10">
                             <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
                             <span>{calculatedRating} ({reviewsCount} Reviews)</span>
@@ -671,18 +654,19 @@ export default function TourPackageDetails() {
                                 {/* BUTTONS */}
                                 <div className="space-y-2.5 pt-1">
                                     <button
-                                        onClick={handleDirectBookNow}
-                                        className="w-full py-3.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-700 backdrop-blur-xl border border-white/30 text-white font-black text-xs uppercase tracking-wider rounded-2xl transition-all duration-300 cursor-pointer shadow-[0_8px_30px_rgba(37,99,235,0.4)] hover:shadow-[0_12px_36px_rgba(37,99,235,0.6)] hover:scale-[1.01] active:scale-[0.99] text-center"
+                                        onClick={handleAddToCart}
+                                        className="w-full py-3.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-700 backdrop-blur-xl border border-white/30 text-white font-black text-xs uppercase tracking-wider rounded-2xl transition-all duration-300 cursor-pointer shadow-[0_8px_30px_rgba(37,99,235,0.4)] hover:shadow-[0_12px_36px_rgba(37,99,235,0.6)] hover:scale-[1.01] active:scale-[0.99] text-center flex items-center justify-center gap-2"
                                     >
-                                        BUY NOW • ₹{totalPrice.toLocaleString()}
+                                        <ShoppingBag className="w-4 h-4" />
+                                        ADD TO CART
                                     </button>
 
                                     <button
-                                        onClick={handleAddToCart}
+                                        onClick={handleDirectBookNow}
                                         className="relative group w-full py-3.5 bg-gradient-to-b from-slate-900 via-slate-950 to-black border-2 border-blue-500 hover:border-blue-400 text-white font-black text-xs uppercase tracking-wider rounded-2xl transition-all duration-300 cursor-pointer shadow-[0_0_15px_rgba(59,130,246,0.45)] hover:shadow-[0_0_25px_rgba(59,130,246,0.8)] hover:scale-[1.01] active:scale-[0.99] overflow-hidden text-center"
                                     >
                                         <div className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-[300%] transition-transform duration-1000" />
-                                        <span>ADD TO CART</span>
+                                        <span>BOOK NOW</span>
                                     </button>
                                 </div>
                             </div>
@@ -840,10 +824,11 @@ export default function TourPackageDetails() {
                                 <span className="text-base sm:text-lg font-black text-blue-600">₹{totalPrice.toLocaleString()}</span>
                             </div>
                             <button
-                                onClick={handleDirectBookNow}
-                                className="py-2.5 px-5 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-md hover:scale-105 transition-all cursor-pointer"
+                                onClick={handleAddToCart}
+                                className="py-2.5 px-5 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-md hover:scale-105 transition-all cursor-pointer flex items-center gap-2"
                             >
-                                BUY NOW • ₹{totalPrice.toLocaleString()}
+                                <ShoppingBag className="w-4 h-4" />
+                                ADD TO CART
                             </button>
                         </div>
                     </motion.div>
