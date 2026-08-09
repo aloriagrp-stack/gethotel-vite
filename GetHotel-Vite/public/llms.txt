@@ -35,7 +35,8 @@
 
 ## Company Details
 
-- **Name**: GetHotelStays
+- **Name**: GetHotelStays (also known as ChatGHS / ChatGHS Travel AI)
+- **Brand Keywords**: chatghs, chat ghs, chatghs travel ai, chatghs ai, gethotelstays
 - **Official Website**: https://gethotelstays.com
 - **Support Email**: support@gethotelstays.com
 - **Phone**: +91-800-GETHOTEL

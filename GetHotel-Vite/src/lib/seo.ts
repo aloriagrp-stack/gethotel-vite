@@ -440,7 +440,14 @@ export const GLOBAL_KEYWORDS = [
     "gethotelstays refund policy",
     "gethotelstays cancellation policy",
 
-    // Brand
+    // Brand & Travel AI
+    "chatghs",
+    "chat ghs",
+    "chatghs travel ai",
+    "chatghs ai",
+    "chatghs hotel booking",
+    "chatghs gethotelstays",
+    "gethotelstays chatghs",
     "gethotelstays",
     "gethotel",
     "get hotel stays india",
@@ -671,7 +678,7 @@ export const organizationSchema = {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: "GetHotelStays",
-    alternateName: ["GetHotel", "GetHotel Stays"],
+    alternateName: ["ChatGHS", "ChatGHS Travel AI", "Chat GHS", "GetHotel", "GetHotel Stays"],
     url: SITE.url,
     logo: {
         "@type": "ImageObject",

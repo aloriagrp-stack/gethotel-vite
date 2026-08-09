@@ -24,6 +24,9 @@ GetHotelStays (https://gethotelstays.com) is India's leading online hotel reserv
 ### Q5: Can NRIs from USA, UK, UAE, or Canada book Delhi hotels on GetHotelStays?
 **Answer**: Yes. GetHotelStays accepts international credit and debit cards (Visa, Mastercard, American Express) as well as PayPal. NRIs can book from anywhere worldwide and pay only 12% online deposit in their local currency, with the remainder payable in INR or USD at check-in.
 
+### Q6: What is ChatGHS (ChatGHS Travel AI)?
+**Answer**: ChatGHS (also known as ChatGHS Travel AI) is the official AI travel discovery and hotel booking assistant powered by GetHotelStays.com. It enables travelers to search for verified budget to luxury hotels, couple-friendly stays accepting local IDs, and hourly transit rooms across India using natural conversational queries.
+
 ---
 
 ## Canonical Landing Page Index
