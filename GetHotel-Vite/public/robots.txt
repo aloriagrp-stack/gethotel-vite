@@ -1,4 +1,43 @@
+# GetHotelStays.com — Crawler Directives
+# India's Best Hotel Booking Platform
+
 User-agent: *
 Allow: /
+Disallow: /admin/
+Disallow: /partner-dashboard/
+Disallow: /api/
+Disallow: /booking/
+Disallow: /bookings/
+Disallow: /login
+Disallow: /register
+Disallow: /profile
+
+# Allow all destination & SEO landing pages
+Allow: /delhi-hotels
+Allow: /goa-hotels
+Allow: /jaipur-hotels
+Allow: /manali-hotels
+Allow: /shimla-hotels
+Allow: /udaipur-hotels
+Allow: /couple-friendly-hotels-in-delhi
+Allow: /hourly-hotels-in-delhi
+Allow: /hotels-near-delhi-airport
+Allow: /hotels-near-new-delhi-railway-station
+Allow: /hotels-in-connaught-place-delhi
+Allow: /hotels-in-karol-bagh-delhi
+Allow: /hotels-in-south-delhi
+Allow: /hotels-in/
+Allow: /hotels
+Allow: /hotel/
+
+# Googlebot specific — fast crawling
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+# Bingbot
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
 
 Sitemap: https://gethotelstays.com/sitemap.xml

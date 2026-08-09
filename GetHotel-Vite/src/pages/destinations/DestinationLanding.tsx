@@ -6,7 +6,7 @@ import { Hotel as HotelType } from "@/types";
 import HotelCard from "@/components/hotels/HotelCard";
 import { HotelCardSkeleton } from "@/components/hotels/HotelCardSkeleton";
 import SEOHead from "@/components/common/SEOHead";
-import { SITE, buildFAQSchema, buildBreadcrumbSchema, buildCitySchema, buildCityHotelListingSchema } from "@/lib/seo";
+import { SITE, buildFAQSchema, buildBreadcrumbSchema, buildCitySchema, buildCityHotelListingSchema, buildLocalBusinessListSchema } from "@/lib/seo";
 
 interface Section {
     h2: string;
@@ -91,6 +91,36 @@ export default function DestinationLanding({
         window.scrollTo(0, 0);
     }, [city, filterSlug]);
 
+    // Build smart breadcrumbs: sub-pages get an extra level
+    const isSubPage = filterSlug || (urlSlug && urlSlug !== city.toLowerCase() + "-hotels");
+    const breadcrumbs = [
+        { name: "Home", url: "/" },
+        { name: "Hotels", url: "/hotels" },
+        { name: `${city} Hotels`, url: isSubPage ? `/${city.toLowerCase()}-hotels` : `${urlPrefix}${urlSlug || city.toLowerCase() + "-hotels"}` },
+    ];
+    if (isSubPage && h1) {
+        breadcrumbs.push({ name: h1.split("—")[0].trim(), url: `${urlPrefix}${urlSlug || city.toLowerCase() + "-hotels"}` });
+    }
+
+    // Build schemas array
+    const schemas: object[] = [
+        buildFAQSchema(faqs),
+        buildCitySchema(city, `Book verified hotels in ${city} at best prices. Budget to luxury stays. Pay 12% now, rest at hotel. Trusted by NRIs worldwide.`),
+        buildCityHotelListingSchema(city, 2000, "₹699-₹25,000", urlSlug || `${city.toLowerCase()}-hotels`),
+        buildBreadcrumbSchema(breadcrumbs),
+    ];
+
+    // Add LocalBusiness schema for neighbourhood and sub-category pages
+    if (isSubPage && urlSlug) {
+        schemas.push(buildLocalBusinessListSchema(
+            h1.split("—")[0].trim(),
+            city,
+            urlSlug,
+            keywords.slice(0, 3),
+            "₹699-₹25,000"
+        ));
+    }
+
     return (
         <div className="min-h-screen pt-3 pb-8 md:pt-6 md:pb-12 bg-transparent px-0">
             <SEOHead
@@ -99,16 +129,7 @@ export default function DestinationLanding({
                 keywords={keywords}
                 ogUrl={`${SITE.url}${urlPrefix}${urlSlug || city.toLowerCase() + "-hotels"}`}
                 canonicalUrl={`${SITE.url}${urlPrefix}${urlSlug || city.toLowerCase() + "-hotels"}`}
-                schemas={[
-                    buildFAQSchema(faqs),
-                    buildCitySchema(city, `Book verified hotels in ${city} at best prices. Budget to luxury stays. Pay 12% now, rest at hotel. Trusted by NRIs worldwide.`),
-                    buildCityHotelListingSchema(city, 2000, "₹699-₹25,000", urlSlug || `${city.toLowerCase()}-hotels`),
-                    buildBreadcrumbSchema([
-                        { name: "Home", url: "/" },
-                        { name: "Hotels", url: "/hotels" },
-                        { name: `${city} Hotels`, url: `${urlPrefix}${urlSlug || city.toLowerCase() + "-hotels"}` }
-                    ])
-                ]}
+                schemas={schemas}
             />
 
             <div className="w-full max-w-none mx-auto px-4 md:px-10 space-y-8 md:space-y-12">
