@@ -60,6 +60,7 @@ export default function SEOHead({
                 <meta name="author" content="GetHotelStays" />
                 <meta name="copyright" content="GetHotelStays" />
                 <meta name="language" content="English" />
+                <meta name="msvalidate.01" content="854D75231F8CB4CCD136C72C68768B36" />
                 <meta name="revisit-after" content="3 days" />
                 <meta name="rating" content="General" />
                 <meta name="geo.region" content="IN" />
