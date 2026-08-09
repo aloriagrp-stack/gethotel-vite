@@ -7,7 +7,6 @@ import Footer from "@/components/layout/Footer";
 import BlueWavesBackground from "@/components/home/BlueWavesBackground";
 import CookieConsent from "@/components/common/CookieConsent";
 import FloatingCartPill from "@/components/common/FloatingCartPill";
-import AICopilot from "@/components/home/AICopilot";
 import { paymentApi } from "@/lib/api";
 
 export default function ConditionalLayout({
@@ -100,7 +99,6 @@ export default function ConditionalLayout({
                 <main className="relative">{children}</main>
             </div>
             {!isNoFooterPage && <Footer />}
-            <AICopilot />
             <CookieConsent />
             <FloatingCartPill />
         </>

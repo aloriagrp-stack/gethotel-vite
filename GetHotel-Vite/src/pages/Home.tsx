@@ -4,6 +4,7 @@
 import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import Hero from "@/components/home/Hero";
 import TrendingHotels from "@/components/home/TrendingHotels";
+import AICopilot from "@/components/home/AICopilot";
 import { useStayMode } from "@/context/StayModeContext";
 
 // Lazy load non-critical, below-the-fold components to reduce initial JS execution and improve INP
@@ -115,6 +116,7 @@ export default function HomePage() {
       <Suspense fallback={<SEOPlaceholder />}>
         <HomeSEOContent />
       </Suspense>
+      <AICopilot />
     </main>
   );
 }
