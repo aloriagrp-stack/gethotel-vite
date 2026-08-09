@@ -96,11 +96,12 @@ export default function DelhiHotels() {
                 { label: "Hourly Hotels in Delhi", url: "/hourly-hotels-in-delhi" },
                 { label: "Hotels Near Delhi Airport", url: "/hotels-near-delhi-airport" },
                 { label: "Hotels Near New Delhi Railway Station", url: "/hotels-near-new-delhi-railway-station" },
+                { label: "Hotels in Connaught Place", url: "/hotels-in-connaught-place-delhi" },
+                { label: "Hotels in Karol Bagh", url: "/hotels-in-karol-bagh-delhi" },
+                { label: "Hotels in South Delhi", url: "/hotels-in-south-delhi" },
                 { label: "Goa Hotels", url: "/goa-hotels" },
                 { label: "Jaipur Hotels", url: "/jaipur-hotels" },
                 { label: "Manali Hotels", url: "/manali-hotels" },
-                { label: "Shimla Hotels", url: "/shimla-hotels" },
-                { label: "Udaipur Hotels", url: "/udaipur-hotels" },
             ]}
         />
     );

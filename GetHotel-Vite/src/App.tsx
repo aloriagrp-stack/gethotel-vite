@@ -42,6 +42,9 @@ const CoupleFriendlyDelhiHotels = lazy(() => import("./pages/destinations/DelhiS
 const HourlyDelhiHotels = lazy(() => import("./pages/destinations/DelhiSubLandings").then(m => ({ default: m.HourlyDelhiHotels })));
 const AirportDelhiHotels = lazy(() => import("./pages/destinations/DelhiSubLandings").then(m => ({ default: m.AirportDelhiHotels })));
 const RailwayStationDelhiHotels = lazy(() => import("./pages/destinations/DelhiSubLandings").then(m => ({ default: m.RailwayStationDelhiHotels })));
+const ConnaughtPlaceDelhiHotels = lazy(() => import("./pages/destinations/DelhiSubLandings").then(m => ({ default: m.ConnaughtPlaceDelhiHotels })));
+const KarolBaghDelhiHotels = lazy(() => import("./pages/destinations/DelhiSubLandings").then(m => ({ default: m.KarolBaghDelhiHotels })));
+const SouthDelhiHotels = lazy(() => import("./pages/destinations/DelhiSubLandings").then(m => ({ default: m.SouthDelhiHotels })));
 const CityPage = lazy(() => import("./pages/destinations/CityPage"));
 
 const BookingInvoice = lazy(() => import("./pages/BookingInvoice"));
@@ -180,6 +183,9 @@ export default function App() {
                         <Route path="hourly-hotels-in-delhi" element={<HourlyDelhiHotels />} />
                         <Route path="hotels-near-delhi-airport" element={<AirportDelhiHotels />} />
                         <Route path="hotels-near-new-delhi-railway-station" element={<RailwayStationDelhiHotels />} />
+                        <Route path="hotels-in-connaught-place-delhi" element={<ConnaughtPlaceDelhiHotels />} />
+                        <Route path="hotels-in-karol-bagh-delhi" element={<KarolBaghDelhiHotels />} />
+                        <Route path="hotels-in-south-delhi" element={<SouthDelhiHotels />} />
                         <Route path="hotels-in/:citySlug" element={<CityPage />} />
                         <Route path="hotels-in/:citySlug/:filterSlug" element={<CityPage />} />
                         <Route path="booking/invoice/:id" element={<BookingInvoice />} />

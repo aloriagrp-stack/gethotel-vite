@@ -1049,3 +1049,74 @@ export const buildCityHotelListingSchema = (city: string, hotelCount: number, pr
         "@id": `${SITE.url}/${urlSlug || `${city.toLowerCase().replace(/\s+/g, '-')}-hotels`}`,
     },
 });
+
+/** Build LocalBusiness list schema for hyper-local neighbourhood pages */
+export const buildLocalBusinessListSchema = (
+    area: string,
+    city: string,
+    urlSlug: string,
+    landmarks: string[],
+    priceRange: string = "₹699-₹25,000"
+) => ({
+    "@context": "https://schema.org",
+    "@type": "LodgingBusiness",
+    name: `Hotels in ${area}, ${city}`,
+    description: `Book verified hotels in ${area}, ${city}. Near ${landmarks.join(", ")}. Budget to luxury stays from ${priceRange}/night. Pay 12% online, rest at hotel.`,
+    url: `${SITE.url}/${urlSlug}`,
+    address: {
+        "@type": "PostalAddress",
+        addressLocality: city,
+        addressRegion: "Delhi",
+        addressCountry: "IN",
+    },
+    areaServed: {
+        "@type": "Place",
+        name: `${area}, ${city}`,
+    },
+    priceRange: priceRange,
+    hasMap: `https://www.google.com/maps/search/hotels+near+${encodeURIComponent(area + " " + city)}`,
+    potentialAction: {
+        "@type": "ReserveAction",
+        target: {
+            "@type": "EntryPoint",
+            urlTemplate: `${SITE.url}/${urlSlug}`,
+            actionPlatform: [
+                "https://schema.org/DesktopWebPlatform",
+                "https://schema.org/MobileWebPlatform",
+            ],
+        },
+        result: {
+            "@type": "LodgingReservation",
+            name: `Hotel Reservation in ${area}, ${city}`,
+        },
+    },
+});
+
+/** Build TouristAttraction schema for nearby landmarks pages */
+export const buildNearbyAttractionSchema = (
+    attraction: string,
+    city: string,
+    urlSlug: string,
+    description: string
+) => ({
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: `Hotels Near ${attraction} in ${city}`,
+    description: description,
+    url: `${SITE.url}/${urlSlug}`,
+    about: {
+        "@type": "TouristAttraction",
+        name: attraction,
+        address: {
+            "@type": "PostalAddress",
+            addressLocality: city,
+            addressCountry: "IN",
+        },
+    },
+    provider: {
+        "@type": "Organization",
+        name: "GetHotelStays",
+        url: SITE.url,
+    },
+});
+

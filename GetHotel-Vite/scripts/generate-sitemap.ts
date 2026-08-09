@@ -31,6 +31,9 @@ const destinationPages = [
     { url: "/hourly-hotels-in-delhi", priority: "0.90" },
     { url: "/hotels-near-delhi-airport", priority: "0.90" },
     { url: "/hotels-near-new-delhi-railway-station", priority: "0.90" },
+    { url: "/hotels-in-connaught-place-delhi", priority: "0.90" },
+    { url: "/hotels-in-karol-bagh-delhi", priority: "0.90" },
+    { url: "/hotels-in-south-delhi", priority: "0.90" },
     ...CITIES.flatMap(c => [
         { url: `/hotels-in/${c.slug}`, priority: "0.80" },
         ...filters.map(f => ({ url: `/hotels-in/${c.slug}/${f}`, priority: "0.75" }))
