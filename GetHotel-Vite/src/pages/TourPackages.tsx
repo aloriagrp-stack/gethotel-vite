@@ -302,7 +302,7 @@ export default function TourPackages() {
     const activeBanner = banners[currentBannerIndex] || BANNER_IMAGES[0];
 
     return (
-        <div className="min-h-screen bg-slate-50/70 pb-24 font-sans text-slate-900">
+        <div className="min-h-screen bg-gradient-to-b from-blue-50/60 via-indigo-50/30 to-slate-50/50 pb-24 font-sans text-slate-900">
             <SEOHead
                 title="Handcrafted Tour Packages | GetHotelStays"
                 description="Explore handpicked holiday & tour packages across Goa, Rajasthan, Kashmir, Himachal, Kerala and Ladakh with verified hotel stays and private cabs."
@@ -327,36 +327,18 @@ export default function TourPackages() {
                             />
                         </AnimatePresence>
 
-                        {/* Rich Dark Gradient Overlay for Maximum Legibility */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent z-10" />
+                        {/* Subtle vignette — no text overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/20 via-transparent to-transparent z-10" />
 
-                        {/* Banner Content Text */}
-                        <div className="absolute bottom-6 sm:bottom-10 left-6 sm:left-10 right-6 sm:right-10 z-20 space-y-2 text-white">
-                            <div className="flex items-center gap-2">
-                                <span className="px-3 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 backdrop-blur-md text-white text-[10px] sm:text-xs font-black uppercase tracking-wider rounded-lg border border-white/20 shadow-sm inline-flex items-center gap-1.5">
-                                    <Sparkles className="w-3.5 h-3.5 text-blue-200" />
-                                    <span>{activeBanner.tag || "Featured Holiday"}</span>
-                                </span>
-                            </div>
-
-                            <h1 className="text-xl sm:text-3xl md:text-4xl font-black tracking-tight drop-shadow-md text-white max-w-3xl leading-tight">
-                                {activeBanner.title}
-                            </h1>
-
-                            <p className="text-xs sm:text-sm text-slate-200 font-medium max-w-2xl line-clamp-2 drop-shadow">
-                                {activeBanner.subtitle}
-                            </p>
-                        </div>
-
-                        {/* Navigation Dots */}
-                        <div className="absolute bottom-4 right-6 z-20 flex items-center gap-1.5 bg-slate-950/50 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20">
+                        {/* Minimal Centered Navigation Dots */}
+                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1">
                             {banners.map((_, idx) => (
                                 <button
                                     key={idx}
                                     onClick={() => setCurrentBannerIndex(idx)}
                                     className={cn(
-                                        "h-2 rounded-full transition-all cursor-pointer",
-                                        currentBannerIndex === idx ? "bg-blue-400 w-5" : "bg-white/50 w-2 hover:bg-white"
+                                        "rounded-full transition-all cursor-pointer",
+                                        currentBannerIndex === idx ? "bg-white w-4 h-1.5" : "bg-white/40 w-1.5 h-1.5 hover:bg-white/70"
                                     )}
                                 />
                             ))}
@@ -374,7 +356,7 @@ export default function TourPackages() {
                     </div>
 
                     {/* Circular Destination Story Cards (Large & Prominent) */}
-                    <div className="flex items-center gap-5 sm:gap-6 overflow-x-auto no-scrollbar py-2">
+                    <div className="flex items-center gap-5 sm:gap-6 overflow-x-auto no-scrollbar py-2 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
                         {destinationStories.map((item) => {
                             const isSelected = selectedDestination === item.name;
                             return (
@@ -559,8 +541,8 @@ export default function TourPackages() {
 
                                             {/* Duration & Price Footer Row */}
                                             <div className="pt-2.5 border-t border-slate-900/10 flex items-center justify-between gap-3">
-                                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-950/85 backdrop-blur-md rounded-xl text-xs font-extrabold text-white border border-slate-800 shadow-xs">
-                                                    <Clock className="w-3.5 h-3.5 text-sky-300 shrink-0" />
+                                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/25 backdrop-blur-xl rounded-xl text-xs font-extrabold text-slate-900 border border-white/50 shadow-xs">
+                                                    <Clock className="w-3.5 h-3.5 text-blue-600 shrink-0" />
                                                     <span>{pkg.duration}</span>
                                                 </div>
 
