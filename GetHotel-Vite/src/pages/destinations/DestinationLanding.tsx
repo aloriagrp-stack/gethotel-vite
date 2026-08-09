@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { MapPin, ArrowRight, HelpCircle, AlertCircle } from "lucide-react";
+import { MapPin, ArrowRight, HelpCircle, AlertCircle, Sparkles, ShieldCheck, Zap } from "lucide-react";
 import { hotelApi } from "@/lib/api";
 import { Hotel as HotelType } from "@/types";
 import HotelCard from "@/components/hotels/HotelCard";
@@ -152,6 +152,29 @@ export default function DestinationLanding({
                             </button>
                         )}
                     </p>
+                </div>
+
+                {/* ── ChatGHS AI Assistant Banner ── */}
+                <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-brand-950 border border-slate-800 rounded-3xl p-5 md:p-7 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl">
+                    <div className="space-y-1 max-w-2xl">
+                        <div className="flex items-center gap-2 text-amber-300 font-extrabold text-xs uppercase tracking-widest">
+                            <Sparkles className="w-4 h-4 animate-spin" style={{ animationDuration: "4s" }} />
+                            <span>Powered by ChatGHS Travel AI</span>
+                        </div>
+                        <h3 className="text-lg md:text-xl font-bold tracking-tight text-white">
+                            Need personalized hotel recommendations in {city}?
+                        </h3>
+                        <p className="text-slate-400 text-xs md:text-sm font-medium">
+                            Ask ChatGHS AI for couple friendly stays, budget options, or airport layover rooms in real-time.
+                        </p>
+                    </div>
+                    <button
+                        onClick={() => window.dispatchEvent(new CustomEvent("open-ai-copilot"))}
+                        className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs rounded-2xl transition-all shadow-lg hover:scale-105 active:scale-95 flex items-center gap-2 shrink-0 border border-white/20"
+                    >
+                        <Sparkles className="w-4 h-4 text-amber-300" />
+                        <span>Ask ChatGHS AI</span>
+                    </button>
                 </div>
 
                 {/* ── Live Hotels Listing Section ── */}

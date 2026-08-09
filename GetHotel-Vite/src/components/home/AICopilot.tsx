@@ -178,9 +178,16 @@ function TriggerButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="fixed bottom-6 right-6 z-50 flex items-center h-13 rounded-full px-5 bg-brand-600 text-white text-[12px] font-bold uppercase tracking-widest shadow-lg hover:bg-[#002f87] active:scale-95 transition-all"
+      className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 h-12 rounded-full px-5 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 text-white text-xs font-black tracking-wide shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all group border border-white/20"
+      aria-label="Open ChatGHS Travel AI"
     >
-      AI Mode
+      <span className="relative flex h-2.5 w-2.5">
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-300"></span>
+      </span>
+      <span className="bg-clip-text text-transparent bg-gradient-to-r from-white via-blue-100 to-amber-200">
+        ChatGHS AI
+      </span>
     </button>
   );
 }
@@ -193,6 +200,13 @@ export default function AICopilot() {
   const [isOpen, setIsOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Collapsed by default
   const [input, setInput] = useState("");
+
+  // Global event listener to trigger AI Copilot from Navbar or any button
+  useEffect(() => {
+    const handleOpen = () => setIsOpen(true);
+    window.addEventListener("open-ai-copilot", handleOpen);
+    return () => window.removeEventListener("open-ai-copilot", handleOpen);
+  }, []);
   
   const [sessions, setSessions] = useState<ChatSession[]>(() => {
     try {

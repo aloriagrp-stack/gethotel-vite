@@ -209,13 +209,16 @@ export default function HotelCard({ hotel, className }: HotelCardProps) {
                 </div>
 
                 <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5 z-10">
+                    <div className="bg-emerald-600 text-white text-[8.5px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1 border border-emerald-400/30 backdrop-blur-md">
+                        <CreditCard className="w-2.5 h-2.5" /> PAY 12% NOW
+                    </div>
                     {hasDiscount && (
-                        <div className="bg-brand-600 text-white text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded shadow-lg flex items-center gap-1">
+                        <div className="bg-brand-600 text-white text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full shadow-lg flex items-center gap-1">
                             <Zap className="w-2.5 h-2.5 fill-white" /> {discountPercent}% OFF
                         </div>
                     )}
                     {mode === 'hourly' && rooms.some((r: any) => r.isHourlyEnabled || r.is_hourly_enabled) && (
-                        <div className="bg-purple-600 text-white text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded shadow-lg flex items-center gap-1">
+                        <div className="bg-purple-600 text-white text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full shadow-lg flex items-center gap-1">
                             <Clock className="w-2.5 h-2.5" /> HOURLY
                         </div>
                     )}

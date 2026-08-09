@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import confetti from "canvas-confetti";
 import {
-    Menu, X, MapPin, User, Heart, Bell, Hotel, Globe,
+    Menu, X, MapPin, User, Heart, Bell, Hotel, Globe, Sparkles,
     LogOut, Settings, ClipboardList, ChevronDown, UserRound, CheckCircle2,
     AlertCircle, Shield, FileText, Mail
 } from "lucide-react";
@@ -175,6 +175,15 @@ export default function Navbar() {
                 <div className={cn("hidden items-center gap-4 shrink-0 md:flex")}>
                     <button className="w-10 h-10 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-950 hover:bg-slate-50 transition-all">
                         <Bell className="w-5 h-5" />
+                    </button>
+
+                    <button
+                        onClick={() => window.dispatchEvent(new CustomEvent("open-ai-copilot"))}
+                        className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 text-white rounded-full text-[11px] font-black tracking-wider shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all border border-white/20"
+                        title="Open ChatGHS Travel AI"
+                    >
+                        <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-spin" style={{ animationDuration: "3s" }} />
+                        <span>ChatGHS AI</span>
                     </button>
 
                     <Link
