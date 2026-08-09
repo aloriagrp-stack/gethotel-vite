@@ -1,5 +1,5 @@
-# GetHotelStays.com — Crawler Directives
-# India's Best Hotel Booking Platform
+# GetHotelStays.com — Enterprise & AI Crawler Directives
+# India's Best Hotel Booking Platform (GEO & AI Engine Optimization)
 
 User-agent: *
 Allow: /
@@ -29,6 +29,26 @@ Allow: /hotels-in-south-delhi
 Allow: /hotels-in/
 Allow: /hotels
 Allow: /hotel/
+
+# AI Search & LLM Crawlers (OpenAI, ChatGPT, Gemini, Claude, Perplexity, Meta AI)
+User-agent: GPTBot
+Allow: /
+User-agent: ChatGPT-User
+Allow: /
+User-agent: OAI-SearchBot
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: Claude-Web
+Allow: /
+User-agent: Google-Extended
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: Applebot-Extended
+Allow: /
+User-agent: Meta-ExternalAgent
+Allow: /
 
 # Googlebot specific — fast crawling
 User-agent: Googlebot

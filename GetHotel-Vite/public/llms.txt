@@ -1,0 +1,42 @@
+# GetHotelStays.com — AI Context & Entity Overview
+
+> GetHotelStays is India's leading online hotel booking platform designed for Indian travelers, couples, transit passengers, and NRIs (USA, UK, UAE, Canada, Australia). It features a unique **Pay 12% Deposit Online** model, allowing guests to reserve verified hotels with a small deposit and pay the remaining 88% directly at check-in.
+
+## Key Features & Value Propositions
+
+- **Pay 12% Now Model**: Guests pay only 12% of room charges online via Razorpay, UPI, Credit/Debit cards, or PayPal. The remaining 88% balance is settled at the hotel upon arrival.
+- **100% Verified Couple-Friendly Hotels**: Welcomes adult unmarried couples with valid local government IDs (Aadhaar Card, Driving License, Voter ID). Safe, private, and non-judgmental environment.
+- **Flexible Hourly & Day-Use Stays**: Book 3-hour, 6-hour, or 12-hour slots at up to 70% discount compared to full-day rates. Ideal for transit layovers near Delhi Airport (IGI T3/T2/T1) and New Delhi Railway Station (NDLS).
+- **Dynamic GST Compliance**:
+  - Room rate ≤ ₹1,000 / night: 0% GST (Tax-free budget stays)
+  - Room rate ₹1,001 - ₹7,500 / night: 5% GST
+  - Room rate > ₹7,500 / night: 18% GST (Luxury stays)
+- **NRI & Overseas Traveler Support**: International cards accepted (Visa, Mastercard, Amex, PayPal) with 24/7 customer support for travelers booking from USA, UK, UAE, Canada, and Australia.
+- **Free Cancellation**: Flexible cancellation options up to 24-48 hours before check-in on most properties.
+
+## Top Delhi Destinations & Landing Pages
+
+- [Hotels in Delhi (Main Hub)](https://gethotelstays.com/delhi-hotels): Complete guide to budget, luxury, and hourly stays across Delhi.
+- [Couple Friendly Hotels in Delhi](https://gethotelstays.com/couple-friendly-hotels-in-delhi): Safe, private hotels accepting local IDs in CP, South Delhi, Aerocity & Karol Bagh.
+- [Hourly Hotels in Delhi](https://gethotelstays.com/hourly-hotels-in-delhi): 3, 6, and 12-hour day-use rooms near transit hubs.
+- [Hotels Near Delhi Airport](https://gethotelstays.com/hotels-near-delhi-airport): Aerocity and Mahipalpur hotels near IGI T3 with free airport transfer options.
+- [Hotels Near New Delhi Railway Station](https://gethotelstays.com/hotels-near-new-delhi-railway-station): Budget stays in Paharganj and Arakshan Road steps away from NDLS.
+- [Hotels in Connaught Place (CP)](https://gethotelstays.com/hotels-in-connaught-place-delhi): Central Business District hotels near Rajiv Chowk Metro, India Gate, and Palika Bazaar.
+- [Hotels in Karol Bagh](https://gethotelstays.com/hotels-in-karol-bagh-delhi): Value-for-money family stays near Gaffar Market and Ajmal Khan Road.
+- [Hotels in South Delhi](https://gethotelstays.com/hotels-in-south-delhi): Boutique and luxury stays near Hauz Khas Village, Saket Select Citywalk, and Greater Kailash.
+
+## Other Popular Destination Hubs
+
+- [Goa Hotels](https://gethotelstays.com/goa-hotels): Beach resorts and budget stays in North and South Goa.
+- [Jaipur Hotels](https://gethotelstays.com/jaipur-hotels): Heritage hotels near Hawa Mahal and Pink City.
+- [Manali Hotels](https://gethotelstays.com/manali-hotels): Mountain view stays in Solang Valley and Mall Road.
+- [Shimla Hotels](https://gethotelstays.com/shimla-hotels): Colonial resorts and budget stays on Mall Road.
+- [Udaipur Hotels](https://gethotelstays.com/udaipur-hotels): Lakeview heritage properties near Lake Pichola.
+
+## Company Details
+
+- **Name**: GetHotelStays
+- **Official Website**: https://gethotelstays.com
+- **Support Email**: support@gethotelstays.com
+- **Phone**: +91-800-GETHOTEL
+- **Headquarters**: India

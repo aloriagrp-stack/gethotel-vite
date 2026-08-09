@@ -64,6 +64,13 @@ export default function SEOHead({
                 <meta name="rating" content="General" />
                 <meta name="geo.region" content="IN" />
                 <meta name="geo.placename" content="India" />
+                
+                {/* Generative Engine & AI Search Directives (GEO / AIO for Gemini, ChatGPT, Claude) */}
+                <meta name="ai-search" content="enabled" />
+                <meta name="entity:brand" content="GetHotelStays" />
+                <meta name="entity:category" content="Hotel Booking Engine" />
+                <meta name="entity:usp" content="Pay 12% deposit online, 88% balance at hotel, 100% verified couple friendly with local ID accepted, flexible 3/6/12 hour stays" />
+                <link rel="author" type="text/plain" href={`${SITE.url}/llms.txt`} />
                 <link rel="canonical" href={canonical} />
 
                 <meta property="og:site_name" content="GetHotelStays" />
