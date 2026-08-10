@@ -7,63 +7,17 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { packageApi } from "@/lib/api";
 
-// Default Initial Data
-const INITIAL_PACKAGES = [
-    {
-        id: "pkg-1",
-        slug: "royal-rajasthan-heritage-fort-trail",
-        title: "Royal Rajasthan Heritage & Fort Trail",
-        destination: "Jaipur • Udaipur • Jodhpur",
-        duration: "6 Days / 5 Nights",
-        rating: 4.9,
-        reviewsCount: 142,
-        price: 18499,
-        originalPrice: 24999,
-        image: "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80",
-        includedStay: "4-Star Heritage Haveli Hotel",
-        transport: "Private AC Sedan Included",
-        badge: "Bestseller",
-        overview: "Immerse yourself in royal Indian hospitality. Visit grand palaces, ancient forts of Amber and Mehrangarh, and enjoy romantic sunset boat cruises on Lake Pichola in Udaipur.",
-        inclusions: "4-Star Heritage Haveli stay with swimming pool\nDaily Breakfast & Authentic Rajasthani Dinner\nAmer Fort & City Palace Guided Sightseeing\nLake Pichola Sunset Boat Ride in Udaipur\nPrivate AC Sedan Transfers for entire 6 days\nAll toll taxes, parking & driver allowances",
-        itinerary: "Day 1: Arrival in Pink City Jaipur - Pickup from airport, visit Hawa Mahal & Johari Bazaar.\nDay 2: Jaipur Royal Forts - Amer Fort, Nahargarh & City Palace.\nDay 3: Jaipur to Jodhpur - Visit Mehrangarh Fort & Jaswant Thada.\nDay 4: Jodhpur to Udaipur - Enroute Ranakpur Jain Temple.\nDay 5: Udaipur Lakes & Palaces - City Palace & Lake Pichola boat cruise.\nDay 6: Departure from Udaipur - Airport transfer."
-    },
-    {
-        id: "pkg-2",
-        slug: "goa-tropical-beach-retreat-watersports",
-        title: "Goa Tropical Beach Retreat & Watersports",
-        destination: "North Goa • South Goa",
-        duration: "4 Days / 3 Nights",
-        rating: 4.8,
-        reviewsCount: 210,
-        price: 12999,
-        originalPrice: 17999,
-        image: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1200&q=80",
-        includedStay: "Beachfront 4-Star Resort",
-        transport: "Airport Pickup & Sightseeing Cab",
-        badge: "Trending",
-        overview: "Experience Goa's golden beaches, crystal clear watersports, vibrant shacks, and romantic river cruises. Includes 4-star resort stay with pool access.",
-        inclusions: "Beachfront resort stay with infinity pool access\nScuba Diving & Parasailing Watersports combo\nMandovi River Sunset Cruise with Goan Dance\nNorth & South Goa Guided Sightseeing tour\nAirport Pickup & Drop transfers included\nBuffet Breakfast included every morning",
-        itinerary: "Day 1: Arrival in Goa & Sunset Shack Vibe\nDay 2: North Goa Beaches & Fort Aguada\nDay 3: Watersports & Mandovi River Cruise\nDay 4: South Goa Sightseeing & Departure"
-    },
-    {
-        id: "pkg-3",
-        slug: "kashmir-paradise-srinagar-gulmarg-pahalgam",
-        title: "Kashmir Paradise: Srinagar, Gulmarg & Pahalgam",
-        destination: "Srinagar • Gulmarg • Pahalgam",
-        duration: "5 Days / 4 Nights",
-        rating: 4.95,
-        reviewsCount: 188,
-        price: 21999,
-        originalPrice: 28999,
-        image: "https://images.unsplash.com/photo-1566837945700-30057527ade0?auto=format&fit=crop&w=1200&q=80",
-        includedStay: "Houseboat + 4-Star Resort",
-        transport: "Private SUV Mountain Transfers",
-        badge: "Popular",
-        overview: "Witness Heaven on Earth! Enjoy a romantic Shikara ride on Dal Lake, stay in a hand-carved cedar houseboat, ride the Gulmarg Gondola cable car, and trek valley pines in Pahalgam.",
-        inclusions: "1 Night Luxury Houseboat stay in Dal Lake\n3 Nights 4-Star Mountain Resort stay\nGulmarg Gondola Cable Car Ride pass included\nShikara Ride on Dal Lake at Sunset\nPrivate SUV Transfers (Innova/XYLO) for full trip\nDaily Breakfast & Dinner included",
-        itinerary: "Day 1: Arrival Srinagar & Dal Lake Houseboat\nDay 2: Srinagar to Gulmarg Snow Pass & Gondola Ride\nDay 3: Gulmarg to Pahalgam Valley of Shepherds\nDay 4: Betaab & Aru Valley Excursion\nDay 5: Mughal Gardens & Departure"
+// Read admin-configured tour packages from localStorage (SSR-safe)
+const readAdminPackages = (): any[] | null => {
+    try {
+        const raw = localStorage.getItem("ghs_admin_tour_packages");
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) && parsed.length > 0 ? parsed : null;
+    } catch (e) {
+        return null;
     }
-];
+};
 
 const INITIAL_DESTINATIONS = [
     { id: "dest-1", name: "All", image: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=200&q=80" },
@@ -85,10 +39,7 @@ export default function AdminTourPackages() {
     const [subTab, setSubTab] = useState<"packages" | "banners" | "destinations" | "filters">("packages");
 
     // Packages State
-    const [packages, setPackages] = useState<any[]>(() => {
-        const saved = localStorage.getItem("ghs_admin_tour_packages");
-        return saved ? JSON.parse(saved) : INITIAL_PACKAGES;
-    });
+    const [packages, setPackages] = useState<any[]>(() => readAdminPackages() || []);
 
     // Hero Banners State
     const [banners, setBanners] = useState<any[]>(() => {
@@ -143,9 +94,21 @@ export default function AdminTourPackages() {
 
     // Persistence Effects
     useEffect(() => {
-        localStorage.setItem("ghs_admin_tour_packages", JSON.stringify(packages));
+        try {
+            localStorage.setItem("ghs_admin_tour_packages", JSON.stringify(packages));
+        } catch (e) { console.error("localStorage full, packages not cached locally:", e); }
         window.dispatchEvent(new Event("ghs_tour_settings_updated"));
     }, [packages]);
+
+    // Load real tour packages from backend on mount when nothing is cached locally
+    useEffect(() => {
+        if (readAdminPackages()) return;
+        packageApi.getPackages().then(res => {
+            if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
+                setPackages(res.data);
+            }
+        }).catch(err => console.error("Failed to load tour packages from backend:", err));
+    }, []);
 
     useEffect(() => {
         try {

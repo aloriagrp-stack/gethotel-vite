@@ -31,127 +31,21 @@ const DESTINATION_STORIES = [
     { name: "Ladakh", image: "https://images.unsplash.com/photo-1581793745862-99fde7fa73d2?auto=format&fit=crop&w=200&q=80" }
 ];
 
-// Fallback Tour Packages
-const POPULAR_PACKAGES = [
-    {
-        id: "pkg-golden-triangle-4415",
-        slug: "golden-triangle-classic-5d4n-delhi-agra-jaipur-tour-4415",
-        title: "Golden Triangle Classic 5D4N Delhi Agra Jaipur Tour",
-        destination: "Delhi • Agra • Jaipur",
-        duration: "5 Days / 4 Nights",
-        rating: 4.85,
-        reviewsCount: 218,
-        price: 14999,
-        originalPrice: 19999,
-        discountPercent: "25% OFF",
-        image: "https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=1200&q=80",
-        includedStay: "4-Star Hotel Stay Included",
-        transport: "Private Chauffeur AC Sedan",
-        badge: "Bestseller"
-    },
-    {
-        id: "pkg-1",
-        slug: "royal-rajasthan-heritage-fort-trail",
-        title: "Royal Rajasthan Heritage & Fort Trail",
-        destination: "Jaipur • Udaipur • Jodhpur",
-        duration: "6 Days / 5 Nights",
-        rating: 4.9,
-        reviewsCount: 142,
-        price: 18499,
-        originalPrice: 24999,
-        discountPercent: "26% OFF",
-        image: "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80",
-        includedStay: "4-Star Heritage Haveli Hotel",
-        transport: "Private AC Sedan Included",
-        badge: "Bestseller"
-    },
-    {
-        id: "pkg-2",
-        slug: "goa-tropical-beach-retreat-watersports",
-        title: "Goa Tropical Beach Retreat & Watersports",
-        destination: "North Goa • South Goa",
-        duration: "4 Days / 3 Nights",
-        rating: 4.8,
-        reviewsCount: 210,
-        price: 12999,
-        originalPrice: 17999,
-        discountPercent: "28% OFF",
-        image: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1200&q=80",
-        includedStay: "Beachfront 4-Star Resort",
-        transport: "Airport Pickup & Sightseeing Cab",
-        badge: "Trending"
-    },
-    {
-        id: "pkg-3",
-        slug: "kashmir-paradise-srinagar-gulmarg-pahalgam",
-        title: "Kashmir Paradise: Srinagar, Gulmarg & Pahalgam",
-        destination: "Srinagar • Gulmarg • Pahalgam",
-        duration: "5 Days / 4 Nights",
-        rating: 4.95,
-        reviewsCount: 188,
-        price: 21999,
-        originalPrice: 28999,
-        discountPercent: "24% OFF",
-        image: "https://images.unsplash.com/photo-1566837945700-30057527ade0?auto=format&fit=crop&w=1200&q=80",
-        includedStay: "Houseboat + 4-Star Resort",
-        transport: "Private SUV Mountain Transfers",
-        badge: "Popular"
-    },
-    {
-        id: "pkg-4",
-        slug: "himachal-scenic-escapade-shimla-manali",
-        title: "Himachal Scenic Escapade: Shimla & Manali",
-        destination: "Shimla • Kullu • Manali • Solang",
-        duration: "7 Days / 6 Nights",
-        rating: 4.85,
-        reviewsCount: 320,
-        price: 16499,
-        originalPrice: 22999,
-        discountPercent: "28% OFF",
-        image: "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=1200&q=80",
-        includedStay: "Mountain View Deluxe Resort",
-        transport: "AC Volvo + Private Cab",
-        badge: "Super Saver"
-    },
-    {
-        id: "pkg-5",
-        slug: "serene-kerala-backwaters-tea-gardens",
-        title: "Serene Kerala Backwaters & Tea Gardens",
-        destination: "Munnar • Thekkady • Alleppey",
-        duration: "5 Days / 4 Nights",
-        rating: 4.9,
-        reviewsCount: 165,
-        price: 19499,
-        originalPrice: 26999,
-        discountPercent: "27% OFF",
-        image: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1200&q=80",
-        includedStay: "Houseboat + Hill Resort",
-        transport: "Private Chauffeur Sedan",
-        badge: "Top Rated"
-    },
-    {
-        id: "pkg-6",
-        slug: "ladakh-high-passes-pangong-tso-odyssey",
-        title: "Ladakh High Passes & Pangong Tso Odyssey",
-        destination: "Leh • Nubra Valley • Pangong Tso",
-        duration: "6 Days / 5 Nights",
-        rating: 4.92,
-        reviewsCount: 98,
-        price: 24999,
-        originalPrice: 32999,
-        discountPercent: "24% OFF",
-        image: "https://images.unsplash.com/photo-1581793745862-99fde7fa73d2?auto=format&fit=crop&w=1200&q=80",
-        includedStay: "Deluxe Hotel + Glamping Camps",
-        transport: "4x4 Mountain SUV",
-        badge: "Bucket List"
+// Read admin-configured tour packages from localStorage (SSR-safe)
+const readAdminPackages = (): any[] | null => {
+    try {
+        const raw = localStorage.getItem("ghs_admin_tour_packages");
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) && parsed.length > 0 ? parsed : null;
+    } catch (e) {
+        return null;
     }
-];
+};
 
 export default function TourPackages() {
-    const [packages, setPackages] = useState<any[]>(() => {
-        const saved = localStorage.getItem("ghs_admin_tour_packages");
-        return saved ? JSON.parse(saved) : POPULAR_PACKAGES;
-    });
+    const [packages, setPackages] = useState<any[]>(() => readAdminPackages() || []);
+    const [packagesLoading, setPackagesLoading] = useState<boolean>(() => readAdminPackages() === null);
 
     const [banners, setBanners] = useState<any[]>(() => {
         const validOverride = (() => {
@@ -193,6 +87,7 @@ export default function TourPackages() {
                     const parsed = JSON.parse(savedPkgs);
                     if (Array.isArray(parsed) && parsed.length > 0) {
                         setPackages(parsed);
+                        setPackagesLoading(false);
                     }
                 } catch (e) {}
             }
@@ -268,15 +163,18 @@ export default function TourPackages() {
     useEffect(() => {
         const fetchApiPackages = async () => {
             try {
-                const localPkgs = localStorage.getItem("ghs_admin_tour_packages");
+                const localPkgs = readAdminPackages();
                 if (!localPkgs) {
                     const res = await packageApi.getPackages();
-                    if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
+                    if (res && res.success && Array.isArray(res.data)) {
                         setPackages(res.data);
                     }
                 }
             } catch (err) {
-                console.error("Using default packages fallback:", err);
+                console.error("Failed to load tour packages:", err);
+                setPackages([]);
+            } finally {
+                setPackagesLoading(false);
             }
 
             try {
@@ -471,7 +369,7 @@ export default function TourPackages() {
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
                         <h2 className="text-base font-black text-slate-900 tracking-tight flex items-center gap-2">
-                            <span>Available Tour Packages ({filteredPackages.length})</span>
+                            <span>Available Tour Packages {!packagesLoading && `(${filteredPackages.length})`}</span>
                         </h2>
                         {selectedDestination !== "All" && (
                             <button
@@ -483,7 +381,27 @@ export default function TourPackages() {
                         )}
                     </div>
 
-                    {filteredPackages.length === 0 ? (
+                    {packagesLoading ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+                            {[0, 1, 2, 3, 4, 5].map((i) => (
+                                <div key={i} className="relative rounded-3xl overflow-hidden aspect-[4/5] sm:aspect-[3/4] bg-slate-200 animate-pulse">
+                                    <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5 space-y-3 bg-white/70 backdrop-blur-sm">
+                                        <div className="h-3 w-1/3 bg-slate-300 rounded-full" />
+                                        <div className="h-4 w-4/5 bg-slate-300 rounded-full" />
+                                        <div className="h-10 w-full bg-slate-300 rounded-2xl" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : packages.length === 0 ? (
+                        <div className="bg-white rounded-3xl p-16 text-center border border-slate-200/80 space-y-4 shadow-sm">
+                            <Search className="w-10 h-10 text-slate-300 mx-auto" />
+                            <h3 className="text-base font-bold text-slate-800">No Available Tours</h3>
+                            <p className="text-xs text-slate-500 max-w-md mx-auto">
+                                Tour packages will appear here once added by the admin.
+                            </p>
+                        </div>
+                    ) : filteredPackages.length === 0 ? (
                         <div className="bg-white rounded-3xl p-16 text-center border border-slate-200/80 space-y-4 shadow-sm">
                             <Search className="w-10 h-10 text-slate-300 mx-auto" />
                             <h3 className="text-base font-bold text-slate-800">No Tour Packages Found</h3>
