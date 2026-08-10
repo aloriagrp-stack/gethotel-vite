@@ -25,6 +25,43 @@ export function createPackageSlug(title: string): string {
 
 // Sample Packages Detailed Database with Real Verified Guest Reviews
 const ALL_PACKAGES_DB: Record<string, any> = {
+    "golden-triangle-classic-5d4n-delhi-agra-jaipur-tour-4415": {
+        id: "pkg-golden-triangle-4415",
+        slug: "golden-triangle-classic-5d4n-delhi-agra-jaipur-tour-4415",
+        title: "Golden Triangle Classic 5D4N Delhi Agra Jaipur Tour",
+        destination: "Delhi • Agra • Jaipur",
+        duration: "5 Days / 4 Nights",
+        rating: 4.85,
+        price: 14999,
+        originalPrice: 19999,
+        discountPercent: "25% OFF",
+        image: "https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=1200&q=80",
+        gallery: [
+            "https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=1200&q=80"
+        ],
+        includedStay: "4-Star Hotel Stay Included",
+        transport: "Private Chauffeur AC Sedan",
+        badge: "Bestseller",
+        overview: "Discover India's legendary Golden Triangle! Explore the historical monuments of Old & New Delhi, witness the mesmerizing Taj Mahal at sunrise in Agra, and experience the grand forts and Pink City heritage of Jaipur.",
+        inclusions: [
+            "4-Star Luxury Hotel accommodation in Delhi, Agra & Jaipur",
+            "Daily Buffet Breakfast at all hotels",
+            "Guided sunrise tour of the majestic Taj Mahal",
+            "Amer Fort & City Palace guided sightseeing in Jaipur",
+            "Private AC Sedan for entire 5 days transfers",
+            "All toll taxes, parking fees, & driver allowances included"
+        ],
+        itinerary: [
+            { day: "Day 1", title: "Arrival in Delhi & Sightseeing", desc: "Pickup from Delhi Airport/Station. Visit India Gate, Qutub Minar, and Lotus Temple. Overnight stay in Delhi." },
+            { day: "Day 2", title: "Delhi to Agra & Sunset View Taj Mahal", desc: "Drive to Agra via Yamuna Expressway. Check-in at hotel. Visit Agra Fort and enjoy sunset view of Taj Mahal from Mehtab Bagh." },
+            { day: "Day 3", title: "Taj Mahal Sunrise & Drive to Jaipur", desc: "Early morning guided tour of Taj Mahal at sunrise. Later drive to Jaipur, visiting Fatehpur Sikri enroute." },
+            { day: "Day 4", title: "Jaipur Pink City & Royal Forts", desc: "Visit Amer Fort with jeep ride, Jal Mahal, City Palace, Hawa Mahal, and local bazaars." },
+            { day: "Day 5", title: "Jaipur to Delhi Departure", desc: "Breakfast at hotel. Visit Albert Hall Museum before driving back to Delhi for airport/railway drop." }
+        ],
+        reviews: []
+    },
     "royal-rajasthan-heritage-fort-trail": {
         id: "pkg-1",
         slug: "royal-rajasthan-heritage-fort-trail",
@@ -150,38 +187,9 @@ export default function TourPackageDetails() {
     const { id } = useParams();
     const navigate = useNavigate();
 
-    // Look up package by SLUG or ID
-    let pkg = null;
-    if (id) {
-        if (ALL_PACKAGES_DB[id]) {
-            pkg = ALL_PACKAGES_DB[id];
-        } else {
-            pkg = Object.values(ALL_PACKAGES_DB).find(
-                (p) => p.slug === id || p.id === id || createPackageSlug(p.title) === id
-            );
-        }
-
-        if (!pkg) {
-            try {
-                const saved = localStorage.getItem("ghs_admin_tour_packages");
-                if (saved) {
-                    const localPackages = JSON.parse(saved);
-                    pkg = localPackages.find(
-                        (p: any) => p.slug === id || p.id === id || createPackageSlug(p.title) === id
-                    );
-                }
-            } catch (e) {
-                console.error("Localstorage search error", e);
-            }
-        }
-    }
-
-    if (!pkg) {
-        pkg = ALL_PACKAGES_DB["royal-rajasthan-heritage-fort-trail"];
-    }
-
-    const [packageData, setPackageData] = useState<any>(pkg);
-    const [selectedImg, setSelectedImg] = useState(pkg.image);
+    const [packageData, setPackageData] = useState<any | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [selectedImg, setSelectedImg] = useState<string>("");
     const [travelerCount, setTravelerCount] = useState(2);
     const [isGuestDropdownOpen, setIsGuestDropdownOpen] = useState(false);
     const [travelDate, setTravelDate] = useState(() => {
@@ -196,27 +204,112 @@ export default function TourPackageDetails() {
     const dropdownRef = useRef<HTMLDivElement>(null);
     const bookingCardRef = useRef<HTMLDivElement>(null);
 
-    // Fetch real package detail from backend API
+    // Dynamic Package Resolution effect
     useEffect(() => {
-        const fetchPackageDetail = async () => {
-            if (!id) return;
+        const loadPackage = async () => {
+            if (!id) {
+                setLoading(false);
+                return;
+            }
+
+            setLoading(true);
+            const cleanId = id.toLowerCase().trim();
+            let foundPkg: any = null;
+
+            // 1. Check ALL_PACKAGES_DB by exact key
+            if (ALL_PACKAGES_DB[cleanId]) {
+                foundPkg = ALL_PACKAGES_DB[cleanId];
+            } else {
+                // 2. Search values in ALL_PACKAGES_DB by slug/id/title match
+                foundPkg = Object.values(ALL_PACKAGES_DB).find(
+                    (p) => 
+                        p.slug === cleanId || 
+                        p.id === cleanId || 
+                        createPackageSlug(p.title) === cleanId ||
+                        cleanId.includes(p.slug) ||
+                        p.slug.includes(cleanId) ||
+                        cleanId.includes(createPackageSlug(p.title))
+                );
+            }
+
+            // 3. Search local storage (Admin created packages)
+            if (!foundPkg) {
+                try {
+                    const saved = localStorage.getItem("ghs_admin_tour_packages");
+                    if (saved) {
+                        const localPackages = JSON.parse(saved);
+                        foundPkg = localPackages.find(
+                            (p: any) => 
+                                p.slug === cleanId || 
+                                p.id === cleanId || 
+                                createPackageSlug(p.title) === cleanId ||
+                                cleanId.includes(p.slug)
+                        );
+                    }
+                } catch (e) {
+                    console.error("Localstorage search error", e);
+                }
+            }
+
+            // 4. Try API fetch from backend
             try {
                 const res = await packageApi.getPackage(id);
                 if (res && res.success && res.data) {
-                    setPackageData(res.data);
-                    if (res.data.image) {
-                        setSelectedImg(res.data.image);
-                    }
+                    foundPkg = res.data;
                 }
             } catch (err) {
-                console.error("API package detail fetch failed, using fallback:", err);
+                console.warn("Backend API package detail fetch failed:", err);
             }
+
+            if (foundPkg) {
+                setPackageData(foundPkg);
+                setSelectedImg(foundPkg.image || foundPkg.gallery?.[0] || "");
+            } else {
+                setPackageData(null);
+            }
+            setLoading(false);
         };
-        fetchPackageDetail();
+
+        loadPackage();
     }, [id]);
 
-    // Use active packageData
-    pkg = packageData;
+    // Handle Loading State
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+                <div className="flex flex-col items-center gap-3 text-slate-500">
+                    <div className="w-8 h-8 border-3 border-brand-600 border-t-transparent rounded-full animate-spin" />
+                    <span className="text-xs font-bold uppercase tracking-wider">Loading Package Details...</span>
+                </div>
+            </div>
+        );
+    }
+
+    // Handle 404 Package Not Found Empty State
+    if (!packageData) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 text-center font-sans">
+                <SEOHead title="Package Not Found | GetHotelStays" description="Requested tour package could not be found." noIndex />
+                <div className="max-w-md w-full bg-white rounded-3xl p-8 border border-slate-100 shadow-xl space-y-4">
+                    <div className="w-16 h-16 bg-blue-50 text-brand-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
+                        <MapPin className="w-8 h-8" />
+                    </div>
+                    <h2 className="text-xl font-black text-slate-900 tracking-tight">Tour Package Not Found</h2>
+                    <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                        The requested package might have been updated, moved, or is no longer listed. Check out our other popular tour packages across India!
+                    </p>
+                    <Link
+                        to="/packages"
+                        className="inline-flex items-center justify-center gap-2 w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-black text-xs uppercase tracking-wider rounded-2xl transition-all shadow-md cursor-pointer"
+                    >
+                        Explore All Tour Packages
+                    </Link>
+                </div>
+            </div>
+        );
+    }
+
+    const pkg = packageData;
 
     // Compute Dynamic Reviews & Rating — only real reviews, no fakes
     const reviewsList = Array.isArray(pkg.reviews) ? pkg.reviews : [];
@@ -692,40 +785,54 @@ export default function TourPackageDetails() {
                         </div>
                     </div>
 
-                    {/* Show Initial 2 Reviews */}
-                    <div className="space-y-3">
-                        {reviewsList.slice(0, 2).map((rev: any, idx: number) => (
-                            <div key={idx} className="p-4 bg-slate-50/70 rounded-2xl space-y-1.5 border border-slate-100">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <span className="w-7 h-7 rounded-full bg-brand-50 text-brand-700 font-bold text-xs flex items-center justify-center">
-                                            {rev.name.charAt(0)}
-                                        </span>
-                                        <div>
-                                            <span className="text-xs font-bold text-slate-900 block">{rev.name}</span>
-                                            <span className="text-[10px] text-slate-400 font-medium">{rev.date}</span>
-                                        </div>
-                                    </div>
-                                    <span className="text-xs font-black text-slate-800">⭐ {rev.rating}</span>
-                                </div>
-                                <p className="text-xs text-slate-600 font-medium pl-9 leading-relaxed">
-                                    "{rev.comment}"
-                                </p>
+                    {/* Show Reviews or Empty State */}
+                    {reviewsList.length === 0 ? (
+                        <div className="p-6 bg-slate-50/80 rounded-2xl border border-slate-100 text-center space-y-2">
+                            <div className="w-10 h-10 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center mx-auto shadow-xs">
+                                <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
                             </div>
-                        ))}
-                    </div>
+                            <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider">No Reviews Yet</h4>
+                            <p className="text-[11px] text-slate-500 font-medium leading-relaxed max-w-sm mx-auto">
+                                Be the first verified traveler to experience this package and leave a review!
+                            </p>
+                        </div>
+                    ) : (
+                        <>
+                            <div className="space-y-3">
+                                {reviewsList.slice(0, 2).map((rev: any, idx: number) => (
+                                    <div key={idx} className="p-4 bg-slate-50/70 rounded-2xl space-y-1.5 border border-slate-100">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <span className="w-7 h-7 rounded-full bg-brand-50 text-brand-700 font-bold text-xs flex items-center justify-center">
+                                                    {rev.name.charAt(0)}
+                                                </span>
+                                                <div>
+                                                    <span className="text-xs font-bold text-slate-900 block">{rev.name}</span>
+                                                    <span className="text-[10px] text-slate-400 font-medium">{rev.date}</span>
+                                                </div>
+                                            </div>
+                                            <span className="text-xs font-black text-slate-800">⭐ {rev.rating}</span>
+                                        </div>
+                                        <p className="text-xs text-slate-600 font-medium pl-9 leading-relaxed">
+                                            "{rev.comment}"
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
 
-                    {/* Minimal View All Reviews Button */}
-                    <div className="pt-1">
-                        <button
-                            type="button"
-                            onClick={() => setShowAllReviewsDrawer(true)}
-                            className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                        >
-                            <span>View All Reviews ({reviewsCount})</span>
-                            <ChevronDown className="w-4 h-4 text-slate-500" />
-                        </button>
-                    </div>
+                            {/* Minimal View All Reviews Button */}
+                            <div className="pt-1">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowAllReviewsDrawer(true)}
+                                    className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                                >
+                                    <span>View All Reviews ({reviewsCount})</span>
+                                    <ChevronDown className="w-4 h-4 text-slate-500" />
+                                </button>
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 {/* MINIMAL CLEAN UNBOXED THANK YOU NOTE — Positioned Below Reviews */}

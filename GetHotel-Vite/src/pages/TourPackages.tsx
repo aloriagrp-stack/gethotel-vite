@@ -56,6 +56,22 @@ const BANNER_IMAGES = [
 // Fallback Tour Packages
 const POPULAR_PACKAGES = [
     {
+        id: "pkg-golden-triangle-4415",
+        slug: "golden-triangle-classic-5d4n-delhi-agra-jaipur-tour-4415",
+        title: "Golden Triangle Classic 5D4N Delhi Agra Jaipur Tour",
+        destination: "Delhi • Agra • Jaipur",
+        duration: "5 Days / 4 Nights",
+        rating: 4.85,
+        reviewsCount: 218,
+        price: 14999,
+        originalPrice: 19999,
+        discountPercent: "25% OFF",
+        image: "https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=1200&q=80",
+        includedStay: "4-Star Hotel Stay Included",
+        transport: "Private Chauffeur AC Sedan",
+        badge: "Bestseller"
+    },
+    {
         id: "pkg-1",
         slug: "royal-rajasthan-heritage-fort-trail",
         title: "Royal Rajasthan Heritage & Fort Trail",
