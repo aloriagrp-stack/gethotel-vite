@@ -452,38 +452,49 @@ export const packageApi = {
             }
         } catch (e) {}
 
-        const local = localStorage.getItem("ghs_admin_tour_hero_config");
-        if (local) {
-            try { return { success: true, data: JSON.parse(local) }; } catch (e) {}
+        const localBanners = localStorage.getItem("ghs_admin_tour_banners");
+        if (localBanners) {
+            try {
+                const parsed = JSON.parse(localBanners);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    return { success: true, data: { banners: parsed, heroImages: parsed.map(b => b.image || b) } };
+                }
+            } catch (e) {}
         }
+
+        const localConfig = localStorage.getItem("ghs_admin_tour_hero_config");
+        if (localConfig) {
+            try { return { success: true, data: JSON.parse(localConfig) }; } catch (e) {}
+        }
+
         return {
             success: true,
             data: {
                 title: "Explore Handcrafted Tour Packages",
                 subtitle: "Unforgettable journeys designed for your dream vacation across India & global destinations",
-                heroImages: [
-                    "https://images.unsplash.com/photo-1506461883276-594a12b11cf3?auto=format&fit=crop&w=1920&q=80"
-                ]
+                heroImages: []
             }
         };
     },
     updateHeroConfig: async (data: any) => {
+        if (data && data.banners) {
+            localStorage.setItem("ghs_admin_tour_banners", JSON.stringify(data.banners));
+        }
+        localStorage.setItem("ghs_admin_tour_hero_config", JSON.stringify(data));
+
         try {
             const res = await apiFetch('/packages/hero-config', { method: 'PUT', body: JSON.stringify(data) });
             if (res && res.success) return res;
         } catch (e) {}
 
-        localStorage.setItem("ghs_admin_tour_hero_config", JSON.stringify(data));
-
         try {
             await apiFetch('/admin/homepage/config', {
                 method: 'PUT',
-                body: JSON.stringify({ tour_hero_config: JSON.stringify(data) })
+                body: JSON.stringify({ key: 'tour_hero_config', value: JSON.stringify(data) })
             });
-            return { success: true, message: "Tour Hero Section Configuration updated successfully!", data };
         } catch (e) {}
 
-        return { success: true, message: "Tour Hero Section Configuration updated successfully!", data };
+        return { success: true, message: "Hero config updated" };
     },
 };
 
