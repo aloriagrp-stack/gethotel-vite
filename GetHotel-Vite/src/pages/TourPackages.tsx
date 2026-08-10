@@ -296,20 +296,22 @@ export default function TourPackages() {
             }
 
             try {
-                const localBanners = localStorage.getItem("ghs_admin_tour_banners");
-                if (!localBanners) {
-                    const heroRes = await packageApi.getHeroConfig();
-                    if (heroRes && heroRes.success && heroRes.data) {
-                        const hData = heroRes.data;
-                        if (Array.isArray(hData.heroImages) && hData.heroImages.length > 0) {
-                            const formattedBanners = hData.heroImages.map((imgUrl: string, idx: number) => ({
-                                title: hData.title || "Explore Handcrafted Tour Packages",
-                                subtitle: hData.subtitle || "Unforgettable luxury & budget holiday packages across India & global destinations",
-                                tag: idx === 0 ? "Featured Deal" : "Trending Offer",
-                                image: imgUrl
-                            }));
-                            setBanners(formattedBanners);
-                        }
+                const heroRes = await packageApi.getHeroConfig();
+                if (heroRes && heroRes.success && heroRes.data) {
+                    const hData = heroRes.data;
+                    if (Array.isArray(hData.banners) && hData.banners.length > 0) {
+                        setBanners(hData.banners);
+                        localStorage.setItem("ghs_admin_tour_banners", JSON.stringify(hData.banners));
+                    } else if (Array.isArray(hData.heroImages) && hData.heroImages.length > 0) {
+                        const formattedBanners = hData.heroImages.map((imgUrl: string, idx: number) => ({
+                            id: `b-${idx}`,
+                            title: hData.title || "Explore Handcrafted Tour Packages",
+                            subtitle: hData.subtitle || "Unforgettable luxury & budget holiday packages across India & global destinations",
+                            tag: idx === 0 ? "Featured Deal" : "Trending Offer",
+                            image: imgUrl
+                        }));
+                        setBanners(formattedBanners);
+                        localStorage.setItem("ghs_admin_tour_banners", JSON.stringify(formattedBanners));
                     }
                 }
             } catch (e) {

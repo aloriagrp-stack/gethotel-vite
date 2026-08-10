@@ -5,6 +5,7 @@ import {
     Eye, EyeOff, Tag, Sliders, CircleDot, Layers, Upload
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { packageApi } from "@/lib/api";
 
 // Default Initial Data
 const INITIAL_PACKAGES = [
@@ -164,6 +165,15 @@ export default function AdminTourPackages() {
     useEffect(() => {
         localStorage.setItem("ghs_admin_tour_banners", JSON.stringify(banners));
         window.dispatchEvent(new Event("ghs_tour_settings_updated"));
+
+        // Sync live to MySQL Backend API
+        const heroImagesList = banners.map((b: any) => typeof b === 'string' ? b : (b.image || ''));
+        packageApi.updateHeroConfig({
+            title: "Handcrafted Tour Packages",
+            subtitle: "Unforgettable luxury & budget holiday packages across India & global destinations",
+            heroImages: heroImagesList,
+            banners: banners
+        }).catch(err => console.error("Failed to sync hero banners to backend DB:", err));
     }, [banners]);
 
     useEffect(() => {

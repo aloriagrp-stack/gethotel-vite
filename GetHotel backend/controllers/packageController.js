@@ -494,11 +494,12 @@ exports.getHeroConfig = async (req, res) => {
 // PUT Update Tour Hero Section Config (Admin)
 exports.updateHeroConfig = async (req, res) => {
     try {
-        const { title, subtitle, heroImages } = req.body;
+        const { title, subtitle, heroImages, banners } = req.body;
         const payload = {
             title: title || "Explore Handcrafted Tour Packages",
             subtitle: subtitle || "Unforgettable journeys designed for your dream vacation across India & global destinations",
-            heroImages: Array.isArray(heroImages) ? heroImages : []
+            heroImages: Array.isArray(heroImages) ? heroImages : [],
+            banners: Array.isArray(banners) ? banners : []
         };
 
         const strValue = JSON.stringify(payload);
