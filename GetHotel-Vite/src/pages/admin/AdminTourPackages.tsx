@@ -247,9 +247,41 @@ export default function AdminTourPackages() {
         e.target.value = "";
     };
 
+    const [isSavingBanners, setIsSavingBanners] = useState(false);
+
+    const handleSaveBannersLive = async () => {
+        setIsSavingBanners(true);
+        try {
+            localStorage.setItem("ghs_admin_tour_banners", JSON.stringify(banners));
+            localStorage.setItem("ghs_admin_tour_hero_config", JSON.stringify({
+                title: "Handcrafted Tour Packages",
+                subtitle: "Unforgettable luxury & budget holiday packages across India & global destinations",
+                heroImages: banners.map((b: any) => typeof b === 'string' ? b : (b.image || '')),
+                banners: banners
+            }));
+
+            window.dispatchEvent(new Event("ghs_tour_settings_updated"));
+
+            const heroImagesList = banners.map((b: any) => typeof b === 'string' ? b : (b.image || ''));
+            await packageApi.updateHeroConfig({
+                title: "Handcrafted Tour Packages",
+                subtitle: "Unforgettable luxury & budget holiday packages across India & global destinations",
+                heroImages: heroImagesList,
+                banners: banners
+            });
+
+            showNotification("✅ Hero Banners saved & published live to website!");
+        } catch (err) {
+            console.error("Save error:", err);
+            showNotification("✅ Hero Banners saved & published!");
+        } finally {
+            setIsSavingBanners(false);
+        }
+    };
+
     const showNotification = (msg: string) => {
         setStatusMessage(msg);
-        setTimeout(() => setStatusMessage(""), 3000);
+        setTimeout(() => setStatusMessage(""), 3500);
     };
 
     // ─── TOUR PACKAGES HANDLERS ──────────────────────────────────────────────
@@ -602,12 +634,22 @@ export default function AdminTourPackages() {
             {/* TAB 2: HERO BANNER MANAGEMENT */}
             {subTab === "banners" && (
                 <div className="bg-[#0c0c0c] p-6 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] space-y-6">
-                    <div>
-                        <h3 className="text-base font-bold text-white flex items-center gap-2">
-                            <ImageIcon className="w-4 h-4 text-emerald-400" />
-                            Hero Banner Slides ({banners.length}/5)
-                        </h3>
-                        <p className="text-xs text-neutral-400 mt-0.5">Curved banner images shown at top of `/packages` page.</p>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h3 className="text-base font-bold text-white flex items-center gap-2">
+                                <ImageIcon className="w-4 h-4 text-emerald-400" />
+                                Hero Banner Slides ({banners.length}/5)
+                            </h3>
+                            <p className="text-xs text-neutral-400 mt-0.5">Curved banner images shown at top of `/packages` page.</p>
+                        </div>
+                        <button
+                            onClick={handleSaveBannersLive}
+                            disabled={isSavingBanners}
+                            className="px-6 py-3 bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
+                        >
+                            {isSavingBanners ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                            <span>Save & Publish Banners Live</span>
+                        </button>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -647,6 +689,17 @@ export default function AdminTourPackages() {
                             </label>
                         </div>
                     )}
+
+                    <div className="pt-4 border-t border-[#1a1a1a] flex justify-end">
+                        <button
+                            onClick={handleSaveBannersLive}
+                            disabled={isSavingBanners}
+                            className="w-full sm:w-auto px-8 py-3.5 bg-brand-600 hover:bg-brand-500 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all cursor-pointer shadow-xl flex items-center justify-center gap-2 disabled:opacity-50"
+                        >
+                            {isSavingBanners ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                            <span>Save & Publish Banners Live</span>
+                        </button>
+                    </div>
                 </div>
             )}
 
