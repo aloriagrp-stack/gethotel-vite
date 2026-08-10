@@ -176,18 +176,65 @@ export default function AdminTourPackages() {
         window.dispatchEvent(new Event("ghs_tour_settings_updated"));
     }, [filterConfig]);
 
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, callback: (url: string) => void) => {
-        const file = e.target.files?.[0];
-        if (file) {
+    const compressImage = (file: File, maxWidth = 1400, quality = 0.85): Promise<string> => {
+        return new Promise((resolve) => {
             const reader = new FileReader();
-            reader.onloadend = () => {
-                if (reader.result) {
-                    callback(reader.result as string);
-                    showNotification("Local image uploaded successfully!");
-                }
-            };
             reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target?.result as string;
+                img.onload = () => {
+                    const canvas = document.createElement("canvas");
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > maxWidth) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    const ctx = canvas.getContext("2d");
+                    if (ctx) {
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL("image/jpeg", quality));
+                    } else {
+                        resolve(event.target?.result as string);
+                    }
+                };
+                img.onerror = () => resolve(event.target?.result as string);
+            };
+            reader.onerror = () => resolve("");
+        });
+    };
+
+    const handleBannerDirectUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (banners.length >= 5) {
+            alert("Maximum 5 hero banner images allowed.");
+            return;
         }
+        try {
+            const compressedUrl = await compressImage(file, 1400, 0.85);
+            if (!compressedUrl) {
+                alert("Failed to process image file.");
+                return;
+            }
+            const newB = {
+                id: `b-${Date.now()}`,
+                image: compressedUrl,
+                title: file.name.replace(/\.[^/.]+$/, "") || "Hero Banner"
+            };
+            setBanners(prev => [...prev, newB]);
+            showNotification("Local image banner uploaded and added live!");
+        } catch (err) {
+            console.error("Upload error", err);
+            alert("Error reading file.");
+        }
+        e.target.value = "";
     };
 
     const showNotification = (msg: string) => {
@@ -573,32 +620,23 @@ export default function AdminTourPackages() {
                         ))}
                     </div>
 
-                    <form onSubmit={handleAddBanner} className="flex flex-col sm:flex-row gap-2 pt-2">
-                        <input
-                            type="text"
-                            required
-                            placeholder="Paste image URL or click Upload Local File..."
-                            value={newBannerUrl}
-                            onChange={(e) => setNewBannerUrl(e.target.value)}
-                            className="flex-1 px-4 py-2.5 bg-[#141414] border border-[#282828] rounded-xl text-xs font-medium text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-500 font-mono"
-                        />
-                        <label className="px-4 py-2.5 bg-[#1a1a1a] hover:bg-[#252525] text-neutral-300 border border-[#333] rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shrink-0 transition-colors">
-                            <Upload className="w-3.5 h-3.5 text-emerald-400" />
-                            <span>Upload Local File</span>
-                            <input
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={(e) => handleFileUpload(e, (url) => setNewBannerUrl(url))}
-                            />
-                        </label>
-                        <button
-                            type="submit"
-                            className="px-5 py-2.5 bg-neutral-100 hover:bg-white text-black font-bold text-xs rounded-xl transition-all cursor-pointer shrink-0 uppercase tracking-wider"
-                        >
-                            Add Banner
-                        </button>
-                    </form>
+                    {banners.length < 5 && (
+                        <div className="pt-2">
+                            <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-[#2b2b2b] hover:border-emerald-500/50 bg-[#121212] hover:bg-[#161616] rounded-2xl cursor-pointer transition-all group shadow-sm">
+                                <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                                    <Upload className="w-6 h-6" />
+                                </div>
+                                <span className="text-xs font-bold text-white mb-1">Click to Upload Local Image File</span>
+                                <span className="text-[10px] text-neutral-400 font-medium">Select photo from your computer/device to add as Hero Banner slide</span>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={handleBannerDirectUpload}
+                                />
+                            </label>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -773,33 +811,31 @@ export default function AdminTourPackages() {
                                 </div>
 
                                 <div>
-                                    <div className="flex items-center justify-between mb-1.5">
-                                        <label className="block text-[10px] font-bold text-neutral-400 uppercase">Thumbnail Image</label>
-                                        <label className="text-[10px] font-bold text-emerald-400 hover:underline flex items-center gap-1 cursor-pointer">
-                                            <Upload className="w-3 h-3" />
-                                            <span>Upload Local File</span>
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                className="hidden"
-                                                onChange={(e) => handleFileUpload(e, (url) => setDestFormData({ ...destFormData, image: url }))}
-                                            />
-                                        </label>
-                                    </div>
-                                    <input
-                                        type="text"
-                                        required
-                                        placeholder="Paste image URL or click Upload Local File above..."
-                                        value={destFormData.image}
-                                        onChange={e => setDestFormData({ ...destFormData, image: e.target.value })}
-                                        className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-white focus:outline-none focus:border-neutral-500 font-mono"
-                                    />
+                                    <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">Destination Thumbnail Image</label>
+                                    <label className="flex flex-col items-center justify-center p-5 border border-dashed border-[#333] hover:border-emerald-500/50 bg-[#141414] hover:bg-[#181818] rounded-xl cursor-pointer transition-all">
+                                        <Upload className="w-5 h-5 text-emerald-400 mb-1" />
+                                        <span className="text-xs font-bold text-neutral-200">Click to Select Local Image File</span>
+                                        <span className="text-[10px] text-neutral-500 font-medium mt-0.5">Choose photo from your device</span>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            className="hidden"
+                                            onChange={async (e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) {
+                                                    const compressed = await compressImage(file, 600, 0.85);
+                                                    setDestFormData({ ...destFormData, image: compressed });
+                                                    showNotification("Destination thumbnail loaded!");
+                                                }
+                                            }}
+                                        />
+                                    </label>
                                 </div>
 
                                 {destFormData.image && (
                                     <div className="flex flex-col items-center pt-2">
-                                        <span className="text-[10px] text-neutral-400 font-bold mb-1">Preview:</span>
-                                        <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-white/20">
+                                        <span className="text-[10px] text-neutral-400 font-bold mb-1">Thumbnail Preview:</span>
+                                        <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-emerald-500/50 shadow-md">
                                             <img src={destFormData.image} alt="Preview" className="w-full h-full object-cover" />
                                         </div>
                                     </div>
@@ -919,30 +955,38 @@ export default function AdminTourPackages() {
                                 </div>
 
                                 <div>
-                                    <div className="flex items-center justify-between mb-1.5">
-                                        <label className="block text-[10px] font-bold text-neutral-400 uppercase">Cover Image</label>
-                                        <label className="text-[10px] font-bold text-emerald-400 hover:underline flex items-center gap-1 cursor-pointer">
-                                            <Upload className="w-3 h-3" />
-                                            <span>Upload Local File</span>
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                className="hidden"
-                                                onChange={(e) => handleFileUpload(e, (url) => setFormData({ ...formData, image: url }))}
-                                            />
-                                        </label>
-                                    </div>
-                                    <input
-                                        type="text"
-                                        required
-                                        placeholder="Paste image URL or click Upload Local File above..."
-                                        value={formData.image}
-                                        onChange={e => setFormData({ ...formData, image: e.target.value })}
-                                        className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-white focus:outline-none focus:border-neutral-500 font-mono"
-                                    />
+                                    <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">Package Cover Image</label>
+                                    <label className="flex flex-col items-center justify-center p-5 border border-dashed border-[#333] hover:border-emerald-500/50 bg-[#141414] hover:bg-[#181818] rounded-xl cursor-pointer transition-all">
+                                        <Upload className="w-6 h-6 text-emerald-400 mb-1" />
+                                        <span className="text-xs font-bold text-neutral-200">Choose Cover Image File</span>
+                                        <span className="text-[10px] text-neutral-500 font-medium mt-0.5">Select photo from your device/computer</span>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            className="hidden"
+                                            onChange={async (e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) {
+                                                    const compressed = await compressImage(file, 1200, 0.85);
+                                                    setFormData({ ...formData, image: compressed });
+                                                    showNotification("Cover image loaded!");
+                                                }
+                                            }}
+                                        />
+                                    </label>
+
                                     {formData.image && (
-                                        <div className="mt-2 relative h-24 rounded-xl overflow-hidden border border-[#282828]">
+                                        <div className="mt-3 relative h-32 rounded-xl overflow-hidden border border-[#282828] group">
                                             <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
+                                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setFormData({ ...formData, image: "" })}
+                                                    className="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white font-bold text-xs rounded-lg transition-colors cursor-pointer shadow-md"
+                                                >
+                                                    Remove / Change Image
+                                                </button>
+                                            </div>
                                         </div>
                                     )}
                                 </div>
