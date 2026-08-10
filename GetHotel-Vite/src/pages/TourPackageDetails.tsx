@@ -186,6 +186,9 @@ const GUEST_OPTIONS = [
 export default function TourPackageDetails() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { user } = useAuth();
+    const { langCode } = useLocale();
+    const { addToCart, cartItems } = useCart();
 
     const [packageData, setPackageData] = useState<any | null>(null);
     const [loading, setLoading] = useState(true);
@@ -273,10 +276,36 @@ export default function TourPackageDetails() {
         loadPackage();
     }, [id]);
 
+    // Scroll listener: Hide floating bottom bar when booking card is in view!
+    useEffect(() => {
+        const handleScroll = () => {
+            if (bookingCardRef.current) {
+                const rect = bookingCardRef.current.getBoundingClientRect();
+                const isCardInViewport = rect.top < window.innerHeight && rect.bottom > 0;
+                setShowFloatingBar(!isCardInViewport);
+            }
+        };
+
+        window.addEventListener("scroll", handleScroll, { passive: true });
+        handleScroll();
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
+
+    // Close dropdown on outside click
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+                setIsGuestDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
     // Handle Loading State
     if (loading) {
         return (
-            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 font-sans">
                 <div className="flex flex-col items-center gap-3 text-slate-500">
                     <div className="w-8 h-8 border-3 border-brand-600 border-t-transparent rounded-full animate-spin" />
                     <span className="text-xs font-bold uppercase tracking-wider">Loading Package Details...</span>
@@ -317,42 +346,6 @@ export default function TourPackageDetails() {
     const calculatedRating = reviewsList.length > 0
         ? (reviewsList.reduce((acc: number, r: any) => acc + (r.rating || 5), 0) / reviewsList.length).toFixed(1)
         : (pkg.rating || 0).toFixed(1);
-
-    // Scroll listener: Hide floating bottom bar when booking card is in view!
-    useEffect(() => {
-        const handleScroll = () => {
-            if (bookingCardRef.current) {
-                const rect = bookingCardRef.current.getBoundingClientRect();
-                const isCardInViewport = rect.top < window.innerHeight && rect.bottom > 0;
-                setShowFloatingBar(!isCardInViewport);
-            }
-        };
-
-        window.addEventListener("scroll", handleScroll, { passive: true });
-        handleScroll();
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
-
-    // Close dropdown on outside click
-    useEffect(() => {
-        const handleClickOutside = (e: MouseEvent) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-                setIsGuestDropdownOpen(false);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
-
-    useEffect(() => {
-        if (pkg && pkg.image) {
-            setSelectedImg(pkg.image);
-        }
-    }, [pkg]);
-
-    const { user } = useAuth();
-    const { langCode } = useLocale();
-    const { addToCart, cartItems } = useCart();
 
     const totalPrice = (pkg.price || 15000) * travelerCount;
 
