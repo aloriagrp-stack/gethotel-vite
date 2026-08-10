@@ -4,6 +4,27 @@ const API_URL = import.meta.env.MODE === 'production'
     : (import.meta.env.VITE_API_URL 
         || `http://${typeof window !== 'undefined' ? window.location.hostname : 'localhost'}:5000/api`);
 
+// Legacy fabricated default hero images that the OLD backend used to return when
+// no tour hero config was saved. These must NOT be treated as real admin banners —
+// if the backend only returns these, the frontend should show "Not Available".
+const LEGACY_FALLBACK_PHOTO_IDS = [
+    "photo-1506461883276-594a12b11cf3",
+    "photo-1512343879784-a960bf40e7f2"
+];
+
+// Sanitize a hero config response: real configured data (banners array or
+// non-legacy heroImages) passes through; fabricated legacy defaults become null.
+const sanitizeHeroConfig = (d: any): any => {
+    if (!d || typeof d !== 'object') return null;
+    if (Array.isArray(d.banners) && d.banners.length > 0) return d;
+    const realHeroImages = (Array.isArray(d.heroImages) ? d.heroImages : [])
+        .filter((u: string) => typeof u === 'string' && !LEGACY_FALLBACK_PHOTO_IDS.some(id => u.includes(id)));
+    if (realHeroImages.length > 0) {
+        return { ...d, heroImages: realHeroImages };
+    }
+    return null;
+};
+
 export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
     const token = typeof window !== 'undefined' ? (sessionStorage.getItem('token') || localStorage.getItem('token')) : null;
     const controller = options.signal ? null : new AbortController();
@@ -439,7 +460,11 @@ export const packageApi = {
     getHeroConfig: async () => {
         try {
             const res = await apiFetch('/packages/hero-config');
-            if (res && res.success && res.data) return res;
+            if (res && res.success) {
+                const cleaned = sanitizeHeroConfig(res.data);
+                if (cleaned) return { success: true, data: cleaned };
+                return { success: true, data: null };
+            }
         } catch (e) {}
 
         try {
@@ -448,7 +473,9 @@ export const packageApi = {
                 const hData = typeof hpRes.data.tour_hero_config === 'string'
                     ? JSON.parse(hpRes.data.tour_hero_config)
                     : hpRes.data.tour_hero_config;
-                return { success: true, data: hData };
+                const cleaned = sanitizeHeroConfig(hData);
+                if (cleaned) return { success: true, data: cleaned };
+                return { success: true, data: null };
             }
         } catch (e) {}
 
