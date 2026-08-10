@@ -6,7 +6,6 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { packageApi } from "@/lib/api";
-import BannerCropModal from "@/components/admin/BannerCropModal";
 
 // Read admin-configured tour packages from localStorage (SSR-safe)
 const readAdminPackages = (): any[] | null => {
@@ -68,11 +67,6 @@ export default function AdminTourPackages() {
     const [editingPackage, setEditingPackage] = useState<any>(null);
     const [newBannerUrl, setNewBannerUrl] = useState("");
     const [statusMessage, setStatusMessage] = useState("");
-
-    // Banner Crop Modal State
-    const [isCropModalOpen, setIsCropModalOpen] = useState(false);
-    const [cropImageSrc, setCropImageSrc] = useState("");
-    const [cropBannerTitle, setCropBannerTitle] = useState("");
 
     // Destination Circle Edit / Create Modal State
     const [isDestModalOpen, setIsDestModalOpen] = useState(false);
@@ -147,82 +141,65 @@ export default function AdminTourPackages() {
         window.dispatchEvent(new Event("ghs_tour_settings_updated"));
     }, [filterConfig]);
 
-    const compressDataUrl = (dataUrl: string, maxWidth = 1400, quality = 0.85): Promise<string> => {
-        return new Promise((resolve) => {
-            const img = new Image();
-            img.src = dataUrl;
-            img.onload = () => {
-                const canvas = document.createElement("canvas");
-                let width = img.width;
-                let height = img.height;
-
-                if (width > maxWidth) {
-                    height = Math.round((height * maxWidth) / width);
-                    width = maxWidth;
-                }
-
-                canvas.width = width;
-                canvas.height = height;
-
-                const ctx = canvas.getContext("2d");
-                if (ctx) {
-                    ctx.drawImage(img, 0, 0, width, height);
-                    resolve(canvas.toDataURL("image/jpeg", quality));
-                } else {
-                    resolve(dataUrl);
-                }
-            };
-            img.onerror = () => resolve(dataUrl);
-        });
-    };
-
     const compressImage = (file: File, maxWidth = 1400, quality = 0.85): Promise<string> => {
         return new Promise((resolve) => {
             const reader = new FileReader();
-            reader.onload = () => {
-                const dataUrl = reader.result as string;
-                compressDataUrl(dataUrl, maxWidth, quality).then(resolve);
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target?.result as string;
+                img.onload = () => {
+                    const canvas = document.createElement("canvas");
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > maxWidth) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    const ctx = canvas.getContext("2d");
+                    if (ctx) {
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL("image/jpeg", quality));
+                    } else {
+                        resolve(event.target?.result as string);
+                    }
+                };
+                img.onerror = () => resolve(event.target?.result as string);
             };
             reader.onerror = () => resolve("");
-            reader.readAsDataURL(file);
         });
     };
 
-    const handleBannerDirectUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleBannerDirectUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
         if (banners.length >= 5) {
             alert("Maximum 5 hero banner images allowed.");
-            e.target.value = "";
             return;
         }
-        const reader = new FileReader();
-        reader.onload = () => {
-            setCropBannerTitle(file.name.replace(/\.[^/.]+$/, "") || "Hero Banner");
-            setCropImageSrc(reader.result as string);
-            setIsCropModalOpen(true);
-        };
-        reader.onerror = () => alert("Error reading file.");
-        reader.readAsDataURL(file);
-        e.target.value = "";
-    };
-
-    const handleCropConfirm = async (croppedUrl: string) => {
-        setIsCropModalOpen(false);
-        setCropImageSrc("");
         try {
-            const compressedUrl = await compressDataUrl(croppedUrl, 1400, 0.85);
+            const compressedUrl = await compressImage(file, 1400, 0.85);
+            if (!compressedUrl) {
+                alert("Failed to process image file.");
+                return;
+            }
             const newB = {
                 id: `b-${Date.now()}`,
-                image: compressedUrl || croppedUrl,
-                title: cropBannerTitle || "Hero Banner"
+                image: compressedUrl,
+                title: file.name.replace(/\.[^/.]+$/, "") || "Hero Banner"
             };
             setBanners(prev => [...prev, newB]);
-            showNotification("Banner cropped & added! Click Save & Publish to go live.");
+            showNotification("Local image banner uploaded and added live!");
         } catch (err) {
             console.error("Upload error", err);
-            alert("Error processing cropped image.");
+            alert("Error reading file.");
         }
+        e.target.value = "";
     };
 
     const [isSavingBanners, setIsSavingBanners] = useState(false);
@@ -663,7 +640,7 @@ export default function AdminTourPackages() {
                                     <Upload className="w-6 h-6" />
                                 </div>
                                 <span className="text-xs font-bold text-white mb-1">Click to Upload Local Image File</span>
-                                <span className="text-[10px] text-neutral-400 font-medium">Select photo — you can crop & choose the banner area before adding it</span>
+                                <span className="text-[10px] text-neutral-400 font-medium">Select photo from your computer/device to add as Hero Banner slide</span>
                                 <input
                                     type="file"
                                     accept="image/*"
@@ -1085,14 +1062,6 @@ export default function AdminTourPackages() {
                     </div>
                 )}
             </AnimatePresence>
-
-            <BannerCropModal
-                open={isCropModalOpen}
-                imageSrc={cropImageSrc}
-                defaultAspect={0}
-                onCancel={() => { setIsCropModalOpen(false); setCropImageSrc(""); }}
-                onConfirm={handleCropConfirm}
-            />
         </div>
     );
 }
