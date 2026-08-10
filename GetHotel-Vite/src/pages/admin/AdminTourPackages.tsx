@@ -1089,7 +1089,7 @@ export default function AdminTourPackages() {
             <BannerCropModal
                 open={isCropModalOpen}
                 imageSrc={cropImageSrc}
-                defaultAspect={21 / 9}
+                defaultAspect={0}
                 onCancel={() => { setIsCropModalOpen(false); setCropImageSrc(""); }}
                 onConfirm={handleCropConfirm}
             />

@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from "react";
-import Cropper, { Area } from "react-easy-crop";
-import "react-easy-crop/react-easy-crop.css";
-import { X, Crop, ZoomIn, ZoomOut, Check } from "lucide-react";
+import ReactCrop, { Crop, PercentCrop, makeAspectCrop } from "react-image-crop";
+import "react-image-crop/dist/ReactCrop.css";
+import { X, Crop as CropIcon, ZoomIn, ZoomOut, Check } from "lucide-react";
 
 interface BannerCropModalProps {
     open: boolean;
@@ -12,6 +12,7 @@ interface BannerCropModalProps {
 }
 
 const ASPECT_OPTIONS: { label: string; value: number }[] = [
+    { label: "Free (Manual)", value: 0 },
     { label: "Banner (21:9)", value: 21 / 9 },
     { label: "Widescreen (16:9)", value: 16 / 9 },
     { label: "Ultra-wide (3:1)", value: 3 / 1 }
@@ -25,56 +26,76 @@ const loadImage = (url: string): Promise<HTMLImageElement> =>
         image.src = url;
     });
 
-const getCroppedImg = async (imageSrc: string, pixelCrop: Area): Promise<string> => {
+const getCroppedImg = async (imageSrc: string, crop: PercentCrop): Promise<string> => {
     const image = await loadImage(imageSrc);
+    const nw = image.naturalWidth;
+    const nh = image.naturalHeight;
+
+    const x = (crop.x / 100) * nw;
+    const y = (crop.y / 100) * nh;
+    const w = (crop.width / 100) * nw;
+    const h = (crop.height / 100) * nh;
+
     const canvas = document.createElement("canvas");
-    canvas.width = Math.round(pixelCrop.width);
-    canvas.height = Math.round(pixelCrop.height);
+    canvas.width = Math.max(1, Math.round(w));
+    canvas.height = Math.max(1, Math.round(h));
     const ctx = canvas.getContext("2d");
     if (!ctx) throw new Error("Canvas not supported in this browser");
-    ctx.drawImage(
-        image,
-        pixelCrop.x,
-        pixelCrop.y,
-        pixelCrop.width,
-        pixelCrop.height,
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
+    ctx.drawImage(image, x, y, w, h, 0, 0, canvas.width, canvas.height);
     return canvas.toDataURL("image/jpeg", 0.92);
 };
 
+const FULL_CROP: PercentCrop = { unit: "%", x: 0, y: 0, width: 100, height: 100 };
+
 export default function BannerCropModal({ open, imageSrc, defaultAspect, onCancel, onConfirm }: BannerCropModalProps) {
-    const [crop, setCrop] = useState({ x: 0, y: 0 });
+    const [crop, setCrop] = useState<Crop>(FULL_CROP);
     const [zoom, setZoom] = useState(1);
-    const [aspect, setAspect] = useState<number>(defaultAspect || 21 / 9);
-    const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+    const [aspectValue, setAspectValue] = useState<number>(defaultAspect || 0);
+    const [imgSize, setImgSize] = useState<{ width: number; height: number } | null>(null);
     const [isCropping, setIsCropping] = useState(false);
     const [error, setError] = useState("");
 
     useEffect(() => {
-        if (open) {
-            setCrop({ x: 0, y: 0 });
+        if (open && imageSrc) {
             setZoom(1);
-            setAspect(defaultAspect || 21 / 9);
-            setCroppedAreaPixels(null);
             setIsCropping(false);
             setError("");
+            loadImage(imageSrc)
+                .then((img) => {
+                    const size = { width: img.naturalWidth, height: img.naturalHeight };
+                    setImgSize(size);
+                    setAspectValue(defaultAspect || 0);
+                    if (defaultAspect) {
+                        setCrop(makeAspectCrop({ unit: "%", width: 92 }, defaultAspect, size.width, size.height));
+                    } else {
+                        setCrop(FULL_CROP);
+                    }
+                })
+                .catch(() => setError("Failed to load image. Please try another photo."));
         }
     }, [open, imageSrc, defaultAspect]);
 
-    const onCropComplete = useCallback((_: Area, croppedPixels: Area) => {
-        setCroppedAreaPixels(croppedPixels);
+    const onCropChange = useCallback((_: any, percentCrop: PercentCrop) => {
+        setCrop(percentCrop);
     }, []);
 
+    const handleAspectChange = (value: number) => {
+        setAspectValue(value);
+        if (imgSize) {
+            if (value === 0) {
+                setCrop(FULL_CROP);
+            } else {
+                setCrop(makeAspectCrop({ unit: "%", width: 92 }, value, imgSize.width, imgSize.height));
+            }
+        }
+    };
+
     const handleConfirm = async () => {
-        if (!croppedAreaPixels || !imageSrc) return;
+        if (!imageSrc) return;
         setIsCropping(true);
         setError("");
         try {
-            const croppedUrl = await getCroppedImg(imageSrc, croppedAreaPixels);
+            const croppedUrl = await getCroppedImg(imageSrc, crop as PercentCrop);
             onConfirm(croppedUrl);
         } catch (err) {
             console.error("Crop error:", err);
@@ -91,11 +112,11 @@ export default function BannerCropModal({ open, imageSrc, defaultAspect, onCance
                 <div className="flex items-center justify-between px-6 py-4 border-b border-[#1a1a1a]">
                     <div>
                         <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                            <Crop className="w-4 h-4 text-emerald-400" />
+                            <CropIcon className="w-4 h-4 text-emerald-400" />
                             Crop Hero Banner Image
                         </h3>
                         <p className="text-[11px] text-neutral-400 mt-0.5">
-                            Drag the box / use zoom to choose which part of the photo appears in the banner
+                            Resize the box from any edge/corner, or drag the image to position the part you want in the banner
                         </p>
                     </div>
                     <button
@@ -109,15 +130,24 @@ export default function BannerCropModal({ open, imageSrc, defaultAspect, onCance
 
                 <div className="p-5 space-y-4">
                     <div className="relative w-full h-[45vh] bg-[#121212] rounded-xl overflow-hidden border border-[#262626]">
-                        <Cropper
-                            image={imageSrc}
+                        <ReactCrop
                             crop={crop}
-                            zoom={zoom}
-                            aspect={aspect}
-                            onCropChange={setCrop}
-                            onZoomChange={setZoom}
-                            onCropComplete={onCropComplete}
-                        />
+                            onChange={onCropChange}
+                            onComplete={onCropChange}
+                            aspect={aspectValue === 0 ? undefined : aspectValue}
+                            keepSelection
+                            minWidth={60}
+                            minHeight={34}
+                            ruleOfThirds
+                            className="w-full h-full flex items-center justify-center"
+                        >
+                            <img
+                                src={imageSrc}
+                                alt="Crop preview"
+                                className="max-h-[45vh] max-w-full select-none"
+                                style={{ transform: `scale(${zoom})`, transformOrigin: "center center" }}
+                            />
+                        </ReactCrop>
                     </div>
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -137,12 +167,12 @@ export default function BannerCropModal({ open, imageSrc, defaultAspect, onCance
                         <label className="flex items-center gap-2 text-[11px] font-bold text-neutral-300 shrink-0">
                             <span className="uppercase tracking-wider">Aspect:</span>
                             <select
-                                value={aspect}
-                                onChange={(e) => setAspect(Number(e.target.value))}
+                                value={aspectValue}
+                                onChange={(e) => handleAspectChange(Number(e.target.value))}
                                 className="bg-[#1a1a1a] border border-[#2b2b2b] text-white text-xs font-bold rounded-lg px-3 py-2 outline-none cursor-pointer focus:border-emerald-500/60"
                             >
                                 {ASPECT_OPTIONS.map(opt => (
-                                    <option key={opt.value} value={opt.value} className="bg-[#1a1a1a]">
+                                    <option key={opt.label} value={opt.value} className="bg-[#1a1a1a]">
                                         {opt.label}
                                     </option>
                                 ))}
@@ -164,7 +194,7 @@ export default function BannerCropModal({ open, imageSrc, defaultAspect, onCance
                     </button>
                     <button
                         onClick={handleConfirm}
-                        disabled={isCropping || !croppedAreaPixels}
+                        disabled={isCropping || !crop}
                         className="px-6 py-2.5 bg-brand-600 hover:bg-brand-500 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all cursor-pointer shadow-lg flex items-center gap-2 disabled:opacity-50"
                     >
                         {isCropping ? (
