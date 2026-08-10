@@ -31,28 +31,6 @@ const DESTINATION_STORIES = [
     { name: "Ladakh", image: "https://images.unsplash.com/photo-1581793745862-99fde7fa73d2?auto=format&fit=crop&w=200&q=80" }
 ];
 
-// Fallback Banner Images
-const BANNER_IMAGES = [
-    {
-        title: "Kashmir Paradise: Snow & Houseboat Escapade",
-        subtitle: "Luxury Houseboat stay in Dal Lake & Gondola cable car ride included",
-        tag: "Flat 25% OFF",
-        image: "https://images.unsplash.com/photo-1566837945700-30057527ade0?auto=format&fit=crop&w=1600&q=80"
-    },
-    {
-        title: "Goa Tropical Beach Retreat & Watersports",
-        subtitle: "Beachfront 4-Star Resort stay with Scuba Diving & Parasailing combo",
-        tag: "Bestseller Deal",
-        image: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1600&q=80"
-    },
-    {
-        title: "Royal Rajasthan Heritage & Fort Trail",
-        subtitle: "Explore Palaces of Jaipur, Udaipur & Jodhpur with Private AC Sedan",
-        tag: "Special Offer",
-        image: "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1600&q=80"
-    }
-];
-
 // Fallback Tour Packages
 const POPULAR_PACKAGES = [
     {
@@ -176,8 +154,11 @@ export default function TourPackages() {
     });
 
     const [banners, setBanners] = useState<any[]>(() => {
-        const saved = localStorage.getItem("ghs_admin_tour_banners");
-        return saved ? JSON.parse(saved) : BANNER_IMAGES;
+        const validOverride = (() => {
+            try { return localStorage.getItem("ghs_tour_banners_v2") === "1"; } catch (e) { return false; }
+        })();
+        const saved = validOverride ? localStorage.getItem("ghs_admin_tour_banners") : null;
+        return saved ? JSON.parse(saved) : [];
     });
 
     const [destinationStories, setDestinationStories] = useState<any[]>(() => {
@@ -193,7 +174,10 @@ export default function TourPackages() {
     // Listen to live settings changes from Super Admin
     useEffect(() => {
         const loadSettings = () => {
-            const savedBanners = localStorage.getItem("ghs_admin_tour_banners");
+            const validOverride = (() => {
+                try { return localStorage.getItem("ghs_tour_banners_v2") === "1"; } catch (e) { return false; }
+            })();
+            const savedBanners = validOverride ? localStorage.getItem("ghs_admin_tour_banners") : null;
             if (savedBanners) {
                 try {
                     const parsed = JSON.parse(savedBanners);
@@ -296,7 +280,10 @@ export default function TourPackages() {
             }
 
             try {
-                const localBanners = localStorage.getItem("ghs_admin_tour_banners");
+                const validOverride = (() => {
+                    try { return localStorage.getItem("ghs_tour_banners_v2") === "1"; } catch (e) { return false; }
+                })();
+                const localBanners = validOverride ? localStorage.getItem("ghs_admin_tour_banners") : null;
                 const hasLocalOverride = localBanners !== null && localBanners.length > 0;
 
                 const heroRes = await packageApi.getHeroConfig();
@@ -304,7 +291,6 @@ export default function TourPackages() {
                     const hData = heroRes.data;
                     if (Array.isArray(hData.banners) && hData.banners.length > 0) {
                         setBanners(hData.banners);
-                        try { localStorage.setItem("ghs_admin_tour_banners", JSON.stringify(hData.banners)); } catch (e) { /* quota */ }
                     } else if (Array.isArray(hData.heroImages) && hData.heroImages.length > 0) {
                         const formattedBanners = hData.heroImages.map((imgUrl: string, idx: number) => ({
                             id: `b-${idx}`,
@@ -314,7 +300,6 @@ export default function TourPackages() {
                             image: imgUrl
                         }));
                         setBanners(formattedBanners);
-                        try { localStorage.setItem("ghs_admin_tour_banners", JSON.stringify(formattedBanners)); } catch (e) { /* quota */ }
                     }
                 }
             } catch (e) {
@@ -361,7 +346,7 @@ export default function TourPackages() {
         return true;
     });
 
-    const activeBanner = banners[currentBannerIndex] || BANNER_IMAGES[0];
+    const activeBanner = banners[currentBannerIndex];
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-50/60 via-indigo-50/30 to-slate-50/50 pb-24 font-sans text-slate-900">
@@ -374,7 +359,7 @@ export default function TourPackages() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8">
                 
                 {/* 1. HERO WIDESCREEN BANNER SLIDER */}
-                {banners && banners.length > 0 && (
+                {banners && banners.length > 0 ? (
                     <div className="relative overflow-hidden rounded-3xl border border-slate-200/80 shadow-lg aspect-[21/9] sm:aspect-[24/8] md:aspect-[28/9] bg-slate-950 group">
                         <AnimatePresence mode="wait">
                             <motion.img
@@ -404,6 +389,14 @@ export default function TourPackages() {
                                     )}
                                 />
                             ))}
+                        </div>
+                    </div>
+                ) : (
+                    <div className="relative overflow-hidden rounded-3xl border border-slate-200/80 shadow-lg aspect-[21/9] sm:aspect-[24/8] md:aspect-[28/9] bg-white flex items-center justify-center">
+                        <div className="text-center px-6">
+                            <ImageIcon className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+                            <p className="text-sm sm:text-base font-bold text-slate-400 uppercase tracking-widest">Not Available</p>
+                            <p className="text-xs text-slate-300 font-medium mt-1">Hero banner will appear here once uploaded by admin</p>
                         </div>
                     </div>
                 )}

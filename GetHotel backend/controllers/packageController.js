@@ -467,24 +467,18 @@ exports.getHeroConfig = async (req, res) => {
             where: { key: 'tour_hero_config' }
         });
 
-        let config = {
-            title: "Explore Handcrafted Tour Packages",
-            subtitle: "Unforgettable journeys designed for your dream vacation across India & global destinations",
-            heroImages: [
-                "https://images.unsplash.com/photo-1506461883276-594a12b11cf3?auto=format&fit=crop&w=1920&q=80",
-                "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1920&q=80"
-            ]
-        };
-
         if (row && row.value) {
             try {
-                config = { ...config, ...JSON.parse(row.value) };
+                const parsed = JSON.parse(row.value);
+                return res.json({ success: true, data: parsed });
             } catch (e) {
-                /* fallback to default */
+                /* fall through to null */
             }
         }
 
-        return res.json({ success: true, data: config });
+        // No banner configured by super admin yet — return null so the frontend
+        // shows "Not Available" instead of fabricated default images.
+        return res.json({ success: true, data: null });
     } catch (err) {
         console.error("Error in getHeroConfig:", err);
         return res.status(500).json({ success: false, message: err.message });

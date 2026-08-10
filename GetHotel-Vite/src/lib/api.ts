@@ -452,7 +452,10 @@ export const packageApi = {
             }
         } catch (e) {}
 
-        const localBanners = localStorage.getItem("ghs_admin_tour_banners");
+        const validOverride = (() => {
+            try { return localStorage.getItem("ghs_tour_banners_v2") === "1"; } catch (e) { return false; }
+        })();
+        const localBanners = validOverride ? localStorage.getItem("ghs_admin_tour_banners") : null;
         if (localBanners) {
             try {
                 const parsed = JSON.parse(localBanners);
@@ -462,7 +465,7 @@ export const packageApi = {
             } catch (e) {}
         }
 
-        const localConfig = localStorage.getItem("ghs_admin_tour_hero_config");
+        const localConfig = validOverride ? localStorage.getItem("ghs_admin_tour_hero_config") : null;
         if (localConfig) {
             try { return { success: true, data: JSON.parse(localConfig) }; } catch (e) {}
         }
@@ -481,6 +484,7 @@ export const packageApi = {
             try { localStorage.setItem("ghs_admin_tour_banners", JSON.stringify(data.banners)); } catch (e) { /* quota */ }
         }
         try { localStorage.setItem("ghs_admin_tour_hero_config", JSON.stringify(data)); } catch (e) { /* quota */ }
+        try { localStorage.setItem("ghs_tour_banners_v2", "1"); } catch (e) { /* quota */ }
 
         let lastError: string = "Unknown error while saving hero config";
         try {

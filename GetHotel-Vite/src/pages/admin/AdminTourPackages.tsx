@@ -65,24 +65,6 @@ const INITIAL_PACKAGES = [
     }
 ];
 
-const INITIAL_BANNERS = [
-    {
-        id: "b1",
-        image: "https://images.unsplash.com/photo-1566837945700-30057527ade0?auto=format&fit=crop&w=1400&q=80",
-        title: "Kashmir Paradise: Snow & Houseboat Escapade"
-    },
-    {
-        id: "b2",
-        image: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1400&q=80",
-        title: "Goa Tropical Beach Retreat & Watersports"
-    },
-    {
-        id: "b3",
-        image: "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1400&q=80",
-        title: "Royal Rajasthan Heritage & Fort Trail"
-    }
-];
-
 const INITIAL_DESTINATIONS = [
     { id: "dest-1", name: "All", image: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=200&q=80" },
     { id: "dest-2", name: "Goa", image: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=200&q=80" },
@@ -110,8 +92,11 @@ export default function AdminTourPackages() {
 
     // Hero Banners State
     const [banners, setBanners] = useState<any[]>(() => {
-        const saved = localStorage.getItem("ghs_admin_tour_banners");
-        return saved ? JSON.parse(saved) : INITIAL_BANNERS;
+        const validOverride = (() => {
+            try { return localStorage.getItem("ghs_tour_banners_v2") === "1"; } catch (e) { return false; }
+        })();
+        const saved = validOverride ? localStorage.getItem("ghs_admin_tour_banners") : null;
+        return saved ? JSON.parse(saved) : [];
     });
 
     // Destination Circle Cards State
@@ -163,7 +148,10 @@ export default function AdminTourPackages() {
     }, [packages]);
 
     useEffect(() => {
-        try { localStorage.setItem("ghs_admin_tour_banners", JSON.stringify(banners)); } catch (e) { console.error("localStorage full, banners not cached locally:", e); }
+        try {
+            localStorage.setItem("ghs_admin_tour_banners", JSON.stringify(banners));
+            localStorage.setItem("ghs_tour_banners_v2", "1");
+        } catch (e) { console.error("localStorage full, banners not cached locally:", e); }
         window.dispatchEvent(new Event("ghs_tour_settings_updated"));
 
         // Sync live to MySQL Backend API
@@ -257,6 +245,7 @@ export default function AdminTourPackages() {
         setIsSavingBanners(true);
         try {
             try { localStorage.setItem("ghs_admin_tour_banners", JSON.stringify(banners)); } catch (e) { console.error("localStorage full:", e); }
+            try { localStorage.setItem("ghs_tour_banners_v2", "1"); } catch (e) { /* quota */ }
             try { localStorage.setItem("ghs_admin_tour_hero_config", JSON.stringify({
                 title: "Handcrafted Tour Packages",
                 subtitle: "Unforgettable luxury & budget holiday packages across India & global destinations",
