@@ -491,7 +491,15 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
             }
         });
 
-        // 2. Sort fully valid promos to find the best applicable one
+        // 2. Sort fully valid promos to find the best applicable one (fallback to activePromos if dates not set yet)
+        if (fullyValidPromos.length === 0 && activePromos.length > 0) {
+            activePromos.forEach(p => {
+                if (p.isActive !== false && p.is_active !== false) {
+                    fullyValidPromos.push(p);
+                }
+            });
+        }
+
         fullyValidPromos.sort((a: any, b: any) => Number(b.discountValue) - Number(a.discountValue));
         const bestPromo = fullyValidPromos[0];
 

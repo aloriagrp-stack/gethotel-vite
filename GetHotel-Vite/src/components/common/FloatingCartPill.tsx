@@ -18,6 +18,18 @@ export default function FloatingCartPill() {
     const [isOpen, setIsOpen] = useState(false);
     const buttonRef = useRef<HTMLButtonElement>(null);
 
+    // Prevent background scrolling when cart panel is open
+    React.useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "";
+        }
+        return () => {
+            document.body.style.overflow = "";
+        };
+    }, [isOpen]);
+
     // DO NOT show floating cart pill if user is NOT signed in or on checkout, login, register, my-bookings pages
     if (
         !user ||
@@ -104,7 +116,7 @@ export default function FloatingCartPill() {
 
     return (
         <>
-            {/* Floating Circular Cart Button — Bottom Left */}
+            {/* Floating Circular Cart Button — Bottom Left (White background, blue border, no glow) */}
             <AnimatePresence>
                 {!isOpen && (
                     <motion.button
@@ -114,18 +126,15 @@ export default function FloatingCartPill() {
                         exit={{ scale: 0, opacity: 0 }}
                         transition={{ type: "spring", damping: 18, stiffness: 300 }}
                         onClick={() => setIsOpen(true)}
-                        className="fixed bottom-6 left-5 z-[100] w-14 h-14 bg-gradient-to-br from-blue-600 via-indigo-600 to-blue-700 rounded-full flex items-center justify-center shadow-[0_8px_32px_rgba(37,99,235,0.5),0_0_0_3px_rgba(255,255,255,0.15)] hover:shadow-[0_12px_40px_rgba(37,99,235,0.7)] hover:scale-110 active:scale-95 transition-all cursor-pointer border border-white/25"
+                        className="fixed bottom-6 left-5 z-[250] w-14 h-14 bg-white rounded-full flex items-center justify-center border-2 border-blue-600 text-blue-600 shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer"
                         title="View Cart"
                     >
-                        <ShoppingBag className="w-6 h-6 text-white" />
+                        <ShoppingBag className="w-6 h-6 text-blue-600" />
 
                         {/* Item count badge */}
                         <span className="absolute -top-1 -right-1 w-5.5 h-5.5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-md min-w-[22px] min-h-[22px]">
                             {itemCount}
                         </span>
-
-                        {/* Pulse ring animation */}
-                        <span className="absolute inset-0 rounded-full bg-blue-500/30 animate-ping pointer-events-none" />
                     </motion.button>
                 )}
             </AnimatePresence>
@@ -141,7 +150,7 @@ export default function FloatingCartPill() {
                             exit={{ opacity: 0 }}
                             transition={{ duration: 0.2 }}
                             onClick={() => setIsOpen(false)}
-                            className="fixed inset-0 z-[150] bg-slate-950/50 backdrop-blur-md"
+                            className="fixed inset-0 z-[300] bg-slate-950/50 backdrop-blur-md"
                         />
 
                         {/* Genie-expanding Cart Panel */}
@@ -150,7 +159,7 @@ export default function FloatingCartPill() {
                             initial="hidden"
                             animate="visible"
                             exit="exit"
-                            className="fixed z-[160] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[92%] max-w-md max-h-[80vh] flex flex-col"
+                            className="fixed z-[310] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[92%] max-w-md max-h-[80vh] flex flex-col"
                             style={{ transformOrigin: "bottom left" }}
                         >
                             <div className="bg-white rounded-[28px] shadow-[0_24px_80px_rgba(0,0,0,0.25)] border border-slate-200/80 overflow-hidden flex flex-col max-h-[80vh]">

@@ -732,30 +732,32 @@ function BookingContent() {
                     {/* Left Sidebar Summary Box */}
                     <div className="lg:col-span-1 lg:sticky lg:top-28 space-y-6">
                         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                            <div className="relative h-48 sm:h-56 w-full bg-slate-100">
-                                <Image 
-                                    src={isPackage ? "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80" : (selectedRoom ? (getImages(selectedRoom.images)[0] || selectedRoom.thumbnail) : (hotel?.thumbnail || "/placeholder-hotel.jpg"))} 
-                                    alt={isPackage ? packageTitle : (hotel?.name || "Hotel")} 
-                                    className="w-full h-full object-cover" 
-                                />
-                                <div className="absolute top-3 left-3 flex items-center gap-1 px-3 py-1 bg-slate-900/80 backdrop-blur-md text-white rounded-full text-[10px] font-black tracking-widest uppercase">
-                                    <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
-                                    <span>{hotel?.starRating || hotel?.rating || "4.8"}</span>
+                            <div className="p-4 sm:p-5 flex items-center gap-3.5 bg-slate-50/80 border-b border-slate-100">
+                                <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden bg-slate-200 shrink-0 border border-slate-200 shadow-sm">
+                                    <Image 
+                                        src={isPackage ? "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80" : (selectedRoom ? (getImages(selectedRoom.images)[0] || selectedRoom.thumbnail) : (hotel?.thumbnail || "/placeholder-hotel.jpg"))} 
+                                        alt={isPackage ? packageTitle : (hotel?.name || "Hotel")} 
+                                        className="w-full h-full object-cover" 
+                                    />
+                                    <div className="absolute bottom-1 left-1 flex items-center gap-0.5 px-1.5 py-0.5 bg-slate-900/80 backdrop-blur-md text-white rounded-md text-[9px] font-black">
+                                        <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
+                                        <span>{hotel?.starRating || hotel?.rating || "4.8"}</span>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="p-5 sm:p-6 space-y-6">
-                                <div>
-                                    <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest block mb-1">
+                                <div className="min-w-0 flex-1">
+                                    <span className="text-[9px] font-black text-blue-600 uppercase tracking-widest block mb-0.5">
                                         {isPackage ? "Selected Tour Package" : "Selected Property"}
                                     </span>
-                                    <h2 className="text-xl font-black text-slate-900 tracking-tight leading-tight uppercase">
+                                    <h2 className="text-sm sm:text-base font-black text-slate-900 tracking-tight leading-snug line-clamp-2 uppercase">
                                         {isPackage ? packageTitle : (hotel?.name || "Loading...")}
                                     </h2>
-                                    <p className="text-[11px] text-slate-500 font-bold leading-relaxed flex items-center gap-1 mt-1">
-                                        <MapPin className="w-3.5 h-3.5 text-blue-600" />
-                                        <span>{isPackage ? packageDestination : (hotel?.address || "Address loading...")}</span>
+                                    <p className="text-[11px] text-slate-500 font-bold leading-tight flex items-center gap-1 mt-1 truncate">
+                                        <MapPin className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                                        <span className="truncate">{isPackage ? packageDestination : (hotel?.address || "Address loading...")}</span>
                                     </p>
                                 </div>
+                            </div>
+                            <div className="p-4 sm:p-6 space-y-6">
 
                                 <div className="pt-6 border-t border-slate-100 space-y-4">
                                     <div className="flex flex-col gap-1">
