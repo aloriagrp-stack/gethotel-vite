@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import {
     Palmtree, Plus, Trash2, Edit, Save, X, Search, MapPin,
     Clock, Check, Image as ImageIcon, Star, CheckCircle2, RefreshCw, AlertCircle,
-    Eye, EyeOff, Tag, Sliders, CircleDot, Layers
+    Eye, EyeOff, Tag, Sliders, CircleDot, Layers, Upload
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -175,6 +175,20 @@ export default function AdminTourPackages() {
         localStorage.setItem("ghs_admin_tour_filter_config", JSON.stringify(filterConfig));
         window.dispatchEvent(new Event("ghs_tour_settings_updated"));
     }, [filterConfig]);
+
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, callback: (url: string) => void) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                if (reader.result) {
+                    callback(reader.result as string);
+                    showNotification("Local image uploaded successfully!");
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     const showNotification = (msg: string) => {
         setStatusMessage(msg);
@@ -559,15 +573,25 @@ export default function AdminTourPackages() {
                         ))}
                     </div>
 
-                    <form onSubmit={handleAddBanner} className="flex gap-2 pt-2">
+                    <form onSubmit={handleAddBanner} className="flex flex-col sm:flex-row gap-2 pt-2">
                         <input
-                            type="url"
+                            type="text"
                             required
-                            placeholder="Paste image URL for new banner slide..."
+                            placeholder="Paste image URL or click Upload Local File..."
                             value={newBannerUrl}
                             onChange={(e) => setNewBannerUrl(e.target.value)}
                             className="flex-1 px-4 py-2.5 bg-[#141414] border border-[#282828] rounded-xl text-xs font-medium text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-500 font-mono"
                         />
+                        <label className="px-4 py-2.5 bg-[#1a1a1a] hover:bg-[#252525] text-neutral-300 border border-[#333] rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shrink-0 transition-colors">
+                            <Upload className="w-3.5 h-3.5 text-emerald-400" />
+                            <span>Upload Local File</span>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={(e) => handleFileUpload(e, (url) => setNewBannerUrl(url))}
+                            />
+                        </label>
                         <button
                             type="submit"
                             className="px-5 py-2.5 bg-neutral-100 hover:bg-white text-black font-bold text-xs rounded-xl transition-all cursor-pointer shrink-0 uppercase tracking-wider"
@@ -749,11 +773,23 @@ export default function AdminTourPackages() {
                                 </div>
 
                                 <div>
-                                    <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">Thumbnail Image URL</label>
+                                    <div className="flex items-center justify-between mb-1.5">
+                                        <label className="block text-[10px] font-bold text-neutral-400 uppercase">Thumbnail Image</label>
+                                        <label className="text-[10px] font-bold text-emerald-400 hover:underline flex items-center gap-1 cursor-pointer">
+                                            <Upload className="w-3 h-3" />
+                                            <span>Upload Local File</span>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                className="hidden"
+                                                onChange={(e) => handleFileUpload(e, (url) => setDestFormData({ ...destFormData, image: url }))}
+                                            />
+                                        </label>
+                                    </div>
                                     <input
-                                        type="url"
+                                        type="text"
                                         required
-                                        placeholder="https://images.unsplash.com/..."
+                                        placeholder="Paste image URL or click Upload Local File above..."
                                         value={destFormData.image}
                                         onChange={e => setDestFormData({ ...destFormData, image: e.target.value })}
                                         className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-white focus:outline-none focus:border-neutral-500 font-mono"
@@ -883,15 +919,32 @@ export default function AdminTourPackages() {
                                 </div>
 
                                 <div>
-                                    <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">Cover Image URL</label>
+                                    <div className="flex items-center justify-between mb-1.5">
+                                        <label className="block text-[10px] font-bold text-neutral-400 uppercase">Cover Image</label>
+                                        <label className="text-[10px] font-bold text-emerald-400 hover:underline flex items-center gap-1 cursor-pointer">
+                                            <Upload className="w-3 h-3" />
+                                            <span>Upload Local File</span>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                className="hidden"
+                                                onChange={(e) => handleFileUpload(e, (url) => setFormData({ ...formData, image: url }))}
+                                            />
+                                        </label>
+                                    </div>
                                     <input
-                                        type="url"
+                                        type="text"
                                         required
-                                        placeholder="https://images.unsplash.com/..."
+                                        placeholder="Paste image URL or click Upload Local File above..."
                                         value={formData.image}
                                         onChange={e => setFormData({ ...formData, image: e.target.value })}
                                         className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-white focus:outline-none focus:border-neutral-500 font-mono"
                                     />
+                                    {formData.image && (
+                                        <div className="mt-2 relative h-24 rounded-xl overflow-hidden border border-[#282828]">
+                                            <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3">
