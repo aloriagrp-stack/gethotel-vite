@@ -33,7 +33,6 @@ import AdminSettings from "./AdminSettings";
 import AdminNotifications from "./AdminNotifications";
 import AdminDisputes from "./AdminDisputes";
 import AdminRequests from "./AdminRequests";
-import AdminBookings from "./AdminBookings";
 
 // ─── Safe Date Formatter ────────────────────────────────────────────────────
 function formatDateSafe(rawDate: string | Date | null | undefined, opts?: Intl.DateTimeFormatOptions): string {
@@ -477,7 +476,6 @@ export default function SuperAdminDashboard() {
                     {activeTab === "notifications" && <AdminNotifications />}
                     {activeTab === "disputes" && <AdminDisputes />}
                     {activeTab === "requests" && <AdminRequests />}
-                    {activeTab === "bookings" && <AdminBookings />}
                     {activeTab === "promotions" && <AdminPromotions hotels={hotels} onRefresh={() => fetchDashboardData('hotels', true)} />}
                     {activeTab === "controlhub" && <AdminControlHub hotels={hotels} loading={loading} />}
                     {activeTab === "multi-room" && <AdminMultiRoomSetup hotels={hotels} />}
