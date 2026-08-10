@@ -296,12 +296,15 @@ export default function TourPackages() {
             }
 
             try {
+                const localBanners = localStorage.getItem("ghs_admin_tour_banners");
+                const hasLocalOverride = localBanners !== null && localBanners.length > 0;
+
                 const heroRes = await packageApi.getHeroConfig();
-                if (heroRes && heroRes.success && heroRes.data) {
+                if (heroRes && heroRes.success && heroRes.data && !hasLocalOverride) {
                     const hData = heroRes.data;
                     if (Array.isArray(hData.banners) && hData.banners.length > 0) {
                         setBanners(hData.banners);
-                        localStorage.setItem("ghs_admin_tour_banners", JSON.stringify(hData.banners));
+                        try { localStorage.setItem("ghs_admin_tour_banners", JSON.stringify(hData.banners)); } catch (e) { /* quota */ }
                     } else if (Array.isArray(hData.heroImages) && hData.heroImages.length > 0) {
                         const formattedBanners = hData.heroImages.map((imgUrl: string, idx: number) => ({
                             id: `b-${idx}`,
@@ -311,7 +314,7 @@ export default function TourPackages() {
                             image: imgUrl
                         }));
                         setBanners(formattedBanners);
-                        localStorage.setItem("ghs_admin_tour_banners", JSON.stringify(formattedBanners));
+                        try { localStorage.setItem("ghs_admin_tour_banners", JSON.stringify(formattedBanners)); } catch (e) { /* quota */ }
                     }
                 }
             } catch (e) {

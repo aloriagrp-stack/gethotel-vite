@@ -163,7 +163,7 @@ export default function AdminTourPackages() {
     }, [packages]);
 
     useEffect(() => {
-        localStorage.setItem("ghs_admin_tour_banners", JSON.stringify(banners));
+        try { localStorage.setItem("ghs_admin_tour_banners", JSON.stringify(banners)); } catch (e) { console.error("localStorage full, banners not cached locally:", e); }
         window.dispatchEvent(new Event("ghs_tour_settings_updated"));
 
         // Sync live to MySQL Backend API
@@ -173,6 +173,10 @@ export default function AdminTourPackages() {
             subtitle: "Unforgettable luxury & budget holiday packages across India & global destinations",
             heroImages: heroImagesList,
             banners: banners
+        }).then(res => {
+            if (res && !res.success) {
+                console.error("Failed to sync hero banners to backend DB:", res.message);
+            }
         }).catch(err => console.error("Failed to sync hero banners to backend DB:", err));
     }, [banners]);
 
@@ -252,28 +256,33 @@ export default function AdminTourPackages() {
     const handleSaveBannersLive = async () => {
         setIsSavingBanners(true);
         try {
-            localStorage.setItem("ghs_admin_tour_banners", JSON.stringify(banners));
-            localStorage.setItem("ghs_admin_tour_hero_config", JSON.stringify({
+            try { localStorage.setItem("ghs_admin_tour_banners", JSON.stringify(banners)); } catch (e) { console.error("localStorage full:", e); }
+            try { localStorage.setItem("ghs_admin_tour_hero_config", JSON.stringify({
                 title: "Handcrafted Tour Packages",
                 subtitle: "Unforgettable luxury & budget holiday packages across India & global destinations",
                 heroImages: banners.map((b: any) => typeof b === 'string' ? b : (b.image || '')),
                 banners: banners
-            }));
+            })); } catch (e) { console.error("localStorage full:", e); }
 
             window.dispatchEvent(new Event("ghs_tour_settings_updated"));
 
             const heroImagesList = banners.map((b: any) => typeof b === 'string' ? b : (b.image || ''));
-            await packageApi.updateHeroConfig({
+            const res = await packageApi.updateHeroConfig({
                 title: "Handcrafted Tour Packages",
                 subtitle: "Unforgettable luxury & budget holiday packages across India & global destinations",
                 heroImages: heroImagesList,
                 banners: banners
             });
 
-            showNotification("✅ Hero Banners saved & published live to website!");
+            if (res && res.success) {
+                showNotification("✅ Hero Banners saved & published live to website!");
+            } else {
+                console.error("Save error:", res?.message);
+                showNotification("⚠️ Banners saved locally, but LIVE sync failed: " + (res?.message || "backend error"));
+            }
         } catch (err) {
             console.error("Save error:", err);
-            showNotification("✅ Hero Banners saved & published!");
+            showNotification("⚠️ Failed to save banners. Please try again.");
         } finally {
             setIsSavingBanners(false);
         }

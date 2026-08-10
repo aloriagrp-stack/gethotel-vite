@@ -478,23 +478,34 @@ export const packageApi = {
     },
     updateHeroConfig: async (data: any) => {
         if (data && data.banners) {
-            localStorage.setItem("ghs_admin_tour_banners", JSON.stringify(data.banners));
+            try { localStorage.setItem("ghs_admin_tour_banners", JSON.stringify(data.banners)); } catch (e) { /* quota */ }
         }
-        localStorage.setItem("ghs_admin_tour_hero_config", JSON.stringify(data));
+        try { localStorage.setItem("ghs_admin_tour_hero_config", JSON.stringify(data)); } catch (e) { /* quota */ }
 
+        let lastError: string = "Unknown error while saving hero config";
         try {
             const res = await apiFetch('/packages/hero-config', { method: 'PUT', body: JSON.stringify(data) });
             if (res && res.success) return res;
-        } catch (e) {}
+            if (res && res.message) lastError = res.message;
+        } catch (e: any) {
+            lastError = e?.message || lastError;
+        }
 
         try {
-            await apiFetch('/admin/homepage/config', {
+            const res = await apiFetch('/admin/homepage/config', {
                 method: 'PUT',
                 body: JSON.stringify({ key: 'tour_hero_config', value: JSON.stringify(data) })
             });
-        } catch (e) {}
+            if (res && res.success) {
+                return { success: true, message: "Hero config updated" };
+            }
+            if (res && res.message) lastError = res.message;
+        } catch (e: any) {
+            lastError = e?.message || lastError;
+        }
 
-        return { success: true, message: "Hero config updated" };
+        console.error("updateHeroConfig failed:", lastError);
+        return { success: false, message: `Hero config sync failed: ${lastError}` };
     },
 };
 
