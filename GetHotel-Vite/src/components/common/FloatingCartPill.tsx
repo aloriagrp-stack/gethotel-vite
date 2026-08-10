@@ -126,10 +126,10 @@ export default function FloatingCartPill() {
                         exit={{ scale: 0, opacity: 0 }}
                         transition={{ type: "spring", damping: 18, stiffness: 300 }}
                         onClick={() => setIsOpen(true)}
-                        className="fixed bottom-6 left-5 z-[250] w-14 h-14 bg-white rounded-full flex items-center justify-center border-2 border-blue-600 text-blue-600 shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                        className="fixed bottom-6 left-5 z-[250] w-14 h-14 bg-white rounded-full flex items-center justify-center border-2 border-brand-600 text-brand-600 shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer"
                         title="View Cart"
                     >
-                        <ShoppingBag className="w-6 h-6 text-blue-600" />
+                        <ShoppingBag className="w-6 h-6 text-brand-600" />
 
                         {/* Item count badge */}
                         <span className="absolute -top-1 -right-1 w-5.5 h-5.5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-md min-w-[22px] min-h-[22px]">
@@ -166,7 +166,7 @@ export default function FloatingCartPill() {
                                 {/* Header */}
                                 <div className="px-5 pt-5 pb-4 border-b border-slate-100 flex items-center justify-between shrink-0">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-md">
+                                        <div className="w-10 h-10 bg-brand-600 rounded-2xl flex items-center justify-center shadow-md">
                                             <ShoppingBag className="w-5 h-5 text-white" />
                                         </div>
                                         <div>
@@ -205,11 +205,11 @@ export default function FloatingCartPill() {
                                                     className="w-14 h-14 rounded-xl object-cover shrink-0 border border-slate-200"
                                                 />
                                             ) : (
-                                                <div className="w-14 h-14 rounded-xl bg-blue-50 flex items-center justify-center shrink-0 border border-blue-100">
+                                                <div className="w-14 h-14 rounded-xl bg-brand-50 flex items-center justify-center shrink-0 border border-brand-100">
                                                     {item.type === "package" ? (
-                                                        <Package className="w-6 h-6 text-blue-500" />
+                                                        <Package className="w-6 h-6 text-brand-600" />
                                                     ) : (
-                                                        <Hotel className="w-6 h-6 text-blue-500" />
+                                                        <Hotel className="w-6 h-6 text-brand-600" />
                                                     )}
                                                 </div>
                                             )}
@@ -218,7 +218,7 @@ export default function FloatingCartPill() {
                                             <div className="flex-1 min-w-0 space-y-0.5">
                                                 <div className="flex items-start justify-between gap-2">
                                                     <div className="min-w-0">
-                                                        <span className="text-[9px] font-black uppercase tracking-wider text-blue-600 block">
+                                                        <span className="text-[9px] font-black uppercase tracking-wider text-brand-600 block">
                                                             {item.type === "package" ? "Tour Package" : "Hotel Stay"}
                                                         </span>
                                                         <h4 className="text-xs font-bold text-slate-900 leading-snug line-clamp-2">
@@ -255,7 +255,7 @@ export default function FloatingCartPill() {
                                     {/* Checkout Button */}
                                     <button
                                         onClick={handleCheckout}
-                                        className="w-full py-3.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-xs uppercase tracking-wider rounded-2xl transition-all duration-300 cursor-pointer shadow-[0_8px_30px_rgba(37,99,235,0.4)] hover:shadow-[0_12px_36px_rgba(37,99,235,0.6)] hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2"
+                                        className="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-black text-xs uppercase tracking-wider rounded-2xl transition-all duration-300 cursor-pointer shadow-lg shadow-brand-600/20 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2"
                                     >
                                         <CreditCard className="w-4 h-4" />
                                         Proceed to Checkout

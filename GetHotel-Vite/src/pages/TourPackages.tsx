@@ -367,8 +367,8 @@ export default function TourPackages() {
                                 >
                                     <div className={`p-1 rounded-full transition-all duration-300 ${
                                         isSelected
-                                            ? "bg-gradient-to-tr from-blue-500 via-indigo-600 to-sky-400 scale-105 shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_0_20px_rgba(59,130,246,0.6)] ring-4 ring-sky-400/40"
-                                            : "bg-slate-200 group-hover:bg-blue-500 group-hover:scale-105"
+                                            ? "bg-brand-600 scale-105 shadow-md ring-4 ring-brand-500/30"
+                                            : "bg-slate-200 group-hover:bg-brand-600 group-hover:scale-105"
                                     }`}>
                                         <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full overflow-hidden border-3 border-white bg-white shadow-sm">
                                             <img
@@ -379,7 +379,7 @@ export default function TourPackages() {
                                         </div>
                                     </div>
                                     <span className={`text-sm sm:text-base font-bold transition-colors ${
-                                        isSelected ? "text-blue-600 font-extrabold" : "text-slate-700 group-hover:text-blue-600"
+                                        isSelected ? "text-brand-600 font-extrabold" : "text-slate-700 group-hover:text-brand-600"
                                     }`}>
                                         {item.name}
                                     </span>
@@ -401,7 +401,7 @@ export default function TourPackages() {
                                     onClick={() => setSelectedFilterTag(tag)}
                                     className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                                         selectedFilterTag === tag
-                                            ? "bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-500 text-white shadow-[inset_0_1px_2px_rgba(255,255,255,0.6),0_4px_15px_rgba(37,99,235,0.4)] border border-white/30 backdrop-blur-xl"
+                                            ? "bg-brand-600 text-white shadow-md shadow-brand-600/20 border border-white/30 backdrop-blur-xl"
                                             : "bg-white border border-slate-200 hover:bg-slate-100 text-slate-600"
                                     }`}
                                 >
@@ -421,7 +421,7 @@ export default function TourPackages() {
                         {selectedDestination !== "All" && (
                             <button
                                 onClick={() => { setSelectedDestination("All"); setSearchQuery(""); setSelectedFilterTag("All"); }}
-                                className="text-xs font-bold text-blue-600 hover:underline"
+                                className="text-xs font-bold text-brand-600 hover:underline"
                             >
                                 Clear All Filters
                             </button>
@@ -437,7 +437,7 @@ export default function TourPackages() {
                             </p>
                             <button
                                 onClick={() => { setSelectedDestination("All"); setSearchQuery(""); setSelectedFilterTag("All"); }}
-                                className="px-5 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-blue-700 transition-all inline-flex items-center gap-2 cursor-pointer"
+                                className="px-5 py-2.5 bg-brand-600 text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-brand-700 transition-all inline-flex items-center gap-2 cursor-pointer"
                             >
                                 <span>View All Packages</span>
                             </button>
@@ -479,7 +479,7 @@ export default function TourPackages() {
                                         {/* Top Overlay Controls: Badge, Rating & Wishlist */}
                                         <div className="relative z-20 p-4 flex items-center justify-between gap-2">
                                             {/* Top Left Badge: Liquid Glass Sheen */}
-                                            <span className="px-3.5 py-1.5 bg-gradient-to-r from-blue-600/90 via-indigo-600/90 to-sky-500/90 backdrop-blur-2xl text-white text-[10px] font-black uppercase tracking-wider rounded-2xl border border-white/40 shadow-[inset_0_1px_2px_rgba(255,255,255,0.7),0_4px_15px_rgba(37,99,235,0.4)]">
+                                            <span className="px-3.5 py-1.5 bg-brand-600 text-white text-[10px] font-black uppercase tracking-wider rounded-2xl border border-white/40 shadow-md">
                                                 {pkg.badge || "Bestseller"}
                                             </span>
 
@@ -505,13 +505,13 @@ export default function TourPackages() {
                                             <>
                                                 <button
                                                     onClick={(e) => handlePrevImage(e, pkg.id, photosList.length)}
-                                                    className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-950/70 text-white backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 hover:bg-blue-600 cursor-pointer border border-white/20"
+                                                    className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-950/70 text-white backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 hover:bg-brand-600 cursor-pointer border border-white/20"
                                                 >
                                                     <ChevronLeft className="w-4 h-4" />
                                                 </button>
                                                 <button
                                                     onClick={(e) => handleNextImage(e, pkg.id, photosList.length)}
-                                                    className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-950/70 text-white backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 hover:bg-blue-600 cursor-pointer border border-white/20"
+                                                    className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-950/70 text-white backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 hover:bg-brand-600 cursor-pointer border border-white/20"
                                                 >
                                                     <ChevronRight className="w-4 h-4" />
                                                 </button>
@@ -522,9 +522,9 @@ export default function TourPackages() {
                                         <div className="relative z-20 m-3 sm:m-4 p-4 sm:p-5 rounded-[28px] bg-white/30 backdrop-blur-2xl border border-white/70 shadow-[inset_0_1px_2px_rgba(255,255,255,0.9),0_12px_40px_rgba(0,0,0,0.18)] space-y-3 group-hover:bg-white/45 group-hover:border-white transition-all duration-300">
                                             {/* Destination & Title */}
                                             <div className="space-y-1">
-                                                <div className="flex items-center justify-between text-[11px] font-extrabold uppercase tracking-wider text-blue-800">
+                                                <div className="flex items-center justify-between text-[11px] font-extrabold uppercase tracking-wider text-brand-700">
                                                     <div className="flex items-center gap-1.5 line-clamp-1">
-                                                        <MapPin className="w-3.5 h-3.5 text-blue-700 shrink-0" />
+                                                        <MapPin className="w-3.5 h-3.5 text-brand-600 shrink-0" />
                                                         <span>{pkg.destination}</span>
                                                     </div>
                                                     {pkg.discountPercent && (
@@ -534,7 +534,7 @@ export default function TourPackages() {
                                                     )}
                                                 </div>
 
-                                                <h3 className="font-black text-base sm:text-lg text-slate-950 leading-tight line-clamp-2 tracking-tight group-hover:text-blue-900 transition-colors">
+                                                <h3 className="font-black text-base sm:text-lg text-slate-950 leading-tight line-clamp-2 tracking-tight group-hover:text-brand-600 transition-colors">
                                                     {pkg.title}
                                                 </h3>
                                             </div>
@@ -542,7 +542,7 @@ export default function TourPackages() {
                                             {/* Duration & Price Footer Row */}
                                             <div className="pt-2.5 border-t border-slate-900/10 flex items-center justify-between gap-3">
                                                 <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/25 backdrop-blur-xl rounded-xl text-xs font-extrabold text-slate-900 border border-white/50 shadow-xs">
-                                                    <Clock className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                                                    <Clock className="w-3.5 h-3.5 text-brand-600 shrink-0" />
                                                     <span>{pkg.duration}</span>
                                                 </div>
 
@@ -560,8 +560,8 @@ export default function TourPackages() {
                                                         </div>
                                                     </div>
 
-                                                    {/* Liquid Glass Blue Arrow Button */}
-                                                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 via-indigo-600 to-sky-500 border border-white/60 text-white flex items-center justify-center shrink-0 shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_4px_15px_rgba(37,99,235,0.5)] group-hover:scale-110 group-hover:shadow-[inset_0_1px_2px_rgba(255,255,255,0.9),0_0_25px_rgba(59,130,246,0.8)] transition-all">
+                                                    {/* Liquid Glass Brand Blue Arrow Button */}
+                                                    <div className="w-9 h-9 rounded-full bg-brand-600 border border-white/60 text-white flex items-center justify-center shrink-0 shadow-md group-hover:scale-110 group-hover:bg-brand-700 transition-all">
                                                         <ArrowRight className="w-4 h-4" />
                                                     </div>
                                                 </div>

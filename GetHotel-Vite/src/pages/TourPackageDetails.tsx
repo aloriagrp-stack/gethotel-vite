@@ -655,7 +655,7 @@ export default function TourPackageDetails() {
                                 <div className="space-y-2.5 pt-1">
                                     <button
                                         onClick={handleAddToCart}
-                                        className="w-full py-3.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-700 backdrop-blur-xl border border-white/30 text-white font-black text-xs uppercase tracking-wider rounded-2xl transition-all duration-300 cursor-pointer shadow-[0_8px_30px_rgba(37,99,235,0.4)] hover:shadow-[0_12px_36px_rgba(37,99,235,0.6)] hover:scale-[1.01] active:scale-[0.99] text-center flex items-center justify-center gap-2"
+                                        className="w-full py-3.5 bg-brand-600 hover:bg-brand-700 backdrop-blur-xl border border-white/30 text-white font-black text-xs uppercase tracking-wider rounded-2xl transition-all duration-300 cursor-pointer shadow-lg shadow-brand-600/30 hover:scale-[1.01] active:scale-[0.99] text-center flex items-center justify-center gap-2"
                                     >
                                         <ShoppingBag className="w-4 h-4" />
                                         ADD TO CART
@@ -663,7 +663,7 @@ export default function TourPackageDetails() {
 
                                     <button
                                         onClick={handleDirectBookNow}
-                                        className="relative group w-full py-3.5 bg-gradient-to-b from-slate-900 via-slate-950 to-black border-2 border-blue-500 hover:border-blue-400 text-white font-black text-xs uppercase tracking-wider rounded-2xl transition-all duration-300 cursor-pointer shadow-[0_0_15px_rgba(59,130,246,0.45)] hover:shadow-[0_0_25px_rgba(59,130,246,0.8)] hover:scale-[1.01] active:scale-[0.99] overflow-hidden text-center"
+                                        className="relative group w-full py-3.5 bg-gradient-to-b from-slate-900 via-slate-950 to-black border-2 border-brand-600 hover:border-brand-500 text-white font-black text-xs uppercase tracking-wider rounded-2xl transition-all duration-300 cursor-pointer shadow-md hover:scale-[1.01] active:scale-[0.99] overflow-hidden text-center"
                                     >
                                         <div className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-[300%] transition-transform duration-1000" />
                                         <span>BOOK NOW</span>
@@ -698,7 +698,7 @@ export default function TourPackageDetails() {
                             <div key={idx} className="p-4 bg-slate-50/70 rounded-2xl space-y-1.5 border border-slate-100">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
-                                        <span className="w-7 h-7 rounded-full bg-blue-100 text-blue-800 font-bold text-xs flex items-center justify-center">
+                                        <span className="w-7 h-7 rounded-full bg-brand-50 text-brand-700 font-bold text-xs flex items-center justify-center">
                                             {rev.name.charAt(0)}
                                         </span>
                                         <div>
@@ -787,7 +787,7 @@ export default function TourPackageDetails() {
                                     <div key={idx} className="p-4 bg-slate-50 rounded-2xl space-y-1.5 border border-slate-100">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2.5">
-                                                <span className="w-8 h-8 rounded-full bg-blue-100 text-blue-800 font-bold text-xs flex items-center justify-center">
+                                                <span className="w-8 h-8 rounded-full bg-brand-50 text-brand-700 font-bold text-xs flex items-center justify-center">
                                                     {rev.name.charAt(0)}
                                                 </span>
                                                 <div>
@@ -821,11 +821,11 @@ export default function TourPackageDetails() {
                         <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
                             <div>
                                 <span className="text-[10px] font-bold uppercase text-slate-400 block">Total Rate ({travelerCount} Guests)</span>
-                                <span className="text-base sm:text-lg font-black text-blue-600">₹{totalPrice.toLocaleString()}</span>
+                                <span className="text-base sm:text-lg font-black text-brand-600">₹{totalPrice.toLocaleString()}</span>
                             </div>
                             <button
                                 onClick={handleAddToCart}
-                                className="py-2.5 px-5 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-md hover:scale-105 transition-all cursor-pointer flex items-center gap-2"
+                                className="py-2.5 px-5 bg-brand-600 hover:bg-brand-700 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-md transition-all cursor-pointer flex items-center gap-2"
                             >
                                 <ShoppingBag className="w-4 h-4" />
                                 ADD TO CART

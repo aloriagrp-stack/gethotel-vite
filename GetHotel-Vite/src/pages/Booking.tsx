@@ -712,8 +712,8 @@ function BookingContent() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6">
                 {/* Stepper */}
                 <div className="flex items-center justify-center gap-2 sm:gap-4 mb-6 sm:mb-8 text-[10px] sm:text-[11px] font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] text-slate-400">
-                    <div className="flex items-center gap-1.5 sm:gap-2 text-blue-600">
-                        <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-[9px] sm:text-[10px]">1</div>
+                    <div className="flex items-center gap-1.5 sm:gap-2 text-brand-600">
+                        <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-brand-600 text-white flex items-center justify-center text-[9px] sm:text-[10px]">1</div>
                         <span className="hidden sm:inline">Selection</span>
                     </div>
                     <div className="w-6 sm:w-12 h-[1px] bg-slate-200" />
@@ -745,14 +745,14 @@ function BookingContent() {
                                     </div>
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <span className="text-[9px] font-black text-blue-600 uppercase tracking-widest block mb-0.5">
+                                    <span className="text-[9px] font-black text-brand-600 uppercase tracking-widest block mb-0.5">
                                         {isPackage ? "Selected Tour Package" : "Selected Property"}
                                     </span>
                                     <h2 className="text-sm sm:text-base font-black text-slate-900 tracking-tight leading-snug line-clamp-2 uppercase">
                                         {isPackage ? packageTitle : (hotel?.name || "Loading...")}
                                     </h2>
                                     <p className="text-[11px] text-slate-500 font-bold leading-tight flex items-center gap-1 mt-1 truncate">
-                                        <MapPin className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                                        <MapPin className="w-3.5 h-3.5 text-brand-600 shrink-0" />
                                         <span className="truncate">{isPackage ? packageDestination : (hotel?.address || "Address loading...")}</span>
                                     </p>
                                 </div>
