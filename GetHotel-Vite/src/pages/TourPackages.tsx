@@ -193,12 +193,38 @@ export default function TourPackages() {
     // Listen to live settings changes from Super Admin
     useEffect(() => {
         const loadSettings = () => {
+            const savedBanners = localStorage.getItem("ghs_admin_tour_banners");
+            if (savedBanners) {
+                try {
+                    const parsed = JSON.parse(savedBanners);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        setBanners(parsed);
+                    }
+                } catch (e) {}
+            }
+
+            const savedPkgs = localStorage.getItem("ghs_admin_tour_packages");
+            if (savedPkgs) {
+                try {
+                    const parsed = JSON.parse(savedPkgs);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        setPackages(parsed);
+                    }
+                } catch (e) {}
+            }
+
             const savedDest = localStorage.getItem("ghs_admin_tour_destinations");
-            if (savedDest) setDestinationStories(JSON.parse(savedDest));
+            if (savedDest) {
+                try { setDestinationStories(JSON.parse(savedDest)); } catch (e) {}
+            }
 
             const savedFilter = localStorage.getItem("ghs_admin_tour_filter_config");
-            if (savedFilter) setFilterConfig(JSON.parse(savedFilter));
+            if (savedFilter) {
+                try { setFilterConfig(JSON.parse(savedFilter)); } catch (e) {}
+            }
         };
+
+        loadSettings();
 
         window.addEventListener("ghs_tour_settings_updated", loadSettings);
         window.addEventListener("storage", loadSettings);
@@ -212,6 +238,15 @@ export default function TourPackages() {
     const [selectedDestination, setSelectedDestination] = useState("All");
     const [selectedFilterTag, setSelectedFilterTag] = useState("All");
     const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
+
+    // Auto-slide Hero Banners every 4 seconds
+    useEffect(() => {
+        if (!banners || banners.length <= 1) return;
+        const timer = setInterval(() => {
+            setCurrentBannerIndex(prev => (prev + 1) % banners.length);
+        }, 4000);
+        return () => clearInterval(timer);
+    }, [banners.length]);
 
     // Wishlist Heart Toggle state
     const [wishlist, setWishlist] = useState<Record<string, boolean>>({});
@@ -245,30 +280,36 @@ export default function TourPackages() {
         });
     };
 
-    // Fetch real tour packages & hero config from backend API
+    // Fetch real tour packages & hero config from backend API (if no admin local override exists)
     useEffect(() => {
         const fetchApiPackages = async () => {
             try {
-                const res = await packageApi.getPackages();
-                if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
-                    setPackages(res.data);
+                const localPkgs = localStorage.getItem("ghs_admin_tour_packages");
+                if (!localPkgs) {
+                    const res = await packageApi.getPackages();
+                    if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
+                        setPackages(res.data);
+                    }
                 }
             } catch (err) {
                 console.error("Using default packages fallback:", err);
             }
 
             try {
-                const heroRes = await packageApi.getHeroConfig();
-                if (heroRes && heroRes.success && heroRes.data) {
-                    const hData = heroRes.data;
-                    if (Array.isArray(hData.heroImages) && hData.heroImages.length > 0) {
-                        const formattedBanners = hData.heroImages.map((imgUrl: string, idx: number) => ({
-                            title: hData.title || "Explore Handcrafted Tour Packages",
-                            subtitle: hData.subtitle || "Unforgettable luxury & budget holiday packages across India & global destinations",
-                            tag: idx === 0 ? "Featured Deal" : "Trending Offer",
-                            image: imgUrl
-                        }));
-                        setBanners(formattedBanners);
+                const localBanners = localStorage.getItem("ghs_admin_tour_banners");
+                if (!localBanners) {
+                    const heroRes = await packageApi.getHeroConfig();
+                    if (heroRes && heroRes.success && heroRes.data) {
+                        const hData = heroRes.data;
+                        if (Array.isArray(hData.heroImages) && hData.heroImages.length > 0) {
+                            const formattedBanners = hData.heroImages.map((imgUrl: string, idx: number) => ({
+                                title: hData.title || "Explore Handcrafted Tour Packages",
+                                subtitle: hData.subtitle || "Unforgettable luxury & budget holiday packages across India & global destinations",
+                                tag: idx === 0 ? "Featured Deal" : "Trending Offer",
+                                image: imgUrl
+                            }));
+                            setBanners(formattedBanners);
+                        }
                     }
                 }
             } catch (e) {
