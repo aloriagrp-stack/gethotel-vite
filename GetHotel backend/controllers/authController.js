@@ -250,9 +250,8 @@ exports.login = async (req, res, next) => {
 
 // Create token and send response with role-based session limits
 const sendTokenResponse = (user, statusCode, res) => {
-    const isAdmin = user.role === 'super_admin' || user.role === 'hotel_admin';
-    const expiresIn = isAdmin ? '12h' : '30d';
-    const cookieAgeMs = isAdmin ? 12 * 60 * 60 * 1000 : 30 * 24 * 60 * 60 * 1000;
+    const expiresIn = '30d';
+    const cookieAgeMs = 30 * 24 * 60 * 60 * 1000;
 
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
         expiresIn,

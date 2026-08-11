@@ -75,6 +75,12 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
     }
 
     if (!response.ok) {
+        if (response.status === 401 && token) {
+            try {
+                sessionStorage.removeItem('token');
+                localStorage.removeItem('token');
+            } catch (e) {}
+        }
         const err = new Error(data.message || data.error || 'Something went wrong') as any;
         err.status = response.status;
         err.errors = data.errors;
@@ -520,6 +526,9 @@ export const packageApi = {
             if (res && res.message) lastError = res.message;
         } catch (e: any) {
             lastError = e?.message || lastError;
+            if (e?.status === 401) {
+                lastError = 'Session expired — please login again and publish';
+            }
         }
 
         try {
@@ -533,6 +542,9 @@ export const packageApi = {
             if (res && res.message) lastError = res.message;
         } catch (e: any) {
             lastError = e?.message || lastError;
+            if (e?.status === 401) {
+                lastError = 'Session expired — please login again and publish';
+            }
         }
 
         console.error("updateHeroConfig failed:", lastError);
