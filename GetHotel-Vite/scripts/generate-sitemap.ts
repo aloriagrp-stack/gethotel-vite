@@ -7,36 +7,39 @@ const SITE_URL = "https://gethotelstays.com";
 
 const staticPages = [
     { url: "/", priority: "1.0", changefreq: "daily" },
-    { url: "/hotels", priority: "0.9", changefreq: "daily" },
-    { url: "/partner", priority: "0.7", changefreq: "weekly" },
-    { url: "/list-property", priority: "0.6", changefreq: "weekly" },
-    { url: "/contact", priority: "0.5", changefreq: "monthly" },
-    { url: "/privacy", priority: "0.3", changefreq: "monthly" },
-    { url: "/terms-&-conditions", priority: "0.3", changefreq: "monthly" },
-    { url: "/cancellation-policy", priority: "0.3", changefreq: "monthly" },
-    { url: "/pricing-policy", priority: "0.3", changefreq: "monthly" },
-    { url: "/cookies", priority: "0.3", changefreq: "monthly" },
+    { url: "/en", priority: "1.0", changefreq: "daily" },
+    { url: "/en/hotels", priority: "0.95", changefreq: "daily" },
+    { url: "/en/packages", priority: "0.95", changefreq: "daily" },
+    { url: "/en/flights", priority: "0.90", changefreq: "daily" },
+    { url: "/en/partner", priority: "0.70", changefreq: "weekly" },
+    { url: "/en/list-property", priority: "0.65", changefreq: "weekly" },
+    { url: "/en/contact", priority: "0.50", changefreq: "monthly" },
+    { url: "/en/privacy", priority: "0.30", changefreq: "monthly" },
+    { url: "/en/terms-&-conditions", priority: "0.30", changefreq: "monthly" },
+    { url: "/en/cancellation-policy", priority: "0.30", changefreq: "monthly" },
+    { url: "/en/pricing-policy", priority: "0.30", changefreq: "monthly" },
+    { url: "/en/cookies", priority: "0.30", changefreq: "monthly" },
 ];
 
 const filters = ["couple-friendly", "hourly", "budget", "luxury"];
 
 const destinationPages = [
-    { url: "/goa-hotels", priority: "0.85" },
-    { url: "/jaipur-hotels", priority: "0.85" },
-    { url: "/manali-hotels", priority: "0.85" },
-    { url: "/shimla-hotels", priority: "0.85" },
-    { url: "/udaipur-hotels", priority: "0.85" },
-    { url: "/delhi-hotels", priority: "0.95" },
-    { url: "/couple-friendly-hotels-in-delhi", priority: "0.90" },
-    { url: "/hourly-hotels-in-delhi", priority: "0.90" },
-    { url: "/hotels-near-delhi-airport", priority: "0.90" },
-    { url: "/hotels-near-new-delhi-railway-station", priority: "0.90" },
-    { url: "/hotels-in-connaught-place-delhi", priority: "0.90" },
-    { url: "/hotels-in-karol-bagh-delhi", priority: "0.90" },
-    { url: "/hotels-in-south-delhi", priority: "0.90" },
+    { url: "/en/goa-hotels", priority: "0.85" },
+    { url: "/en/jaipur-hotels", priority: "0.85" },
+    { url: "/en/manali-hotels", priority: "0.85" },
+    { url: "/en/shimla-hotels", priority: "0.85" },
+    { url: "/en/udaipur-hotels", priority: "0.85" },
+    { url: "/en/delhi-hotels", priority: "0.95" },
+    { url: "/en/couple-friendly-hotels-in-delhi", priority: "0.90" },
+    { url: "/en/hourly-hotels-in-delhi", priority: "0.90" },
+    { url: "/en/hotels-near-delhi-airport", priority: "0.90" },
+    { url: "/en/hotels-near-new-delhi-railway-station", priority: "0.90" },
+    { url: "/en/hotels-in-connaught-place-delhi", priority: "0.90" },
+    { url: "/en/hotels-in-karol-bagh-delhi", priority: "0.90" },
+    { url: "/en/hotels-in-south-delhi", priority: "0.90" },
     ...CITIES.flatMap(c => [
-        { url: `/hotels-in/${c.slug}`, priority: "0.80" },
-        ...filters.map(f => ({ url: `/hotels-in/${c.slug}/${f}`, priority: "0.75" }))
+        { url: `/en/hotels-in/${c.slug}`, priority: "0.80" },
+        ...filters.map(f => ({ url: `/en/hotels-in/${c.slug}/${f}`, priority: "0.75" }))
     ]),
 ];
 
