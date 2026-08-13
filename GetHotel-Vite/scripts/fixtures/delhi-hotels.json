@@ -1,0 +1,406 @@
+[
+  {
+    "id": 23,
+    "name": "Hotel Cottage Yes Please",
+    "city": "New Delhi",
+    "address": "Paharganj, Near New Delhi Railway Station",
+    "pricePerNight": 1,
+    "starRating": 3,
+    "guestRating": 0,
+    "reviewCount": 0,
+    "amenities": "[\"WiFi\",\"Pool\",\"Gym\",\"Spa\",\"Restaurant\"]",
+    "mainAmenities": null,
+    "dining": null,
+    "room": [
+      {
+        "id": 25,
+        "name": "Deluxe King Room",
+        "pricePerNight": 1,
+        "maxOccupancy": 3,
+        "status": "active"
+      },
+      {
+        "id": 28,
+        "name": "Superior family room- complimentary Fruit Basket ",
+        "pricePerNight": 1,
+        "maxOccupancy": 2,
+        "status": "active"
+      },
+      {
+        "id": 29,
+        "name": "Superior Double or Twin Room",
+        "pricePerNight": 1,
+        "maxOccupancy": 2,
+        "status": "active"
+      },
+      {
+        "id": 30,
+        "name": "Deluxe Double Room",
+        "pricePerNight": 1,
+        "maxOccupancy": 2,
+        "status": "active"
+      },
+      {
+        "id": 31,
+        "name": "Comfort Triple Room",
+        "pricePerNight": 1,
+        "maxOccupancy": 2,
+        "status": "active"
+      }
+    ]
+  },
+  {
+    "id": 30,
+    "name": "Hotel Cottage Yes Please",
+    "city": "New Delhi",
+    "address": "Paharganj, Near New Delhi Railway Station",
+    "pricePerNight": 1,
+    "starRating": 3,
+    "guestRating": 0,
+    "reviewCount": 0,
+    "amenities": "[\"WiFi\",\"Pool\",\"Gym\",\"Spa\",\"Restaurant\"]",
+    "mainAmenities": null,
+    "dining": null,
+    "room": [
+      {
+        "id": 69,
+        "name": "Deluxe King Room",
+        "pricePerNight": 1,
+        "maxOccupancy": 2,
+        "status": "active"
+      }
+    ]
+  },
+  {
+    "id": 31,
+    "name": "Hotel Arch at Delhi Airport By Arch Group",
+    "city": "New Delhi",
+    "address": "A-74, Road No. 4, Street No. 5, Block-A, Near IGI Airport (Aerocity), Mahipalpur Extension, 110037",
+    "pricePerNight": 1,
+    "starRating": 4,
+    "guestRating": 0,
+    "reviewCount": 0,
+    "amenities": "[\"Free Wi-Fi\",\"Airport Shuttle\",\"Free Parking\",\"Restaurant (Chinese, Indian, American)\",\"Room Service\",\"Non-smoking rooms\",\"24-hour Front Desk\",\"Tea/Coffee Maker in All Rooms\",\"Facilities for Disabled Guests\",\"Family-friendly dining\",\"Currency Exchange\",\"Car Rentals\",\"Taxi Booking Service\",\"Luggage Storage (Free)\",\"Afternoon Tea\"]",
+    "mainAmenities": "[\"Free Wi-Fi\",\"Airport Shuttle\",\"Free Parking\",\"Restaurant\",\"Room Service\",\"24-hour Front Desk\"]",
+    "dining": null,
+    "room": [
+      {
+        "id": 70,
+        "name": "Executive King Room",
+        "pricePerNight": 1,
+        "maxOccupancy": 2,
+        "status": "active"
+      },
+      {
+        "id": 71,
+        "name": "Deluxe Double Room",
+        "pricePerNight": 1,
+        "maxOccupancy": 3,
+        "status": "active"
+      },
+      {
+        "id": 72,
+        "name": "Family Quadruple Room",
+        "pricePerNight": 1,
+        "maxOccupancy": 4,
+        "status": "active"
+      },
+      {
+        "id": 73,
+        "name": "Family Triple Room",
+        "pricePerNight": 1,
+        "maxOccupancy": 3,
+        "status": "active"
+      }
+    ]
+  },
+  {
+    "id": 32,
+    "name": "Hotel City Lite",
+    "city": "New Delhi",
+    "address": "A-184, Mahipalpur, Near Aerocity, New Delhi",
+    "pricePerNight": 1,
+    "starRating": 3,
+    "guestRating": 0,
+    "reviewCount": 0,
+    "amenities": "[\"Air Conditioning\",\"Wi-Fi\",\"Room Service\",\"Daily Housekeeping\",\"Power Backup\",\"Parking\"]",
+    "mainAmenities": "[\"Air Conditioning\",\"Wi-Fi\",\"Room Service\",\"Daily Housekeeping\",\"Power Backup\",\"Parking\"]",
+    "dining": null,
+    "room": [
+      {
+        "id": 74,
+        "name": "Standard Room",
+        "pricePerNight": 1,
+        "maxOccupancy": 2,
+        "status": "active"
+      },
+      {
+        "id": 75,
+        "name": "Deluxe Room",
+        "pricePerNight": 1,
+        "maxOccupancy": 2,
+        "status": "active"
+      }
+    ]
+  },
+  {
+    "id": 33,
+    "name": "Hotel Delhi Airport",
+    "city": "New Delhi",
+    "address": "L-384 / 701/1, First Floor, Above Hotel Delhi Airport Plaza, Street No. 7, L Block, Mahipalpur, Near NH-8",
+    "pricePerNight": 1,
+    "starRating": 3,
+    "guestRating": 0,
+    "reviewCount": 0,
+    "amenities": "[\"Multi-Cuisine Restaurant\",\"Free Airport Pick-up & Drop-off\",\"Free Wi-Fi\",\"Daily Housekeeping\",\"24-hour Front Desk\",\"Conference Hall\",\"Doctor On Call\",\"Free Parking\",\"Safe Deposit Locker\",\"Power Backup System\",\"Room Service\",\"Laundry Service\",\"CCTV Security\"]",
+    "mainAmenities": "[\"Free Airport Pick-up & Drop-off\",\"Free Wi-Fi\",\"Multi-Cuisine Restaurant\",\"24-hour Front Desk\"]",
+    "dining": null,
+    "room": [
+      {
+        "id": 76,
+        "name": "Deluxe Room",
+        "pricePerNight": 1,
+        "maxOccupancy": 2,
+        "status": "active"
+      },
+      {
+        "id": 77,
+        "name": "Super Deluxe Room",
+        "pricePerNight": 1,
+        "maxOccupancy": 3,
+        "status": "active"
+      },
+      {
+        "id": 78,
+        "name": "Luxury Suite",
+        "pricePerNight": 1,
+        "maxOccupancy": 4,
+        "status": "active"
+      }
+    ]
+  },
+  {
+    "id": 34,
+    "name": "Hotel Fly Rooms",
+    "city": "New Delhi",
+    "address": "A-60, Road No. 1, Mahipalpur, Near International Airport",
+    "pricePerNight": 1,
+    "starRating": 2,
+    "guestRating": 0,
+    "reviewCount": 0,
+    "amenities": "[\"Wi-Fi\",\"Air Conditioning\",\"Room Service\",\"Power Backup\",\"Caretaker\",\"Pets Allowed\",\"Kid's Friendly\",\"Free Cancellation\"]",
+    "mainAmenities": "[\"Wi-Fi\",\"Air Conditioning\",\"Room Service\",\"Pets Allowed\"]",
+    "dining": null,
+    "room": [
+      {
+        "id": 79,
+        "name": "Standard Room",
+        "pricePerNight": 1,
+        "maxOccupancy": 2,
+        "status": "active"
+      },
+      {
+        "id": 80,
+        "name": "Deluxe Room",
+        "pricePerNight": 1,
+        "maxOccupancy": 2,
+        "status": "active"
+      }
+    ]
+  },
+  {
+    "id": 35,
+    "name": "Hotel Haris Court (Lajpat Nagar)",
+    "city": "Delhi",
+    "address": "71, Ring Road, Block L, Lajpat Nagar III, Lajpat Nagar",
+    "pricePerNight": 1,
+    "starRating": 3,
+    "guestRating": 0,
+    "reviewCount": 0,
+    "amenities": "[\"Multi-cuisine Restaurant\",\"Rooftop dining area\",\"Banquet hall\",\"Free Wi-Fi\",\"24-hour Room Service\",\"Daily housekeeping\",\"Laundry service\",\"Dry cleaning\",\"Concierge service\",\"Express check-in/check-out\",\"Luggage storage\",\"Safety deposit boxes\",\"Tour desk / sightseeing assistance\",\"Car rental / taxi service\",\"Airport shuttle (paid, ₹600)\",\"Free parking\",\"Business center\",\"Conference / meeting facilities\",\"Elevator / lift\",\"24-hour security\",\"CCTV surveillance\",\"Doctor on call\",\"Fire safety equipment\"]",
+    "mainAmenities": "[\"Free Wi-Fi\",\"24-hour Room Service\",\"Multi-cuisine Restaurant\",\"Free parking\",\"Airport shuttle (paid)\"]",
+    "dining": null,
+    "room": [
+      {
+        "id": 81,
+        "name": "Standard Room",
+        "pricePerNight": 1,
+        "maxOccupancy": 2,
+        "status": "active"
+      },
+      {
+        "id": 82,
+        "name": "Deluxe Room",
+        "pricePerNight": 1,
+        "maxOccupancy": 3,
+        "status": "active"
+      },
+      {
+        "id": 83,
+        "name": "Suite",
+        "pricePerNight": 1,
+        "maxOccupancy": 4,
+        "status": "active"
+      }
+    ]
+  },
+  {
+    "id": 36,
+    "name": "Hotel Iconic Suites",
+    "city": "New Delhi",
+    "address": "A-97, Road No. 4, Street Number 7, Near IGI Airport",
+    "pricePerNight": 1,
+    "starRating": 3,
+    "guestRating": 0,
+    "reviewCount": 0,
+    "amenities": "[\"Free Wi-Fi (throughout property)\",\"24-hour Room Service\",\"Daily Housekeeping\",\"Laundry Service\",\"Free Parking\",\"Elevator\",\"Travel Desk / Sightseeing Assistance\",\"Doctor On Call\",\"Airport Transfer (paid)\",\"Railway Station Transfer (paid)\",\"Taxi Service\",\"Guide Service\",\"CCTV Security\",\"Power Backup\",\"Daily Newspaper\",\"Security Guard\"]",
+    "mainAmenities": "[\"Free Wi-Fi\",\"24-hour Room Service\",\"Daily Housekeeping\",\"Free Parking\",\"Elevator\"]",
+    "dining": null,
+    "room": [
+      {
+        "id": 84,
+        "name": "Deluxe Room",
+        "pricePerNight": 1,
+        "maxOccupancy": 3,
+        "status": "active"
+      },
+      {
+        "id": 85,
+        "name": "Executive Room",
+        "pricePerNight": 1,
+        "maxOccupancy": 3,
+        "status": "active"
+      }
+    ]
+  },
+  {
+    "id": 37,
+    "name": "Hotel Ivy Plaza",
+    "city": "New Delhi",
+    "address": "A-34, Block A, Rd Number 2, Block B, Mahipalpur Village, Mahipalpur, New Delhi, Delhi 110037",
+    "pricePerNight": 1,
+    "starRating": 3,
+    "guestRating": 0,
+    "reviewCount": 0,
+    "amenities": "[\"In-house Restaurant\",\"Complimentary Breakfast\",\"Free Wi-Fi\",\"Room Service (24-hour)\",\"Daily Housekeeping\",\"Laundry Service\",\"Free Parking\",\"CCTV Cameras\",\"Elevator\",\"Geyser (24-hour hot water)\",\"Power Backup\",\"Fire Extinguisher\",\"First Aid\",\"Modern Wardrobe\",\"Attached Bathroom with Shower\",\"Bath Tub\",\"Card Payment Accepted\",\"Jacuzzi\",\"Luggage Storage\"]",
+    "mainAmenities": "[\"Free Wi-Fi\",\"Complimentary Breakfast\",\"In-house Restaurant\",\"Free Parking\",\"Room Service\"]",
+    "dining": null,
+    "room": [
+      {
+        "id": 86,
+        "name": "Classic Room",
+        "pricePerNight": 1,
+        "maxOccupancy": 2,
+        "status": "active"
+      },
+      {
+        "id": 87,
+        "name": "Deluxe Room",
+        "pricePerNight": 1,
+        "maxOccupancy": 2,
+        "status": "active"
+      },
+      {
+        "id": 88,
+        "name": "Family Room",
+        "pricePerNight": 1,
+        "maxOccupancy": 3,
+        "status": "active"
+      }
+    ]
+  },
+  {
+    "id": 38,
+    "name": "Olivia Hotels Delhi Airport",
+    "city": "New Delhi",
+    "address": "A-15/385, Rd Number 2, Block B, Mahipalpur Village",
+    "pricePerNight": 1,
+    "starRating": 3,
+    "guestRating": 0,
+    "reviewCount": 0,
+    "amenities": "[\"On-site Restaurant (British, Indian, Korean, Chinese)\",\"Free Wi-Fi\",\"Free Parking\",\"Airport Shuttle\",\"24-hour Front Desk\",\"Currency Exchange\",\"Car Rentals\",\"BBQ Facilities\",\"Daily Housekeeping\",\"Laundry / Dry Cleaning\",\"Ironing Service\",\"Trouser Press\",\"CCTV in Common Areas\",\"Fire Extinguishers\",\"Security Alarms\",\"Kitchenette\",\"Cafe\",\"Printer / Photocopying\",\"Intercom\"]",
+    "mainAmenities": "[\"Free Wi-Fi\",\"Free Parking\",\"Airport Shuttle\",\"On-site Restaurant\",\"24-hour Front Desk\"]",
+    "dining": null,
+    "room": [
+      {
+        "id": 89,
+        "name": "Deluxe Double Room",
+        "pricePerNight": 1,
+        "maxOccupancy": 4,
+        "status": "active"
+      },
+      {
+        "id": 90,
+        "name": "Deluxe Room with Airport Drop",
+        "pricePerNight": 1,
+        "maxOccupancy": 2,
+        "status": "active"
+      },
+      {
+        "id": 91,
+        "name": "Superior Deluxe Room",
+        "pricePerNight": 1,
+        "maxOccupancy": 3,
+        "status": "active"
+      }
+    ]
+  },
+  {
+    "id": 39,
+    "name": "OPO Hotels Alpino (The Alpino Hotel)",
+    "city": "New Delhi",
+    "address": "A-275, NH-8, Mahipalpur, Near Indira Gandhi Airport",
+    "pricePerNight": 1,
+    "starRating": 3,
+    "guestRating": 0,
+    "reviewCount": 0,
+    "amenities": "[\"Restaurant\",\"Multi-cuisine Dining\",\"Room Service (24-hour)\",\"Free Wi-Fi\",\"Daily Housekeeping\",\"Laundry Service\",\"Doctor On Call\",\"Free Parking\",\"In-room Tea-Coffee Maker\",\"Mini Bar\",\"Wardrobes\",\"Private Geyser for Hot Water\",\"Iron & Ironing Board (on request)\",\"Hair Dryer (on request)\",\"Smart LED TV with Dish\",\"CCTV Security\",\"Power Backup\",\"Elevator/Lift\",\"Lounge\",\"Smoking Rooms\",\"Personal Lockers\"]",
+    "mainAmenities": "[\"Free Wi-Fi\",\"Restaurant\",\"Free Parking\",\"Room Service (24-hour)\"]",
+    "dining": null,
+    "room": [
+      {
+        "id": 92,
+        "name": "Superior Room",
+        "pricePerNight": 1,
+        "maxOccupancy": 3,
+        "status": "active"
+      },
+      {
+        "id": 93,
+        "name": "Deluxe Room",
+        "pricePerNight": 1,
+        "maxOccupancy": 3,
+        "status": "active"
+      }
+    ]
+  },
+  {
+    "id": 40,
+    "name": "Hotel Airlift @ Delhi Airport",
+    "city": "New Delhi",
+    "address": "Road Number 2, Mahipalpur, New Delhi, 110037",
+    "pricePerNight": 1,
+    "starRating": 3,
+    "guestRating": 0,
+    "reviewCount": 0,
+    "amenities": "[\"Restaurant (Chinese, Indian, Local)\",\"24-hour Front Desk\",\"Non-smoking rooms\",\"Free Wi-Fi\",\"Airport Shuttle\",\"Business Centre\",\"Free Parking\",\"Car Hire\",\"Sun Terrace\",\"ATM/Cash Machine\",\"Elevator\",\"Daily Maid Service\",\"Designated Smoking Area\",\"Room Service\",\"Breakfast (Buffet/Continental/A la carte)\",\"Currency Exchange\",\"Concierge\"]",
+    "mainAmenities": "[\"Free Wi-Fi\",\"Airport Shuttle\",\"Restaurant\",\"24-hour Front Desk\",\"Free Parking\"]",
+    "dining": null,
+    "room": [
+      {
+        "id": 94,
+        "name": "Deluxe Room",
+        "pricePerNight": 1,
+        "maxOccupancy": 2,
+        "status": "active"
+      },
+      {
+        "id": 95,
+        "name": "Family Room with Balcony",
+        "pricePerNight": 1,
+        "maxOccupancy": 3,
+        "status": "active"
+      }
+    ]
+  }
+]

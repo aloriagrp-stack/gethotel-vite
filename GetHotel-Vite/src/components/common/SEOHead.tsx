@@ -48,7 +48,7 @@ export default function SEOHead({
 
     return (
         <>
-            <SSRHead title={finalTitle} description={finalDesc} keywords={keywords} canonicalUrl={canonical} />
+            <SSRHead title={finalTitle} description={finalDesc} keywords={keywords} canonicalUrl={canonical} noIndex={noIndex} />
             <Helmet>
                 <html lang="en-IN" />
                 <title>{finalTitle}</title>

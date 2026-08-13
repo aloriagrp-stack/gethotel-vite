@@ -14,6 +14,8 @@ Disallow: /profile
 
 # Allow all destination & SEO landing pages
 Allow: /delhi-hotels
+Allow: /hotels/delhi/
+Allow: /hotels/delhi
 Allow: /goa-hotels
 Allow: /jaipur-hotels
 Allow: /manali-hotels

@@ -4,6 +4,8 @@ import { HelmetProvider } from 'react-helmet-async'
 import AppSSR from './AppSSR'
 import { enableCollection, getCollectedHead, resetCollectedHead } from './lib/ssr-head'
 import { SITE } from './lib/seo'
+import { loadDelhiInventory } from './lib/delhiSeo'
+import { languages } from './context/LocaleContext'
 
 const noopStorage = {
   getItem: () => null,
@@ -35,6 +37,7 @@ function buildHeadTags(collected: any) {
     `<title>${title.replace(/</g, '&lt;')}</title>`,
     `<meta name="description" content="${desc.replace(/"/g, '&quot;')}" />`,
     keywords ? `<meta name="keywords" content="${keywords}" />` : '',
+    `<meta name="robots" content="${collected.noIndex ? 'noindex, nofollow' : 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1'}" />`,
     `<meta property="og:title" content="${title.replace(/</g, '&lt;')}" />`,
     `<meta property="og:description" content="${desc.replace(/"/g, '&quot;')}" />`,
     `<meta property="og:url" content="${canonical}" />`,
@@ -52,14 +55,22 @@ function buildHeadTags(collected: any) {
   return tags.filter(Boolean).join('\n    ')
 }
 
-export function render(url: string) {
+export async function render(url: string) {
   enableCollection()
   resetCollectedHead()
 
+  await loadDelhiInventory()
+
   const helmetContext: Record<string, any> = {}
+
+  const pathname = url.split('?')[0]
+  const segments = pathname.split('/').filter(Boolean)
+  const lang = segments.length > 0 && languages.some((l) => l.code === segments[0]) ? segments[0] : ''
+  const basename = lang ? `/${lang}` : ''
+
   const html = renderToString(
     <HelmetProvider context={helmetContext}>
-      <StaticRouter location={url}>
+      <StaticRouter location={pathname} basename={basename}>
         <AppSSR />
       </StaticRouter>
     </HelmetProvider>

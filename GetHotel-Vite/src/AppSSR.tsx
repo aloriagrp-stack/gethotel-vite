@@ -1,9 +1,11 @@
 import { Suspense, useEffect } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useParams } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { BookingProvider } from "./context/BookingContext";
 import { WishlistProvider } from "./context/WishlistContext";
 import { StayModeProvider } from "./context/StayModeContext";
+import { LocaleProvider } from "./context/LocaleContext";
+import { CartProvider } from "./context/CartContext";
 import ConditionalLayout from "./components/layout/ConditionalLayout";
 import GlobalTranslator from "./components/layout/GlobalTranslator";
 import ErrorBoundary from "./components/common/ErrorBoundary";
@@ -29,7 +31,9 @@ import ManaliHotels from "./pages/destinations/ManaliHotels";
 import ShimlaHotels from "./pages/destinations/ShimlaHotels";
 import UdaipurHotels from "./pages/destinations/UdaipurHotels";
 import DelhiHotels from "./pages/destinations/DelhiHotels";
+import { CoupleFriendlyDelhiHotels, HourlyDelhiHotels } from "./pages/destinations/DelhiSubLandings";
 import CityPage from "./pages/destinations/CityPage";
+import DelhiLandingPage from "./pages/delhi/DelhiLandingPage";
 
 import BookingInvoice from "./pages/BookingInvoice";
 import WriteReview from "./pages/WriteReview";
@@ -55,6 +59,7 @@ import PartnerLayout from "./components/layout/PartnerLayout";
 
 import SuperAdminDashboard from "./pages/admin/AdminDashboard";
 import AdminHotelDetails from "./pages/admin/AdminHotelDetails";
+import AdminDelhiSeo from "./pages/admin/AdminDelhiSeo";
 
 import PartnerDashboard from "./pages/partner-dashboard/Dashboard";
 import PartnerBookings from "./pages/partner-dashboard/Bookings";
@@ -79,6 +84,16 @@ const PageLoader = () => (
   </div>
 );
 
+function DelhiFilterAlias() {
+  const { filterSlug } = useParams();
+  if (filterSlug === "hourly") return <HourlyDelhiHotels />;
+  if (filterSlug === "couple-friendly") return <CoupleFriendlyDelhiHotels />;
+  if (filterSlug === "budget" || filterSlug === "luxury" || filterSlug === "family" || filterSlug === "business") {
+    return <DelhiLandingPage slugOverride={filterSlug} />;
+  }
+  return <DelhiLandingPage slugOverride="" />;
+}
+
 export default function AppSSR() {
   useEffect(() => {
     try {
@@ -91,10 +106,12 @@ export default function AppSSR() {
       <ScrollToTop />
       <GlobalTranslator />
       <AuthProvider>
-        <StayModeProvider>
-          <BookingProvider>
-            <WishlistProvider>
-              <ConditionalLayout>
+        <LocaleProvider>
+          <CartProvider>
+            <StayModeProvider>
+              <BookingProvider>
+                <WishlistProvider>
+                <ConditionalLayout>
                 <Suspense fallback={<PageLoader />}>
                   <Routes>
                     <Route path="/" element={<Home />} />
@@ -127,7 +144,18 @@ export default function AppSSR() {
                     <Route path="/manali-hotels" element={<ManaliHotels />} />
                     <Route path="/shimla-hotels" element={<ShimlaHotels />} />
                     <Route path="/udaipur-hotels" element={<UdaipurHotels />} />
-                    <Route path="/delhi-hotels" element={<DelhiHotels />} />
+                    <Route path="/delhi-hotels" element={<DelhiLandingPage slugOverride="" />} />
+                    <Route path="/couple-friendly-hotels-in-delhi" element={<CoupleFriendlyDelhiHotels />} />
+                    <Route path="/hourly-hotels-in-delhi" element={<HourlyDelhiHotels />} />
+                    <Route path="/hotels-near-delhi-airport" element={<DelhiLandingPage slugOverride="near-delhi-airport" />} />
+                    <Route path="/hotels-near-new-delhi-railway-station" element={<DelhiLandingPage slugOverride="near-new-delhi-railway-station" />} />
+                    <Route path="/hotels-in-connaught-place-delhi" element={<DelhiLandingPage slugOverride="connaught-place" />} />
+                    <Route path="/hotels-in-karol-bagh-delhi" element={<DelhiLandingPage slugOverride="karol-bagh" />} />
+                    <Route path="/hotels-in-south-delhi" element={<DelhiLandingPage slugOverride="south-delhi" />} />
+                    <Route path="/hotels/delhi" element={<DelhiLandingPage />} />
+                    <Route path="/hotels/delhi/:slug" element={<DelhiLandingPage />} />
+                    <Route path="/hotels-in/delhi" element={<DelhiLandingPage slugOverride="" />} />
+                    <Route path="/hotels-in/delhi/:filterSlug" element={<DelhiFilterAlias />} />
                     <Route path="/hotels-in/:citySlug" element={<CityPage />} />
                     <Route path="/hotels-in/:citySlug/:filterSlug" element={<CityPage />} />
                     <Route path="/booking/invoice/:id" element={<BookingInvoice />} />
@@ -174,14 +202,17 @@ export default function AppSSR() {
                       <Route path="notifications" element={<SuperAdminDashboard />} />
                       <Route path="settings" element={<SuperAdminDashboard />} />
                       <Route path="homepage" element={<SuperAdminDashboard />} />
+                      <Route path="delhi-seo" element={<AdminDelhiSeo />} />
                     </Route>
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>
               </ConditionalLayout>
-            </WishlistProvider>
-          </BookingProvider>
-        </StayModeProvider>
+                </WishlistProvider>
+              </BookingProvider>
+            </StayModeProvider>
+          </CartProvider>
+        </LocaleProvider>
       </AuthProvider>
     </ErrorBoundary>
   );

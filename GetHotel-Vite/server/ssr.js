@@ -22,7 +22,7 @@ app.use(async (req, res, next) => {
     )
 
     const { render } = await import('../dist/server/entry-server.js')
-    const { html, headTags } = render(req.originalUrl)
+    const { html, headTags } = await render(req.originalUrl)
 
     const rendered = template
       .replace('<!--ssr-outlet-->', html)

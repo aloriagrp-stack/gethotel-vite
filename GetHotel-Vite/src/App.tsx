@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect } from "react";
-import { Routes, Route, Outlet, useParams, useNavigate, useLocation } from "react-router-dom";
+import { Routes, Route, Outlet, useParams, useNavigate, useLocation, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { BookingProvider } from "./context/BookingContext";
 import { WishlistProvider } from "./context/WishlistContext";
@@ -46,6 +46,7 @@ const ConnaughtPlaceDelhiHotels = lazy(() => import("./pages/destinations/DelhiS
 const KarolBaghDelhiHotels = lazy(() => import("./pages/destinations/DelhiSubLandings").then(m => ({ default: m.KarolBaghDelhiHotels })));
 const SouthDelhiHotels = lazy(() => import("./pages/destinations/DelhiSubLandings").then(m => ({ default: m.SouthDelhiHotels })));
 const CityPage = lazy(() => import("./pages/destinations/CityPage"));
+const DelhiLandingPage = lazy(() => import("./pages/delhi/DelhiLandingPage"));
 
 const BookingInvoice = lazy(() => import("./pages/BookingInvoice"));
 const WriteReview = lazy(() => import("./pages/WriteReview"));
@@ -70,6 +71,7 @@ const AdminLayout = lazy(() => import("./components/layout/AdminLayout"));
 const PartnerLayout = lazy(() => import("./components/layout/PartnerLayout"));
 
 const SuperAdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const AdminDelhiSeo = lazy(() => import("./pages/admin/AdminDelhiSeo"));
 const AdminHotelDetails = lazy(() => import("./pages/admin/AdminHotelDetails"));
 const AdminPackages = lazy(() => import("./pages/admin/AdminPackages"));
 const AdminTourPackages = lazy(() => import("./pages/admin/AdminTourPackages"));
@@ -118,6 +120,12 @@ function LocalizedLayout() {
   if (!isValidLang) return null; // Don't render children while redirecting
 
   return <Outlet />;
+}
+
+function DelhiLegacyRedirect({ to }: { to: string }) {
+  const { lang } = useParams();
+  const target = to.startsWith("/") ? `/${lang || "en"}${to}` : `/${lang || "en"}/hotels/delhi${to ? `/${to}` : ""}`;
+  return <Navigate to={target} replace />;
 }
 
 import { CartProvider } from "./context/CartContext";
@@ -178,14 +186,23 @@ export default function App() {
                         <Route path="manali-hotels" element={<ManaliHotels />} />
                         <Route path="shimla-hotels" element={<ShimlaHotels />} />
                         <Route path="udaipur-hotels" element={<UdaipurHotels />} />
-                        <Route path="delhi-hotels" element={<DelhiHotels />} />
+                        <Route path="hotels/delhi" element={<DelhiLandingPage />} />
+                        <Route path="hotels/delhi/:slug" element={<DelhiLandingPage />} />
+                        <Route path="delhi-hotels" element={<DelhiLegacyRedirect to="" />} />
                         <Route path="couple-friendly-hotels-in-delhi" element={<CoupleFriendlyDelhiHotels />} />
                         <Route path="hourly-hotels-in-delhi" element={<HourlyDelhiHotels />} />
-                        <Route path="hotels-near-delhi-airport" element={<AirportDelhiHotels />} />
-                        <Route path="hotels-near-new-delhi-railway-station" element={<RailwayStationDelhiHotels />} />
-                        <Route path="hotels-in-connaught-place-delhi" element={<ConnaughtPlaceDelhiHotels />} />
-                        <Route path="hotels-in-karol-bagh-delhi" element={<KarolBaghDelhiHotels />} />
-                        <Route path="hotels-in-south-delhi" element={<SouthDelhiHotels />} />
+                        <Route path="hotels-near-delhi-airport" element={<DelhiLegacyRedirect to="near-delhi-airport" />} />
+                        <Route path="hotels-near-new-delhi-railway-station" element={<DelhiLegacyRedirect to="near-new-delhi-railway-station" />} />
+                        <Route path="hotels-in-connaught-place-delhi" element={<DelhiLegacyRedirect to="connaught-place" />} />
+                        <Route path="hotels-in-karol-bagh-delhi" element={<DelhiLegacyRedirect to="karol-bagh" />} />
+                        <Route path="hotels-in-south-delhi" element={<DelhiLegacyRedirect to="south-delhi" />} />
+                        <Route path="hotels-in/delhi" element={<DelhiLegacyRedirect to="" />} />
+                        <Route path="hotels-in/delhi/couple-friendly" element={<DelhiLegacyRedirect to="/couple-friendly-hotels-in-delhi" />} />
+                        <Route path="hotels-in/delhi/hourly" element={<DelhiLegacyRedirect to="/hourly-hotels-in-delhi" />} />
+                        <Route path="hotels-in/delhi/budget" element={<DelhiLegacyRedirect to="budget" />} />
+                        <Route path="hotels-in/delhi/luxury" element={<DelhiLegacyRedirect to="luxury" />} />
+                        <Route path="hotels-in/delhi/family" element={<DelhiLegacyRedirect to="family" />} />
+                        <Route path="hotels-in/delhi/business" element={<DelhiLegacyRedirect to="business" />} />
                         <Route path="hotels-in/:citySlug" element={<CityPage />} />
                         <Route path="hotels-in/:citySlug/:filterSlug" element={<CityPage />} />
                         <Route path="booking/invoice/:id" element={<BookingInvoice />} />
@@ -238,6 +255,7 @@ export default function App() {
                           <Route path="destination-analytics" element={<SuperAdminDashboard />} />
                           <Route path="top-destinations" element={<SuperAdminDashboard />} />
                           <Route path="homepage" element={<SuperAdminDashboard />} />
+                          <Route path="delhi-seo" element={<AdminDelhiSeo />} />
                         </Route>
                         
                         <Route path="*" element={<NotFound />} />

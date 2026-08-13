@@ -1,0 +1,30 @@
+{
+  "generated": "2026-08-13",
+  "totalHotels": 12,
+  "pages": [
+    {
+      "url": "/en/hotels/delhi",
+      "priority": "0.95"
+    },
+    {
+      "url": "/en/hotels/delhi/mahipalpur",
+      "priority": "0.9"
+    },
+    {
+      "url": "/en/hotels/delhi/near-delhi-airport",
+      "priority": "0.9"
+    },
+    {
+      "url": "/en/hotels/delhi/business",
+      "priority": "0.9"
+    },
+    {
+      "url": "/en/hotels/delhi/with-parking",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/with-airport-transfer",
+      "priority": "0.9"
+    }
+  ]
+}

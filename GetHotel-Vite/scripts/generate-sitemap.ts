@@ -43,6 +43,24 @@ const destinationPages = [
     ]),
 ];
 
+// Delhi SEO ecosystem pages — only indexable ones, as computed live by the
+// backend sitemap job (utils/sitemap.js) and persisted to public/delhi-indexable.json.
+const __manifestDir = path.join(process.cwd(), "public");
+const manifestPath = path.join(__manifestDir, "delhi-indexable.json");
+let delhiIndexablePages: { url: string; priority: string }[] = [];
+if (fs.existsSync(manifestPath)) {
+    try {
+        const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
+        if (Array.isArray(manifest.pages)) {
+            delhiIndexablePages = manifest.pages.filter((p: any) => p?.url && p?.priority);
+        }
+    } catch (err) {
+        console.warn("[sitemap] Could not parse delhi-indexable.json — skipping Delhi pages:", err);
+    }
+} else {
+    console.warn("[sitemap] delhi-indexable.json not found — Delhi /hotels/delhi/ pages will be added once the backend sitemap job runs.");
+}
+
 const escapeXml = (unsafe: string) => {
     return unsafe.replace(/[<>&'"]/g, (c) => {
         switch (c) {
@@ -80,6 +98,15 @@ const generateSitemap = () => {
         xml += `  </url>\n`;
     }
 
+    for (const page of delhiIndexablePages) {
+        xml += `  <url>\n`;
+        xml += `    <loc>${SITE_URL}${escapeXml(page.url)}</loc>\n`;
+        xml += `    <lastmod>${now}</lastmod>\n`;
+        xml += `    <changefreq>weekly</changefreq>\n`;
+        xml += `    <priority>${page.priority}</priority>\n`;
+        xml += `  </url>\n`;
+    }
+
     xml += `</urlset>`;
     return xml;
 };
@@ -92,5 +119,5 @@ const __dirname = path.dirname(__filename);
 const outputPath = path.join(__dirname, "..", "public", "sitemap.xml");
 fs.writeFileSync(outputPath, sitemapXml, "utf-8");
 
-console.log(`✅ Sitemap generated with ${staticPages.length + destinationPages.length} URLs`);
+console.log(`✅ Sitemap generated with ${staticPages.length + destinationPages.length + delhiIndexablePages.length} URLs`);
 console.log(`📄 Saved to: ${outputPath}`);

@@ -71,6 +71,7 @@ export default function AdminLayout() {
         { id: "users", label: "Users", icon: Users, href: "/admin/super?tab=users" },
         { id: "addPartner", label: "Add Partner", icon: Plus, href: "/admin/super?tab=addPartner" },
         { id: "destination-analytics", label: "Top Destinations Analytics", icon: Globe, href: "/admin/super/destination-analytics" },
+        { id: "delhi-seo", label: "Delhi SEO Dashboard", icon: Search, href: "/admin/super/delhi-seo" },
         { id: "analytics", label: "Stats", icon: BarChart3, href: "/admin/super/stats" },
         { id: "finance", label: "Financial Hub", icon: CreditCard, href: "/admin/super/finance" },
         { id: "homepage", label: "Homepage Editor", icon: LayoutTemplate, href: "/admin/super/homepage" },
