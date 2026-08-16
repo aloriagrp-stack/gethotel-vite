@@ -323,6 +323,14 @@ exports.updateRoom = async (req, res, next) => {
         const rawRoomId = req.params.roomId || req.body._roomId || req.body.roomId || req.body.id;
         const hotelId = parseInt(String(rawHotelId || '0'));
         const roomId = parseInt(String(rawRoomId || '0'));
+
+        // Validate IDs before any DB calls
+        if (isNaN(hotelId) || hotelId <= 0) {
+            return res.status(400).json({ success: false, message: 'Invalid Hotel ID' });
+        }
+        if (isNaN(roomId) || roomId <= 0) {
+            return res.status(400).json({ success: false, message: 'Invalid Room ID' });
+        }
         
         const hotel = await prisma.hotel.findUnique({
             where: { id: hotelId }
@@ -338,10 +346,6 @@ exports.updateRoom = async (req, res, next) => {
 
         // SECURITY: Ensure room belongs to the hotel
         const roomToUpdate = await prisma.room.findUnique({ where: { id: roomId } });
-        
-        if (isNaN(roomId)) {
-            return res.status(400).json({ success: false, message: 'Invalid Room ID' });
-        }
 
         if (!roomToUpdate || roomToUpdate.hotelId !== hotelId) {
             return res.status(404).json({ success: false, message: 'Room not found in this hotel' });
@@ -450,6 +454,14 @@ exports.deleteRoom = async (req, res, next) => {
     try {
         const hotelId = parseInt(req.params.hotelId);
         const roomId = parseInt(req.params.roomId);
+
+        // Validate IDs before any DB calls
+        if (isNaN(hotelId) || hotelId <= 0) {
+            return res.status(400).json({ success: false, message: 'Invalid Hotel ID' });
+        }
+        if (isNaN(roomId) || roomId <= 0) {
+            return res.status(400).json({ success: false, message: 'Invalid Room ID' });
+        }
         
         const hotel = await prisma.hotel.findUnique({
             where: { id: hotelId }
@@ -486,6 +498,11 @@ exports.bulkUpdateRooms = async (req, res, next) => {
     try {
         const hotelId = parseInt(req.params.hotelId);
         const { rooms, deleteIds } = req.body;
+
+        // Validate hotelId before any DB calls
+        if (isNaN(hotelId) || hotelId <= 0) {
+            return res.status(400).json({ success: false, message: 'Invalid Hotel ID' });
+        }
 
         const hotel = await prisma.hotel.findUnique({
             where: { id: hotelId }
@@ -564,10 +581,11 @@ exports.bulkUpdateRooms = async (req, res, next) => {
                     variants: normalizeJsonField(r.variants)
                 };
 
-                if (r.id && r.id > 0) {
+                const parsedRoomId = r.id ? parseInt(r.id) : NaN;
+                if (!isNaN(parsedRoomId) && parsedRoomId > 0) {
                     // Update
                     const updated = await prisma.room.update({
-                        where: { id: parseInt(r.id) },
+                        where: { id: parsedRoomId },
                         data: roomData
                     });
                     savedRooms.push(updated);
