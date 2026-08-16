@@ -9,8 +9,13 @@ const getDailyRates = async (req, res) => {
             return res.status(400).json({ message: "roomId, startDate, and endDate are required" });
         }
 
+        const parsedRoomId = parseInt(roomId);
+        if (!parsedRoomId || isNaN(parsedRoomId)) {
+            return res.status(400).json({ message: "Invalid roomId" });
+        }
+
         const room = await prisma.room.findUnique({
-            where: { id: parseInt(roomId) },
+            where: { id: parsedRoomId },
             select: { totalInventory: true, pricePerNight: true }
         });
         if (!room) return res.status(404).json({ message: "Room not found" });
@@ -97,9 +102,14 @@ const bulkUpdateDailyRates = async (req, res) => {
             return res.status(400).json({ message: "roomId, startDate, and endDate are required" });
         }
 
+        const parsedRoomId = parseInt(roomId);
+        if (!parsedRoomId || isNaN(parsedRoomId)) {
+            return res.status(400).json({ message: "Invalid roomId" });
+        }
+
         // Check ownership
         const room = await prisma.room.findUnique({
-            where: { id: parseInt(roomId) },
+            where: { id: parsedRoomId },
             include: { hotel: true }
         });
 
@@ -121,7 +131,7 @@ const bulkUpdateDailyRates = async (req, res) => {
             const updated = await prisma.dailyrate.upsert({
                 where: {
                     roomId_date: {
-                        roomId: parseInt(roomId),
+                        roomId: parsedRoomId,
                         date: targetDate
                     }
                 },
@@ -130,7 +140,7 @@ const bulkUpdateDailyRates = async (req, res) => {
                     available: isBlocked ? 0 : (available !== undefined ? parseInt(available) : undefined)
                 },
                 create: {
-                    roomId: parseInt(roomId),
+                    roomId: parsedRoomId,
                     date: targetDate,
                     price: price !== undefined ? parseFloat(price) : room.pricePerNight,
                     available: isBlocked ? 0 : (available !== undefined ? parseInt(available) : 1)
@@ -153,9 +163,14 @@ const updateDailyRate = async (req, res) => {
     try {
         const { roomId, date, price, available } = req.body;
 
+        const parsedRoomId = parseInt(roomId);
+        if (!parsedRoomId || isNaN(parsedRoomId)) {
+            return res.status(400).json({ message: "Invalid roomId" });
+        }
+
         // Check ownership
         const room = await prisma.room.findUnique({
-            where: { id: parseInt(roomId) },
+            where: { id: parsedRoomId },
             include: { hotel: true }
         });
 

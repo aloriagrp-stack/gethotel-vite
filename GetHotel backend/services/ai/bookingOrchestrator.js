@@ -85,11 +85,17 @@ async function processAiBookingConfirmation({ reply, userId, messages, memory })
         }
 
         // Fetch hotel from database — resolve room-to-hotel fallback
-        let hotelDb = await prisma.hotel.findUnique({ where: { id: hotelId } });
+        const parsedHotelId = parseInt(hotelId);
+        if (!parsedHotelId || isNaN(parsedHotelId)) {
+            logger.warn('BookingOrch', 'Invalid or missing hotelId', { hotelId });
+            return null;
+        }
+
+        let hotelDb = await prisma.hotel.findUnique({ where: { id: parsedHotelId } });
 
         if (!hotelDb) {
             // Maybe the ID is actually a roomId — try resolving
-            const roomDb = await prisma.room.findUnique({ where: { id: hotelId }, select: { hotelId: true } });
+            const roomDb = await prisma.room.findUnique({ where: { id: parsedHotelId }, select: { hotelId: true } });
             if (roomDb) {
                 hotelId = roomDb.hotelId;
                 hotelDb = await prisma.hotel.findUnique({ where: { id: hotelId } });
@@ -181,9 +187,10 @@ async function processAiBookingConfirmation({ reply, userId, messages, memory })
         let resolvedRoomId = roomId;
         let resolvedHotelId = hotelId || memory?.selectedHotelId;
 
-        if (resolvedRoomId) {
+        const parsedResolvedRoomId = parseInt(resolvedRoomId);
+        if (parsedResolvedRoomId && !isNaN(parsedResolvedRoomId)) {
             const roomDb = await prisma.room.findUnique({
-                where: { id: resolvedRoomId },
+                where: { id: parsedResolvedRoomId },
                 include: {
                     dailyrate: {
                         where: { date: { gte: new Date(new Date().setHours(0,0,0,0)) } },

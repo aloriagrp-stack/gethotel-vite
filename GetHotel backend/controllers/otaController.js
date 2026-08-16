@@ -124,13 +124,14 @@ exports.updateOtaInventory = async (req, res) => {
         const hotel = await authenticateOtaRequest(req);
         const { roomTypeId, updates } = req.body;
 
-        if (!roomTypeId || !Array.isArray(updates)) {
-            return res.status(400).json({ success: false, message: 'roomTypeId and updates array are required' });
+        const parsedRoomTypeId = parseInt(roomTypeId);
+        if (!parsedRoomTypeId || isNaN(parsedRoomTypeId)) {
+            return res.status(400).json({ success: false, message: 'Invalid roomTypeId' });
         }
 
         // Verify the room belongs to the hotel
         const room = await prisma.room.findUnique({
-            where: { id: parseInt(roomTypeId) }
+            where: { id: parsedRoomTypeId }
         });
 
         if (!room || room.hotelId !== hotel.id) {
@@ -179,13 +180,18 @@ exports.updateOtaRates = async (req, res) => {
         const hotel = await authenticateOtaRequest(req);
         const { roomTypeId, updates } = req.body;
 
+        const parsedRoomTypeId2 = parseInt(roomTypeId);
+        if (!parsedRoomTypeId2 || isNaN(parsedRoomTypeId2)) {
+            return res.status(400).json({ success: false, message: 'Invalid roomTypeId' });
+        }
+
         if (!roomTypeId || !Array.isArray(updates)) {
             return res.status(400).json({ success: false, message: 'roomTypeId and updates array are required' });
         }
 
         // Verify the room belongs to the hotel
         const room = await prisma.room.findUnique({
-            where: { id: parseInt(roomTypeId) }
+            where: { id: parsedRoomTypeId2 }
         });
 
         if (!room || room.hotelId !== hotel.id) {
