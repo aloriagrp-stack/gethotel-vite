@@ -96,6 +96,10 @@ function matchesDelhiPage(hotel, page) {
 
 async function generateSitemap(prisma) {
     try {
+        if (!prisma) {
+            const { PrismaClient } = require('@prisma/client');
+            prisma = new PrismaClient();
+        }
         console.log('[sitemap] Fetching active hotels from database...');
         const hotels = await prisma.hotel.findMany({
             where: { isActive: true },
