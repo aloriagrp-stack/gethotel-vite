@@ -4,6 +4,22 @@ header('Content-Type: text/plain');
 
 $action = isset($_GET['action']) ? $_GET['action'] : 'extract_all';
 
+if ($action === 'check_htaccess') {
+    $paths = [
+        '/home/vgyuvmpi/.htaccess',
+        '/home/vgyuvmpi/public_html/.htaccess',
+        '/home/vgyuvmpi/gethotel_backend/.htaccess'
+    ];
+    foreach ($paths as $p) {
+        if (file_exists($p)) {
+            echo "=== $p ===\n" . file_get_contents($p) . "\n\n";
+        } else {
+            echo "Not found: $p\n";
+        }
+    }
+    exit;
+}
+
 if ($action === 'debug') {
     $envPath = '/home/vgyuvmpi/.env';
     if (!file_exists($envPath)) {
