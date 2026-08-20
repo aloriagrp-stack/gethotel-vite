@@ -58,8 +58,11 @@ export default function AdminLoginPage() {
         if (!rawMsg) return "Invalid identity email or password.";
         if (typeof rawMsg === 'string') {
             const lower = rawMsg.toLowerCase();
-            if (lower.includes("invalid credentials") || lower.includes("unauthorized") || lower.includes("invalid identity")) {
+            if (lower.includes("invalid credentials") || lower.includes("unauthorized") || lower.includes("invalid identity") || lower.includes("incorrect")) {
                 return "Incorrect Password or Email. Please check your account password.";
+            }
+            if (lower.includes("non-json") || lower.includes("503") || lower.includes("doctype") || lower.includes("connection error") || lower.includes("server error")) {
+                return "Server connection initializing. Please wait 5 seconds and click Authenticate Identity again.";
             }
             if (lower.includes("prisma") || lower.includes("d:\\") || lower.includes("can't reach database") || lower.includes("invocation")) {
                 return "Database connection unavailable. Please verify database connection.";
