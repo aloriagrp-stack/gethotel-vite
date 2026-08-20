@@ -324,12 +324,10 @@ exports.updateRoom = async (req, res, next) => {
         const hotelId = parseInt(String(rawHotelId || '0'));
         const roomId = parseInt(String(rawRoomId || '0'));
 
-        // Validate IDs before any DB calls
-        if (isNaN(hotelId) || hotelId <= 0) {
-            return res.status(400).json({ success: false, message: 'Invalid Hotel ID' });
-        }
+        // If roomId is missing or <= 0 (e.g. newly drafted room), seamlessly delegate to addRoom
         if (isNaN(roomId) || roomId <= 0) {
-            return res.status(400).json({ success: false, message: 'Invalid Room ID' });
+            console.log(`[roomController.updateRoom] Room ID is ${roomId}, routing to addRoom for hotelId ${hotelId}...`);
+            return exports.addRoom(req, res, next);
         }
         
         const hotel = await prisma.hotel.findUnique({
@@ -460,7 +458,7 @@ exports.deleteRoom = async (req, res, next) => {
             return res.status(400).json({ success: false, message: 'Invalid Hotel ID' });
         }
         if (isNaN(roomId) || roomId <= 0) {
-            return res.status(400).json({ success: false, message: 'Invalid Room ID' });
+            return res.status(200).json({ success: true, message: 'Unsaved room skipped' });
         }
         
         const hotel = await prisma.hotel.findUnique({

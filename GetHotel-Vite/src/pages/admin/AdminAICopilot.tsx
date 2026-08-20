@@ -528,8 +528,9 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                     policy: v.policy || "Free cancellation till 24h"
                 }));
 
+                const validRoomId = (r.id && Number(r.id) > 0) ? Number(r.id) : undefined;
                 return {
-                    id: r.id || undefined, // Preserve ID if editing
+                    id: validRoomId, // Preserve ID if editing, omit if new category
                     name: r.name,
                     description: r.description || "",
                     pricePerNight: Number(r.pricePerNight),
@@ -1345,7 +1346,7 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                                     onClick={async () => {
                                         const { messageId, roomList, existingRoomIds } = confirmModal;
                                         setConfirmModal(null);
-                                        const currentIds = roomList.map((r: any) => r.id).filter(Boolean);
+                                        const currentIds = roomList.map((r: any) => Number(r.id)).filter(id => !isNaN(id) && id > 0);
                                         const deleteIds = existingRoomIds.filter(id => !currentIds.includes(id));
                                         await executeSave(messageId, roomList, deleteIds);
                                     }}
