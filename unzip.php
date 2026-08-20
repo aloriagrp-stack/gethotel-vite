@@ -2,42 +2,26 @@
 header('Access-Control-Allow-Origin: *');
 header('Content-Type: text/plain');
 
+$htaccessContent = '# ═══════════════════════════════════════════════
+# SPA ROUTING & API REVERSE PROXY
+# ═══════════════════════════════════════════════
+RewriteEngine On
+RewriteBase /
+
+# Reverse Proxy /api requests to local Node server on port 5000
+RewriteRule ^api/(.*)$ http://127.0.0.1:5000/api/$1 [P,L]
+
+RewriteRule ^index\.html$ - [L]
+RewriteCond %{REQUEST_URI} !^/api [NC]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.html [L]
+';
+
+// Automatically update .htaccess
+file_put_contents('/home/vgyuvmpi/public_html/.htaccess', $htaccessContent);
+
 $action = isset($_GET['action']) ? $_GET['action'] : 'extract_all';
-
-if ($action === 'check_htaccess') {
-    $paths = [
-        '/home/vgyuvmpi/.htaccess',
-        '/home/vgyuvmpi/public_html/.htaccess',
-        '/home/vgyuvmpi/gethotel_backend/.htaccess'
-    ];
-    foreach ($paths as $p) {
-        if (file_exists($p)) {
-            echo "=== $p ===\n" . file_get_contents($p) . "\n\n";
-        } else {
-            echo "Not found: $p\n";
-        }
-    }
-    exit;
-}
-
-if ($action === 'fix_htaccess') {
-    $htaccessPath = '/home/vgyuvmpi/public_html/.htaccess';
-    $proxyRule = "\n# Reverse Proxy /api requests to local Node server on port 5000\nRewriteRule ^api/(.*)$ http://127.0.0.1:5000/api/$1 [P,L]\n";
-    
-    if (file_exists($htaccessPath)) {
-        $content = file_get_contents($htaccessPath);
-        if (strpos($content, 'http://127.0.0.1:5000') === false) {
-            $content = str_replace('RewriteEngine On', 'RewriteEngine On' . $proxyRule, $content);
-            file_put_contents($htaccessPath, $content);
-            echo "Added API proxy rule to .htaccess\n";
-        } else {
-            echo ".htaccess API proxy rule already exists\n";
-        }
-    } else {
-        echo ".htaccess not found\n";
-    }
-    exit;
-}
 
 if ($action === 'debug') {
     $envPath = '/home/vgyuvmpi/.env';
