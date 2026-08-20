@@ -32,8 +32,7 @@ const cleanHtmlText = (html) => {
 const runGeminiWithFallback = async (genAI, options, executeFn) => {
     const modelsToTry = [
         options.model || "gemini-2.5-flash",
-        "gemini-3.1-flash-lite",
-        "gemini-3.5-flash",
+        "gemini-2.5-flash",
         "gemini-2.0-flash",
         "gemini-1.5-flash"
     ];
@@ -569,68 +568,69 @@ Output strictly valid JSON matching the requested schema. Do not include any mar
         let searchQueries = [];
         let searchSources = [];
 
-        if (needsSearch && apiKey) {
-            // ==========================================
-            // PASS 1: Search Grounding & Chat Context (Text Mode via Gemini)
-            // ==========================================
-            console.log("[AI Copilot] Pass 1: Calling Gemini with Google Search grounding...");
-            let searchContents = [];
-            if (Array.isArray(history) && history.length > 0) {
-                history.forEach(msg => {
-                    searchContents.push({
-                        role: msg.role === "model" ? "model" : "user",
-                        parts: [{ text: msg.text }]
+        if (apiKey) {
+            if (needsSearch) {
+                // ==========================================
+                // PASS 1: Search Grounding & Chat Context (Text Mode via Gemini)
+                // ==========================================
+                console.log("[AI Copilot] Pass 1: Calling Gemini with Google Search grounding...");
+                let searchContents = [];
+                if (Array.isArray(history) && history.length > 0) {
+                    history.forEach(msg => {
+                        searchContents.push({
+                            role: msg.role === "model" ? "model" : "user",
+                            parts: [{ text: msg.text }]
+                        });
                     });
-                });
-            }
-            searchContents.push({
-                role: "user",
-                parts: [{ text: userInput.trim() ? userInput : (prompt || "Continue chatting") }]
-            });
-
-            const searchResponse = await runGeminiWithFallback(
-                genAI,
-                {
-                    model: "gemini-2.5-flash",
-                    systemInstruction,
-                    tools: [{ googleSearch: {} }],
-                },
-                (model) => model.generateContent({ contents: searchContents })
-            );
-            const groundedText = searchResponse.response.text();
-
-            console.log(`[AI Copilot] Pass 1 completed. Grounded Text Length: ${groundedText.length}`);
-
-            try {
-                const candidate = searchResponse.response?.candidates?.[0];
-                if (candidate && candidate.groundingMetadata) {
-                    const metadata = candidate.groundingMetadata;
-                    if (Array.isArray(metadata.webSearchQueries)) {
-                        searchQueries = metadata.webSearchQueries;
-                    }
-                    if (Array.isArray(metadata.groundingChunks)) {
-                        searchSources = metadata.groundingChunks
-                            .map(chunk => {
-                                if (chunk.web) {
-                                    return {
-                                        title: chunk.web.title || "",
-                                        url: chunk.web.uri || ""
-                                    };
-                                }
-                                return null;
-                            })
-                            .filter(Boolean);
-                    }
                 }
-            } catch (metadataError) {
-                console.error("[AI Copilot] Error parsing grounding metadata:", metadataError);
-            }
+                searchContents.push({
+                    role: "user",
+                    parts: [{ text: userInput.trim() ? userInput : (prompt || "Continue chatting") }]
+                });
 
-            // ==========================================
-            // PASS 2: JSON Schema Structure (JSON Mode via Gemini)
-            // ==========================================
-            console.log("[AI Copilot] Pass 2: Structuring output to JSON via Gemini...");
-            const structPrompt = `
+                const searchResponse = await runGeminiWithFallback(
+                    genAI,
+                    {
+                        model: "gemini-2.5-flash",
+                        systemInstruction,
+                        tools: [{ googleSearch: {} }],
+                    },
+                    (model) => model.generateContent({ contents: searchContents })
+                );
+                const groundedText = searchResponse.response.text();
+
+                console.log(`[AI Copilot] Pass 1 completed. Grounded Text Length: ${groundedText.length}`);
+
+                try {
+                    const candidate = searchResponse.response?.candidates?.[0];
+                    if (candidate && candidate.groundingMetadata) {
+                        const metadata = candidate.groundingMetadata;
+                        if (Array.isArray(metadata.webSearchQueries)) {
+                            searchQueries = metadata.webSearchQueries;
+                        }
+                        if (Array.isArray(metadata.groundingChunks)) {
+                            searchSources = metadata.groundingChunks
+                                .map(chunk => {
+                                    if (chunk.web) {
+                                        return {
+                                            title: chunk.web.title || "",
+                                            url: chunk.web.uri || ""
+                                        };
+                                    }
+                                    return null;
+                                })
+                                .filter(Boolean);
+                        }
+                    }
+                } catch (metadataError) {
+                    console.error("[AI Copilot] Error parsing grounding metadata:", metadataError);
+                }
+
+                // ==========================================
+                // PASS 2: JSON Schema Structure (JSON Mode via Gemini)
+                // ==========================================
+                console.log("[AI Copilot] Pass 2: Structuring output to JSON via Gemini...");
+                const structPrompt = `
 Grounded Context (contains search findings or conversational replies):
 ${groundedText}
 
@@ -641,28 +641,63 @@ Existing Rooms Context:
 ${existingRoomsContext || "None"}
 `;
 
-            const result = await runGeminiWithFallback(
-                genAI,
-                {
-                    model: "gemini-2.5-flash",
-                    systemInstruction,
-                    generationConfig: {
-                        responseMimeType: "application/json",
-                        responseSchema: copilotSchema,
-                        temperature: 0.6
-                    }
-                },
-                (model) => model.generateContent(structPrompt)
-            );
-            jsonText = result.response.text();
-            console.log("[AI Copilot] Pass 2 completed (Gemini). JSON structured output received.");
+                const result = await runGeminiWithFallback(
+                    genAI,
+                    {
+                        model: "gemini-2.5-flash",
+                        systemInstruction,
+                        generationConfig: {
+                            responseMimeType: "application/json",
+                            responseSchema: copilotSchema,
+                            temperature: 0.6
+                        }
+                    },
+                    (model) => model.generateContent(structPrompt)
+                );
+                jsonText = result.response.text();
+                console.log("[AI Copilot] Pass 2 completed (Gemini). JSON structured output received.");
 
+            } else {
+                // ==========================================
+                // Single-Pass JSON Generation via Gemini (gemini-2.5-flash)
+                // ==========================================
+                console.log("[AI Copilot] Calling Gemini (gemini-2.5-flash) for single-pass structured JSON generation...");
+                let contents = [];
+                if (Array.isArray(history) && history.length > 0) {
+                    history.forEach(msg => {
+                        contents.push({
+                            role: msg.role === "model" ? "model" : "user",
+                            parts: [{ text: msg.text }]
+                        });
+                    });
+                }
+                contents.push({
+                    role: "user",
+                    parts: [{ text: userInput.trim() ? userInput : (prompt || "Continue chatting") }]
+                });
+
+                const result = await runGeminiWithFallback(
+                    genAI,
+                    {
+                        model: "gemini-2.5-flash",
+                        systemInstruction,
+                        generationConfig: {
+                            responseMimeType: "application/json",
+                            responseSchema: copilotSchema,
+                            temperature: 0.6
+                        }
+                    },
+                    (model) => model.generateContent({ contents })
+                );
+                jsonText = result.response.text();
+                console.log("[AI Copilot] Gemini single-pass completed. JSON structured output received.");
+            }
 
         } else if (groqApiKey) {
             // ==========================================
-            // Single-Pass JSON Generation via Groq (Llama-3.3-70b)
+            // Single-Pass JSON Generation via Groq
             // ==========================================
-            console.log("[AI Copilot] Calling Groq (llama-3.3-70b-versatile) for single-pass JSON generation...");
+            console.log("[AI Copilot] Calling Groq for single-pass JSON generation...");
             
             let groqMessages = [
                 { role: "system", content: systemInstruction + `\n\nJSON SCHEMA TO FOLLOW:\n${JSON.stringify(copilotSchema, null, 2)}\n\nCRITICAL: You MUST output strictly a valid JSON object matching this schema structure. Do not output markdown code blocks (like \`\`\`json ... \`\`\`).` }
@@ -689,7 +724,7 @@ ${existingRoomsContext || "None"}
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    model: "llama-3.3-70b-versatile",
+                    model: "llama-3.1-8b-instant",
                     messages: groqMessages,
                     response_format: { type: "json_object" },
                     temperature: 0.6

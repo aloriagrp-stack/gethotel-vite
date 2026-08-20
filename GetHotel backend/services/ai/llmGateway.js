@@ -30,9 +30,10 @@ function createTimeoutSignal(ms) {
  */
 const runGeminiWithFallback = async (genAI, options, executeFn) => {
     const modelsToTry = [
-        'gemini-1.5-flash',
-        'gemini-1.5-pro',
-        'gemini-2.0-flash-exp'
+        options.model || 'gemini-2.5-flash',
+        'gemini-2.5-flash',
+        'gemini-2.0-flash',
+        'gemini-1.5-flash'
     ];
     const uniqueModels = Array.from(new Set(modelsToTry.filter(Boolean)));
 
