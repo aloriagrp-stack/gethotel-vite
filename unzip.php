@@ -2,30 +2,32 @@
 header('Access-Control-Allow-Origin: *');
 header('Content-Type: text/plain');
 
-$action = isset($_GET['action']) ? $_GET['action'] : 'extract_all';
+$htaccessContent = '# ═══════════════════════════════════════════════
+# SPA ROUTING & API REVERSE PROXY
+# ═══════════════════════════════════════════════
+RewriteEngine On
+RewriteBase /
 
-if ($action === 'check_modules') {
-    $paths = [
-        '/home/vgyuvmpi/node_modules',
-        '/home/vgyuvmpi/public_html/node_modules',
-        '/home/vgyuvmpi/gethotel_backend/node_modules'
-    ];
-    foreach ($paths as $p) {
-        if (file_exists($p)) {
-            echo "Found node_modules at $p\n";
-        } else {
-            echo "NOT found: $p\n";
-        }
-    }
-    exit;
-}
+# Reverse Proxy /api requests to local Node server on port 5000
+RewriteRule ^api/(.*)$ http://127.0.0.1:5000/api/$1 [P,L]
+
+RewriteRule ^index\.html$ - [L]
+RewriteCond %{REQUEST_URI} !^/api [NC]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.html [L]
+';
+
+file_put_contents('/home/vgyuvmpi/public_html/.htaccess', $htaccessContent);
+
+$action = isset($_GET['action']) ? $_GET['action'] : 'extract_all';
 
 if ($action === 'sync_backend' || $action === 'extract_backend' || $action === 'extract_all') {
     $srcDir = '/home/vgyuvmpi/gethotel_backend/';
     $targetDir = '/home/vgyuvmpi/';
     
     // Copy updated backend files to app root
-    $items = ['server.js', 'package.json', 'routes', 'controllers', 'config', 'middleware', 'prisma', 'utils', 'services', 'node_modules'];
+    $items = ['server.js', 'package.json', 'routes', 'controllers', 'config', 'middleware', 'prisma', 'utils', 'services'];
     foreach ($items as $item) {
         $src = $srcDir . $item;
         $dest = $targetDir . $item;
@@ -40,11 +42,17 @@ if ($action === 'sync_backend' || $action === 'extract_backend' || $action === '
         }
     }
     
-    // Touch restart.txt
-    $restartFile = '/home/vgyuvmpi/tmp/restart.txt';
-    @mkdir(dirname($restartFile), 0755, true);
-    file_put_contents($restartFile, time());
-    echo "Backend sync complete. Restart triggered.\n";
+    // Touch restart.txt in all possible app roots
+    $restartPaths = [
+        '/home/vgyuvmpi/tmp/restart.txt',
+        '/home/vgyuvmpi/public_html/tmp/restart.txt',
+        '/home/vgyuvmpi/gethotel_backend/tmp/restart.txt'
+    ];
+    foreach ($restartPaths as $rp) {
+        @mkdir(dirname($rp), 0755, true);
+        file_put_contents($rp, time());
+        echo "Restart triggered via $rp\n";
+    }
     exit;
 }
 
