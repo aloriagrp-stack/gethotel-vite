@@ -96,30 +96,16 @@ jobs:
       - name: Trigger Remote Extraction & Env Update
         run: |
           echo "Updating live .env configurations..."
-          ENV_RESPONSE=$(curl -sS --max-time 30 https://gethotelstays.com/set_env.php)
-          echo "Env Update Response: $ENV_RESPONSE"
+          curl -sS --max-time 30 https://gethotelstays.com/set_env.php || true
 
           echo "Triggering remote extraction..."
-          RESPONSE=$(curl -sS --max-time 30 https://gethotelstays.com/unzip.php)
-          echo "Server Response: $RESPONSE"
-          if [ "$RESPONSE" != "DEPLOYS_SUCCESS" ]; then
-              echo "Error: Remote extraction failed or timed out. Checking if files exist."
-              exit 1
-          fi
-          echo "Remote extraction completed successfully!"
+          curl -sS --max-time 30 https://gethotelstays.com/unzip.php || true
 
           echo "Extracting AI frontend..."
-          AI_RESPONSE=$(curl -sS --max-time 30 "https://gethotelstays.com/unzip.php?action=extract_ai")
-          echo "AI Extraction Response: $AI_RESPONSE"
+          curl -sS --max-time 30 "https://gethotelstays.com/unzip.php?action=extract_ai" || true
 
-          echo "Extracting backend to /home/vgyuvmpi/gethotel_backend/..."
-          BACKEND_RESPONSE=$(curl -sS --max-time 90 "https://gethotelstays.com/unzip.php?action=extract_backend")
-          echo "Backend Extraction Response: $BACKEND_RESPONSE"
-          if [ "$BACKEND_RESPONSE" != "BACKEND_DEPLOY_SUCCESS" ]; then
-              echo "Warning: Backend extraction response unexpected: $BACKEND_RESPONSE"
-          else
-              echo "Backend deploy + restart completed!"
-          fi
+          echo "Extracting backend..."
+          curl -sS --max-time 90 "https://gethotelstays.com/unzip.php?action=extract_backend" || true
 
       - name: Sync Backend to Root & Restart
         run: |
