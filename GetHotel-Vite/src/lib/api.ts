@@ -71,7 +71,13 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
         data = await response.json();
     } else {
         const text = await response.text();
-        throw new Error(`Server returned non-JSON response: ${text.slice(0, 100)}...`);
+        if (text.includes('503') || text.includes('Service Unavailable')) {
+            throw new Error('Server temporarily initializing (503 Service Unavailable). Please try again in 5 seconds.');
+        }
+        if (text.includes('<!DOCTYPE') || text.includes('<html')) {
+            throw new Error(`Server connection error (${response.status}). Please check network or reload.`);
+        }
+        throw new Error(`Server error: ${text.slice(0, 80)}`);
     }
 
     if (!response.ok) {

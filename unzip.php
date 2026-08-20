@@ -20,6 +20,25 @@ if ($action === 'check_htaccess') {
     exit;
 }
 
+if ($action === 'fix_htaccess') {
+    $htaccessPath = '/home/vgyuvmpi/public_html/.htaccess';
+    $proxyRule = "\n# Reverse Proxy /api requests to local Node server on port 5000\nRewriteRule ^api/(.*)$ http://127.0.0.1:5000/api/$1 [P,L]\n";
+    
+    if (file_exists($htaccessPath)) {
+        $content = file_get_contents($htaccessPath);
+        if (strpos($content, 'http://127.0.0.1:5000') === false) {
+            $content = str_replace('RewriteEngine On', 'RewriteEngine On' . $proxyRule, $content);
+            file_put_contents($htaccessPath, $content);
+            echo "Added API proxy rule to .htaccess\n";
+        } else {
+            echo ".htaccess API proxy rule already exists\n";
+        }
+    } else {
+        echo ".htaccess not found\n";
+    }
+    exit;
+}
+
 if ($action === 'debug') {
     $envPath = '/home/vgyuvmpi/.env';
     if (!file_exists($envPath)) {
