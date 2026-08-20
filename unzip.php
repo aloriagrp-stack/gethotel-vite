@@ -2,45 +2,20 @@
 header('Access-Control-Allow-Origin: *');
 header('Content-Type: text/plain');
 
-$htaccessContent = '# ═══════════════════════════════════════════════
-# SPA ROUTING & API REVERSE PROXY
-# ═══════════════════════════════════════════════
-RewriteEngine On
-RewriteBase /
-
-# Reverse Proxy /api requests to local Node server on port 5000
-RewriteRule ^api/(.*)$ http://127.0.0.1:5000/api/$1 [P,L]
-
-RewriteRule ^index\.html$ - [L]
-RewriteCond %{REQUEST_URI} !^/api [NC]
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule . /index.html [L]
-';
-
-// Automatically update .htaccess
-file_put_contents('/home/vgyuvmpi/public_html/.htaccess', $htaccessContent);
-
 $action = isset($_GET['action']) ? $_GET['action'] : 'extract_all';
 
-if ($action === 'debug') {
-    $envPath = '/home/vgyuvmpi/.env';
-    if (!file_exists($envPath)) {
-        $envPath = '/home/vgyuvmpi/public_html/.env';
-    }
-    if (!file_exists($envPath)) {
-        $envPath = '/home/vgyuvmpi/gethotel_backend/.env';
-    }
-    if (file_exists($envPath)) {
-        $content = file_get_contents($envPath);
-        echo "Found .env at $envPath (length " . strlen($content) . ")\n";
-        if (preg_match('/DATABASE_URL=["\']?([^"\']+)["\']?/', $content, $m)) {
-            echo "DATABASE_URL set: " . substr($m[1], 0, 25) . "...\n";
+if ($action === 'check_modules') {
+    $paths = [
+        '/home/vgyuvmpi/node_modules',
+        '/home/vgyuvmpi/public_html/node_modules',
+        '/home/vgyuvmpi/gethotel_backend/node_modules'
+    ];
+    foreach ($paths as $p) {
+        if (file_exists($p)) {
+            echo "Found node_modules at $p\n";
         } else {
-            echo "DATABASE_URL not found in .env\n";
+            echo "NOT found: $p\n";
         }
-    } else {
-        echo "No .env found anywhere\n";
     }
     exit;
 }
@@ -50,7 +25,7 @@ if ($action === 'sync_backend' || $action === 'extract_backend' || $action === '
     $targetDir = '/home/vgyuvmpi/';
     
     // Copy updated backend files to app root
-    $items = ['server.js', 'package.json', 'routes', 'controllers', 'config', 'middleware', 'prisma', 'utils', 'services'];
+    $items = ['server.js', 'package.json', 'routes', 'controllers', 'config', 'middleware', 'prisma', 'utils', 'services', 'node_modules'];
     foreach ($items as $item) {
         $src = $srcDir . $item;
         $dest = $targetDir . $item;
