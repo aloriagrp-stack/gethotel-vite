@@ -2,22 +2,30 @@
 header('Access-Control-Allow-Origin: *');
 header('Content-Type: text/plain');
 
-$cleanHtaccess = '# ═══════════════════════════════════════════════
-# SPA ROUTING (React Router fallback)
-# ═══════════════════════════════════════════════
-RewriteEngine On
-RewriteBase /
-RewriteRule ^index\.html$ - [L]
-RewriteCond %{REQUEST_URI} !^/api [NC]
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule . /index.html [L]
-';
+$action = isset($_GET['action']) ? $_GET['action'] : 'find_passenger';
 
-// Overwrite public_html/.htaccess to clean up port 5000 proxy rule
-file_put_contents('/home/vgyuvmpi/public_html/.htaccess', $cleanHtaccess);
+if ($action === 'find_passenger') {
+    echo "=== SEARCHING FOR PASSENGER DIRECTIVES OR BACKUP HTACCESS ===\n";
+    $files = glob('/home/vgyuvmpi/*.htaccess*');
+    $files2 = glob('/home/vgyuvmpi/public_html/*.htaccess*');
+    $all = array_merge($files ?: [], $files2 ?: []);
+    
+    foreach ($all as $f) {
+        echo "--- File: $f ---\n";
+        echo file_get_contents($f) . "\n\n";
+    }
 
-$action = isset($_GET['action']) ? $_GET['action'] : 'sync_backend';
+    echo "=== SEARCHING NODEVENV DIRECTORY ===\n";
+    $venvs = glob('/home/vgyuvmpi/nodevenv/*');
+    foreach ($venvs as $v) {
+        echo "Found nodevenv: $v\n";
+        $nodes = glob("$v/*/bin/node");
+        foreach ($nodes as $n) {
+            echo "  Node binary: $n\n";
+        }
+    }
+    exit;
+}
 
 if ($action === 'sync_backend' || $action === 'extract_backend' || $action === 'extract_all') {
     $srcDir = '/home/vgyuvmpi/gethotel_backend/';
