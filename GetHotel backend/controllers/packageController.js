@@ -22,12 +22,18 @@ const ensureTableExists = async () => {
                 gallery LONGTEXT DEFAULT NULL,
                 overview LONGTEXT DEFAULT NULL,
                 inclusions LONGTEXT DEFAULT NULL,
+                exclusions LONGTEXT DEFAULT NULL,
                 itinerary LONGTEXT DEFAULT NULL,
                 is_active TINYINT(1) DEFAULT 1,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
             );
         `);
+        try {
+            await prisma.$executeRawUnsafe(`ALTER TABLE tour_packages ADD COLUMN exclusions LONGTEXT DEFAULT NULL;`);
+        } catch (e) {
+            // Column already exists
+        }
     } catch (err) {
         console.error('[PackageController] Table initialization error:', err.message);
     }
@@ -67,6 +73,7 @@ function formatPackage(row) {
         gallery: typeof row.gallery === "string" ? JSON.parse(row.gallery || "[]") : (row.gallery || []),
         overview: row.overview || "",
         inclusions: typeof row.inclusions === "string" ? JSON.parse(row.inclusions || "[]") : (row.inclusions || []),
+        exclusions: typeof row.exclusions === "string" ? JSON.parse(row.exclusions || "[]") : (row.exclusions || []),
         itinerary: typeof row.itinerary === "string" ? JSON.parse(row.itinerary || "[]") : (row.itinerary || []),
         isActive: Boolean(row.is_active),
         createdAt: row.created_at,
@@ -349,22 +356,32 @@ exports.uploadImage = async (req, res) => {
 exports.importPackagesJson = async (req, res) => {
     try {
         await ensureTableExists();
-        const { jsonText, packages } = req.body;
+        const { jsonText, packages, products, tours, defaultPrice, defaultBadge } = req.body;
         let items = [];
 
         if (Array.isArray(packages) && packages.length > 0) {
             items = packages;
+        } else if (Array.isArray(products) && products.length > 0) {
+            items = products;
+        } else if (Array.isArray(tours) && tours.length > 0) {
+            items = tours;
         } else if (jsonText) {
             try {
                 const parsed = typeof jsonText === 'string' ? JSON.parse(jsonText) : jsonText;
                 if (Array.isArray(parsed)) {
                     items = parsed;
                 } else if (parsed && typeof parsed === 'object') {
-                    if (Array.isArray(parsed.packages)) {
+                    if (Array.isArray(parsed.products)) {
+                        items = parsed.products;
+                    } else if (Array.isArray(parsed.packages)) {
                         items = parsed.packages;
                     } else if (Array.isArray(parsed.tours)) {
                         items = parsed.tours;
-                    } else if (parsed.title || parsed.name) {
+                    } else if (Array.isArray(parsed.data)) {
+                        items = parsed.data;
+                    } else if (Array.isArray(parsed.tour_packages)) {
+                        items = parsed.tour_packages;
+                    } else if (parsed.title || parsed.tour_name || parsed.name) {
                         items = [parsed];
                     }
                 }
@@ -382,17 +399,40 @@ exports.importPackagesJson = async (req, res) => {
 
         for (const item of items) {
             try {
-                const title = item.title || item.name || "Untitled Exotic Tour Package";
-                const destination = item.destination || item.city || "India";
-                const duration = item.duration || "5 Days / 4 Nights";
-                const price = parseFloat(item.price || item.cost || 15000);
-                const originalPrice = item.originalPrice || item.original_price ? parseFloat(item.originalPrice || item.original_price) : (price ? Math.round(price * 1.25) : null);
-                const discountPercent = item.discountPercent || item.discount_percent || (originalPrice ? `${Math.round(((originalPrice - price) / originalPrice) * 100)}% OFF` : "20% OFF");
+                const title = item.title || item.tour_name || item.name || "Untitled Exotic Tour Package";
                 
-                const pkgSlug = createPackageSlug(item.slug || title) + "-" + Date.now().toString().slice(-4);
+                let destination = "India";
+                if (item.destination) {
+                    destination = typeof item.destination === 'string' ? item.destination : (Array.isArray(item.destination) ? item.destination.join(", ") : String(item.destination));
+                } else if (item.destinations) {
+                    destination = typeof item.destinations === 'string' ? item.destinations : (Array.isArray(item.destinations) ? item.destinations.join(", ") : String(item.destinations));
+                } else if (item.city) {
+                    destination = String(item.city);
+                }
+
+                const duration = item.duration || item.days_nights || "5 Days / 4 Nights";
+                
+                let price = 0;
+                if (item.price !== undefined && item.price !== null && !isNaN(parseFloat(item.price))) {
+                    price = parseFloat(item.price);
+                } else if (defaultPrice !== undefined && !isNaN(parseFloat(defaultPrice))) {
+                    price = parseFloat(defaultPrice);
+                }
+
+                let originalPrice = null;
+                if (item.originalPrice || item.original_price) {
+                    originalPrice = parseFloat(item.originalPrice || item.original_price);
+                } else if (price > 0) {
+                    originalPrice = Math.round(price * 1.25);
+                }
+
+                const discountPercent = item.discountPercent || item.discount_percent || (price > 0 && originalPrice > price ? `${Math.round(((originalPrice - price) / originalPrice) * 100)}% OFF` : null);
+                
+                const randomId = Math.floor(1000 + Math.random() * 9000);
+                const pkgSlug = createPackageSlug(item.slug || title) + "-" + randomId;
                 
                 // Process images
-                let mainImage = item.image || item.coverImage || item.thumbnail || "";
+                let mainImage = item.image || item.coverImage || item.thumbnail || item.cover_image || "";
                 if (mainImage && mainImage.startsWith("data:image")) {
                     mainImage = await processBase64Image(mainImage);
                 }
@@ -403,19 +443,36 @@ exports.importPackagesJson = async (req, res) => {
                     if (typeof gImg === 'string' && gImg.startsWith("data:image")) {
                         const saved = await processBase64Image(gImg);
                         processedGallery.push(saved);
-                    } else {
+                    } else if (typeof gImg === 'string') {
                         processedGallery.push(gImg);
                     }
                 }
 
                 const galleryJson = JSON.stringify(processedGallery);
-                const inclusionsJson = JSON.stringify(Array.isArray(item.inclusions) ? item.inclusions : ["Hotel Stay", "Sightseeing", "Transfers"]);
-                const itineraryJson = JSON.stringify(Array.isArray(item.itinerary) ? item.itinerary : []);
+                const inclusionsJson = JSON.stringify(Array.isArray(item.inclusions) ? item.inclusions : (typeof item.inclusions === 'string' ? item.inclusions.split('\n').map(s => s.trim()).filter(Boolean) : []));
+                const exclusionsJson = JSON.stringify(Array.isArray(item.exclusions) ? item.exclusions : (typeof item.exclusions === 'string' ? item.exclusions.split('\n').map(s => s.trim()).filter(Boolean) : []));
+                
+                let itineraryData = [];
+                if (Array.isArray(item.itinerary)) {
+                    itineraryData = item.itinerary;
+                } else if (typeof item.itinerary === 'string') {
+                    try {
+                        itineraryData = JSON.parse(item.itinerary);
+                    } catch {
+                        itineraryData = [{ day: 1, title: "Day 1", details: item.itinerary }];
+                    }
+                }
+                const itineraryJson = JSON.stringify(itineraryData);
+
+                const badge = item.badge || item.category || defaultBadge || "Bestseller";
+                const includedStay = item.included_stay || item.includedStay || item.stay || "Hotel Stay Included";
+                const transport = item.transport || item.vehicle || "Private AC Transfers Included";
+                const overview = item.overview || item.about_the_tour || item.description || item.about || `${title} covering ${destination}.`;
 
                 const insertQuery = `
                     INSERT INTO tour_packages 
-                    (title, slug, destination, duration, price, original_price, discount_percent, rating, reviews_count, badge, included_stay, transport, image, gallery, overview, inclusions, itinerary, is_active)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    (title, slug, destination, duration, price, original_price, discount_percent, rating, reviews_count, badge, included_stay, transport, image, gallery, overview, inclusions, exclusions, itinerary, is_active)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 `;
 
                 await prisma.$executeRawUnsafe(
@@ -429,13 +486,14 @@ exports.importPackagesJson = async (req, res) => {
                     discountPercent,
                     item.rating ? parseFloat(item.rating) : 4.8,
                     item.reviewsCount ? parseInt(item.reviewsCount, 10) : 45,
-                    item.badge || "Bestseller",
-                    item.includedStay || item.stay || "4-Star Hotel Stay",
-                    item.transport || "Private AC Cab Included",
+                    badge,
+                    includedStay,
+                    transport,
                     mainImage,
                     galleryJson,
-                    item.overview || item.description || `${title} covering ${destination}.`,
+                    overview,
                     inclusionsJson,
+                    exclusionsJson,
                     itineraryJson,
                     item.isActive !== undefined ? (item.isActive ? 1 : 0) : 1
                 );
