@@ -81,17 +81,6 @@ export default function TourPackages() {
                 } catch (e) {}
             }
 
-            const savedPkgs = localStorage.getItem("ghs_admin_tour_packages");
-            if (savedPkgs) {
-                try {
-                    const parsed = JSON.parse(savedPkgs);
-                    if (Array.isArray(parsed) && parsed.length > 0) {
-                        setPackages(parsed);
-                        setPackagesLoading(false);
-                    }
-                } catch (e) {}
-            }
-
             const savedDest = localStorage.getItem("ghs_admin_tour_destinations");
             if (savedDest) {
                 try { setDestinationStories(JSON.parse(savedDest)); } catch (e) {}
@@ -159,20 +148,16 @@ export default function TourPackages() {
         });
     };
 
-    // Fetch real tour packages & hero config from backend API (if no admin local override exists)
+    // Fetch real tour packages & hero config from backend API
     useEffect(() => {
         const fetchApiPackages = async () => {
             try {
-                const localPkgs = readAdminPackages();
-                if (!localPkgs) {
-                    const res = await packageApi.getPackages();
-                    if (res && res.success && Array.isArray(res.data)) {
-                        setPackages(res.data);
-                    }
+                const res = await packageApi.getPackages();
+                if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
+                    setPackages(res.data);
                 }
             } catch (err) {
                 console.error("Failed to load tour packages:", err);
-                setPackages([]);
             } finally {
                 setPackagesLoading(false);
             }
