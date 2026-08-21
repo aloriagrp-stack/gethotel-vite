@@ -2,25 +2,22 @@
 header('Access-Control-Allow-Origin: *');
 header('Content-Type: text/plain');
 
-$action = isset($_GET['action']) ? $_GET['action'] : 'test_node';
+$cleanHtaccess = '# ═══════════════════════════════════════════════
+# SPA ROUTING (React Router fallback)
+# ═══════════════════════════════════════════════
+RewriteEngine On
+RewriteBase /
+RewriteRule ^index\.html$ - [L]
+RewriteCond %{REQUEST_URI} !^/api [NC]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.html [L]
+';
 
-if ($action === 'test_node') {
-    echo "=== FINDING NODE BINARY ===\n";
-    $nodePath = shell_exec("which node 2>&1 || find /home/vgyuvmpi/nodevenv/ -name node 2>&1");
-    echo "Node Path: " . trim($nodePath) . "\n\n";
+// Overwrite public_html/.htaccess to clean up port 5000 proxy rule
+file_put_contents('/home/vgyuvmpi/public_html/.htaccess', $cleanHtaccess);
 
-    echo "=== TESTING SERVER.JS LOAD WITH NODE ===\n";
-    $cmd = "cd /home/vgyuvmpi && " . trim($nodePath) . " -e \"
-      try {
-        require('./server.js');
-        console.log('Server.js loaded OK!');
-      } catch(e) {
-        console.error('SERVER INIT ERROR:', e.stack);
-      }
-    \" 2>&1";
-    echo shell_exec($cmd) . "\n";
-    exit;
-}
+$action = isset($_GET['action']) ? $_GET['action'] : 'sync_backend';
 
 if ($action === 'sync_backend' || $action === 'extract_backend' || $action === 'extract_all') {
     $srcDir = '/home/vgyuvmpi/gethotel_backend/';
@@ -42,7 +39,7 @@ if ($action === 'sync_backend' || $action === 'extract_backend' || $action === '
         }
     }
     
-    // Touch restart.txt
+    // Touch restart.txt in all possible app roots
     $restartPaths = [
         '/home/vgyuvmpi/tmp/restart.txt',
         '/home/vgyuvmpi/public_html/tmp/restart.txt',

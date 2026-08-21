@@ -58,14 +58,10 @@
 </IfModule>
 
 # ═══════════════════════════════════════════════
-# SPA ROUTING & API REVERSE PROXY
+# SPA ROUTING (React Router fallback)
 # ═══════════════════════════════════════════════
 RewriteEngine On
 RewriteBase /
-
-# Reverse Proxy /api requests to local Node server on port 5000
-RewriteRule ^api/(.*)$ http://127.0.0.1:5000/api/$1 [P,L]
-
 RewriteRule ^index\.html$ - [L]
 RewriteCond %{REQUEST_URI} !^/api [NC]
 RewriteCond %{REQUEST_FILENAME} !-f
