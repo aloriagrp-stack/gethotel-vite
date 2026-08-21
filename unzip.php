@@ -5,10 +5,9 @@ header('Content-Type: text/plain');
 $action = isset($_GET['action']) ? $_GET['action'] : 'run_node_check';
 
 if (empty($action) || $action === 'run_node_check') {
-    echo "=== TESTING SERVER.JS LOAD WITH NODE 20 ===\n";
-    $nodeBin = '/home/vgyuvmpi/nodevenv/gethotel_backend/20/bin/node';
+    echo "=== TESTING SERVER.JS LOAD WITH ACTIVATED VENV ===\n";
     
-    // Ensure production .env exists in /home/vgyuvmpi/.env
+    // Ensure production .env exists
     $envContent = 'PORT=5000
 DATABASE_URL="mysql://vgyuvmpi_gethotel_db:shriyanshking@103.108.220.145:3306/vgyuvmpi_gethotel_db?connection_limit=20&pool_timeout=30&connect_timeout=30"
 JWT_SECRET="G7h!sT@yS_2024_S3cur3_K3y_#99_fX_zQ_pL_88_wK_22_mN_11_vB_00_xZ_99_pQ_77"
@@ -30,7 +29,7 @@ OPENROUTER_API_KEY="sk-or-v1-b9da21efd4b63237c0c4473d508c20df40bffbb417ba8d959ef
     file_put_contents('/home/vgyuvmpi/.env', $envContent);
     file_put_contents('/home/vgyuvmpi/gethotel_backend/.env', $envContent);
 
-    $cmd = "cd /home/vgyuvmpi && $nodeBin -e \"
+    $cmd = "cd /home/vgyuvmpi && source /home/vgyuvmpi/nodevenv/gethotel_backend/20/bin/activate && node -e \"
       try {
         process.env.DATABASE_URL = 'mysql://vgyuvmpi_gethotel_db:shriyanshking@103.108.220.145:3306/vgyuvmpi_gethotel_db?connection_limit=20&pool_timeout=30&connect_timeout=30';
         require('./server.js');
