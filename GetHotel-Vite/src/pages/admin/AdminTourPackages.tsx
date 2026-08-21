@@ -7,18 +7,6 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { packageApi } from "@/lib/api";
 
-// Read admin-configured tour packages from localStorage (SSR-safe)
-const readAdminPackages = (): any[] | null => {
-    try {
-        const raw = localStorage.getItem("ghs_admin_tour_packages");
-        if (!raw) return null;
-        const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) && parsed.length > 0 ? parsed : null;
-    } catch (e) {
-        return null;
-    }
-};
-
 const INITIAL_DESTINATIONS = [
     { id: "dest-1", name: "All", image: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=200&q=80" },
     { id: "dest-2", name: "Goa", image: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=200&q=80" },
@@ -39,7 +27,7 @@ export default function AdminTourPackages() {
     const [subTab, setSubTab] = useState<"packages" | "banners" | "destinations" | "filters">("packages");
 
     // Packages State
-    const [packages, setPackages] = useState<any[]>(() => readAdminPackages() || []);
+    const [packages, setPackages] = useState<any[]>([]);
 
     // Hero Banners State
     const [banners, setBanners] = useState<any[]>(() => {
@@ -92,17 +80,8 @@ export default function AdminTourPackages() {
         itinerary: ""
     });
 
-    // Persistence Effects
+    // Load real tour packages from backend on mount
     useEffect(() => {
-        try {
-            localStorage.setItem("ghs_admin_tour_packages", JSON.stringify(packages));
-        } catch (e) { console.error("localStorage full, packages not cached locally:", e); }
-        window.dispatchEvent(new Event("ghs_tour_settings_updated"));
-    }, [packages]);
-
-    // Load real tour packages from backend on mount when nothing is cached locally
-    useEffect(() => {
-        if (readAdminPackages()) return;
         packageApi.getPackages().then(res => {
             if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
                 setPackages(res.data);

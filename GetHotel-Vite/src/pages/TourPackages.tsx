@@ -31,21 +31,9 @@ const DESTINATION_STORIES = [
     { name: "Ladakh", image: "https://images.unsplash.com/photo-1581793745862-99fde7fa73d2?auto=format&fit=crop&w=200&q=80" }
 ];
 
-// Read admin-configured tour packages from localStorage (SSR-safe)
-const readAdminPackages = (): any[] | null => {
-    try {
-        const raw = localStorage.getItem("ghs_admin_tour_packages");
-        if (!raw) return null;
-        const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) && parsed.length > 0 ? parsed : null;
-    } catch (e) {
-        return null;
-    }
-};
-
 export default function TourPackages() {
-    const [packages, setPackages] = useState<any[]>(() => readAdminPackages() || []);
-    const [packagesLoading, setPackagesLoading] = useState<boolean>(() => readAdminPackages() === null);
+    const [packages, setPackages] = useState<any[]>([]);
+    const [packagesLoading, setPackagesLoading] = useState<boolean>(true);
 
     const [banners, setBanners] = useState<any[]>(() => {
         const validOverride = (() => {
@@ -151,6 +139,10 @@ export default function TourPackages() {
     // Fetch real tour packages & hero config from backend API
     useEffect(() => {
         const fetchApiPackages = async () => {
+            try {
+                localStorage.removeItem("ghs_admin_tour_packages");
+            } catch (e) {}
+
             try {
                 const res = await packageApi.getPackages();
                 if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
