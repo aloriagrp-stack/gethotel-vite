@@ -301,28 +301,8 @@ export const packageApi = {
     getPackages: async (params?: any) => {
         try {
             const res = await apiFetch(`/packages${params ? '?' + new URLSearchParams(params).toString() : ''}`);
-            if (res && res.success && Array.isArray(res.data) && res.data.length > 0) return res;
+            if (res && res.success && Array.isArray(res.data)) return res;
         } catch (e) {}
-
-        // Fallback 1: Fetch from live MySQL homepage_config DB table
-        try {
-            const hpRes = await apiFetch('/homepage/config');
-            if (hpRes && hpRes.success && hpRes.data && hpRes.data.ghs_admin_tour_packages) {
-                const pkgs = typeof hpRes.data.ghs_admin_tour_packages === 'string'
-                    ? JSON.parse(hpRes.data.ghs_admin_tour_packages)
-                    : hpRes.data.ghs_admin_tour_packages;
-                if (Array.isArray(pkgs) && pkgs.length > 0) return { success: true, data: pkgs };
-            }
-        } catch (e) {}
-
-        // Fallback 2: LocalStorage
-        const local = localStorage.getItem("ghs_admin_tour_packages");
-        if (local) {
-            try {
-                return { success: true, data: JSON.parse(local) };
-            } catch (e) {}
-        }
-
         return { success: true, data: [] };
     },
     getPackage: (idOrSlug: string) => apiFetch(`/packages/${idOrSlug}`),
