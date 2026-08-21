@@ -34,6 +34,25 @@ foreach ($paths as $path) {
     }
 }
 
+// Copy backend files from gethotel_backend to root app dir
+$srcDir = '/home/vgyuvmpi/gethotel_backend/';
+$targetDir = '/home/vgyuvmpi/';
+
+$items = ['server.js', 'package.json', 'routes', 'controllers', 'config', 'middleware', 'prisma', 'utils', 'services'];
+foreach ($items as $item) {
+    $src = $srcDir . $item;
+    $dest = $targetDir . $item;
+    if (file_exists($src)) {
+        if (is_dir($src)) {
+            exec("cp -rf '$src' '$targetDir'");
+            echo "Synced dir: $item\n";
+        } else {
+            copy($src, $dest);
+            echo "Copied file: $item\n";
+        }
+    }
+}
+
 // Trigger restart
 $restartPaths = [
     '/home/vgyuvmpi/tmp/restart.txt',
