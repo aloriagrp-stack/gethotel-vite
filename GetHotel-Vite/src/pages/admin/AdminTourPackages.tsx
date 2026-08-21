@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
     Palmtree, Plus, Trash2, Edit, Save, X, Search, MapPin,
     Clock, Check, Image as ImageIcon, Star, CheckCircle2, RefreshCw, AlertCircle,
-    Eye, EyeOff, Tag, Sliders, CircleDot, Layers, Upload
+    Eye, EyeOff, Tag, Sliders, CircleDot, Layers, Upload, FileJson, UploadCloud, FileCode
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { packageApi } from "@/lib/api";
@@ -56,6 +56,17 @@ export default function AdminTourPackages() {
     const [newBannerUrl, setNewBannerUrl] = useState("");
     const [statusMessage, setStatusMessage] = useState("");
 
+    // Bulk Import Modal State
+    const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
+    const [bulkJsonText, setBulkJsonText] = useState("");
+    const [bulkDefaultPrice, setBulkDefaultPrice] = useState<number>(0);
+    const [bulkDefaultBadge, setBulkDefaultBadge] = useState("Bestseller");
+    const [bulkParsedItems, setBulkParsedItems] = useState<any[]>([]);
+    const [bulkParseError, setBulkParseError] = useState("");
+    const [isBulkImporting, setIsBulkImporting] = useState(false);
+    const [bulkInputTab, setBulkInputTab] = useState<"file" | "text">("file");
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
     // Destination Circle Edit / Create Modal State
     const [isDestModalOpen, setIsDestModalOpen] = useState(false);
     const [editingDest, setEditingDest] = useState<any>(null);
@@ -81,12 +92,19 @@ export default function AdminTourPackages() {
     });
 
     // Load real tour packages from backend on mount
-    useEffect(() => {
-        packageApi.getPackages().then(res => {
-            if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
+    const loadPackages = async () => {
+        try {
+            const res = await packageApi.getPackages();
+            if (res && res.success && Array.isArray(res.data)) {
                 setPackages(res.data);
             }
-        }).catch(err => console.error("Failed to load tour packages from backend:", err));
+        } catch (err) {
+            console.error("Failed to load tour packages from backend:", err);
+        }
+    };
+
+    useEffect(() => {
+        loadPackages();
     }, []);
 
     useEffect(() => {
@@ -222,6 +240,79 @@ export default function AdminTourPackages() {
     const showNotification = (msg: string) => {
         setStatusMessage(msg);
         setTimeout(() => setStatusMessage(""), 3500);
+    };
+
+    // ─── BULK JSON IMPORT HANDLERS ───────────────────────────────────────────
+    const handleParseJsonInput = (text: string) => {
+        setBulkJsonText(text);
+        if (!text.trim()) {
+            setBulkParsedItems([]);
+            setBulkParseError("");
+            return;
+        }
+        try {
+            const parsed = JSON.parse(text);
+            let items: any[] = [];
+            if (Array.isArray(parsed)) {
+                items = parsed;
+            } else if (parsed && typeof parsed === 'object') {
+                if (Array.isArray(parsed.products)) items = parsed.products;
+                else if (Array.isArray(parsed.packages)) items = parsed.packages;
+                else if (Array.isArray(parsed.tours)) items = parsed.tours;
+                else if (Array.isArray(parsed.data)) items = parsed.data;
+                else if (Array.isArray(parsed.tour_packages)) items = parsed.tour_packages;
+                else if (parsed.title || parsed.tour_name || parsed.name) items = [parsed];
+            }
+            if (items.length === 0) {
+                setBulkParseError("No tour package objects found in JSON structure.");
+                setBulkParsedItems([]);
+            } else {
+                setBulkParsedItems(items);
+                setBulkParseError("");
+            }
+        } catch (e: any) {
+            setBulkParseError("Invalid JSON syntax: " + e.message);
+            setBulkParsedItems([]);
+        }
+    };
+
+    const handleFileUpload = (file: File) => {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const content = (e.target?.result as string) || "";
+            handleParseJsonInput(content);
+        };
+        reader.readAsText(file);
+    };
+
+    const handleExecuteBulkImport = async () => {
+        if (bulkParsedItems.length === 0 && !bulkJsonText.trim()) {
+            alert("Please provide a valid JSON file or JSON text containing tour packages.");
+            return;
+        }
+        setIsBulkImporting(true);
+        try {
+            const res = await packageApi.importJson({
+                jsonText: bulkJsonText,
+                packages: bulkParsedItems,
+                defaultPrice: bulkDefaultPrice,
+                defaultBadge: bulkDefaultBadge
+            });
+            if (res && res.success) {
+                showNotification(`🎉 Successfully imported ${res.count || bulkParsedItems.length} tour package(s) into database!`);
+                setIsBulkModalOpen(false);
+                setBulkJsonText("");
+                setBulkParsedItems([]);
+                await loadPackages();
+            } else {
+                alert("Import failed: " + (res?.message || "Server error"));
+            }
+        } catch (err: any) {
+            alert("Import error: " + err.message);
+        } finally {
+            setIsBulkImporting(false);
+        }
     };
 
     // ─── TOUR PACKAGES HANDLERS ──────────────────────────────────────────────
@@ -424,17 +515,32 @@ export default function AdminTourPackages() {
                 </div>
 
                 {subTab === "packages" && (
-                    <button
-                        onClick={() => {
-                            resetForm();
-                            setEditingPackage(null);
-                            setIsAddModalOpen(true);
-                        }}
-                        className="px-5 py-3 bg-neutral-100 hover:bg-white text-black font-bold text-xs rounded-xl flex items-center gap-2 transition-all cursor-pointer shadow-lg shrink-0 uppercase tracking-wider"
-                    >
-                        <Plus className="w-4 h-4 text-black" />
-                        <span>Add New Tour Package</span>
-                    </button>
+                    <div className="flex items-center gap-3 shrink-0 flex-wrap">
+                        <button
+                            onClick={() => {
+                                setBulkJsonText("");
+                                setBulkParsedItems([]);
+                                setBulkParseError("");
+                                setIsBulkModalOpen(true);
+                            }}
+                            className="px-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl flex items-center gap-2 transition-all cursor-pointer shadow-lg shadow-emerald-950/40 uppercase tracking-wider"
+                        >
+                            <FileJson className="w-4 h-4" />
+                            <span>Bulk Import (JSON)</span>
+                        </button>
+
+                        <button
+                            onClick={() => {
+                                resetForm();
+                                setEditingPackage(null);
+                                setIsAddModalOpen(true);
+                            }}
+                            className="px-5 py-3 bg-neutral-100 hover:bg-white text-black font-bold text-xs rounded-xl flex items-center gap-2 transition-all cursor-pointer shadow-lg uppercase tracking-wider"
+                        >
+                            <Plus className="w-4 h-4 text-black" />
+                            <span>Add Single Tour</span>
+                        </button>
+                    </div>
                 )}
 
                 {subTab === "destinations" && (
@@ -1037,6 +1143,288 @@ export default function AdminTourPackages() {
                                     </button>
                                 </div>
                             </form>
+                        </motion.div>
+                    </div>
+                )}
+
+                {/* BULK JSON IMPORT MODAL */}
+                {isBulkModalOpen && (
+                    <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="bg-[#0e0e0e] border border-[#262626] border-t-[#3a3a3a] shadow-2xl rounded-3xl w-full max-w-3xl overflow-hidden my-auto max-h-[92vh] flex flex-col"
+                        >
+                            {/* Modal Header */}
+                            <div className="p-6 border-b border-[#1c1c1c] flex items-center justify-between bg-[#121212] shrink-0">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                                        <FileJson className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <div className="flex items-center gap-2">
+                                            <h3 className="text-lg font-black text-white">Bulk Tour Import via JSON</h3>
+                                            <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-800/40 px-2 py-0.5 rounded-full">
+                                                1 to 200+ Tours Supported
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-neutral-400 mt-0.5">
+                                            Import complete tour catalogs, itineraries, inclusions & exclusions in one click.
+                                        </p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        setIsBulkModalOpen(false);
+                                        setBulkJsonText("");
+                                        setBulkParsedItems([]);
+                                        setBulkParseError("");
+                                    }}
+                                    className="p-2 text-neutral-400 hover:text-white bg-[#181818] hover:bg-[#222] rounded-xl transition-all cursor-pointer"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            <div className="p-6 space-y-6 overflow-y-auto flex-1">
+                                {/* Input Mode Selector Tabs */}
+                                <div className="flex items-center gap-2 bg-[#141414] p-1.5 rounded-xl border border-[#222]">
+                                    <button
+                                        type="button"
+                                        onClick={() => setBulkInputTab("file")}
+                                        className={`flex-1 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                                            bulkInputTab === "file"
+                                                ? "bg-neutral-200 text-black shadow-sm"
+                                                : "text-neutral-400 hover:text-white hover:bg-[#1a1a1a]"
+                                        }`}
+                                    >
+                                        <UploadCloud className="w-4 h-4" />
+                                        <span>Upload .JSON File</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setBulkInputTab("text")}
+                                        className={`flex-1 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                                            bulkInputTab === "text"
+                                                ? "bg-neutral-200 text-black shadow-sm"
+                                                : "text-neutral-400 hover:text-white hover:bg-[#1a1a1a]"
+                                        }`}
+                                    >
+                                        <FileCode className="w-4 h-4" />
+                                        <span>Paste Raw JSON Text</span>
+                                    </button>
+                                </div>
+
+                                {/* TAB A: FILE DROP ZONE */}
+                                {bulkInputTab === "file" && (
+                                    <div
+                                        onClick={() => fileInputRef.current?.click()}
+                                        onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                                        onDrop={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            const file = e.dataTransfer.files?.[0];
+                                            if (file) handleFileUpload(file);
+                                        }}
+                                        className="p-8 border-2 border-dashed border-[#2d2d2d] hover:border-emerald-500/60 bg-[#121212] hover:bg-[#151515] rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer transition-all group"
+                                    >
+                                        <div className="w-14 h-14 rounded-2xl bg-[#1a1a1a] border border-[#282828] group-hover:border-emerald-500/40 flex items-center justify-center text-neutral-400 group-hover:text-emerald-400 mb-3 transition-colors">
+                                            <UploadCloud className="w-7 h-7" />
+                                        </div>
+                                        <span className="text-sm font-bold text-white group-hover:text-emerald-300 transition-colors">
+                                            Click to browse or Drag & Drop .json file here
+                                        </span>
+                                        <span className="text-xs text-neutral-500 mt-1">
+                                            Supports .json files containing product catalog or tours array
+                                        </span>
+                                        <input
+                                            ref={fileInputRef}
+                                            type="file"
+                                            accept=".json,application/json"
+                                            className="hidden"
+                                            onChange={(e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) handleFileUpload(file);
+                                            }}
+                                        />
+                                    </div>
+                                )}
+
+                                {/* TAB B: PASTE JSON TEXTAREA */}
+                                {bulkInputTab === "text" && (
+                                    <div className="space-y-2">
+                                        <div className="flex items-center justify-between">
+                                            <label className="text-xs font-bold text-neutral-300">Paste JSON Array or Catalog Object</label>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    const sample = `[
+  {
+    "title": "Rajasthan Royal Triangle – 6 Days",
+    "destination": "Jaipur, Jodhpur, Udaipur",
+    "duration": "6 Days / 5 Nights",
+    "price": 0,
+    "badge": "Rajasthan Tours",
+    "overview": "Experience the royal heritage, palaces and lakes of Rajasthan.",
+    "inclusions": ["Hotel Accommodation", "Daily Breakfast", "Private AC Cab"],
+    "exclusions": ["Airfare", "Personal Expenses", "Monument Entry Tickets"],
+    "itinerary": [
+      { "day": 1, "title": "Day 1", "details": "Arrive in Jaipur and check in." },
+      { "day": 2, "title": "Day 2", "details": "Explore Amber Fort & City Palace." }
+    ]
+  }
+]`;
+                                                    handleParseJsonInput(sample);
+                                                }}
+                                                className="text-[11px] font-bold text-emerald-400 hover:underline"
+                                            >
+                                                Insert Sample JSON Format
+                                            </button>
+                                        </div>
+                                        <textarea
+                                            rows={8}
+                                            value={bulkJsonText}
+                                            onChange={(e) => handleParseJsonInput(e.target.value)}
+                                            placeholder='[ { "title": "Manali Snow Escape", "destination": "Manali", "duration": "5 Days", "inclusions": [...], "itinerary": [...] } ]'
+                                            className="w-full p-4 bg-[#141414] border border-[#282828] rounded-2xl text-neutral-200 font-mono text-xs focus:outline-none focus:border-emerald-500/60 resize-y"
+                                        />
+                                    </div>
+                                )}
+
+                                {/* Real-time Parser Status Indicator */}
+                                {bulkParseError ? (
+                                    <div className="p-3.5 bg-red-950/60 border border-red-800/40 rounded-xl text-red-300 text-xs font-bold flex items-center gap-2">
+                                        <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
+                                        <span>{bulkParseError}</span>
+                                    </div>
+                                ) : bulkParsedItems.length > 0 ? (
+                                    <div className="p-4 bg-emerald-950/60 border border-emerald-800/40 rounded-2xl space-y-3">
+                                        <div className="flex items-center justify-between text-emerald-300 text-xs font-bold">
+                                            <span className="flex items-center gap-2">
+                                                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                                                <span>Valid JSON Detected: {bulkParsedItems.length} Tour Package(s) Ready to Import</span>
+                                            </span>
+                                            <span className="text-[11px] font-mono text-neutral-400 bg-black/40 px-2 py-0.5 rounded-lg">
+                                                {bulkParsedItems.length} items parsed
+                                            </span>
+                                        </div>
+
+                                        {/* Preview List of first 4 items */}
+                                        <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+                                            {bulkParsedItems.slice(0, 5).map((item, idx) => (
+                                                <div key={idx} className="p-2.5 bg-black/50 border border-emerald-900/30 rounded-xl flex items-center justify-between gap-3 text-xs">
+                                                    <div className="min-w-0">
+                                                        <span className="font-bold text-white truncate block">
+                                                            {idx + 1}. {item.title || item.tour_name || item.name || "Untitled Tour"}
+                                                        </span>
+                                                        <span className="text-[11px] text-neutral-400 flex items-center gap-2 mt-0.5">
+                                                            <span>📍 {item.destination || (Array.isArray(item.destinations) ? item.destinations.join(", ") : "India")}</span>
+                                                            <span>•</span>
+                                                            <span>⏱️ {item.duration || "5 Days"}</span>
+                                                            {item.inclusions && (
+                                                                <>
+                                                                    <span>•</span>
+                                                                    <span>✓ {Array.isArray(item.inclusions) ? item.inclusions.length : 1} inclusions</span>
+                                                                </>
+                                                            )}
+                                                        </span>
+                                                    </div>
+                                                    <span className="text-[11px] font-bold text-emerald-400 bg-emerald-900/40 px-2 py-1 rounded-lg shrink-0">
+                                                        {item.price > 0 ? `₹${item.price.toLocaleString()}` : "Price: ₹0 (Draft)"}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                            {bulkParsedItems.length > 5 && (
+                                                <p className="text-[11px] text-neutral-400 text-center pt-1 font-semibold">
+                                                    + {bulkParsedItems.length - 5} more tour packages will be imported...
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                ) : null}
+
+                                {/* Optional Defaults Configuration */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-[#1c1c1c]">
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">
+                                            Default Price (if missing in JSON)
+                                        </label>
+                                        <div className="relative">
+                                            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-500 text-xs font-bold">₹</span>
+                                            <input
+                                                type="number"
+                                                value={bulkDefaultPrice}
+                                                onChange={(e) => setBulkDefaultPrice(parseFloat(e.target.value) || 0)}
+                                                placeholder="0 (Leave as ₹0 for manual admin pricing)"
+                                                className="w-full pl-8 pr-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-white text-xs font-mono focus:outline-none focus:border-emerald-500"
+                                            />
+                                        </div>
+                                        <p className="text-[10px] text-neutral-500 mt-1">Keep ₹0 if you want to set prices manually from the admin panel later.</p>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">
+                                            Default Badge (if missing in JSON)
+                                        </label>
+                                        <select
+                                            value={bulkDefaultBadge}
+                                            onChange={(e) => setBulkDefaultBadge(e.target.value)}
+                                            className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-white text-xs focus:outline-none focus:border-emerald-500 cursor-pointer"
+                                        >
+                                            <option value="Bestseller">Bestseller</option>
+                                            <option value="Trending">Trending</option>
+                                            <option value="Popular">Popular</option>
+                                            <option value="Super Saver">Super Saver</option>
+                                            <option value="Luxury">Luxury</option>
+                                        </select>
+                                        <p className="text-[10px] text-neutral-500 mt-1">Applied only if an item does not have a category/badge specified.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Modal Footer Actions */}
+                            <div className="p-6 border-t border-[#1c1c1c] bg-[#121212] flex items-center justify-end gap-3 shrink-0">
+                                <button
+                                    type="button"
+                                    disabled={isBulkImporting}
+                                    onClick={() => {
+                                        setIsBulkModalOpen(false);
+                                        setBulkJsonText("");
+                                        setBulkParsedItems([]);
+                                    }}
+                                    className="px-5 py-2.5 rounded-xl border border-[#282828] text-neutral-300 hover:text-white hover:bg-[#181818] text-xs font-bold transition-all cursor-pointer"
+                                >
+                                    Cancel
+                                </button>
+
+                                <button
+                                    type="button"
+                                    disabled={isBulkImporting || bulkParsedItems.length === 0}
+                                    onClick={handleExecuteBulkImport}
+                                    className={`px-6 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shadow-lg ${
+                                        isBulkImporting || bulkParsedItems.length === 0
+                                            ? "bg-neutral-800 text-neutral-500 cursor-not-allowed"
+                                            : "bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold shadow-emerald-950/50"
+                                    }`}
+                                >
+                                    {isBulkImporting ? (
+                                        <>
+                                            <RefreshCw className="w-4 h-4 animate-spin" />
+                                            <span>Importing {bulkParsedItems.length} Tours to DB...</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Upload className="w-4 h-4" />
+                                            <span>
+                                                {bulkParsedItems.length > 0
+                                                    ? `Import All ${bulkParsedItems.length} Tours Now`
+                                                    : "Upload or Paste JSON to Import"}
+                                            </span>
+                                        </>
+                                    )}
+                                </button>
+                            </div>
                         </motion.div>
                     </div>
                 )}

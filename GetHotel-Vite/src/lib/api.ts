@@ -298,205 +298,25 @@ export const messageApi = {
 };
 
 export const packageApi = {
-    getPackages: async (params?: any) => {
-        try {
-            const res = await apiFetch(`/packages${params ? '?' + new URLSearchParams(params).toString() : ''}`);
-            if (res && res.success && Array.isArray(res.data)) return res;
-        } catch (e) {}
-        return { success: true, data: [] };
-    },
+    getPackages: (params?: any) => apiFetch(`/packages${params ? '?' + new URLSearchParams(params).toString() : ''}`),
     getPackage: (idOrSlug: string) => apiFetch(`/packages/${idOrSlug}`),
     createPackage: async (data: any) => {
-        try {
-            const res = await apiFetch('/packages', { method: 'POST', body: JSON.stringify(data) });
-            if (res && res.success) return res;
-        } catch (e) {}
-
-        // Fallback: Save to LocalStorage + Sync with live MySQL homepage_config DB
-        const existingStr = localStorage.getItem("ghs_admin_tour_packages");
-        let existingList: any[] = existingStr ? JSON.parse(existingStr) : [];
-
-        const newPkg = {
-            id: Date.now() + Math.floor(Math.random() * 1000),
-            slug: (data.title || "tour").toLowerCase().replace(/[^a-z0-9]/g, "-") + "-" + Date.now().toString().slice(-4),
-            ...data,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-        };
-
-        existingList.unshift(newPkg);
-        localStorage.setItem("ghs_admin_tour_packages", JSON.stringify(existingList));
-
-        // Save to homepage_config MySQL database so all users on website see it!
-        try {
-            await apiFetch('/admin/homepage/config', {
-                method: 'PUT',
-                body: JSON.stringify({ ghs_admin_tour_packages: JSON.stringify(existingList) })
-            });
-        } catch (e) {}
-
-        return { success: true, message: "Package created successfully", data: newPkg };
+        return await apiFetch('/packages', { method: 'POST', body: JSON.stringify(data) });
     },
     updatePackage: async (id: string | number, data: any) => {
-        try {
-            const res = await apiFetch(`/packages/${id}`, { method: 'PUT', body: JSON.stringify(data) });
-            if (res && res.success) return res;
-        } catch (e) {}
-
-        const existingStr = localStorage.getItem("ghs_admin_tour_packages");
-        let existingList: any[] = existingStr ? JSON.parse(existingStr) : [];
-        existingList = existingList.map(p => p.id === id || String(p.id) === String(id) ? { ...p, ...data, updatedAt: new Date().toISOString() } : p);
-        localStorage.setItem("ghs_admin_tour_packages", JSON.stringify(existingList));
-
-        try {
-            await apiFetch('/admin/homepage/config', {
-                method: 'PUT',
-                body: JSON.stringify({ ghs_admin_tour_packages: JSON.stringify(existingList) })
-            });
-        } catch (e) {}
-
-        return { success: true, message: "Package updated successfully" };
+        return await apiFetch(`/packages/${id}`, { method: 'PUT', body: JSON.stringify(data) });
     },
     deletePackage: async (id: string | number) => {
-        try {
-            const res = await apiFetch(`/packages/${id}`, { method: 'DELETE' });
-            if (res && res.success) return res;
-        } catch (e) {}
-
-        const existingStr = localStorage.getItem("ghs_admin_tour_packages");
-        let existingList: any[] = existingStr ? JSON.parse(existingStr) : [];
-        existingList = existingList.filter(p => p.id !== id && String(p.id) !== String(id));
-        localStorage.setItem("ghs_admin_tour_packages", JSON.stringify(existingList));
-
-        try {
-            await apiFetch('/admin/homepage/config', {
-                method: 'PUT',
-                body: JSON.stringify({ ghs_admin_tour_packages: JSON.stringify(existingList) })
-            });
-        } catch (e) {}
-
-        return { success: true, message: "Package deleted successfully" };
+        return await apiFetch(`/packages/${id}`, { method: 'DELETE' });
     },
     uploadImage: async (imageBase64: string) => {
-        try {
-            const res = await apiFetch('/packages/upload-image', { method: 'POST', body: JSON.stringify({ image: imageBase64 }) });
-            if (res && res.success && res.url) return res;
-        } catch (e) {}
-        // Fallback return base64 if server image upload route not available
-        return { success: true, url: imageBase64 };
+        return await apiFetch('/packages/upload-image', { method: 'POST', body: JSON.stringify({ image: imageBase64 }) });
     },
-    importJson: async (payload: { jsonText?: string; packages?: any[] }) => {
-        try {
-            const res = await apiFetch('/packages/import-json', { method: 'POST', body: JSON.stringify(payload) });
-            if (res && res.success) return res;
-        } catch (e) { /* try fallback */ }
-
-        try {
-            const res2 = await apiFetch('/admin/packages/import-json', { method: 'POST', body: JSON.stringify(payload) });
-            if (res2 && res2.success) return res2;
-        } catch (e) { /* try fallback */ }
-
-        // Client-side Fallback using existing homepage_config DB + LocalStorage persistence
-        let items: any[] = [];
-        if (Array.isArray(payload.packages) && payload.packages.length > 0) {
-            items = payload.packages;
-        } else if (payload.jsonText) {
-            try {
-                const parsed = JSON.parse(payload.jsonText);
-                if (Array.isArray(parsed)) items = parsed;
-                else if (parsed && typeof parsed === 'object') {
-                    if (Array.isArray(parsed.packages)) items = parsed.packages;
-                    else if (Array.isArray(parsed.tours)) items = parsed.tours;
-                    else if (parsed.title || parsed.name) items = [parsed];
-                }
-            } catch (e) {}
-        }
-
-        if (items.length > 0) {
-            let importedCount = 0;
-            for (const item of items) {
-                const pkgPayload = {
-                    title: item.title || item.name || "Untitled Tour Package",
-                    destination: item.destination || item.city || "India",
-                    duration: item.duration || "5 Days / 4 Nights",
-                    price: parseFloat(item.price || item.cost || 15000),
-                    originalPrice: item.originalPrice || item.original_price ? parseFloat(item.originalPrice || item.original_price) : null,
-                    discountPercent: item.discountPercent || item.discount_percent || "20% OFF",
-                    badge: item.badge || "Bestseller",
-                    rating: item.rating ? parseFloat(item.rating) : 4.8,
-                    reviewsCount: item.reviewsCount ? parseInt(item.reviewsCount, 10) : 45,
-                    includedStay: item.includedStay || item.stay || "4-Star Hotel Stay",
-                    transport: item.transport || "Private AC Cab Included",
-                    image: item.image || item.coverImage || item.thumbnail || "",
-                    gallery: Array.isArray(item.gallery) ? item.gallery : (item.image ? [item.image] : []),
-                    overview: item.overview || item.description || "",
-                    inclusions: Array.isArray(item.inclusions) ? item.inclusions : ["Hotel Stay", "Transfers"],
-                    itinerary: Array.isArray(item.itinerary) ? item.itinerary : [],
-                    isActive: item.isActive !== false
-                };
-                await packageApi.createPackage(pkgPayload);
-                importedCount++;
-            }
-
-            if (importedCount > 0) {
-                return {
-                    success: true,
-                    count: importedCount,
-                    message: `Successfully imported ${importedCount} tour package(s)!`
-                };
-            }
-        }
-
-        return { success: false, message: "Could not import tour packages from JSON." };
+    importJson: async (payload: { jsonText?: string; packages?: any[]; products?: any[]; tours?: any[]; defaultPrice?: number; defaultBadge?: string }) => {
+        return await apiFetch('/packages/import-json', { method: 'POST', body: JSON.stringify(payload) });
     },
     getHeroConfig: async () => {
-        try {
-            const res = await apiFetch('/packages/hero-config');
-            if (res && res.success) {
-                const cleaned = sanitizeHeroConfig(res.data);
-                if (cleaned) return { success: true, data: cleaned };
-                return { success: true, data: null };
-            }
-        } catch (e) {}
-
-        try {
-            const hpRes = await apiFetch('/homepage/config');
-            if (hpRes && hpRes.success && hpRes.data && hpRes.data.tour_hero_config) {
-                const hData = typeof hpRes.data.tour_hero_config === 'string'
-                    ? JSON.parse(hpRes.data.tour_hero_config)
-                    : hpRes.data.tour_hero_config;
-                const cleaned = sanitizeHeroConfig(hData);
-                if (cleaned) return { success: true, data: cleaned };
-                return { success: true, data: null };
-            }
-        } catch (e) {}
-
-        const validOverride = (() => {
-            try { return localStorage.getItem("ghs_tour_banners_v2") === "1"; } catch (e) { return false; }
-        })();
-        const localBanners = validOverride ? localStorage.getItem("ghs_admin_tour_banners") : null;
-        if (localBanners) {
-            try {
-                const parsed = JSON.parse(localBanners);
-                if (Array.isArray(parsed) && parsed.length > 0) {
-                    return { success: true, data: { banners: parsed, heroImages: parsed.map(b => b.image || b) } };
-                }
-            } catch (e) {}
-        }
-
-        const localConfig = validOverride ? localStorage.getItem("ghs_admin_tour_hero_config") : null;
-        if (localConfig) {
-            try { return { success: true, data: JSON.parse(localConfig) }; } catch (e) {}
-        }
-
-        return {
-            success: true,
-            data: {
-                title: "Explore Handcrafted Tour Packages",
-                subtitle: "Unforgettable journeys designed for your dream vacation across India & global destinations",
-                heroImages: []
-            }
-        };
+        return await apiFetch('/packages/hero-config');
     },
     updateHeroConfig: async (data: any) => {
         if (data && data.banners) {
