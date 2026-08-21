@@ -5,18 +5,20 @@ header('Content-Type: text/plain');
 $action = isset($_GET['action']) ? $_GET['action'] : 'test_node';
 
 if ($action === 'test_node') {
-    echo "=== RUNNING NODE SERVER DIAGNOSTIC ===\n";
-    $output = [];
-    $return_var = 0;
-    exec("cd /home/vgyuvmpi && node -e \"
+    echo "=== FINDING NODE BINARY ===\n";
+    $nodePath = shell_exec("which node 2>&1 || find /home/vgyuvmpi/nodevenv/ -name node 2>&1");
+    echo "Node Path: " . trim($nodePath) . "\n\n";
+
+    echo "=== TESTING SERVER.JS LOAD WITH NODE ===\n";
+    $cmd = "cd /home/vgyuvmpi && " . trim($nodePath) . " -e \"
       try {
         require('./server.js');
         console.log('Server.js loaded OK!');
       } catch(e) {
         console.error('SERVER INIT ERROR:', e.stack);
       }
-    \" 2>&1", $output, $return_var);
-    echo implode("\n", $output) . "\n";
+    \" 2>&1";
+    echo shell_exec($cmd) . "\n";
     exit;
 }
 
