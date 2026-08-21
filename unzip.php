@@ -2,9 +2,23 @@
 header('Access-Control-Allow-Origin: *');
 header('Content-Type: text/plain');
 
-$action = isset($_GET['action']) ? $_GET['action'] : 'find_passenger';
+$cleanHtaccess = '# ═══════════════════════════════════════════════
+# SPA ROUTING (React Router fallback)
+# ═══════════════════════════════════════════════
+RewriteEngine On
+RewriteBase /
+RewriteRule ^index\.html$ - [L]
+RewriteCond %{REQUEST_URI} !^/api [NC]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.html [L]
+';
 
-if ($action === 'find_passenger') {
+@file_put_contents('/home/vgyuvmpi/public_html/.htaccess', $cleanHtaccess);
+
+$action = isset($_GET['action']) ? $_GET['action'] : 'diag';
+
+if ($action === 'find_passenger' || $action === 'diag') {
     echo "=== SEARCHING FOR PASSENGER DIRECTIVES OR BACKUP HTACCESS ===\n";
     $files = glob('/home/vgyuvmpi/*.htaccess*');
     $files2 = glob('/home/vgyuvmpi/public_html/*.htaccess*');
@@ -23,6 +37,22 @@ if ($action === 'find_passenger') {
         foreach ($nodes as $n) {
             echo "  Node binary: $n\n";
         }
+    }
+    
+    echo "=== TESTING SERVER.JS IN CLI ===\n";
+    $nodeBin = shell_exec("which node 2>&1 || find /home/vgyuvmpi/nodevenv/ -name node 2>&1");
+    $nodeBin = trim(explode("\n", trim($nodeBin))[0]);
+    echo "Using Node Binary: $nodeBin\n";
+    if ($nodeBin && file_exists($nodeBin)) {
+        $cmd = "cd /home/vgyuvmpi && $nodeBin -e \"
+          try {
+            require('./server.js');
+            console.log('Server.js loaded OK!');
+          } catch(e) {
+            console.error('SERVER INIT ERROR:', e.stack);
+          }
+        \" 2>&1";
+        echo shell_exec($cmd) . "\n";
     }
     exit;
 }
