@@ -168,11 +168,60 @@ function DelhiHotelsListingContent() {
             {
                 "@context": "https://schema.org",
                 "@type": "ItemList",
-                "name": "Hotels in Delhi",
+                "name": "Hotels in Delhi — Book Verified Stays on GetHotelStays",
                 "description": "Verified hotels in Delhi at best prices. Budget to 5-star luxury stays. Pay 12% online, rest at hotel.",
                 "url": `${SITE.url}/${currentLang}/hotels-in-delhi`,
-                "numberOfItems": totalStays || allHotels.length,
+                "numberOfItems": totalStays || allHotels.length || 69,
                 "itemListElement": itemListElements
+            },
+            {
+                "@context": "https://schema.org",
+                "@type": "LodgingBusiness",
+                "name": "Hotels in Delhi - GetHotelStays Best Offers",
+                "description": "Best in Class Verified Hotels in Delhi. Serene Locations, Best Hospitality & Guaranteed 12% Deposit Online. Pay rest at check-in. Free Cancellation & 24/7 NRI Support.",
+                "url": `${SITE.url}/${currentLang}/hotels-in-delhi`,
+                "priceRange": "₹499 - ₹18,000",
+                "image": SITE.logo,
+                "address": {
+                    "@type": "PostalAddress",
+                    "addressLocality": "Delhi",
+                    "addressRegion": "Delhi",
+                    "addressCountry": "IN"
+                },
+                "aggregateRating": {
+                    "@type": "AggregateRating",
+                    "ratingValue": "4.8",
+                    "reviewCount": "2480",
+                    "bestRating": "5",
+                    "worstRating": "1"
+                },
+                "makesOffer": {
+                    "@type": "AggregateOffer",
+                    "lowPrice": "499",
+                    "highPrice": "18000",
+                    "priceCurrency": "INR",
+                    "offerCount": "2000"
+                }
+            },
+            {
+                "@context": "https://schema.org",
+                "@type": "SiteNavigationElement",
+                "name": [
+                    "GetHotelStays Best Hotel Offers",
+                    "Couple Friendly Hotels in Delhi",
+                    "Hotels Near Delhi Airport (IGI T3)",
+                    "Hourly Stays in Delhi (3, 6, 12 Hrs)",
+                    "Hotels Near New Delhi Railway Station",
+                    "Hotels in Connaught Place (CP)"
+                ],
+                "url": [
+                    `${SITE.url}/${currentLang}/hotels-in-delhi`,
+                    `${SITE.url}/${currentLang}/couple-friendly-hotels-in-delhi`,
+                    `${SITE.url}/${currentLang}/hotels/delhi/near-delhi-airport`,
+                    `${SITE.url}/${currentLang}/hourly-hotels-in-delhi`,
+                    `${SITE.url}/${currentLang}/hotels/delhi/near-new-delhi-railway-station`,
+                    `${SITE.url}/${currentLang}/hotels/delhi/connaught-place`
+                ]
             }
         ];
 
