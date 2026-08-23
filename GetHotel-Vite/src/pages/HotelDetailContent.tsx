@@ -127,18 +127,38 @@ const FAQItem = ({ faq }: { faq: any }) => {
 
 export default function HotelDetailContent({ id, initialHotel }: { id: string, initialHotel?: any }) {
     const router = useRouter();
+    const { user } = useAuth();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [hotel, setHotel] = useState<any>(initialHotel || null);
+
     const handleBack = () => {
+        try {
+            const savedUrl = sessionStorage.getItem("last_hotel_listing_url");
+            if (savedUrl && savedUrl !== window.location.pathname && savedUrl !== window.location.href) {
+                router(savedUrl);
+                return;
+            }
+        } catch (_) {}
+
+        if (document.referrer && document.referrer.includes(window.location.host) && !document.referrer.includes(window.location.pathname)) {
+            window.history.back();
+            return;
+        }
+
         if (window.history.length > 1) {
             router(-1);
         } else {
             const parts = window.location.pathname.split("/");
             const langCode = ["en", "hi", "de", "ja", "fr", "es", "zh", "ar", "ru", "pt"].includes(parts[1]) ? parts[1] : "en";
-            router(`/${langCode}/hotels`);
+            if (hotel?.city && hotel.city.toLowerCase().trim() === "delhi") {
+                router(`/${langCode}/hotels-in-delhi`);
+            } else if (hotel?.city) {
+                router(`/${langCode}/hotels?city=${encodeURIComponent(hotel.city)}`);
+            } else {
+                router(`/${langCode}/hotels`);
+            }
         }
     };
-    const { user } = useAuth();
-    const [searchParams, setSearchParams] = useSearchParams();
-    const [hotel, setHotel] = useState<any>(initialHotel || null);
     const [rooms, setRooms] = useState<any[]>([]);
     const [coupons, setCoupons] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -661,8 +681,17 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
             {/* 1. Static Rounded Search Pill (Same as Hotels page) */}
             <div className="w-full bg-white py-2 px-4 border-b border-slate-50 flex flex-col items-center gap-4">
                 <div className="w-full max-w-7xl flex items-center justify-between">
-                    <button onClick={handleBack} className="p-2 hover:bg-slate-50 rounded-full transition-colors">
-                        <ArrowLeft className="w-6 h-6 text-slate-600" />
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleBack();
+                        }}
+                        aria-label="Go Back to Listings"
+                        className="p-2.5 -ml-1 text-slate-700 hover:text-slate-950 hover:bg-slate-100 active:bg-slate-200 rounded-full transition-all active:scale-90 cursor-pointer shrink-0 z-20 flex items-center justify-center"
+                    >
+                        <ArrowLeft className="w-6 h-6 stroke-[2.5]" />
                     </button>
 
                     <button

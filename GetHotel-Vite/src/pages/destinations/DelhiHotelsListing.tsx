@@ -270,48 +270,6 @@ function DelhiHotelsListingContent() {
                 </div>
             </div>
 
-            {/* High-Converting USP Badges */}
-            <div className="w-full px-4 md:px-10 mb-5">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-white/70 backdrop-blur-sm border border-slate-200/80 shadow-xs">
-                        <div className="w-8 h-8 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center font-black text-xs shrink-0">
-                            12%
-                        </div>
-                        <div>
-                            <p className="text-xs font-black text-slate-900 leading-tight">Pay 12% Online</p>
-                            <p className="text-[10px] text-slate-500 font-semibold">Rest at check-in</p>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-white/70 backdrop-blur-sm border border-slate-200/80 shadow-xs">
-                        <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-black text-xs shrink-0">
-                            💑
-                        </div>
-                        <div>
-                            <p className="text-xs font-black text-slate-900 leading-tight">Couple Friendly</p>
-                            <p className="text-[10px] text-slate-500 font-semibold">Local IDs accepted</p>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-white/70 backdrop-blur-sm border border-slate-200/80 shadow-xs">
-                        <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-black text-xs shrink-0">
-                            ⏱️
-                        </div>
-                        <div>
-                            <p className="text-xs font-black text-slate-900 leading-tight">Hourly Stays</p>
-                            <p className="text-[10px] text-slate-500 font-semibold">3, 6, 12 Hrs slots</p>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-white/70 backdrop-blur-sm border border-slate-200/80 shadow-xs">
-                        <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-black text-xs shrink-0">
-                            🌍
-                        </div>
-                        <div>
-                            <p className="text-xs font-black text-slate-900 leading-tight">NRI & Global Cards</p>
-                            <p className="text-[10px] text-slate-500 font-semibold">Zero foreign markup</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             {/* Delhi Locality Quick Pills */}
             <div className="w-full px-4 md:px-10 mb-6">
                 <div className="flex items-center gap-2 overflow-x-auto pb-2 custom-scrollbar">
@@ -486,6 +444,48 @@ function DelhiHotelsListingContent() {
             </div>
 
             {/* ═══ High-Converting White-Hat SEO Sections ═══ */}
+
+            {/* High-Converting USP Badges (Positioned cleanly at bottom) */}
+            <div className="max-w-7xl mx-auto px-4 md:px-10 mt-14">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-white/70 backdrop-blur-sm border border-slate-200/80 shadow-xs">
+                        <div className="w-8 h-8 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center font-black text-xs shrink-0">
+                            12%
+                        </div>
+                        <div>
+                            <p className="text-xs font-black text-slate-900 leading-tight">Pay 12% Online</p>
+                            <p className="text-[10px] text-slate-500 font-semibold">Rest at check-in</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-white/70 backdrop-blur-sm border border-slate-200/80 shadow-xs">
+                        <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-black text-xs shrink-0">
+                            💑
+                        </div>
+                        <div>
+                            <p className="text-xs font-black text-slate-900 leading-tight">Couple Friendly</p>
+                            <p className="text-[10px] text-slate-500 font-semibold">Local IDs accepted</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-white/70 backdrop-blur-sm border border-slate-200/80 shadow-xs">
+                        <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-black text-xs shrink-0">
+                            ⏱️
+                        </div>
+                        <div>
+                            <p className="text-xs font-black text-slate-900 leading-tight">Hourly Stays</p>
+                            <p className="text-[10px] text-slate-500 font-semibold">3, 6, 12 Hrs slots</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-white/70 backdrop-blur-sm border border-slate-200/80 shadow-xs">
+                        <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-black text-xs shrink-0">
+                            🌍
+                        </div>
+                        <div>
+                            <p className="text-xs font-black text-slate-900 leading-tight">NRI & Global Cards</p>
+                            <p className="text-[10px] text-slate-500 font-semibold">Zero foreign markup</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             {/* Delhi Area Guides */}
             <div className="max-w-7xl mx-auto px-4 md:px-10 mt-16 pt-10 border-t border-slate-200">

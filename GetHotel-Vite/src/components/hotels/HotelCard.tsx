@@ -147,12 +147,20 @@ export default function HotelCard({ hotel, className }: HotelCardProps) {
 
     return (
         <div
-            onClick={() => {
+            onClick={(e) => {
                 const params = new URLSearchParams(searchParams);
                 if (!params.has("stayType")) {
                     params.set("stayType", mode);
                 }
-                window.open(`${getHotelUrl(hotel.id, hotel.name)}?${params.toString()}`, "_blank");
+                const targetUrl = `${getHotelUrl(hotel.id, hotel.name)}?${params.toString()}`;
+                try {
+                    sessionStorage.setItem("last_hotel_listing_url", window.location.pathname + window.location.search);
+                } catch (_) {}
+                if (e.metaKey || e.ctrlKey) {
+                    window.open(targetUrl, "_blank");
+                } else {
+                    router(targetUrl);
+                }
             }}
             className={cn(
                 "group relative bg-white rounded-2xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] cursor-pointer border border-slate-50 flex flex-col md:h-[480px] hover:shadow-xl transition-all duration-300",
