@@ -33,17 +33,42 @@ const optimizeUnsplashUrl = (url: string, width?: number | string, priority?: bo
   }
 };
 
+const FALLBACK_HOTEL_IMAGE = "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80";
+
+const normalizeImageUrl = (url: string): string => {
+  if (!url) return FALLBACK_HOTEL_IMAGE;
+  let clean = url.trim();
+  // Fix backend upload paths: /api/uploads/ -> /uploads/
+  clean = clean.replace(/https?:\/\/[^\/]+\/api\/uploads\//g, 'https://gethotelstays.com/uploads/');
+  clean = clean.replace(/^\/api\/uploads\//g, 'https://gethotelstays.com/uploads/');
+  clean = clean.replace(/\/api\/uploads\//g, '/uploads/');
+  return clean;
+};
+
 const Image = ({ src, alt, width, height, fill, priority, unoptimized, className, ...props }: ImageProps) => {
   const [loaded, setLoaded] = React.useState(false);
+  const [currentSrc, setCurrentSrc] = React.useState(() => normalizeImageUrl(src));
+  const [hasError, setHasError] = React.useState(false);
   const imgRef = React.useRef<HTMLImageElement>(null);
 
   React.useEffect(() => {
-    // Reset loaded state on src change
     setLoaded(false);
+    setHasError(false);
+    const normalized = normalizeImageUrl(src);
+    setCurrentSrc(normalized);
     if (imgRef.current && imgRef.current.complete) {
       setLoaded(true);
     }
   }, [src]);
+
+  const handleImageError = () => {
+    if (!hasError && currentSrc !== FALLBACK_HOTEL_IMAGE) {
+      setHasError(true);
+      setCurrentSrc(FALLBACK_HOTEL_IMAGE);
+    } else {
+      setLoaded(true); // Stop shimmer if fallback loaded or failed
+    }
+  };
 
   // Wrapper positioning style
   const wrapperStyle: React.CSSProperties = fill ? {
@@ -76,7 +101,7 @@ const Image = ({ src, alt, width, height, fill, priority, unoptimized, className
     transition: 'opacity 0.4s ease-in-out',
   };
 
-  const optimizedSrc = unoptimized ? src : optimizeUnsplashUrl(src, width, priority);
+  const optimizedSrc = unoptimized ? currentSrc : optimizeUnsplashUrl(currentSrc, width, priority);
 
   return (
     <div style={wrapperStyle} className={className}>
@@ -145,6 +170,7 @@ const Image = ({ src, alt, width, height, fill, priority, unoptimized, className
         className={className}
         style={{ ...imgStyle, ...props.style }}
         onLoad={() => setLoaded(true)}
+        onError={handleImageError}
         loading={priority ? 'eager' : 'lazy'}
         decoding="async"
         {...props}

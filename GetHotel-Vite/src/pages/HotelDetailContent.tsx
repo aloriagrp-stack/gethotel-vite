@@ -432,7 +432,20 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
     const arrivalTime = searchParams.get("arrivalTime") || "12:00";
     const searchedGuests = parseInt(adults);
 
-    const calculateStayPrice = (basePrice: any, room: any, activePromos: any[] = []) => {
+    const allAvailableCoupons = useMemo(() => {
+        const fromHotel = (hotel?.coupon || hotel?.coupons || []);
+        const rawList = [...(Array.isArray(fromHotel) ? fromHotel : []), ...(Array.isArray(coupons) ? coupons : [])];
+        const map = new Map();
+        rawList.forEach((c: any) => {
+            if (c && (c.id || c.code)) {
+                map.set(c.id || c.code, c);
+            }
+        });
+        return Array.from(map.values());
+    }, [hotel, coupons]);
+
+    const calculateStayPrice = (basePrice: any, room: any, activePromos: any[] = allAvailableCoupons) => {
+        const promoList = activePromos && activePromos.length > 0 ? activePromos : allAvailableCoupons;
         const priceDiff = room.dynamicPricePerNight ? (room.dynamicPricePerNight - room.pricePerNight) : 0;
         const parsedBase = room?.selectedVariant?.price ? parseFloat(room.selectedVariant.price) : parseFloat(basePrice);
         const actualPrice = parsedBase + priceDiff;
@@ -494,7 +507,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
         const fullyValidPromos: any[] = [];
         let mobileRestrictedPromo: any = null;
 
-        activePromos.forEach(p => {
+        promoList.forEach(p => {
             // Check basic constraints bypassing the mobile check
             const copyPromo = { ...p, promoType: p.promoType === 'mobile_only' ? 'standard' : p.promoType };
             const basicCheck = validateCoupon(copyPromo, stayDetails);
@@ -511,9 +524,9 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
             }
         });
 
-        // 2. Sort fully valid promos to find the best applicable one (fallback to activePromos if dates not set yet)
-        if (fullyValidPromos.length === 0 && activePromos.length > 0) {
-            activePromos.forEach(p => {
+        // 2. Sort fully valid promos to find the best applicable one (fallback to promoList if dates not set yet)
+        if (fullyValidPromos.length === 0 && promoList.length > 0) {
+            promoList.forEach(p => {
                 if (p.isActive !== false && p.is_active !== false) {
                     fullyValidPromos.push(p);
                 }
