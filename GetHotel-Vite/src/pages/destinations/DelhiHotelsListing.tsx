@@ -182,24 +182,26 @@ function DelhiHotelsListingContent() {
     return (
         <div className="min-h-screen pt-2 bg-transparent px-0">
             <SEOHead
-                title="Hotels in Delhi & India — Search, Compare & Book | GetHotelStays"
-                description="Search 10,000+ verified hotels in Delhi & across India. Filter by price, star rating, amenities & location. Budget to luxury. Pay only 12% online, rest at hotel. Free cancellation. Trusted by NRIs worldwide."
+                title="Hotels in Delhi — Book Verified Stays from ₹499 | Pay 12% Online | GetHotelStays"
+                description="Book 2,000+ verified hotels in Delhi with Pay 12% Online model. Budget hotels in Paharganj & Karol Bagh (₹499) to 5-star luxury in Aerocity & CP. Couple-friendly with local ID, hourly day-use & 24/7 NRI support."
                 keywords={[
                     "hotels in delhi", "delhi hotels booking", "cheap hotels in delhi", "budget hotels in delhi",
                     "luxury hotels in delhi", "hotels near delhi airport", "hotels in aerocity delhi",
                     "hotels in connaught place delhi", "hourly hotels in delhi", "couple friendly hotels delhi",
-                    "delhi hotels pay at hotel", "hotels near new delhi railway station", "hotels in karol bagh delhi"
+                    "delhi hotels pay at hotel", "hotels near new delhi railway station", "hotels in karol bagh delhi",
+                    "hotels in south delhi", "delhi hotels for nri", "day use hotels delhi", "3 star hotels in delhi",
+                    "5 star hotels in aerocity delhi", "delhi hotels free cancellation", "pay 12 percent hotel booking"
                 ]}
                 ogUrl={`${SITE.url}/${currentLang}/hotels-in-delhi`}
                 canonicalUrl={`${SITE.url}/${currentLang}/hotels-in-delhi`}
                 schemas={hotelStructuredData}
             />
 
-            {/* Top Search Bar — Identical to GetHotelStays Hotels Page */}
-            <div className="w-full flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-6 px-4 md:px-10">
+            {/* Top Search Bar — Native GetHotelStays Style */}
+            <div className="w-full flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-4 px-4 md:px-10">
                 <div className="shrink-0 sr-only">
                     <h1 className="text-3xl md:text-4xl font-bold text-slate-950 tracking-tight leading-tight">
-                        Hotels in <span className="text-brand-600">Delhi</span>
+                        Hotels in Delhi — Book Verified Stays Online
                     </h1>
                 </div>
 
@@ -219,6 +221,48 @@ function DelhiHotelsListingContent() {
                 </div>
             </div>
 
+            {/* High-Converting USP Badges */}
+            <div className="w-full px-4 md:px-10 mb-5">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-white/70 backdrop-blur-sm border border-slate-200/80 shadow-xs">
+                        <div className="w-8 h-8 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center font-black text-xs shrink-0">
+                            12%
+                        </div>
+                        <div>
+                            <p className="text-xs font-black text-slate-900 leading-tight">Pay 12% Online</p>
+                            <p className="text-[10px] text-slate-500 font-semibold">Rest at check-in</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-white/70 backdrop-blur-sm border border-slate-200/80 shadow-xs">
+                        <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-black text-xs shrink-0">
+                            💑
+                        </div>
+                        <div>
+                            <p className="text-xs font-black text-slate-900 leading-tight">Couple Friendly</p>
+                            <p className="text-[10px] text-slate-500 font-semibold">Local IDs accepted</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-white/70 backdrop-blur-sm border border-slate-200/80 shadow-xs">
+                        <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-black text-xs shrink-0">
+                            ⏱️
+                        </div>
+                        <div>
+                            <p className="text-xs font-black text-slate-900 leading-tight">Hourly Stays</p>
+                            <p className="text-[10px] text-slate-500 font-semibold">3, 6, 12 Hrs slots</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-white/70 backdrop-blur-sm border border-slate-200/80 shadow-xs">
+                        <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-black text-xs shrink-0">
+                            🌍
+                        </div>
+                        <div>
+                            <p className="text-xs font-black text-slate-900 leading-tight">NRI & Global Cards</p>
+                            <p className="text-[10px] text-slate-500 font-semibold">Zero foreign markup</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {/* Delhi Locality Quick Pills */}
             <div className="w-full px-4 md:px-10 mb-6">
                 <div className="flex items-center gap-2 overflow-x-auto pb-2 custom-scrollbar">
@@ -234,7 +278,7 @@ function DelhiHotelsListingContent() {
                                     setSelectedLocality(loc.query);
                                     setSearchQuery("");
                                 }}
-                                className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${
+                                className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border cursor-pointer ${
                                     isActive
                                         ? "bg-slate-950 text-white border-slate-950 shadow-md shadow-slate-950/10"
                                         : "bg-white/80 hover:bg-white text-slate-700 border-slate-200 hover:border-brand-500"
@@ -382,7 +426,7 @@ function DelhiHotelsListingContent() {
                                         setSearchQuery("");
                                         setPage(1);
                                     }}
-                                    className="mt-8 px-10 py-4 bg-brand-600 text-white rounded-full text-sm font-black shadow-xl shadow-brand-600/20 active:scale-95 transition-all"
+                                    className="mt-8 px-10 py-4 bg-brand-600 text-white rounded-full text-sm font-black shadow-xl shadow-brand-600/20 active:scale-95 transition-all cursor-pointer"
                                 >
                                     Reset All Delhi Filters
                                 </button>
@@ -392,14 +436,113 @@ function DelhiHotelsListingContent() {
                 </div>
             </div>
 
+            {/* ═══ High-Converting White-Hat SEO Sections ═══ */}
+
+            {/* Delhi Area Guides */}
+            <div className="max-w-7xl mx-auto px-4 md:px-10 mt-16 pt-10 border-t border-slate-200">
+                <div className="text-center max-w-3xl mx-auto mb-10">
+                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-950 tracking-tight">
+                        Best Areas to Stay in Delhi for Every Traveler
+                    </h2>
+                    <p className="text-xs md:text-sm text-slate-500 font-medium mt-2">
+                        Whether catching a flight at IGI Airport, visiting for business in Connaught Place, or exploring heritage markets, choose the ideal Delhi neighbourhood.
+                    </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="p-6 rounded-3xl bg-white/80 backdrop-blur-md border border-slate-200 shadow-xs hover:border-brand-500/50 transition-all">
+                        <span className="text-2xl mb-3 block">✈️</span>
+                        <h3 className="text-base font-bold text-slate-900 mb-1">Aerocity & Mahipalpur</h3>
+                        <p className="text-xs text-slate-600 leading-relaxed mb-3">
+                            Ideal for flight layovers, transit passengers, and business travelers. 5 minutes from IGI Terminal 3 with free airport shuttles & 24/7 check-in.
+                        </p>
+                        <Link to={`/${currentLang}/hotels/delhi/near-delhi-airport`} className="text-xs font-bold text-brand-600 hover:text-brand-700 inline-flex items-center gap-1">
+                            Explore Airport Hotels →
+                        </Link>
+                    </div>
+
+                    <div className="p-6 rounded-3xl bg-white/80 backdrop-blur-md border border-slate-200 shadow-xs hover:border-brand-500/50 transition-all">
+                        <span className="text-2xl mb-3 block">🏛️</span>
+                        <h3 className="text-base font-bold text-slate-900 mb-1">Connaught Place (CP)</h3>
+                        <p className="text-xs text-slate-600 leading-relaxed mb-3">
+                            Central Delhi's premier commercial hub. Walk to India Gate, Rajiv Chowk Metro, luxury restaurants, and embassies in Chanakyapuri.
+                        </p>
+                        <Link to={`/${currentLang}/hotels/delhi/connaught-place`} className="text-xs font-bold text-brand-600 hover:text-brand-700 inline-flex items-center gap-1">
+                            Explore CP Hotels →
+                        </Link>
+                    </div>
+
+                    <div className="p-6 rounded-3xl bg-white/80 backdrop-blur-md border border-slate-200 shadow-xs hover:border-brand-500/50 transition-all">
+                        <span className="text-2xl mb-3 block">🚆</span>
+                        <h3 className="text-base font-bold text-slate-900 mb-1">Paharganj & Karol Bagh</h3>
+                        <p className="text-xs text-slate-600 leading-relaxed mb-3">
+                            Top value-for-money zones near New Delhi Railway Station (NDLS). Famous for street shopping, budget family suites, and authentic street food.
+                        </p>
+                        <Link to={`/${currentLang}/hotels/delhi/near-new-delhi-railway-station`} className="text-xs font-bold text-brand-600 hover:text-brand-700 inline-flex items-center gap-1">
+                            Explore NDLS Hotels →
+                        </Link>
+                    </div>
+                </div>
+            </div>
+
+            {/* Delhi Hotel Price Guide Table */}
+            <div className="max-w-7xl mx-auto px-4 md:px-10 mt-12">
+                <div className="p-6 md:p-8 rounded-3xl bg-white/90 backdrop-blur-md border border-slate-200 shadow-sm overflow-x-auto">
+                    <h2 className="text-lg md:text-xl font-black text-slate-900 mb-4">
+                        Delhi Hotel Rates & Tariff Guide (2026)
+                    </h2>
+                    <table className="w-full text-left text-xs border-collapse min-w-[550px]">
+                        <thead>
+                            <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase tracking-wider">
+                                <th className="pb-3 font-black">Stay Category</th>
+                                <th className="pb-3 font-black">Price Range / Night</th>
+                                <th className="pb-3 font-black">Top Recommended Areas</th>
+                                <th className="pb-3 font-black">Deposit Required</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 text-slate-700 font-medium">
+                            <tr>
+                                <td className="py-3.5 font-bold text-slate-900">Budget Stays & Dorms</td>
+                                <td className="py-3.5 text-brand-600 font-black">₹499 - ₹1,199</td>
+                                <td className="py-3.5">Paharganj, Mahipalpur, Karol Bagh</td>
+                                <td className="py-3.5 font-bold text-emerald-600">Only 12% Online</td>
+                            </tr>
+                            <tr>
+                                <td className="py-3.5 font-bold text-slate-900">3-Star & Boutique Stays</td>
+                                <td className="py-3.5 text-brand-600 font-black">₹1,299 - ₹2,999</td>
+                                <td className="py-3.5">Karol Bagh, South Delhi, Janpath</td>
+                                <td className="py-3.5 font-bold text-emerald-600">Only 12% Online</td>
+                            </tr>
+                            <tr>
+                                <td className="py-3.5 font-bold text-slate-900">5-Star & Luxury Resorts</td>
+                                <td className="py-3.5 text-brand-600 font-black">₹4,999 - ₹18,000+</td>
+                                <td className="py-3.5">Aerocity, Connaught Place, Chanakyapuri</td>
+                                <td className="py-3.5 font-bold text-emerald-600">Only 12% Online</td>
+                            </tr>
+                            <tr>
+                                <td className="py-3.5 font-bold text-slate-900">Hourly / Day-Use Slots (3-12 Hrs)</td>
+                                <td className="py-3.5 text-brand-600 font-black">₹399 - ₹1,499</td>
+                                <td className="py-3.5">IGI Airport T3, Aerocity, NDLS</td>
+                                <td className="py-3.5 font-bold text-emerald-600">Only 12% Online</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             {/* SEO Content & FAQ Section */}
-            <div className="max-w-7xl mx-auto px-4 md:px-10 mt-20 pt-10 border-t border-slate-200">
-                <h2 className="text-2xl font-extrabold text-slate-900 mb-6">
-                    Frequently Asked Questions About Delhi Hotels
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {DELHI_FAQS.slice(0, 8).map((faq, idx) => (
-                        <div key={idx} className="bg-white/80 backdrop-blur-sm border border-slate-200/80 rounded-2xl p-5 shadow-sm">
+            <div className="max-w-7xl mx-auto px-4 md:px-10 mt-14 mb-16 pt-10 border-t border-slate-200">
+                <div className="text-center max-w-2xl mx-auto mb-8">
+                    <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+                        Frequently Asked Questions About Hotels in Delhi
+                    </h2>
+                    <p className="text-xs text-slate-500 font-medium mt-1">
+                        Everything you need to know about booking, deposits, check-in rules & transit stays in Delhi.
+                    </p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    {DELHI_FAQS.slice(0, 10).map((faq, idx) => (
+                        <div key={idx} className="bg-white/80 backdrop-blur-sm border border-slate-200/80 rounded-2xl p-5 shadow-xs">
                             <h3 className="font-bold text-slate-900 text-sm mb-2">
                                 {faq.question}
                             </h3>
