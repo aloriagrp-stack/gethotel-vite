@@ -1540,7 +1540,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                                                                             {(() => {
                                                                                 const rates = typeof room.hourlyRates === 'string' ? safeParse(room.hourlyRates, {}) : (room.hourlyRates || safeParse(room.hourly_rates, {}));
                                                                                 const bPrice = stayType === 'hourly' ? (rates[duration] || rates[String(duration)] || room.pricePerNight / 2) : variant.price;
-                                                                                const sInfo = calculateStayPrice(bPrice, room, coupons);
+                                                                                const sInfo = calculateStayPrice(bPrice, room, allAvailableCoupons);
                                                                                 
                                                                                 return (
                                                                                     <>
