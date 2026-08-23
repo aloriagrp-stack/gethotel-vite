@@ -47,6 +47,7 @@ const KarolBaghDelhiHotels = lazy(() => import("./pages/destinations/DelhiSubLan
 const SouthDelhiHotels = lazy(() => import("./pages/destinations/DelhiSubLandings").then(m => ({ default: m.SouthDelhiHotels })));
 const CityPage = lazy(() => import("./pages/destinations/CityPage"));
 const DelhiLandingPage = lazy(() => import("./pages/delhi/DelhiLandingPage"));
+const DelhiHotelsListing = lazy(() => import("./pages/destinations/DelhiHotelsListing"));
 
 const BookingInvoice = lazy(() => import("./pages/BookingInvoice"));
 const WriteReview = lazy(() => import("./pages/WriteReview"));
@@ -186,9 +187,12 @@ export default function App() {
                         <Route path="manali-hotels" element={<ManaliHotels />} />
                         <Route path="shimla-hotels" element={<ShimlaHotels />} />
                         <Route path="udaipur-hotels" element={<UdaipurHotels />} />
-                        <Route path="hotels/delhi" element={<DelhiLandingPage />} />
+                        <Route path="hotels-in-delhi" element={<DelhiHotelsListing />} />
+                        <Route path="hotels-in-delhi.html" element={<DelhiHotelsListing />} />
+                        <Route path="hotels%20in%20delhi.html" element={<DelhiHotelsListing />} />
+                        <Route path="delhi-hotels" element={<DelhiHotelsListing />} />
+                        <Route path="hotels/delhi" element={<DelhiHotelsListing />} />
                         <Route path="hotels/delhi/:slug" element={<DelhiLandingPage />} />
-                        <Route path="delhi-hotels" element={<DelhiLegacyRedirect to="" />} />
                         <Route path="couple-friendly-hotels-in-delhi" element={<CoupleFriendlyDelhiHotels />} />
                         <Route path="hourly-hotels-in-delhi" element={<HourlyDelhiHotels />} />
                         <Route path="hotels-near-delhi-airport" element={<DelhiLegacyRedirect to="near-delhi-airport" />} />

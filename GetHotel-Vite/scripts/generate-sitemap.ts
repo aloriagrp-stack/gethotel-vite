@@ -8,6 +8,8 @@ const SITE_URL = "https://gethotelstays.com";
 const staticPages = [
     { url: "/", priority: "1.0", changefreq: "daily" },
     { url: "/en", priority: "1.0", changefreq: "daily" },
+    { url: "/en/hotels-in-delhi", priority: "1.0", changefreq: "daily" },
+    { url: "/hotels-in-delhi.html", priority: "1.0", changefreq: "daily" },
     { url: "/en/hotels", priority: "0.95", changefreq: "daily" },
     { url: "/en/packages", priority: "0.95", changefreq: "daily" },
     { url: "/en/flights", priority: "0.90", changefreq: "daily" },
