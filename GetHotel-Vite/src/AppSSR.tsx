@@ -15,6 +15,7 @@ import Loader from "./components/common/Loader";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Hotels from "./pages/Hotels";
+import Flights from "./pages/Flights";
 import HotelDetails from "./pages/HotelDetails";
 import Profile from "./pages/Profile";
 import Wishlist from "./pages/Wishlist";
@@ -31,6 +32,7 @@ import ManaliHotels from "./pages/destinations/ManaliHotels";
 import ShimlaHotels from "./pages/destinations/ShimlaHotels";
 import UdaipurHotels from "./pages/destinations/UdaipurHotels";
 import DelhiHotels from "./pages/destinations/DelhiHotels";
+import DelhiHotelsListing from "./pages/destinations/DelhiHotelsListing";
 import { CoupleFriendlyDelhiHotels, HourlyDelhiHotels } from "./pages/destinations/DelhiSubLandings";
 import CityPage from "./pages/destinations/CityPage";
 import DelhiLandingPage from "./pages/delhi/DelhiLandingPage";
@@ -60,6 +62,8 @@ import PartnerLayout from "./components/layout/PartnerLayout";
 import SuperAdminDashboard from "./pages/admin/AdminDashboard";
 import AdminHotelDetails from "./pages/admin/AdminHotelDetails";
 import AdminDelhiSeo from "./pages/admin/AdminDelhiSeo";
+import AdminTourPackages from "./pages/admin/AdminTourPackages";
+import { AdminHotelImporter } from "./pages/admin/AdminHotelImporter";
 
 import PartnerDashboard from "./pages/partner-dashboard/Dashboard";
 import PartnerBookings from "./pages/partner-dashboard/Bookings";
@@ -118,6 +122,7 @@ export default function AppSSR() {
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Login />} />
                     <Route path="/hotels" element={<Hotels />} />
+                    <Route path="/flights" element={<Flights />} />
                     <Route path="/packages" element={<TourPackages />} />
                     <Route path="/packages/:id" element={<TourPackageDetails />} />
                     <Route path="/tour-packages" element={<TourPackages />} />
@@ -144,7 +149,12 @@ export default function AppSSR() {
                     <Route path="/manali-hotels" element={<ManaliHotels />} />
                     <Route path="/shimla-hotels" element={<ShimlaHotels />} />
                     <Route path="/udaipur-hotels" element={<UdaipurHotels />} />
-                    <Route path="/delhi-hotels" element={<DelhiLandingPage slugOverride="" />} />
+                    <Route path="/hotels-in-delhi" element={<DelhiHotelsListing />} />
+                    <Route path="/hotels-in-delhi.html" element={<DelhiHotelsListing />} />
+                    <Route path="/hotels%20in%20delhi.html" element={<DelhiHotelsListing />} />
+                    <Route path="/delhi-hotels" element={<DelhiHotelsListing />} />
+                    <Route path="/hotels/delhi" element={<DelhiHotelsListing />} />
+                    <Route path="/hotels/delhi/:slug" element={<DelhiLandingPage />} />
                     <Route path="/couple-friendly-hotels-in-delhi" element={<CoupleFriendlyDelhiHotels />} />
                     <Route path="/hourly-hotels-in-delhi" element={<HourlyDelhiHotels />} />
                     <Route path="/hotels-near-delhi-airport" element={<DelhiLandingPage slugOverride="near-delhi-airport" />} />
@@ -152,8 +162,6 @@ export default function AppSSR() {
                     <Route path="/hotels-in-connaught-place-delhi" element={<DelhiLandingPage slugOverride="connaught-place" />} />
                     <Route path="/hotels-in-karol-bagh-delhi" element={<DelhiLandingPage slugOverride="karol-bagh" />} />
                     <Route path="/hotels-in-south-delhi" element={<DelhiLandingPage slugOverride="south-delhi" />} />
-                    <Route path="/hotels/delhi" element={<DelhiLandingPage />} />
-                    <Route path="/hotels/delhi/:slug" element={<DelhiLandingPage />} />
                     <Route path="/hotels-in/delhi" element={<DelhiLandingPage slugOverride="" />} />
                     <Route path="/hotels-in/delhi/:filterSlug" element={<DelhiFilterAlias />} />
                     <Route path="/hotels-in/:citySlug" element={<CityPage />} />
@@ -185,7 +193,9 @@ export default function AppSSR() {
                     </Route>
                     <Route path="/admin/super" element={<AdminLayout />}>
                       <Route index element={<SuperAdminDashboard />} />
-                      <Route path="tour-packages" element={<SuperAdminDashboard />} />
+                      <Route path="tour-packages" element={<AdminTourPackages />} />
+                      <Route path="hotel-importer" element={<AdminHotelImporter />} />
+                      <Route path="packages" element={<AdminTourPackages />} />
                       <Route path="requests" element={<SuperAdminDashboard />} />
                       <Route path="controlhub" element={<SuperAdminDashboard />} />
                       <Route path="ai-chats" element={<SuperAdminDashboard />} />
