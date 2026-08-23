@@ -3,11 +3,12 @@ import DestinationLanding from "./DestinationLanding";
 import { getCityBySlug, getCitySEO, CITIES } from "@/lib/cityData";
 
 export default function CityPage() {
-    const { citySlug, filterSlug } = useParams<{ citySlug: string; filterSlug?: string }>();
+    const { citySlug, filterSlug, lang } = useParams<{ citySlug: string; filterSlug?: string; lang?: string }>();
+    const currentLang = lang || "en";
     const cityData = getCityBySlug(citySlug || "");
 
     if (!cityData) {
-        return <Navigate to="/hotels" replace />;
+        return <Navigate to={`/${currentLang}/hotels`} replace />;
     }
 
     const seoData = getCitySEO(cityData, filterSlug);
@@ -26,15 +27,15 @@ export default function CityPage() {
             urlPrefix="/hotels-in/"
             filterSlug={filterSlug}
             internalLinks={[
-                { label: "Delhi Hotels", url: "/delhi-hotels" },
-                { label: "Goa Hotels", url: "/goa-hotels" },
-                { label: "Jaipur Hotels", url: "/jaipur-hotels" },
-                { label: "Manali Hotels", url: "/manali-hotels" },
-                { label: "Shimla Hotels", url: "/shimla-hotels" },
-                { label: "Udaipur Hotels", url: "/udaipur-hotels" },
+                { label: "Delhi Hotels", url: `/${currentLang}/hotels-in-delhi` },
+                { label: "Goa Hotels", url: `/${currentLang}/goa-hotels` },
+                { label: "Jaipur Hotels", url: `/${currentLang}/jaipur-hotels` },
+                { label: "Manali Hotels", url: `/${currentLang}/manali-hotels` },
+                { label: "Shimla Hotels", url: `/${currentLang}/shimla-hotels` },
+                { label: "Udaipur Hotels", url: `/${currentLang}/udaipur-hotels` },
                 ...CITIES.filter(c => c.slug !== cityData.slug).slice(0, 6).map(c => ({
                     label: `${c.city} Hotels`,
-                    url: `/hotels-in/${c.slug}`,
+                    url: `/${currentLang}/hotels-in/${c.slug}`,
                 })),
             ]}
         />

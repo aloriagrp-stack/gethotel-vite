@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { MapPin, ArrowRight, HelpCircle, AlertCircle } from "lucide-react";
 import { hotelApi } from "@/lib/api";
 import { Hotel as HotelType } from "@/types";
@@ -52,6 +52,8 @@ export default function DestinationLanding({
     urlPrefix = "/",
     filterSlug,
 }: DestinationLandingProps) {
+    const { lang } = useParams();
+    const currentLang = lang || "en";
     const [hotels, setHotels] = useState<HotelType[]>([]);
     const [loading, setLoading] = useState(true);
     const [isExpanded, setIsExpanded] = useState(false);
@@ -93,13 +95,16 @@ export default function DestinationLanding({
 
     // Build smart breadcrumbs: sub-pages get an extra level
     const isSubPage = filterSlug || (urlSlug && urlSlug !== city.toLowerCase() + "-hotels");
+    const rawPath = `${urlPrefix === "/" ? "/" : urlPrefix}${urlSlug || city.toLowerCase() + "-hotels"}`.replace(/^\/+/, "");
+    const pagePath = `/${currentLang}/${rawPath}`;
+
     const breadcrumbs = [
-        { name: "Home", url: "/" },
-        { name: "Hotels", url: "/hotels" },
-        { name: `${city} Hotels`, url: isSubPage ? `/${city.toLowerCase()}-hotels` : `${urlPrefix}${urlSlug || city.toLowerCase() + "-hotels"}` },
+        { name: "Home", url: `/${currentLang}` },
+        { name: "Hotels", url: `/${currentLang}/hotels` },
+        { name: `${city} Hotels`, url: isSubPage ? `/${currentLang}/${city.toLowerCase()}-hotels` : pagePath },
     ];
     if (isSubPage && h1) {
-        breadcrumbs.push({ name: h1.split("—")[0].trim(), url: `${urlPrefix}${urlSlug || city.toLowerCase() + "-hotels"}` });
+        breadcrumbs.push({ name: h1.split("—")[0].trim(), url: pagePath });
     }
 
     // Build schemas array
@@ -127,8 +132,8 @@ export default function DestinationLanding({
                 title={title}
                 description={description}
                 keywords={keywords}
-                ogUrl={`${SITE.url}${urlPrefix}${urlSlug || city.toLowerCase() + "-hotels"}`}
-                canonicalUrl={`${SITE.url}${urlPrefix}${urlSlug || city.toLowerCase() + "-hotels"}`}
+                ogUrl={`${SITE.url}${pagePath}`}
+                canonicalUrl={`${SITE.url}${pagePath}`}
                 schemas={schemas}
             />
 
@@ -181,7 +186,7 @@ export default function DestinationLanding({
                                 We are currently onboarding verified hotel partners in {city}. Check back soon or search other top tourist locations in India!
                             </p>
                             <Link 
-                                to="/hotels"
+                                to={`/${currentLang}/hotels`}
                                 className="mt-6 px-8 py-3 bg-brand-600 hover:bg-brand-500 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-md active:scale-95"
                             >
                                 Browse All India Hotels
@@ -234,7 +239,7 @@ export default function DestinationLanding({
                     </p>
                     <div className="flex flex-wrap gap-3 pt-2">
                         <Link
-                            to={`/hotels-in/${urlSlug || city.toLowerCase()}`}
+                            to={`/${currentLang}/hotels-in/${urlSlug || city.toLowerCase()}`}
                             className={`px-4 py-2 border rounded-xl text-xs font-bold transition-all duration-300 ${
                                 !filterSlug
                                     ? "bg-brand-600 border-brand-600 text-white shadow-md shadow-brand-100"
@@ -244,7 +249,7 @@ export default function DestinationLanding({
                             All Stays in {city}
                         </Link>
                         <Link
-                            to={`/hotels-in/${urlSlug || city.toLowerCase()}/couple-friendly`}
+                            to={`/${currentLang}/hotels-in/${urlSlug || city.toLowerCase()}/couple-friendly`}
                             className={`px-4 py-2 border rounded-xl text-xs font-bold transition-all duration-300 ${
                                 filterSlug === "couple-friendly"
                                     ? "bg-brand-600 border-brand-600 text-white shadow-md shadow-brand-100"
@@ -254,7 +259,7 @@ export default function DestinationLanding({
                             Couple Friendly Hotels in {city}
                         </Link>
                         <Link
-                            to={`/hotels-in/${urlSlug || city.toLowerCase()}/hourly`}
+                            to={`/${currentLang}/hotels-in/${urlSlug || city.toLowerCase()}/hourly`}
                             className={`px-4 py-2 border rounded-xl text-xs font-bold transition-all duration-300 ${
                                 filterSlug === "hourly"
                                     ? "bg-brand-600 border-brand-600 text-white shadow-md shadow-brand-100"
@@ -264,7 +269,7 @@ export default function DestinationLanding({
                             Hourly & Day-Use Hotels in {city}
                         </Link>
                         <Link
-                            to={`/hotels-in/${urlSlug || city.toLowerCase()}/budget`}
+                            to={`/${currentLang}/hotels-in/${urlSlug || city.toLowerCase()}/budget`}
                             className={`px-4 py-2 border rounded-xl text-xs font-bold transition-all duration-300 ${
                                 filterSlug === "budget"
                                     ? "bg-brand-600 border-brand-600 text-white shadow-md shadow-brand-100"
@@ -274,7 +279,7 @@ export default function DestinationLanding({
                             Budget-Friendly Hotels in {city}
                         </Link>
                         <Link
-                            to={`/hotels-in/${urlSlug || city.toLowerCase()}/luxury`}
+                            to={`/${currentLang}/hotels-in/${urlSlug || city.toLowerCase()}/luxury`}
                             className={`px-4 py-2 border rounded-xl text-xs font-bold transition-all duration-300 ${
                                 filterSlug === "luxury"
                                     ? "bg-brand-600 border-brand-600 text-white shadow-md shadow-brand-100"

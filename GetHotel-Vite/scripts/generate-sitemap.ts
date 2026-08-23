@@ -12,12 +12,9 @@ interface PageEntry {
 }
 
 const staticPages: PageEntry[] = [
-    { url: "/", priority: "1.0", changefreq: "daily" },
     { url: "/en", priority: "1.0", changefreq: "daily" },
-    { url: "/en/hotels-in-delhi", priority: "1.0", changefreq: "daily" },
-    { url: "/hotels-in-delhi", priority: "1.0", changefreq: "daily" },
-    { url: "/hotels-in-delhi.html", priority: "1.0", changefreq: "daily" },
     { url: "/en/hotels", priority: "0.95", changefreq: "daily" },
+    { url: "/en/hotels-in-delhi", priority: "1.0", changefreq: "daily" },
     { url: "/en/packages", priority: "0.95", changefreq: "daily" },
     { url: "/en/flights", priority: "0.90", changefreq: "daily" },
     { url: "/en/partner", priority: "0.70", changefreq: "weekly" },
@@ -34,14 +31,8 @@ const filters = ["couple-friendly", "hourly", "budget", "luxury"];
 
 const destinationPages: PageEntry[] = [
     { url: "/en/delhi-hotels", priority: "0.95", changefreq: "daily" },
-    { url: "/en/hotels-in-delhi", priority: "1.0", changefreq: "daily" },
     { url: "/en/couple-friendly-hotels-in-delhi", priority: "0.90", changefreq: "daily" },
     { url: "/en/hourly-hotels-in-delhi", priority: "0.90", changefreq: "daily" },
-    { url: "/en/hotels-near-delhi-airport", priority: "0.90", changefreq: "daily" },
-    { url: "/en/hotels-near-new-delhi-railway-station", priority: "0.90", changefreq: "daily" },
-    { url: "/en/hotels-in-connaught-place-delhi", priority: "0.90", changefreq: "daily" },
-    { url: "/en/hotels-in-karol-bagh-delhi", priority: "0.90", changefreq: "daily" },
-    { url: "/en/hotels-in-south-delhi", priority: "0.90", changefreq: "daily" },
     { url: "/en/goa-hotels", priority: "0.85", changefreq: "weekly" },
     { url: "/en/jaipur-hotels", priority: "0.85", changefreq: "weekly" },
     { url: "/en/manali-hotels", priority: "0.85", changefreq: "weekly" },

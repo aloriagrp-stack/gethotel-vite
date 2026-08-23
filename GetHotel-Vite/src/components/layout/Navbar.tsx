@@ -178,7 +178,7 @@ export default function Navbar() {
                     </button>
 
                     <Link
-                        to="/wishlist"
+                        to={`/${langCode}/wishlist`}
                         className="relative w-10 h-10 flex items-center justify-center rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"
                     >
                         <Heart className="w-5 h-5" />
@@ -193,7 +193,7 @@ export default function Navbar() {
 
                     {!user && (
                         <Link
-                            to="/list-property"
+                            to={`/${langCode}/list-property`}
                             className="hidden lg:flex items-center gap-2 px-6 py-2.5 bg-sky-100 text-sky-700 border border-sky-200 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-sky-200 transition-all hover:scale-105"
                         >
                             <Hotel className="w-3.5 h-3.5" />
@@ -207,7 +207,7 @@ export default function Navbar() {
                                 if (user) {
                                     setDropdownOpen(!dropdownOpen);
                                 } else {
-                                    window.location.href = "/login";
+                                    navigate(`/${langCode}/login`);
                                 }
                             }}
                             className="flex items-center gap-2 pl-2 pr-4 py-1.5 bg-slate-950 text-white rounded-full hover:bg-slate-900 transition-all"
@@ -233,11 +233,11 @@ export default function Navbar() {
                                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                                     className="absolute right-0 mt-3 w-60 bg-white rounded-[24px] shadow-2xl border border-slate-100 overflow-hidden py-2"
                                 >
-                                    <Link to="/profile" onClick={() => setDropdownOpen(false)} className="flex items-center gap-3 px-5 py-3.5 text-slate-700 hover:bg-slate-50 transition-all border-b border-slate-50">
+                                    <Link to={`/${langCode}/profile`} onClick={() => setDropdownOpen(false)} className="flex items-center gap-3 px-5 py-3.5 text-slate-700 hover:bg-slate-50 transition-all border-b border-slate-50">
                                         <UserRound className="w-5 h-5 text-slate-400" />
                                         <span className="text-sm font-bold">My Profile</span>
                                     </Link>
-                                    <Link to="/list-property" onClick={() => setDropdownOpen(false)} className="flex items-center gap-3 px-5 py-3.5 text-slate-700 hover:bg-slate-50 transition-all border-b border-slate-50">
+                                    <Link to={`/${langCode}/list-property`} onClick={() => setDropdownOpen(false)} className="flex items-center gap-3 px-5 py-3.5 text-slate-700 hover:bg-slate-50 transition-all border-b border-slate-50">
                                         <Hotel className="w-5 h-5 text-sky-600" />
                                         <span className="text-sm font-bold">List Your Property</span>
                                     </Link>
@@ -258,7 +258,7 @@ export default function Navbar() {
                             if (user) {
                                 setProfileMobileOpen(true);
                             } else {
-                                window.location.href = "/login";
+                                navigate(`/${langCode}/login`);
                             }
                         }}
                         className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-900 border border-slate-200"
@@ -330,14 +330,14 @@ export default function Navbar() {
                                 {user ? (
                                     <div className="space-y-6 pt-2">
                                         <nav className="space-y-1">
-                                            <Link to="/" onClick={() => setMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
+                                            <Link to={`/${langCode}`} onClick={() => setMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
                                                 <MapPin className="w-5 h-5 text-brand-600" /> Home
                                             </Link>
 
-                                            <Link to="/hotels" onClick={() => setMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
+                                            <Link to={`/${langCode}/hotels`} onClick={() => setMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
                                                 <Hotel className="w-5 h-5 text-brand-600" /> Hotels
                                             </Link>
-                                            <Link to="/list-property" onClick={() => setMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
+                                            <Link to={`/${langCode}/list-property`} onClick={() => setMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
                                                 <Hotel className="w-5 h-5 text-sky-600" /> List Your Property
                                             </Link>
                                         </nav>
@@ -345,10 +345,10 @@ export default function Navbar() {
                                 ) : (
                                     <div className="space-y-6">
                                         <nav className="space-y-1">
-                                            <Link to="/" onClick={() => setMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold">
+                                            <Link to={`/${langCode}`} onClick={() => setMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold">
                                                 <MapPin className="w-5 h-5 text-brand-600" /> Home
                                             </Link>
-                                            <Link to="/hotels" onClick={() => setMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold">
+                                            <Link to={`/${langCode}/hotels`} onClick={() => setMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold">
                                                 <Hotel className="w-5 h-5 text-brand-600" /> Hotels
                                             </Link>
                                             <button
@@ -362,9 +362,9 @@ export default function Navbar() {
                                             </button>
                                         </nav>
                                         <div className="px-4 space-y-3 pt-6">
-                                            <Link to="/login" onClick={() => setMobileOpen(false)} className="w-full flex items-center justify-center py-5 bg-slate-950 text-white rounded-[24px] text-[10px] font-black uppercase tracking-widest">Sign In</Link>
-                                            <Link to="/login?mode=signup" onClick={() => setMobileOpen(false)} className="w-full flex items-center justify-center py-5 bg-white text-slate-950 border-2 border-slate-950 rounded-[24px] text-[10px] font-black uppercase tracking-widest">Create Account</Link>
-                                            <Link to="/list-property" onClick={() => setMobileOpen(false)} className="w-full flex items-center justify-center py-5 bg-sky-50 text-sky-700 border border-sky-100 rounded-[24px] text-[10px] font-black uppercase tracking-widest mt-4">List Your Property</Link>
+                                            <Link to={`/${langCode}/login`} onClick={() => setMobileOpen(false)} className="w-full flex items-center justify-center py-5 bg-slate-950 text-white rounded-[24px] text-[10px] font-black uppercase tracking-widest">Sign In</Link>
+                                            <Link to={`/${langCode}/login?mode=signup`} onClick={() => setMobileOpen(false)} className="w-full flex items-center justify-center py-5 bg-white text-slate-950 border-2 border-slate-950 rounded-[24px] text-[10px] font-black uppercase tracking-widest">Create Account</Link>
+                                            <Link to={`/${langCode}/list-property`} onClick={() => setMobileOpen(false)} className="w-full flex items-center justify-center py-5 bg-sky-50 text-sky-700 border border-sky-100 rounded-[24px] text-[10px] font-black uppercase tracking-widest mt-4">List Your Property</Link>
                                         </div>
                                     </div>
                                 )}
@@ -402,25 +402,25 @@ export default function Navbar() {
                             <div className="flex-1 overflow-y-auto">
                                 <div className="space-y-6 pt-2">
                                     <nav className="space-y-1">
-                                        <Link to="/profile" onClick={() => setProfileMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
+                                        <Link to={`/${langCode}/profile`} onClick={() => setProfileMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
                                             <UserRound className="w-5 h-5 text-slate-400" /> My Account
                                         </Link>
-                                        <Link to="/my-bookings" onClick={() => setProfileMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
+                                        <Link to={`/${langCode}/my-bookings`} onClick={() => setProfileMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
                                             <ClipboardList className="w-5 h-5 text-brand-600" /> My Bookings
                                         </Link>
                                         
                                         <div className="h-px bg-slate-100 my-4" />
                                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-4 block mb-2">Support & Legal</span>
-                                        <Link to="/privacy" onClick={() => setProfileMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
+                                        <Link to={`/${langCode}/privacy`} onClick={() => setProfileMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
                                             <Shield className="w-5 h-5 text-slate-400" /> Privacy Policy
                                         </Link>
-                                        <Link to="/terms-&-conditions" onClick={() => setProfileMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
+                                        <Link to={`/${langCode}/terms-&-conditions`} onClick={() => setProfileMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
                                             <FileText className="w-5 h-5 text-slate-400" /> Terms & Conditions
                                         </Link>
-                                        <Link to="/cancellation-policy" onClick={() => setProfileMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
+                                        <Link to={`/${langCode}/cancellation-policy`} onClick={() => setProfileMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
                                             <AlertCircle className="w-5 h-5 text-slate-400" /> Refund & Cancellation
                                         </Link>
-                                        <Link to="/contact" onClick={() => setProfileMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
+                                        <Link to={`/${langCode}/contact`} onClick={() => setProfileMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
                                             <Mail className="w-5 h-5 text-slate-400" /> Contact Us
                                         </Link>
 

@@ -2,6 +2,7 @@
 
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import { useLocale } from "@/context/LocaleContext";
 import {
     MapPin,
     Mail,
@@ -15,29 +16,6 @@ import {
     CheckCircle,
 } from "lucide-react";
 
-const footerLinks = {
-    Destinations: [
-        { label: "Goa Hotels", href: "/goa-hotels" },
-        { label: "Mumbai Hotels", href: "/hotels?city=Mumbai" },
-        { label: "Jaipur Hotels", href: "/jaipur-hotels" },
-        { label: "Shimla Hotels", href: "/shimla-hotels" },
-        { label: "Manali Hotels", href: "/manali-hotels" },
-        { label: "Udaipur Hotels", href: "/udaipur-hotels" },
-    ],
-    Support: [
-        { label: "Privacy Policy", href: "/privacy" },
-        { label: "Terms & Conditions", href: "/terms-&-conditions" },
-        { label: "Refund & Cancellation", href: "/cancellation-policy" },
-        { label: "Pricing Policy", href: "/pricing-policy" },
-        { label: "Contact Us", href: "/contact" },
-    ],
-    Partners: [
-        { label: "List Your Property", href: "/list-property" },
-        { label: "Partner Central", href: "/partner" },
-        { label: "Partner Login", href: "/login" },
-    ],
-};
-
 const socials = [
     { icon: Twitter, href: "#", label: "Twitter", color: "hover:bg-sky-500/20 hover:border-sky-500/50 hover:text-sky-400" },
     { icon: Instagram, href: "#", label: "Instagram", color: "hover:bg-pink-500/20 hover:border-pink-500/50 hover:text-pink-400" },
@@ -46,8 +24,34 @@ const socials = [
 ];
 
 export default function Footer() {
+    const { langCode } = useLocale();
+    const currentLang = langCode || "en";
     const [email, setEmail] = useState("");
     const [subscribed, setSubscribed] = useState(false);
+
+    const footerLinks = {
+        Destinations: [
+            { label: "Delhi Hotels", href: `/${currentLang}/hotels-in-delhi` },
+            { label: "Goa Hotels", href: `/${currentLang}/goa-hotels` },
+            { label: "Mumbai Hotels", href: `/${currentLang}/hotels?city=Mumbai` },
+            { label: "Jaipur Hotels", href: `/${currentLang}/jaipur-hotels` },
+            { label: "Shimla Hotels", href: `/${currentLang}/shimla-hotels` },
+            { label: "Manali Hotels", href: `/${currentLang}/manali-hotels` },
+            { label: "Udaipur Hotels", href: `/${currentLang}/udaipur-hotels` },
+        ],
+        Support: [
+            { label: "Privacy Policy", href: `/${currentLang}/privacy` },
+            { label: "Terms & Conditions", href: `/${currentLang}/terms-&-conditions` },
+            { label: "Refund & Cancellation", href: `/${currentLang}/cancellation-policy` },
+            { label: "Pricing Policy", href: `/${currentLang}/pricing-policy` },
+            { label: "Contact Us", href: `/${currentLang}/contact` },
+        ],
+        Partners: [
+            { label: "List Your Property", href: `/${currentLang}/list-property` },
+            { label: "Partner Central", href: `/${currentLang}/partner` },
+            { label: "Partner Login", href: `/${currentLang}/login` },
+        ],
+    };
 
     const handleSubscribe = (e: React.FormEvent) => {
         e.preventDefault();
@@ -70,15 +74,12 @@ export default function Footer() {
                 style={{ background: "radial-gradient(circle, #0369c5, transparent)" }}
             />
 
-            {/* Stats section removed */}
-
-
             {/* ── Main Footer Grid ── */}
             <div className="w-full max-w-none mx-auto px-4 sm:px-6 lg:px-8 py-14">
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-12">
                     {/* Brand Column */}
                     <div className="col-span-2">
-                        <Link to="/" className="flex items-center gap-3 mb-6 group w-fit">
+                        <Link to={`/${currentLang}`} className="flex items-center gap-3 mb-6 group w-fit">
                             <span className="text-2xl font-black text-black tracking-tighter">
                                 GetHotelStays
                             </span>
@@ -148,11 +149,11 @@ export default function Footer() {
                         </div>
                         <div className="h-4 w-px bg-black/5 hidden sm:block" />
                         <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 uppercase tracking-widest">
-                            <Link to="/privacy" className="hover:text-black transition-colors">Privacy Policy</Link>
-                            <Link to="/terms-&-conditions" className="hover:text-black transition-colors">Terms & Conditions</Link>
-                            <Link to="/cancellation-policy" className="hover:text-black transition-colors">Refund & Cancellation</Link>
-                            <Link to="/pricing-policy" className="hover:text-black transition-colors">Pricing Policy</Link>
-                            <Link to="/cookies" className="hover:text-black transition-colors">Cookie Policy</Link>
+                            <Link to={`/${currentLang}/privacy`} className="hover:text-black transition-colors">Privacy Policy</Link>
+                            <Link to={`/${currentLang}/terms-&-conditions`} className="hover:text-black transition-colors">Terms & Conditions</Link>
+                            <Link to={`/${currentLang}/cancellation-policy`} className="hover:text-black transition-colors">Refund & Cancellation</Link>
+                            <Link to={`/${currentLang}/pricing-policy`} className="hover:text-black transition-colors">Pricing Policy</Link>
+                            <Link to={`/${currentLang}/cookies`} className="hover:text-black transition-colors">Cookie Policy</Link>
                         </div>
                     </div>
                 </div>

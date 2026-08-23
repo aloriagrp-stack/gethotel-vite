@@ -47,10 +47,10 @@ export function CoupleFriendlyDelhiHotels() {
                 }
             ]}
             internalLinks={[
-                { label: "Delhi Hotels Hub", url: "/delhi-hotels" },
+                { label: "Delhi Hotels Hub", url: "/hotels-in-delhi" },
                 { label: "Hourly Hotels in Delhi", url: "/hourly-hotels-in-delhi" },
-                { label: "Hotels Near Delhi Airport", url: "/hotels-near-delhi-airport" },
-                { label: "Hotels Near New Delhi Railway Station", url: "/hotels-near-new-delhi-railway-station" },
+                { label: "Hotels Near Delhi Airport", url: "/hotels/delhi/near-delhi-airport" },
+                { label: "Hotels Near New Delhi Railway Station", url: "/hotels/delhi/near-new-delhi-railway-station" },
             ]}
         />
     );
@@ -98,9 +98,9 @@ export function HourlyDelhiHotels() {
                 }
             ]}
             internalLinks={[
-                { label: "Delhi Hotels Hub", url: "/delhi-hotels" },
+                { label: "Delhi Hotels Hub", url: "/hotels-in-delhi" },
                 { label: "Couple Friendly Hotels in Delhi", url: "/couple-friendly-hotels-in-delhi" },
-                { label: "Hotels Near Delhi Airport", url: "/hotels-near-delhi-airport" },
+                { label: "Hotels Near Delhi Airport", url: "/hotels/delhi/near-delhi-airport" },
             ]}
         />
     );
@@ -139,7 +139,7 @@ export function AirportDelhiHotels() {
                 }
             ]}
             internalLinks={[
-                { label: "Delhi Hotels Hub", url: "/delhi-hotels" },
+                { label: "Delhi Hotels Hub", url: "/hotels-in-delhi" },
                 { label: "Hourly Hotels in Delhi", url: "/hourly-hotels-in-delhi" },
             ]}
         />
@@ -177,8 +177,8 @@ export function RailwayStationDelhiHotels() {
                 }
             ]}
             internalLinks={[
-                { label: "Delhi Hotels Hub", url: "/delhi-hotels" },
-                { label: "Hotels Near Delhi Airport", url: "/hotels-near-delhi-airport" },
+                { label: "Delhi Hotels Hub", url: "/hotels-in-delhi" },
+                { label: "Hotels Near Delhi Airport", url: "/hotels/delhi/near-delhi-airport" },
             ]}
         />
     );
@@ -226,10 +226,10 @@ export function ConnaughtPlaceDelhiHotels() {
                 }
             ]}
             internalLinks={[
-                { label: "Delhi Hotels Hub", url: "/delhi-hotels" },
-                { label: "Hotels in Karol Bagh Delhi", url: "/hotels-in-karol-bagh-delhi" },
-                { label: "Hotels in South Delhi", url: "/hotels-in-south-delhi" },
-                { label: "Hotels Near Delhi Airport", url: "/hotels-near-delhi-airport" },
+                { label: "Delhi Hotels Hub", url: "/hotels-in-delhi" },
+                { label: "Hotels in Karol Bagh Delhi", url: "/hotels/delhi/karol-bagh" },
+                { label: "Hotels in South Delhi", url: "/hotels/delhi/south-delhi" },
+                { label: "Hotels Near Delhi Airport", url: "/hotels/delhi/near-delhi-airport" },
             ]}
         />
     );
@@ -275,9 +275,9 @@ export function KarolBaghDelhiHotels() {
                 }
             ]}
             internalLinks={[
-                { label: "Delhi Hotels Hub", url: "/delhi-hotels" },
-                { label: "Hotels in Connaught Place Delhi", url: "/hotels-in-connaught-place-delhi" },
-                { label: "Hotels Near New Delhi Railway Station", url: "/hotels-near-new-delhi-railway-station" },
+                { label: "Delhi Hotels Hub", url: "/hotels-in-delhi" },
+                { label: "Hotels in Connaught Place Delhi", url: "/hotels/delhi/connaught-place" },
+                { label: "Hotels Near New Delhi Railway Station", url: "/hotels/delhi/near-new-delhi-railway-station" },
             ]}
         />
     );
@@ -326,10 +326,10 @@ export function SouthDelhiHotels() {
                 }
             ]}
             internalLinks={[
-                { label: "Delhi Hotels Hub", url: "/delhi-hotels" },
+                { label: "Delhi Hotels Hub", url: "/hotels-in-delhi" },
                 { label: "Couple Friendly Hotels in Delhi", url: "/couple-friendly-hotels-in-delhi" },
-                { label: "Hotels in Connaught Place Delhi", url: "/hotels-in-connaught-place-delhi" },
-                { label: "Hotels Near Delhi Airport", url: "/hotels-near-delhi-airport" },
+                { label: "Hotels in Connaught Place Delhi", url: "/hotels/delhi/connaught-place" },
+                { label: "Hotels Near Delhi Airport", url: "/hotels/delhi/near-delhi-airport" },
             ]}
         />
     );
