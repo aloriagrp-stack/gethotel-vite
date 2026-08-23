@@ -19,6 +19,12 @@
     <priority>1.0</priority>
   </url>
   <url>
+    <loc>https://gethotelstays.com/hotels-in-delhi</loc>
+    <lastmod>2026-08-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
     <loc>https://gethotelstays.com/hotels-in-delhi.html</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>daily</changefreq>
@@ -91,6 +97,54 @@
     <priority>0.30</priority>
   </url>
   <url>
+    <loc>https://gethotelstays.com/en/delhi-hotels</loc>
+    <lastmod>2026-08-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
+  </url>
+  <url>
+    <loc>https://gethotelstays.com/en/couple-friendly-hotels-in-delhi</loc>
+    <lastmod>2026-08-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://gethotelstays.com/en/hourly-hotels-in-delhi</loc>
+    <lastmod>2026-08-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://gethotelstays.com/en/hotels-near-delhi-airport</loc>
+    <lastmod>2026-08-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://gethotelstays.com/en/hotels-near-new-delhi-railway-station</loc>
+    <lastmod>2026-08-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://gethotelstays.com/en/hotels-in-connaught-place-delhi</loc>
+    <lastmod>2026-08-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://gethotelstays.com/en/hotels-in-karol-bagh-delhi</loc>
+    <lastmod>2026-08-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://gethotelstays.com/en/hotels-in-south-delhi</loc>
+    <lastmod>2026-08-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
     <loc>https://gethotelstays.com/en/goa-hotels</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>weekly</changefreq>
@@ -119,54 +173,6 @@
     <lastmod>2026-08-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/en/delhi-hotels</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.95</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/en/couple-friendly-hotels-in-delhi</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.90</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/en/hourly-hotels-in-delhi</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.90</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/en/hotels-near-delhi-airport</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.90</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/en/hotels-near-new-delhi-railway-station</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.90</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/en/hotels-in-connaught-place-delhi</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.90</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/en/hotels-in-karol-bagh-delhi</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.90</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/en/hotels-in-south-delhi</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.90</priority>
   </url>
   <url>
     <loc>https://gethotelstays.com/en/hotels-in/new-delhi</loc>
