@@ -15,7 +15,6 @@ const optimizeUnsplashUrl = (url: string, width?: number | string, priority?: bo
   if (!url || !url.includes('images.unsplash.com')) return url;
 
   try {
-    // Basic fast string replacement or URL parsing
     const urlObj = new URL(url);
     urlObj.searchParams.set('auto', 'format');
     urlObj.searchParams.set('fit', 'crop');
@@ -33,30 +32,17 @@ const optimizeUnsplashUrl = (url: string, width?: number | string, priority?: bo
   }
 };
 
-const normalizeImageUrl = (url: string): string => {
-  if (!url) return '';
-  let clean = url.trim();
-  // Normalize upload paths
-  clean = clean.replace(/https?:\/\/[^\/]+\/api\/uploads\//g, 'https://gethotelstays.com/uploads/');
-  clean = clean.replace(/^\/api\/uploads\//g, 'https://gethotelstays.com/uploads/');
-  clean = clean.replace(/\/api\/uploads\//g, '/uploads/');
-  return clean;
-};
-
 const Image = ({ src, alt, width, height, fill, priority, unoptimized, className, ...props }: ImageProps) => {
   const [loaded, setLoaded] = React.useState(false);
-  const [hasError, setHasError] = React.useState(false);
   const imgRef = React.useRef<HTMLImageElement>(null);
 
   React.useEffect(() => {
+    // Reset loaded state on src change
     setLoaded(false);
-    setHasError(false);
     if (imgRef.current && imgRef.current.complete) {
       setLoaded(true);
     }
   }, [src]);
-
-  const cleanSrc = normalizeImageUrl(src);
 
   // Wrapper positioning style
   const wrapperStyle: React.CSSProperties = fill ? {
@@ -82,14 +68,14 @@ const Image = ({ src, alt, width, height, fill, priority, unoptimized, className
     right: 0,
     bottom: 0,
     objectFit: 'cover',
-    opacity: loaded && !hasError ? 1 : 0,
+    opacity: loaded ? 1 : 0,
     transition: 'opacity 0.4s ease-in-out',
   } : {
-    opacity: loaded && !hasError ? 1 : 0,
+    opacity: loaded ? 1 : 0,
     transition: 'opacity 0.4s ease-in-out',
   };
 
-  const optimizedSrc = unoptimized ? cleanSrc : optimizeUnsplashUrl(cleanSrc, width, priority);
+  const optimizedSrc = unoptimized ? src : optimizeUnsplashUrl(src, width, priority);
 
   return (
     <div style={wrapperStyle} className={className}>
@@ -158,7 +144,6 @@ const Image = ({ src, alt, width, height, fill, priority, unoptimized, className
         className={className}
         style={{ ...imgStyle, ...props.style }}
         onLoad={() => setLoaded(true)}
-        onError={() => setHasError(true)}
         loading={priority ? 'eager' : 'lazy'}
         decoding="async"
         {...props}
@@ -168,6 +153,3 @@ const Image = ({ src, alt, width, height, fill, priority, unoptimized, className
 };
 
 export default Image;
-
-
-
