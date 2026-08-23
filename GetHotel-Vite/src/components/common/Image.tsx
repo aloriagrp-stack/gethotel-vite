@@ -33,12 +33,10 @@ const optimizeUnsplashUrl = (url: string, width?: number | string, priority?: bo
   }
 };
 
-const FALLBACK_HOTEL_IMAGE = "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80";
-
 const normalizeImageUrl = (url: string): string => {
-  if (!url) return FALLBACK_HOTEL_IMAGE;
+  if (!url) return '';
   let clean = url.trim();
-  // Fix backend upload paths: /api/uploads/ -> /uploads/
+  // Normalize upload paths
   clean = clean.replace(/https?:\/\/[^\/]+\/api\/uploads\//g, 'https://gethotelstays.com/uploads/');
   clean = clean.replace(/^\/api\/uploads\//g, 'https://gethotelstays.com/uploads/');
   clean = clean.replace(/\/api\/uploads\//g, '/uploads/');
@@ -47,28 +45,18 @@ const normalizeImageUrl = (url: string): string => {
 
 const Image = ({ src, alt, width, height, fill, priority, unoptimized, className, ...props }: ImageProps) => {
   const [loaded, setLoaded] = React.useState(false);
-  const [currentSrc, setCurrentSrc] = React.useState(() => normalizeImageUrl(src));
   const [hasError, setHasError] = React.useState(false);
   const imgRef = React.useRef<HTMLImageElement>(null);
 
   React.useEffect(() => {
     setLoaded(false);
     setHasError(false);
-    const normalized = normalizeImageUrl(src);
-    setCurrentSrc(normalized);
     if (imgRef.current && imgRef.current.complete) {
       setLoaded(true);
     }
   }, [src]);
 
-  const handleImageError = () => {
-    if (!hasError && currentSrc !== FALLBACK_HOTEL_IMAGE) {
-      setHasError(true);
-      setCurrentSrc(FALLBACK_HOTEL_IMAGE);
-    } else {
-      setLoaded(true); // Stop shimmer if fallback loaded or failed
-    }
-  };
+  const cleanSrc = normalizeImageUrl(src);
 
   // Wrapper positioning style
   const wrapperStyle: React.CSSProperties = fill ? {
@@ -94,14 +82,14 @@ const Image = ({ src, alt, width, height, fill, priority, unoptimized, className
     right: 0,
     bottom: 0,
     objectFit: 'cover',
-    opacity: loaded ? 1 : 0,
+    opacity: loaded && !hasError ? 1 : 0,
     transition: 'opacity 0.4s ease-in-out',
   } : {
-    opacity: loaded ? 1 : 0,
+    opacity: loaded && !hasError ? 1 : 0,
     transition: 'opacity 0.4s ease-in-out',
   };
 
-  const optimizedSrc = unoptimized ? currentSrc : optimizeUnsplashUrl(currentSrc, width, priority);
+  const optimizedSrc = unoptimized ? cleanSrc : optimizeUnsplashUrl(cleanSrc, width, priority);
 
   return (
     <div style={wrapperStyle} className={className}>
@@ -170,7 +158,7 @@ const Image = ({ src, alt, width, height, fill, priority, unoptimized, className
         className={className}
         style={{ ...imgStyle, ...props.style }}
         onLoad={() => setLoaded(true)}
-        onError={handleImageError}
+        onError={() => setHasError(true)}
         loading={priority ? 'eager' : 'lazy'}
         decoding="async"
         {...props}

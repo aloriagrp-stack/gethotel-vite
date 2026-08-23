@@ -422,16 +422,6 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
         return safeParse(hotel.faqs, []);
     }, [hotel?.faqs]);
 
-    if (loading || !hotel) return <Loader variant="fullscreen" text="Loading hotel details..." />;
-
-    const checkIn = searchParams.get("checkIn") || "Dates";
-    const checkOut = searchParams.get("checkOut") || "Dates";
-    const adults = searchParams.get("adults") || "2";
-    const stayType = searchParams.get("stayType") || globalMode || "nightly";
-    const duration = searchParams.get("duration") || "3";
-    const arrivalTime = searchParams.get("arrivalTime") || "12:00";
-    const searchedGuests = parseInt(adults);
-
     const allAvailableCoupons = useMemo(() => {
         const fromHotel = (hotel?.coupon || hotel?.coupons || []);
         const rawList = [...(Array.isArray(fromHotel) ? fromHotel : []), ...(Array.isArray(coupons) ? coupons : [])];
@@ -442,7 +432,17 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
             }
         });
         return Array.from(map.values());
-    }, [hotel, coupons]);
+    }, [hotel?.coupon, hotel?.coupons, coupons]);
+
+    if (loading || !hotel) return <Loader variant="fullscreen" text="Loading hotel details..." />;
+
+    const checkIn = searchParams.get("checkIn") || "Dates";
+    const checkOut = searchParams.get("checkOut") || "Dates";
+    const adults = searchParams.get("adults") || "2";
+    const stayType = searchParams.get("stayType") || globalMode || "nightly";
+    const duration = searchParams.get("duration") || "3";
+    const arrivalTime = searchParams.get("arrivalTime") || "12:00";
+    const searchedGuests = parseInt(adults);
 
     const calculateStayPrice = (basePrice: any, room: any, activePromos: any[] = allAvailableCoupons) => {
         const promoList = activePromos && activePromos.length > 0 ? activePromos : allAvailableCoupons;
