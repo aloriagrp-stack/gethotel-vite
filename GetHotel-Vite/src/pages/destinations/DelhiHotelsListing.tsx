@@ -1,5 +1,5 @@
-import React, { useState, useEffect, Suspense, useCallback } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import React, { useState, useEffect, Suspense, useCallback, useMemo } from "react";
+import { useSearchParams, useParams, Link } from "react-router-dom";
 import { ArrowUpDown, MapPin, Hotel, X, SlidersHorizontal } from "lucide-react";
 import type { FilterState, SortOption, Hotel as HotelType } from "@/types";
 import { useStayMode } from "@/context/StayModeContext";
@@ -9,7 +9,7 @@ import { HotelCardSkeleton } from "@/components/hotels/HotelCardSkeleton";
 import SmartSearchBar from "@/components/search/SmartSearchBar";
 import SEOHead from "@/components/common/SEOHead";
 import Loader from "@/components/common/Loader";
-import { SITE, buildBreadcrumbSchema, buildFAQSchema, buildCityHotelListingSchema } from "@/lib/seo";
+import { SITE, buildBreadcrumbSchema, buildFAQSchema, DELHI_FAQS } from "@/lib/seo";
 import { hotelApi } from "@/lib/api";
 
 const sortOptions: { value: SortOption; label: string }[] = [
@@ -35,28 +35,11 @@ const delhiLocalities = [
     { name: "South Delhi / Saket", query: "South Delhi" },
 ];
 
-const delhiFaqs = [
-    {
-        question: "What are the best affordable hotels in Delhi for NRI travelers?",
-        answer: "GetHotelStays features verified hotels in top hubs like Karol Bagh, Connaught Place, and Aerocity. NRI guests from the USA, UK, UAE, and Canada can securely pay the 12% deposit online with zero foreign transaction fees, settling the rest at check-in."
-    },
-    {
-        question: "Can I book a hotel in Delhi with 12% deposit?",
-        answer: "Yes! With our Pay 12% Deposit model, you only pay a nominal 12% deposit online to lock in your reservation and price. The remaining 88% is paid directly at the hotel during check-in."
-    },
-    {
-        question: "Are hourly hotels available in Delhi near the airport?",
-        answer: "Yes, GetHotelStays offers flexible 3, 6, and 12-hour day-use slots in Aerocity and Mahipalpur starting from just ₹699, perfect for layovers at IGI Airport."
-    },
-    {
-        question: "Are couple-friendly hotels available with local ID check-in in Delhi?",
-        answer: "Yes, all couple-friendly tagged properties on GetHotelStays welcome 18+ couples with valid government ID cards (Aadhaar, Passport, Driving License) ensuring 100% privacy and smooth check-in."
-    }
-];
-
 function DelhiHotelsListingContent() {
+    const { lang } = useParams();
+    const currentLang = lang || "en";
     const { mode } = useStayMode();
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams] = useSearchParams();
     const guests = searchParams.get("adults") || searchParams.get("guests") || "2";
     const stayType = searchParams.get("stayType") || mode || "nightly";
 
@@ -136,41 +119,91 @@ function DelhiHotelsListingContent() {
         setPage(1);
     };
 
+    // Build comprehensive JSON-LD Structured Data Schema for Google Crawlers / Bots
+    const hotelStructuredData = useMemo(() => {
+        const itemListElements = allHotels.slice(0, 30).map((hotel, index) => ({
+            "@type": "ListItem",
+            "position": index + 1,
+            "item": {
+                "@type": "Hotel",
+                "@id": `${SITE.url}/${currentLang}/hotel/${hotel.id}`,
+                "name": hotel.name,
+                "description": hotel.description || `Book ${hotel.name} in Delhi on GetHotelStays. Pay only 12% online.`,
+                "url": `${SITE.url}/${currentLang}/hotel/${hotel.id}`,
+                "image": Array.isArray(hotel.images) && hotel.images.length > 0 ? hotel.images[0] : SITE.logo,
+                "priceRange": `₹${hotel.pricePerNight || 999}`,
+                "address": {
+                    "@type": "PostalAddress",
+                    "streetAddress": hotel.address || "Delhi",
+                    "addressLocality": "Delhi",
+                    "addressRegion": "Delhi",
+                    "postalCode": "110001",
+                    "addressCountry": "IN"
+                },
+                ...(hotel.guestRating ? {
+                    "aggregateRating": {
+                        "@type": "AggregateRating",
+                        "ratingValue": (Number(hotel.guestRating) / 2).toFixed(1),
+                        "reviewCount": hotel.reviewCount || 25,
+                        "bestRating": "5",
+                        "worstRating": "1"
+                    }
+                } : {}),
+                ...(hotel.starRating ? {
+                    "starRating": {
+                        "@type": "Rating",
+                        "ratingValue": String(hotel.starRating)
+                    }
+                } : {})
+            }
+        }));
+
+        const schemas: any[] = [
+            buildBreadcrumbSchema([
+                { name: "Home", url: `/${currentLang}` },
+                { name: "Hotels", url: `/${currentLang}/hotels` },
+                { name: "Hotels in Delhi", url: `/${currentLang}/hotels-in-delhi` }
+            ]),
+            buildFAQSchema(DELHI_FAQS),
+            {
+                "@context": "https://schema.org",
+                "@type": "ItemList",
+                "name": "Hotels in Delhi",
+                "description": "Verified hotels in Delhi at best prices. Budget to 5-star luxury stays. Pay 12% online, rest at hotel.",
+                "url": `${SITE.url}/${currentLang}/hotels-in-delhi`,
+                "numberOfItems": totalStays || allHotels.length,
+                "itemListElement": itemListElements
+            }
+        ];
+
+        return schemas;
+    }, [allHotels, totalStays, currentLang]);
+
     return (
         <div className="min-h-screen pt-2 bg-transparent px-0">
             <SEOHead
-                title="Hotels in Delhi — Book Affordable to Luxury Stays | Pay 12% | GetHotelStays"
-                description="Book 2,000+ verified hotels in Delhi at best prices. Budget stays in Paharganj & Karol Bagh to 5-star luxury in Aerocity & CP. Pay only 12% online, rest at hotel. Free cancellation & 24/7 NRI support."
+                title="Hotels in Delhi & India — Search, Compare & Book | GetHotelStays"
+                description="Search 10,000+ verified hotels in Delhi & across India. Filter by price, star rating, amenities & location. Budget to luxury. Pay only 12% online, rest at hotel. Free cancellation. Trusted by NRIs worldwide."
                 keywords={[
                     "hotels in delhi", "delhi hotels booking", "cheap hotels in delhi", "budget hotels in delhi",
                     "luxury hotels in delhi", "hotels near delhi airport", "hotels in aerocity delhi",
                     "hotels in connaught place delhi", "hourly hotels in delhi", "couple friendly hotels delhi",
-                    "delhi hotels pay at hotel"
+                    "delhi hotels pay at hotel", "hotels near new delhi railway station", "hotels in karol bagh delhi"
                 ]}
-                ogUrl={`${SITE.url}/hotels-in-delhi`}
-                canonicalUrl={`${SITE.url}/hotels-in-delhi`}
-                schemas={[
-                    buildBreadcrumbSchema([
-                        { name: "Home", url: "/" },
-                        { name: "Hotels", url: "/hotels" },
-                        { name: "Hotels in Delhi", url: "/hotels-in-delhi" }
-                    ]),
-                    buildFAQSchema(delhiFaqs),
-                ]}
+                ogUrl={`${SITE.url}/${currentLang}/hotels-in-delhi`}
+                canonicalUrl={`${SITE.url}/${currentLang}/hotels-in-delhi`}
+                schemas={hotelStructuredData}
             />
 
-            {/* Top Search Bar Pre-Filled for Delhi */}
-            <div className="w-full flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-4 px-4 md:px-10">
-                <div className="shrink-0">
-                    <h1 className="text-2xl md:text-3xl font-extrabold text-slate-950 tracking-tight leading-tight">
+            {/* Top Search Bar — Identical to GetHotelStays Hotels Page */}
+            <div className="w-full flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-6 px-4 md:px-10">
+                <div className="shrink-0 sr-only">
+                    <h1 className="text-3xl md:text-4xl font-bold text-slate-950 tracking-tight leading-tight">
                         Hotels in <span className="text-brand-600">Delhi</span>
                     </h1>
-                    <p className="text-xs text-slate-500 font-semibold mt-0.5">
-                        Verified stays • Pay 12% online, rest at hotel
-                    </p>
                 </div>
 
-                <div className="w-full lg:max-w-4xl">
+                <div className="w-full lg:max-w-4xl mx-auto">
                     <SmartSearchBar
                         layoutMode="hotels"
                         hideStories
@@ -261,7 +294,7 @@ function DelhiHotelsListingContent() {
 
                             <div className="flex items-center gap-4">
                                 <p className="hidden sm:block text-xs text-slate-500 font-bold">
-                                    <span className="text-slate-900">{totalStays}</span> Delhi properties found
+                                    <span className="text-slate-900">{totalStays}</span> properties found
                                 </p>
 
                                 <button
@@ -273,7 +306,7 @@ function DelhiHotelsListingContent() {
                                 </button>
 
                                 <div className="flex items-center gap-2">
-                                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Sort By</span>
+                                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">SORT BY</span>
                                     <select
                                         value={sort}
                                         onChange={(e) => {
@@ -359,13 +392,13 @@ function DelhiHotelsListingContent() {
                 </div>
             </div>
 
-            {/* MMT-Style Delhi SEO FAQs Section */}
+            {/* SEO Content & FAQ Section */}
             <div className="max-w-7xl mx-auto px-4 md:px-10 mt-20 pt-10 border-t border-slate-200">
                 <h2 className="text-2xl font-extrabold text-slate-900 mb-6">
                     Frequently Asked Questions About Delhi Hotels
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {delhiFaqs.map((faq, idx) => (
+                    {DELHI_FAQS.slice(0, 8).map((faq, idx) => (
                         <div key={idx} className="bg-white/80 backdrop-blur-sm border border-slate-200/80 rounded-2xl p-5 shadow-sm">
                             <h3 className="font-bold text-slate-900 text-sm mb-2">
                                 {faq.question}
@@ -388,3 +421,4 @@ export default function DelhiHotelsListing() {
         </Suspense>
     );
 }
+

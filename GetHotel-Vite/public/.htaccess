@@ -63,7 +63,6 @@
 RewriteEngine On
 RewriteBase /
 RewriteRule ^index\.html$ - [L]
-RewriteRule ^(en/)?hotels-in-delhi/?$ /hotels-in-delhi.html [L]
 RewriteCond %{REQUEST_URI} !^/api [NC]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
