@@ -67,7 +67,7 @@ const sortOptions: { value: SortOption; label: string }[] = [
 ];
 
 const defaultFilters: FilterState = {
-    priceRange: [0, 50000],
+    priceRange: [0, 500000],
     starRatings: [],
     guestRatingMin: 0,
     amenities: [],
@@ -245,32 +245,12 @@ export default function DestinationLanding({
                 schemas={schemas}
             />
 
-            {/* ── Top Search Bar (Right-aligned) ── */}
-            <div className="w-full mb-6 px-4 md:px-10">
-                <div className="w-full max-w-7xl mx-auto flex justify-end">
-                    <div className="w-full lg:max-w-4xl">
-                        <SmartSearchBar
-                            layoutMode="hotels"
-                            hideStories
-                            initialState={{
-                                destination: { label: city, id: city.toLowerCase(), category: "trending" },
-                                dates: {
-                                    checkIn: searchParams.get("checkIn") ? new Date(searchParams.get("checkIn") as string) : null,
-                                    checkOut: searchParams.get("checkOut") ? new Date(searchParams.get("checkOut") as string) : null,
-                                },
-                                guests: { adults: Number(guests), children: 0, rooms: 1, childAges: [] },
-                            }}
-                        />
-                    </div>
-                </div>
-            </div>
-
-            {/* ── Main Layout: Sidebar Filters + Right Results Column ── */}
-            <div className="w-full max-w-7xl mx-auto px-4 md:px-10 py-0">
-                <div className="flex gap-8 lg:gap-10 items-start">
+            {/* ── Unified Main Layout (Left Sidebar starts at Top parallel with Search Bar) ── */}
+            <div className="w-full max-w-7xl mx-auto px-4 md:px-8 py-0">
+                <div className="flex gap-8 lg:gap-9 items-start">
                     
-                    {/* Desktop Sidebar Filter (Sticky on scroll) */}
-                    <aside className="hidden lg:block w-72 shrink-0 sticky top-20 z-30">
+                    {/* Desktop Sidebar Filter (Starts at the very top parallel with Search Bar, expanded to w-[330px]) */}
+                    <aside className="hidden lg:block w-80 lg:w-[330px] shrink-0 sticky top-20 z-30">
                         <FilterPanel filters={filters} onChange={handleFilterChange} />
                     </aside>
 
@@ -281,7 +261,7 @@ export default function DestinationLanding({
                                 className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-all duration-300"
                                 onClick={() => setShowMobileFilter(false)}
                             />
-                            <div className="absolute right-0 top-0 bottom-0 w-[85%] max-w-[380px] bg-white overflow-y-auto p-6 border-l border-slate-200 shadow-2xl z-10">
+                            <div className="absolute right-0 top-0 bottom-0 w-[85%] max-w-[380px] bg-white overflow-y-auto p-6 border-l border-slate-200 shadow-2xl z-10 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                                 <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
                                     <div className="flex items-center gap-2">
                                         <SlidersHorizontal className="w-5 h-5 text-brand-600" />
@@ -304,9 +284,26 @@ export default function DestinationLanding({
                         </div>
                     )}
 
-                    {/* Results Column */}
+                    {/* Results Column (Starts with Top Right-aligned Search Bar) */}
                     <div className="flex-1 min-w-0 flex flex-col gap-6">
-                        
+                        {/* Top Search Pill Container (Right-aligned inside right column) */}
+                        <div className="w-full flex justify-end">
+                            <div className="w-full">
+                                <SmartSearchBar
+                                    layoutMode="hotels"
+                                    hideStories
+                                    initialState={{
+                                        destination: { label: city, id: city.toLowerCase(), category: "trending" },
+                                        dates: {
+                                            checkIn: searchParams.get("checkIn") ? new Date(searchParams.get("checkIn") as string) : null,
+                                            checkOut: searchParams.get("checkOut") ? new Date(searchParams.get("checkOut") as string) : null,
+                                        },
+                                        guests: { adults: Number(guests), children: 0, rooms: 1, childAges: [] },
+                                    }}
+                                />
+                            </div>
+                        </div>
+
                         {/* City / Destination Header Area */}
                         <div className="bg-white/70 backdrop-blur-md border border-white/60 rounded-2xl p-5 md:p-6 shadow-sm space-y-3">
                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

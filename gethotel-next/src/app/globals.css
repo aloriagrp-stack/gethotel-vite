@@ -89,6 +89,37 @@
   100% { box-shadow: 0 0 5px rgba(14,165,233,0.2); }
 }
 
+@keyframes btnShine {
+  0% {
+    transform: translateX(-150%) skewX(-20deg);
+  }
+  30%, 100% {
+    transform: translateX(250%) skewX(-20deg);
+  }
+}
+
+.btn-shine-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-shine-effect::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.45) 50%,
+    transparent 100%
+  );
+  animation: btnShine 3s infinite ease-in-out;
+  pointer-events: none;
+}
+
 .animate-glow {
   animation: glow 2s infinite ease-in-out;
 }
