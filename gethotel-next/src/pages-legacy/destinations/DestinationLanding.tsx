@@ -1,13 +1,33 @@
 'use client';
-import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { MapPin, ArrowRight, HelpCircle, AlertCircle } from "lucide-react";
+
+import React, { useEffect, useState, useMemo, useCallback } from "react";
+import { Link, useParams, useSearchParams } from "react-router-dom";
+import {
+    MapPin,
+    ArrowRight,
+    HelpCircle,
+    AlertCircle,
+    SlidersHorizontal,
+    X,
+    Sparkles,
+    ChevronDown,
+    ChevronUp,
+} from "lucide-react";
 import { hotelApi } from "@/lib/api";
-import { Hotel as HotelType } from "@/types";
+import { Hotel as HotelType, FilterState, SortOption } from "@/types";
 import HotelCard from "@/components/hotels/HotelCard";
+import FilterPanel from "@/components/hotels/FilterPanel";
 import { HotelCardSkeleton } from "@/components/hotels/HotelCardSkeleton";
+import SmartSearchBar from "@/components/search/SmartSearchBar";
 import SEOHead from "@/components/common/SEOHead";
-import { SITE, buildFAQSchema, buildBreadcrumbSchema, buildCitySchema, buildCityHotelListingSchema, buildLocalBusinessListSchema } from "@/lib/seo";
+import {
+    SITE,
+    buildFAQSchema,
+    buildBreadcrumbSchema,
+    buildCitySchema,
+    buildCityHotelListingSchema,
+    buildLocalBusinessListSchema,
+} from "@/lib/seo";
 
 interface Section {
     h2: string;
@@ -39,6 +59,20 @@ interface DestinationLandingProps {
     filterSlug?: string;
 }
 
+const sortOptions: { value: SortOption; label: string }[] = [
+    { value: "recommended", label: "Recommended" },
+    { value: "price_asc", label: "Price: Low to High" },
+    { value: "price_desc", label: "Price: High to Low" },
+    { value: "rating", label: "Guest Rating" },
+];
+
+const defaultFilters: FilterState = {
+    priceRange: [0, 50000],
+    starRatings: [],
+    guestRatingMin: 0,
+    amenities: [],
+};
+
 export default function DestinationLanding({
     city,
     title,
@@ -46,57 +80,127 @@ export default function DestinationLanding({
     keywords,
     h1,
     introduction,
-    sections,
-    faqs,
-    internalLinks,
+    sections = [],
+    faqs = [],
+    internalLinks = [],
     urlSlug,
     urlPrefix = "/",
     filterSlug,
 }: DestinationLandingProps) {
     const { lang } = useParams();
     const currentLang = lang || "en";
+    const [searchParams] = useSearchParams();
+
+    const guests = searchParams.get("adults") || searchParams.get("guests") || "2";
+
     const [hotels, setHotels] = useState<HotelType[]>([]);
     const [loading, setLoading] = useState(true);
+    const [filters, setFilters] = useState<FilterState>(defaultFilters);
+    const [sort, setSort] = useState<SortOption>("recommended");
     const [isExpanded, setIsExpanded] = useState(false);
+    const [showMobileFilter, setShowMobileFilter] = useState(false);
+    const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
 
+    // Fetch hotels for this specific city & apply filter slug overrides if present
     useEffect(() => {
         const fetchHotels = async () => {
             try {
                 setLoading(true);
                 let response;
+                const params: any = {
+                    city,
+                    limit: "50",
+                };
+
                 if (filterSlug) {
-                    const searchParams: any = { city };
                     const cleanFilter = filterSlug.toLowerCase().trim();
                     if (cleanFilter === "couple-friendly") {
-                        searchParams.searchQuery = "couple friendly";
+                        params.searchQuery = "couple friendly";
                     } else if (cleanFilter === "hourly") {
-                        searchParams.stayType = "hourly";
+                        params.stayType = "hourly";
                     } else if (cleanFilter === "budget") {
-                        searchParams.maxPrice = "2000";
+                        params.maxPrice = "2500";
                     } else if (cleanFilter === "luxury") {
-                        searchParams.minPrice = "4000";
-                        searchParams.starRatings = "4,5";
+                        params.minPrice = "4000";
+                        params.starRatings = "4,5";
                     }
-                    response = await hotelApi.searchHotels(searchParams);
-                } else {
-                    response = await hotelApi.getHotels(city);
                 }
+
+                // Also inherit any query params
+                searchParams.forEach((val, key) => {
+                    if (key !== "city") params[key] = val;
+                });
+
+                response = await hotelApi.searchHotels(params);
                 setHotels(response.data || []);
             } catch (err) {
-                console.error(`Failed to fetch hotels for ${city} with filter ${filterSlug}:`, err);
+                console.error(`Failed to fetch hotels for ${city}:`, err);
+                setHotels([]);
             } finally {
                 setLoading(false);
             }
         };
 
         fetchHotels();
-        // Scroll to top on route change
         window.scrollTo(0, 0);
-    }, [city, filterSlug]);
+    }, [city, filterSlug, searchParams]);
 
-    // Build smart breadcrumbs: sub-pages get an extra level
+    // Client-side filtering & sorting on the returned destination inventory
+    const filteredHotels = useMemo(() => {
+        let list = [...hotels];
+
+        // Price filter
+        list = list.filter((h) => {
+            const price = Number(h.pricePerNight || 0);
+            return price >= filters.priceRange[0] && price <= filters.priceRange[1];
+        });
+
+        // Star rating filter
+        if (filters.starRatings.length > 0) {
+            list = list.filter((h) => filters.starRatings.includes(Number(h.starRating || 0)));
+        }
+
+        // Guest rating filter
+        if (filters.guestRatingMin > 0) {
+            list = list.filter((h) => Number(h.guestRating || 0) >= filters.guestRatingMin);
+        }
+
+        // Amenities filter
+        if (filters.amenities.length > 0) {
+            list = list.filter((h) => {
+                const hotelAmenities = Array.isArray(h.amenities)
+                    ? h.amenities
+                    : typeof h.amenities === "string"
+                    ? JSON.parse(h.amenities || "[]")
+                    : [];
+                return filters.amenities.every((a) =>
+                    hotelAmenities.some((ha: string) => ha.toLowerCase().includes(a.toLowerCase()))
+                );
+            });
+        }
+
+        // Sorting
+        if (sort === "price_asc") {
+            list.sort((a, b) => Number(a.pricePerNight || 0) - Number(b.pricePerNight || 0));
+        } else if (sort === "price_desc") {
+            list.sort((a, b) => Number(b.pricePerNight || 0) - Number(a.pricePerNight || 0));
+        } else if (sort === "rating") {
+            list.sort((a, b) => Number(b.guestRating || 0) - Number(a.guestRating || 0));
+        }
+
+        return list;
+    }, [hotels, filters, sort]);
+
+    const handleFilterChange = (f: FilterState) => {
+        setFilters(f);
+    };
+
+    // Breadcrumbs and schema generation
     const isSubPage = filterSlug || (urlSlug && urlSlug !== city.toLowerCase() + "-hotels");
-    const rawPath = `${urlPrefix === "/" ? "/" : urlPrefix}${urlSlug || city.toLowerCase() + "-hotels"}`.replace(/^\/+/, "");
+    const rawPath = `${urlPrefix === "/" ? "/" : urlPrefix}${urlSlug || city.toLowerCase() + "-hotels"}`.replace(
+        /^\/+/,
+        ""
+    );
     const pagePath = `/${currentLang}/${rawPath}`;
 
     const breadcrumbs = [
@@ -108,27 +212,30 @@ export default function DestinationLanding({
         breadcrumbs.push({ name: h1.split("—")[0].trim(), url: pagePath });
     }
 
-    // Build schemas array
     const schemas: object[] = [
         buildFAQSchema(faqs),
-        buildCitySchema(city, `Book verified hotels in ${city} at best prices. Budget to luxury stays. Pay 12% now, rest at hotel. Trusted by NRIs worldwide.`),
+        buildCitySchema(
+            city,
+            `Book verified hotels in ${city} at best prices. Budget to luxury stays. Pay 12% now, rest at hotel. Trusted by NRIs worldwide.`
+        ),
         buildCityHotelListingSchema(city, 2000, "₹699-₹25,000", urlSlug || `${city.toLowerCase()}-hotels`),
         buildBreadcrumbSchema(breadcrumbs),
     ];
 
-    // Add LocalBusiness schema for neighbourhood and sub-category pages
     if (isSubPage && urlSlug) {
-        schemas.push(buildLocalBusinessListSchema(
-            h1.split("—")[0].trim(),
-            city,
-            urlSlug,
-            keywords.slice(0, 3),
-            "₹699-₹25,000"
-        ));
+        schemas.push(
+            buildLocalBusinessListSchema(
+                h1.split("—")[0].trim(),
+                city,
+                urlSlug,
+                keywords.slice(0, 3),
+                "₹699-₹25,000"
+            )
+        );
     }
 
     return (
-        <div className="min-h-screen pt-3 pb-8 md:pt-6 md:pb-12 bg-transparent px-0">
+        <div className="min-h-screen pt-2 pb-16 bg-transparent px-0">
             <SEOHead
                 title={title}
                 description={description}
@@ -138,182 +245,285 @@ export default function DestinationLanding({
                 schemas={schemas}
             />
 
-            <div className="w-full max-w-none mx-auto px-4 md:px-10 space-y-8 md:space-y-12">
-                
-                {/* ── Header SEO Area ── */}
-                <div className="max-w-4xl space-y-2 md:space-y-3">
-                    <h1 className="text-2xl md:text-4xl lg:text-5xl font-extrabold text-slate-950 tracking-tight leading-tight">
-                        {h1}
-                    </h1>
-                    <p className="text-slate-600 text-xs md:text-sm lg:text-base leading-relaxed font-medium">
-                        {introduction.length > 200 && !isExpanded
-                            ? `${introduction.slice(0, 200)}...`
-                            : introduction}
-                        {introduction.length > 200 && (
-                            <button
-                                onClick={() => setIsExpanded(!isExpanded)}
-                                className="text-brand-600 hover:text-brand-500 font-bold ml-1.5 focus:outline-none inline-flex items-center gap-0.5 hover:underline cursor-pointer"
-                            >
-                                {isExpanded ? "Read Less" : "Read More"}
-                            </button>
-                        )}
-                    </p>
+            {/* ── Top Search Bar (Exact same as /hotels) ── */}
+            <div className="w-full mb-6 px-4 md:px-10">
+                <div className="w-full max-w-7xl mx-auto">
+                    <SmartSearchBar
+                        layoutMode="hotels"
+                        hideStories
+                        initialState={{
+                            destination: { label: city, id: city.toLowerCase(), category: "trending" },
+                            dates: {
+                                checkIn: searchParams.get("checkIn") ? new Date(searchParams.get("checkIn") as string) : null,
+                                checkOut: searchParams.get("checkOut") ? new Date(searchParams.get("checkOut") as string) : null,
+                            },
+                            guests: { adults: Number(guests), children: 0, rooms: 1, childAges: [] },
+                        }}
+                    />
                 </div>
+            </div>
 
-                {/* ── Live Hotels Listing Section ── */}
-                <div className="space-y-4 md:space-y-6">
-                    <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                        <MapPin className="w-5 h-5 md:w-6 h-6 text-brand-600 animate-pulse" />
-                        Available properties in {city}
-                    </h2>
+            {/* ── Main Layout: Sidebar Filters + Right Results Column ── */}
+            <div className="w-full max-w-7xl mx-auto px-4 md:px-10 py-0">
+                <div className="flex gap-8 lg:gap-10 items-start">
+                    
+                    {/* Desktop Sidebar Filter (Exact same as /hotels) */}
+                    <aside className="hidden lg:block w-72 shrink-0">
+                        <div className="sticky top-24">
+                            <FilterPanel filters={filters} onChange={handleFilterChange} />
+                        </div>
+                    </aside>
 
-                    {loading ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                            {Array.from({ length: 3 }).map((_, i) => (
-                                <HotelCardSkeleton key={i} />
-                            ))}
-                        </div>
-                    ) : hotels.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                            {hotels.map(hotel => (
-                                <HotelCard key={hotel.id} hotel={hotel} />
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="flex flex-col items-center justify-center py-16 bg-white/50 backdrop-blur-md rounded-[2.5rem] border border-white/40 p-8 text-center max-w-2xl">
-                            <AlertCircle className="w-12 h-12 text-slate-300 mb-4" />
-                            <h3 className="text-xl font-bold text-slate-900 mb-2">No active properties listed yet</h3>
-                            <p className="text-slate-500 text-xs font-semibold leading-relaxed max-w-md">
-                                We are currently onboarding verified hotel partners in {city}. Check back soon or search other top tourist locations in India!
-                            </p>
-                            <Link 
-                                to={`/${currentLang}/hotels`}
-                                className="mt-6 px-8 py-3 bg-brand-600 hover:bg-brand-500 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-md active:scale-95"
-                            >
-                                Browse All India Hotels
-                            </Link>
+                    {/* Mobile Filter Drawer */}
+                    {showMobileFilter && (
+                        <div className="fixed inset-0 z-[100] lg:hidden">
+                            <div
+                                className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-all duration-300"
+                                onClick={() => setShowMobileFilter(false)}
+                            />
+                            <div className="absolute right-0 top-0 bottom-0 w-[85%] max-w-[380px] bg-white overflow-y-auto p-6 border-l border-slate-200 shadow-2xl z-10">
+                                <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+                                    <div className="flex items-center gap-2">
+                                        <SlidersHorizontal className="w-5 h-5 text-brand-600" />
+                                        <h2 className="text-lg font-bold text-slate-900">Filters</h2>
+                                    </div>
+                                    <button
+                                        onClick={() => setShowMobileFilter(false)}
+                                        className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 transition-colors"
+                                    >
+                                        <X className="w-5 h-5" />
+                                    </button>
+                                </div>
+                                <FilterPanel
+                                    filters={filters}
+                                    onChange={(f) => {
+                                        handleFilterChange(f);
+                                    }}
+                                />
+                            </div>
                         </div>
                     )}
-                </div>
 
-                {/* ── Editorial Content Sections (H2 & H3) ── */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 pt-6">
-                    {sections.map((sec, i) => (
-                        <div key={i} className="bg-white/60 backdrop-blur-xl border border-white/40 rounded-[2.5rem] p-8 md:p-10 space-y-4 hover:shadow-xl transition-all duration-300">
-                            <h2 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
-                                {sec.h2}
-                            </h2>
-                            <p className="text-slate-500 text-xs md:text-sm leading-relaxed font-semibold">
-                                {sec.text}
-                            </p>
-                        </div>
-                    ))}
-                </div>
+                    {/* Results Column */}
+                    <div className="flex-1 min-w-0 flex flex-col gap-6">
+                        
+                        {/* City / Destination Header Area */}
+                        <div className="bg-white/70 backdrop-blur-md border border-white/60 rounded-2xl p-5 md:p-6 shadow-sm space-y-3">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div>
+                                    <h1 className="text-xl md:text-2xl lg:text-3xl font-extrabold text-slate-950 tracking-tight leading-tight">
+                                        {h1}
+                                    </h1>
+                                    <p className="text-xs text-slate-500 font-semibold flex items-center gap-1.5 mt-1">
+                                        <MapPin className="w-3.5 h-3.5 text-brand-600" />
+                                        <span>Verified properties in {city} — Pay only 12% deposit online</span>
+                                    </p>
+                                </div>
 
-                {/* ── FAQ Section (Accordion style) ── */}
-                <div className="space-y-6 max-w-4xl pt-6">
-                    <h2 className="text-2xl md:text-4xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
-                        <HelpCircle className="w-6 h-6 text-blue-600" />
-                        Frequently Asked Questions
-                    </h2>
-                    <div className="space-y-4">
-                        {faqs.map((faq, idx) => (
-                            <div key={idx} className="bg-white/40 backdrop-blur-sm border border-white/30 rounded-3xl p-6 space-y-2">
-                                <h3 className="font-bold text-slate-950 text-sm md:text-base">
-                                    {faq.question}
-                                </h3>
-                                <p className="text-slate-500 text-xs md:text-sm leading-relaxed font-semibold">
-                                    {faq.answer}
-                                </p>
+                                <div className="flex items-center gap-3 shrink-0">
+                                    <span className="text-xs text-slate-500 font-bold hidden sm:inline">
+                                        <strong className="text-slate-900 font-black">{filteredHotels.length}</strong> properties
+                                    </span>
+
+                                    {/* Mobile Filter Trigger Button */}
+                                    <button
+                                        onClick={() => setShowMobileFilter(true)}
+                                        className="lg:hidden flex items-center gap-2 bg-slate-900 hover:bg-black text-white rounded-xl px-4 py-2 text-xs font-bold transition-all shadow-md"
+                                    >
+                                        <SlidersHorizontal className="w-3.5 h-3.5" />
+                                        <span>Filters</span>
+                                    </button>
+
+                                    {/* Sort Dropdown */}
+                                    <div className="flex items-center gap-1.5">
+                                        <select
+                                            value={sort}
+                                            onChange={(e) => setSort(e.target.value as SortOption)}
+                                            className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all cursor-pointer shadow-sm hover:border-slate-300"
+                                        >
+                                            {sortOptions.map((opt) => (
+                                                <option key={opt.value} value={opt.value}>
+                                                    {opt.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
-                        ))}
+
+                            {/* SEO Introduction Text (Expandable) */}
+                            {introduction && (
+                                <div className="pt-2 border-t border-slate-100/80">
+                                    <p className="text-slate-600 text-xs md:text-sm leading-relaxed font-normal">
+                                        {introduction.length > 220 && !isExpanded
+                                            ? `${introduction.slice(0, 220)}...`
+                                            : introduction}
+                                        {introduction.length > 220 && (
+                                            <button
+                                                onClick={() => setIsExpanded(!isExpanded)}
+                                                className="text-brand-600 hover:text-brand-700 font-bold ml-1.5 inline-flex items-center gap-0.5 hover:underline cursor-pointer"
+                                            >
+                                                {isExpanded ? "Read Less" : "Read More"}
+                                            </button>
+                                        )}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Hotel Cards Grid */}
+                        {loading ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {Array.from({ length: 4 }).map((_, i) => (
+                                    <HotelCardSkeleton key={i} />
+                                ))}
+                            </div>
+                        ) : filteredHotels.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {filteredHotels.map((hotel) => (
+                                    <HotelCard key={hotel.id} hotel={hotel} />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center py-16 bg-white/70 backdrop-blur-md rounded-2xl border border-slate-200 p-8 text-center">
+                                <AlertCircle className="w-12 h-12 text-slate-300 mb-3" />
+                                <h3 className="text-lg font-bold text-slate-900 mb-1">
+                                    No properties match your filters in {city}
+                                </h3>
+                                <p className="text-slate-500 text-xs leading-relaxed max-w-md mb-5">
+                                    Try adjusting your price range or star rating filters to discover more hotel stays in {city}.
+                                </p>
+                                <button
+                                    onClick={() => setFilters(defaultFilters)}
+                                    className="px-6 py-2.5 bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs rounded-xl transition-all shadow-md"
+                                >
+                                    Reset Filters
+                                </button>
+                            </div>
+                        )}
+
+                        {/* ── Editorial Content Sections (H2 & H3) ── */}
+                        {sections.length > 0 && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
+                                {sections.map((sec, i) => (
+                                    <div
+                                        key={i}
+                                        className="bg-white/70 backdrop-blur-md border border-slate-200/80 rounded-2xl p-6 space-y-2.5 shadow-sm hover:shadow-md transition-shadow"
+                                    >
+                                        <h2 className="text-base md:text-lg font-bold text-slate-900 tracking-tight">
+                                            {sec.h2}
+                                        </h2>
+                                        <p className="text-slate-600 text-xs md:text-sm leading-relaxed font-normal">
+                                            {sec.text}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* ── FAQ Section (Accordion) ── */}
+                        {faqs.length > 0 && (
+                            <div className="bg-white/70 backdrop-blur-md border border-slate-200/80 rounded-2xl p-6 md:p-8 space-y-5 shadow-sm mt-4">
+                                <div className="flex items-center gap-2.5">
+                                    <HelpCircle className="w-5 h-5 text-brand-600" />
+                                    <h2 className="text-lg md:text-xl font-bold text-slate-900">
+                                        Frequently Asked Questions about {city} Hotels
+                                    </h2>
+                                </div>
+                                <div className="space-y-3">
+                                    {faqs.map((faq, idx) => {
+                                        const isOpen = openFaqIndex === idx;
+                                        return (
+                                            <div
+                                                key={idx}
+                                                className="border border-slate-200/80 rounded-xl overflow-hidden bg-white/90 transition-colors"
+                                            >
+                                                <button
+                                                    onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
+                                                    className="w-full flex items-center justify-between p-4 text-left font-bold text-slate-900 text-xs md:text-sm gap-4 hover:bg-slate-50/80 cursor-pointer"
+                                                >
+                                                    <span>{faq.question}</span>
+                                                    {isOpen ? (
+                                                        <ChevronUp className="w-4 h-4 text-brand-600 shrink-0" />
+                                                    ) : (
+                                                        <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />
+                                                    )}
+                                                </button>
+                                                {isOpen && (
+                                                    <div className="px-4 pb-4 pt-1 text-slate-600 text-xs md:text-sm leading-relaxed border-t border-slate-100">
+                                                        {faq.answer}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* ── Popular Hotel Categories in {city} / Interlinking ── */}
+                        <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-6 md:p-8 text-slate-900 space-y-4 mt-2">
+                            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                                <Sparkles className="w-4 h-4 text-brand-600" />
+                                Popular Categories & Nearby Stays
+                            </h3>
+                            <div className="flex flex-wrap gap-2 pt-1">
+                                <Link
+                                    to={`/${currentLang}/hotels?city=${encodeURIComponent(city)}`}
+                                    className="px-3.5 py-1.5 bg-brand-600 text-white rounded-lg text-xs font-bold shadow-sm hover:bg-brand-700 transition-colors"
+                                >
+                                    All {city} Hotels
+                                </Link>
+                                <Link
+                                    to={`/${currentLang}/delhi-hotels`}
+                                    className="px-3.5 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-100 hover:text-brand-600 transition-colors"
+                                >
+                                    Delhi Hotels
+                                </Link>
+                                <Link
+                                    to={`/${currentLang}/goa-hotels`}
+                                    className="px-3.5 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-100 hover:text-brand-600 transition-colors"
+                                >
+                                    Goa Hotels
+                                </Link>
+                                <Link
+                                    to={`/${currentLang}/jaipur-hotels`}
+                                    className="px-3.5 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-100 hover:text-brand-600 transition-colors"
+                                >
+                                    Jaipur Hotels
+                                </Link>
+                                <Link
+                                    to={`/${currentLang}/manali-hotels`}
+                                    className="px-3.5 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-100 hover:text-brand-600 transition-colors"
+                                >
+                                    Manali Hotels
+                                </Link>
+                                <Link
+                                    to={`/${currentLang}/shimla-hotels`}
+                                    className="px-3.5 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-100 hover:text-brand-600 transition-colors"
+                                >
+                                    Shimla Hotels
+                                </Link>
+                                <Link
+                                    to={`/${currentLang}/udaipur-hotels`}
+                                    className="px-3.5 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-100 hover:text-brand-600 transition-colors"
+                                >
+                                    Udaipur Hotels
+                                </Link>
+                                {internalLinks.map((link, idx) => (
+                                    <Link
+                                        key={idx}
+                                        to={link.url}
+                                        className="px-3.5 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-100 hover:text-brand-600 transition-colors"
+                                    >
+                                        {link.label}
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+
                     </div>
                 </div>
-
-                {/* ── Category Interlinking ── */}
-                <div className="bg-slate-50 border border-slate-200/60 rounded-[2.5rem] p-8 md:p-12 text-slate-900 space-y-6">
-                    <h3 className="text-xl md:text-2xl font-black italic uppercase tracking-tighter text-slate-955">
-                        Popular Hotel Categories in {city}
-                    </h3>
-                    <p className="text-slate-500 text-xs md:text-sm font-semibold max-w-2xl leading-relaxed">
-                        Find the perfect accommodation tailored to your travel needs. Explore budget options, hourly rooms, couple-friendly stays, and premium hotels in {city}.
-                    </p>
-                    <div className="flex flex-wrap gap-3 pt-2">
-                        <Link
-                            to={`/${currentLang}/hotels-in/${urlSlug || city.toLowerCase()}`}
-                            className={`px-4 py-2 border rounded-xl text-xs font-bold transition-all duration-300 ${
-                                !filterSlug
-                                    ? "bg-brand-600 border-brand-600 text-white shadow-md shadow-brand-100"
-                                    : "bg-white hover:bg-slate-50 border-slate-200 text-slate-700 hover:text-brand-600"
-                            }`}
-                        >
-                            All Stays in {city}
-                        </Link>
-                        <Link
-                            to={`/${currentLang}/hotels-in/${urlSlug || city.toLowerCase()}/couple-friendly`}
-                            className={`px-4 py-2 border rounded-xl text-xs font-bold transition-all duration-300 ${
-                                filterSlug === "couple-friendly"
-                                    ? "bg-brand-600 border-brand-600 text-white shadow-md shadow-brand-100"
-                                    : "bg-white hover:bg-slate-50 border-slate-200 text-slate-700 hover:text-brand-600"
-                            }`}
-                        >
-                            Couple Friendly Hotels in {city}
-                        </Link>
-                        <Link
-                            to={`/${currentLang}/hotels-in/${urlSlug || city.toLowerCase()}/hourly`}
-                            className={`px-4 py-2 border rounded-xl text-xs font-bold transition-all duration-300 ${
-                                filterSlug === "hourly"
-                                    ? "bg-brand-600 border-brand-600 text-white shadow-md shadow-brand-100"
-                                    : "bg-white hover:bg-slate-50 border-slate-200 text-slate-700 hover:text-brand-600"
-                            }`}
-                        >
-                            Hourly & Day-Use Hotels in {city}
-                        </Link>
-                        <Link
-                            to={`/${currentLang}/hotels-in/${urlSlug || city.toLowerCase()}/budget`}
-                            className={`px-4 py-2 border rounded-xl text-xs font-bold transition-all duration-300 ${
-                                filterSlug === "budget"
-                                    ? "bg-brand-600 border-brand-600 text-white shadow-md shadow-brand-100"
-                                    : "bg-white hover:bg-slate-50 border-slate-200 text-slate-700 hover:text-brand-600"
-                            }`}
-                        >
-                            Budget-Friendly Hotels in {city}
-                        </Link>
-                        <Link
-                            to={`/${currentLang}/hotels-in/${urlSlug || city.toLowerCase()}/luxury`}
-                            className={`px-4 py-2 border rounded-xl text-xs font-bold transition-all duration-300 ${
-                                filterSlug === "luxury"
-                                    ? "bg-brand-600 border-brand-600 text-white shadow-md shadow-brand-100"
-                                    : "bg-white hover:bg-slate-50 border-slate-200 text-slate-700 hover:text-brand-600"
-                            }`}
-                        >
-                            Premium & Luxury Hotels in {city}
-                        </Link>
-                    </div>
-                </div>
-
-                {/* ── Internal Links & Interlinking ── */}
-                <div className="bg-blue-50 border border-blue-100 rounded-[2.5rem] p-8 md:p-12 text-slate-900 space-y-6">
-                    <h3 className="text-xl md:text-2xl font-black italic uppercase tracking-tighter text-blue-950">
-                        Explore Other Popular Destinations
-                    </h3>
-                    <p className="text-slate-500 text-xs md:text-sm font-semibold max-w-2xl leading-relaxed">
-                        Planning your next trip? GetHotelStays offers verified stays and hourly rooms across India's top tourist destinations. Compare prices, read reviews, and book instantly.
-                    </p>
-                    <div className="flex flex-wrap gap-4 pt-2">
-                        {internalLinks.map((link, idx) => (
-                            <Link
-                                key={idx}
-                                to={link.url}
-                                className="px-5 py-3 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-xl text-xs font-bold text-slate-800 transition-all duration-300 flex items-center gap-2 active:scale-95 shadow-sm"
-                            >
-                                {link.label}
-                                <ArrowRight className="w-3.5 h-3.5 text-slate-500" />
-                            </Link>
-                        ))}
-                    </div>
-                </div>
-
             </div>
         </div>
     );
