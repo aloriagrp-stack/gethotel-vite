@@ -297,7 +297,7 @@ export default function HotelCard({ hotel, className }: HotelCardProps) {
                             </div>
                         </div>
                         
-                        <button className="btn-shine-effect flex items-center justify-center gap-1.5 px-8 py-3 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 group-hover:scale-105 active:scale-95 shadow-md shadow-brand-500/20">
+                        <button className="btn-shine-effect flex items-center justify-center gap-1.5 px-8 py-3 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 group-hover:scale-105 active:scale-95 shadow-md shadow-brand-600/20">
                             <span className="relative z-10">Book</span>
                         </button>
                     </div>

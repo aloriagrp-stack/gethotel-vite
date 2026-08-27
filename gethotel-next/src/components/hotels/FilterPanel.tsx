@@ -120,7 +120,7 @@ export default function FilterPanel({ filters, onChange }: FilterPanelProps) {
                             <span className="text-xs font-black text-slate-900 notranslate">{formatPrice(filters.priceRange[0])}</span>
                         </div>
                         <span className="text-slate-300 font-bold text-xs">—</span>
-                        <div className="flex-1 bg-gradient-to-r from-brand-50 to-indigo-50/80 border border-brand-200/80 rounded-2xl px-3 py-2 text-center shadow-sm">
+                        <div className="flex-1 bg-brand-50/80 border border-brand-200/80 rounded-2xl px-3 py-2 text-center shadow-sm">
                             <span className="text-[9px] font-bold text-brand-600 uppercase tracking-widest block">Up to</span>
                             <span className="text-xs font-black text-brand-700 notranslate">
                                 {currentMaxPrice >= MAX_PRICE ? `${formatPrice(MAX_PRICE)}+` : formatPrice(currentMaxPrice)}
@@ -138,7 +138,7 @@ export default function FilterPanel({ filters, onChange }: FilterPanelProps) {
                             value={currentMaxPrice}
                             onChange={(e) => updateFilter("priceRange", [filters.priceRange[0], Number(e.target.value)])}
                             style={{
-                                background: `linear-gradient(to right, #0284c7 0%, #6366f1 ${pricePercent}%, #e2e8f0 ${pricePercent}%, #e2e8f0 100%)`
+                                background: `linear-gradient(to right, #0284c7 0%, #0ea5e9 ${pricePercent}%, #e2e8f0 ${pricePercent}%, #e2e8f0 100%)`
                             }}
                             className={cn(
                                 "w-full h-2 rounded-full appearance-none cursor-pointer outline-none transition-all",
