@@ -163,8 +163,8 @@ function HotelListingContent() {
             />
 
             {/* Unified Main Layout (Left Sidebar starts at Top parallel with Search Bar) */}
-            <div className="w-full max-w-7xl mx-auto px-4 md:px-8 py-0">
-                <div className="flex gap-8 lg:gap-9 items-start">
+            <div className="w-full max-w-[1440px] mx-auto px-2 md:px-5 lg:px-6 py-0">
+                <div className="flex gap-6 lg:gap-8 items-start">
                     
                     {/* Sidebar Filter — Desktop (Starts at the very top parallel with Search Bar, expanded to w-[330px]) */}
                     <aside className="hidden lg:block w-80 lg:w-[330px] shrink-0 sticky top-20 z-30">

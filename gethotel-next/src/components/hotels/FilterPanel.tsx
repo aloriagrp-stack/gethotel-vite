@@ -88,10 +88,7 @@ export default function FilterPanel({ filters, onChange }: FilterPanelProps) {
         <aside className="w-full bg-white/95 backdrop-blur-2xl border border-slate-200/90 rounded-[28px] p-5 lg:p-6 shadow-[0_12px_40px_rgba(0,0,0,0.06)] space-y-4 max-h-[calc(100vh-100px)] overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             {/* Header */}
             <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
-                <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-brand-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
-                        <SlidersHorizontal className="w-4 h-4" />
-                    </div>
+                <div className="flex items-center gap-2">
                     <div>
                         <span className="font-extrabold text-slate-950 text-base tracking-tight block leading-tight">Filters</span>
                         <span className="text-[10px] font-semibold text-slate-400">Refine stays in real-time</span>
