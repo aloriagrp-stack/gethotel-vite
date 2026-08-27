@@ -219,9 +219,8 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
             <div className="w-full relative z-50">
                 <div className={cn(
                     "w-full flex flex-col lg:flex-row lg:items-center relative transition-all duration-700 gap-3 lg:gap-0",
-                    !hideStories
-                        ? "lg:bg-white/40 lg:backdrop-blur-3xl lg:rounded-full lg:shadow-premium lg:border lg:border-white/40 lg:p-2"
-                        : "lg:rounded-full lg:p-0"
+                    "lg:bg-white/80 lg:backdrop-blur-3xl lg:rounded-full lg:shadow-[0_12px_40px_rgba(0,0,0,0.08)] lg:border lg:border-slate-200/80 lg:p-2",
+                    "bg-white/80 backdrop-blur-2xl border border-slate-200/80 rounded-3xl p-1.5 shadow-md"
                 )}>
 
                     {/* Mobile View (Unified Pill Container) */}

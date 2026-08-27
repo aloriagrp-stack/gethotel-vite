@@ -1,6 +1,5 @@
 'use client';
 
-
 import React, { useState, useEffect, Suspense, useRef, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { ArrowUpDown, MapPin, Hotel, X, Search, ChevronDown, SlidersHorizontal } from "lucide-react";
@@ -19,8 +18,6 @@ import { Hotel as HotelType } from "@/types";
 import SEOHead from "@/components/common/SEOHead";
 import Loader from "@/components/common/Loader";
 import { PAGE_SEO, buildBreadcrumbSchema, SITE } from "@/lib/seo";
-
-// Remove HOTELS_PER_PAGE as we use dynamic visibleCount
 
 const sortOptions: { value: SortOption; label: string }[] = [
     { value: "recommended", label: "Recommended" },
@@ -54,7 +51,6 @@ function HotelListingContent() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [showMobileFilter, setShowMobileFilter] = useState(false);
-    const [showSearchModal, setShowSearchModal] = useState(false);
 
     // Reset page to 1 on searchParams change
     useEffect(() => {
@@ -80,17 +76,22 @@ function HotelListingContent() {
                 if (filters.starRatings.length > 0) {
                     params.starRatings = filters.starRatings.join(",");
                 }
+                
                 if (filters.guestRatingMin > 0) {
                     params.guestRatingMin = String(filters.guestRatingMin);
                 }
+
                 if (filters.amenities.length > 0) {
                     params.amenities = filters.amenities.join(",");
                 }
-                if (searchQuery) {
-                    params.searchQuery = searchQuery;
+
+                if (searchQuery.trim()) {
+                    params.searchQuery = searchQuery.trim();
                 }
-                params.sort = sort;
-                params.stayType = stayType;
+
+                if (sort) {
+                    params.sort = sort;
+                }
 
                 const response = await hotelApi.searchHotels(params);
 
@@ -145,7 +146,7 @@ function HotelListingContent() {
         : PAGE_SEO.hotels.keywords;
 
     return (
-        <div className="min-h-screen pt-2 bg-transparent px-0">
+        <div className="min-h-screen pt-2 pb-16 bg-transparent px-0">
             <SEOHead
                 title={pageTitle}
                 description={pageDesc}
@@ -160,22 +161,14 @@ function HotelListingContent() {
                     ]),
                 ]}
             />
-            {/* Search Modal Overlay */}
-            {/* Page Header Area - Side-by-Side Layout */}
-            <div className="w-full flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-6 px-4 md:px-10">
-                <div className="shrink-0 sr-only">
-                    <h1 className="text-3xl md:text-4xl font-bold text-slate-950 tracking-tight leading-tight">
-                        {cityParam !== "All"
-                            ? <>Hotels in <span className="text-brand-600">{cityParam}</span></>
-                            : "All Hotels in India - Book Verified Stays"}
-                    </h1>
-                </div>
 
-                <div className="w-full lg:max-w-4xl">
+            {/* Top Search Pill Container */}
+            <div className="w-full mb-6 px-4 md:px-10">
+                <div className="w-full max-w-7xl mx-auto">
                     <SmartSearchBar
                         layoutMode="hotels"
                         hideStories
-                        className=""
+                        className="w-full"
                         initialState={{
                             destination: cityParam !== "All" ? { label: cityParam, id: cityParam.toLowerCase(), category: "trending" } : null,
                             dates: {
@@ -189,8 +182,9 @@ function HotelListingContent() {
             </div>
 
             {/* Main Content Area */}
-            <div className="w-full px-4 md:px-10 py-0">
-                <div className="flex gap-10">
+            <div className="w-full max-w-7xl mx-auto px-4 md:px-10 py-0">
+                <div className="flex gap-8 lg:gap-10 items-start">
+                    
                     {/* Sidebar Filter — Desktop */}
                     <aside className="hidden lg:block w-72 shrink-0">
                         <div className="sticky top-24">
@@ -201,17 +195,18 @@ function HotelListingContent() {
                     {/* Mobile Filter Drawer */}
                     {showMobileFilter && (
                         <div className="fixed inset-0 z-[100] lg:hidden">
-                            <div className="absolute inset-0 bg-black/20 backdrop-blur-md transition-all duration-500" onClick={() => setShowMobileFilter(false)} />
-                            <div className="absolute right-0 top-0 bottom-0 w-[85%] max-w-[400px] bg-white/70 backdrop-blur-3xl saturate-[180%] overflow-y-auto p-6 md:p-10 border-l border-white/40 shadow-[-20px_0_50px_rgba(0,0,0,0.1)]">
-                                <div className="flex items-center justify-between mb-8 pb-4 border-b border-black/10">
-                                    <div className="flex items-center gap-3">
-                                        <h2 className="text-xl font-black text-slate-900 tracking-tight">Filters</h2>
+                            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-all duration-300" onClick={() => setShowMobileFilter(false)} />
+                            <div className="absolute right-0 top-0 bottom-0 w-[85%] max-w-[380px] bg-white overflow-y-auto p-6 border-l border-slate-200 shadow-2xl z-10">
+                                <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+                                    <div className="flex items-center gap-2">
+                                        <SlidersHorizontal className="w-5 h-5 text-brand-600" />
+                                        <h2 className="text-lg font-bold text-slate-900">Filters</h2>
                                     </div>
                                     <button
                                         onClick={() => setShowMobileFilter(false)}
-                                        className="w-10 h-10 rounded-full bg-black/5 flex items-center justify-center text-slate-500 hover:bg-black/10 transition-colors"
+                                        className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 transition-colors"
                                     >
-                                        <X className="w-6 h-6" />
+                                        <X className="w-5 h-5" />
                                     </button>
                                 </div>
                                 <div className="space-y-4">
@@ -222,25 +217,28 @@ function HotelListingContent() {
                     )}
 
                     {/* Results Column */}
-                    <div className="flex-1 flex flex-col gap-8 px-0">
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-4 md:px-0">
-                            <div className="flex-1" />
-
-                            <div className="flex items-center gap-4">
-                                <p className="hidden sm:block text-xs text-slate-500 font-bold">
-                                    <span className="text-slate-900">{totalStays}</span> properties found
+                    <div className="flex-1 min-w-0 flex flex-col gap-6">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div>
+                                <h1 className="text-xl md:text-2xl font-extrabold text-slate-950 tracking-tight">
+                                    {cityParam !== "All" ? `Hotels in ${cityParam}` : "All Hotels in India"}
+                                </h1>
+                                <p className="text-xs text-slate-500 font-semibold mt-0.5">
+                                    <span className="text-slate-900 font-bold">{totalStays}</span> verified properties found
                                 </p>
+                            </div>
 
+                            <div className="flex items-center gap-3 shrink-0">
                                 {/* Mobile Filter Button */}
                                 <button
                                     onClick={() => setShowMobileFilter(true)}
-                                    className="lg:hidden flex items-center gap-2 bg-slate-950 hover:bg-black text-white rounded-xl px-4 py-2 text-xs font-bold transition-all active:scale-95 shadow-md shadow-slate-950/10 cursor-pointer"
+                                    className="lg:hidden flex items-center gap-2 bg-slate-900 hover:bg-black text-white rounded-xl px-4 py-2 text-xs font-bold transition-all shadow-md active:scale-95 cursor-pointer"
                                 >
                                     <SlidersHorizontal className="w-3.5 h-3.5" />
                                     <span>Filters</span>
                                 </button>
 
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1.5">
                                     <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Sort By</span>
                                     <select
                                         value={sort}
@@ -248,7 +246,7 @@ function HotelListingContent() {
                                             setSort(e.target.value as SortOption);
                                             setPage(1);
                                         }}
-                                        className="bg-white/60 backdrop-blur-md border border-white/60 rounded-xl px-4 py-2 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all cursor-pointer shadow-sm hover:bg-white/80"
+                                        className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all cursor-pointer shadow-sm hover:border-slate-300"
                                     >
                                         {sortOptions.map((opt) => (
                                             <option key={opt.value} value={opt.value}>
@@ -261,14 +259,14 @@ function HotelListingContent() {
                         </div>
 
                         {loading && page === 1 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 md:gap-8">
-                                {Array.from({ length: 6 }).map((_, i) => (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {Array.from({ length: 4 }).map((_, i) => (
                                     <HotelCardSkeleton key={i} />
                                 ))}
                             </div>
                         ) : visibleHotels.length > 0 ? (
                             <>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 md:gap-8">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {visibleHotels.map((hotel) => (
                                         <HotelCard key={hotel.id} hotel={hotel} />
                                     ))}
@@ -279,46 +277,30 @@ function HotelListingContent() {
                                         <button
                                             onClick={loadMore}
                                             disabled={loading}
-                                            className="px-6 py-3 bg-slate-900 hover:bg-black text-white rounded-full text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2 cursor-pointer shadow-lg shadow-slate-950/10"
+                                            className="px-8 py-3 bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95 disabled:opacity-50"
                                         >
-                                            {loading ? (
-                                                <>
-                                                    <div className="w-3.5 h-3.5 rounded-full border-2 border-white/20 border-t-white animate-spin" />
-                                                    <span>Loading Stays...</span>
-                                                </>
-                                            ) : (
-                                                <span>Load More Stays</span>
-                                            )}
+                                            {loading ? "Loading more..." : "Load More Stays"}
                                         </button>
-                                    </div>
-                                )}
-
-                                {!hasMore && (
-                                    <div className="mt-8 flex flex-col items-center">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                            Showing all {totalStays} Stays
-                                        </p>
                                     </div>
                                 )}
                             </>
                         ) : (
-                            <div className="flex flex-col items-center justify-center py-24 glass-card rounded-[40px] border border-white/40">
-                                <div className="w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center mb-6">
-                                    <Hotel className="w-10 h-10 text-slate-300" />
-                                </div>
-                                <h3 className="text-2xl font-black text-slate-900 mb-2 italic">No matches found</h3>
-                                <p className="text-slate-500 font-bold max-w-xs text-center px-4">
-                                    {searchQuery ? `We couldn't find anything matching "${searchQuery}".` : "Try adjusting your filters to find the perfect stay."}
+                            <div className="flex flex-col items-center justify-center py-16 bg-white/70 backdrop-blur-md rounded-2xl border border-slate-200 p-8 text-center">
+                                <Hotel className="w-12 h-12 text-slate-300 mb-3" />
+                                <h3 className="text-lg font-bold text-slate-900 mb-1">
+                                    No hotels found matching your search
+                                </h3>
+                                <p className="text-slate-500 text-xs leading-relaxed max-w-md mb-5">
+                                    Try clearing some filters or changing your search criteria.
                                 </p>
                                 <button
-                                        onClick={() => {
-                                            setFilters(defaultFilters);
-                                            setSearchQuery("");
-                                            setPage(1);
-                                        }}
-                                        className="mt-8 px-10 py-4 bg-brand-600 text-white rounded-full text-sm font-black shadow-xl shadow-brand-600/20 active:scale-95 transition-all"
-                                    >
-                                    Reset All Search & Filters
+                                    onClick={() => {
+                                        setFilters(defaultFilters);
+                                        setSearchQuery("");
+                                    }}
+                                    className="px-6 py-2.5 bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs rounded-xl transition-all shadow-md"
+                                >
+                                    Reset All Filters
                                 </button>
                             </div>
                         )}
@@ -329,13 +311,10 @@ function HotelListingContent() {
     );
 }
 
-export default function HotelsPage() {
+export default function Hotels() {
     return (
-        <Suspense fallback={<Loader variant="fullscreen" text="Curating Luxury Stays..." />}>
+        <Suspense fallback={<Loader />}>
             <HotelListingContent />
         </Suspense>
     );
 }
-
-
-
