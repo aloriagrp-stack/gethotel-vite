@@ -1,22 +1,16 @@
 'use client';
 
-
-
-import { useState, useEffect, useCallback, lazy, Suspense } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import Hero from "@/components/home/Hero";
-import TrendingHotels from "@/components/home/TrendingHotels";
+import ExploreByDestinations from "@/components/home/ExploreByDestinations";
 import AICopilot from "@/components/home/AICopilot";
 import { useStayMode } from "@/context/StayModeContext";
 
-// Lazy load non-critical, below-the-fold components to reduce initial JS execution and improve INP
-const ExploreByDestinations = lazy(() => import("@/components/home/ExploreByDestinations"));
-const FeaturedCollections = lazy(() => import("@/components/home/FeaturedCollections"));
+// Lazy load non-critical, below-the-fold components
 const WhyGetHotel = lazy(() => import("@/components/home/WhyGetHotel"));
 const HomeSEOContent = lazy(() => import("@/components/home/HomeSEOContent"));
 
-// Placeholders to prevent Layout Shift (CLS)
-const ExplorePlaceholder = () => <div className="min-h-[450px] w-full bg-transparent" />;
-const CollectionsPlaceholder = () => <div className="min-h-[400px] w-full bg-transparent" />;
+// Placeholders
 const WhyPlaceholder = () => <div className="min-h-[350px] w-full bg-transparent" />;
 const SEOPlaceholder = () => <div className="min-h-[500px] w-full bg-transparent animate-pulse" />;
 
@@ -34,12 +28,8 @@ import {
 } from "@/lib/seo";
 
 export default function HomePage() {
-  const [trendingHotels, setTrendingHotels] = useState([]);
   const [homeConfig, setHomeConfig] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [trendingLoading, setTrendingLoading] = useState(false);
   const [configLoading, setConfigLoading] = useState(true);
-  const { mode } = useStayMode();
 
   // Fetch config once on mount
   useEffect(() => {
@@ -55,27 +45,6 @@ export default function HomePage() {
     };
     fetchConfig();
   }, []);
-
-  // Fetch trending hotels
-  const fetchTrending = useCallback(async () => {
-    setTrendingLoading(true);
-    try {
-      const res = await homepageApi.getTrendingHotels(undefined, mode);
-      if (res.success) {
-        setTrendingHotels(res.data);
-      }
-    } catch (err) {
-      console.error("Failed to fetch trending hotels:", err);
-    } finally {
-      setTrendingLoading(false);
-      setLoading(false);
-    }
-  }, [mode]);
-
-  // Initial fetch (no city override — let backend auto-detect)
-  useEffect(() => {
-    fetchTrending();
-  }, [fetchTrending]);
 
   return (
     <main className="flex flex-col overflow-x-hidden">
@@ -95,32 +64,29 @@ export default function HomePage() {
         ]}
       />
       <h1 className="sr-only">GetHotelStays — Book Best Hotels & Hourly Stays in India</h1>
+      
+      {/* Hero Section with Search Bar */}
       <Hero
         title={homeConfig?.heroTitle}
         highlight={homeConfig?.heroHighlight}
         transitionInterval={homeConfig?.heroTransitionInterval}
         stories={homeConfig?.stories}
       />
-      <TrendingHotels
-        hotels={trendingHotels}
-        loading={loading || trendingLoading}
-      />
-      <Suspense fallback={<ExplorePlaceholder />}>
-        <ExploreByDestinations destinations={homeConfig?.destinations} loading={configLoading} />
-      </Suspense>
-      <Suspense fallback={<CollectionsPlaceholder />}>
-        <FeaturedCollections collections={homeConfig?.collections} loading={configLoading} />
-      </Suspense>
+
+      {/* Top Destinations / Cities Grid */}
+      <ExploreByDestinations destinations={homeConfig?.destinations} loading={configLoading} />
+
+      {/* Trust & Features Section */}
       <Suspense fallback={<WhyPlaceholder />}>
         <WhyGetHotel />
       </Suspense>
+
+      {/* SEO Editorial Content */}
       <Suspense fallback={<SEOPlaceholder />}>
         <HomeSEOContent />
       </Suspense>
+
       <AICopilot />
     </main>
   );
 }
-
-
-
