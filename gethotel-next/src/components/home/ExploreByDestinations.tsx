@@ -72,19 +72,15 @@ export default function ExploreByDestinations({ destinations, loading = false }:
                 {/* Section Header */}
                 <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
                     <div>
-                        <div className="flex items-center gap-2 mb-1">
-                            <Sparkles className="w-4 h-4 text-brand-600" />
-                            <span className="text-xs font-extrabold uppercase tracking-widest text-brand-600">Top Destinations</span>
-                        </div>
-                        <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-950 tracking-tight">
-                            Explore Popular <span className="bg-gradient-to-r from-brand-600 to-indigo-600 bg-clip-text text-transparent">Destinations</span>
+                        <h2 className="text-3xl md:text-5xl font-black text-slate-950 tracking-tight">
+                            Destinations
                         </h2>
                     </div>
                     <Link
                         to="/hotels"
                         className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-brand-600 transition-colors"
                     >
-                        <span>View all destinations</span>
+                        <span>View all</span>
                         <ArrowRight className="w-3.5 h-3.5" />
                     </Link>
                 </div>
