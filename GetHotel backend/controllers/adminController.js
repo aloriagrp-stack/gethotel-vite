@@ -235,6 +235,75 @@ exports.resetPartnerPassword = async (req, res) => {
     }
 };
 
+// @desc    Update partner email (Super Admin only, zero OTP required)
+// @route   PUT /api/admin/partners/:id/update-email
+// @access  Private (Super Admin)
+exports.updatePartnerEmail = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const partnerId = parseInt(req.params.id);
+
+        if (!email || typeof email !== 'string' || !email.includes('@')) {
+            return res.status(400).json({ success: false, message: 'Please provide a valid email address' });
+        }
+
+        const normalizedEmail = email.trim().toLowerCase();
+
+        const partner = await prisma.user.findUnique({
+            where: { id: partnerId }
+        });
+
+        if (!partner || (partner.role !== 'hotel_admin' && partner.role !== 'partner')) {
+            return res.status(404).json({ success: false, message: 'Partner not found' });
+        }
+
+        if (partner.email && partner.email.toLowerCase() === normalizedEmail) {
+            return res.status(400).json({ success: false, message: 'New email is the same as the current email' });
+        }
+
+        // Check if new email is already used by another account
+        const existingUser = await prisma.user.findUnique({
+            where: { email: normalizedEmail }
+        });
+
+        if (existingUser && existingUser.id !== partnerId) {
+            return res.status(400).json({ success: false, message: 'This email is already in use by another account' });
+        }
+
+        const oldEmail = partner.email;
+
+        // Update partner email directly (zero OTP required)
+        const updatedPartner = await prisma.user.update({
+            where: { id: partnerId },
+            data: {
+                email: normalizedEmail,
+                updatedAt: new Date()
+            },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                updatedAt: true
+            }
+        });
+
+        logAdminActivity(req.user, 'UPDATE_PARTNER_EMAIL', {
+            partnerId,
+            oldEmail,
+            newEmail: normalizedEmail
+        }, req);
+
+        res.json({
+            success: true,
+            message: `Partner email updated successfully to ${normalizedEmail}`,
+            data: updatedPartner
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 // @desc    Get all hotels
 // @route   GET /api/admin/hotels
 // @access  Private (Super Admin)

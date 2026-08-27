@@ -116,6 +116,9 @@ export default function SuperAdminDashboard() {
 
     // Reset Password States
     const [resetModal, setResetModal] = useState<{ show: boolean, partner: any }>({ show: false, partner: null });
+    const [editEmailModal, setEditEmailModal] = useState<{ show: boolean, partner: any }>({ show: false, partner: null });
+    const [newPartnerEmail, setNewPartnerEmail] = useState("");
+    const [isUpdatingEmail, setIsUpdatingEmail] = useState(false);
     const [requestDetailModal, setRequestDetailModal] = useState<{ show: boolean, request: any }>({ show: false, request: null });
     const [declineConfirmModal, setDeclineConfirmModal] = useState<{ show: boolean, requestId: number | null }>({ show: false, requestId: null });
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -344,6 +347,35 @@ export default function SuperAdminDashboard() {
             alert(err.message || "Failed to reset password");
         } finally {
             setIsReseting(false);
+        }
+    };
+
+    const handleUpdatePartnerEmail = async () => {
+        if (!newPartnerEmail || !newPartnerEmail.includes("@")) {
+            alert("Please provide a valid email address.");
+            return;
+        }
+
+        const trimmedEmail = newPartnerEmail.trim().toLowerCase();
+        if (editEmailModal.partner && editEmailModal.partner.email?.toLowerCase() === trimmedEmail) {
+            alert("The new email is the same as the current email.");
+            return;
+        }
+
+        setIsUpdatingEmail(true);
+        try {
+            const res = await adminApi.updatePartnerEmail(editEmailModal.partner.id, trimmedEmail);
+            if (res.success) {
+                alert(res.message || "Partner email updated successfully!");
+                // Update local partners state immediately
+                setPartners(prev => prev.map(p => p.id === editEmailModal.partner.id ? { ...p, email: trimmedEmail } : p));
+                setEditEmailModal({ show: false, partner: null });
+                setNewPartnerEmail("");
+            }
+        } catch (err: any) {
+            alert(err.message || "Failed to update partner email.");
+        } finally {
+            setIsUpdatingEmail(false);
         }
     };
 
@@ -875,12 +907,24 @@ export default function SuperAdminDashboard() {
                                                     {formatDateSafe(partner.createdAt)}
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
-                                                    <button
-                                                        onClick={() => setResetModal({ show: true, partner })}
-                                                        className="px-4 py-2 bg-[#181818] text-white text-[9px] font-bold uppercase tracking-widest hover:bg-[#222222] border border-[#2a2a2a] flex items-center gap-2 ml-auto rounded-lg"
-                                                    >
-                                                        <Key className="w-3 h-3" /> Reset Password
-                                                    </button>
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <button
+                                                            onClick={() => {
+                                                                setEditEmailModal({ show: true, partner });
+                                                                setNewPartnerEmail(partner.email || "");
+                                                            }}
+                                                            className="px-3 py-2 bg-[#181818] text-white text-[9px] font-bold uppercase tracking-widest hover:bg-[#222222] hover:text-emerald-400 border border-[#2a2a2a] flex items-center gap-1.5 rounded-lg transition-colors cursor-pointer"
+                                                            title="Edit Partner Email (No OTP Required)"
+                                                        >
+                                                            <Mail className="w-3 h-3 text-emerald-400" /> Edit Email
+                                                        </button>
+                                                        <button
+                                                            onClick={() => setResetModal({ show: true, partner })}
+                                                            className="px-3 py-2 bg-[#181818] text-white text-[9px] font-bold uppercase tracking-widest hover:bg-[#222222] border border-[#2a2a2a] flex items-center gap-1.5 rounded-lg transition-colors cursor-pointer"
+                                                        >
+                                                            <Key className="w-3 h-3" /> Reset Password
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}
@@ -1393,6 +1437,89 @@ export default function SuperAdminDashboard() {
                                     <button
                                         onClick={() => setResetModal({ show: false, partner: null })}
                                         className="flex-1 py-4 bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 cursor-pointer"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
+
+
+            {/* ─── Edit Partner Email Modal (Zero OTP Required) ────────────────────── */}
+            <AnimatePresence>
+                {editEmailModal.show && editEmailModal.partner && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[200]"
+                            onClick={() => setEditEmailModal({ show: false, partner: null })}
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-white p-8 rounded-sm z-[210] shadow-2xl border border-slate-200"
+                        >
+                            <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-100">
+                                <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
+                                    <Mail className="w-5 h-5 text-emerald-600" />
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Update Partner Email</h3>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{editEmailModal.partner.name || "Partner"}</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div className="p-4 bg-emerald-50/80 border border-emerald-200 flex gap-3 rounded-sm">
+                                    <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] font-black text-emerald-900 uppercase tracking-wider">Super Admin Direct Override</p>
+                                        <p className="text-[10px] font-medium text-emerald-700 leading-relaxed">
+                                            No OTP or verification needed. Partner will use this new email to login instantly.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Current Email</label>
+                                    <input
+                                        type="text"
+                                        value={editEmailModal.partner.email || "No email"}
+                                        disabled
+                                        className="w-full px-5 py-3.5 bg-slate-100 border border-slate-200 rounded-sm text-xs font-bold text-slate-500 cursor-not-allowed"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-700 uppercase tracking-widest ml-1">New Partner Email</label>
+                                    <input
+                                        type="email"
+                                        value={newPartnerEmail}
+                                        onChange={(e) => setNewPartnerEmail(e.target.value)}
+                                        placeholder="e.g. partner@hotel.com"
+                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-200 focus:border-emerald-600 focus:bg-white outline-none rounded-sm text-sm font-bold text-slate-900 transition-all"
+                                        autoFocus
+                                    />
+                                </div>
+
+                                <div className="flex gap-2 pt-4">
+                                    <button
+                                        onClick={handleUpdatePartnerEmail}
+                                        disabled={isUpdatingEmail}
+                                        className="flex-1 py-4 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 shadow-xl shadow-emerald-100 disabled:opacity-50 flex items-center justify-center gap-2 rounded-sm cursor-pointer"
+                                    >
+                                        {isUpdatingEmail ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                                        Update Email
+                                    </button>
+                                    <button
+                                        onClick={() => setEditEmailModal({ show: false, partner: null })}
+                                        className="flex-1 py-4 bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 cursor-pointer rounded-sm"
                                     >
                                         Cancel
                                     </button>

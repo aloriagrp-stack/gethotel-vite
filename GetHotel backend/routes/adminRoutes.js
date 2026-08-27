@@ -1,6 +1,6 @@
 const express = require('express');
 const { 
-    getStats, getHotelDetail, getPartners, resetPartnerPassword, assignHotelsToPartner, 
+    getStats, getHotelDetail, getPartners, resetPartnerPassword, updatePartnerEmail, assignHotelsToPartner, 
     getAllHotels, getAllBookings, getAdminHotelDetail, updateHotelMetrics, recalculateHotelMetrics, 
     suspendHotel, deleteHotel, getPayouts, approvePayout, createQuickPartner, createBulkHotels, 
     getUsers, getGlobalReviews, deleteReview, createBulkPartnersWithHotels,
@@ -38,6 +38,7 @@ router.get('/partners', getPartners);
 router.post('/partners/quick', createQuickPartner);
 router.post('/partners/bulk-with-hotels', createBulkPartnersWithHotels);
 router.post('/partners/:id/reset-password', resetPartnerPassword);
+router.put('/partners/:id/update-email', updatePartnerEmail);
 router.put('/partners/:id/assign-hotels', assignHotelsToPartner);
 router.put('/homepage/config', updateHomepageConfig);
 // Payout administration routes

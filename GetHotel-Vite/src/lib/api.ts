@@ -213,6 +213,7 @@ export const adminApi = {
     bulkApprovePartnerRequests: (ids: number[]) => apiFetch('/partner/requests/bulk-approve', { method: 'PUT', body: JSON.stringify({ ids }) }),
     bulkDeclinePartnerRequests: (ids: number[]) => apiFetch('/partner/requests/bulk-decline', { method: 'PUT', body: JSON.stringify({ ids }) }),
     resetPartnerPassword: (id: number, password: string) => apiFetch(`/admin/partners/${id}/reset-password`, { method: 'POST', body: JSON.stringify({ password }) }),
+    updatePartnerEmail: (id: number, email: string) => apiFetch(`/admin/partners/${id}/update-email`, { method: 'PUT', body: JSON.stringify({ email }) }),
     getAllHotels: () => apiFetch('/admin/hotels'),
     getAllBookings: () => apiFetch('/admin/bookings'),
     getStats: () => apiFetch('/admin/stats'),
