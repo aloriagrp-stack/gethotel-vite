@@ -245,21 +245,23 @@ export default function DestinationLanding({
                 schemas={schemas}
             />
 
-            {/* ── Top Search Bar (Exact same as /hotels) ── */}
+            {/* ── Top Search Bar (Right-aligned) ── */}
             <div className="w-full mb-6 px-4 md:px-10">
-                <div className="w-full max-w-7xl mx-auto">
-                    <SmartSearchBar
-                        layoutMode="hotels"
-                        hideStories
-                        initialState={{
-                            destination: { label: city, id: city.toLowerCase(), category: "trending" },
-                            dates: {
-                                checkIn: searchParams.get("checkIn") ? new Date(searchParams.get("checkIn") as string) : null,
-                                checkOut: searchParams.get("checkOut") ? new Date(searchParams.get("checkOut") as string) : null,
-                            },
-                            guests: { adults: Number(guests), children: 0, rooms: 1, childAges: [] },
-                        }}
-                    />
+                <div className="w-full max-w-7xl mx-auto flex justify-end">
+                    <div className="w-full lg:max-w-4xl">
+                        <SmartSearchBar
+                            layoutMode="hotels"
+                            hideStories
+                            initialState={{
+                                destination: { label: city, id: city.toLowerCase(), category: "trending" },
+                                dates: {
+                                    checkIn: searchParams.get("checkIn") ? new Date(searchParams.get("checkIn") as string) : null,
+                                    checkOut: searchParams.get("checkOut") ? new Date(searchParams.get("checkOut") as string) : null,
+                                },
+                                guests: { adults: Number(guests), children: 0, rooms: 1, childAges: [] },
+                            }}
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -267,11 +269,9 @@ export default function DestinationLanding({
             <div className="w-full max-w-7xl mx-auto px-4 md:px-10 py-0">
                 <div className="flex gap-8 lg:gap-10 items-start">
                     
-                    {/* Desktop Sidebar Filter (Exact same as /hotels) */}
-                    <aside className="hidden lg:block w-72 shrink-0">
-                        <div className="sticky top-24">
-                            <FilterPanel filters={filters} onChange={handleFilterChange} />
-                        </div>
+                    {/* Desktop Sidebar Filter (Sticky on scroll) */}
+                    <aside className="hidden lg:block w-72 shrink-0 sticky top-20 z-30">
+                        <FilterPanel filters={filters} onChange={handleFilterChange} />
                     </aside>
 
                     {/* Mobile Filter Drawer */}

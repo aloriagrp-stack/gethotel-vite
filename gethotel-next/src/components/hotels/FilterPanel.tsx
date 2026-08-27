@@ -1,8 +1,7 @@
 'use client';
 
-
 import { useState } from "react";
-import { ChevronDown, ChevronUp, SlidersHorizontal } from "lucide-react";
+import { ChevronDown, ChevronUp, SlidersHorizontal, RotateCcw, Star } from "lucide-react";
 import type { FilterState, Amenity } from "@/types";
 import { cn, amenityLabel, amenityIcon, formatPrice } from "@/lib/utils";
 
@@ -50,35 +49,44 @@ export default function FilterPanel({ filters, onChange }: FilterPanelProps) {
         filters.priceRange[1] < 50000;
 
     return (
-        <aside className="space-y-2 py-2">
+        <aside className="bg-white/95 backdrop-blur-2xl border border-slate-200/90 rounded-3xl p-5 shadow-[0_10px_35px_rgba(0,0,0,0.04)] space-y-3 max-h-[calc(100vh-100px)] overflow-y-auto custom-scrollbar">
             {/* Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-white/20">
+            <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
                 <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full glass-interactive flex items-center justify-center">
-                        <SlidersHorizontal className="w-4 h-4 text-brand-600" />
+                    <div className="w-8 h-8 rounded-xl bg-brand-50 flex items-center justify-center text-brand-600">
+                        <SlidersHorizontal className="w-4 h-4" />
                     </div>
-                    <span className="font-black text-black text-sm">Filters</span>
+                    <span className="font-extrabold text-slate-900 text-sm tracking-tight">Filters</span>
                     {hasActive && (
-                        <span className="text-[10px] bg-brand-600 text-white px-2 py-0.5 rounded-full font-black">
+                        <span className="text-[10px] bg-brand-600 text-white px-2 py-0.5 rounded-full font-bold">
                             {filters.starRatings.length + filters.amenities.length + (filters.guestRatingMin ? 1 : 0) + (filters.priceRange[1] < 50000 ? 1 : 0)}
                         </span>
                     )}
                 </div>
                 {hasActive && (
-                    <button onClick={reset} className="text-xs font-bold text-brand-600 hover:text-brand-800 px-2 py-1 rounded-lg glass-interactive border-white/40 transition-all">
-                        Clear all
+                    <button
+                        onClick={reset}
+                        className="text-[11px] font-bold text-slate-500 hover:text-brand-600 px-2.5 py-1 rounded-lg hover:bg-slate-100 flex items-center gap-1 transition-all"
+                    >
+                        <RotateCcw className="w-3 h-3" />
+                        <span>Reset</span>
                     </button>
                 )}
             </div>
 
             {/* Price Range */}
             <FilterSection title="Price per Night" open={priceOpen} onToggle={() => setPriceOpen(!priceOpen)}>
-                <div className="pt-2">
-                    <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 mb-3 px-1">
-                        <span className="bg-white/50 px-2 py-1 rounded-md border border-white/40 notranslate">{formatPrice(filters.priceRange[0])}</span>
-                        <span className="bg-white/50 px-2 py-1 rounded-md border border-white/40 notranslate">{formatPrice(filters.priceRange[1])}</span>
+                <div className="pt-1 space-y-3">
+                    <div className="flex items-center justify-between text-xs font-bold text-slate-700">
+                        <span className="bg-slate-50 border border-slate-200/80 px-2.5 py-1 rounded-lg text-slate-800 notranslate">
+                            {formatPrice(filters.priceRange[0])}
+                        </span>
+                        <span className="text-slate-400 font-normal">to</span>
+                        <span className="bg-slate-50 border border-slate-200/80 px-2.5 py-1 rounded-lg text-slate-800 notranslate">
+                            {formatPrice(filters.priceRange[1])}
+                        </span>
                     </div>
-                    <div className="px-1">
+                    <div>
                         <input
                             type="range"
                             min={0}
@@ -86,10 +94,10 @@ export default function FilterPanel({ filters, onChange }: FilterPanelProps) {
                             step={500}
                             value={filters.priceRange[1]}
                             onChange={(e) => updateFilter("priceRange", [filters.priceRange[0], Number(e.target.value)])}
-                            className="w-full h-2 bg-white/40 rounded-full appearance-none cursor-pointer accent-brand-600 border border-white/20"
+                            className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-brand-600"
                         />
                     </div>
-                    <div className="flex justify-between text-[10px] text-slate-400 mt-2 px-1">
+                    <div className="flex justify-between text-[10px] font-semibold text-slate-400 px-0.5">
                         <span>₹0</span>
                         <span>₹50,000+</span>
                     </div>
@@ -98,26 +106,32 @@ export default function FilterPanel({ filters, onChange }: FilterPanelProps) {
 
             {/* Star Rating */}
             <FilterSection title="Hotel Class" open={ratingOpen} onToggle={() => setRatingOpen(!ratingOpen)}>
-                <div className="space-y-2.5 pt-1">
+                <div className="space-y-1.5 pt-1">
                     {[5, 4, 3].map((star) => (
-                        <label key={star} className="flex items-center gap-3 cursor-pointer group p-2 rounded-2xl hover:glass-interactive border border-transparent hover:border-white/40 transition-all">
-                            <div className="relative flex items-center justify-center">
-                                <input
-                                    type="checkbox"
-                                    checked={filters.starRatings.includes(star)}
-                                    onChange={() => toggleStar(star)}
-                                    className="w-5 h-5 rounded-lg border-white/60 bg-white/20 text-brand-600 accent-brand-600 cursor-pointer transition-all"
-                                />
-                            </div>
+                        <label
+                            key={star}
+                            className={cn(
+                                "flex items-center gap-3 cursor-pointer p-2 rounded-xl border transition-all text-xs font-bold",
+                                filters.starRatings.includes(star)
+                                    ? "bg-brand-50/70 border-brand-200 text-brand-700"
+                                    : "border-transparent hover:bg-slate-50 text-slate-700 hover:text-slate-900"
+                            )}
+                        >
+                            <input
+                                type="checkbox"
+                                checked={filters.starRatings.includes(star)}
+                                onChange={() => toggleStar(star)}
+                                className="w-4 h-4 rounded border-slate-300 text-brand-600 accent-brand-600 cursor-pointer"
+                            />
                             <div className="flex items-center gap-0.5">
                                 {Array.from({ length: star }).map((_, i) => (
-                                    <span key={i} className="text-gold-500 text-sm">★</span>
+                                    <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                                 ))}
                                 {Array.from({ length: 5 - star }).map((_, i) => (
-                                    <span key={i} className="text-slate-300 text-sm">★</span>
+                                    <Star key={i} className="w-3.5 h-3.5 text-slate-200 fill-slate-200" />
                                 ))}
                             </div>
-                            <span className="text-xs font-bold text-black group-hover:text-brand-600 transition-colors">
+                            <span className="ml-auto text-[11px] font-semibold text-slate-500">
                                 {star === 5 ? "Luxury" : star === 4 ? "Superior" : "Standard"}
                             </span>
                         </label>
@@ -127,20 +141,28 @@ export default function FilterPanel({ filters, onChange }: FilterPanelProps) {
 
             {/* Guest Rating */}
             <FilterSection title="Guest Rating" open={guestOpen} onToggle={() => setGuestOpen(!guestOpen)}>
-                <div className="space-y-2.5 pt-1">
+                <div className="space-y-1.5 pt-1">
                     {[9, 8, 7].map((min) => (
-                        <label key={min} className="flex items-center gap-3 cursor-pointer group p-2 rounded-2xl hover:glass-interactive border border-transparent hover:border-white/40 transition-all">
+                        <label
+                            key={min}
+                            className={cn(
+                                "flex items-center gap-3 cursor-pointer p-2 rounded-xl border transition-all text-xs font-bold",
+                                filters.guestRatingMin === min
+                                    ? "bg-emerald-50/70 border-emerald-200 text-emerald-800"
+                                    : "border-transparent hover:bg-slate-50 text-slate-700 hover:text-slate-900"
+                            )}
+                        >
                             <input
                                 type="radio"
                                 name="guestRating"
                                 checked={filters.guestRatingMin === min}
                                 onChange={() => updateFilter("guestRatingMin", min)}
-                                className="w-5 h-5 border-white/60 bg-white/20 text-brand-600 accent-brand-600 cursor-pointer"
+                                className="w-4 h-4 text-emerald-600 accent-emerald-600 cursor-pointer"
                             />
-                            <span className="text-[10px] font-bold px-1.5 py-0.5 bg-emerald-600 text-white rounded-md shadow-sm">{min}+</span>
-                            <span className="text-xs font-bold text-black group-hover:text-brand-600">
-                                {min === 9 ? "Superb" : min === 8 ? "Very Good" : "Good"}
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 bg-emerald-600 text-white rounded-md">
+                                {min}+
                             </span>
+                            <span>{min === 9 ? "Superb (9+)" : min === 8 ? "Very Good (8+)" : "Good (7+)"}</span>
                         </label>
                     ))}
                 </div>
@@ -148,19 +170,25 @@ export default function FilterPanel({ filters, onChange }: FilterPanelProps) {
 
             {/* Amenities */}
             <FilterSection title="Amenities" open={amenOpen} onToggle={() => setAmenOpen(!amenOpen)}>
-                <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1 pt-1 custom-scrollbar">
+                <div className="space-y-1 max-h-56 overflow-y-auto pr-1 pt-1 custom-scrollbar">
                     {ALL_AMENITIES.map((amenity) => (
-                        <label key={amenity} className="flex items-center gap-3 cursor-pointer group p-2 rounded-2xl hover:glass-interactive border border-transparent hover:border-white/40 transition-all">
+                        <label
+                            key={amenity}
+                            className={cn(
+                                "flex items-center gap-2.5 cursor-pointer p-2 rounded-xl border transition-all text-xs font-medium",
+                                filters.amenities.includes(amenity)
+                                    ? "bg-brand-50/70 border-brand-200 text-brand-700 font-bold"
+                                    : "border-transparent hover:bg-slate-50 text-slate-600 hover:text-slate-900"
+                            )}
+                        >
                             <input
                                 type="checkbox"
                                 checked={filters.amenities.includes(amenity)}
                                 onChange={() => toggleAmenity(amenity)}
-                                className="w-5 h-5 rounded-lg border-white/60 bg-white/20 text-brand-600 accent-brand-600 cursor-pointer"
+                                className="w-4 h-4 rounded border-slate-300 text-brand-600 accent-brand-600 cursor-pointer"
                             />
-                            <span className="text-base">{amenityIcon(amenity)}</span>
-                            <span className="text-xs font-bold text-black group-hover:text-brand-600 transition-colors">
-                                {amenityLabel(amenity)}
-                            </span>
+                            <span className="text-sm">{amenityIcon(amenity)}</span>
+                            <span>{amenityLabel(amenity)}</span>
                         </label>
                     ))}
                 </div>
@@ -181,24 +209,19 @@ function FilterSection({
     children: React.ReactNode;
 }) {
     return (
-        <div className="border-b border-white/10 last:border-0">
+        <div className="border-b border-slate-100 last:border-0 pb-1">
             <button
                 onClick={onToggle}
-                className="flex items-center justify-between w-full py-4 text-left group"
+                className="flex items-center justify-between w-full py-2.5 text-left group cursor-pointer"
             >
-                <span className="text-xs font-black text-black uppercase tracking-wider group-hover:text-brand-600 transition-colors">{title}</span>
-                <div className="w-6 h-6 rounded-lg glass-interactive flex items-center justify-center border-white/20">
-                    {open ? (
-                        <ChevronUp className="w-3 h-3 text-slate-400" />
-                    ) : (
-                        <ChevronDown className="w-3 h-3 text-slate-400" />
-                    )}
+                <span className="text-xs font-bold text-slate-900 uppercase tracking-wider group-hover:text-brand-600 transition-colors">
+                    {title}
+                </span>
+                <div className="w-5 h-5 rounded-md flex items-center justify-center text-slate-400 group-hover:text-slate-600">
+                    {open ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                 </div>
             </button>
-            {open && <div className="pb-5">{children}</div>}
+            {open && <div className="pb-3">{children}</div>}
         </div>
     );
 }
-
-
-

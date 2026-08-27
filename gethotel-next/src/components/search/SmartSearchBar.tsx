@@ -361,85 +361,104 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
                                     />
                                 </div>
                             </div>
-                            {activeSection === "where" && (
-                                <div className="absolute top-[115%] left-0 w-[400px] bg-white rounded-[40px] p-8 shadow-premium z-[500]" onClick={e => e.stopPropagation()}>
-                                    {query.trim().length > 0 ? (
-                                        isLoadingSuggestions ? (
-                                            <div className="p-4 space-y-3">
-                                                {[1, 2, 3].map((i) => (
-                                                    <div key={i} className="flex items-center gap-3 animate-pulse">
-                                                        <div className="w-10 h-10 rounded-full bg-slate-100 shrink-0" />
-                                                        <div className="flex-1 space-y-1.5">
-                                                            <div className="h-3 bg-slate-100 rounded w-2/3" />
-                                                            <div className="h-2 bg-slate-100 rounded w-1/2" />
-                                                        </div>
+                            {activeSection === "where" && query.trim().length > 0 && (
+                                <div className="absolute top-[115%] left-0 w-[420px] bg-white rounded-3xl p-5 shadow-2xl border border-slate-100 z-[500]" onClick={e => e.stopPropagation()}>
+                                    {isLoadingSuggestions ? (
+                                        <div className="p-3 space-y-3">
+                                            {[1, 2, 3].map((i) => (
+                                                <div key={i} className="flex items-center gap-3 animate-pulse">
+                                                    <div className="w-10 h-10 rounded-xl bg-slate-100 shrink-0" />
+                                                    <div className="flex-1 space-y-1.5">
+                                                        <div className="h-3 bg-slate-100 rounded w-2/3" />
+                                                        <div className="h-2 bg-slate-100 rounded w-1/2" />
                                                     </div>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <div className="space-y-1 max-h-[300px] overflow-y-auto pr-1">
-                                                {suggestions.map(s => {
-                                                    const isHotel = s.category === "hotel";
-                                                    return (
-                                                        <button 
-                                                            key={s.id} 
-                                                            onClick={e => { 
-                                                                e.stopPropagation(); 
-                                                                setQuery(s.label); 
-                                                                setState(p => ({ ...p, destination: s })); 
-                                                                setActiveSection("dates"); 
-                                                            }} 
-                                                            className="w-full flex items-center gap-4 p-3 hover:bg-slate-50/50 rounded-3xl transition-all group text-left"
-                                                        >
-                                                            {s.thumbnail ? (
-                                                                <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 bg-slate-100 relative">
-                                                                    <img src={s.thumbnail} alt={s.label} className="object-cover w-full h-full absolute inset-0" loading="lazy" />
-                                                                </div>
-                                                            ) : (
-                                                                <div className="w-10 h-10 rounded-full bg-slate-50/50 flex items-center justify-center group-hover:bg-brand-50 transition-colors shrink-0">
-                                                                    {isHotel ? (
-                                                                        <Hotel className="w-4 h-4 text-violet-500" />
-                                                                    ) : (
-                                                                        <MapPin className="w-4 h-4 text-brand-600" />
-                                                                    )}
-                                                                </div>
-                                                            )}
-                                                            <div className="min-w-0 flex-1">
-                                                                <p className="font-bold text-slate-900 truncate">{s.label}</p>
-                                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">
-                                                                    {s.sublabel}
-                                                                </p>
-                                                            </div>
-                                                        </button>
-                                                    );
-                                                })}
-                                                {suggestions.length === 0 && (
-                                                    <div className="py-10 text-center">
-                                                        <p className="text-sm font-bold text-slate-400 italic">No matches found for &quot;{query}&quot;</p>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )
+                                                </div>
+                                            ))}
+                                        </div>
                                     ) : (
-                                        <div className="space-y-4">
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Popular Destinations</p>
-                                            <div className="grid grid-cols-2 gap-2">
-                                                {TOP_DESTINATIONS.slice(0, 6).map(dest => (
-                                                    <button 
-                                                        key={dest.label} 
-                                                        onClick={e => { 
-                                                            e.stopPropagation(); 
-                                                            setQuery(dest.label); 
-                                                            setState(p => ({ ...p, destination: { id: dest.label.toLowerCase(), label: dest.label, category: "trending" } })); 
-                                                            setActiveSection("dates"); 
-                                                        }} 
-                                                        className="flex items-center gap-2.5 p-3 hover:bg-slate-50/50 rounded-2xl transition-all group text-left border border-slate-100/50"
-                                                    >
-                                                        <MapPin className="w-3.5 h-3.5 text-brand-600 shrink-0" />
-                                                        <span className="text-xs font-bold text-slate-700 truncate">{dest.label}</span>
-                                                    </button>
-                                                ))}
-                                            </div>
+                                        <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1 custom-scrollbar">
+                                            {(() => {
+                                                const cityList = suggestions.filter(s => s.category !== 'hotel');
+                                                const hotelList = suggestions.filter(s => s.category === 'hotel');
+
+                                                if (cityList.length === 0 && hotelList.length === 0) {
+                                                    return (
+                                                        <div className="py-8 text-center">
+                                                            <p className="text-xs font-bold text-slate-400 italic">No matches found for &quot;{query}&quot;</p>
+                                                        </div>
+                                                    );
+                                                }
+
+                                                return (
+                                                    <>
+                                                        {cityList.length > 0 && (
+                                                            <div className="space-y-1">
+                                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 pb-0.5">
+                                                                    Cities & Destinations
+                                                                </p>
+                                                                {cityList.map(s => (
+                                                                    <button
+                                                                        key={s.id}
+                                                                        onClick={e => {
+                                                                            e.stopPropagation();
+                                                                            setQuery(s.label);
+                                                                            setState(p => ({ ...p, destination: s }));
+                                                                            setActiveSection("dates");
+                                                                        }}
+                                                                        className="w-full flex items-center gap-3 p-2.5 hover:bg-slate-50 rounded-2xl transition-all group text-left"
+                                                                    >
+                                                                        <div className="w-9 h-9 rounded-xl bg-brand-50 flex items-center justify-center group-hover:bg-brand-100 text-brand-600 transition-colors shrink-0">
+                                                                            <MapPin className="w-4 h-4" />
+                                                                        </div>
+                                                                        <div className="min-w-0 flex-1">
+                                                                            <p className="font-extrabold text-slate-900 text-xs truncate group-hover:text-brand-600 transition-colors">{s.label}</p>
+                                                                            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider truncate">
+                                                                                {s.sublabel || "City"}
+                                                                            </p>
+                                                                        </div>
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        )}
+
+                                                        {hotelList.length > 0 && (
+                                                            <div className={cn("space-y-1", cityList.length > 0 && "pt-2 border-t border-slate-100")}>
+                                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 pb-0.5">
+                                                                    Hotels & Stays
+                                                                </p>
+                                                                {hotelList.map(s => (
+                                                                    <button
+                                                                        key={s.id}
+                                                                        onClick={e => {
+                                                                            e.stopPropagation();
+                                                                            setQuery(s.label);
+                                                                            setState(p => ({ ...p, destination: s }));
+                                                                            setActiveSection("dates");
+                                                                        }}
+                                                                        className="w-full flex items-center gap-3 p-2.5 hover:bg-slate-50 rounded-2xl transition-all group text-left"
+                                                                    >
+                                                                        {s.thumbnail ? (
+                                                                            <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 bg-slate-100 relative">
+                                                                                <img src={s.thumbnail} alt={s.label} className="object-cover w-full h-full absolute inset-0" loading="lazy" />
+                                                                            </div>
+                                                                        ) : (
+                                                                            <div className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center text-violet-600 shrink-0">
+                                                                                <Hotel className="w-4 h-4" />
+                                                                            </div>
+                                                                        )}
+                                                                        <div className="min-w-0 flex-1">
+                                                                            <p className="font-extrabold text-slate-900 text-xs truncate group-hover:text-brand-600 transition-colors">{s.label}</p>
+                                                                            <p className="text-[10px] font-semibold text-slate-400 truncate">
+                                                                                {s.sublabel || "Verified Hotel"}
+                                                                            </p>
+                                                                        </div>
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </>
+                                                );
+                                            })()}
                                         </div>
                                     )}
                                 </div>
@@ -613,7 +632,7 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
                                         <input autoFocus type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search destinations..." className="w-full pl-12 pr-4 py-4 bg-slate-50 rounded-full font-bold outline-none transition-all text-slate-900" />
                                     </div>
                                 </div>
-                                <div className="flex-1 overflow-y-auto px-6 pb-6 mt-4 space-y-1">
+                                <div className="flex-1 overflow-y-auto px-6 pb-6 mt-4 space-y-3">
                                     {query.trim().length > 0 ? (
                                         isLoadingSuggestions ? (
                                             <div className="space-y-4 py-4 animate-pulse">
@@ -628,60 +647,91 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
                                                 ))}
                                             </div>
                                         ) : (
-                                            suggestions.map(s => {
-                                                const isHotel = s.category === "hotel";
+                                            (() => {
+                                                const cityList = suggestions.filter(s => s.category !== 'hotel');
+                                                const hotelList = suggestions.filter(s => s.category === 'hotel');
+
+                                                if (cityList.length === 0 && hotelList.length === 0) {
+                                                    return (
+                                                        <div className="py-12 text-center">
+                                                            <p className="text-sm font-bold text-slate-400 italic">No matches found for &quot;{query}&quot;</p>
+                                                        </div>
+                                                    );
+                                                }
+
                                                 return (
-                                                    <button 
-                                                        key={s.id} 
-                                                        onClick={() => { 
-                                                            setQuery(s.label); 
-                                                            setState(p => ({ ...p, destination: s })); 
-                                                            setActiveSection("dates"); 
-                                                        }} 
-                                                        className="w-full flex items-center gap-4 py-4 text-left active:bg-slate-50 transition-colors"
-                                                    >
-                                                        {s.thumbnail ? (
-                                                            <div className="w-12 h-12 rounded-2xl overflow-hidden shrink-0 bg-slate-100 relative">
-                                                                <img src={s.thumbnail} alt={s.label} className="object-cover w-full h-full absolute inset-0" loading="lazy" />
-                                                            </div>
-                                                        ) : (
-                                                            <div className="w-12 h-12 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 shadow-sm shrink-0">
-                                                                {isHotel ? (
-                                                                    <Hotel className="w-5 h-5 text-violet-500" />
-                                                                ) : (
-                                                                    <MapPin className="w-5 h-5 text-brand-600" />
-                                                                )}
+                                                    <div className="space-y-4">
+                                                        {cityList.length > 0 && (
+                                                            <div className="space-y-1">
+                                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 pb-1">
+                                                                    Cities & Destinations
+                                                                </p>
+                                                                {cityList.map(s => (
+                                                                    <button 
+                                                                        key={s.id} 
+                                                                        onClick={() => { 
+                                                                            setQuery(s.label); 
+                                                                            setState(p => ({ ...p, destination: s })); 
+                                                                            setActiveSection("dates"); 
+                                                                        }} 
+                                                                        className="w-full flex items-center gap-4 py-3 text-left active:bg-slate-50 transition-colors"
+                                                                    >
+                                                                        <div className="w-11 h-11 rounded-2xl bg-brand-50 flex items-center justify-center text-brand-600 shadow-sm shrink-0">
+                                                                            <MapPin className="w-5 h-5" />
+                                                                        </div>
+                                                                        <div className="min-w-0 flex-1">
+                                                                            <p className="font-extrabold text-slate-950 text-sm truncate">{s.label}</p>
+                                                                            <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider truncate">
+                                                                                {s.sublabel || "City"}
+                                                                            </p>
+                                                                        </div>
+                                                                    </button>
+                                                                ))}
                                                             </div>
                                                         )}
-                                                        <div className="min-w-0 flex-1">
-                                                            <p className="font-black text-slate-950 truncate">{s.label}</p>
-                                                            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider truncate">
-                                                                {s.sublabel}
-                                                            </p>
-                                                        </div>
-                                                    </button>
+
+                                                        {hotelList.length > 0 && (
+                                                            <div className={cn("space-y-1", cityList.length > 0 && "pt-3 border-t border-slate-100")}>
+                                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 pb-1">
+                                                                    Hotels & Stays
+                                                                </p>
+                                                                {hotelList.map(s => (
+                                                                    <button 
+                                                                        key={s.id} 
+                                                                        onClick={() => { 
+                                                                            setQuery(s.label); 
+                                                                            setState(p => ({ ...p, destination: s })); 
+                                                                            setActiveSection("dates"); 
+                                                                        }} 
+                                                                        className="w-full flex items-center gap-4 py-3 text-left active:bg-slate-50 transition-colors"
+                                                                    >
+                                                                        {s.thumbnail ? (
+                                                                            <div className="w-11 h-11 rounded-2xl overflow-hidden shrink-0 bg-slate-100 relative">
+                                                                                <img src={s.thumbnail} alt={s.label} className="object-cover w-full h-full absolute inset-0" loading="lazy" />
+                                                                            </div>
+                                                                        ) : (
+                                                                            <div className="w-11 h-11 rounded-2xl bg-violet-50 flex items-center justify-center text-violet-600 shadow-sm shrink-0">
+                                                                                <Hotel className="w-5 h-5" />
+                                                                            </div>
+                                                                        )}
+                                                                        <div className="min-w-0 flex-1">
+                                                                            <p className="font-extrabold text-slate-950 text-sm truncate">{s.label}</p>
+                                                                            <p className="text-[11px] font-semibold text-slate-400 truncate">
+                                                                                {s.sublabel || "Verified Hotel"}
+                                                                            </p>
+                                                                        </div>
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 );
-                                            })
+                                            })()
                                         )
                                     ) : (
-                                        <div className="space-y-6 py-4">
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Popular Destinations</p>
-                                            <div className="grid grid-cols-2 gap-3">
-                                                {TOP_DESTINATIONS.map(dest => (
-                                                    <button 
-                                                        key={dest.label} 
-                                                        onClick={() => { 
-                                                            setQuery(dest.label); 
-                                                            setState(p => ({ ...p, destination: { id: dest.label.toLowerCase(), label: dest.label, category: "trending" } })); 
-                                                            setActiveSection("dates"); 
-                                                        }} 
-                                                        className="flex items-center gap-3 p-4 bg-slate-50 rounded-3xl active:bg-slate-100 transition-all text-left"
-                                                    >
-                                                        <MapPin className="w-4 h-4 text-brand-600 shrink-0" />
-                                                        <span className="font-black text-xs text-slate-800 truncate">{dest.label}</span>
-                                                    </button>
-                                                ))}
-                                            </div>
+                                        <div className="py-16 text-center text-slate-400 space-y-2">
+                                            <Search className="w-8 h-8 mx-auto text-slate-300" />
+                                            <p className="text-xs font-bold">Type to search destinations, cities, or hotel stays</p>
                                         </div>
                                     )}
                                 </div>
