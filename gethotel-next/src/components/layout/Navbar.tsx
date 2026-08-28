@@ -295,85 +295,132 @@ export default function Navbar() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-[110]"
+                            className="fixed inset-0 bg-slate-950/30 backdrop-blur-sm z-[110]"
                             onClick={() => setMobileOpen(false)}
                         />
                         <motion.div
                             initial={{ x: "100%" }}
                             animate={{ x: 0 }}
                             exit={{ x: "100%" }}
-                            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                            className="fixed top-0 right-0 bottom-0 w-[300px] max-w-[85vw] bg-white z-[120] shadow-2xl px-6 pt-12 pb-6 flex flex-col"
+                            transition={{ type: "spring", damping: 28, stiffness: 240 }}
+                            className="fixed top-0 right-0 bottom-0 w-[290px] max-w-[85vw] bg-white z-[120] shadow-2xl p-6 flex flex-col justify-between"
                         >
-                            <div className="flex items-center justify-between mb-8 gap-4">
-                                {user ? (
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-9 h-9 bg-slate-100 rounded-full overflow-hidden shrink-0 border border-slate-200">
-                                            {user.photoURL ? (
-                                                <img src={user.photoURL} alt={user.name} className="w-full h-full object-cover" loading="lazy" />
-                                            ) : (
-                                                <div className="w-full h-full bg-brand-50 text-brand-600 flex items-center justify-center font-bold text-sm">
-                                                    {user.name?.[0]}
-                                                </div>
-                                            )}
-                                        </div>
+                            <div>
+                                {/* Drawer Top Header */}
+                                <div className="flex items-center justify-between pb-5 border-b border-slate-100 mb-6">
+                                    {user ? (
                                         <div className="flex flex-col">
-                                            <span className="text-sm font-black text-slate-950 leading-tight">Hello, {user.name?.split(' ')[0]}</span>
-                                            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Premium Member</span>
+                                            <span className="text-base font-bold text-slate-900">Hello, {user.name?.split(' ')[0]}</span>
+                                            <span className="text-[10px] text-brand-600 font-semibold uppercase tracking-wider">Member</span>
                                         </div>
-                                    </div>
-                                ) : (
-                                    <div className="text-left">
-                                        <h3 className="text-xl font-black text-slate-950 leading-tight">Welcome!</h3>
-                                        <p className="text-[11px] text-slate-500 font-semibold mt-0.5">Sign in to unlock exclusive deals.</p>
-                                    </div>
-                                )}
-                                <button onClick={() => setMobileOpen(false)} className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 shrink-0">
-                                    <X className="w-5 h-5" />
-                                </button>
+                                    ) : (
+                                        <div className="text-left">
+                                            <h3 className="text-base font-bold text-slate-900 leading-tight">Welcome</h3>
+                                            <p className="text-xs text-slate-400 mt-0.5">Sign in to unlock deals</p>
+                                        </div>
+                                    )}
+                                    <button 
+                                        onClick={() => setMobileOpen(false)} 
+                                        className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors"
+                                        aria-label="Close menu"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                </div>
+
+                                {/* Main Navigation (Iconless & Minimal) */}
+                                <nav className="space-y-1">
+                                    <Link 
+                                        to={`/${langCode}`} 
+                                        onClick={() => setMobileOpen(false)} 
+                                        className="block px-3 py-2.5 rounded-lg text-slate-800 font-medium text-sm hover:bg-slate-50 transition-colors"
+                                    >
+                                        {t('home')}
+                                    </Link>
+                                    <Link 
+                                        to={`/${langCode}/hotels`} 
+                                        onClick={() => setMobileOpen(false)} 
+                                        className="block px-3 py-2.5 rounded-lg text-slate-800 font-medium text-sm hover:bg-slate-50 transition-colors"
+                                    >
+                                        {t('hotels')}
+                                    </Link>
+                                    <Link 
+                                        to={`/${langCode}/my-bookings`} 
+                                        onClick={(e) => {
+                                            setMobileOpen(false);
+                                            if (!user) {
+                                                e.preventDefault();
+                                                setActionPopup({ isOpen: true, message: "Please log in first to view your bookings." });
+                                            }
+                                        }} 
+                                        className="block px-3 py-2.5 rounded-lg text-slate-800 font-medium text-sm hover:bg-slate-50 transition-colors"
+                                    >
+                                        {t('bookings')}
+                                    </Link>
+
+                                    {user && (
+                                        <>
+                                            <Link 
+                                                to={`/${langCode}/profile`} 
+                                                onClick={() => setMobileOpen(false)} 
+                                                className="block px-3 py-2.5 rounded-lg text-slate-800 font-medium text-sm hover:bg-slate-50 transition-colors"
+                                            >
+                                                My Profile
+                                            </Link>
+                                            <Link 
+                                                to={`/${langCode}/wishlist`} 
+                                                onClick={() => setMobileOpen(false)} 
+                                                className="block px-3 py-2.5 rounded-lg text-slate-800 font-medium text-sm hover:bg-slate-50 transition-colors"
+                                            >
+                                                Wishlist
+                                            </Link>
+                                        </>
+                                    )}
+                                </nav>
                             </div>
 
-                            <div className="flex-1 overflow-y-auto">
+                            {/* Drawer Bottom Actions */}
+                            <div className="pt-6 border-t border-slate-100 space-y-2">
                                 {user ? (
-                                    <div className="space-y-6 pt-2">
-                                        <nav className="space-y-1">
-                                            <Link to={`/${langCode}`} onClick={() => setMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
-                                                <MapPin className="w-5 h-5 text-brand-600" /> Home
-                                            </Link>
-
-                                            <Link to={`/${langCode}/hotels`} onClick={() => setMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
-                                                <Hotel className="w-5 h-5 text-brand-600" /> Hotels
-                                            </Link>
-                                            <Link to={`/${langCode}/list-property`} onClick={() => setMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
-                                                <Hotel className="w-5 h-5 text-sky-600" /> List Your Property
-                                            </Link>
-                                        </nav>
-                                    </div>
+                                    <>
+                                        <Link 
+                                            to={`/${langCode}/list-property`} 
+                                            onClick={() => setMobileOpen(false)} 
+                                            className="block w-full py-2.5 text-center bg-slate-50 hover:bg-slate-100 text-slate-800 rounded-lg text-xs font-semibold transition-colors"
+                                        >
+                                            List Your Property
+                                        </Link>
+                                        <button 
+                                            onClick={() => { setShowLogoutConfirm(true); setMobileOpen(false); }} 
+                                            className="block w-full py-2.5 text-center text-red-600 hover:bg-red-50 rounded-lg text-xs font-semibold transition-colors"
+                                        >
+                                            Log Out
+                                        </button>
+                                    </>
                                 ) : (
-                                    <div className="space-y-6">
-                                        <nav className="space-y-1">
-                                            <Link to={`/${langCode}`} onClick={() => setMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold">
-                                                <MapPin className="w-5 h-5 text-brand-600" /> Home
-                                            </Link>
-                                            <Link to={`/${langCode}/hotels`} onClick={() => setMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold">
-                                                <Hotel className="w-5 h-5 text-brand-600" /> Hotels
-                                            </Link>
-                                            <button
-                                                onClick={() => {
-                                                    setMobileOpen(false);
-                                                    setActionPopup({ isOpen: true, message: "Please log in first to view your bookings." });
-                                                }}
-                                                className="w-full flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold text-left"
-                                            >
-                                                <ClipboardList className="w-5 h-5 text-brand-600" /> My Bookings
-                                            </button>
-                                        </nav>
-                                        <div className="px-4 space-y-3 pt-6">
-                                            <Link to={`/${langCode}/login`} onClick={() => setMobileOpen(false)} className="w-full flex items-center justify-center py-5 bg-slate-950 text-white rounded-[24px] text-[10px] font-black uppercase tracking-widest">Sign In</Link>
-                                            <Link to={`/${langCode}/login?mode=signup`} onClick={() => setMobileOpen(false)} className="w-full flex items-center justify-center py-5 bg-white text-slate-950 border-2 border-slate-950 rounded-[24px] text-[10px] font-black uppercase tracking-widest">Create Account</Link>
-                                            <Link to={`/${langCode}/list-property`} onClick={() => setMobileOpen(false)} className="w-full flex items-center justify-center py-5 bg-sky-50 text-sky-700 border border-sky-100 rounded-[24px] text-[10px] font-black uppercase tracking-widest mt-4">List Your Property</Link>
-                                        </div>
-                                    </div>
+                                    <>
+                                        <Link 
+                                            to={`/${langCode}/login`} 
+                                            onClick={() => setMobileOpen(false)} 
+                                            className="block w-full py-3 text-center bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-semibold tracking-wide transition-colors"
+                                        >
+                                            Sign In
+                                        </Link>
+                                        <Link 
+                                            to={`/${langCode}/login?mode=signup`} 
+                                            onClick={() => setMobileOpen(false)} 
+                                            className="block w-full py-2.5 text-center bg-white border border-slate-200 text-slate-800 hover:bg-slate-50 rounded-xl text-xs font-semibold transition-colors"
+                                        >
+                                            Create Account
+                                        </Link>
+                                        <Link 
+                                            to={`/${langCode}/list-property`} 
+                                            onClick={() => setMobileOpen(false)} 
+                                            className="block w-full py-2.5 text-center text-slate-500 hover:text-slate-900 text-xs font-medium transition-colors pt-1"
+                                        >
+                                            List Your Property
+                                        </Link>
+                                    </>
                                 )}
                             </div>
                         </motion.div>
@@ -389,54 +436,66 @@ export default function Navbar() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-[110]"
+                            className="fixed inset-0 bg-slate-950/30 backdrop-blur-sm z-[110]"
                             onClick={() => setProfileMobileOpen(false)}
                         />
                         <motion.div
                             initial={{ x: "100%" }}
                             animate={{ x: 0 }}
                             exit={{ x: "100%" }}
-                            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                            className="fixed top-0 right-0 bottom-0 w-[300px] max-w-[85vw] bg-white z-[120] shadow-2xl px-6 pt-12 pb-6 flex flex-col"
+                            transition={{ type: "spring", damping: 28, stiffness: 240 }}
+                            className="fixed top-0 right-0 bottom-0 w-[290px] max-w-[85vw] bg-white z-[120] shadow-2xl p-6 flex flex-col justify-between"
                         >
-                            <div className="flex items-center justify-between mb-8">
-                                <span className="text-xl font-black">My Profile<span className="text-brand-600">.</span></span>
-                                <button onClick={() => setProfileMobileOpen(false)} className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400">
-                                    <X className="w-5 h-5" />
-                                </button>
+                            <div>
+                                <div className="flex items-center justify-between pb-5 border-b border-slate-100 mb-6">
+                                    <div className="flex flex-col">
+                                        <span className="text-base font-bold text-slate-900">{user.name || "Account"}</span>
+                                        <span className="text-xs text-slate-400">{user.email}</span>
+                                    </div>
+                                    <button 
+                                        onClick={() => setProfileMobileOpen(false)} 
+                                        className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors"
+                                        aria-label="Close profile menu"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                </div>
+
+                                <nav className="space-y-1">
+                                    <Link to={`/${langCode}/profile`} onClick={() => setProfileMobileOpen(false)} className="block px-3 py-2.5 rounded-lg text-slate-800 font-medium text-sm hover:bg-slate-50 transition-colors">
+                                        My Profile
+                                    </Link>
+                                    <Link to={`/${langCode}/my-bookings`} onClick={() => setProfileMobileOpen(false)} className="block px-3 py-2.5 rounded-lg text-slate-800 font-medium text-sm hover:bg-slate-50 transition-colors">
+                                        My Bookings
+                                    </Link>
+                                    <Link to={`/${langCode}/wishlist`} onClick={() => setProfileMobileOpen(false)} className="block px-3 py-2.5 rounded-lg text-slate-800 font-medium text-sm hover:bg-slate-50 transition-colors">
+                                        Wishlist
+                                    </Link>
+                                    
+                                    <div className="h-px bg-slate-100 my-3" />
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 block mb-1">Support</span>
+                                    <Link to={`/${langCode}/privacy-policy`} onClick={() => setProfileMobileOpen(false)} className="block px-3 py-2 rounded-lg text-slate-600 text-xs hover:bg-slate-50 transition-colors">
+                                        Privacy Policy
+                                    </Link>
+                                    <Link to={`/${langCode}/terms-of-service`} onClick={() => setProfileMobileOpen(false)} className="block px-3 py-2 rounded-lg text-slate-600 text-xs hover:bg-slate-50 transition-colors">
+                                        Terms of Service
+                                    </Link>
+                                    <Link to={`/${langCode}/cancellation-policy`} onClick={() => setProfileMobileOpen(false)} className="block px-3 py-2 rounded-lg text-slate-600 text-xs hover:bg-slate-50 transition-colors">
+                                        Refund & Cancellation
+                                    </Link>
+                                    <Link to={`/${langCode}/contact-us`} onClick={() => setProfileMobileOpen(false)} className="block px-3 py-2 rounded-lg text-slate-600 text-xs hover:bg-slate-50 transition-colors">
+                                        Contact Us
+                                    </Link>
+                                </nav>
                             </div>
 
-                            <div className="flex-1 overflow-y-auto">
-                                <div className="space-y-6 pt-2">
-                                    <nav className="space-y-1">
-                                        <Link to={`/${langCode}/profile`} onClick={() => setProfileMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
-                                            <UserRound className="w-5 h-5 text-slate-400" /> My Account
-                                        </Link>
-                                        <Link to={`/${langCode}/my-bookings`} onClick={() => setProfileMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
-                                            <ClipboardList className="w-5 h-5 text-brand-600" /> My Bookings
-                                        </Link>
-                                        
-                                        <div className="h-px bg-slate-100 my-4" />
-                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-4 block mb-2">Support & Legal</span>
-                                        <Link to={`/${langCode}/privacy-policy`} onClick={() => setProfileMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
-                                            <Shield className="w-5 h-5 text-slate-400" /> Privacy Policy
-                                        </Link>
-                                        <Link to={`/${langCode}/terms-of-service`} onClick={() => setProfileMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
-                                            <FileText className="w-5 h-5 text-slate-400" /> Terms of Service
-                                        </Link>
-                                        <Link to={`/${langCode}/cancellation-policy`} onClick={() => setProfileMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
-                                            <AlertCircle className="w-5 h-5 text-slate-400" /> Refund & Cancellation
-                                        </Link>
-                                        <Link to={`/${langCode}/contact-us`} onClick={() => setProfileMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
-                                            <Mail className="w-5 h-5 text-slate-400" /> Contact Us
-                                        </Link>
-
-                                        <div className="h-px bg-slate-100 my-4" />
-                                        <button onClick={() => { setShowLogoutConfirm(true); setProfileMobileOpen(false); }} className="w-full flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-red-50 text-red-600 font-bold">
-                                            <LogOut className="w-5 h-5" /> Log Out
-                                        </button>
-                                    </nav>
-                                </div>
+                            <div className="pt-4 border-t border-slate-100">
+                                <button 
+                                    onClick={() => { setShowLogoutConfirm(true); setProfileMobileOpen(false); }} 
+                                    className="block w-full py-2.5 text-center text-red-600 hover:bg-red-50 rounded-lg text-xs font-semibold transition-colors"
+                                >
+                                    Log Out
+                                </button>
                             </div>
                         </motion.div>
                     </>
