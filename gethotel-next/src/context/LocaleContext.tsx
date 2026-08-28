@@ -320,6 +320,17 @@ export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         detectAndInitLocale();
     }, []);
 
+    // Ensure root homepage visit displays language prefix (/en, /hi, etc.) in the URL
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const currentPath = window.location.pathname;
+            if (currentPath === "/" || currentPath === "") {
+                const target = `/${langCode || "en"}`;
+                window.history.replaceState(null, "", target + window.location.search + window.location.hash);
+            }
+        }
+    }, [langCode]);
+
     return (
         <LocaleContext.Provider value={{ langCode, currency, exchangeRate, changeLanguage, changeCurrency, detectAndInitLocale }}>
             {children}
