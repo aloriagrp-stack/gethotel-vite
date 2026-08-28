@@ -237,48 +237,15 @@ export default function TourPackages() {
             {/* Main Widescreen Desktop Container */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8">
                 
-                {/* 1. HERO WIDESCREEN BANNER SLIDER */}
-                {banners && banners.length > 0 ? (
-                    <div className="relative overflow-hidden rounded-3xl border border-slate-200/80 shadow-lg aspect-[21/9] sm:aspect-[24/8] md:aspect-[28/9] bg-slate-950 group">
-                        <AnimatePresence mode="wait">
-                            <motion.img
-                                key={currentBannerIndex}
-                                src={activeBanner.image}
-                                alt="Tour Banner"
-                                initial={{ opacity: 0, scale: 1.05 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0 }}
-                                transition={{ duration: 0.6 }}
-                                className="w-full h-full object-cover opacity-85"
-                            />
-                        </AnimatePresence>
-
-                        {/* Subtle vignette — no text overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/20 via-transparent to-transparent z-10" />
-
-                        {/* Minimal Centered Navigation Dots */}
-                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1">
-                            {banners.map((_, idx) => (
-                                <button
-                                    key={idx}
-                                    onClick={() => setCurrentBannerIndex(idx)}
-                                    className={cn(
-                                        "rounded-full transition-all cursor-pointer",
-                                        currentBannerIndex === idx ? "bg-white w-4 h-1.5" : "bg-white/40 w-1.5 h-1.5 hover:bg-white/70"
-                                    )}
-                                />
-                            ))}
-                        </div>
-                    </div>
-                ) : (
-                    <div className="relative overflow-hidden rounded-3xl border border-slate-200/80 shadow-lg aspect-[21/9] sm:aspect-[24/8] md:aspect-[28/9] bg-white flex items-center justify-center">
-                        <div className="text-center px-6">
-                            <ImageIcon className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-                            <p className="text-sm sm:text-base font-bold text-slate-400 uppercase tracking-widest">Not Available</p>
-                            <p className="text-xs text-slate-300 font-medium mt-1">Hero banner will appear here once uploaded by admin</p>
-                        </div>
-                    </div>
-                )}
+                {/* Minimal Page Header */}
+                <div className="pt-2 pb-1">
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight">
+                        Handcrafted <span className="text-brand-600">Tour Packages</span>
+                    </h1>
+                    <p className="text-sm sm:text-base text-slate-500 font-medium mt-1">
+                        Curated holiday experiences with verified premium hotels, transfers & sightseeing
+                    </p>
+                </div>
 
                 {/* 2. INSTAGRAM-STYLE DESTINATION STORY FILTERS */}
                 <div className="space-y-5 py-3">
