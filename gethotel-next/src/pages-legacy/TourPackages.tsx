@@ -236,17 +236,7 @@ export default function TourPackages() {
             {/* Main Widescreen Desktop Container */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8">
                 
-                {/* Minimal Page Header */}
-                <div className="pt-2 pb-1">
-                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight">
-                        Handcrafted <span className="text-brand-600">Tour Packages</span>
-                    </h1>
-                    <p className="text-sm sm:text-base text-slate-500 font-medium mt-1">
-                        Curated holiday experiences with verified premium hotels, transfers & sightseeing
-                    </p>
-                </div>
-
-                {/* 2. INSTAGRAM-STYLE DESTINATION STORY FILTERS */}
+                {/* 1. INSTAGRAM-STYLE DESTINATION STORY FILTERS */}
                 <div className="space-y-5 py-3">
                     <div className="space-y-1">
                         <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
