@@ -1,7 +1,6 @@
 'use client';
 
-
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate as useRouter, useSearchParams, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { hotelApi, adminApi } from "@/lib/api";
@@ -13,7 +12,7 @@ import {
     CreditCard, TrendingUp, MoreVertical,
     ArrowUpRight, ArrowDownRight, Globe, ChevronRight, Loader2, ArrowRight,
     Key, ShieldAlert, Eye, EyeOff, Star, MessageSquare, Trash2, Sparkles,
-    UserCheck, Mail, Phone, Calendar, LogIn, Shield, Copy, ExternalLink, RefreshCw, LayoutGrid, Percent, Bot, Palmtree
+    UserCheck, Mail, Phone, Calendar, LogIn, Shield, Copy, ExternalLink, RefreshCw, LayoutGrid, Percent, Bot, Palmtree, MapPin
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "@/components/common/Image";
@@ -21,6 +20,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import AdminStats from "./AdminStats";
 import AdminFinance from "./AdminFinance";
 import AdminHomepageEditor from "./AdminHomepageEditor";
+import AdminDestinationsManager from "./AdminDestinationsManager";
 import AdminControlHub from "./AdminControlHub";
 import AdminAddPartner from "./AdminAddPartner";
 import AdminMultiRoomSetup from "./AdminMultiRoomSetup";
@@ -34,7 +34,6 @@ import AdminSettings from "./AdminSettings";
 import AdminNotifications from "./AdminNotifications";
 import AdminDisputes from "./AdminDisputes";
 
-// ─── Safe Date Formatter ────────────────────────────────────────────────────
 function formatDateSafe(rawDate: string | Date | null | undefined, opts?: Intl.DateTimeFormatOptions): string {
     if (!rawDate) return "—";
     try {
@@ -63,8 +62,6 @@ function formatDateTimeSafe(rawDate: string | Date | null | undefined): string {
 
 // ─── Login Provider Detection ────────────────────────────────────────────────
 function detectLoginProvider(customer: any): "Google" | "OTP/Email" {
-    // A user who signed in via Google will have a profileImage from google (lh3.googleusercontent.com)
-    // or their password will be a long random bcrypt of a UUID-like value
     if (customer.profileImage && customer.profileImage.includes("googleusercontent")) return "Google";
     if (customer.provider === "google") return "Google";
     return "OTP/Email";
@@ -513,7 +510,8 @@ export default function SuperAdminDashboard() {
                     {activeTab === "addPartner" && <AdminAddPartner hotels={hotels} partners={partners} setPartners={setPartners} />}
                     {activeTab === "ai-copilot" && <AdminAICopilot hotels={hotels} loadingHotels={!loadedSections.hotels} />}
                     {activeTab === "tour-packages" && <AdminTourPackages />}
-                    {(activeTab === "destination-analytics" || activeTab === "destinations") && <AdminDestinationAnalytics />}
+                    {activeTab === "destinations" && <AdminDestinationsManager />}
+                    {activeTab === "destination-analytics" && <AdminDestinationAnalytics />}
 
                     {activeTab === "overview" && (
                 <>
@@ -1380,46 +1378,46 @@ export default function SuperAdminDashboard() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[200]"
+                            className="fixed inset-0 bg-black/80 backdrop-blur-md z-[200]"
                             onClick={() => setResetModal({ show: false, partner: null })}
                         />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-white p-8 rounded-sm z-[210] shadow-2xl border border-slate-200"
+                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-[#0c0c0c] p-8 rounded-2xl z-[210] shadow-2xl border border-[#222222] text-white"
                         >
-                            <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-100">
-                                <div className="w-10 h-10 bg-brand-50 rounded-xl flex items-center justify-center">
-                                    <Key className="w-5 h-5 text-brand-600" />
+                            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-[#1f1f1f]">
+                                <div className="w-10 h-10 bg-emerald-950/80 border border-emerald-800/40 rounded-xl flex items-center justify-center">
+                                    <Key className="w-5 h-5 text-emerald-400" />
                                 </div>
                                 <div>
-                                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Force Password Reset</h3>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{resetModal.partner.email}</p>
+                                    <h3 className="text-sm font-black text-white uppercase tracking-tight">Force Password Reset</h3>
+                                    <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">{resetModal.partner.email}</p>
                                 </div>
                             </div>
 
                             <div className="space-y-6">
-                                <div className="p-4 bg-amber-50 border border-amber-100 flex gap-3">
-                                    <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0" />
-                                    <p className="text-[10px] font-bold text-amber-700 uppercase leading-relaxed">
+                                <div className="p-4 bg-amber-950/60 border border-amber-800/40 rounded-xl flex gap-3">
+                                    <ShieldAlert className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                                    <p className="text-[10px] font-bold text-amber-300 uppercase leading-relaxed">
                                         This will immediately invalidate the partner's current password. They will need to use the new password to login.
                                     </p>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">New Secure Password</label>
+                                    <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest ml-1">New Secure Password</label>
                                     <div className="relative">
                                         <input
                                             type={showPass ? "text" : "password"}
                                             value={newPassword}
                                             onChange={(e) => setNewPassword(e.target.value)}
                                             placeholder="Enter new password..."
-                                            className="w-full px-5 py-4 bg-slate-50 border border-transparent focus:border-brand-600 focus:bg-white outline-none rounded-sm text-sm font-bold transition-all"
+                                            className="w-full px-4 py-3 bg-[#141414] border border-[#262626] focus:border-neutral-400 outline-none rounded-xl text-sm font-bold text-white transition-all"
                                         />
                                         <button
                                             onClick={() => setShowPass(!showPass)}
-                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white cursor-pointer"
                                         >
                                             {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                         </button>
@@ -1430,14 +1428,14 @@ export default function SuperAdminDashboard() {
                                     <button
                                         onClick={handleResetPassword}
                                         disabled={isReseting}
-                                        className="flex-1 py-4 bg-brand-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-brand-700 shadow-xl shadow-brand-100 disabled:opacity-50 flex items-center justify-center gap-2"
+                                        className="flex-1 py-3.5 bg-white hover:bg-neutral-200 text-black text-xs font-black uppercase tracking-wider rounded-xl shadow-md disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
                                     >
-                                        {isReseting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                                        {isReseting ? <Loader2 className="w-4 h-4 animate-spin text-black" /> : <CheckCircle2 className="w-4 h-4" />}
                                         Confirm Reset
                                     </button>
                                     <button
                                         onClick={() => setResetModal({ show: false, partner: null })}
-                                        className="flex-1 py-4 bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 cursor-pointer"
+                                        className="flex-1 py-3.5 bg-[#141414] border border-[#262626] text-neutral-300 text-xs font-bold uppercase tracking-wider hover:text-white rounded-xl cursor-pointer"
                                     >
                                         Cancel
                                     </button>
@@ -1457,54 +1455,54 @@ export default function SuperAdminDashboard() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[200]"
+                            className="fixed inset-0 bg-black/80 backdrop-blur-md z-[200]"
                             onClick={() => setEditEmailModal({ show: false, partner: null })}
                         />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-white p-8 rounded-sm z-[210] shadow-2xl border border-slate-200"
+                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-[#0c0c0c] p-8 rounded-2xl z-[210] shadow-2xl border border-[#222222] text-white"
                         >
-                            <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-100">
-                                <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
-                                    <Mail className="w-5 h-5 text-emerald-600" />
+                            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-[#1f1f1f]">
+                                <div className="w-10 h-10 bg-emerald-950/80 border border-emerald-800/40 rounded-xl flex items-center justify-center">
+                                    <Mail className="w-5 h-5 text-emerald-400" />
                                 </div>
                                 <div>
-                                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Update Partner Email</h3>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{editEmailModal.partner.name || "Partner"}</p>
+                                    <h3 className="text-sm font-black text-white uppercase tracking-tight">Update Partner Email</h3>
+                                    <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">{editEmailModal.partner.name || "Partner"}</p>
                                 </div>
                             </div>
 
                             <div className="space-y-6">
-                                <div className="p-4 bg-emerald-50/80 border border-emerald-200 flex gap-3 rounded-sm">
-                                    <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                                <div className="p-4 bg-emerald-950/60 border border-emerald-800/40 flex gap-3 rounded-xl">
+                                    <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
                                     <div className="space-y-1">
-                                        <p className="text-[10px] font-black text-emerald-900 uppercase tracking-wider">Super Admin Direct Override</p>
-                                        <p className="text-[10px] font-medium text-emerald-700 leading-relaxed">
+                                        <p className="text-[10px] font-black text-emerald-300 uppercase tracking-wider">Super Admin Direct Override</p>
+                                        <p className="text-[10px] font-medium text-emerald-400/90 leading-relaxed">
                                             No OTP or verification needed. Partner will use this new email to login instantly.
                                         </p>
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Current Email</label>
+                                    <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest ml-1">Current Email</label>
                                     <input
                                         type="text"
                                         value={editEmailModal.partner.email || "No email"}
                                         disabled
-                                        className="w-full px-5 py-3.5 bg-slate-100 border border-slate-200 rounded-sm text-xs font-bold text-slate-500 cursor-not-allowed"
+                                        className="w-full px-4 py-3 bg-[#141414] border border-[#262626] rounded-xl text-xs font-bold text-neutral-500 cursor-not-allowed"
                                     />
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-700 uppercase tracking-widest ml-1">New Partner Email</label>
+                                    <label className="text-[10px] font-black text-neutral-300 uppercase tracking-widest ml-1">New Partner Email</label>
                                     <input
                                         type="email"
                                         value={newPartnerEmail}
                                         onChange={(e) => setNewPartnerEmail(e.target.value)}
                                         placeholder="e.g. partner@hotel.com"
-                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-200 focus:border-emerald-600 focus:bg-white outline-none rounded-sm text-sm font-bold text-slate-900 transition-all"
+                                        className="w-full px-4 py-3 bg-[#141414] border border-[#262626] focus:border-neutral-400 outline-none rounded-xl text-sm font-bold text-white transition-all"
                                         autoFocus
                                     />
                                 </div>
@@ -1513,14 +1511,14 @@ export default function SuperAdminDashboard() {
                                     <button
                                         onClick={handleUpdatePartnerEmail}
                                         disabled={isUpdatingEmail}
-                                        className="flex-1 py-4 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 shadow-xl shadow-emerald-100 disabled:opacity-50 flex items-center justify-center gap-2 rounded-sm cursor-pointer"
+                                        className="flex-1 py-3.5 bg-white hover:bg-neutral-200 text-black text-xs font-black uppercase tracking-wider rounded-xl shadow-md disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
                                     >
-                                        {isUpdatingEmail ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                                        {isUpdatingEmail ? <Loader2 className="w-4 h-4 animate-spin text-black" /> : <CheckCircle2 className="w-4 h-4" />}
                                         Update Email
                                     </button>
                                     <button
                                         onClick={() => setEditEmailModal({ show: false, partner: null })}
-                                        className="flex-1 py-4 bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 cursor-pointer rounded-sm"
+                                        className="flex-1 py-3.5 bg-[#141414] border border-[#262626] text-neutral-300 text-xs font-bold uppercase tracking-wider hover:text-white rounded-xl cursor-pointer"
                                     >
                                         Cancel
                                     </button>
@@ -1540,47 +1538,47 @@ export default function SuperAdminDashboard() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[200]"
+                            className="fixed inset-0 bg-black/80 backdrop-blur-md z-[200]"
                             onClick={() => setRequestDetailModal({ show: false, request: null })}
                         />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] max-w-2xl bg-white rounded-sm z-[210] shadow-2xl border border-slate-200 overflow-hidden"
+                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] max-w-2xl bg-[#0c0c0c] rounded-2xl z-[210] shadow-2xl border border-[#222222] text-white overflow-hidden"
                         >
-                            <div className="p-6 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+                            <div className="p-6 border-b border-[#1f1f1f] bg-[#111111] flex items-center justify-between">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-blue-600 text-white flex items-center justify-center">
+                                    <div className="w-12 h-12 bg-emerald-950 border border-emerald-800/40 text-emerald-400 rounded-xl flex items-center justify-center">
                                         <Hotel className="w-6 h-6" />
                                     </div>
                                     <div>
-                                        <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">{requestDetailModal.request.hotelName}</h3>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Partner Application Review</p>
+                                        <h3 className="text-lg font-black text-white uppercase tracking-tight">{requestDetailModal.request.hotelName}</h3>
+                                        <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.2em]">Partner Application Review</p>
                                     </div>
                                 </div>
                                 <button
                                     onClick={() => setRequestDetailModal({ show: false, request: null })}
-                                    className="p-2 text-slate-400 hover:text-slate-900 transition-colors"
+                                    className="p-2 text-neutral-400 hover:text-white transition-colors cursor-pointer"
                                 >
                                     <XCircle className="w-6 h-6" />
                                 </button>
                             </div>
 
-                            <div className="p-8 max-h-[70vh] overflow-y-auto">
+                            <div className="p-8 max-h-[70vh] overflow-y-auto space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div className="space-y-6">
                                         <div>
-                                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Property Information</h4>
+                                            <h4 className="text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-3">Property Information</h4>
                                             <div className="space-y-4">
                                                 <div>
-                                                    <p className="text-[10px] font-bold text-slate-400 uppercase">Username</p>
-                                                    <p className="text-sm font-bold text-slate-900">@{requestDetailModal.request.hotelUsername}</p>
+                                                    <p className="text-[10px] font-bold text-neutral-500 uppercase">Username</p>
+                                                    <p className="text-sm font-bold text-white">@{requestDetailModal.request.hotelUsername}</p>
                                                 </div>
                                                 <div>
-                                                    <p className="text-[10px] font-bold text-slate-400 uppercase">Location</p>
-                                                    <p className="text-sm font-bold text-slate-900">{requestDetailModal.request.city}</p>
-                                                    <p className="text-xs text-slate-500">{requestDetailModal.request.address}</p>
+                                                    <p className="text-[10px] font-bold text-neutral-500 uppercase">Location</p>
+                                                    <p className="text-sm font-bold text-white">{requestDetailModal.request.city}</p>
+                                                    <p className="text-xs text-neutral-400">{requestDetailModal.request.address}</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -1588,48 +1586,48 @@ export default function SuperAdminDashboard() {
 
                                     <div className="space-y-6">
                                         <div>
-                                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Partner Contact</h4>
+                                            <h4 className="text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-3">Partner Contact</h4>
                                             <div className="space-y-4">
                                                 <div>
-                                                    <p className="text-[10px] font-bold text-slate-400 uppercase">Full Name</p>
-                                                    <p className="text-sm font-bold text-slate-900">{requestDetailModal.request.userName}</p>
+                                                    <p className="text-[10px] font-bold text-neutral-500 uppercase">Full Name</p>
+                                                    <p className="text-sm font-bold text-white">{requestDetailModal.request.userName}</p>
                                                 </div>
                                                 <div>
-                                                    <p className="text-[10px] font-bold text-slate-400 uppercase">Email Address</p>
-                                                    <p className="text-sm font-bold text-slate-900">{requestDetailModal.request.userEmail}</p>
+                                                    <p className="text-[10px] font-bold text-neutral-500 uppercase">Email Address</p>
+                                                    <p className="text-sm font-bold text-white">{requestDetailModal.request.userEmail}</p>
                                                 </div>
                                                 <div>
-                                                    <p className="text-[10px] font-bold text-slate-400 uppercase">Phone Number</p>
-                                                    <p className="text-sm font-bold text-slate-900">{requestDetailModal.request.userPhone}</p>
+                                                    <p className="text-[10px] font-bold text-neutral-500 uppercase">Phone Number</p>
+                                                    <p className="text-sm font-bold text-white">{requestDetailModal.request.userPhone}</p>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="mt-8 pt-8 border-t border-slate-100">
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">Application Status</p>
+                                <div className="mt-8 pt-8 border-t border-[#1f1f1f]">
+                                    <p className="text-[10px] font-bold text-neutral-500 uppercase mb-2">Application Status</p>
                                     <div className="flex items-center gap-2">
                                         <div className={cn(
-                                            "px-4 py-1 rounded-sm text-[10px] font-black uppercase tracking-widest",
-                                            requestDetailModal.request.status === 'pending' ? "bg-amber-100 text-amber-700" :
-                                                requestDetailModal.request.status === 'approved' ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"
+                                            "px-4 py-1 rounded-md text-[10px] font-black uppercase tracking-widest border",
+                                            requestDetailModal.request.status === 'pending' ? "bg-amber-950/80 text-amber-300 border-amber-800/40" :
+                                                requestDetailModal.request.status === 'approved' ? "bg-emerald-950/80 text-emerald-300 border-emerald-800/40" : "bg-red-950/80 text-red-300 border-red-800/40"
                                         )}>
                                             {requestDetailModal.request.status}
                                         </div>
-                                        <p className="text-[10px] text-slate-400 italic">Submitted on {formatDateTimeSafe(requestDetailModal.request.createdAt)}</p>
+                                        <p className="text-[10px] text-neutral-500 italic">Submitted on {formatDateTimeSafe(requestDetailModal.request.createdAt)}</p>
                                     </div>
                                 </div>
                             </div>
 
                             {requestDetailModal.request.status === 'pending' && (
-                                <div className="p-6 bg-slate-50 border-t border-slate-100 flex gap-3">
+                                <div className="p-6 bg-[#111111] border-t border-[#1f1f1f] flex gap-3">
                                     <button
                                         onClick={() => {
                                             handleApproveRequest(requestDetailModal.request.id);
                                             setRequestDetailModal({ show: false, request: null });
                                         }}
-                                        className="flex-1 py-4 bg-emerald-600 text-white text-[11px] font-black uppercase tracking-widest hover:bg-emerald-700 shadow-xl shadow-emerald-100 flex items-center justify-center gap-2"
+                                        className="flex-1 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md flex items-center justify-center gap-2 cursor-pointer"
                                     >
                                         <CheckCircle2 className="w-4 h-4" /> Approve Listing
                                     </button>
@@ -1638,7 +1636,7 @@ export default function SuperAdminDashboard() {
                                             handleDeclineRequest(requestDetailModal.request.id);
                                             setRequestDetailModal({ show: false, request: null });
                                         }}
-                                        className="flex-1 py-4 bg-red-500 text-white text-[11px] font-black uppercase tracking-widest hover:bg-red-600 flex items-center justify-center gap-2"
+                                        className="flex-1 py-3.5 bg-red-600 hover:bg-red-500 text-white text-xs font-black uppercase tracking-wider rounded-xl flex items-center justify-center gap-2 cursor-pointer"
                                     >
                                         <XCircle className="w-4 h-4" /> Reject Application
                                     </button>
@@ -1657,19 +1655,19 @@ export default function SuperAdminDashboard() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[200]"
+                            className="fixed inset-0 bg-black/80 backdrop-blur-md z-[200]"
                             onClick={() => setCustomerModal({ show: false, customer: null })}
                         />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] max-w-2xl bg-white rounded-sm z-[210] shadow-2xl border border-slate-200 overflow-hidden"
+                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] max-w-2xl bg-[#0c0c0c] rounded-2xl z-[210] shadow-2xl border border-[#222222] text-white overflow-hidden"
                         >
                             {/* Header */}
-                            <div className="bg-gradient-to-r from-slate-900 to-slate-800 p-6 flex items-center justify-between">
+                            <div className="bg-[#111111] p-6 border-b border-[#1f1f1f] flex items-center justify-between">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-white/20 bg-white/10 flex items-center justify-center shrink-0">
+                                    <div className="w-14 h-14 rounded-full overflow-hidden border border-[#333] bg-[#181818] flex items-center justify-center shrink-0">
                                         {customerModal.customer.profileImage ? (
                                             <img src={customerModal.customer.profileImage} alt={customerModal.customer.name} className="w-full h-full object-cover" />
                                         ) : (
@@ -1680,13 +1678,13 @@ export default function SuperAdminDashboard() {
                                     </div>
                                     <div>
                                         <h3 className="text-lg font-black text-white">{customerModal.customer.name}</h3>
-                                        <p className="text-[10px] text-slate-400 font-medium">{customerModal.customer.email}</p>
+                                        <p className="text-[10px] text-neutral-400 font-medium">{customerModal.customer.email}</p>
                                         <div className="flex items-center gap-2 mt-1">
                                             <span className={cn(
                                                 "inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-black uppercase",
                                                 detectLoginProvider(customerModal.customer) === "Google"
-                                                    ? "bg-blue-500/20 text-blue-300"
-                                                    : "bg-white/10 text-slate-300"
+                                                    ? "bg-blue-950/80 text-blue-300 border border-blue-800/40"
+                                                    : "bg-[#181818] text-neutral-400 border border-[#282828]"
                                             )}>
                                                 {detectLoginProvider(customerModal.customer) === "Google" ? (
                                                     <svg className="w-2.5 h-2.5" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
@@ -1695,7 +1693,7 @@ export default function SuperAdminDashboard() {
                                                 )}
                                                 {detectLoginProvider(customerModal.customer)}
                                             </span>
-                                            <span className="px-2 py-0.5 bg-white/10 text-slate-300 rounded text-[9px] font-black uppercase">
+                                            <span className="px-2 py-0.5 bg-[#181818] border border-[#282828] text-neutral-400 rounded text-[9px] font-black uppercase font-mono">
                                                 #{customerModal.customer.id}
                                             </span>
                                         </div>
@@ -1703,121 +1701,96 @@ export default function SuperAdminDashboard() {
                                 </div>
                                 <button
                                     onClick={() => setCustomerModal({ show: false, customer: null })}
-                                    className="p-2 text-slate-400 hover:text-white transition-colors"
+                                    className="p-2 text-neutral-400 hover:text-white transition-colors cursor-pointer"
                                 >
                                     <XCircle className="w-6 h-6" />
                                 </button>
                             </div>
 
                             {/* Body */}
-                            <div className="p-6 max-h-[60vh] overflow-y-auto">
+                            <div className="p-6 max-h-[60vh] overflow-y-auto space-y-6">
                                 <div className="grid grid-cols-2 gap-6">
                                     {/* Contact Info */}
                                     <div className="space-y-4">
-                                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">Contact Information</h4>
+                                        <h4 className="text-[10px] font-black text-neutral-400 uppercase tracking-widest border-b border-[#1f1f1f] pb-2">Contact Information</h4>
                                         <div className="space-y-3">
                                             <div className="flex items-center gap-2">
-                                                <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                                                <span className="text-xs text-slate-700 font-medium">{customerModal.customer.email || "—"}</span>
+                                                <Mail className="w-3.5 h-3.5 text-neutral-500 shrink-0" />
+                                                <span className="text-xs text-neutral-200 font-medium">{customerModal.customer.email || "—"}</span>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                                                <span className="text-xs text-slate-700 font-medium">{customerModal.customer.phone || "Not provided"}</span>
+                                                <Phone className="w-3.5 h-3.5 text-neutral-500 shrink-0" />
+                                                <span className="text-xs text-neutral-200 font-medium">{customerModal.customer.phone || "Not provided"}</span>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                                                <span className="text-xs text-slate-700 font-medium">Joined {formatDateSafe(customerModal.customer.createdAt)}</span>
+                                                <Calendar className="w-3.5 h-3.5 text-neutral-500 shrink-0" />
+                                                <span className="text-xs text-neutral-200 font-medium">Joined {formatDateSafe(customerModal.customer.createdAt)}</span>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <LogIn className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                                                <span className="text-xs text-slate-700 font-medium">Provider: {detectLoginProvider(customerModal.customer)}</span>
+                                                <LogIn className="w-3.5 h-3.5 text-neutral-500 shrink-0" />
+                                                <span className="text-xs text-neutral-200 font-medium">Provider: {detectLoginProvider(customerModal.customer)}</span>
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* Security Info */}
                                     <div className="space-y-4">
-                                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">Security Information</h4>
+                                        <h4 className="text-[10px] font-black text-neutral-400 uppercase tracking-widest border-b border-[#1f1f1f] pb-2">Security Information</h4>
                                         <div className="space-y-3">
                                             <div>
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Password Last Changed</p>
-                                                <p className="text-xs text-slate-700 font-medium">{formatDateTimeSafe(customerModal.customer.passwordLastChangedAt)}</p>
+                                                <p className="text-[10px] font-bold text-neutral-500 uppercase mb-1">Password Last Changed</p>
+                                                <p className="text-xs text-neutral-200 font-medium">{formatDateTimeSafe(customerModal.customer.passwordLastChangedAt)}</p>
                                             </div>
                                             <div>
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Password Hash</p>
+                                                <p className="text-[10px] font-bold text-neutral-500 uppercase mb-1">Password Hash</p>
                                                 <div className="flex items-center gap-2">
-                                                    <code className="text-[9px] text-slate-600 bg-slate-100 px-2 py-1 rounded font-mono truncate max-w-[140px]">
+                                                    <code className="text-[9px] text-neutral-400 bg-[#141414] border border-[#262626] px-2 py-1 rounded font-mono truncate max-w-[140px]">
                                                         {showPasswordHash
                                                             ? (customerModal.customer.password || "N/A")
                                                             : "••••••••••••••••••••"}
                                                     </code>
                                                     <button
                                                         onClick={() => setShowPasswordHash(!showPasswordHash)}
-                                                        className="text-slate-400 hover:text-slate-600 shrink-0"
+                                                        className="text-neutral-400 hover:text-white shrink-0 cursor-pointer"
                                                     >
                                                         {showPasswordHash ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
                                                     </button>
                                                     {showPasswordHash && customerModal.customer.password && (
                                                         <button
                                                             onClick={() => { navigator.clipboard.writeText(customerModal.customer.password); alert("Hash copied!"); }}
-                                                            className="text-slate-400 hover:text-slate-600 shrink-0"
+                                                            className="text-neutral-400 hover:text-white shrink-0 cursor-pointer"
                                                         >
                                                             <Copy className="w-3 h-3" />
                                                         </button>
                                                     )}
                                                 </div>
                                             </div>
-                                            {/* Password Change History */}
-                                            {customerModal.customer.passwordChangeHistory && (() => {
-                                                try {
-                                                    const hist = typeof customerModal.customer.passwordChangeHistory === 'string'
-                                                        ? JSON.parse(customerModal.customer.passwordChangeHistory)
-                                                        : customerModal.customer.passwordChangeHistory;
-                                                    if (Array.isArray(hist) && hist.length > 0) {
-                                                        return (
-                                                            <div>
-                                                                <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">Password Change History</p>
-                                                                <div className="space-y-1 max-h-[80px] overflow-y-auto">
-                                                                    {hist.slice(-5).reverse().map((entry: any, i: number) => (
-                                                                        <div key={i} className="text-[9px] text-slate-500 flex items-center gap-1.5">
-                                                                            <div className="w-1 h-1 rounded-full bg-slate-300 shrink-0" />
-                                                                            {formatDateTimeSafe(entry.changedAt || entry.date)}
-                                                                        </div>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                        );
-                                                    }
-                                                } catch {}
-                                                return null;
-                                            })()}
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Footer Actions */}
-                            <div className="p-4 bg-slate-50 border-t border-slate-100 flex gap-3">
+                            <div className="p-4 bg-[#111111] border-t border-[#1f1f1f] flex gap-3">
                                 <button
                                     onClick={() => handleImpersonateCustomer(customerModal.customer)}
-                                    className="flex-1 py-3 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest hover:bg-black flex items-center justify-center gap-2 transition-all"
+                                    className="flex-1 py-3 bg-[#1c1c1c] hover:bg-[#282828] text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 rounded-xl transition-all border border-[#333] cursor-pointer"
                                 >
-                                    <UserCheck className="w-3.5 h-3.5" /> Impersonate User
+                                    <UserCheck className="w-3.5 h-3.5 text-emerald-400" /> Impersonate User
                                 </button>
                                 <button
                                     onClick={() => {
                                         setCustomerModal({ show: false, customer: null });
-                                        // Switch to customers sub-tab and search by email
                                         setUsersSubTab("customers");
                                         setCustomerSearchQuery(customerModal.customer.email);
                                     }}
-                                    className="flex-1 py-3 bg-brand-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-brand-700 flex items-center justify-center gap-2 transition-all"
+                                    className="flex-1 py-3 bg-white hover:bg-neutral-200 text-black text-xs font-extrabold uppercase tracking-wider flex items-center justify-center gap-2 rounded-xl transition-all cursor-pointer shadow-md"
                                 >
-                                    <ExternalLink className="w-3.5 h-3.5" /> View Full Details
+                                    <ExternalLink className="w-3.5 h-3.5 text-black" /> View Full Details
                                 </button>
                                 <button
                                     onClick={() => setCustomerModal({ show: false, customer: null })}
-                                    className="py-3 px-5 bg-white border border-slate-200 text-slate-600 text-[10px] font-black uppercase tracking-widest hover:bg-slate-50"
+                                    className="py-3 px-5 bg-[#141414] border border-[#282828] text-neutral-300 text-xs font-bold uppercase tracking-wider hover:text-white rounded-xl cursor-pointer"
                                 >
                                     Close
                                 </button>
@@ -1835,33 +1808,33 @@ export default function SuperAdminDashboard() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[200]"
+                            className="fixed inset-0 bg-black/80 backdrop-blur-md z-[200]"
                             onClick={() => setReviewModal({ show: false, review: null })}
                         />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] max-w-xl bg-white rounded-sm z-[210] shadow-2xl border border-slate-200 overflow-hidden"
+                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] max-w-xl bg-[#0c0c0c] rounded-2xl z-[210] shadow-2xl border border-[#222222] text-white overflow-hidden"
                         >
                             {/* Header */}
-                            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                            <div className="p-5 border-b border-[#1f1f1f] flex items-center justify-between bg-[#111111]">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full overflow-hidden border border-slate-200 bg-slate-100 flex items-center justify-center shrink-0">
+                                    <div className="w-10 h-10 rounded-full overflow-hidden border border-[#333] bg-[#181818] flex items-center justify-center shrink-0">
                                         {reviewModal.review.user?.profileImage ? (
                                             <img src={reviewModal.review.user.profileImage} alt={reviewModal.review.user.name} className="w-full h-full object-cover" />
                                         ) : (
-                                            <span className="text-sm font-black text-slate-500">
+                                            <span className="text-sm font-black text-neutral-400">
                                                 {reviewModal.review.user?.name?.charAt(0)?.toUpperCase() || "?"}
                                             </span>
                                         )}
                                     </div>
                                     <div>
-                                        <h3 className="text-sm font-black text-slate-900">{reviewModal.review.user?.name || "Unknown User"}</h3>
-                                        <p className="text-[10px] text-slate-400 font-medium">{reviewModal.review.user?.email}</p>
+                                        <h3 className="text-sm font-black text-white">{reviewModal.review.user?.name || "Unknown User"}</h3>
+                                        <p className="text-[10px] text-neutral-400 font-medium">{reviewModal.review.user?.email}</p>
                                     </div>
                                 </div>
-                                <button onClick={() => setReviewModal({ show: false, review: null })} className="p-2 text-slate-400 hover:text-slate-700">
+                                <button onClick={() => setReviewModal({ show: false, review: null })} className="p-2 text-neutral-400 hover:text-white cursor-pointer">
                                     <XCircle className="w-5 h-5" />
                                 </button>
                             </div>
@@ -1871,70 +1844,70 @@ export default function SuperAdminDashboard() {
                                 {/* Hotel + Rating */}
                                 <div className="flex items-start justify-between">
                                     <div>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Property</p>
-                                        <p className="text-sm font-bold text-slate-900">{reviewModal.review.hotel?.name}</p>
-                                        <p className="text-[10px] text-slate-400">{reviewModal.review.hotel?.city}</p>
+                                        <p className="text-[10px] font-bold text-neutral-500 uppercase mb-1">Property</p>
+                                        <p className="text-sm font-bold text-white">{reviewModal.review.hotel?.name}</p>
+                                        <p className="text-[10px] text-neutral-400">{reviewModal.review.hotel?.city}</p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Rating</p>
+                                        <p className="text-[10px] font-bold text-neutral-500 uppercase mb-1">Rating</p>
                                         <StarRating rating={reviewModal.review.rating} />
-                                        <p className="text-xs font-black text-amber-600 mt-0.5">{reviewModal.review.rating} / 5</p>
+                                        <p className="text-xs font-black text-amber-400 mt-0.5">{reviewModal.review.rating} / 5</p>
                                     </div>
                                 </div>
 
                                 {/* Stay Type + Date */}
                                 <div className="flex items-center gap-4">
                                     <span className={cn(
-                                        "px-3 py-1 text-[9px] font-black uppercase rounded-sm",
-                                        reviewModal.review.stayType === 'hourly' ? "bg-purple-100 text-purple-700" : "bg-sky-100 text-sky-700"
+                                        "px-3 py-1 text-[9px] font-black uppercase rounded-md border",
+                                        reviewModal.review.stayType === 'hourly' ? "bg-purple-950/80 text-purple-300 border-purple-800/40" : "bg-sky-950/80 text-sky-300 border-sky-800/40"
                                     )}>
                                         {reviewModal.review.stayType} stay
                                     </span>
-                                    <span className="text-[10px] text-slate-400 font-medium">
+                                    <span className="text-[10px] text-neutral-400 font-medium">
                                         Posted on {formatDateTimeSafe(reviewModal.review.createdAt)}
                                     </span>
                                 </div>
 
                                 {/* Comment */}
                                 {reviewModal.review.comment && (
-                                    <div className="bg-slate-50 border border-slate-100 p-4 rounded-sm">
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">Guest Review</p>
-                                        <p className="text-sm text-slate-700 leading-relaxed italic">"{reviewModal.review.comment}"</p>
+                                    <div className="bg-[#141414] border border-[#242424] p-4 rounded-xl">
+                                        <p className="text-[10px] font-bold text-neutral-400 uppercase mb-2">Guest Review</p>
+                                        <p className="text-sm text-neutral-200 leading-relaxed italic">"{reviewModal.review.comment}"</p>
                                     </div>
                                 )}
 
                                 {/* Partner Reply */}
                                 {reviewModal.review.partnerReply && (
-                                    <div className="bg-blue-50 border border-blue-100 p-4 rounded-sm">
-                                        <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">Partner Response:</p>
-                                        <p className="text-sm text-blue-900 leading-relaxed">"{reviewModal.review.partnerReply}"</p>
+                                    <div className="bg-blue-950/40 border border-blue-800/40 p-4 rounded-xl">
+                                        <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1">Partner Response:</p>
+                                        <p className="text-sm text-blue-200 leading-relaxed">"{reviewModal.review.partnerReply}"</p>
                                     </div>
                                 )}
                             </div>
 
                             {/* Footer */}
-                            <div className="p-4 bg-slate-50 border-t border-slate-100 flex gap-3">
+                            <div className="p-4 bg-[#111111] border-t border-[#1f1f1f] flex gap-3">
                                 <button
                                     onClick={() => {
                                         setCustomerModal({ show: true, customer: reviewModal.review.user });
                                         setReviewModal({ show: false, review: null });
                                         setShowPasswordHash(false);
                                     }}
-                                    className="flex-1 py-3 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest hover:bg-black flex items-center justify-center gap-2"
+                                    className="flex-1 py-3 bg-[#1c1c1c] hover:bg-[#282828] text-white text-xs font-bold uppercase tracking-wider rounded-xl border border-[#333] flex items-center justify-center gap-2 cursor-pointer"
                                 >
-                                    <UserCheck className="w-3.5 h-3.5" /> View Customer Profile
+                                    <UserCheck className="w-3.5 h-3.5 text-emerald-400" /> View Customer
                                 </button>
                                 <button
                                     onClick={() => handleDeleteReview(reviewModal.review.id)}
                                     disabled={actionLoading === reviewModal.review.id}
-                                    className="flex-1 py-3 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-red-700 flex items-center justify-center gap-2 disabled:opacity-50"
+                                    className="flex-1 py-3 bg-red-600 hover:bg-red-500 text-white text-xs font-extrabold uppercase tracking-wider rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer shadow-md"
                                 >
                                     {actionLoading === reviewModal.review.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
                                     Delete Review
                                 </button>
                                 <button
                                     onClick={() => setReviewModal({ show: false, review: null })}
-                                    className="py-3 px-5 bg-white border border-slate-200 text-slate-600 text-[10px] font-black uppercase tracking-widest hover:bg-slate-50"
+                                    className="py-3 px-5 bg-[#141414] border border-[#282828] text-neutral-300 text-xs font-bold uppercase tracking-wider hover:text-white rounded-xl cursor-pointer"
                                 >
                                     Close
                                 </button>
@@ -1952,34 +1925,34 @@ export default function SuperAdminDashboard() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[300]"
+                            className="fixed inset-0 bg-black/80 backdrop-blur-md z-[300]"
                             onClick={() => setDeclineConfirmModal({ show: false, requestId: null })}
                         />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-white p-10 rounded-sm z-[310] shadow-2xl border border-slate-200 text-center"
+                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-[#0c0c0c] p-8 rounded-2xl z-[310] shadow-2xl border border-[#222222] text-center text-white"
                         >
-                            <div className="w-20 h-20 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <ShieldAlert className="w-10 h-10" />
+                            <div className="w-16 h-16 bg-red-950/80 border border-red-800/50 text-red-400 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <ShieldAlert className="w-8 h-8" />
                             </div>
-                            <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-4">Confirm Rejection</h3>
-                            <p className="text-slate-500 font-bold text-sm leading-relaxed mb-8">
+                            <h3 className="text-lg font-black text-white uppercase tracking-tight mb-3">Confirm Rejection</h3>
+                            <p className="text-neutral-400 font-medium text-xs leading-relaxed mb-6">
                                 Are you sure you want to decline this property application? This action will permanently disable the partner's account.
                             </p>
-                            <div className="flex flex-col gap-2">
+                            <div className="flex flex-col gap-2.5">
                                 <button
                                     onClick={confirmDeclineRequest}
                                     disabled={actionLoading !== null}
-                                    className="w-full py-4 bg-red-600 text-white text-[11px] font-black uppercase tracking-widest hover:bg-red-700 shadow-xl shadow-red-100 flex items-center justify-center gap-2"
+                                    className="w-full py-3.5 bg-red-600 hover:bg-red-500 text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md flex items-center justify-center gap-2 cursor-pointer"
                                 >
-                                    {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
+                                    {actionLoading ? <Loader2 className="w-4 h-4 animate-spin text-white" /> : <XCircle className="w-4 h-4" />}
                                     Yes, Reject Application
                                 </button>
                                 <button
                                     onClick={() => setDeclineConfirmModal({ show: false, requestId: null })}
-                                    className="w-full py-4 bg-slate-100 text-slate-600 text-[11px] font-black uppercase tracking-widest hover:bg-slate-200"
+                                    className="w-full py-3 bg-[#141414] border border-[#282828] text-neutral-300 text-xs font-bold uppercase tracking-wider hover:text-white rounded-xl cursor-pointer"
                                 >
                                     Cancel
                                 </button>
@@ -1997,37 +1970,37 @@ export default function SuperAdminDashboard() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[400]"
+                            className="fixed inset-0 bg-black/80 backdrop-blur-md z-[400]"
                             onClick={() => setBulkModal({ show: false, type: null })}
                         />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-white p-10 rounded-sm z-[410] shadow-2xl border border-slate-200 text-center"
+                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-[#0c0c0c] p-8 rounded-2xl z-[410] shadow-2xl border border-[#222222] text-center text-white"
                         >
                             <div className={cn(
-                                "w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6",
-                                bulkModal.type === 'approve' ? "bg-emerald-50 text-emerald-600" : "bg-red-50 text-red-600"
+                                "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 border",
+                                bulkModal.type === 'approve' ? "bg-emerald-950/80 border-emerald-800/50 text-emerald-400" : "bg-red-950/80 border-red-800/50 text-red-400"
                             )}>
-                                {bulkModal.type === 'approve' ? <CheckCircle2 className="w-10 h-10" /> : <XCircle className="w-10 h-10" />}
+                                {bulkModal.type === 'approve' ? <CheckCircle2 className="w-8 h-8" /> : <XCircle className="w-8 h-8" />}
                             </div>
-                            <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-4">
+                            <h3 className="text-lg font-black text-white uppercase tracking-tight mb-3">
                                 Confirm Bulk {bulkModal.type === 'approve' ? 'Approval' : 'Rejection'}
                             </h3>
-                            <p className="text-slate-500 font-bold text-sm leading-relaxed mb-8">
-                                Are you sure you want to {bulkModal.type} <b>{selectedIds.length} property applications</b> at once? This action cannot be undone.
+                            <p className="text-neutral-400 font-medium text-xs leading-relaxed mb-6">
+                                Are you sure you want to {bulkModal.type} <strong className="text-white">{selectedIds.length} property applications</strong> at once? This action cannot be undone.
                             </p>
-                            <div className="flex flex-col gap-2">
+                            <div className="flex flex-col gap-2.5">
                                 <button
                                     onClick={handleBulkAction}
                                     disabled={actionLoading !== null}
                                     className={cn(
-                                        "w-full py-4 text-white text-[11px] font-black uppercase tracking-widest shadow-xl flex items-center justify-center gap-2",
-                                        bulkModal.type === 'approve' ? "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-100" : "bg-red-600 hover:bg-red-700 shadow-red-100"
+                                        "w-full py-3.5 text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md flex items-center justify-center gap-2 cursor-pointer",
+                                        bulkModal.type === 'approve' ? "bg-emerald-600 hover:bg-emerald-500" : "bg-red-600 hover:bg-red-500"
                                     )}
                                 >
-                                    {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (bulkModal.type === 'approve' ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />)}
+                                    {actionLoading ? <Loader2 className="w-4 h-4 animate-spin text-white" /> : (bulkModal.type === 'approve' ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />)}
                                     Confirm Bulk {bulkModal.type}
                                 </button>
                                 <button

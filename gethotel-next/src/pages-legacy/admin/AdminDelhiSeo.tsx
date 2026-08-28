@@ -10,6 +10,7 @@ import {
     normalizeDelhiHotels,
     type DelhiHotelInput,
 } from "@/lib/delhiSeo";
+import { Globe, RefreshCw } from "lucide-react";
 
 interface DelhiSeoRow {
     slug: string;
@@ -97,111 +98,115 @@ export default function AdminDelhiSeo() {
 
     const typeBadge = (type: string) => {
         const map: Record<string, string> = {
-            hub: "bg-indigo-100 text-indigo-700 border-indigo-200",
-            area: "bg-sky-100 text-sky-700 border-sky-200",
-            landmark: "bg-amber-100 text-amber-700 border-amber-200",
-            airport: "bg-violet-100 text-violet-700 border-violet-200",
-            rail: "bg-teal-100 text-teal-700 border-teal-200",
-            hospital: "bg-rose-100 text-rose-700 border-rose-200",
-            category: "bg-emerald-100 text-emerald-700 border-emerald-200",
+            hub: "bg-indigo-950/80 text-indigo-300 border-indigo-800/40",
+            area: "bg-sky-950/80 text-sky-300 border-sky-800/40",
+            landmark: "bg-amber-950/80 text-amber-300 border-amber-800/40",
+            airport: "bg-violet-950/80 text-violet-300 border-violet-800/40",
+            rail: "bg-teal-950/80 text-teal-300 border-teal-800/40",
+            hospital: "bg-rose-950/80 text-rose-300 border-rose-800/40",
+            category: "bg-emerald-950/80 text-emerald-300 border-emerald-800/40",
         };
-        return map[type] || "bg-slate-100 text-slate-700 border-slate-200";
+        return map[type] || "bg-[#181818] text-neutral-400 border-[#282828]";
     };
 
     return (
-        <div className="p-6 md:p-8 space-y-6 max-w-[1400px]">
-            <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="space-y-8 max-w-[1400px] text-neutral-100 animate-in fade-in duration-300 pb-16">
+            <div className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-[#1f1f1f]">
                 <div>
-                    <h1 className="text-2xl font-black text-slate-950">Delhi SEO Ecosystem Dashboard</h1>
-                    <p className="text-sm text-slate-500 font-semibold">
+                    <h1 className="text-xl font-black text-white uppercase tracking-wider flex items-center gap-2">
+                        <Globe className="w-5 h-5 text-emerald-400" />
+                        <span>Delhi SEO Ecosystem Dashboard</span>
+                    </h1>
+                    <p className="text-xs text-neutral-400 font-semibold mt-1">
                         Inventory-gated indexability for all {rows.length} Delhi landing pages ({delhiHub().requiredInventory}+ rule).
                     </p>
                 </div>
                 <button
                     onClick={refresh}
                     disabled={loading}
-                    className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 disabled:opacity-50 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all"
+                    className="px-5 py-2.5 bg-white hover:bg-neutral-200 disabled:opacity-50 text-black text-xs font-extrabold uppercase tracking-wider rounded-xl transition-all shadow-md flex items-center gap-2 cursor-pointer"
                 >
-                    {loading ? "Refreshing..." : "Refresh Inventory"}
+                    <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+                    <span>{loading ? "Refreshing..." : "Refresh Inventory"}</span>
                 </button>
             </div>
 
             {error && (
-                <div className="bg-red-50 border border-red-200 rounded-2xl p-4 text-sm font-bold text-red-700">
+                <div className="bg-red-950/80 border border-red-800/50 rounded-2xl p-4 text-xs font-bold text-red-300">
                     {error}
                 </div>
             )}
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-1">
-                    <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">Live Delhi Hotels</p>
-                    <p className="text-3xl font-black text-slate-950">{hotels.length}</p>
+                <div className="bg-[#0c0c0c] rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.9)] p-5 space-y-1">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Live Delhi Hotels</p>
+                    <p className="text-3xl font-black text-white">{hotels.length}</p>
                 </div>
-                <div className="bg-emerald-50 rounded-2xl border border-emerald-200 p-5 space-y-1">
-                    <p className="text-[11px] font-black uppercase tracking-widest text-emerald-600">Indexable Pages</p>
-                    <p className="text-3xl font-black text-emerald-700">{indexableCount}</p>
+                <div className="bg-[#0c0c0c] rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.9)] p-5 space-y-1">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Indexable Pages</p>
+                    <p className="text-3xl font-black text-emerald-400">{indexableCount}</p>
                 </div>
-                <div className="bg-amber-50 rounded-2xl border border-amber-200 p-5 space-y-1">
-                    <p className="text-[11px] font-black uppercase tracking-widest text-amber-600">Noindex (Awaiting Inventory)</p>
-                    <p className="text-3xl font-black text-amber-700">{noindexCount}</p>
+                <div className="bg-[#0c0c0c] rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.9)] p-5 space-y-1">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-amber-400">Noindex (Awaiting Inventory)</p>
+                    <p className="text-3xl font-black text-amber-400">{noindexCount}</p>
                 </div>
-                <div className="bg-sky-50 rounded-2xl border border-sky-200 p-5 space-y-1">
-                    <p className="text-[11px] font-black uppercase tracking-widest text-sky-600">Pages with Live From-Price</p>
-                    <p className="text-3xl font-black text-sky-700">{priceReadyCount}</p>
+                <div className="bg-[#0c0c0c] rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.9)] p-5 space-y-1">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-sky-400">Pages with Live From-Price</p>
+                    <p className="text-3xl font-black text-sky-400">{priceReadyCount}</p>
                 </div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+            <div className="bg-[#0c0c0c] rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.9)] overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm">
                         <thead>
-                            <tr className="bg-slate-50 text-[11px] uppercase tracking-widest text-slate-500">
-                                <th className="px-4 py-3 font-black">Page</th>
-                                <th className="px-4 py-3 font-black">URL</th>
-                                <th className="px-4 py-3 font-black">Type</th>
-                                <th className="px-4 py-3 font-black">Priority</th>
-                                <th className="px-4 py-3 font-black">Inventory</th>
-                                <th className="px-4 py-3 font-black">Status</th>
-                                <th className="px-4 py-3 font-black">From Price</th>
-                                <th className="px-4 py-3 font-black">Updated</th>
+                            <tr className="bg-[#0e0e0e] border-b border-[#1f1f1f] text-[10px] uppercase tracking-wider text-neutral-400 font-mono">
+                                <th className="px-4 py-3 font-bold">Page</th>
+                                <th className="px-4 py-3 font-bold">URL</th>
+                                <th className="px-4 py-3 font-bold">Type</th>
+                                <th className="px-4 py-3 font-bold">Priority</th>
+                                <th className="px-4 py-3 font-bold">Inventory</th>
+                                <th className="px-4 py-3 font-bold">Status</th>
+                                <th className="px-4 py-3 font-bold">From Price</th>
+                                <th className="px-4 py-3 font-bold">Updated</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody className="divide-y divide-[#161616]">
                             {rows.map((row) => (
-                                <tr key={row.slug || "hub"} className="border-t border-slate-100 align-top">
+                                <tr key={row.slug || "hub"} className="hover:bg-[#121212] transition-colors align-top">
                                     <td className="px-4 py-3">
-                                        <p className="font-bold text-slate-900">{row.primaryKeyword}</p>
-                                        <p className="text-[11px] text-slate-400 font-semibold max-w-[280px] truncate" title={row.title}>{row.title}</p>
+                                        <p className="font-bold text-white text-xs">{row.primaryKeyword}</p>
+                                        <p className="text-[10px] text-neutral-500 font-medium max-w-[280px] truncate" title={row.title}>{row.title}</p>
                                     </td>
                                     <td className="px-4 py-3">
                                         <a
                                             href={delhiPagePath("en", row.slug || undefined)}
                                             target="_blank"
                                             rel="noreferrer"
-                                            className="text-brand-600 hover:underline font-semibold text-xs break-all"
+                                            className="text-blue-400 hover:underline font-mono text-xs break-all"
                                         >
                                             {delhiPagePath("en", row.slug || undefined)}
                                         </a>
                                     </td>
                                     <td className="px-4 py-3">
-                                        <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${typeBadge(row.type)}`}>
+                                        <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider border ${typeBadge(row.type)}`}>
                                             {row.type}
                                         </span>
                                     </td>
-                                    <td className="px-4 py-3 font-bold text-slate-700">P{row.priority}</td>
+                                    <td className="px-4 py-3 font-mono text-xs text-neutral-300 font-bold">P{row.priority}</td>
                                     <td className="px-4 py-3">
-                                        <div className="flex items-center gap-2">
-                                            <span className={`font-black ${row.count >= row.requiredInventory ? "text-emerald-600" : "text-amber-600"}`}>
+                                        <div className="flex items-center gap-1.5 font-mono text-xs">
+                                            <span className={`font-black ${row.count >= row.requiredInventory ? "text-emerald-400" : "text-amber-400"}`}>
                                                 {row.count}
                                             </span>
-                                            <span className="text-slate-400 font-semibold">/ {row.requiredInventory}</span>
+                                            <span className="text-neutral-500 font-semibold">/ {row.requiredInventory}</span>
                                         </div>
                                         {row.matched.length > 0 && (
-                                            <details className="text-[11px] text-slate-500 font-semibold mt-1">
-                                                <summary className="cursor-pointer text-brand-600">hotels</summary>
-                                                <ul className="mt-1 space-y-0.5 list-disc list-inside">
+                                            <details className="text-[10px] text-neutral-400 font-medium mt-1">
+                                                <summary className="cursor-pointer text-emerald-400 hover:underline">hotels</summary>
+                                                <ul className="mt-1 space-y-0.5 list-disc list-inside bg-[#141414] p-2 rounded-lg border border-[#222]">
                                                     {row.matched.map((h) => (
-                                                        <li key={h.id}>{h.name}</li>
+                                                        <li key={h.id} className="text-neutral-300">{h.name}</li>
                                                     ))}
                                                 </ul>
                                             </details>
@@ -209,23 +214,23 @@ export default function AdminDelhiSeo() {
                                     </td>
                                     <td className="px-4 py-3">
                                         {row.indexable ? (
-                                            <span className="px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-700 border border-emerald-200">
+                                             <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-emerald-950/80 text-emerald-400 border border-emerald-800/40">
                                                 Indexable
                                             </span>
                                         ) : (
-                                            <span className="px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-700 border border-amber-200">
+                                            <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-amber-950/80 text-amber-400 border border-amber-800/40">
                                                 Noindex
                                             </span>
                                         )}
                                     </td>
                                     <td className="px-4 py-3">
                                         {row.fromPrice !== null ? (
-                                            <span className="font-bold text-slate-900">from {formatInr(row.fromPrice)}</span>
+                                            <span className="font-mono font-bold text-white text-xs">from {formatInr(row.fromPrice)}</span>
                                         ) : (
-                                            <span className="text-slate-400 font-semibold text-xs">no live price</span>
+                                            <span className="text-neutral-500 font-medium text-xs">no live price</span>
                                         )}
                                     </td>
-                                    <td className="px-4 py-3 text-xs text-slate-500 font-semibold">{row.lastUpdated}</td>
+                                    <td className="px-4 py-3 text-xs text-neutral-400 font-mono">{row.lastUpdated}</td>
                                 </tr>
                             ))}
                         </tbody>

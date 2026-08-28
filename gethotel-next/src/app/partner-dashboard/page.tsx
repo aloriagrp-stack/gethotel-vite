@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import PartnerDashboard from "@/pages-legacy/partner-dashboard/Dashboard";
+import PartnerLayout from "@/components/layout/PartnerLayout";
 
 export const metadata: Metadata = {
   title: "Partner Operations Dashboard | GetHotelStays",
@@ -10,5 +11,9 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <PartnerDashboard />;
+  return (
+    <PartnerLayout>
+      <PartnerDashboard />
+    </PartnerLayout>
+  );
 }

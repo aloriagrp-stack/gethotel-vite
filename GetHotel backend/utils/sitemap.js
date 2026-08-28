@@ -17,7 +17,9 @@ const DEFAULT_PRICE = 1;
 
 function loadDelhiConfig() {
     try {
-        const cfgPath = path.join(__dirname, '..', '..', 'GetHotel-Vite', 'src', 'data', 'delhiSeoConfig.json');
+        const nextCfg = path.join(__dirname, '..', '..', 'gethotel-next', 'src', 'data', 'delhiSeoConfig.json');
+        const viteCfg = path.join(__dirname, '..', '..', 'old stack', 'GetHotel-Vite', 'src', 'data', 'delhiSeoConfig.json');
+        const cfgPath = fs.existsSync(nextCfg) ? nextCfg : viteCfg;
         return JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
     } catch (err) {
         console.warn('[sitemap] delhiSeoConfig.json not found — skipping Delhi SEO pages:', err.message);
@@ -112,7 +114,8 @@ async function generateSitemap(prisma) {
         const searchPaths = [
             path.join(__dirname, '..', '..', 'public_html', 'sitemap.xml'),
             '/home/vgyuvmpi/public_html/sitemap.xml',
-            path.join(__dirname, '..', '..', 'GetHotel-Vite', 'public', 'sitemap.xml')
+            path.join(__dirname, '..', '..', 'gethotel-next', 'public', 'sitemap.xml'),
+            path.join(__dirname, '..', '..', 'old stack', 'GetHotel-Vite', 'public', 'sitemap.xml')
         ];
         
         let sitemapPath = '';
@@ -125,7 +128,7 @@ async function generateSitemap(prisma) {
         
         if (!sitemapPath) {
             console.warn('[sitemap] Warning: sitemap.xml template not found in search paths. Using local fallback.');
-            sitemapPath = path.join(__dirname, '..', '..', 'GetHotel-Vite', 'public', 'sitemap.xml');
+            sitemapPath = path.join(__dirname, '..', '..', 'gethotel-next', 'public', 'sitemap.xml');
             
             // If even local directory doesn't exist, create directory recursively
             const dir = path.dirname(sitemapPath);

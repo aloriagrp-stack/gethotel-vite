@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import SuperAdminDashboard from "@/pages-legacy/admin/AdminDashboard";
+import AdminLayout from "@/components/layout/AdminLayout";
 
 export const metadata: Metadata = {
   title: "Super Admin Command Center | GetHotelStays",
@@ -10,5 +11,9 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <SuperAdminDashboard />;
+  return (
+    <AdminLayout>
+      <SuperAdminDashboard />
+    </AdminLayout>
+  );
 }

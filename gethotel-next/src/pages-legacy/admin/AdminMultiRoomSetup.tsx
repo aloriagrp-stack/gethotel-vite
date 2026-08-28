@@ -756,122 +756,122 @@ export default function AdminMultiRoomSetup({ hotels }: { hotels: HotelSummary[]
                                             {/* Tab 2: Occupancy & Location */}
                                             {currentTab === "occupancy-location" && (
                                                 <>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818]">
                                                         {isEditing ? (
                                                             <input
                                                                 type="text"
                                                                 value={room.bedConfiguration}
                                                                 onChange={e => handleCellChange(room.id, "bedConfiguration", e.target.value)}
-                                                                className="w-full bg-white border border-slate-200 px-2 py-0.5 text-[10.5px] font-bold text-slate-800 focus:border-slate-400 outline-none rounded-sm"
+                                                                className="w-full bg-[#141414] border border-[#262626] px-2.5 py-1 text-xs font-bold text-white focus:border-neutral-500 outline-none rounded-lg"
                                                             />
                                                         ) : (
-                                                            <span className="text-[10.5px] font-medium text-slate-600">{room.bedConfiguration}</span>
+                                                            <span className="text-xs font-medium text-neutral-300">{room.bedConfiguration}</span>
                                                         )}
                                                     </td>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100 text-center">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818] text-center">
                                                         {isEditing ? (
                                                             <input
                                                                 type="number"
                                                                 value={room.sizeM2}
                                                                 onChange={e => handleCellChange(room.id, "sizeM2", Number(e.target.value))}
-                                                                className="w-16 bg-white border border-slate-200 px-1 py-0.5 text-[10.5px] font-bold text-slate-800 focus:border-slate-400 outline-none rounded-sm text-center"
+                                                                className="w-16 bg-[#141414] border border-[#262626] px-1 py-1 text-xs font-bold text-white focus:border-neutral-500 outline-none rounded-lg text-center font-mono"
                                                             />
                                                         ) : (
-                                                            <span className="text-[10.5px] font-medium text-slate-700">{room.sizeM2 || "—"} sq.ft</span>
+                                                            <span className="text-xs font-medium text-neutral-300">{room.sizeM2 || "—"} sq.ft</span>
                                                         )}
                                                     </td>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100 text-center">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818] text-center">
                                                         {isEditing ? (
                                                             <input
                                                                 type="number"
                                                                 value={room.maxOccupancy}
                                                                 onChange={e => handleCellChange(room.id, "maxOccupancy", Number(e.target.value))}
-                                                                className="w-12 bg-white border border-slate-200 px-1 py-0.5 text-[10.5px] font-bold text-slate-800 focus:border-slate-400 outline-none rounded-sm text-center"
+                                                                className="w-12 bg-[#141414] border border-[#262626] px-1 py-1 text-xs font-bold text-white focus:border-neutral-500 outline-none rounded-lg text-center font-mono"
                                                             />
                                                         ) : (
-                                                            <span className="text-[10.5px] font-medium text-slate-700">{room.maxOccupancy} Pax</span>
+                                                            <span className="text-xs font-medium text-neutral-300">{room.maxOccupancy} Pax</span>
                                                         )}
                                                     </td>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100 text-center">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818] text-center">
                                                         {isEditing ? (
                                                             <input
                                                                 type="number"
                                                                 value={room.capacityAdults}
                                                                 onChange={e => handleCellChange(room.id, "capacityAdults", Number(e.target.value))}
-                                                                className="w-12 bg-white border border-slate-200 px-1 py-0.5 text-[10.5px] font-bold text-slate-800 focus:border-slate-400 outline-none rounded-sm text-center"
+                                                                className="w-12 bg-[#141414] border border-[#262626] px-1 py-1 text-xs font-bold text-white focus:border-neutral-500 outline-none rounded-lg text-center font-mono"
                                                             />
                                                         ) : (
-                                                            <span className="text-[10.5px] font-medium text-slate-700">{room.capacityAdults}</span>
+                                                            <span className="text-xs font-medium text-neutral-300">{room.capacityAdults}</span>
                                                         )}
                                                     </td>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100 text-center">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818] text-center">
                                                         {isEditing ? (
                                                             <input
                                                                 type="number"
                                                                 value={room.capacityChildren}
                                                                 onChange={e => handleCellChange(room.id, "capacityChildren", Number(e.target.value))}
-                                                                className="w-12 bg-white border border-slate-200 px-1 py-0.5 text-[10.5px] font-bold text-slate-800 focus:border-slate-400 outline-none rounded-sm text-center"
+                                                                className="w-12 bg-[#141414] border border-[#262626] px-1 py-1 text-xs font-bold text-white focus:border-neutral-500 outline-none rounded-lg text-center font-mono"
                                                             />
                                                         ) : (
-                                                            <span className="text-[10.5px] font-medium text-slate-700">{room.capacityChildren}</span>
+                                                            <span className="text-xs font-medium text-neutral-300">{room.capacityChildren}</span>
                                                         )}
                                                     </td>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100 text-center">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818] text-center">
                                                         {isEditing ? (
                                                             <input
                                                                 type="number"
                                                                 value={room.capacityInfants}
                                                                 onChange={e => handleCellChange(room.id, "capacityInfants", Number(e.target.value))}
-                                                                className="w-12 bg-white border border-slate-200 px-1 py-0.5 text-[10.5px] font-bold text-slate-800 focus:border-slate-400 outline-none rounded-sm text-center"
+                                                                className="w-12 bg-[#141414] border border-[#262626] px-1 py-1 text-xs font-bold text-white focus:border-neutral-500 outline-none rounded-lg text-center font-mono"
                                                             />
                                                         ) : (
-                                                            <span className="text-[10.5px] font-medium text-slate-700">{room.capacityInfants}</span>
+                                                            <span className="text-xs font-medium text-neutral-300">{room.capacityInfants}</span>
                                                         )}
                                                     </td>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818]">
                                                         {isEditing ? (
                                                             <select
                                                                 value={room.viewType}
                                                                 onChange={e => handleCellChange(room.id, "viewType", e.target.value)}
-                                                                className="w-full bg-white border border-slate-200 px-2 py-0.5 text-[10.5px] font-bold text-slate-800 focus:border-slate-400 outline-none rounded-sm cursor-pointer"
+                                                                className="w-full bg-[#141414] border border-[#262626] px-2 py-1 text-[11px] font-bold text-white focus:border-neutral-500 outline-none rounded-lg cursor-pointer"
                                                             >
-                                                                <option value="City View">City View</option>
-                                                                <option value="Sea View">Sea View</option>
-                                                                <option value="Mountain View">Mountain View</option>
-                                                                <option value="Garden View">Garden View</option>
-                                                                <option value="Pool View">Pool View</option>
-                                                                <option value="Lake View">Lake View</option>
-                                                                <option value="River View">River View</option>
-                                                                <option value="Street View">Street View</option>
+                                                                <option value="City View" className="bg-black text-white">City View</option>
+                                                                <option value="Sea View" className="bg-black text-white">Sea View</option>
+                                                                <option value="Mountain View" className="bg-black text-white">Mountain View</option>
+                                                                <option value="Garden View" className="bg-black text-white">Garden View</option>
+                                                                <option value="Pool View" className="bg-black text-white">Pool View</option>
+                                                                <option value="Lake View" className="bg-black text-white">Lake View</option>
+                                                                <option value="River View" className="bg-black text-white">River View</option>
+                                                                <option value="Street View" className="bg-black text-white">Street View</option>
                                                             </select>
                                                         ) : (
-                                                            <span className="text-[10.5px] font-medium text-slate-700">{room.viewType || "City View"}</span>
+                                                            <span className="text-xs font-medium text-neutral-300">{room.viewType || "City View"}</span>
                                                         )}
                                                     </td>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100 text-center">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818] text-center">
                                                         {isEditing ? (
                                                             <input
                                                                 type="number"
                                                                 value={room.floorNumber || ""}
                                                                 onChange={e => handleCellChange(room.id, "floorNumber", e.target.value === "" ? null : Number(e.target.value))}
-                                                                className="w-16 bg-white border border-slate-200 px-1 py-0.5 text-[10.5px] font-bold text-slate-800 focus:border-slate-400 outline-none rounded-sm text-center"
+                                                                className="w-16 bg-[#141414] border border-[#262626] px-1 py-1 text-xs font-bold text-white focus:border-neutral-500 outline-none rounded-lg text-center font-mono"
                                                             />
                                                         ) : (
-                                                            <span className="text-[10.5px] font-medium text-slate-700">{room.floorNumber !== null ? `F ${room.floorNumber}` : "—"}</span>
+                                                            <span className="text-xs font-medium text-neutral-300">{room.floorNumber !== null ? `F ${room.floorNumber}` : "—"}</span>
                                                         )}
                                                     </td>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100 text-center">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818] text-center">
                                                         {isEditing ? (
                                                             <input
                                                                 type="checkbox"
                                                                 checked={room.isCornerRoom}
                                                                 onChange={e => handleCellChange(room.id, "isCornerRoom", e.target.checked)}
-                                                                className="w-3.5 h-3.5 border-slate-300 text-slate-800 rounded focus:ring-slate-400 cursor-pointer"
+                                                                className="w-3.5 h-3.5 border-neutral-700 bg-neutral-900 text-purple-500 rounded focus:ring-purple-500 cursor-pointer"
                                                             />
                                                         ) : (
                                                             <span className={cn(
-                                                                "px-1.5 py-0.2 rounded-sm text-[7.5px] font-black uppercase border tracking-wider",
-                                                                room.isCornerRoom ? "bg-purple-50 text-purple-700 border-purple-100" : "bg-slate-50 text-slate-400 border-slate-100"
+                                                                "px-2 py-0.5 rounded-md text-[10px] font-bold uppercase border",
+                                                                room.isCornerRoom ? "bg-purple-950/80 text-purple-300 border-purple-800/40" : "bg-[#181818] text-neutral-500 border-[#262626]"
                                                             )}>
                                                                 {room.isCornerRoom ? "Corner" : "No"}
                                                             </span>
@@ -883,101 +883,101 @@ export default function AdminMultiRoomSetup({ hotels }: { hotels: HotelSummary[]
                                             {/* Tab 3: Pricing Fields */}
                                             {currentTab === "pricing" && (
                                                 <>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100 text-center">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818] text-center">
                                                         {isEditing ? (
                                                             <input
                                                                 type="number"
                                                                 value={room.pricePerNight}
                                                                 onChange={e => handleCellChange(room.id, "pricePerNight", Number(e.target.value))}
-                                                                className="w-20 bg-white border border-slate-200 px-2 py-0.5 text-[10.5px] font-bold text-slate-800 focus:border-slate-400 outline-none rounded-sm text-center"
+                                                                className="w-20 bg-[#141414] border border-[#262626] px-2 py-1 text-xs font-bold text-white focus:border-neutral-500 outline-none rounded-lg text-center font-mono"
                                                             />
                                                         ) : (
-                                                            <span className="text-[10.5px] font-bold text-slate-800">₹{room.pricePerNight.toLocaleString()}</span>
+                                                            <span className="text-xs font-bold text-white font-mono">₹{room.pricePerNight.toLocaleString()}</span>
                                                         )}
                                                     </td>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100 text-center">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818] text-center">
                                                         {isEditing ? (
                                                             <input
                                                                 type="checkbox"
                                                                 checked={room.isHourlyEnabled}
                                                                 onChange={e => handleCellChange(room.id, "isHourlyEnabled", e.target.checked)}
-                                                                className="w-3.5 h-3.5 border-slate-300 text-purple-600 rounded focus:ring-purple-500 cursor-pointer"
+                                                                className="w-3.5 h-3.5 border-neutral-700 bg-neutral-900 text-purple-500 rounded focus:ring-purple-500 cursor-pointer"
                                                             />
                                                         ) : (
                                                             <span className={cn(
-                                                                "px-1.5 py-0.2 rounded-sm text-[7.5px] font-black uppercase border tracking-wider",
-                                                                room.isHourlyEnabled ? "bg-purple-50 text-purple-700 border-purple-100" : "bg-slate-50 text-slate-400 border-slate-100"
+                                                                "px-2 py-0.5 rounded-md text-[10px] font-bold uppercase border",
+                                                                room.isHourlyEnabled ? "bg-purple-950/80 text-purple-300 border-purple-800/40" : "bg-[#181818] text-neutral-500 border-[#262626]"
                                                             )}>
                                                                 {room.isHourlyEnabled ? "Hourly" : "No"}
                                                             </span>
                                                         )}
                                                     </td>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818]">
                                                         {isEditing ? (
                                                             <input
                                                                 type="text"
                                                                 value={room.hourlyRates}
                                                                 onChange={e => handleCellChange(room.id, "hourlyRates", e.target.value)}
                                                                 placeholder='{"3": 1200}'
-                                                                className="w-full bg-white border border-slate-200 px-2 py-0.5 text-[10.5px] font-bold text-slate-800 focus:border-slate-400 outline-none rounded-sm"
+                                                                className="w-full bg-[#141414] border border-[#262626] px-2.5 py-1 text-xs font-bold text-white focus:border-neutral-500 outline-none rounded-lg font-mono"
                                                             />
                                                         ) : (
-                                                            <code className="text-[9.5px] text-slate-500 font-mono truncate max-w-[180px]" title={room.hourlyRates}>{room.hourlyRates || "{}"}</code>
+                                                            <code className="text-[10px] text-neutral-400 font-mono truncate max-w-[180px]" title={room.hourlyRates}>{room.hourlyRates || "{}"}</code>
                                                         )}
                                                     </td>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100 text-center">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818] text-center">
                                                         {isEditing ? (
                                                             <input
                                                                 type="number"
                                                                 value={room.extraBedCharge}
                                                                 onChange={e => handleCellChange(room.id, "extraBedCharge", Number(e.target.value))}
-                                                                className="w-20 bg-white border border-slate-200 px-2 py-0.5 text-[10.5px] font-bold text-slate-800 focus:border-slate-400 outline-none rounded-sm text-center"
+                                                                className="w-20 bg-[#141414] border border-[#262626] px-2 py-1 text-xs font-bold text-white focus:border-neutral-500 outline-none rounded-lg text-center font-mono"
                                                             />
                                                         ) : (
-                                                            <span className="text-[10.5px] font-medium text-slate-700">₹{room.extraBedCharge.toLocaleString()}</span>
+                                                            <span className="text-xs font-medium text-neutral-300 font-mono">₹{room.extraBedCharge.toLocaleString()}</span>
                                                         )}
                                                     </td>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100 text-center">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818] text-center">
                                                         {isEditing ? (
                                                             <input
                                                                 type="number"
                                                                 value={room.securityDeposit}
                                                                 onChange={e => handleCellChange(room.id, "securityDeposit", Number(e.target.value))}
-                                                                className="w-20 bg-white border border-slate-200 px-2 py-0.5 text-[10.5px] font-bold text-slate-800 focus:border-slate-400 outline-none rounded-sm text-center"
+                                                                className="w-20 bg-[#141414] border border-[#262626] px-2 py-1 text-xs font-bold text-white focus:border-neutral-500 outline-none rounded-lg text-center font-mono"
                                                             />
                                                         ) : (
-                                                            <span className="text-[10.5px] font-medium text-slate-700">₹{room.securityDeposit.toLocaleString()}</span>
+                                                            <span className="text-xs font-medium text-neutral-300 font-mono">₹{room.securityDeposit.toLocaleString()}</span>
                                                         )}
                                                     </td>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100 text-center">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818] text-center">
                                                         {isEditing ? (
                                                             <input
                                                                 type="checkbox"
                                                                 checked={room.isRefundable}
                                                                 onChange={e => handleCellChange(room.id, "isRefundable", e.target.checked)}
-                                                                className="w-3.5 h-3.5 border-slate-300 text-emerald-600 rounded focus:ring-emerald-500 cursor-pointer"
+                                                                className="w-3.5 h-3.5 border-neutral-700 bg-neutral-900 text-emerald-500 rounded focus:ring-emerald-500 cursor-pointer"
                                                             />
                                                         ) : (
                                                             <span className={cn(
-                                                                "px-1.5 py-0.2 rounded-sm text-[7.5px] font-black uppercase border tracking-wider",
-                                                                room.isRefundable ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-red-50 text-red-700 border-red-100"
+                                                                "px-2 py-0.5 rounded-md text-[10px] font-bold uppercase border",
+                                                                room.isRefundable ? "bg-emerald-950/80 text-emerald-400 border-emerald-800/40" : "bg-red-950/80 text-red-400 border-red-800/40"
                                                             )}>
                                                                 {room.isRefundable ? "Refundable" : "Non-Ref"}
                                                             </span>
                                                         )}
                                                     </td>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100 text-center">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818] text-center">
                                                         {isEditing ? (
                                                             <input
                                                                 type="checkbox"
                                                                 checked={room.isTaxIncluded}
                                                                 onChange={e => handleCellChange(room.id, "isTaxIncluded", e.target.checked)}
-                                                                className="w-3.5 h-3.5 border-slate-300 text-blue-600 rounded focus:ring-blue-500 cursor-pointer"
+                                                                className="w-3.5 h-3.5 border-neutral-700 bg-neutral-900 text-blue-500 rounded focus:ring-blue-500 cursor-pointer"
                                                             />
                                                         ) : (
                                                             <span className={cn(
-                                                                "px-1.5 py-0.2 rounded-sm text-[7.5px] font-black uppercase border tracking-wider",
-                                                                room.isTaxIncluded ? "bg-blue-50 text-blue-700 border-blue-100" : "bg-slate-50 text-slate-400 border-slate-100"
+                                                                "px-2 py-0.5 rounded-md text-[10px] font-bold uppercase border",
+                                                                room.isTaxIncluded ? "bg-blue-950/80 text-blue-400 border-blue-800/40" : "bg-[#181818] text-neutral-500 border-[#262626]"
                                                             )}>
                                                                 {room.isTaxIncluded ? "Tax Inc" : "Plus Tax"}
                                                             </span>
@@ -989,68 +989,68 @@ export default function AdminMultiRoomSetup({ hotels }: { hotels: HotelSummary[]
                                             {/* Tab 4: Rate Plans (Meal Plans EP, CP, MAP, AP) */}
                                             {currentTab === "rate-plans" && (
                                                 <>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100 text-center">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818] text-center">
                                                         {isEditing ? (
                                                             <input
                                                                 type="number"
                                                                 value={room.epPrice || ""}
                                                                 onChange={e => handleCellChange(room.id, "epPrice", e.target.value === "" ? null : Number(e.target.value))}
-                                                                className="w-20 bg-white border border-slate-200 px-2 py-0.5 text-[10.5px] font-bold text-slate-800 focus:border-slate-400 outline-none rounded-sm text-center"
+                                                                className="w-20 bg-[#141414] border border-[#262626] px-2 py-1 text-xs font-bold text-white focus:border-neutral-500 outline-none rounded-lg text-center font-mono"
                                                                 placeholder="₹ Room Only"
                                                             />
                                                         ) : (
-                                                            <span className="text-[10.5px] font-bold text-slate-850">{room.epPrice !== null ? `₹${room.epPrice.toLocaleString()}` : "—"}</span>
+                                                            <span className="text-xs font-bold text-white font-mono">{room.epPrice !== null ? `₹${room.epPrice.toLocaleString()}` : "—"}</span>
                                                         )}
                                                     </td>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100 text-center">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818] text-center">
                                                         {isEditing ? (
                                                             <input
                                                                 type="number"
                                                                 value={room.cpPrice || ""}
                                                                 onChange={e => handleCellChange(room.id, "cpPrice", e.target.value === "" ? null : Number(e.target.value))}
-                                                                className="w-20 bg-white border border-slate-200 px-2 py-0.5 text-[10.5px] font-bold text-slate-800 focus:border-slate-400 outline-none rounded-sm text-center"
+                                                                className="w-20 bg-[#141414] border border-[#262626] px-2 py-1 text-xs font-bold text-white focus:border-neutral-500 outline-none rounded-lg text-center font-mono"
                                                                 placeholder="₹ Breakfast"
                                                             />
                                                         ) : (
-                                                            <span className="text-[10.5px] font-bold text-slate-850">{room.cpPrice !== null ? `₹${room.cpPrice.toLocaleString()}` : "—"}</span>
+                                                            <span className="text-xs font-bold text-white font-mono">{room.cpPrice !== null ? `₹${room.cpPrice.toLocaleString()}` : "—"}</span>
                                                         )}
                                                     </td>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100 text-center">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818] text-center">
                                                         {isEditing ? (
                                                             <input
                                                                 type="number"
                                                                 value={room.mapPrice || ""}
                                                                 onChange={e => handleCellChange(room.id, "mapPrice", e.target.value === "" ? null : Number(e.target.value))}
-                                                                className="w-20 bg-white border border-slate-200 px-2 py-0.5 text-[10.5px] font-bold text-slate-800 focus:border-slate-400 outline-none rounded-sm text-center"
+                                                                className="w-20 bg-[#141414] border border-[#262626] px-2 py-1 text-xs font-bold text-white focus:border-neutral-500 outline-none rounded-lg text-center font-mono"
                                                                 placeholder="₹ Half Board"
                                                             />
                                                         ) : (
-                                                            <span className="text-[10.5px] font-bold text-slate-850">{room.mapPrice !== null ? `₹${room.mapPrice.toLocaleString()}` : "—"}</span>
+                                                            <span className="text-xs font-bold text-white font-mono">{room.mapPrice !== null ? `₹${room.mapPrice.toLocaleString()}` : "—"}</span>
                                                         )}
                                                     </td>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100 text-center">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818] text-center">
                                                         {isEditing ? (
                                                             <input
                                                                 type="number"
                                                                 value={room.apPrice || ""}
                                                                 onChange={e => handleCellChange(room.id, "apPrice", e.target.value === "" ? null : Number(e.target.value))}
-                                                                className="w-20 bg-white border border-slate-200 px-2 py-0.5 text-[10.5px] font-bold text-slate-800 focus:border-slate-400 outline-none rounded-sm text-center"
+                                                                className="w-20 bg-[#141414] border border-[#262626] px-2 py-1 text-xs font-bold text-white focus:border-neutral-500 outline-none rounded-lg text-center font-mono"
                                                                 placeholder="₹ Full Board"
                                                             />
                                                         ) : (
-                                                            <span className="text-[10.5px] font-bold text-slate-850">{room.apPrice !== null ? `₹${room.apPrice.toLocaleString()}` : "—"}</span>
+                                                            <span className="text-xs font-bold text-white font-mono">{room.apPrice !== null ? `₹${room.apPrice.toLocaleString()}` : "—"}</span>
                                                         )}
                                                     </td>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818]">
                                                         {isEditing ? (
                                                             <input
                                                                 type="text"
                                                                 value={room.cancellationPolicy}
                                                                 onChange={e => handleCellChange(room.id, "cancellationPolicy", e.target.value)}
-                                                                className="w-full bg-white border border-slate-200 px-2 py-0.5 text-[10.5px] font-medium text-slate-700 focus:border-slate-400 outline-none rounded-sm"
+                                                                className="w-full bg-[#141414] border border-[#262626] px-2.5 py-1 text-[11px] font-medium text-white focus:border-neutral-500 outline-none rounded-lg"
                                                             />
                                                         ) : (
-                                                            <span className="text-[10.5px] font-medium text-slate-600 truncate max-w-[200px]" title={room.cancellationPolicy}>{room.cancellationPolicy || "—"}</span>
+                                                            <span className="text-[11px] text-neutral-400 truncate max-w-[200px]" title={room.cancellationPolicy}>{room.cancellationPolicy || "—"}</span>
                                                         )}
                                                     </td>
                                                 </>
@@ -1059,69 +1059,69 @@ export default function AdminMultiRoomSetup({ hotels }: { hotels: HotelSummary[]
                                             {/* Tab 5: Booking Rules */}
                                             {currentTab === "booking-rules" && (
                                                 <>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100 text-center">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818] text-center">
                                                         {isEditing ? (
                                                             <input
                                                                 type="number"
                                                                 value={room.minStay}
                                                                 onChange={e => handleCellChange(room.id, "minStay", Number(e.target.value))}
-                                                                className="w-16 bg-white border border-slate-200 px-1 py-0.5 text-[10.5px] font-bold text-slate-800 focus:border-slate-400 outline-none rounded-sm text-center"
+                                                                className="w-16 bg-[#141414] border border-[#262626] px-1 py-1 text-xs font-bold text-white focus:border-neutral-500 outline-none rounded-lg text-center font-mono"
                                                             />
                                                         ) : (
-                                                            <span className="text-[10.5px] font-medium text-slate-700">{room.minStay} N</span>
+                                                            <span className="text-xs font-medium text-neutral-300 font-mono">{room.minStay} N</span>
                                                         )}
                                                     </td>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100 text-center">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818] text-center">
                                                         {isEditing ? (
                                                             <input
                                                                 type="number"
                                                                 value={room.maxStay}
                                                                 onChange={e => handleCellChange(room.id, "maxStay", Number(e.target.value))}
-                                                                className="w-16 bg-white border border-slate-200 px-1 py-0.5 text-[10.5px] font-bold text-slate-800 focus:border-slate-400 outline-none rounded-sm text-center"
+                                                                className="w-16 bg-[#141414] border border-[#262626] px-1 py-1 text-xs font-bold text-white focus:border-neutral-500 outline-none rounded-lg text-center font-mono"
                                                             />
                                                         ) : (
-                                                            <span className="text-[10.5px] font-medium text-slate-700">{room.maxStay} N</span>
+                                                            <span className="text-xs font-medium text-neutral-300 font-mono">{room.maxStay} N</span>
                                                         )}
                                                     </td>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100 text-center">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818] text-center">
                                                         {isEditing ? (
                                                             <input
                                                                 type="checkbox"
                                                                 checked={room.isInstantBooking}
                                                                 onChange={e => handleCellChange(room.id, "isInstantBooking", e.target.checked)}
-                                                                className="w-3.5 h-3.5 border-slate-300 text-slate-800 rounded focus:ring-slate-400 cursor-pointer"
+                                                                className="w-3.5 h-3.5 border-neutral-700 bg-neutral-900 text-emerald-500 rounded focus:ring-emerald-500 cursor-pointer"
                                                             />
                                                         ) : (
                                                             <span className={cn(
-                                                                "px-1.5 py-0.2 rounded-sm text-[7.5px] font-black uppercase border tracking-wider",
-                                                                room.isInstantBooking ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-slate-50 text-slate-400 border-slate-100"
+                                                                "px-2 py-0.5 rounded-md text-[10px] font-bold uppercase border",
+                                                                room.isInstantBooking ? "bg-emerald-950/80 text-emerald-400 border-emerald-800/40" : "bg-[#181818] text-neutral-500 border-[#262626]"
                                                             )}>
                                                                 {room.isInstantBooking ? "Instant" : "Request"}
                                                             </span>
                                                         )}
                                                     </td>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100 text-center">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818] text-center">
                                                         {isEditing ? (
                                                             <input
                                                                 type="number"
                                                                 value={room.advanceBookingDays}
                                                                 onChange={e => handleCellChange(room.id, "advanceBookingDays", Number(e.target.value))}
-                                                                className="w-20 bg-white border border-slate-200 px-1 py-0.5 text-[10.5px] font-bold text-slate-800 focus:border-slate-400 outline-none rounded-sm text-center"
+                                                                className="w-20 bg-[#141414] border border-[#262626] px-1 py-1 text-xs font-bold text-white focus:border-neutral-500 outline-none rounded-lg text-center font-mono"
                                                             />
                                                         ) : (
-                                                            <span className="text-[10.5px] font-medium text-slate-700">{room.advanceBookingDays} D</span>
+                                                            <span className="text-xs font-medium text-neutral-300 font-mono">{room.advanceBookingDays} D</span>
                                                         )}
                                                     </td>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100 text-center">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818] text-center">
                                                         {isEditing ? (
                                                             <input
                                                                 type="number"
                                                                 value={room.advancePayment}
                                                                 onChange={e => handleCellChange(room.id, "advancePayment", Number(e.target.value))}
-                                                                className="w-16 bg-white border border-slate-200 px-1 py-0.5 text-[10.5px] font-bold text-slate-800 focus:border-slate-400 outline-none rounded-sm text-center"
+                                                                className="w-16 bg-[#141414] border border-[#262626] px-1 py-1 text-xs font-bold text-white focus:border-neutral-500 outline-none rounded-lg text-center font-mono"
                                                             />
                                                         ) : (
-                                                            <span className="text-[10.5px] font-medium text-slate-700">{room.advancePayment}%</span>
+                                                            <span className="text-xs font-medium text-neutral-300 font-mono">{room.advancePayment}%</span>
                                                         )}
                                                     </td>
                                                 </>
@@ -1193,85 +1193,85 @@ export default function AdminMultiRoomSetup({ hotels }: { hotels: HotelSummary[]
                                             {/* Tab 7: Search Visibility & SEO Fields */}
                                             {currentTab === "search-visibility" && (
                                                 <>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818]">
                                                         {isEditing ? (
                                                             <input
                                                                 type="text"
                                                                 value={room.tags}
                                                                 onChange={e => handleCellChange(room.id, "tags", e.target.value)}
                                                                 placeholder="Couple Friendly, Best Seller..."
-                                                                className="w-full bg-white border border-slate-200 px-2 py-0.5 text-[10.5px] font-medium text-slate-700 focus:border-slate-400 outline-none rounded-sm"
+                                                                className="w-full bg-[#141414] border border-[#262626] px-2.5 py-1 text-[11px] font-medium text-white focus:border-neutral-500 outline-none rounded-lg"
                                                             />
                                                         ) : (
-                                                            <p className="text-[10px] text-slate-500 truncate max-w-[180px]" title={room.tags}>{room.tags || "—"}</p>
+                                                            <p className="text-[10px] text-neutral-400 truncate max-w-[180px]" title={room.tags}>{room.tags || "—"}</p>
                                                         )}
                                                     </td>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100 text-center">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818] text-center">
                                                         {isEditing ? (
                                                             <input
                                                                 type="checkbox"
                                                                 checked={room.isFeatured}
                                                                 onChange={e => handleCellChange(room.id, "isFeatured", e.target.checked)}
-                                                                className="w-3.5 h-3.5 border-slate-300 text-amber-500 rounded focus:ring-amber-500 cursor-pointer"
+                                                                className="w-3.5 h-3.5 border-neutral-700 bg-neutral-900 text-amber-500 rounded focus:ring-amber-500 cursor-pointer"
                                                             />
                                                         ) : (
                                                             <span className={cn(
-                                                                "px-1.5 py-0.2 rounded-sm text-[7.5px] font-black uppercase border tracking-wider",
-                                                                room.isFeatured ? "bg-amber-50 text-amber-700 border-amber-100" : "bg-slate-50 text-slate-400 border-slate-100"
+                                                                "px-2 py-0.5 rounded-md text-[10px] font-bold uppercase border",
+                                                                room.isFeatured ? "bg-amber-950/80 text-amber-300 border-amber-800/40" : "bg-[#181818] text-neutral-500 border-[#262626]"
                                                             )}>
                                                                 {room.isFeatured ? "Featured" : "No"}
                                                             </span>
                                                         )}
                                                     </td>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100 text-center">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818] text-center">
                                                         {isEditing ? (
                                                             <input
                                                                 type="number"
                                                                 value={room.displayPriority}
                                                                 onChange={e => handleCellChange(room.id, "displayPriority", Number(e.target.value))}
-                                                                className="w-16 bg-white border border-slate-200 px-1 py-0.5 text-[10.5px] font-bold text-slate-800 focus:border-slate-400 outline-none rounded-sm text-center"
+                                                                className="w-16 bg-[#141414] border border-[#262626] px-1 py-1 text-xs font-bold text-white focus:border-neutral-500 outline-none rounded-lg text-center font-mono"
                                                             />
                                                         ) : (
-                                                            <span className="text-[10.5px] font-bold text-slate-800">{room.displayPriority}</span>
+                                                            <span className="text-xs font-bold text-white font-mono">{room.displayPriority}</span>
                                                         )}
                                                     </td>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818]">
                                                         {isEditing ? (
                                                             <input
                                                                 type="text"
                                                                 value={room.seoTitle}
                                                                 onChange={e => handleCellChange(room.id, "seoTitle", e.target.value)}
                                                                 placeholder="SEO Title..."
-                                                                className="w-full bg-white border border-slate-200 px-2 py-0.5 text-[10.5px] font-medium text-slate-700 focus:border-slate-400 outline-none rounded-sm"
+                                                                className="w-full bg-[#141414] border border-[#262626] px-2.5 py-1 text-[11px] font-medium text-white focus:border-neutral-500 outline-none rounded-lg"
                                                             />
                                                         ) : (
-                                                            <span className="text-[10.5px] font-medium text-slate-700">{room.seoTitle || "—"}</span>
+                                                            <span className="text-[11px] font-medium text-neutral-300 truncate max-w-[170px] block">{room.seoTitle || "—"}</span>
                                                         )}
                                                     </td>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818]">
                                                         {isEditing ? (
                                                             <input
                                                                 type="text"
                                                                 value={room.seoDescription}
                                                                 onChange={e => handleCellChange(room.id, "seoDescription", e.target.value)}
                                                                 placeholder="SEO Description..."
-                                                                className="w-full bg-white border border-slate-200 px-2 py-0.5 text-[10.5px] font-medium text-slate-700 focus:border-slate-400 outline-none rounded-sm"
+                                                                className="w-full bg-[#141414] border border-[#262626] px-2.5 py-1 text-[11px] font-medium text-white focus:border-neutral-500 outline-none rounded-lg"
                                                             />
                                                         ) : (
-                                                            <p className="text-[10px] text-slate-500 truncate max-w-[180px]" title={room.seoDescription}>{room.seoDescription || "—"}</p>
+                                                            <p className="text-[10px] text-neutral-400 truncate max-w-[180px]" title={room.seoDescription}>{room.seoDescription || "—"}</p>
                                                         )}
                                                     </td>
-                                                    <td className="px-3 py-1.5 border-r border-slate-100">
+                                                    <td className="px-3.5 py-2.5 border-r border-[#181818]">
                                                         {isEditing ? (
                                                             <input
                                                                 type="text"
                                                                 value={room.slug}
                                                                 onChange={e => handleCellChange(room.id, "slug", e.target.value)}
                                                                 placeholder="seo-room-slug..."
-                                                                className="w-full bg-white border border-slate-200 px-2 py-0.5 text-[10.5px] font-medium text-slate-700 focus:border-slate-400 outline-none rounded-sm"
+                                                                className="w-full bg-[#141414] border border-[#262626] px-2.5 py-1 text-[11px] font-medium text-white focus:border-neutral-500 outline-none rounded-lg font-mono"
                                                             />
                                                         ) : (
-                                                            <span className="text-[10.5px] font-mono text-slate-600">{room.slug || "—"}</span>
+                                                            <span className="text-[10px] font-mono text-neutral-400">{room.slug || "—"}</span>
                                                         )}
                                                     </td>
                                                 </>
@@ -1279,13 +1279,13 @@ export default function AdminMultiRoomSetup({ hotels }: { hotels: HotelSummary[]
 
                                             {/* Delete Action (edit mode only) */}
                                             {isEditing && (
-                                                <td className="px-3 py-1.5 text-center">
+                                                <td className="px-3.5 py-2.5 text-center">
                                                     <button
                                                         onClick={() => handleDeleteRow(room.id)}
-                                                        className="p-1 text-red-500 hover:bg-red-50 hover:text-red-700 rounded transition-colors"
+                                                        className="p-1 text-red-400 hover:text-red-300 hover:bg-[#201010] rounded-lg transition-colors cursor-pointer"
                                                         title="Delete Row"
                                                     >
-                                                        <Trash2 className="w-3 h-3" />
+                                                        <Trash2 className="w-3.5 h-3.5" />
                                                     </button>
                                                 </td>
                                             )}
@@ -1298,55 +1298,55 @@ export default function AdminMultiRoomSetup({ hotels }: { hotels: HotelSummary[]
                 </div>
 
                 {/* Footer Controls */}
-                <div className="p-3 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row gap-2.5 justify-between items-center">
+                <div className="p-4 bg-[#0e0e0e] border-t border-[#1f1f1f] flex flex-col sm:flex-row gap-3 justify-between items-center">
                     <div>
                         {deleteIds.length > 0 && (
-                            <span className="text-[9px] font-black text-red-600 uppercase tracking-widest">
+                            <span className="text-[10px] font-bold text-red-400 uppercase tracking-widest">
                                 * {deleteIds.length} categories marked for deletion
                             </span>
                         )}
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="flex gap-2.5">
                         {isEditing ? (
                             <>
                                 <button
                                     onClick={handleAddRow}
                                     disabled={loading || isSaving}
-                                    className="px-4 py-2 bg-slate-800 text-white hover:bg-black font-black text-[8.5px] uppercase tracking-widest rounded-sm transition-all flex items-center gap-1.5 shadow-sm disabled:opacity-50"
+                                    className="px-4 py-2 bg-[#1c1c1c] hover:bg-[#282828] text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center gap-1.5 shadow-sm disabled:opacity-50 cursor-pointer border border-[#303030]"
                                 >
-                                    <Plus className="w-3 h-3" /> Add Row
+                                    <Plus className="w-3.5 h-3.5" /> Add Row
                                 </button>
                                 <button
                                     onClick={handleSave}
                                     disabled={loading || isSaving}
-                                    className="px-4 py-2 bg-brand-600 text-white hover:bg-brand-700 font-black text-[8.5px] uppercase tracking-widest rounded-sm transition-all flex items-center gap-1.5 shadow-sm disabled:opacity-50"
+                                    className="px-5 py-2 bg-white hover:bg-neutral-200 text-black font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center gap-1.5 shadow-md disabled:opacity-50 cursor-pointer"
                                 >
                                     {isSaving ? (
                                         <>
-                                            <Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving...
+                                            <Loader2 className="w-3.5 h-3.5 animate-spin text-black" /> Saving...
                                         </>
                                     ) : (
                                         <>
-                                            <Save className="w-3 h-3" /> Save Changes
+                                            <Save className="w-3.5 h-3.5 text-black" /> Save Changes
                                         </>
                                     )}
                                 </button>
                                 <button
                                     onClick={handleCancel}
                                     disabled={isSaving}
-                                    className="px-4 py-2 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 font-black text-[8.5px] uppercase tracking-widest rounded-sm transition-all flex items-center gap-1.5"
+                                    className="px-4 py-2 bg-[#141414] border border-[#282828] text-neutral-300 hover:text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
                                 >
-                                    <X className="w-3 h-3" /> Cancel
+                                    <X className="w-3.5 h-3.5" /> Cancel
                                 </button>
                             </>
                         ) : (
                             <button
                                 onClick={() => setIsEditing(true)}
                                 disabled={loading || selectedHotelId === null}
-                                className="px-4 py-2 bg-slate-900 text-white hover:bg-black font-black text-[8.5px] uppercase tracking-widest rounded-sm transition-all flex items-center gap-1.5 shadow-sm disabled:opacity-50"
+                                className="px-5 py-2 bg-white hover:bg-neutral-200 text-black font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center gap-1.5 shadow-md disabled:opacity-50 cursor-pointer"
                             >
-                                <Edit3 className="w-3 h-3" /> Edit All Rooms
+                                <Edit3 className="w-3.5 h-3.5 text-black" /> Edit All Rooms
                             </button>
                         )}
                     </div>
@@ -1354,8 +1354,8 @@ export default function AdminMultiRoomSetup({ hotels }: { hotels: HotelSummary[]
             </div>
 
             {/* Note info */}
-            <div className="p-3 bg-slate-50 border border-slate-200 text-[9px] text-slate-500 font-bold uppercase tracking-wider flex items-center gap-2 rounded-sm">
-                <Info className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+            <div className="p-4 bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.9)] text-[10px] text-neutral-400 font-semibold uppercase tracking-wider flex items-center gap-2.5 rounded-2xl">
+                <Info className="w-4 h-4 text-emerald-400 shrink-0" />
                 Note: In media validation, each room category must have at least 1 image (maximum 20). Local uploads are saved safely as compressed WebP assets.
             </div>
         </div>

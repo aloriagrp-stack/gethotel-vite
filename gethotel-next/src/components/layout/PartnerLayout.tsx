@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate as useRouter, useLocation, Outlet } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { 
@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function PartnerLayout() {
+export default function PartnerLayout({ children }: { children?: React.ReactNode }) {
     const { user, loading: authLoading, logout } = useAuth();
     const router = useRouter();
     const pathname = useLocation().pathname;
@@ -299,7 +299,7 @@ export default function PartnerLayout() {
                             </div>
                         </div>
                     ) : (
-                        <Outlet />
+                        children || <Outlet />
                     )}
                 </main>
 
@@ -319,7 +319,7 @@ export default function PartnerLayout() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-slate-950/60 backdrop-blur-md z-[200]"
+                            className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[200]"
                             onClick={() => setShowLogoutConfirm(false)}
                         />
                         <motion.div
@@ -511,6 +511,3 @@ export default function PartnerLayout() {
         </div>
     );
 }
-
-
-

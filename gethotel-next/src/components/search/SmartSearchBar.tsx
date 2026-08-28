@@ -220,42 +220,42 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
                 <div className={cn(
                     "w-full flex flex-col lg:flex-row lg:items-center relative transition-all duration-700 gap-3 lg:gap-0",
                     "lg:bg-white/80 lg:backdrop-blur-3xl lg:rounded-full lg:shadow-[0_12px_40px_rgba(0,0,0,0.08)] lg:border lg:border-slate-200/80 lg:p-2",
-                    "bg-white/80 backdrop-blur-2xl border border-slate-200/80 rounded-3xl p-1.5 shadow-md"
+                    "bg-transparent border-0 p-0 shadow-none"
                 )}>
 
                     {/* Mobile View (Unified Pill Container) */}
                     {layoutMode === "hotels" ? (
-                        /* Hotels Page Mobile View: 2-Row Split Layout */
-                        <div className="flex lg:hidden flex-col gap-0.5 bg-white/40 backdrop-blur-xl rounded-[40px] shadow-sm p-1 overflow-hidden mx-1 w-full">
+                        /* Hotels Page Mobile View: Clean floating cards */
+                        <div className="flex lg:hidden flex-col gap-2 w-full">
                             {/* Row 1: Destination (Where) */}
                             <div 
-                                className="w-full bg-white/40 p-4 flex items-center gap-3 cursor-pointer active:scale-[0.98] transition-transform rounded-t-[36px]"
+                                className="w-full bg-white/90 backdrop-blur-xl border border-slate-200/80 p-4 flex items-center gap-3 cursor-pointer active:scale-[0.98] transition-all rounded-[2rem] shadow-[0_4px_20px_rgba(0,0,0,0.05)] hover:bg-white"
                                 onClick={() => setActiveSection("where")}
                             >
                                 <div className="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 shrink-0 shadow-sm">
                                     <MapPin className="w-4.5 h-4.5" />
                                 </div>
-                                <div className="flex-1">
+                                <div className="flex-1 text-left">
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Destination</p>
                                     <p className="text-sm font-black text-slate-900 truncate italic">
                                         {query || "Where to?"}
                                     </p>
                                 </div>
-                                <Search className="w-5 h-5 text-slate-300 mr-2" />
+                                <Search className="w-5 h-5 text-slate-300 mr-1" />
                             </div>
 
                             {/* Row 2: Dates & Guests side-by-side */}
-                            <div className="flex gap-0.5 w-full">
+                            <div className="flex gap-2 w-full">
                                 {/* Dates */}
                                 <div 
-                                    className="flex-1 bg-white/40 p-4 flex items-center gap-3 cursor-pointer active:scale-[0.98] transition-transform rounded-bl-[36px]"
+                                    className="flex-1 bg-white/90 backdrop-blur-xl border border-slate-200/80 p-3.5 flex items-center gap-2.5 cursor-pointer active:scale-[0.98] transition-all rounded-[1.75rem] shadow-[0_4px_20px_rgba(0,0,0,0.05)] hover:bg-white"
                                     onClick={() => setActiveSection("dates")}
                                 >
                                     <div className="w-9 h-9 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 shrink-0 shadow-sm">
                                         <CalendarIcon className="w-3.5 h-3.5" />
                                     </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{mode === 'hourly' ? "Arrival" : "Dates"}</p>
+                                    <div className="flex-1 min-w-0 text-left">
+                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{mode === 'hourly' ? "Arrival" : "Dates"}</p>
                                         <p className="text-[11px] font-black text-slate-900 truncate">
                                             {state.dates.checkIn ? (
                                                 mode === 'hourly'
@@ -268,14 +268,14 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
 
                                 {/* Guests */}
                                 <div 
-                                    className="flex-1 bg-white/40 p-4 flex items-center gap-3 cursor-pointer active:scale-[0.98] transition-transform rounded-br-[36px]"
+                                    className="flex-1 bg-white/90 backdrop-blur-xl border border-slate-200/80 p-3.5 flex items-center gap-2.5 cursor-pointer active:scale-[0.98] transition-all rounded-[1.75rem] shadow-[0_4px_20px_rgba(0,0,0,0.05)] hover:bg-white"
                                     onClick={() => setActiveSection("guests")}
                                 >
                                     <div className="w-9 h-9 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 shrink-0 shadow-sm">
                                         <Users className="w-3.5 h-3.5" />
                                     </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Guests</p>
+                                    <div className="flex-1 min-w-0 text-left">
+                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Guests</p>
                                         <p className="text-[11px] font-black text-slate-900 truncate">
                                             {state.guests.adults + state.guests.children} Guests
                                         </p>
@@ -284,12 +284,12 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
                             </div>
                         </div>
                     ) : (
-                        /* Home Page Mobile View: 3 stacked sections (Destination, Dates, Guests) */
-                        <div className="flex lg:hidden flex-col gap-3 w-full px-1">
+                        /* Home Page Mobile View: 3 clean floating cards (Destination, Dates, Guests) */
+                        <div className="flex lg:hidden flex-col gap-2.5 w-full">
                             {/* Section 1: Destination */}
                             <div 
                                 onClick={() => setActiveSection("where")}
-                                className="w-full bg-white/40 backdrop-blur-xl border border-white/30 rounded-[2rem] p-4 flex items-center gap-3 cursor-pointer active:scale-[0.98] transition-all shadow-md hover:bg-white/60"
+                                className="w-full bg-white/90 backdrop-blur-xl border border-slate-200/80 rounded-[2rem] p-4 flex items-center gap-3 cursor-pointer active:scale-[0.98] transition-all shadow-[0_4px_20px_rgba(0,0,0,0.05)] hover:bg-white"
                             >
                                 <div className="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 shrink-0 shadow-sm">
                                     <MapPin className="w-4.5 h-4.5" />
@@ -306,7 +306,7 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
                             {/* Section 2: Dates */}
                             <div 
                                 onClick={() => setActiveSection("dates")}
-                                className="w-full bg-white/40 backdrop-blur-xl border border-white/30 rounded-[2rem] p-4 flex items-center gap-3 cursor-pointer active:scale-[0.98] transition-all shadow-md hover:bg-white/60"
+                                className="w-full bg-white/90 backdrop-blur-xl border border-slate-200/80 rounded-[2rem] p-4 flex items-center gap-3 cursor-pointer active:scale-[0.98] transition-all shadow-[0_4px_20px_rgba(0,0,0,0.05)] hover:bg-white"
                             >
                                 <div className="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 shrink-0 shadow-sm">
                                     <CalendarIcon className="w-4.5 h-4.5" />
@@ -326,7 +326,7 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
                             {/* Section 3: Guests */}
                             <div 
                                 onClick={() => setActiveSection("guests")}
-                                className="w-full bg-white/40 backdrop-blur-xl border border-white/30 rounded-[2rem] p-4 flex items-center gap-3 cursor-pointer active:scale-[0.98] transition-all shadow-md hover:bg-white/60"
+                                className="w-full bg-white/90 backdrop-blur-xl border border-slate-200/80 rounded-[2rem] p-4 flex items-center gap-3 cursor-pointer active:scale-[0.98] transition-all shadow-[0_4px_20px_rgba(0,0,0,0.05)] hover:bg-white"
                             >
                                 <div className="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 shrink-0 shadow-sm">
                                     <Users className="w-4.5 h-4.5" />

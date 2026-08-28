@@ -136,3 +136,7 @@ export const Navigate: React.FC<{ to: string; replace?: boolean }> = ({ to, repl
     }, [to, replace, router]);
     return null;
 };
+
+export function Outlet() {
+    return null;
+}

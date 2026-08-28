@@ -23,7 +23,7 @@ export default function Hero({
     const langCode = lang || 'en';
 
     return (
-        <section className="relative z-20 min-h-[60vh] md:min-h-[75vh] flex flex-col items-center justify-start pt-16 md:justify-center md:pt-16 pb-12 md:pb-16 px-3 md:px-8">
+        <section className="relative z-20 flex flex-col items-center justify-start pt-6 sm:pt-10 md:justify-center md:pt-14 pb-2 sm:pb-4 md:pb-8 px-3 md:px-8">
             {/* Atmospheric Background Elements */}
             <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
                 <div 

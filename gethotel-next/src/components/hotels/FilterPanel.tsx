@@ -47,9 +47,10 @@ const MAX_PRICE = 500000;
 interface FilterPanelProps {
     filters: FilterState;
     onChange: (filters: FilterState) => void;
+    isMobileModal?: boolean;
 }
 
-export default function FilterPanel({ filters, onChange }: FilterPanelProps) {
+export default function FilterPanel({ filters, onChange, isMobileModal = false }: FilterPanelProps) {
     const [priceOpen, setPriceOpen] = useState(true);
     const [ratingOpen, setRatingOpen] = useState(true);
     const [amenOpen, setAmenOpen] = useState(true);
@@ -85,30 +86,37 @@ export default function FilterPanel({ filters, onChange }: FilterPanelProps) {
         currentMaxPrice < MAX_PRICE;
 
     return (
-        <aside className="w-full bg-white/95 backdrop-blur-2xl border border-slate-200/90 rounded-[28px] p-5 lg:p-6 shadow-[0_12px_40px_rgba(0,0,0,0.06)] space-y-4 max-h-[calc(100vh-100px)] overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-            {/* Header */}
-            <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
-                <div className="flex items-center gap-2">
-                    <div>
-                        <span className="font-extrabold text-slate-950 text-base tracking-tight block leading-tight">Filters</span>
-                        <span className="text-[10px] font-semibold text-slate-400">Refine stays in real-time</span>
+        <aside className={cn(
+            "w-full space-y-4",
+            isMobileModal 
+                ? "bg-transparent border-0 rounded-none p-0 shadow-none" 
+                : "bg-white/95 backdrop-blur-2xl border border-slate-200/90 rounded-[28px] p-5 lg:p-6 shadow-[0_12px_40px_rgba(0,0,0,0.06)] max-h-[calc(100vh-100px)] overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        )}>
+            {/* Header (Only on Desktop Sidebar) */}
+            {!isMobileModal && (
+                <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
+                    <div className="flex items-center gap-2">
+                        <div>
+                            <span className="font-extrabold text-slate-950 text-base tracking-tight block leading-tight">Filters</span>
+                            <span className="text-[10px] font-semibold text-slate-400">Refine stays in real-time</span>
+                        </div>
+                        {hasActive && (
+                            <span className="text-[10px] bg-brand-600 text-white px-2 py-0.5 rounded-full font-black shadow-sm ml-1">
+                                {filters.starRatings.length + filters.amenities.length + (filters.guestRatingMin ? 1 : 0) + (currentMaxPrice < MAX_PRICE ? 1 : 0)}
+                            </span>
+                        )}
                     </div>
                     {hasActive && (
-                        <span className="text-[10px] bg-brand-600 text-white px-2 py-0.5 rounded-full font-black shadow-sm ml-1">
-                            {filters.starRatings.length + filters.amenities.length + (filters.guestRatingMin ? 1 : 0) + (currentMaxPrice < MAX_PRICE ? 1 : 0)}
-                        </span>
+                        <button
+                            onClick={reset}
+                            className="text-[11px] font-bold text-slate-500 hover:text-brand-600 px-2.5 py-1 rounded-xl hover:bg-slate-100 flex items-center gap-1 transition-all cursor-pointer"
+                        >
+                            <RotateCcw className="w-3 h-3" />
+                            <span>Reset</span>
+                        </button>
                     )}
                 </div>
-                {hasActive && (
-                    <button
-                        onClick={reset}
-                        className="text-[11px] font-bold text-slate-500 hover:text-brand-600 px-2.5 py-1 rounded-xl hover:bg-slate-100 flex items-center gap-1 transition-all cursor-pointer"
-                    >
-                        <RotateCcw className="w-3 h-3" />
-                        <span>Reset</span>
-                    </button>
-                )}
-            </div>
+            )}
 
             {/* Price Range with Ultra-Smooth Metallic Ball Slider */}
             <FilterSection title="Budget / Price per Night" open={priceOpen} onToggle={() => setPriceOpen(!priceOpen)}>

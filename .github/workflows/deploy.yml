@@ -24,7 +24,7 @@ jobs:
 
       - name: Build Main Frontend
         run: |
-          cd GetHotel-Vite
+          cd gethotel-next
           npm install
           npm run build
 
@@ -57,9 +57,9 @@ jobs:
 
       - name: Zip Main Frontend Build
         run: |
-          cd GetHotel-Vite/dist/client
-          zip -r ../../../frontend.zip .
-          cd ../../..
+          cd gethotel-next/out
+          zip -r ../../frontend.zip .
+          cd ../..
 
       - name: Deploy Main Frontend Zip to cPanel
         env:

@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import ClientBookingDetailsPage from "@/pages-legacy/BookingDetails";
+import ControlHubGateway from "@/pages-legacy/admin/ControlHubGateway";
 
 export function generateStaticParams() {
-  return [{ id: "1" }];
+  return [{ slug: ["dashboard"] }];
 }
 
 export const metadata: Metadata = {
-  title: "Booking Confirmation & Details | GetHotelStays",
+  title: "Super Admin ControlHub | GetHotelStays",
   robots: {
     index: false,
     follow: false,
@@ -14,5 +14,5 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <ClientBookingDetailsPage />;
+  return <ControlHubGateway />;
 }

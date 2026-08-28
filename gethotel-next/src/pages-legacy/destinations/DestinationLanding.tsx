@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import {
     MapPin,
     ArrowRight,
@@ -20,6 +21,7 @@ import FilterPanel from "@/components/hotels/FilterPanel";
 import { HotelCardSkeleton } from "@/components/hotels/HotelCardSkeleton";
 import SmartSearchBar from "@/components/search/SmartSearchBar";
 import SEOHead from "@/components/common/SEOHead";
+import { cn } from "@/lib/utils";
 import {
     SITE,
     buildFAQSchema,
@@ -254,38 +256,67 @@ export default function DestinationLanding({
                         <FilterPanel filters={filters} onChange={handleFilterChange} />
                     </aside>
 
-                    {/* Mobile Filter Drawer */}
-                    {showMobileFilter && (
-                        <div className="fixed inset-0 z-[100] lg:hidden">
-                            <div
-                                className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-all duration-300"
-                                onClick={() => setShowMobileFilter(false)}
-                            />
-                            <div className="absolute right-0 top-0 bottom-0 w-[85%] max-w-[380px] bg-white overflow-y-auto p-6 border-l border-slate-200 shadow-2xl z-10 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                                <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+                    {/* Mobile Filter Modal (Butter-smooth Spring Sheet) */}
+                    <AnimatePresence>
+                        {showMobileFilter && (
+                            <motion.div
+                                initial={{ opacity: 0, y: "-100%" }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: "-100%" }}
+                                transition={{ type: "spring", damping: 28, stiffness: 280 }}
+                                className="fixed inset-0 z-[100] lg:hidden flex flex-col bg-white overflow-hidden"
+                            >
+                                {/* Sticky Top Header */}
+                                <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-white/95 backdrop-blur-md shrink-0">
                                     <div className="flex items-center gap-2">
-                                        <SlidersHorizontal className="w-5 h-5 text-brand-600" />
-                                        <h2 className="text-lg font-bold text-slate-900">Filters</h2>
+                                        <h2 className="text-base font-black text-slate-950">Filters</h2>
+                                        {(filters.starRatings.length + filters.amenities.length + (filters.guestRatingMin ? 1 : 0) + (filters.priceRange[1] < 500000 ? 1 : 0)) > 0 && (
+                                            <span className="text-[10px] bg-brand-600 text-white px-2 py-0.5 rounded-full font-black">
+                                                {filters.starRatings.length + filters.amenities.length + (filters.guestRatingMin ? 1 : 0) + (filters.priceRange[1] < 500000 ? 1 : 0)}
+                                            </span>
+                                        )}
                                     </div>
                                     <button
                                         onClick={() => setShowMobileFilter(false)}
-                                        className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 transition-colors"
+                                        className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 active:scale-95 transition-all cursor-pointer"
                                     >
-                                        <X className="w-5 h-5" />
+                                        <X className="w-4 h-4" />
                                     </button>
                                 </div>
-                                <FilterPanel
-                                    filters={filters}
-                                    onChange={(f) => {
-                                        handleFilterChange(f);
-                                    }}
-                                />
-                            </div>
-                        </div>
-                    )}
+
+                                {/* Scrollable Filter Body (Clean, No Nested Box) */}
+                                <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                                    <FilterPanel
+                                        isMobileModal={true}
+                                        filters={filters}
+                                        onChange={(f) => handleFilterChange(f)}
+                                    />
+                                </div>
+
+                                {/* Sticky Bottom Action Bar */}
+                                <div className="p-4 border-t border-slate-100 bg-white flex items-center gap-3 shrink-0 shadow-lg">
+                                    <button
+                                        onClick={() => {
+                                            setFilters(defaultFilters);
+                                            handleFilterChange(defaultFilters);
+                                        }}
+                                        className="flex-1 py-3 border border-slate-200 text-slate-700 font-bold text-xs rounded-xl hover:bg-slate-50 active:scale-95 transition-all"
+                                    >
+                                        Reset
+                                    </button>
+                                    <button
+                                        onClick={() => setShowMobileFilter(false)}
+                                        className="flex-[2] py-3 bg-brand-600 hover:bg-brand-500 active:bg-brand-700 text-white font-bold text-xs rounded-xl shadow-md active:scale-95 transition-all"
+                                    >
+                                        Show {filteredHotels.length} Stays
+                                    </button>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
                     {/* Results Column (Starts with Top Right-aligned Search Bar) */}
-                    <div className="flex-1 min-w-0 flex flex-col gap-6">
+                    <div className="flex-1 min-w-0 flex flex-col gap-3 md:gap-6">
                         {/* Top Search Pill Container (Right-aligned inside right column) */}
                         <div className="w-full flex justify-end">
                             <div className="w-full">
@@ -304,71 +335,49 @@ export default function DestinationLanding({
                             </div>
                         </div>
 
-                        {/* City / Destination Header Area */}
-                        <div className="bg-white/70 backdrop-blur-md border border-white/60 rounded-2xl p-5 md:p-6 shadow-sm space-y-3">
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                <div>
-                                    <h1 className="text-xl md:text-2xl lg:text-3xl font-extrabold text-slate-950 tracking-tight leading-tight">
-                                        {h1}
-                                    </h1>
-                                    <p className="text-xs text-slate-500 font-semibold flex items-center gap-1.5 mt-1">
-                                        <MapPin className="w-3.5 h-3.5 text-brand-600" />
-                                        <span>Verified properties in {city} — Pay only 12% deposit online</span>
-                                    </p>
-                                </div>
-
-                                <div className="flex items-center gap-3 shrink-0">
-                                    <span className="text-xs text-slate-500 font-bold hidden sm:inline">
-                                        <strong className="text-slate-900 font-black">{filteredHotels.length}</strong> properties
+                        {/* Streamlined Results Bar (Hidden on Mobile, Clean on Desktop) */}
+                        <div className="flex items-center justify-end sm:justify-between gap-3 pt-0 pb-1">
+                            {/* Title (Only on Desktop) */}
+                            <div className="hidden lg:block">
+                                <h1 className="text-lg md:text-xl font-black text-slate-950 tracking-tight flex items-center gap-2">
+                                    <span>{h1.split("—")[0].trim() || h1}</span>
+                                    <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                                        {filteredHotels.length}
                                     </span>
-
-                                    {/* Mobile Filter Trigger Button */}
-                                    <button
-                                        onClick={() => setShowMobileFilter(true)}
-                                        className="lg:hidden flex items-center gap-2 bg-slate-900 hover:bg-black text-white rounded-xl px-4 py-2 text-xs font-bold transition-all shadow-md"
-                                    >
-                                        <SlidersHorizontal className="w-3.5 h-3.5" />
-                                        <span>Filters</span>
-                                    </button>
-
-                                    {/* Sort Dropdown */}
-                                    <div className="flex items-center gap-1.5">
-                                        <select
-                                            value={sort}
-                                            onChange={(e) => setSort(e.target.value as SortOption)}
-                                            className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all cursor-pointer shadow-sm hover:border-slate-300"
-                                        >
-                                            {sortOptions.map((opt) => (
-                                                <option key={opt.value} value={opt.value}>
-                                                    {opt.label}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                </div>
+                                </h1>
                             </div>
 
-                            {/* SEO Introduction Text (Expandable) */}
-                            {introduction && (
-                                <div className="pt-2 border-t border-slate-100/80">
-                                    <p className="text-slate-600 text-xs md:text-sm leading-relaxed font-normal">
-                                        {introduction.length > 220 && !isExpanded
-                                            ? `${introduction.slice(0, 220)}...`
-                                            : introduction}
-                                        {introduction.length > 220 && (
-                                            <button
-                                                onClick={() => setIsExpanded(!isExpanded)}
-                                                className="text-brand-600 hover:text-brand-700 font-bold ml-1.5 inline-flex items-center gap-0.5 hover:underline cursor-pointer"
-                                            >
-                                                {isExpanded ? "Read Less" : "Read More"}
-                                            </button>
-                                        )}
-                                    </p>
-                                </div>
-                            )}
+                            {/* Mobile & Desktop Sort & Filter Actions */}
+                            <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-between sm:justify-end">
+                                {/* Mobile Filter Button (NO Icon, Clean Text) */}
+                                <button
+                                    onClick={() => setShowMobileFilter(true)}
+                                    className="lg:hidden flex items-center gap-1.5 bg-slate-900 hover:bg-black text-white rounded-xl px-4 py-2 text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer"
+                                >
+                                    <span>Filters</span>
+                                    {(filters.starRatings.length + filters.amenities.length + (filters.guestRatingMin ? 1 : 0) + (filters.priceRange[1] < 500000 ? 1 : 0)) > 0 && (
+                                        <span className="bg-brand-500 text-white text-[10px] font-black px-1.5 py-0.2 rounded-full">
+                                            {filters.starRatings.length + filters.amenities.length + (filters.guestRatingMin ? 1 : 0) + (filters.priceRange[1] < 500000 ? 1 : 0)}
+                                        </span>
+                                    )}
+                                </button>
+
+                                {/* Sort Dropdown */}
+                                <select
+                                    value={sort}
+                                    onChange={(e) => setSort(e.target.value as SortOption)}
+                                    className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all cursor-pointer shadow-sm hover:border-slate-300"
+                                >
+                                    {sortOptions.map((opt) => (
+                                        <option key={opt.value} value={opt.value}>
+                                            {opt.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
 
-                        {/* Hotel Cards Grid */}
+                        {/* Hotel Cards Grid (Visible Immediately Without Scrolling) */}
                         {loading ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {Array.from({ length: 4 }).map((_, i) => (
@@ -399,9 +408,98 @@ export default function DestinationLanding({
                             </div>
                         )}
 
+                        {/* ── Below Hotel Cards: AEO Fact Sheet & Editorial Content ── */}
+                        
+                        {/* Delhi Micro-Hub Quick Switcher Pills (Bottom Placement) */}
+                        {city.toLowerCase() === "delhi" && (
+                            <div className="bg-white/70 backdrop-blur-md border border-white/60 rounded-2xl p-4 md:p-5 shadow-sm space-y-2.5 mt-4">
+                                <p className="text-xs font-black text-slate-400 uppercase tracking-widest leading-none">
+                                    Explore Delhi Zones & Micro-Stays
+                                </p>
+                                <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-0.5 -mx-1 px-1 no-scrollbar">
+                                    {[
+                                        { label: "All Delhi Stays", url: `/${currentLang}/delhi-hotels`, slug: "delhi-hotels" },
+                                        { label: "⚡ Hourly Stays (3h/6h)", url: `/${currentLang}/hourly-hotels-in-delhi`, slug: "hourly-hotels-in-delhi" },
+                                        { label: "🔒 Couple Friendly", url: `/${currentLang}/couple-friendly-hotels-in-delhi`, slug: "couple-friendly-hotels-in-delhi" },
+                                        { label: "✈️ Near Airport (T3/Aerocity)", url: `/${currentLang}/hotels-near-delhi-airport`, slug: "hotels-near-delhi-airport" },
+                                        { label: "🚆 Near NDLS Station", url: `/${currentLang}/hotels-near-new-delhi-railway-station`, slug: "hotels-near-new-delhi-railway-station" },
+                                        { label: "🏛️ Connaught Place (CP)", url: `/${currentLang}/hotels-in-connaught-place-delhi`, slug: "hotels-in-connaught-place-delhi" },
+                                        { label: "🛍️ South Delhi (Saket)", url: `/${currentLang}/hotels-in-south-delhi`, slug: "hotels-in-south-delhi" },
+                                        { label: "🍜 Karol Bagh", url: `/${currentLang}/hotels-in-karol-bagh-delhi`, slug: "hotels-in-karol-bagh-delhi" },
+                                    ].map((hub) => {
+                                        const isActive = urlSlug === hub.slug || (!urlSlug && hub.slug === "delhi-hotels");
+                                        return (
+                                            <Link
+                                                key={hub.slug}
+                                                to={hub.url}
+                                                className={cn(
+                                                    "px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all shadow-sm shrink-0 border cursor-pointer",
+                                                    isActive
+                                                        ? "bg-slate-950 text-white border-slate-950 shadow-md"
+                                                        : "bg-white/90 hover:bg-white text-slate-700 border-slate-200 hover:border-slate-300"
+                                                )}
+                                            >
+                                                {hub.label}
+                                            </Link>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Delhi AEO Quick Facts Matrix */}
+                        {city.toLowerCase() === "delhi" && (
+                            <div className="bg-white/70 backdrop-blur-md border border-white/60 rounded-2xl p-5 md:p-6 shadow-sm space-y-3 mt-2">
+                                <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                                    <Sparkles className="w-4 h-4 text-brand-600" />
+                                    <span>Delhi Stay Fact Sheet & Quick Insights</span>
+                                </h3>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
+                                    <div className="bg-white/90 border border-slate-100 rounded-xl p-3 text-left shadow-sm">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">Starting Rates</p>
+                                        <p className="text-xs font-black text-slate-900">₹499 (Hourly) / ₹899 (Day)</p>
+                                    </div>
+                                    <div className="bg-white/90 border border-slate-100 rounded-xl p-3 text-left shadow-sm">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">Payment Model</p>
+                                        <p className="text-xs font-black text-emerald-600">Pay 12% Deposit</p>
+                                    </div>
+                                    <div className="bg-white/90 border border-slate-100 rounded-xl p-3 text-left shadow-sm">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">Couple Policy</p>
+                                        <p className="text-xs font-black text-slate-900">100% Local ID Safe</p>
+                                    </div>
+                                    <div className="bg-white/90 border border-slate-100 rounded-xl p-3 text-left shadow-sm">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">Check-in Flexibility</p>
+                                        <p className="text-xs font-black text-blue-600">24/7 + 3h/6h Slots</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* About Destination & Full Introduction Text */}
+                        {introduction && (
+                            <div className="bg-white/70 backdrop-blur-md border border-slate-200/80 rounded-2xl p-6 space-y-3 shadow-sm mt-2">
+                                <h2 className="text-base md:text-lg font-bold text-slate-900 tracking-tight">
+                                    About {h1}
+                                </h2>
+                                <p className="text-slate-600 text-xs md:text-sm leading-relaxed font-normal">
+                                    {introduction.length > 280 && !isExpanded
+                                        ? `${introduction.slice(0, 280)}...`
+                                        : introduction}
+                                    {introduction.length > 280 && (
+                                        <button
+                                            onClick={() => setIsExpanded(!isExpanded)}
+                                            className="text-brand-600 hover:text-brand-700 font-bold ml-1.5 inline-flex items-center gap-0.5 hover:underline cursor-pointer"
+                                        >
+                                            {isExpanded ? "Read Less" : "Read More"}
+                                        </button>
+                                    )}
+                                </p>
+                            </div>
+                        )}
+
                         {/* ── Editorial Content Sections (H2 & H3) ── */}
                         {sections.length > 0 && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                                 {sections.map((sec, i) => (
                                     <div
                                         key={i}

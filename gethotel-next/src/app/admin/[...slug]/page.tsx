@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
 import SuperAdminDashboard from "@/pages-legacy/admin/AdminDashboard";
+import AdminLayout from "@/components/layout/AdminLayout";
+
+export function generateStaticParams() {
+  return [{ slug: ["dashboard"] }];
+}
 
 export const metadata: Metadata = {
   title: "Super Admin Dashboard | GetHotelStays",
@@ -10,5 +15,9 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <SuperAdminDashboard />;
+  return (
+    <AdminLayout>
+      <SuperAdminDashboard />
+    </AdminLayout>
+  );
 }

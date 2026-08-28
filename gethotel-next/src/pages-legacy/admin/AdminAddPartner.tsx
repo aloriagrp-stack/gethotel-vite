@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-
 interface SearchablePartnerSelectProps {
     partners: any[];
     selectedId: string;
@@ -37,12 +36,12 @@ function SearchablePartnerSelect({ partners, selectedId, onChange, disabled, pla
                 type="button"
                 disabled={disabled}
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-sm focus:outline-none focus:border-slate-400 text-left text-xs font-bold transition-all disabled:opacity-55 flex justify-between items-center cursor-pointer select-none"
+                className="w-full px-4 py-3 bg-[#141414] border border-[#262626] rounded-xl focus:outline-none focus:border-neutral-400 text-left text-xs font-bold text-white transition-all disabled:opacity-55 flex justify-between items-center cursor-pointer select-none"
             >
                 <span className="truncate">
                     {selectedPartner ? `${selectedPartner.name} (${selectedPartner.email})` : placeholder}
                 </span>
-                <span className="text-slate-400 ml-2">▼</span>
+                <span className="text-neutral-500 ml-2">▼</span>
             </button>
 
             {isOpen && (
@@ -55,21 +54,21 @@ function SearchablePartnerSelect({ partners, selectedId, onChange, disabled, pla
                         }}
                     />
                     
-                    <div className="absolute left-0 right-0 mt-1 bg-white border border-slate-200 shadow-xl rounded-sm z-50 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
-                        <div className="p-2 border-b border-slate-100 bg-slate-50">
+                    <div className="absolute left-0 right-0 mt-1.5 bg-[#0c0c0c] border border-[#262626] shadow-2xl rounded-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
+                        <div className="p-2.5 border-b border-[#1f1f1f] bg-[#111111]">
                             <input
                                 type="text"
                                 placeholder="Type to search partner..."
                                 value={search}
                                 onChange={e => setSearch(e.target.value)}
-                                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-sm outline-none focus:border-slate-400 text-xs font-bold"
+                                className="w-full px-3 py-2 bg-[#161616] border border-[#282828] rounded-lg outline-none focus:border-neutral-400 text-xs font-bold text-white placeholder:text-neutral-500"
                                 autoFocus
                             />
                         </div>
                         
-                        <div className="max-h-60 overflow-y-auto divide-y divide-slate-100">
+                        <div className="max-h-60 overflow-y-auto divide-y divide-[#181818]">
                             {filtered.length === 0 ? (
-                                <div className="p-3 text-center text-slate-400 text-[10px] font-bold uppercase">
+                                <div className="p-4 text-center text-neutral-500 text-[10px] font-bold uppercase tracking-wider">
                                     No partners found
                                 </div>
                             ) : (
@@ -83,11 +82,11 @@ function SearchablePartnerSelect({ partners, selectedId, onChange, disabled, pla
                                             setSearch("");
                                         }}
                                         className={cn(
-                                            "w-full text-left px-4 py-2.5 text-xs font-bold transition-colors hover:bg-slate-50 block truncate cursor-pointer",
-                                            p.id.toString() === selectedId ? "bg-slate-50 text-brand-600" : "text-slate-750"
+                                            "w-full text-left px-4 py-3 text-xs font-bold transition-colors hover:bg-[#161616] block truncate cursor-pointer",
+                                            p.id.toString() === selectedId ? "bg-[#181818] text-white" : "text-neutral-300"
                                         )}
                                     >
-                                        {p.name} <span className="text-[10px] text-slate-400 font-medium">({p.email})</span>
+                                        {p.name} <span className="text-[10px] text-neutral-500 font-medium">({p.email})</span>
                                     </button>
                                 ))
                             )}
@@ -229,82 +228,27 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                         hotelName: 'Hotel Name',
                         hotelAddress: 'Hotel Address'
                     };
-                    const missingList = missingRequired.map(f => friendlyNames[f] || f).join(', ');
-                    setCsvError(`Missing required column headers: ${missingList}. Please ensure these columns are in your CSV file.`);
+                    setCsvError(`CSV is missing required columns: ${missingRequired.map(f => friendlyNames[f] || f).join(", ")}`);
                     return;
                 }
 
-                const rows = dataRows.map((cols, rowIndex) => {
-                    const rowObj: any = {
-                        id: rowIndex + 1,
-                        partnerName: "",
-                        partnerEmail: "",
-                        partnerPhone: "",
-                        partnerPassword: "",
-                        hotelName: "",
-                        hotelAddress: "",
-                        city: "New Delhi",
-                        price: "1200",
-                        stars: "3",
-                        amenities: ""
-                    };
-
-                    cols.forEach((val, colIndex) => {
-                        const fieldName = headerMap[colIndex];
+                const parsedRows = dataRows.map((rowArr, i) => {
+                    const rowObj: any = { id: i + 1, stars: "3", price: "1200", city: "Delhi", amenities: "Free Wifi, AC" };
+                    rowArr.forEach((val, colIdx) => {
+                        const fieldName = headerMap[colIdx];
                         if (fieldName) {
                             rowObj[fieldName] = val;
                         }
                     });
-
                     return rowObj;
                 });
 
-                setCsvRows(rows);
-                setCsvSuccess(`Successfully parsed ${rows.length} rows. Please review and edit the details below before importing.`);
-
+                setCsvRows(parsedRows);
             } catch (err: any) {
-                setCsvError("Failed to parse CSV file: " + err.message);
+                setCsvError("Failed to parse CSV file. Please make sure it is a valid CSV.");
             }
         };
         reader.readAsText(file);
-    };
-
-    const downloadCsvTemplate = () => {
-        const headers = [
-            "Partner Name", 
-            "Partner Email", 
-            "Partner Phone", 
-            "Partner Password", 
-            "Hotel Name", 
-            "Hotel Address", 
-            "City", 
-            "Price", 
-            "Stars", 
-            "Amenities"
-        ];
-        const sampleRow = [
-            "John Doe", 
-            "john.doe@example.com", 
-            "9876543210", 
-            "SecurePass123", 
-            "The Royal Orchid Resort", 
-            "12 Mall Road, Near City Center", 
-            "Shimla", 
-            "3500", 
-            "4", 
-            "Wifi, AC, Free Breakfast, Parking"
-        ];
-        
-        const csvContent = [headers.join(","), sampleRow.join(",")].join("\n");
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.setAttribute("href", url);
-        link.setAttribute("download", "gethotel_partner_import_template.csv");
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
     };
 
     const handleCsvRowChange = (index: number, field: string, value: string) => {
@@ -317,16 +261,17 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
         setCsvRows(csvRows.filter((_, i) => i !== index));
     };
 
-    const validateCsvRows = () => {
-        for (let i = 0; i < csvRows.length; i++) {
-            const row = csvRows[i];
-            if (!row.partnerName?.trim()) return `Row ${i + 1}: Partner Name is required.`;
-            if (!row.partnerEmail?.trim() || !row.partnerEmail.includes("@")) return `Row ${i + 1}: Valid Partner Email is required.`;
-            if (!row.partnerPassword?.trim() || row.partnerPassword.length < 6) return `Row ${i + 1}: Partner Password must be at least 6 characters.`;
-            if (!row.hotelName?.trim()) return `Row ${i + 1}: Hotel Name is required.`;
-            if (!row.hotelAddress?.trim()) return `Row ${i + 1}: Hotel Address is required.`;
-        }
-        return null;
+    const downloadCsvTemplate = () => {
+        const headers = "Partner Name,Partner Email,Partner Phone,Partner Password,Hotel Name,Hotel Address,City,Price,Stars,Amenities\n";
+        const sampleRow = 'John Doe,john@grandpalace.com,9876543210,SecretPass123!,Grand Palace Hotel,"Plot 44, Aerocity",Delhi,2500,4,"Free Wifi, Swimming Pool, AC, Restaurant"\n';
+        const blob = new Blob([headers + sampleRow], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", "partner_hotel_import_template.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
 
     const handleCsvImportSubmit = async (e: React.FormEvent) => {
@@ -336,84 +281,143 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
         setCsvResultsLog([]);
 
         if (csvRows.length === 0) {
-            setCsvError("No data rows to import. Please upload a CSV file first.");
+            setCsvError("No CSV records loaded to process.");
             return;
         }
 
-        const valError = validateCsvRows();
-        if (valError) {
-            setCsvError(valError);
-            return;
+        // Validate rows
+        for (let i = 0; i < csvRows.length; i++) {
+            const r = csvRows[i];
+            if (!r.partnerName?.trim() || !r.partnerEmail?.trim() || !r.partnerPassword?.trim()) {
+                setCsvError(`Row #${i + 1}: Partner Name, Partner Email, and Password are required.`);
+                return;
+            }
+            if (!r.hotelName?.trim() || !r.hotelAddress?.trim()) {
+                setCsvError(`Row #${i + 1}: Hotel Name and Hotel Address are required.`);
+                return;
+            }
         }
 
         setIsCsvImporting(true);
+        const results = [];
+
         try {
-            const formattedRows = csvRows.map(row => ({
-                partnerName: row.partnerName.trim(),
-                partnerEmail: row.partnerEmail.trim(),
-                partnerPhone: row.partnerPhone?.trim() || "",
-                partnerPassword: row.partnerPassword,
-                hotelName: row.hotelName.trim(),
-                hotelAddress: row.hotelAddress.trim(),
-                city: row.city?.trim() || "New Delhi",
-                price: parseFloat(row.price) || 1200,
-                stars: parseInt(row.stars) || 3,
-                amenities: row.amenities
-            }));
+            for (let i = 0; i < csvRows.length; i++) {
+                const r = csvRows[i];
+                try {
+                    // 1. Create Partner
+                    let partnerId: number;
+                    const existingPartner = partners.find(p => p.email?.toLowerCase() === r.partnerEmail.trim().toLowerCase());
+                    
+                    if (existingPartner) {
+                        partnerId = existingPartner.id;
+                    } else {
+                        const partnerRes = await adminApi.createPartner({
+                            name: r.partnerName.trim(),
+                            email: r.partnerEmail.trim(),
+                            phone: r.partnerPhone?.trim() || "",
+                            password: r.partnerPassword.trim()
+                        });
+                        
+                        if (!partnerRes.success || !partnerRes.data?.id) {
+                            results.push({
+                                row: i + 1,
+                                partnerName: r.partnerName,
+                                email: r.partnerEmail,
+                                hotelName: r.hotelName,
+                                success: false,
+                                message: partnerRes.message || "Failed to register partner account"
+                            });
+                            continue;
+                        }
+                        partnerId = partnerRes.data.id;
+                    }
 
-            const res = await adminApi.createBulkPartnersWithHotels({ rows: formattedRows });
+                    // 2. Create Hotel under Partner
+                    const propRes = await adminApi.createHotel({
+                        ownerId: partnerId,
+                        name: r.hotelName.trim(),
+                        city: r.city?.trim() || "Delhi",
+                        address: r.hotelAddress.trim(),
+                        pricePerNight: parseFloat(r.price) || 1200,
+                        starRating: parseInt(r.stars) || 3,
+                        amenities: r.amenities ? r.amenities.split(",").map((s: string) => s.trim()).filter(Boolean) : ["Free Wifi", "AC"]
+                    });
 
-            if (res.success && Array.isArray(res.results)) {
-                setCsvResultsLog(res.results);
-                const total = res.results.length;
-                const successCount = res.results.filter((r: any) => r.success).length;
-                
-                if (successCount === total) {
-                    setCsvSuccess(`Successfully provisioned all ${successCount} partners and hotels!`);
-                    setCsvRows([]);
-                    setCsvFile(null);
-                } else if (successCount > 0) {
-                    setCsvSuccess(`Import partially completed. Created ${successCount} of ${total} entries. Please check the status log below for details.`);
-                } else {
-                    setCsvError("Failed to import. All entries encountered errors. See log details below.");
+                    if (propRes.success) {
+                        results.push({
+                            row: i + 1,
+                            partnerName: r.partnerName,
+                            email: r.partnerEmail,
+                            hotelName: r.hotelName,
+                            success: true,
+                            message: "Account & Property created successfully"
+                        });
+                    } else {
+                        results.push({
+                            row: i + 1,
+                            partnerName: r.partnerName,
+                            email: r.partnerEmail,
+                            hotelName: r.hotelName,
+                            success: false,
+                            message: propRes.message || "Failed to register property under partner"
+                        });
+                    }
+                } catch (err: any) {
+                    results.push({
+                        row: i + 1,
+                        partnerName: r.partnerName,
+                        email: r.partnerEmail,
+                        hotelName: r.hotelName,
+                        success: false,
+                        message: err.message || "Unexpected server error"
+                    });
                 }
+            }
 
-                const refreshed = await adminApi.getPartners();
-                setPartners(refreshed.data || []);
-            } else {
-                setCsvError(res.message || "Failed to process bulk import.");
+            setCsvResultsLog(results);
+            const successfulCount = results.filter(r => r.success).length;
+            setCsvSuccess(`Processed ${results.length} records: ${successfulCount} successfully imported, ${results.length - successfulCount} failed.`);
+            
+            // Refresh partner list
+            const refreshed = await adminApi.getPartners();
+            setPartners(refreshed.data || []);
+            
+            if (successfulCount === results.length) {
+                setCsvRows([]);
+                setCsvFile(null);
             }
         } catch (err: any) {
-            setCsvError(err.message || "An unexpected error occurred during import.");
+            setCsvError(err.message || "An unexpected error occurred during CSV batch processing.");
         } finally {
             setIsCsvImporting(false);
         }
     };
 
-    // Single Partner Registration States
+    // ─── Single Partner Registration States ───────────────────────────────────
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
     const [phone, setPhone] = useState("");
+    const [password, setPassword] = useState("");
     const [showPass, setShowPass] = useState(false);
     const [isCreatingPartner, setIsCreatingPartner] = useState(false);
     const [registerError, setRegisterError] = useState("");
     const [registerSuccess, setRegisterSuccess] = useState("");
 
-    // Create Single Property States
-    const [propOwnerId, setPropOwnerId] = useState<string>("");
+    // ─── Create Single Property States ────────────────────────────────────────
+    const [propOwnerId, setPropOwnerId] = useState("");
     const [propName, setPropName] = useState("");
-    const [propCity, setPropCity] = useState("");
+    const [propCity, setPropCity] = useState("Delhi");
     const [propAddress, setPropAddress] = useState("");
-    const [propPrice, setPropPrice] = useState("");
+    const [propPrice, setPropPrice] = useState("1200");
     const [propStars, setPropStars] = useState("3");
-    const [propAmenities, setPropAmenities] = useState("");
+    const [propAmenities, setPropAmenities] = useState("Free Wifi, AC, Power Backup");
     const [isCreatingProp, setIsCreatingProp] = useState(false);
     const [propError, setPropError] = useState("");
     const [propSuccess, setPropSuccess] = useState("");
 
-    // Bulk Hotels States
-    const [bulkOwnerId, setBulkOwnerId] = useState<string>("");
+    // ─── Bulk Hotel Creation States ──────────────────────────────────────────
+    const [bulkOwnerId, setBulkOwnerId] = useState("");
     const [bulkHotels, setBulkHotels] = useState<Array<{
         name: string;
         city: string;
@@ -421,14 +425,18 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
         pricePerNight: string;
         starRating: string;
         amenitiesString: string;
-    }>>([{ name: "", city: "", address: "", pricePerNight: "", starRating: "3", amenitiesString: "" }]);
+    }>>([
+        { name: "", city: "Delhi", address: "", pricePerNight: "1200", starRating: "3", amenitiesString: "Free Wifi, AC" }
+    ]);
     const [isBulkCreating, setIsBulkCreating] = useState(false);
     const [bulkError, setBulkError] = useState("");
     const [bulkSuccess, setBulkSuccess] = useState("");
 
-    // Multi-Partner Studio States
+    // ─── Multi-Partner Studio States ─────────────────────────────────────────
     const [studioStep, setStudioStep] = useState<1 | 2 | 3>(1);
     const [studioSelectedIds, setStudioSelectedIds] = useState<number[]>([]);
+    const [studioSearch, setStudioSearch] = useState("");
+    const [expandedPartnerIds, setExpandedPartnerIds] = useState<number[]>([]);
     const [studioPartnerHotels, setStudioPartnerHotels] = useState<Record<number, Array<{
         name: string;
         city: string;
@@ -437,239 +445,43 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
         starRating: string;
         amenitiesString: string;
     }>>>({});
-    const [expandedPartnerIds, setExpandedPartnerIds] = useState<number[]>([]);
-    const [studioSearch, setStudioSearch] = useState("");
     const [isProvisioning, setIsProvisioning] = useState(false);
+    const [studioError, setStudioError] = useState("");
     const [provisionResults, setProvisionResults] = useState<Array<{
+        partnerId: number;
         partnerName: string;
         success: boolean;
-        count?: number;
+        count: number;
         hotelNames?: string[];
         message?: string;
     }>>([]);
-    const [studioError, setStudioError] = useState("");
 
-    const toggleSelectPartner = (id: number) => {
-        setStudioSelectedIds(prev => {
-            if (prev.includes(id)) {
-                return prev.filter(x => x !== id);
-            } else {
-                return [...prev, id];
-            }
-        });
-    };
-
-    const toggleSelectAllFiltered = (filteredIds: number[]) => {
-        const allSelected = filteredIds.every(id => studioSelectedIds.includes(id));
-        if (allSelected) {
-            setStudioSelectedIds(prev => prev.filter(id => !filteredIds.includes(id)));
-        } else {
-            setStudioSelectedIds(prev => Array.from(new Set([...prev, ...filteredIds])));
-        }
-    };
-
-    const proceedToStep2 = () => {
-        if (studioSelectedIds.length === 0) {
-            setStudioError("Please select at least one partner.");
-            return;
-        }
-        setStudioError("");
-        
-        // Initialize partnerHotels mapping
-        setStudioPartnerHotels(prev => {
-            const updated = { ...prev };
-            studioSelectedIds.forEach(id => {
-                if (!updated[id] || updated[id].length === 0) {
-                    updated[id] = [{ name: "", city: "", address: "", pricePerNight: "", starRating: "3", amenitiesString: "" }];
-                }
-            });
-            // Remove non-selected partners to keep state clean
-            Object.keys(updated).forEach(k => {
-                const id = parseInt(k);
-                if (!studioSelectedIds.includes(id)) {
-                    delete updated[id];
-                }
-            });
-            return updated;
-        });
-        setExpandedPartnerIds(studioSelectedIds);
-        setStudioStep(2);
-    };
-
-    const addStudioHotelRow = (partnerId: number) => {
-        const partner = partners.find(p => p.id === partnerId);
-        const currentCount = partner?.hotel?.length || 0;
-        const draftingCount = studioPartnerHotels[partnerId]?.length || 0;
-        if (currentCount + draftingCount >= 50) {
-            alert(`Capacity limit reached. This partner cannot have more than 50 properties in total (existing: ${currentCount}, drafting: ${draftingCount}).`);
-            return;
-        }
-        setStudioPartnerHotels(prev => ({
-            ...prev,
-            [partnerId]: [...(prev[partnerId] || []), { name: "", city: "", address: "", pricePerNight: "", starRating: "3", amenitiesString: "" }]
-        }));
-    };
-
-    const removeStudioHotelRow = (partnerId: number, index: number) => {
-        setStudioPartnerHotels(prev => {
-            const rows = prev[partnerId] || [];
-            if (rows.length === 1) return prev; // Keep at least one row
-            return {
-                ...prev,
-                [partnerId]: rows.filter((_, i) => i !== index)
-            };
-        });
-    };
-
-    const handleStudioRowChange = (partnerId: number, index: number, field: string, value: string) => {
-        setStudioPartnerHotels(prev => {
-            const rows = [...(prev[partnerId] || [])];
-            rows[index] = { ...rows[index], [field]: value };
-            return {
-                ...prev,
-                [partnerId]: rows
-            };
-        });
-    };
-
-    const togglePartnerCardExpand = (id: number) => {
-        setExpandedPartnerIds(prev => 
-            prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-        );
-    };
-
-    const proceedToStep3 = () => {
-        setStudioError("");
-        for (const partnerId of studioSelectedIds) {
-            const hotels = studioPartnerHotels[partnerId] || [];
-            if (hotels.length === 0) {
-                setStudioError("Please add at least one hotel for each selected partner.");
-                return;
-            }
-            const partnerName = partners.find(p => p.id === partnerId)?.name || `Partner #${partnerId}`;
-            for (let i = 0; i < hotels.length; i++) {
-                const h = hotels[i];
-                if (!h.name.trim() || !h.city.trim() || !h.address.trim()) {
-                    setStudioError(`Hotel #${i + 1} under "${partnerName}" is missing required fields (Name, City, or Address).`);
-                    return;
-                }
-            }
-        }
-        setStudioStep(3);
-    };
-
-    const handleStudioProvision = async () => {
-        setIsProvisioning(true);
-        setStudioError("");
-        setProvisionResults([]);
-        
-        const results: Array<{
-            partnerName: string;
-            success: boolean;
-            count?: number;
-            hotelNames?: string[];
-            message?: string;
-        }> = [];
-
-        for (const partnerId of studioSelectedIds) {
-            const hotels = studioPartnerHotels[partnerId] || [];
-            if (hotels.length === 0) continue;
-            
-            const partner = partners.find(p => p.id === partnerId);
-            const partnerName = partner?.name || `Partner #${partnerId}`;
-            
-            try {
-                const formattedHotels = hotels.map(h => ({
-                    name: h.name.trim(),
-                    city: h.city.trim(),
-                    address: h.address.trim(),
-                    pricePerNight: parseFloat(h.pricePerNight) || 1200,
-                    starRating: parseInt(h.starRating) || 3,
-                    amenities: h.amenitiesString.split(",").map(s => s.trim()).filter(Boolean)
-                }));
-                
-                const res = await adminApi.createBulkHotels({
-                    ownerId: partnerId,
-                    hotels: formattedHotels
-                });
-                
-                if (res.success) {
-                    results.push({
-                        partnerName,
-                        success: true,
-                        count: res.count || formattedHotels.length,
-                        hotelNames: formattedHotels.map(h => h.name)
-                    });
-                } else {
-                    results.push({
-                        partnerName,
-                        success: false,
-                        message: res.message || "Failed to create hotels for this partner."
-                    });
-                }
-            } catch (err: any) {
-                results.push({
-                    partnerName,
-                    success: false,
-                    message: err.message || "An unexpected error occurred."
-                });
-            }
-        }
-        
-        setProvisionResults(results);
-        
-        // Refresh parent partners list
-        try {
-            const refreshed = await adminApi.getPartners();
-            setPartners(refreshed.data || []);
-        } catch (err) {
-            console.error("Failed to refresh partners", err);
-        }
-        setIsProvisioning(false);
-    };
-
-    const resetStudio = () => {
-        setStudioSelectedIds([]);
-        setStudioPartnerHotels({});
-        setStudioSearch("");
-        setProvisionResults([]);
-        setStudioError("");
-        setStudioStep(1);
-    };
-
-
-    // ─── Single Partner Register Submit ──────────────────────────────────────
+    // ─── Single Partner Register Handler ──────────────────────────────────────
     const handleRegisterPartner = async (e: React.FormEvent) => {
         e.preventDefault();
         setRegisterError("");
         setRegisterSuccess("");
 
-        if (!name.trim() || !email.trim() || !password.trim() || !phone.trim()) {
-            setRegisterError("All fields are required.");
+        if (!name || !email || !password) {
+            setRegisterError("Please fill in Name, Email and Password.");
             return;
         }
 
         setIsCreatingPartner(true);
         try {
-            const res = await adminApi.createQuickPartner({
-                name: name.trim(),
-                email: email.trim().toLowerCase(),
-                password: password,
-                phone: phone.trim()
-            });
-
+            const res = await adminApi.createPartner({ name, email, phone, password });
             if (res.success) {
-                setRegisterSuccess(`Partner ${name} registered successfully!`);
+                setRegisterSuccess(`Partner created successfully! ID: #${res.data?.id}`);
                 setName("");
                 setEmail("");
-                setPassword("");
                 setPhone("");
+                setPassword("");
                 
-                // Refresh parent partners list
+                // Refresh list
                 const refreshed = await adminApi.getPartners();
                 setPartners(refreshed.data || []);
             } else {
-                setRegisterError(res.message || "Failed to create partner login.");
+                setRegisterError(res.message || "Failed to create partner account.");
             }
         } catch (err: any) {
             setRegisterError(err.message || "An unexpected error occurred.");
@@ -678,53 +490,41 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
         }
     };
 
-    // ─── Create Single Property Submit ───────────────────────────────────────
+    // ─── Create Single Property Handler ──────────────────────────────────────
     const handleCreateSingleProperty = async (e: React.FormEvent) => {
         e.preventDefault();
         setPropError("");
         setPropSuccess("");
 
         if (!propOwnerId) {
-            setPropError("Please select an owner (partner) first.");
+            setPropError("Please select a partner owner first.");
             return;
         }
-
-        if (!propName.trim() || !propCity.trim() || !propAddress.trim()) {
-            setPropError("Property Name, City, and Address are required.");
-            return;
-        }
-
-        const partner = partners.find(p => p.id === parseInt(propOwnerId));
-        const currentCount = partner?.hotel?.length || 0;
-        if (currentCount >= 50) {
-            setPropError("This partner has already reached the maximum limit of 50 properties.");
+        if (!propName || !propAddress || !propCity) {
+            setPropError("Please provide Hotel Name, City, and Full Address.");
             return;
         }
 
         setIsCreatingProp(true);
         try {
-            const res = await adminApi.createBulkHotels({
+            const amenitiesArr = propAmenities.split(",").map(a => a.trim()).filter(Boolean);
+            const res = await adminApi.createHotel({
                 ownerId: parseInt(propOwnerId),
-                hotels: [{
-                    name: propName.trim(),
-                    city: propCity.trim(),
-                    address: propAddress.trim(),
-                    pricePerNight: parseFloat(propPrice) || 1200,
-                    starRating: parseInt(propStars) || 3,
-                    amenities: propAmenities.split(",").map(s => s.trim()).filter(Boolean)
-                }]
+                name: propName,
+                city: propCity,
+                address: propAddress,
+                pricePerNight: parseFloat(propPrice) || 1200,
+                starRating: parseInt(propStars) || 3,
+                amenities: amenitiesArr
             });
 
             if (res.success) {
-                setPropSuccess(`Property "${propName}" successfully created under partner!`);
+                setPropSuccess(`Property "${propName}" created successfully under partner!`);
                 setPropName("");
-                setPropCity("");
                 setPropAddress("");
-                setPropPrice("");
-                setPropStars("3");
-                setPropAmenities("");
-                
-                // Refresh parent partners list
+                setPropAmenities("Free Wifi, AC, Power Backup");
+
+                // Refresh partners to reflect updated hotel arrays
                 const refreshed = await adminApi.getPartners();
                 setPartners(refreshed.data || []);
             } else {
@@ -737,13 +537,10 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
         }
     };
 
-    // ─── Bulk Hotel Row Management ──────────────────────────────────────────
+    // ─── Bulk Hotel Rows Handlers ────────────────────────────────────────────
     const addBulkRow = () => {
-        if (bulkHotels.length >= 50) {
-            alert("Limit reached: You can create up to 50 hotels in bulk per transaction.");
-            return;
-        }
-        setBulkHotels([...bulkHotels, { name: "", city: "", address: "", pricePerNight: "", starRating: "3", amenitiesString: "" }]);
+        if (bulkHotels.length >= 50) return;
+        setBulkHotels([...bulkHotels, { name: "", city: "Delhi", address: "", pricePerNight: "1200", starRating: "3", amenitiesString: "Free Wifi, AC" }]);
     };
 
     const removeBulkRow = (index: number) => {
@@ -768,7 +565,6 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
             return;
         }
 
-        // Validate
         for (let i = 0; i < bulkHotels.length; i++) {
             const h = bulkHotels[i];
             if (!h.name.trim() || !h.city.trim() || !h.address.trim()) {
@@ -797,7 +593,6 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                 setBulkSuccess(`Successfully batch-created ${res.count} hotels with default standard rooms!`);
                 setBulkHotels([{ name: "", city: "", address: "", pricePerNight: "", starRating: "3", amenitiesString: "" }]);
                 
-                // Refresh parent partners list
                 const refreshed = await adminApi.getPartners();
                 setPartners(refreshed.data || []);
             } else {
@@ -810,30 +605,194 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
         }
     };
 
+    // ─── Studio Handlers ─────────────────────────────────────────────────────
+    const toggleSelectPartner = (id: number) => {
+        setStudioSelectedIds(prev => 
+            prev.includes(id) ? prev.filter(pId => pId !== id) : [...prev, id]
+        );
+    };
+
+    const toggleSelectAllFiltered = (filteredIds: number[]) => {
+        const allSelected = filteredIds.every(id => studioSelectedIds.includes(id));
+        if (allSelected) {
+            setStudioSelectedIds(prev => prev.filter(id => !filteredIds.includes(id)));
+        } else {
+            setStudioSelectedIds(prev => Array.from(new Set([...prev, ...filteredIds])));
+        }
+    };
+
+    const proceedToStep2 = () => {
+        if (studioSelectedIds.length === 0) {
+            setStudioError("Please select at least one partner user.");
+            return;
+        }
+        setStudioError("");
+
+        const newPartnerHotels = { ...studioPartnerHotels };
+        studioSelectedIds.forEach(id => {
+            if (!newPartnerHotels[id] || newPartnerHotels[id].length === 0) {
+                newPartnerHotels[id] = [
+                    { name: "", city: "Delhi", address: "", pricePerNight: "1200", starRating: "3", amenitiesString: "Free Wifi, AC" }
+                ];
+            }
+        });
+        setStudioPartnerHotels(newPartnerHotels);
+        setExpandedPartnerIds([...studioSelectedIds]);
+        setStudioStep(2);
+    };
+
+    const togglePartnerCardExpand = (id: number) => {
+        setExpandedPartnerIds(prev =>
+            prev.includes(id) ? prev.filter(pId => pId !== id) : [...prev, id]
+        );
+    };
+
+    const addStudioHotelRow = (partnerId: number) => {
+        const current = studioPartnerHotels[partnerId] || [];
+        const partner = partners.find(p => p.id === partnerId);
+        const existingCount = partner?.hotel?.length || 0;
+        if (existingCount + current.length >= 50) {
+            setStudioError(`Partner ${partner?.name} has reached the maximum capacity of 50 properties.`);
+            return;
+        }
+        setStudioPartnerHotels({
+            ...studioPartnerHotels,
+            [partnerId]: [
+                ...current,
+                { name: "", city: "Delhi", address: "", pricePerNight: "1200", starRating: "3", amenitiesString: "Free Wifi, AC" }
+            ]
+        });
+    };
+
+    const removeStudioHotelRow = (partnerId: number, index: number) => {
+        const current = studioPartnerHotels[partnerId] || [];
+        if (current.length === 1) return;
+        setStudioPartnerHotels({
+            ...studioPartnerHotels,
+            [partnerId]: current.filter((_, i) => i !== index)
+        });
+    };
+
+    const handleStudioRowChange = (partnerId: number, index: number, field: string, value: string) => {
+        const current = [...(studioPartnerHotels[partnerId] || [])];
+        current[index] = { ...current[index], [field]: value };
+        setStudioPartnerHotels({
+            ...studioPartnerHotels,
+            [partnerId]: current
+        });
+    };
+
+    const proceedToStep3 = () => {
+        setStudioError("");
+        for (const pId of studioSelectedIds) {
+            const partner = partners.find(p => p.id === pId);
+            const hotels = studioPartnerHotels[pId] || [];
+            for (let i = 0; i < hotels.length; i++) {
+                const h = hotels[i];
+                if (!h.name.trim() || !h.city.trim() || !h.address.trim()) {
+                    setStudioError(`Hotel #${i + 1} for ${partner?.name} is missing Name, City, or Address.`);
+                    return;
+                }
+            }
+        }
+        setStudioStep(3);
+    };
+
+    const handleStudioProvision = async () => {
+        setIsProvisioning(true);
+        setStudioError("");
+        const results = [];
+
+        try {
+            for (const pId of studioSelectedIds) {
+                const partner = partners.find(p => p.id === pId);
+                const hotels = studioPartnerHotels[pId] || [];
+
+                try {
+                    const formatted = hotels.map(h => ({
+                        name: h.name.trim(),
+                        city: h.city.trim(),
+                        address: h.address.trim(),
+                        pricePerNight: parseFloat(h.pricePerNight) || 1200,
+                        starRating: parseInt(h.starRating) || 3,
+                        amenities: h.amenitiesString.split(",").map(s => s.trim()).filter(Boolean)
+                    }));
+
+                    const res = await adminApi.createBulkHotels({
+                        ownerId: pId,
+                        hotels: formatted
+                    });
+
+                    if (res.success) {
+                        results.push({
+                            partnerId: pId,
+                            partnerName: partner?.name || `Partner #${pId}`,
+                            success: true,
+                            count: formatted.length,
+                            hotelNames: formatted.map(f => f.name)
+                        });
+                    } else {
+                        results.push({
+                            partnerId: pId,
+                            partnerName: partner?.name || `Partner #${pId}`,
+                            success: false,
+                            count: 0,
+                            message: res.message || "Failed to provision"
+                        });
+                    }
+                } catch (err: any) {
+                    results.push({
+                        partnerId: pId,
+                        partnerName: partner?.name || `Partner #${pId}`,
+                        success: false,
+                        count: 0,
+                        message: err.message || "Error"
+                    });
+                }
+            }
+
+            setProvisionResults(results);
+            const refreshed = await adminApi.getPartners();
+            setPartners(refreshed.data || []);
+        } catch (err: any) {
+            setStudioError(err.message || "Unexpected studio error.");
+        } finally {
+            setIsProvisioning(false);
+        }
+    };
+
+    const resetStudio = () => {
+        setStudioStep(1);
+        setStudioSelectedIds([]);
+        setStudioPartnerHotels({});
+        setProvisionResults([]);
+        setStudioError("");
+    };
+
     return (
-        <div className="space-y-8 animate-in fade-in duration-300">
+        <div className="space-y-8 animate-in fade-in duration-300 max-w-[1400px] text-white pb-16">
             {/* Header */}
-            <div className="bg-slate-900 text-white p-8 border border-slate-800 shadow-lg relative overflow-hidden">
-                <div className="absolute right-0 bottom-0 translate-y-12 translate-x-12 opacity-10 select-none pointer-events-none">
+            <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.9)] p-8 relative overflow-hidden">
+                <div className="absolute right-0 bottom-0 translate-y-12 translate-x-12 opacity-5 select-none pointer-events-none">
                     <Users className="w-64 h-64 text-white" />
                 </div>
                 <div className="relative z-10 space-y-2">
-                    <h2 className="text-xl font-black uppercase tracking-wider">Partner & Asset Provisioning</h2>
-                    <p className="text-xs text-slate-400 font-medium max-w-xl leading-relaxed">
+                    <h2 className="text-xl font-black uppercase tracking-wider text-white">Partner & Asset Provisioning</h2>
+                    <p className="text-xs text-neutral-400 font-medium max-w-xl leading-relaxed">
                         Configure partner credentials, dynamically associate hotel inventory ownership, and provision mock draft categories in bulk.
                     </p>
                 </div>
             </div>
 
             {/* Sub Tabs switcher */}
-            <div className="flex border-b border-slate-200 gap-1 select-none shrink-0 bg-white p-2 shadow-sm rounded-sm overflow-x-auto">
+            <div className="flex border border-[#1f1f1f] gap-1.5 select-none shrink-0 bg-[#0c0c0c] p-2 rounded-2xl shadow-lg overflow-x-auto">
                 <button
                     onClick={() => setSubTab("register")}
                     className={cn(
-                        "px-6 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all rounded-sm flex items-center gap-2 cursor-pointer whitespace-nowrap",
+                        "px-5 py-2.5 text-xs font-black uppercase tracking-wider transition-all rounded-xl flex items-center gap-2 cursor-pointer whitespace-nowrap",
                         subTab === "register" 
-                            ? "bg-slate-900 text-white shadow-md" 
-                            : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
+                            ? "bg-white text-black shadow-md" 
+                            : "text-neutral-400 hover:bg-[#161616] hover:text-white"
                     )}
                 >
                     <Plus className="w-3.5 h-3.5" /> Single Partner
@@ -841,10 +800,10 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                 <button
                     onClick={() => setSubTab("createProperty")}
                     className={cn(
-                        "px-6 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all rounded-sm flex items-center gap-2 cursor-pointer whitespace-nowrap",
+                        "px-5 py-2.5 text-xs font-black uppercase tracking-wider transition-all rounded-xl flex items-center gap-2 cursor-pointer whitespace-nowrap",
                         subTab === "createProperty" 
-                            ? "bg-slate-900 text-white shadow-md" 
-                            : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
+                            ? "bg-white text-black shadow-md" 
+                            : "text-neutral-400 hover:bg-[#161616] hover:text-white"
                     )}
                 >
                     <Plus className="w-3.5 h-3.5" /> Create Property
@@ -852,10 +811,10 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                 <button
                     onClick={() => setSubTab("bulk")}
                     className={cn(
-                        "px-6 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all rounded-sm flex items-center gap-2 cursor-pointer whitespace-nowrap",
+                        "px-5 py-2.5 text-xs font-black uppercase tracking-wider transition-all rounded-xl flex items-center gap-2 cursor-pointer whitespace-nowrap",
                         subTab === "bulk" 
-                            ? "bg-slate-900 text-white shadow-md" 
-                            : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
+                            ? "bg-white text-black shadow-md" 
+                            : "text-neutral-400 hover:bg-[#161616] hover:text-white"
                     )}
                 >
                     <Hotel className="w-3.5 h-3.5" /> Bulk Hotel Setup
@@ -863,10 +822,10 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                 <button
                     onClick={() => setSubTab("studio")}
                     className={cn(
-                        "px-6 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all rounded-sm flex items-center gap-2 cursor-pointer whitespace-nowrap",
+                        "px-5 py-2.5 text-xs font-black uppercase tracking-wider transition-all rounded-xl flex items-center gap-2 cursor-pointer whitespace-nowrap",
                         subTab === "studio" 
-                            ? "bg-slate-900 text-white shadow-md" 
-                            : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
+                            ? "bg-white text-black shadow-md" 
+                            : "text-neutral-400 hover:bg-[#161616] hover:text-white"
                     )}
                 >
                     <SlidersHorizontal className="w-3.5 h-3.5" /> Multi-Partner Studio
@@ -874,10 +833,10 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                 <button
                     onClick={() => setSubTab("csvImport")}
                     className={cn(
-                        "px-6 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all rounded-sm flex items-center gap-2 cursor-pointer whitespace-nowrap",
+                        "px-5 py-2.5 text-xs font-black uppercase tracking-wider transition-all rounded-xl flex items-center gap-2 cursor-pointer whitespace-nowrap",
                         subTab === "csvImport" 
-                            ? "bg-slate-900 text-white shadow-md" 
-                            : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
+                            ? "bg-white text-black shadow-md" 
+                            : "text-neutral-400 hover:bg-[#161616] hover:text-white"
                     )}
                 >
                     <Upload className="w-3.5 h-3.5" /> Setup Using CSV
@@ -886,63 +845,63 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
 
             {/* ─── REGISTER SINGLE PARTNER ────────────────────────────────────────── */}
             {subTab === "register" && (
-                <div className="bg-white border border-slate-200 shadow-sm rounded-sm p-6 max-w-lg">
-                    <div className="pb-4 border-b border-slate-100 mb-6">
-                        <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Register Single Partner Account</h3>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">Create login credentials for a new hotel owner</p>
+                <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.9)] rounded-2xl p-7 max-w-lg">
+                    <div className="pb-4 border-b border-[#1f1f1f] mb-6">
+                        <h3 className="text-sm font-bold text-white uppercase tracking-wider">Register Single Partner Account</h3>
+                        <p className="text-[10px] text-neutral-400 font-bold uppercase mt-1">Create login credentials for a new hotel owner</p>
                     </div>
 
                     <form onSubmit={handleRegisterPartner} className="space-y-4">
                         {registerError && (
-                            <div className="p-3 bg-red-50 border border-red-100 text-red-800 text-xs font-medium rounded-sm animate-in fade-in">
+                            <div className="p-3 bg-red-950/80 border border-red-800/40 text-red-300 text-xs font-medium rounded-xl animate-in fade-in">
                                 {registerError}
                             </div>
                         )}
                         {registerSuccess && (
-                            <div className="p-3 bg-emerald-50 border border-emerald-100 text-emerald-800 text-xs font-medium rounded-sm animate-in fade-in flex items-center gap-2">
-                                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                            <div className="p-3 bg-emerald-950/80 border border-emerald-800/40 text-emerald-300 text-xs font-medium rounded-xl animate-in fade-in flex items-center gap-2">
+                                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                                 {registerSuccess}
                             </div>
                         )}
 
-                        <div className="space-y-1">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest ml-1">Full Name</label>
                             <input
                                 type="text"
                                 value={name}
                                 onChange={e => setName(e.target.value)}
                                 placeholder="Owner's full name..."
                                 disabled={isCreatingPartner}
-                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-sm focus:outline-none focus:border-slate-400 focus:bg-white text-xs font-bold transition-all disabled:opacity-55"
+                                className="w-full px-4 py-3 bg-[#141414] border border-[#262626] rounded-xl focus:outline-none focus:border-neutral-400 text-xs font-bold text-white transition-all disabled:opacity-55"
                             />
                         </div>
 
-                        <div className="space-y-1">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest ml-1">Email Address</label>
                             <input
                                 type="email"
                                 value={email}
                                 onChange={e => setEmail(e.target.value)}
                                 placeholder="Owner's login email..."
                                 disabled={isCreatingPartner}
-                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-sm focus:outline-none focus:border-slate-450 focus:bg-white text-xs font-bold transition-all disabled:opacity-55"
+                                className="w-full px-4 py-3 bg-[#141414] border border-[#262626] rounded-xl focus:outline-none focus:border-neutral-400 text-xs font-bold text-white transition-all disabled:opacity-55"
                             />
                         </div>
 
-                        <div className="space-y-1">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Phone Number</label>
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest ml-1">Phone Number</label>
                             <input
                                 type="tel"
                                 value={phone}
                                 onChange={e => setPhone(e.target.value)}
                                 placeholder="Contact phone number..."
                                 disabled={isCreatingPartner}
-                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-sm focus:outline-none focus:border-slate-400 focus:bg-white text-xs font-bold transition-all disabled:opacity-55"
+                                className="w-full px-4 py-3 bg-[#141414] border border-[#262626] rounded-xl focus:outline-none focus:border-neutral-400 text-xs font-bold text-white transition-all disabled:opacity-55"
                             />
                         </div>
 
-                        <div className="space-y-1">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Password</label>
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest ml-1">Password</label>
                             <div className="relative">
                                 <input
                                     type={showPass ? "text" : "password"}
@@ -950,12 +909,12 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                                     onChange={e => setPassword(e.target.value)}
                                     placeholder="Account password..."
                                     disabled={isCreatingPartner}
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-sm focus:outline-none focus:border-slate-400 focus:bg-white text-xs font-bold transition-all disabled:opacity-55"
+                                    className="w-full px-4 py-3 bg-[#141414] border border-[#262626] rounded-xl focus:outline-none focus:border-neutral-400 text-xs font-bold text-white transition-all disabled:opacity-55"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPass(!showPass)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-450 hover:text-slate-600 cursor-pointer"
+                                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white cursor-pointer"
                                 >
                                     {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                 </button>
@@ -965,15 +924,15 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                         <button
                             type="submit"
                             disabled={isCreatingPartner}
-                            className="w-full py-3.5 bg-slate-900 hover:bg-black text-white text-[10px] font-black uppercase tracking-widest rounded-sm transition-all shadow-md hover:shadow-lg disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                            className="w-full py-3.5 bg-white hover:bg-neutral-200 text-black text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer mt-2"
                         >
                             {isCreatingPartner ? (
                                 <>
-                                    <Loader2 className="w-4 h-4 animate-spin" /> Registering...
+                                    <Loader2 className="w-4 h-4 animate-spin text-black" /> Registering...
                                 </>
                             ) : (
                                 <>
-                                    <CheckCircle2 className="w-4 h-4" /> Create Partner Account
+                                    <CheckCircle2 className="w-4 h-4 text-black" /> Create Partner Account
                                 </>
                             )}
                         </button>
@@ -983,16 +942,16 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
 
             {/* ─── CREATE SINGLE PROPERTY PANEL ───────────────────────────────────── */}
             {subTab === "createProperty" && (
-                <div className="bg-white border border-slate-200 shadow-sm rounded-sm p-6 flex flex-col md:flex-row gap-8">
-                    {/* Left Panel - Partner Info & Status */}
+                <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.9)] rounded-2xl p-7 flex flex-col md:flex-row gap-8">
+                    {/* Left Panel */}
                     <div className="w-full md:w-[40%] space-y-4 shrink-0">
-                        <div className="pb-4 border-b border-slate-100">
-                            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Single Hotel Setup</h3>
-                            <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">Add a new property under a specific partner user</p>
+                        <div className="pb-4 border-b border-[#1f1f1f]">
+                            <h3 className="text-sm font-bold text-white uppercase tracking-wider">Single Hotel Setup</h3>
+                            <p className="text-[10px] text-neutral-400 font-bold uppercase mt-1">Add a new property under a specific partner user</p>
                         </div>
 
-                        <div className="space-y-1">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Select Partner (Owner)</label>
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest ml-1">Select Partner (Owner)</label>
                             <SearchablePartnerSelect
                                 partners={partners}
                                 selectedId={propOwnerId}
@@ -1007,136 +966,136 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                         </div>
 
                         {propOwnerId && (
-                            <div className="p-4 bg-slate-50 border border-slate-200/60 rounded-sm space-y-2">
-                                <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                                    <Info className="w-3.5 h-3.5" /> Selected Partner Stats
+                            <div className="p-4 bg-[#141414] border border-[#262626] rounded-xl space-y-2">
+                                <h4 className="text-[9px] font-black text-neutral-400 uppercase tracking-widest flex items-center gap-1.5">
+                                    <Info className="w-3.5 h-3.5 text-emerald-400" /> Selected Partner Stats
                                 </h4>
-                                <p className="text-xs font-bold text-slate-800">
-                                    Currently Owning: <span className="text-brand-600">{partners.find(p => p.id === parseInt(propOwnerId))?.hotel?.length || 0} / 50 properties</span>
+                                <p className="text-xs font-bold text-neutral-200">
+                                    Currently Owning: <span className="text-emerald-400">{partners.find(p => p.id === parseInt(propOwnerId))?.hotel?.length || 0} / 50 properties</span>
                                 </p>
-                                <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden mt-1">
+                                <div className="h-1.5 w-full bg-[#262626] rounded-full overflow-hidden mt-1">
                                     <div 
                                         className={cn(
                                             "h-full rounded-full transition-all duration-300", 
-                                            (partners.find(p => p.id === parseInt(propOwnerId))?.hotel?.length || 0) >= 50 ? "bg-red-500" : "bg-brand-500"
+                                            (partners.find(p => p.id === parseInt(propOwnerId))?.hotel?.length || 0) >= 50 ? "bg-red-500" : "bg-emerald-500"
                                         )}
                                         style={{ width: `${Math.min(100, ((partners.find(p => p.id === parseInt(propOwnerId))?.hotel?.length || 0) / 50) * 100)}%` }} 
                                     />
                                 </div>
-                                <p className="text-[10px] text-slate-550 font-medium leading-relaxed pt-1">
-                                    Properties are registered with active draft status. A default "Standard Room" and wallet balance tracking will be setup automatically.
+                                <p className="text-[10px] text-neutral-400 font-medium leading-relaxed pt-1">
+                                    Properties are registered with active draft status. A default standard room will be setup automatically.
                                 </p>
                             </div>
                         )}
                     </div>
 
-                    {/* Right Panel - Create Property Form */}
+                    {/* Right Panel */}
                     <div className="flex-1 space-y-4">
                         <form onSubmit={handleCreateSingleProperty} className="space-y-4">
                             {propError && (
-                                <div className="p-3 bg-red-50 border border-red-100 text-red-800 text-xs font-medium rounded-sm animate-in fade-in">
+                                <div className="p-3 bg-red-950/80 border border-red-800/40 text-red-300 text-xs font-medium rounded-xl animate-in fade-in">
                                     {propError}
                                 </div>
                             )}
                             {propSuccess && (
-                                <div className="p-3 bg-emerald-50 border border-emerald-100 text-emerald-800 text-xs font-medium rounded-sm animate-in fade-in flex items-center gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                                <div className="p-3 bg-emerald-950/80 border border-emerald-800/40 text-emerald-300 text-xs font-medium rounded-xl animate-in fade-in flex items-center gap-2">
+                                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                                     {propSuccess}
                                 </div>
                             )}
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Hotel Name *</label>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest ml-1">Hotel Name *</label>
                                     <input
                                         type="text"
                                         value={propName}
                                         onChange={e => setPropName(e.target.value)}
                                         placeholder="Grand Luxury Inn..."
                                         disabled={isCreatingProp || !propOwnerId}
-                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-sm focus:outline-none focus:border-slate-400 focus:bg-white text-xs font-bold transition-all disabled:opacity-55"
+                                        className="w-full px-4 py-3 bg-[#141414] border border-[#262626] rounded-xl focus:outline-none focus:border-neutral-400 text-xs font-bold text-white transition-all disabled:opacity-55"
                                     />
                                 </div>
 
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">City *</label>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest ml-1">City *</label>
                                     <input
                                         type="text"
                                         value={propCity}
                                         onChange={e => setPropCity(e.target.value)}
                                         placeholder="New Delhi..."
                                         disabled={isCreatingProp || !propOwnerId}
-                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-sm focus:outline-none focus:border-slate-400 focus:bg-white text-xs font-bold transition-all disabled:opacity-55"
+                                        className="w-full px-4 py-3 bg-[#141414] border border-[#262626] rounded-xl focus:outline-none focus:border-neutral-400 text-xs font-bold text-white transition-all disabled:opacity-55"
                                     />
                                 </div>
                             </div>
 
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Address *</label>
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest ml-1">Full Address *</label>
                                 <input
                                     type="text"
                                     value={propAddress}
                                     onChange={e => setPropAddress(e.target.value)}
                                     placeholder="Plot No. 12, Sector-4, Dwarka..."
                                     disabled={isCreatingProp || !propOwnerId}
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-sm focus:outline-none focus:border-slate-400 focus:bg-white text-xs font-bold transition-all disabled:opacity-55"
+                                    className="w-full px-4 py-3 bg-[#141414] border border-[#262626] rounded-xl focus:outline-none focus:border-neutral-400 text-xs font-bold text-white transition-all disabled:opacity-55"
                                 />
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Default Base Price (₹ per night)</label>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest ml-1">Default Base Price (₹ / night)</label>
                                     <input
                                         type="number"
                                         value={propPrice}
                                         onChange={e => setPropPrice(e.target.value)}
                                         placeholder="1200"
                                         disabled={isCreatingProp || !propOwnerId}
-                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-sm focus:outline-none focus:border-slate-400 focus:bg-white text-xs font-bold transition-all disabled:opacity-55"
+                                        className="w-full px-4 py-3 bg-[#141414] border border-[#262626] rounded-xl focus:outline-none focus:border-neutral-400 text-xs font-bold text-white transition-all disabled:opacity-55"
                                     />
                                 </div>
 
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Star Rating</label>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest ml-1">Star Rating</label>
                                     <select
                                         value={propStars}
                                         onChange={e => setPropStars(e.target.value)}
                                         disabled={isCreatingProp || !propOwnerId}
-                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-sm focus:outline-none focus:border-slate-400 text-xs font-bold transition-all disabled:opacity-55"
+                                        className="w-full px-4 py-3 bg-[#141414] border border-[#262626] rounded-xl focus:outline-none focus:border-neutral-400 text-xs font-bold text-white transition-all disabled:opacity-55"
                                     >
-                                        <option value="1">1 Star</option>
-                                        <option value="2">2 Star</option>
-                                        <option value="3">3 Star</option>
-                                        <option value="4">4 Star</option>
-                                        <option value="5">5 Star</option>
+                                        <option value="1" className="bg-[#141414]">1 Star</option>
+                                        <option value="2" className="bg-[#141414]">2 Star</option>
+                                        <option value="3" className="bg-[#141414]">3 Star</option>
+                                        <option value="4" className="bg-[#141414]">4 Star</option>
+                                        <option value="5" className="bg-[#141414]">5 Star</option>
                                     </select>
                                 </div>
                             </div>
 
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Amenities (comma-separated)</label>
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest ml-1">Amenities (comma-separated)</label>
                                 <input
                                     type="text"
                                     value={propAmenities}
                                     onChange={e => setPropAmenities(e.target.value)}
                                     placeholder="Free Wifi, AC, Swimming Pool, Parking..."
                                     disabled={isCreatingProp || !propOwnerId}
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-sm focus:outline-none focus:border-slate-400 focus:bg-white text-xs font-bold transition-all disabled:opacity-55"
+                                    className="w-full px-4 py-3 bg-[#141414] border border-[#262626] rounded-xl focus:outline-none focus:border-neutral-400 text-xs font-bold text-white transition-all disabled:opacity-55"
                                 />
                             </div>
 
                             <button
                                 type="submit"
                                 disabled={isCreatingProp || !propOwnerId}
-                                className="w-full py-3.5 bg-slate-900 hover:bg-black text-white text-[10px] font-black uppercase tracking-widest rounded-sm transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer mt-2"
+                                className="w-full py-3.5 bg-white hover:bg-neutral-200 text-black text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer mt-2"
                             >
                                 {isCreatingProp ? (
                                     <>
-                                        <Loader2 className="w-4 h-4 animate-spin" /> Provisioning...
+                                        <Loader2 className="w-4 h-4 animate-spin text-black" /> Provisioning...
                                     </>
                                 ) : (
                                     <>
-                                        <Plus className="w-4 h-4" /> Create Property Under Partner
+                                        <Plus className="w-4 h-4 text-black" /> Create Property Under Partner
                                     </>
                                 )}
                             </button>
@@ -1147,15 +1106,15 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
 
             {/* ─── BULK HOTEL SETUP ────────────────────────────────────────────────── */}
             {subTab === "bulk" && (
-                <div className="bg-white border border-slate-200 shadow-sm rounded-sm p-6 space-y-6">
-                    <div className="pb-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.9)] rounded-2xl p-7 space-y-6">
+                    <div className="pb-4 border-b border-[#1f1f1f] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
-                            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Bulk Hotel Batch setup</h3>
-                            <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">Batch import draft properties with default room types</p>
+                            <h3 className="text-sm font-bold text-white uppercase tracking-wider">Bulk Hotel Batch Setup</h3>
+                            <p className="text-[10px] text-neutral-400 font-bold uppercase mt-1">Batch import draft properties with default room types</p>
                         </div>
                         
                         <div className="flex items-center gap-3 shrink-0">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Assign Ownership to</label>
+                            <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest">Assign Ownership to</label>
                             <SearchablePartnerSelect
                                 partners={partners}
                                 selectedId={bulkOwnerId}
@@ -1169,21 +1128,21 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
 
                     <form onSubmit={handleBulkCreateHotels} className="space-y-6">
                         {bulkError && (
-                            <div className="p-3 bg-red-50 border border-red-100 text-red-800 text-xs font-medium rounded-sm animate-in fade-in">
+                            <div className="p-3 bg-red-950/80 border border-red-800/40 text-red-300 text-xs font-medium rounded-xl animate-in fade-in">
                                 {bulkError}
                             </div>
                         )}
                         {bulkSuccess && (
-                            <div className="p-3 bg-emerald-50 border border-emerald-100 text-emerald-800 text-xs font-medium rounded-sm animate-in fade-in flex items-center gap-2">
-                                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                            <div className="p-3 bg-emerald-950/80 border border-emerald-800/40 text-emerald-300 text-xs font-medium rounded-xl animate-in fade-in flex items-center gap-2">
+                                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                                 {bulkSuccess}
                             </div>
                         )}
 
                         {/* Batch items table */}
-                        <div className="overflow-x-auto border border-slate-200 rounded-sm">
+                        <div className="overflow-x-auto border border-[#1f1f1f] rounded-xl bg-[#0e0e0e]">
                             <table className="w-full text-left border-collapse min-w-[700px]">
-                                <thead className="bg-slate-50 border-b border-slate-200 text-[10px] font-black text-slate-450 uppercase tracking-widest">
+                                <thead className="bg-[#111111] border-b border-[#1f1f1f] text-[10px] font-bold text-neutral-400 uppercase tracking-wider font-mono">
                                     <tr>
                                         <th className="px-4 py-3 w-[8px]">#</th>
                                         <th className="px-4 py-3">Hotel Name *</th>
@@ -1191,14 +1150,14 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                                         <th className="px-4 py-3">Address *</th>
                                         <th className="px-4 py-3 w-[110px]">Price (₹)</th>
                                         <th className="px-4 py-3 w-[80px]">Stars</th>
-                                        <th className="px-4 py-3">Amenities (Comma separated)</th>
+                                        <th className="px-4 py-3">Amenities</th>
                                         <th className="px-4 py-3 w-[50px] text-center">Delete</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-150">
+                                <tbody className="divide-y divide-[#181818]">
                                     {bulkHotels.map((hotel, index) => (
-                                        <tr key={index} className="hover:bg-slate-50/40">
-                                            <td className="px-4 py-3 text-[10px] font-bold text-slate-400 text-center">{index + 1}</td>
+                                        <tr key={index} className="hover:bg-[#141414] transition-colors">
+                                            <td className="px-4 py-3 text-[10px] font-mono text-neutral-500 text-center">{index + 1}</td>
                                             <td className="px-2 py-2">
                                                 <input
                                                     type="text"
@@ -1206,7 +1165,7 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                                                     onChange={e => handleBulkRowChange(index, "name", e.target.value)}
                                                     placeholder="Hotel Name"
                                                     disabled={isBulkCreating}
-                                                    className="w-full px-2 py-1.5 bg-slate-50 border border-transparent focus:border-slate-350 focus:bg-white outline-none text-xs font-bold transition-all disabled:opacity-50"
+                                                    className="w-full px-3 py-1.5 bg-[#161616] border border-[#282828] focus:border-neutral-400 outline-none text-xs font-bold text-white rounded-lg transition-all"
                                                 />
                                             </td>
                                             <td className="px-2 py-2">
@@ -1216,7 +1175,7 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                                                     onChange={e => handleBulkRowChange(index, "city", e.target.value)}
                                                     placeholder="City"
                                                     disabled={isBulkCreating}
-                                                    className="w-full px-2 py-1.5 bg-slate-50 border border-transparent focus:border-slate-350 focus:bg-white outline-none text-xs font-bold transition-all disabled:opacity-50"
+                                                    className="w-full px-3 py-1.5 bg-[#161616] border border-[#282828] focus:border-neutral-400 outline-none text-xs font-bold text-white rounded-lg transition-all"
                                                 />
                                             </td>
                                             <td className="px-2 py-2">
@@ -1226,7 +1185,7 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                                                     onChange={e => handleBulkRowChange(index, "address", e.target.value)}
                                                     placeholder="Full Address"
                                                     disabled={isBulkCreating}
-                                                    className="w-full px-2 py-1.5 bg-slate-50 border border-transparent focus:border-slate-350 focus:bg-white outline-none text-xs font-bold transition-all disabled:opacity-50"
+                                                    className="w-full px-3 py-1.5 bg-[#161616] border border-[#282828] focus:border-neutral-400 outline-none text-xs font-bold text-white rounded-lg transition-all"
                                                 />
                                             </td>
                                             <td className="px-2 py-2">
@@ -1236,7 +1195,7 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                                                     onChange={e => handleBulkRowChange(index, "pricePerNight", e.target.value)}
                                                     placeholder="1200"
                                                     disabled={isBulkCreating}
-                                                    className="w-full px-2 py-1.5 bg-slate-50 border border-transparent focus:border-slate-350 focus:bg-white outline-none text-xs font-bold transition-all disabled:opacity-50"
+                                                    className="w-full px-3 py-1.5 bg-[#161616] border border-[#282828] focus:border-neutral-400 outline-none text-xs font-bold text-white rounded-lg transition-all font-mono"
                                                 />
                                             </td>
                                             <td className="px-2 py-2">
@@ -1244,13 +1203,13 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                                                     value={hotel.starRating}
                                                     onChange={e => handleBulkRowChange(index, "starRating", e.target.value)}
                                                     disabled={isBulkCreating}
-                                                    className="w-full px-1 py-1.5 bg-slate-50 border border-transparent focus:border-slate-350 focus:bg-white outline-none text-xs font-bold transition-all disabled:opacity-50"
+                                                    className="w-full px-2 py-1.5 bg-[#161616] border border-[#282828] focus:border-neutral-400 outline-none text-xs font-bold text-white rounded-lg transition-all"
                                                 >
-                                                    <option value="1">1 ★</option>
-                                                    <option value="2">2 ★</option>
-                                                    <option value="3">3 ★</option>
-                                                    <option value="4">4 ★</option>
-                                                    <option value="5">5 ★</option>
+                                                    <option value="1" className="bg-[#141414]">1 ★</option>
+                                                    <option value="2" className="bg-[#141414]">2 ★</option>
+                                                    <option value="3" className="bg-[#141414]">3 ★</option>
+                                                    <option value="4" className="bg-[#141414]">4 ★</option>
+                                                    <option value="5" className="bg-[#141414]">5 ★</option>
                                                 </select>
                                             </td>
                                             <td className="px-2 py-2">
@@ -1258,9 +1217,9 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                                                     type="text"
                                                     value={hotel.amenitiesString}
                                                     onChange={e => handleBulkRowChange(index, "amenitiesString", e.target.value)}
-                                                    placeholder="Wifi, AC, Pool, Parking..."
+                                                    placeholder="Wifi, AC, Pool..."
                                                     disabled={isBulkCreating}
-                                                    className="w-full px-2 py-1.5 bg-slate-50 border border-transparent focus:border-slate-350 focus:bg-white outline-none text-xs font-bold transition-all disabled:opacity-50"
+                                                    className="w-full px-3 py-1.5 bg-[#161616] border border-[#282828] focus:border-neutral-400 outline-none text-xs font-bold text-white rounded-lg transition-all"
                                                 />
                                             </td>
                                             <td className="px-4 py-3 text-center">
@@ -1268,7 +1227,7 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                                                     type="button"
                                                     onClick={() => removeBulkRow(index)}
                                                     disabled={isBulkCreating || bulkHotels.length === 1}
-                                                    className="text-red-500 hover:text-red-700 disabled:opacity-30 cursor-pointer"
+                                                    className="text-red-400 hover:text-red-300 disabled:opacity-30 cursor-pointer"
                                                 >
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
@@ -1284,7 +1243,7 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                                 type="button"
                                 onClick={addBulkRow}
                                 disabled={isBulkCreating || bulkHotels.length >= 50}
-                                className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-brand-650 hover:text-brand-700 disabled:opacity-50 cursor-pointer"
+                                className="inline-flex items-center gap-1 text-xs font-black uppercase tracking-wider text-emerald-400 hover:underline disabled:opacity-50 cursor-pointer"
                             >
                                 <Plus className="w-4 h-4" /> Add Property Row
                             </button>
@@ -1292,15 +1251,15 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                             <button
                                 type="submit"
                                 disabled={isBulkCreating || !bulkOwnerId || bulkHotels.every(h => !h.name.trim())}
-                                className="px-8 py-3.5 bg-slate-900 hover:bg-black text-white text-[10px] font-black uppercase tracking-widest rounded-sm transition-all shadow-md hover:shadow-lg disabled:opacity-50 flex items-center gap-2 cursor-pointer w-full sm:w-auto justify-center"
+                                className="px-8 py-3.5 bg-white hover:bg-neutral-200 text-black text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-md disabled:opacity-50 flex items-center gap-2 cursor-pointer w-full sm:w-auto justify-center"
                             >
                                 {isBulkCreating ? (
                                     <>
-                                        <Loader2 className="w-3.5 h-3.5 animate-spin" /> Batch Processing...
+                                        <Loader2 className="w-4 h-4 animate-spin text-black" /> Batch Processing...
                                     </>
                                 ) : (
                                     <>
-                                        <Hotel className="w-3.5 h-3.5" /> Bulk Register {bulkHotels.length} Hotels
+                                        <Hotel className="w-4 h-4 text-black" /> Bulk Register {bulkHotels.length} Hotels
                                     </>
                                 )}
                             </button>
@@ -1311,14 +1270,14 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
 
             {/* ─── MULTI-PARTNER STUDIO ────────────────────────────────────────────── */}
             {subTab === "studio" && (
-                <div className="bg-white border border-slate-200 shadow-sm rounded-sm p-6 space-y-6">
+                <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.9)] rounded-2xl p-7 space-y-6">
                     {/* Step Progress Header */}
-                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between border-b border-slate-100 pb-4 gap-4">
+                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between border-b border-[#1f1f1f] pb-4 gap-4">
                         <div>
-                            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                                <Zap className="w-4 h-4 text-brand-600 animate-pulse" /> Multi-Partner Studio
+                            <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                                <Zap className="w-4 h-4 text-amber-400 animate-pulse" /> Multi-Partner Studio
                             </h3>
-                            <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">
+                            <p className="text-[10px] text-neutral-400 font-bold uppercase mt-1">
                                 Provision custom inventories across multiple partner accounts simultaneously
                             </p>
                         </div>
@@ -1326,22 +1285,22 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                         {/* Steps Indicator */}
                         <div className="flex items-center gap-2 select-none">
                             <span className={cn(
-                                "px-3 py-1 text-[9px] font-black tracking-widest rounded-full uppercase transition-all",
-                                studioStep === 1 ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-400"
+                                "px-3.5 py-1 text-[10px] font-black tracking-wider rounded-lg uppercase transition-all",
+                                studioStep === 1 ? "bg-white text-black font-extrabold" : "bg-[#141414] text-neutral-500 border border-[#222]"
                             )}>
                                 1. Select
                             </span>
-                            <ArrowRight className="w-3 h-3 text-slate-400" />
+                            <ArrowRight className="w-3 h-3 text-neutral-600" />
                             <span className={cn(
-                                "px-3 py-1 text-[9px] font-black tracking-widest rounded-full uppercase transition-all",
-                                studioStep === 2 ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-400"
+                                "px-3.5 py-1 text-[10px] font-black tracking-wider rounded-lg uppercase transition-all",
+                                studioStep === 2 ? "bg-white text-black font-extrabold" : "bg-[#141414] text-neutral-500 border border-[#222]"
                             )}>
                                 2. Configure
                             </span>
-                            <ArrowRight className="w-3 h-3 text-slate-400" />
+                            <ArrowRight className="w-3 h-3 text-neutral-600" />
                             <span className={cn(
-                                "px-3 py-1 text-[9px] font-black tracking-widest rounded-full uppercase transition-all",
-                                studioStep === 3 ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-400"
+                                "px-3.5 py-1 text-[10px] font-black tracking-wider rounded-lg uppercase transition-all",
+                                studioStep === 3 ? "bg-white text-black font-extrabold" : "bg-[#141414] text-neutral-500 border border-[#222]"
                             )}>
                                 3. Provision
                             </span>
@@ -1349,8 +1308,8 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                     </div>
 
                     {studioError && (
-                        <div className="p-3 bg-red-50 border border-red-100 text-red-800 text-xs font-medium rounded-sm animate-in fade-in flex items-center gap-2">
-                            <AlertTriangle className="w-4 h-4 text-red-650 shrink-0" />
+                        <div className="p-3 bg-red-950/80 border border-red-800/40 text-red-300 text-xs font-medium rounded-xl animate-in fade-in flex items-center gap-2">
+                            <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
                             <span>{studioError}</span>
                         </div>
                     )}
@@ -1359,9 +1318,8 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                     {studioStep === 1 && (
                         <div className="space-y-4">
                             <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-                                {/* Search input */}
                                 <div className="relative w-full sm:w-80">
-                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400">
                                         <Search className="w-3.5 h-3.5" />
                                     </span>
                                     <input
@@ -1369,18 +1327,18 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                                         placeholder="Search partner by name or email..."
                                         value={studioSearch}
                                         onChange={e => setStudioSearch(e.target.value)}
-                                        className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-sm focus:outline-none focus:border-slate-400 focus:bg-white text-xs font-bold transition-all"
+                                        className="w-full pl-9 pr-4 py-2.5 bg-[#141414] border border-[#262626] rounded-xl focus:outline-none focus:border-neutral-400 text-xs font-bold text-white transition-all placeholder:text-neutral-500"
                                     />
                                 </div>
 
-                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest shrink-0 bg-slate-50 px-3 py-1.5 rounded-sm border border-slate-150">
-                                    Selected Partners: <span className="text-brand-650 font-black">{studioSelectedIds.length}</span>
+                                <div className="text-[10px] font-black text-neutral-400 uppercase tracking-wider shrink-0 bg-[#141414] px-3.5 py-2 rounded-xl border border-[#262626]">
+                                    Selected Partners: <span className="text-emerald-400 font-mono text-xs">{studioSelectedIds.length}</span>
                                 </div>
                             </div>
 
                             {/* Partners Checklist */}
-                            <div className="border border-slate-200 rounded-sm overflow-hidden">
-                                <div className="bg-slate-50 border-b border-slate-200 px-4 py-2.5 flex items-center justify-between text-[10px] font-black text-slate-450 uppercase tracking-widest">
+                            <div className="border border-[#1f1f1f] rounded-xl overflow-hidden bg-[#0e0e0e]">
+                                <div className="bg-[#111111] border-b border-[#1f1f1f] px-4 py-3 flex items-center justify-between text-[10px] font-bold text-neutral-400 uppercase tracking-wider">
                                     <div className="flex items-center gap-3">
                                         <input
                                             type="checkbox"
@@ -1404,20 +1362,20 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                                                 ).map(p => p.id);
                                                 toggleSelectAllFiltered(filtered);
                                             }}
-                                            className="w-3.5 h-3.5 rounded-sm border-slate-300 focus:ring-slate-450 cursor-pointer accent-slate-900"
+                                            className="w-4 h-4 rounded border-neutral-700 bg-[#181818] cursor-pointer accent-emerald-500"
                                         />
                                         <span>Select All Shown</span>
                                     </div>
                                     <div>Properties owned</div>
                                 </div>
 
-                                <div className="max-h-[350px] overflow-y-auto divide-y divide-slate-150">
+                                <div className="max-h-[350px] overflow-y-auto divide-y divide-[#181818]">
                                     {partners.filter(p => 
                                         !studioSearch.trim() ||
                                         p.name?.toLowerCase().includes(studioSearch.toLowerCase()) ||
                                         p.email?.toLowerCase().includes(studioSearch.toLowerCase())
                                     ).length === 0 ? (
-                                        <div className="p-8 text-center text-slate-400 text-xs font-bold uppercase tracking-wider">
+                                        <div className="p-8 text-center text-neutral-500 text-xs font-bold uppercase tracking-wider">
                                             No partners found matching search
                                         </div>
                                     ) : (
@@ -1434,26 +1392,26 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                                                     onClick={() => toggleSelectPartner(p.id)}
                                                     className={cn(
                                                         "px-4 py-3 flex items-center justify-between text-xs font-bold transition-colors cursor-pointer select-none",
-                                                        isSelected ? "bg-slate-50/70 text-brand-650" : "hover:bg-slate-50/40 text-slate-700"
+                                                        isSelected ? "bg-[#161616] text-white" : "hover:bg-[#121212] text-neutral-300"
                                                     )}
                                                 >
                                                     <div className="flex items-center gap-3">
                                                         <input
                                                             type="checkbox"
                                                             checked={isSelected}
-                                                            onChange={() => {}} // click handled by parent div
-                                                            className="w-3.5 h-3.5 rounded-sm border-slate-300 focus:ring-slate-450 cursor-pointer accent-slate-900"
+                                                            onChange={() => {}}
+                                                            className="w-4 h-4 rounded border-neutral-700 bg-[#181818] cursor-pointer accent-emerald-500"
                                                         />
                                                         <div>
-                                                            <div className="font-bold">{p.name}</div>
-                                                            <div className="text-[10px] text-slate-400 font-medium">{p.email}</div>
+                                                            <div className="font-bold text-white">{p.name}</div>
+                                                            <div className="text-[10px] text-neutral-400 font-medium">{p.email}</div>
                                                         </div>
                                                     </div>
                                                     <div className={cn(
-                                                        "text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-sm border",
+                                                        "text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md border font-mono",
                                                         hotelCount >= 50 
-                                                            ? "bg-red-50 text-red-700 border-red-100" 
-                                                            : "bg-slate-100 text-slate-650 border-slate-200"
+                                                            ? "bg-red-950/80 text-red-300 border-red-800/40" 
+                                                            : "bg-[#181818] text-neutral-300 border-[#262626]"
                                                     )}>
                                                         {hotelCount} / 50 Active
                                                     </div>
@@ -1470,7 +1428,7 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                                     type="button"
                                     onClick={proceedToStep2}
                                     disabled={studioSelectedIds.length === 0}
-                                    className="px-6 py-3 bg-slate-900 hover:bg-black disabled:opacity-50 text-white text-[10px] font-black uppercase tracking-widest rounded-sm transition-all shadow-md flex items-center gap-2 cursor-pointer"
+                                    className="px-6 py-3 bg-white hover:bg-neutral-200 disabled:opacity-50 text-black text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-md flex items-center gap-2 cursor-pointer"
                                 >
                                     Configure Properties <ArrowRight className="w-3.5 h-3.5" />
                                 </button>
@@ -1492,30 +1450,30 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                                     const totalCountAfter = currentCount + hotels.length;
 
                                     return (
-                                        <div key={partnerId} className="border border-slate-200 rounded-sm overflow-hidden bg-white shadow-sm transition-all">
+                                        <div key={partnerId} className="border border-[#222222] rounded-xl overflow-hidden bg-[#0e0e0e] shadow-md transition-all">
                                             {/* Card Header */}
                                             <div 
                                                 onClick={() => togglePartnerCardExpand(partnerId)}
-                                                className="bg-slate-50 border-b border-slate-200 px-5 py-4 flex items-center justify-between cursor-pointer select-none hover:bg-slate-100/50 transition-colors"
+                                                className="bg-[#121212] border-b border-[#1f1f1f] px-5 py-4 flex items-center justify-between cursor-pointer select-none hover:bg-[#161616] transition-colors"
                                             >
                                                 <div className="flex items-center gap-2.5">
                                                     {isExpanded ? (
-                                                        <ChevronDown className="w-4 h-4 text-slate-500 shrink-0" />
+                                                        <ChevronDown className="w-4 h-4 text-neutral-400 shrink-0" />
                                                     ) : (
-                                                        <ChevronRight className="w-4 h-4 text-slate-500 shrink-0" />
+                                                        <ChevronRight className="w-4 h-4 text-neutral-400 shrink-0" />
                                                     )}
                                                     <div>
-                                                        <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">{partner.name}</h4>
-                                                        <p className="text-[10px] text-slate-400 font-bold uppercase mt-0.5">{partner.email}</p>
+                                                        <h4 className="text-xs font-bold text-white uppercase tracking-wider">{partner.name}</h4>
+                                                        <p className="text-[10px] text-neutral-400 font-bold uppercase mt-0.5">{partner.email}</p>
                                                     </div>
                                                 </div>
 
                                                 <div className="flex items-center gap-3">
                                                     <div className={cn(
-                                                        "text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-sm border shrink-0",
+                                                        "text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md border shrink-0 font-mono",
                                                         totalCountAfter > 50 
-                                                            ? "bg-red-50 text-red-700 border-red-100"
-                                                            : "bg-slate-100 text-slate-650 border-slate-200"
+                                                            ? "bg-red-950/80 text-red-300 border-red-800/40"
+                                                            : "bg-[#181818] text-neutral-300 border-[#282828]"
                                                     )}>
                                                         Inventory: {currentCount} owned + {hotels.length} drafted = {totalCountAfter} / 50
                                                     </div>
@@ -1524,19 +1482,19 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
 
                                             {/* Card Body */}
                                             {isExpanded && (
-                                                <div className="p-5 space-y-4 bg-slate-50/20">
-                                                    <div className="divide-y divide-slate-150/80 border border-slate-200 rounded-sm bg-white overflow-hidden shadow-sm">
+                                                <div className="p-5 space-y-4 bg-[#0a0a0a]">
+                                                    <div className="divide-y divide-[#181818] border border-[#1f1f1f] rounded-xl bg-[#111111] overflow-hidden">
                                                         {hotels.map((hotel, index) => (
-                                                            <div key={index} className="p-4 space-y-3.5 hover:bg-slate-50/30">
+                                                            <div key={index} className="p-4 space-y-3.5 hover:bg-[#141414]">
                                                                 <div className="flex items-center justify-between">
-                                                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                                                                    <span className="text-[9px] font-black text-neutral-400 uppercase tracking-wider">
                                                                         Hotel #{index + 1} definition
                                                                     </span>
                                                                     {hotels.length > 1 && (
                                                                         <button
                                                                             type="button"
                                                                             onClick={() => removeStudioHotelRow(partnerId, index)}
-                                                                            className="text-red-500 hover:text-red-700 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 cursor-pointer"
+                                                                            className="text-red-400 hover:text-red-300 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 cursor-pointer"
                                                                         >
                                                                             <Trash2 className="w-3.5 h-3.5" /> Remove
                                                                         </button>
@@ -1545,74 +1503,74 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
 
                                                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                                                     <div className="space-y-1">
-                                                                        <label className="text-[9px] font-black text-slate-450 uppercase tracking-widest">Hotel Name *</label>
+                                                                        <label className="text-[9px] font-black text-neutral-400 uppercase tracking-widest">Hotel Name *</label>
                                                                         <input
                                                                             type="text"
                                                                             value={hotel.name}
                                                                             onChange={e => handleStudioRowChange(partnerId, index, "name", e.target.value)}
                                                                             placeholder="Grand Palace Resort..."
-                                                                            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-sm focus:outline-none focus:border-slate-400 focus:bg-white text-xs font-bold transition-all"
+                                                                            className="w-full px-3 py-2 bg-[#161616] border border-[#282828] rounded-lg focus:outline-none focus:border-neutral-400 text-xs font-bold text-white transition-all"
                                                                         />
                                                                     </div>
 
                                                                     <div className="space-y-1">
-                                                                        <label className="text-[9px] font-black text-slate-450 uppercase tracking-widest">City *</label>
+                                                                        <label className="text-[9px] font-black text-neutral-400 uppercase tracking-widest">City *</label>
                                                                         <input
                                                                             type="text"
                                                                             value={hotel.city}
                                                                             onChange={e => handleStudioRowChange(partnerId, index, "city", e.target.value)}
                                                                             placeholder="Mumbai..."
-                                                                            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-sm focus:outline-none focus:border-slate-400 focus:bg-white text-xs font-bold transition-all"
+                                                                            className="w-full px-3 py-2 bg-[#161616] border border-[#282828] rounded-lg focus:outline-none focus:border-neutral-400 text-xs font-bold text-white transition-all"
                                                                         />
                                                                     </div>
 
                                                                     <div className="space-y-1">
-                                                                        <label className="text-[9px] font-black text-slate-450 uppercase tracking-widest">Full Address *</label>
+                                                                        <label className="text-[9px] font-black text-neutral-400 uppercase tracking-widest">Full Address *</label>
                                                                         <input
                                                                             type="text"
                                                                             value={hotel.address}
                                                                             onChange={e => handleStudioRowChange(partnerId, index, "address", e.target.value)}
                                                                             placeholder="Near Airport Road, Andheri..."
-                                                                            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-sm focus:outline-none focus:border-slate-400 focus:bg-white text-xs font-bold transition-all"
+                                                                            className="w-full px-3 py-2 bg-[#161616] border border-[#282828] rounded-lg focus:outline-none focus:border-neutral-400 text-xs font-bold text-white transition-all"
                                                                         />
                                                                     </div>
                                                                 </div>
 
                                                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                                                     <div className="space-y-1">
-                                                                        <label className="text-[9px] font-black text-slate-450 uppercase tracking-widest">Base Price (₹ / night)</label>
+                                                                        <label className="text-[9px] font-black text-neutral-400 uppercase tracking-widest">Base Price (₹ / night)</label>
                                                                         <input
                                                                             type="number"
                                                                             value={hotel.pricePerNight}
                                                                             onChange={e => handleStudioRowChange(partnerId, index, "pricePerNight", e.target.value)}
                                                                             placeholder="1200"
-                                                                            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-sm focus:outline-none focus:border-slate-400 focus:bg-white text-xs font-bold transition-all"
+                                                                            className="w-full px-3 py-2 bg-[#161616] border border-[#282828] rounded-lg focus:outline-none focus:border-neutral-400 text-xs font-bold text-white transition-all font-mono"
                                                                         />
                                                                     </div>
 
                                                                     <div className="space-y-1">
-                                                                        <label className="text-[9px] font-black text-slate-450 uppercase tracking-widest">Star Rating</label>
+                                                                        <label className="text-[9px] font-black text-neutral-400 uppercase tracking-widest">Star Rating</label>
                                                                         <select
                                                                             value={hotel.starRating}
                                                                             onChange={e => handleStudioRowChange(partnerId, index, "starRating", e.target.value)}
-                                                                            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-sm focus:outline-none focus:border-slate-400 text-xs font-bold transition-all"
+                                                                            className="w-full px-3 py-2 bg-[#161616] border border-[#282828] rounded-lg focus:outline-none focus:border-neutral-400 text-xs font-bold text-white transition-all"
                                                                         >
-                                                                            <option value="1">1 Star</option>
-                                                                            <option value="2">2 Star</option>
-                                                                            <option value="3">3 Star</option>
-                                                                            <option value="4">4 Star</option>
-                                                                            <option value="5">5 Star</option>
+                                                                            <option value="1" className="bg-[#141414]">1 Star</option>
+                                                                            <option value="2" className="bg-[#141414]">2 Star</option>
+                                                                            <option value="3" className="bg-[#141414]">3 Star</option>
+                                                                            <option value="4" className="bg-[#141414]">4 Star</option>
+                                                                            <option value="5" className="bg-[#141414]">5 Star</option>
                                                                         </select>
                                                                     </div>
 
                                                                     <div className="space-y-1">
-                                                                        <label className="text-[9px] font-black text-slate-450 uppercase tracking-widest">Amenities (comma-separated)</label>
+                                                                        <label className="text-[9px] font-black text-neutral-400 uppercase tracking-widest">Amenities (comma-separated)</label>
                                                                         <input
                                                                             type="text"
                                                                             value={hotel.amenitiesString}
                                                                             onChange={e => handleStudioRowChange(partnerId, index, "amenitiesString", e.target.value)}
                                                                             placeholder="Free Wifi, AC, Gym..."
-                                                                            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-sm focus:outline-none focus:border-slate-400 focus:bg-white text-xs font-bold transition-all"
+                                                                            className="w-full px-3 py-2 bg-[#161616] border border-[#282828] rounded-lg focus:outline-none focus:border-neutral-400 text-xs font-bold text-white transition-all"
                                                                         />
                                                                     </div>
                                                                 </div>
@@ -1623,7 +1581,7 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                                                     <button
                                                         type="button"
                                                         onClick={() => addStudioHotelRow(partnerId)}
-                                                        className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-brand-650 hover:text-brand-700 cursor-pointer pt-1"
+                                                        className="inline-flex items-center gap-1 text-xs font-black uppercase tracking-wider text-emerald-400 hover:underline cursor-pointer pt-1"
                                                     >
                                                         <Plus className="w-3.5 h-3.5" /> Add another hotel for {partner.name}
                                                     </button>
@@ -1635,11 +1593,11 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                             </div>
 
                             {/* Navigation Actions */}
-                            <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                            <div className="flex items-center justify-between pt-4 border-t border-[#1f1f1f]">
                                 <button
                                     type="button"
                                     onClick={() => setStudioStep(1)}
-                                    className="px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-black uppercase tracking-widest rounded-sm transition-all flex items-center gap-2 cursor-pointer"
+                                    className="px-5 py-3 bg-[#141414] border border-[#282828] hover:bg-[#1e1e1e] text-neutral-300 text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer"
                                 >
                                     <ArrowLeft className="w-3.5 h-3.5" /> Select Partners
                                 </button>
@@ -1647,7 +1605,7 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                                 <button
                                     type="button"
                                     onClick={proceedToStep3}
-                                    className="px-6 py-3 bg-slate-900 hover:bg-black text-white text-[10px] font-black uppercase tracking-widest rounded-sm transition-all shadow-md flex items-center gap-2 cursor-pointer"
+                                    className="px-6 py-3 bg-white hover:bg-neutral-200 text-black text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-md flex items-center gap-2 cursor-pointer"
                                 >
                                     Review Summary <ArrowRight className="w-3.5 h-3.5" />
                                 </button>
@@ -1659,42 +1617,41 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                     {studioStep === 3 && (
                         <div className="space-y-6">
                             {provisionResults.length === 0 ? (
-                                /* REVIEW AND SUBMIT BEFORE PROVISIONING */
                                 <div className="space-y-5">
-                                    <div className="bg-slate-50 border border-slate-200 rounded-sm p-5 space-y-4">
-                                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                    <div className="bg-[#0e0e0e] border border-[#1f1f1f] rounded-xl p-5 space-y-4">
+                                        <h4 className="text-[10px] font-black text-neutral-400 uppercase tracking-widest">
                                             Provisioning Specification Summary
                                         </h4>
 
                                         <div className="overflow-x-auto">
                                             <table className="w-full text-left border-collapse text-xs">
                                                 <thead>
-                                                    <tr className="border-b border-slate-200 text-[10px] font-black text-slate-450 uppercase tracking-widest">
+                                                    <tr className="border-b border-[#1f1f1f] text-[10px] font-bold text-neutral-400 uppercase tracking-wider font-mono">
                                                         <th className="py-2.5">Partner</th>
                                                         <th className="py-2.5">Hotels Drafted</th>
                                                         <th className="py-2.5 text-right">Properties Count</th>
                                                     </tr>
                                                 </thead>
-                                                <tbody className="divide-y divide-slate-100">
+                                                <tbody className="divide-y divide-[#181818]">
                                                     {studioSelectedIds.map(partnerId => {
                                                         const partner = partners.find(p => p.id === partnerId);
                                                         const hotels = studioPartnerHotels[partnerId] || [];
                                                         return (
-                                                            <tr key={partnerId} className="font-bold text-slate-700">
+                                                            <tr key={partnerId} className="font-bold text-neutral-200">
                                                                 <td className="py-3 pr-4">
-                                                                    <div>{partner?.name}</div>
-                                                                    <div className="text-[10px] text-slate-400 font-medium">{partner?.email}</div>
+                                                                    <div className="text-white">{partner?.name}</div>
+                                                                    <div className="text-[10px] text-neutral-400 font-medium">{partner?.email}</div>
                                                                 </td>
                                                                 <td className="py-3">
-                                                                    <div className="flex flex-wrap gap-1">
+                                                                    <div className="flex flex-wrap gap-1.5">
                                                                         {hotels.map((h, i) => (
-                                                                            <span key={i} className="px-2 py-0.5 bg-slate-100 text-slate-650 text-[10px] font-bold rounded-sm border border-slate-200">
+                                                                            <span key={i} className="px-2 py-0.5 bg-[#161616] text-neutral-300 text-[10px] font-bold rounded-md border border-[#282828]">
                                                                                 {h.name || "(Unnamed)"} ({h.city})
                                                                             </span>
                                                                         ))}
                                                                     </div>
                                                                 </td>
-                                                                <td className="py-3 text-right text-brand-650 font-black">
+                                                                <td className="py-3 text-right text-emerald-400 font-mono font-bold">
                                                                     {hotels.length}
                                                                 </td>
                                                             </tr>
@@ -1702,9 +1659,9 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                                                     })}
                                                 </tbody>
                                                 <tfoot>
-                                                    <tr className="font-black text-slate-800 border-t-2 border-slate-200 text-[10px] uppercase tracking-widest bg-slate-50/50">
+                                                    <tr className="font-bold text-white border-t border-[#1f1f1f] text-[10px] uppercase tracking-wider bg-[#111111] font-mono">
                                                         <td className="py-3 pl-2" colSpan={2}>Total Provision Scope</td>
-                                                        <td className="py-3 pr-2 text-right text-brand-650 text-xs font-black">
+                                                        <td className="py-3 pr-2 text-right text-emerald-400 text-xs font-bold font-mono">
                                                             {studioSelectedIds.length} Partners / {Object.values(studioPartnerHotels).reduce((acc, h) => acc + h.length, 0)} Hotels
                                                         </td>
                                                     </tr>
@@ -1714,12 +1671,12 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                                     </div>
 
                                     {/* Action buttons */}
-                                    <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                                    <div className="flex items-center justify-between pt-4 border-t border-[#1f1f1f]">
                                         <button
                                             type="button"
                                             disabled={isProvisioning}
                                             onClick={() => setStudioStep(2)}
-                                            className="px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-black uppercase tracking-widest rounded-sm transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                                            className="px-5 py-3 bg-[#141414] border border-[#282828] hover:bg-[#1e1e1e] text-neutral-300 text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
                                         >
                                             <ArrowLeft className="w-3.5 h-3.5" /> Back to Edit
                                         </button>
@@ -1728,68 +1685,66 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                                             type="button"
                                             disabled={isProvisioning}
                                             onClick={handleStudioProvision}
-                                            className="px-6 py-3.5 bg-slate-900 hover:bg-black text-white text-[10px] font-black uppercase tracking-widest rounded-sm transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 min-w-48"
+                                            className="px-6 py-3.5 bg-white hover:bg-neutral-200 text-black text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 min-w-48"
                                         >
                                             {isProvisioning ? (
                                                 <>
-                                                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> Provisioning Inventory...
+                                                    <Loader2 className="w-4 h-4 animate-spin text-black" /> Provisioning Inventory...
                                                 </>
                                             ) : (
                                                 <>
-                                                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-450" /> Provision All Drafts
+                                                    <CheckCircle2 className="w-4 h-4 text-black" /> Provision All Drafts
                                                 </>
                                             )}
                                         </button>
                                     </div>
                                 </div>
                             ) : (
-                                /* PROVISION RESULTS DISPLAY */
                                 <div className="space-y-5">
-                                    <div className="bg-slate-50 border border-slate-200 rounded-sm p-6 space-y-5">
-                                        <div className="pb-3 border-b border-slate-200 flex items-center gap-2">
-                                            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-                                            <h4 className="text-xs font-bold text-slate-800 uppercase tracking-widest">
+                                    <div className="bg-[#0e0e0e] border border-[#1f1f1f] rounded-xl p-6 space-y-5">
+                                        <div className="pb-3 border-b border-[#1f1f1f] flex items-center gap-2">
+                                            <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                                            <h4 className="text-xs font-bold text-white uppercase tracking-wider">
                                                 Provisioning Session Complete
                                             </h4>
                                         </div>
 
-                                        <div className="space-y-4">
+                                        <div className="space-y-3">
                                             {provisionResults.map((res, i) => (
                                                 <div 
                                                     key={i} 
                                                     className={cn(
-                                                        "p-4 rounded-sm border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs",
+                                                        "p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs",
                                                         res.success 
-                                                            ? "bg-emerald-50/40 border-emerald-100 text-emerald-900" 
-                                                            : "bg-red-50/40 border-red-100 text-red-900"
+                                                            ? "bg-emerald-950/40 border-emerald-800/40 text-emerald-300" 
+                                                            : "bg-red-950/40 border-red-800/40 text-red-300"
                                                     )}
                                                 >
                                                     <div>
-                                                        <div className="font-bold uppercase tracking-wider flex items-center gap-1.5">
-                                                            {res.success ? (
-                                                                <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-                                                            ) : (
-                                                                <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
-                                                            )}
+                                                        <div className="font-bold uppercase tracking-wider flex items-center gap-1.5 text-white">
+                                                            <span className={cn(
+                                                                "w-2 h-2 rounded-full shrink-0", 
+                                                                res.success ? "bg-emerald-400" : "bg-red-400"
+                                                            )} />
                                                             {res.partnerName}
                                                         </div>
                                                         {res.success ? (
-                                                            <div className="text-[10px] text-emerald-700 font-medium mt-1">
+                                                            <div className="text-[10px] text-emerald-400 font-medium mt-1">
                                                                 Successfully provisioned hotels:{" "}
                                                                 <span className="font-bold">{res.hotelNames?.join(", ") || "(None)"}</span>
                                                             </div>
                                                         ) : (
-                                                            <div className="text-[10px] text-red-700 font-medium mt-1">
+                                                            <div className="text-[10px] text-red-400 font-medium mt-1">
                                                                 Error: {res.message}
                                                             </div>
                                                         )}
                                                     </div>
 
                                                     <div className={cn(
-                                                        "text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-sm border shrink-0 sm:text-right",
+                                                        "text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded-md border shrink-0 sm:text-right",
                                                         res.success 
-                                                            ? "bg-emerald-100/60 border-emerald-200 text-emerald-800" 
-                                                            : "bg-red-100/60 border-red-200 text-red-800"
+                                                            ? "bg-emerald-950/80 border-emerald-800/40 text-emerald-400" 
+                                                            : "bg-red-950/80 border-red-800/40 text-red-400"
                                                     )}>
                                                         {res.success ? `+${res.count} Hotels` : "Failed"}
                                                     </div>
@@ -1798,12 +1753,11 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                                         </div>
                                     </div>
 
-                                    {/* Action button */}
                                     <div className="flex justify-end pt-2">
                                         <button
                                             type="button"
                                             onClick={resetStudio}
-                                            className="px-6 py-3 bg-slate-900 hover:bg-black text-white text-[10px] font-black uppercase tracking-widest rounded-sm transition-all shadow-md flex items-center gap-2 cursor-pointer"
+                                            className="px-6 py-3 bg-white hover:bg-neutral-200 text-black text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-md flex items-center gap-2 cursor-pointer"
                                         >
                                             Start New Session <ArrowRight className="w-3.5 h-3.5" />
                                         </button>
@@ -1812,293 +1766,292 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
                             )}
                         </div>
                     )}
-
                 </div>
             )}
 
             {/* ─── SETUP USING CSV PANEL ─────────────────────────────────────────── */}
             {subTab === "csvImport" && (
-                        <div className="bg-white border border-slate-200 shadow-sm rounded-sm p-6 space-y-6">
-                            <div className="pb-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                <div>
-                                    <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                                        <Upload className="w-4 h-4 text-slate-800" /> Setup Using CSV
-                                    </h3>
-                                    <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">
-                                        Register new partners and their properties in bulk using a CSV file (Max 10 records)
-                                    </p>
-                                </div>
-                                
-                                <button
-                                    type="button"
-                                    onClick={downloadCsvTemplate}
-                                    className="px-4 py-2 border border-slate-250 hover:border-slate-400 text-slate-700 text-[10px] font-black uppercase tracking-widest rounded-sm transition-all flex items-center gap-2 cursor-pointer bg-slate-50 shadow-sm"
-                                >
-                                    <Download className="w-3.5 h-3.5" /> Download CSV Template
-                                </button>
-                            </div>
+                <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.9)] rounded-2xl p-7 space-y-6">
+                    <div className="pb-4 border-b border-[#1f1f1f] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                                <Upload className="w-4 h-4 text-white" /> Setup Using CSV
+                            </h3>
+                            <p className="text-[10px] text-neutral-400 font-bold uppercase mt-1">
+                                Register new partners and their properties in bulk using a CSV file (Max 10 records)
+                            </p>
+                        </div>
+                        
+                        <button
+                            type="button"
+                            onClick={downloadCsvTemplate}
+                            className="px-4 py-2.5 border border-[#282828] hover:border-neutral-400 text-neutral-300 hover:text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer bg-[#141414] shadow-sm"
+                        >
+                            <Download className="w-3.5 h-3.5" /> Download CSV Template
+                        </button>
+                    </div>
 
-                            {/* Dropzone / Upload area */}
-                            <div className="border-2 border-dashed border-slate-200 hover:border-slate-350 bg-slate-50/50 rounded-sm p-8 text-center transition-colors relative">
-                                <input
-                                    type="file"
-                                    accept=".csv"
-                                    onChange={handleFileUpload}
-                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                />
-                                <div className="space-y-2 pointer-events-none">
-                                    <Upload className="w-8 h-8 text-slate-400 mx-auto" />
-                                    <p className="text-xs font-bold text-slate-700">
-                                        {csvFile ? `Selected: ${csvFile.name}` : "Click or drag your CSV file here to upload"}
-                                    </p>
-                                    <p className="text-[10px] text-slate-450 uppercase font-black tracking-wider">
-                                        CSV columns must match or map to: Partner Name, Email, Phone, Password, Hotel Name, Address, City, Price, Stars, Amenities
-                                    </p>
-                                </div>
-                            </div>
+                    {/* Dropzone / Upload area */}
+                    <div className="border-2 border-dashed border-[#282828] hover:border-neutral-500 bg-[#0e0e0e] rounded-2xl p-8 text-center transition-colors relative">
+                        <input
+                            type="file"
+                            accept=".csv"
+                            onChange={handleFileUpload}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        />
+                        <div className="space-y-2 pointer-events-none">
+                            <Upload className="w-8 h-8 text-neutral-500 mx-auto" />
+                            <p className="text-xs font-bold text-white">
+                                {csvFile ? `Selected: ${csvFile.name}` : "Click or drag your CSV file here to upload"}
+                            </p>
+                            <p className="text-[10px] text-neutral-400 uppercase font-black tracking-wider">
+                                CSV columns must map to: Partner Name, Email, Phone, Password, Hotel Name, Address, City, Price, Stars, Amenities
+                            </p>
+                        </div>
+                    </div>
 
-                            {csvError && (
-                                <div className="p-3 bg-red-50 border border-red-100 text-red-800 text-xs font-medium rounded-sm animate-in fade-in">
-                                    {csvError}
-                                </div>
-                            )}
-
-                            {csvSuccess && (
-                                <div className="p-3 bg-emerald-50 border border-emerald-100 text-emerald-800 text-xs font-medium rounded-sm animate-in fade-in flex items-center gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                                    {csvSuccess}
-                                </div>
-                            )}
-
-                            {/* Rows Preview Table */}
-                            {csvRows.length > 0 && (
-                                <form onSubmit={handleCsvImportSubmit} className="space-y-6">
-                                    <div className="overflow-x-auto border border-slate-200 rounded-sm shadow-sm bg-white">
-                                        <table className="w-full text-left border-collapse min-w-[1200px]">
-                                            <thead className="bg-slate-50 border-b border-slate-200 text-[9px] font-black text-slate-450 uppercase tracking-widest">
-                                                <tr>
-                                                    <th className="px-3 py-3 w-[40px] text-center">#</th>
-                                                    <th className="px-3 py-3">Partner Name *</th>
-                                                    <th className="px-3 py-3">Partner Email *</th>
-                                                    <th className="px-3 py-3 w-[120px]">Partner Phone</th>
-                                                    <th className="px-3 py-3 w-[150px]">Partner Password *</th>
-                                                    <th className="px-3 py-3">Hotel Name *</th>
-                                                    <th className="px-3 py-3">Hotel Address *</th>
-                                                    <th className="px-3 py-3 w-[120px]">City</th>
-                                                    <th className="px-3 py-3 w-[90px]">Price (₹)</th>
-                                                    <th className="px-3 py-3 w-[80px]">Stars</th>
-                                                    <th className="px-3 py-3 w-[150px]">Amenities</th>
-                                                    <th className="px-3 py-3 w-[50px] text-center">Delete</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-slate-150">
-                                                {csvRows.map((row, index) => (
-                                                    <tr key={row.id} className="hover:bg-slate-50/40 text-xs">
-                                                        <td className="px-3 py-3 font-bold text-slate-400 text-center">{index + 1}</td>
-                                                        
-                                                        {/* Partner fields */}
-                                                        <td className="px-1 py-1.5">
-                                                            <input
-                                                                type="text"
-                                                                value={row.partnerName}
-                                                                onChange={e => handleCsvRowChange(index, "partnerName", e.target.value)}
-                                                                disabled={isCsvImporting}
-                                                                className={cn(
-                                                                    "w-full px-2 py-1.5 bg-slate-50 border border-transparent rounded-sm outline-none focus:border-slate-350 focus:bg-white text-xs font-bold transition-all",
-                                                                    !row.partnerName?.trim() && "border-red-300 bg-red-50/20"
-                                                                )}
-                                                            />
-                                                        </td>
-                                                        <td className="px-1 py-1.5">
-                                                            <input
-                                                                type="email"
-                                                                value={row.partnerEmail}
-                                                                onChange={e => handleCsvRowChange(index, "partnerEmail", e.target.value)}
-                                                                disabled={isCsvImporting}
-                                                                className={cn(
-                                                                    "w-full px-2 py-1.5 bg-slate-50 border border-transparent rounded-sm outline-none focus:border-slate-350 focus:bg-white text-xs font-bold transition-all",
-                                                                    (!row.partnerEmail?.trim() || !row.partnerEmail.includes("@")) && "border-red-300 bg-red-50/20"
-                                                                )}
-                                                            />
-                                                        </td>
-                                                        <td className="px-1 py-1.5">
-                                                            <input
-                                                                type="text"
-                                                                value={row.partnerPhone}
-                                                                onChange={e => handleCsvRowChange(index, "partnerPhone", e.target.value)}
-                                                                disabled={isCsvImporting}
-                                                                className="w-full px-2 py-1.5 bg-slate-50 border border-transparent rounded-sm outline-none focus:border-slate-350 focus:bg-white text-xs font-bold transition-all"
-                                                            />
-                                                        </td>
-                                                        <td className="px-1 py-1.5">
-                                                            <input
-                                                                type="text"
-                                                                value={row.partnerPassword}
-                                                                onChange={e => handleCsvRowChange(index, "partnerPassword", e.target.value)}
-                                                                disabled={isCsvImporting}
-                                                                className={cn(
-                                                                    "w-full px-2 py-1.5 bg-slate-50 border border-transparent rounded-sm outline-none focus:border-slate-350 focus:bg-white text-xs font-bold transition-all",
-                                                                    (!row.partnerPassword?.trim() || row.partnerPassword.length < 6) && "border-red-300 bg-red-50/20"
-                                                                )}
-                                                            />
-                                                        </td>
-
-                                                        {/* Hotel fields */}
-                                                        <td className="px-1 py-1.5">
-                                                            <input
-                                                                type="text"
-                                                                value={row.hotelName}
-                                                                onChange={e => handleCsvRowChange(index, "hotelName", e.target.value)}
-                                                                disabled={isCsvImporting}
-                                                                className={cn(
-                                                                    "w-full px-2 py-1.5 bg-slate-50 border border-transparent rounded-sm outline-none focus:border-slate-350 focus:bg-white text-xs font-bold transition-all",
-                                                                    !row.hotelName?.trim() && "border-red-300 bg-red-50/20"
-                                                                )}
-                                                            />
-                                                        </td>
-                                                        <td className="px-1 py-1.5">
-                                                            <input
-                                                                type="text"
-                                                                value={row.hotelAddress}
-                                                                onChange={e => handleCsvRowChange(index, "hotelAddress", e.target.value)}
-                                                                disabled={isCsvImporting}
-                                                                className={cn(
-                                                                    "w-full px-2 py-1.5 bg-slate-50 border border-transparent rounded-sm outline-none focus:border-slate-350 focus:bg-white text-xs font-bold transition-all",
-                                                                    !row.hotelAddress?.trim() && "border-red-300 bg-red-50/20"
-                                                                )}
-                                                            />
-                                                        </td>
-                                                        <td className="px-1 py-1.5">
-                                                            <input
-                                                                type="text"
-                                                                value={row.city}
-                                                                onChange={e => handleCsvRowChange(index, "city", e.target.value)}
-                                                                disabled={isCsvImporting}
-                                                                className="w-full px-2 py-1.5 bg-slate-50 border border-transparent rounded-sm outline-none focus:border-slate-350 focus:bg-white text-xs font-bold transition-all"
-                                                            />
-                                                        </td>
-                                                        <td className="px-1 py-1.5">
-                                                            <input
-                                                                type="number"
-                                                                value={row.price}
-                                                                onChange={e => handleCsvRowChange(index, "price", e.target.value)}
-                                                                disabled={isCsvImporting}
-                                                                className="w-full px-2 py-1.5 bg-slate-50 border border-transparent rounded-sm outline-none focus:border-slate-350 focus:bg-white text-xs font-bold transition-all"
-                                                            />
-                                                        </td>
-                                                        <td className="px-1 py-1.5">
-                                                            <select
-                                                                value={row.stars}
-                                                                onChange={e => handleCsvRowChange(index, "stars", e.target.value)}
-                                                                disabled={isCsvImporting}
-                                                                className="w-full px-1 py-1.5 bg-slate-50 border border-transparent rounded-sm outline-none focus:border-slate-350 focus:bg-white text-xs font-bold transition-all"
-                                                            >
-                                                                <option value="1">1 ★</option>
-                                                                <option value="2">2 ★</option>
-                                                                <option value="3">3 ★</option>
-                                                                <option value="4">4 ★</option>
-                                                                <option value="5">5 ★</option>
-                                                            </select>
-                                                        </td>
-                                                        <td className="px-1 py-1.5">
-                                                            <input
-                                                                type="text"
-                                                                value={row.amenities}
-                                                                onChange={e => handleCsvRowChange(index, "amenities", e.target.value)}
-                                                                disabled={isCsvImporting}
-                                                                placeholder="Wifi, AC, TV"
-                                                                className="w-full px-2 py-1.5 bg-slate-50 border border-transparent rounded-sm outline-none focus:border-slate-350 focus:bg-white text-xs font-bold transition-all"
-                                                            />
-                                                        </td>
-
-                                                        <td className="px-3 py-3 text-center">
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => removeCsvRow(index)}
-                                                                disabled={isCsvImporting}
-                                                                className="text-red-500 hover:text-red-700 disabled:opacity-30 cursor-pointer"
-                                                            >
-                                                                <Trash2 className="w-4 h-4" />
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-
-                                    <div className="flex justify-end pt-2">
-                                        <button
-                                            type="submit"
-                                            disabled={isCsvImporting || csvRows.length === 0}
-                                            className="px-8 py-3.5 bg-slate-900 hover:bg-black text-white text-[10px] font-black uppercase tracking-widest rounded-sm transition-all shadow-md hover:shadow-lg disabled:opacity-50 flex items-center gap-2 cursor-pointer w-full sm:w-auto justify-center"
-                                        >
-                                            {isCsvImporting ? (
-                                                <>
-                                                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> Provisioning Partner Accounts...
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Upload className="w-3.5 h-3.5" /> Bulk Import {csvRows.length} Records
-                                                </>
-                                            )}
-                                        </button>
-                                    </div>
-                                </form>
-                            )}
-
-                            {/* Execution Results Log */}
-                            {csvResultsLog.length > 0 && (
-                                <div className="bg-slate-50 border border-slate-200 rounded-sm p-5 space-y-4 animate-in fade-in duration-300">
-                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-250 pb-2 flex items-center gap-1.5">
-                                        <Info className="w-3.5 h-3.5" /> CSV Bulk Import Log Report
-                                    </h4>
-                                    <div className="space-y-3">
-                                        {csvResultsLog.map((result, i) => (
-                                            <div 
-                                                key={i} 
-                                                className={cn(
-                                                    "p-3.5 rounded-sm border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs",
-                                                    result.success 
-                                                        ? "bg-emerald-50/40 border-emerald-100 text-emerald-900" 
-                                                        : "bg-red-50/40 border-red-100 text-red-900"
-                                                )}
-                                            >
-                                                <div>
-                                                    <div className="font-bold uppercase tracking-wider flex items-center gap-1.5">
-                                                        <span className={cn(
-                                                            "w-2 h-2 rounded-full shrink-0", 
-                                                            result.success ? "bg-emerald-500" : "bg-red-500"
-                                                        )} />
-                                                        {result.partnerName || 'Row Details'} ({result.email})
-                                                    </div>
-                                                    <div className="text-[10px] text-slate-550 mt-1">
-                                                        {result.success ? (
-                                                            <>
-                                                                Created partner user & associated property <span className="font-bold">"{result.hotelName}"</span>
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                Error: <span className="font-bold text-red-700">{result.message}</span>
-                                                            </>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                <div className={cn(
-                                                    "text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-sm border shrink-0 sm:text-right",
-                                                    result.success 
-                                                        ? "bg-emerald-100/50 border-emerald-250 text-emerald-800" 
-                                                        : "bg-red-100/50 border-red-250 text-red-800"
-                                                )}>
-                                                    {result.success ? "Success" : "Failed"}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
+                    {csvError && (
+                        <div className="p-3 bg-red-950/80 border border-red-800/40 text-red-300 text-xs font-medium rounded-xl animate-in fade-in">
+                            {csvError}
                         </div>
                     )}
+
+                    {csvSuccess && (
+                        <div className="p-3 bg-emerald-950/80 border border-emerald-800/40 text-emerald-300 text-xs font-medium rounded-xl animate-in fade-in flex items-center gap-2">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                            {csvSuccess}
+                        </div>
+                    )}
+
+                    {/* Rows Preview Table */}
+                    {csvRows.length > 0 && (
+                        <form onSubmit={handleCsvImportSubmit} className="space-y-6">
+                            <div className="overflow-x-auto border border-[#1f1f1f] rounded-xl bg-[#0e0e0e]">
+                                <table className="w-full text-left border-collapse min-w-[1200px]">
+                                    <thead className="bg-[#111111] border-b border-[#1f1f1f] text-[9px] font-bold text-neutral-400 uppercase tracking-wider font-mono">
+                                        <tr>
+                                            <th className="px-3 py-3 w-[40px] text-center">#</th>
+                                            <th className="px-3 py-3">Partner Name *</th>
+                                            <th className="px-3 py-3">Partner Email *</th>
+                                            <th className="px-3 py-3 w-[120px]">Partner Phone</th>
+                                            <th className="px-3 py-3 w-[150px]">Partner Password *</th>
+                                            <th className="px-3 py-3">Hotel Name *</th>
+                                            <th className="px-3 py-3">Hotel Address *</th>
+                                            <th className="px-3 py-3 w-[120px]">City</th>
+                                            <th className="px-3 py-3 w-[90px]">Price (₹)</th>
+                                            <th className="px-3 py-3 w-[80px]">Stars</th>
+                                            <th className="px-3 py-3 w-[150px]">Amenities</th>
+                                            <th className="px-3 py-3 w-[50px] text-center">Delete</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-[#181818]">
+                                        {csvRows.map((row, index) => (
+                                            <tr key={row.id} className="hover:bg-[#141414] text-xs">
+                                                <td className="px-3 py-3 font-mono text-neutral-500 text-center">{index + 1}</td>
+                                                
+                                                {/* Partner fields */}
+                                                <td className="px-1 py-1.5">
+                                                    <input
+                                                        type="text"
+                                                        value={row.partnerName}
+                                                        onChange={e => handleCsvRowChange(index, "partnerName", e.target.value)}
+                                                        disabled={isCsvImporting}
+                                                        className={cn(
+                                                            "w-full px-2.5 py-1.5 bg-[#161616] border border-[#282828] rounded-lg outline-none focus:border-neutral-400 text-xs font-bold text-white transition-all",
+                                                            !row.partnerName?.trim() && "border-red-500 bg-red-950/20"
+                                                        )}
+                                                    />
+                                                </td>
+                                                <td className="px-1 py-1.5">
+                                                    <input
+                                                        type="email"
+                                                        value={row.partnerEmail}
+                                                        onChange={e => handleCsvRowChange(index, "partnerEmail", e.target.value)}
+                                                        disabled={isCsvImporting}
+                                                        className={cn(
+                                                            "w-full px-2.5 py-1.5 bg-[#161616] border border-[#282828] rounded-lg outline-none focus:border-neutral-400 text-xs font-bold text-white transition-all",
+                                                            (!row.partnerEmail?.trim() || !row.partnerEmail.includes("@")) && "border-red-500 bg-red-950/20"
+                                                        )}
+                                                    />
+                                                </td>
+                                                <td className="px-1 py-1.5">
+                                                    <input
+                                                        type="text"
+                                                        value={row.partnerPhone}
+                                                        onChange={e => handleCsvRowChange(index, "partnerPhone", e.target.value)}
+                                                        disabled={isCsvImporting}
+                                                        className="w-full px-2.5 py-1.5 bg-[#161616] border border-[#282828] rounded-lg outline-none focus:border-neutral-400 text-xs font-bold text-white transition-all"
+                                                    />
+                                                </td>
+                                                <td className="px-1 py-1.5">
+                                                    <input
+                                                        type="text"
+                                                        value={row.partnerPassword}
+                                                        onChange={e => handleCsvRowChange(index, "partnerPassword", e.target.value)}
+                                                        disabled={isCsvImporting}
+                                                        className={cn(
+                                                            "w-full px-2.5 py-1.5 bg-[#161616] border border-[#282828] rounded-lg outline-none focus:border-neutral-400 text-xs font-bold text-white transition-all",
+                                                            (!row.partnerPassword?.trim() || row.partnerPassword.length < 6) && "border-red-500 bg-red-950/20"
+                                                        )}
+                                                    />
+                                                </td>
+
+                                                {/* Hotel fields */}
+                                                <td className="px-1 py-1.5">
+                                                    <input
+                                                        type="text"
+                                                        value={row.hotelName}
+                                                        onChange={e => handleCsvRowChange(index, "hotelName", e.target.value)}
+                                                        disabled={isCsvImporting}
+                                                        className={cn(
+                                                            "w-full px-2.5 py-1.5 bg-[#161616] border border-[#282828] rounded-lg outline-none focus:border-neutral-400 text-xs font-bold text-white transition-all",
+                                                            !row.hotelName?.trim() && "border-red-500 bg-red-950/20"
+                                                        )}
+                                                    />
+                                                </td>
+                                                <td className="px-1 py-1.5">
+                                                    <input
+                                                        type="text"
+                                                        value={row.hotelAddress}
+                                                        onChange={e => handleCsvRowChange(index, "hotelAddress", e.target.value)}
+                                                        disabled={isCsvImporting}
+                                                        className={cn(
+                                                            "w-full px-2.5 py-1.5 bg-[#161616] border border-[#282828] rounded-lg outline-none focus:border-neutral-400 text-xs font-bold text-white transition-all",
+                                                            !row.hotelAddress?.trim() && "border-red-500 bg-red-950/20"
+                                                        )}
+                                                    />
+                                                </td>
+                                                <td className="px-1 py-1.5">
+                                                    <input
+                                                        type="text"
+                                                        value={row.city}
+                                                        onChange={e => handleCsvRowChange(index, "city", e.target.value)}
+                                                        disabled={isCsvImporting}
+                                                        className="w-full px-2.5 py-1.5 bg-[#161616] border border-[#282828] rounded-lg outline-none focus:border-neutral-400 text-xs font-bold text-white transition-all"
+                                                    />
+                                                </td>
+                                                <td className="px-1 py-1.5">
+                                                    <input
+                                                        type="number"
+                                                        value={row.price}
+                                                        onChange={e => handleCsvRowChange(index, "price", e.target.value)}
+                                                        disabled={isCsvImporting}
+                                                        className="w-full px-2.5 py-1.5 bg-[#161616] border border-[#282828] rounded-lg outline-none focus:border-neutral-400 text-xs font-bold text-white transition-all font-mono"
+                                                    />
+                                                </td>
+                                                <td className="px-1 py-1.5">
+                                                    <select
+                                                        value={row.stars}
+                                                        onChange={e => handleCsvRowChange(index, "stars", e.target.value)}
+                                                        disabled={isCsvImporting}
+                                                        className="w-full px-2 py-1.5 bg-[#161616] border border-[#282828] rounded-lg outline-none focus:border-neutral-400 text-xs font-bold text-white transition-all"
+                                                    >
+                                                        <option value="1" className="bg-[#141414]">1 ★</option>
+                                                        <option value="2" className="bg-[#141414]">2 ★</option>
+                                                        <option value="3" className="bg-[#141414]">3 ★</option>
+                                                        <option value="4" className="bg-[#141414]">4 ★</option>
+                                                        <option value="5" className="bg-[#141414]">5 ★</option>
+                                                    </select>
+                                                </td>
+                                                <td className="px-1 py-1.5">
+                                                    <input
+                                                        type="text"
+                                                        value={row.amenities}
+                                                        onChange={e => handleCsvRowChange(index, "amenities", e.target.value)}
+                                                        disabled={isCsvImporting}
+                                                        placeholder="Wifi, AC, TV"
+                                                        className="w-full px-2.5 py-1.5 bg-[#161616] border border-[#282828] rounded-lg outline-none focus:border-neutral-400 text-xs font-bold text-white transition-all"
+                                                    />
+                                                </td>
+
+                                                <td className="px-3 py-3 text-center">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeCsvRow(index)}
+                                                        disabled={isCsvImporting}
+                                                        className="text-red-400 hover:text-red-300 disabled:opacity-30 cursor-pointer"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div className="flex justify-end pt-2">
+                                <button
+                                    type="submit"
+                                    disabled={isCsvImporting || csvRows.length === 0}
+                                    className="px-8 py-3.5 bg-white hover:bg-neutral-200 text-black text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-md disabled:opacity-50 flex items-center gap-2 cursor-pointer w-full sm:w-auto justify-center"
+                                >
+                                    {isCsvImporting ? (
+                                        <>
+                                            <Loader2 className="w-4 h-4 animate-spin text-black" /> Provisioning Partner Accounts...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Upload className="w-4 h-4 text-black" /> Bulk Import {csvRows.length} Records
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </form>
+                    )}
+
+                    {/* Execution Results Log */}
+                    {csvResultsLog.length > 0 && (
+                        <div className="bg-[#0e0e0e] border border-[#1f1f1f] rounded-xl p-5 space-y-4 animate-in fade-in duration-300">
+                            <h4 className="text-[10px] font-black text-neutral-400 uppercase tracking-widest border-b border-[#1f1f1f] pb-2 flex items-center gap-1.5">
+                                <Info className="w-3.5 h-3.5 text-emerald-400" /> CSV Bulk Import Log Report
+                            </h4>
+                            <div className="space-y-3">
+                                {csvResultsLog.map((result, i) => (
+                                    <div 
+                                        key={i} 
+                                        className={cn(
+                                            "p-3.5 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs",
+                                            result.success 
+                                                ? "bg-emerald-950/40 border-emerald-800/40 text-emerald-300" 
+                                                : "bg-red-950/40 border-red-800/40 text-red-300"
+                                        )}
+                                    >
+                                        <div>
+                                            <div className="font-bold uppercase tracking-wider flex items-center gap-1.5 text-white">
+                                                <span className={cn(
+                                                    "w-2 h-2 rounded-full shrink-0", 
+                                                    result.success ? "bg-emerald-400" : "bg-red-400"
+                                                )} />
+                                                {result.partnerName || 'Row Details'} ({result.email})
+                                            </div>
+                                            <div className="text-[10px] text-neutral-400 mt-1">
+                                                {result.success ? (
+                                                    <>
+                                                        Created partner user & associated property <span className="font-bold text-white">"{result.hotelName}"</span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        Error: <span className="font-bold text-red-400">{result.message}</span>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className={cn(
+                                            "text-[9px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded-md border shrink-0 sm:text-right",
+                                            result.success 
+                                                ? "bg-emerald-950/80 border-emerald-800/40 text-emerald-400" 
+                                                : "bg-red-950/80 border-red-800/40 text-red-400"
+                                        )}>
+                                            {result.success ? "Success" : "Failed"}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 }

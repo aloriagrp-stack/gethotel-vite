@@ -6,13 +6,13 @@ import {
     LayoutDashboard, Hotel, Users,
     BarChart3, Settings, LogOut,
     Bell, Search, Plus, Clock,
-    CreditCard, Loader2, Calendar, AlertCircle, LayoutTemplate, SlidersHorizontal, Star, RefreshCw, LayoutGrid, Globe, Sparkles, Bot, Palmtree, Download,
+    CreditCard, Loader2, Calendar, AlertCircle, LayoutTemplate, SlidersHorizontal, Star, RefreshCw, LayoutGrid, Globe, Sparkles, Bot, Palmtree, Download, MapPin,
     ChevronLeft, ChevronRight, Menu, X, Percent
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function AdminLayout() {
+export default function AdminLayout({ children }: { children?: React.ReactNode }) {
     const { user, loading: authLoading, logout } = useAuth();
     const router = useRouter();
     const location = useLocation();
@@ -60,6 +60,7 @@ export default function AdminLayout() {
         { id: "overview", label: "Dashboard", icon: LayoutDashboard, href: "/admin/super" },
         { id: "hotel-importer", label: "Hotel Importer (Agent)", icon: Download, href: "/admin/super/hotel-importer" },
         { id: "tour-packages", label: "Tour Packages Manager", icon: Palmtree, href: "/admin/super/tour-packages" },
+        { id: "destinations", label: "Destinations Cards Manager", icon: MapPin, href: "/admin/super?tab=destinations" },
         { id: "requests", label: "Partner Requests", icon: Clock, href: "/admin/super/requests" },
         { id: "controlhub", label: "Manager", icon: SlidersHorizontal, href: "/admin/super/controlhub" },
         { id: "ai-chats", label: "AI Chat Analytics", icon: Bot, href: "/admin/super/ai-chats" },
@@ -86,13 +87,14 @@ export default function AdminLayout() {
     const activeItem = navItems.find(item => {
         const searchParams = new URLSearchParams(location.search);
         const currentTab = searchParams.get("tab");
+        const cleanPathname = pathname.replace(/^\/[a-z]{2}(?=\/|$)/i, "");
         if (item.href.includes("?tab=")) {
             const itemTab = new URLSearchParams(item.href.split("?")[1]).get("tab");
-            return pathname === "/admin/super" && currentTab === itemTab;
+            return (cleanPathname === "/admin/super" || cleanPathname === "/admin/super/") && currentTab === itemTab;
         } else if (item.href === "/admin/super") {
-            return pathname === "/admin/super" && (!currentTab || currentTab === "overview");
+            return (cleanPathname === "/admin/super" || cleanPathname === "/admin/super/") && (!currentTab || currentTab === "overview");
         } else {
-            return pathname === item.href;
+            return cleanPathname === item.href || cleanPathname === `${item.href}/`;
         }
     }) || navItems[0];
 
@@ -127,7 +129,7 @@ export default function AdminLayout() {
                             Aloria's <span className="text-neutral-500 font-light text-xs uppercase tracking-widest">Admin</span>
                         </h1>
                     )}
-                    <button
+                    <button 
                         onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
                         className="p-1.5 bg-[#141414] hover:bg-[#1f1f1f] rounded-lg text-neutral-400 hover:text-white transition-all flex items-center justify-center border border-[#262626] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_2px_4px_rgba(0,0,0,0.6)] cursor-pointer"
                         title={sidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
@@ -210,7 +212,7 @@ export default function AdminLayout() {
                         </div>
                     </div>
                     <button 
-                        onClick={() => setIsMobileMenuOpen(false)}
+                        onClick={() => setIsMobileMenuOpen(true)}
                         className="p-2.5 bg-[#141414] text-white rounded-xl border border-[#262626] hover:bg-[#1f1f1f] transition-colors"
                     >
                         <Menu className="w-5 h-5" />
@@ -296,7 +298,7 @@ export default function AdminLayout() {
                             <Loader2 className="w-10 h-10 animate-spin text-neutral-400" />
                         </div>
                     }>
-                        <Outlet />
+                        {children || <Outlet />}
                     </Suspense>
                 </main>
             </div>
@@ -360,6 +362,3 @@ export default function AdminLayout() {
         </div>
     );
 }
-
-
-

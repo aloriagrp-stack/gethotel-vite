@@ -1,32 +1,21 @@
 'use client';
 
-
-import { Wallet, ShieldCheck, Headphones, Sparkles } from "lucide-react";
-
 const REASONS = [
     {
-        icon: Wallet,
         title: "Best Price Guarantee",
-        description: "Experience luxury without the premium tag. We offer the most competitive rates for high-end stays across India.",
-        color: "bg-blue-600 shadow-blue-200",
+        description: "Experience comfort without the premium tag. We offer the most competitive rates for verified stays across India.",
     },
     {
-        icon: ShieldCheck,
         title: "Verified Properties",
-        description: "Your safety and comfort are our priority. Every hotel on our platform undergoes a rigorous 50-point quality check.",
-        color: "bg-emerald-600 shadow-emerald-200",
+        description: "Your safety and peace of mind are our priority. Every hotel on our platform undergoes a rigorous 50-point quality check.",
     },
     {
-        icon: Headphones,
-        title: "24/7 Concierge",
-        description: "From booking to checkout, our dedicated travel experts are available around the clock to ensure a seamless experience.",
-        color: "bg-indigo-600 shadow-indigo-200",
+        title: "24/7 Concierge Support",
+        description: "From instant booking to check-out, our dedicated team is available around the clock to ensure a smooth stay.",
     },
     {
-        icon: Sparkles,
-        title: "Exclusive Rewards",
-        description: "Join our community and unlock hidden deals, complementary upgrades, and special seasonal offerings reserved just for you.",
-        color: "bg-amber-500 shadow-amber-200",
+        title: "Pay 12% Now Model",
+        description: "Book instantly by paying just a 12% deposit online. Pay the remaining 88% balance directly at the hotel front desk.",
     },
 ];
 
@@ -40,18 +29,18 @@ export default function WhyGetHotel() {
                     </h2>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
                     {REASONS.map((reason, i) => (
                         <div
                             key={i}
-                            className="group p-5 lg:p-8 rounded-3xl border border-white/40 hover:border-brand-100 hover:bg-white/80 hover:shadow-2xl hover:shadow-slate-100/60 transition-all duration-300 bg-white/60 backdrop-blur-xl flex flex-row lg:flex-col items-center lg:justify-center gap-6 lg:gap-6 lg:aspect-square lg:text-center"
+                            className="group p-6 lg:p-8 rounded-3xl border border-white/60 hover:border-brand-200 hover:bg-white/90 hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300 bg-white/70 backdrop-blur-xl flex flex-col justify-between gap-3 text-left"
                         >
-                            <div className={`w-14 h-14 lg:w-20 lg:h-20 flex-shrink-0 ${reason.color} rounded-full flex items-center justify-center shadow-lg transition-transform duration-300`}>
-                                <reason.icon className="w-7 h-7 lg:w-10 lg:h-10 text-white" strokeWidth={2.5} />
-                            </div>
-                            <div className="flex-1">
-                                <h3 className="text-lg lg:text-xl font-bold text-slate-900 mb-1 lg:mb-2 tracking-tight leading-tight">{reason.title}</h3>
-                                <p className="text-slate-500 text-sm lg:text-[13px] leading-relaxed font-semibold opacity-80">
+                            <div>
+                                <span className="text-2xl lg:text-3xl font-black text-brand-600/30 block mb-2 font-mono">0{i + 1}</span>
+                                <h3 className="text-lg lg:text-xl font-bold text-slate-900 mb-2 tracking-tight leading-tight group-hover:text-brand-600 transition-colors">
+                                    {reason.title}
+                                </h3>
+                                <p className="text-slate-600 text-sm leading-relaxed font-normal">
                                     {reason.description}
                                 </p>
                             </div>
@@ -62,6 +51,3 @@ export default function WhyGetHotel() {
         </section>
     );
 }
-
-
-

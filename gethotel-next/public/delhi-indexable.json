@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-13",
+  "generated": "2026-08-28",
   "totalHotels": 12,
   "pages": [
     {
@@ -11,19 +11,863 @@
       "priority": "0.9"
     },
     {
+      "url": "/en/hotels/delhi/new-friends-colony",
+      "priority": "0.9"
+    },
+    {
+      "url": "/en/hotels/delhi/lodhi-road",
+      "priority": "0.9"
+    },
+    {
+      "url": "/en/hotels/delhi/mahipalpur-extension",
+      "priority": "0.9"
+    },
+    {
+      "url": "/en/hotels/delhi/ber-sarai",
+      "priority": "0.9"
+    },
+    {
+      "url": "/en/hotels/delhi/delhi-gate",
+      "priority": "0.9"
+    },
+    {
+      "url": "/en/hotels/delhi/near-rajiv-chowk-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-new-delhi-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-kashmiri-gate-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-aerocity-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-hauz-khas-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-saket-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-karol-bagh-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-aiims-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-ina-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-central-secretariat-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-mandi-house-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-supreme-court-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-akshardham-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-yamuna-bank-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-laxmi-nagar-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-nirman-vihar-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-preet-vihar-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-anand-vihar-isbt-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-janakpuri-west-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-dwarka-sector-21-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-lajpat-nagar-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-netaji-subhash-place-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-vishwavidyalaya-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-gtb-nagar-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-khan-market-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-dhaula-kuan-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-delhi-cantt-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-rajouri-garden-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-paschim-vihar-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-rohini-west-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-pitampura-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-botanical-garden-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-chhatarpur-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-mg-road-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-dilli-haat-ina-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-green-park-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-patel-chowk-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-udyog-bhawan-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-lok-kalyan-marg-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-jor-bagh-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-model-town-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-adarsh-nagar-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-jahangirpuri-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-samaypur-badli-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-chandni-chowk-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-chawri-bazar-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-barakhamba-road-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-pragati-maidan-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-indraprastha-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-mayur-vihar-phase-1-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-noida-sector-15-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-shastri-park-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-seelampur-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-welcome-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-shahdara-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-mansarovar-park-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-jhilmil-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-dilshad-garden-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-rithala-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-rohini-east-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-kohat-enclave-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-kanishka-puri-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-inderlok-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-kirti-nagar-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-moti-nagar-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-ramesh-nagar-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-tagore-garden-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-subhash-nagar-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-tilak-nagar-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-janakpuri-east-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-uttam-nagar-east-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-uttam-nagar-west-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-nawada-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-dwarka-mor-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-dwarka-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-sector-14-dwarka-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-sector-13-dwarka-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-sector-12-dwarka-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-sector-11-dwarka-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-sector-10-dwarka-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-sector-9-dwarka-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-sector-8-dwarka-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-dashrath-puri-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-dabri-mor-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-palam-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-sadar-bazar-cantonment-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-terminal-1-igi-airport-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-shankar-vihar-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-vasant-vihar-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-munirka-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-rk-puram-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-iit-delhi-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-panchsheel-park-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-chirag-delhi-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-greater-kailash-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-nehru-enclave-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-kalkaji-mandir-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-okhla-nsic-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-sukhdev-vihar-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-jamia-millia-islamia-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-okhla-vihar-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-jasola-vihar-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-kalindi-kunj-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-sarita-vihar-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-mohan-estate-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-tughlakabad-station-metro",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-badarpur-border-metro-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-aiims-delhi",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-sir-ganga-ram-hospital-rajinder-nagar",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-rajiv-gandhi-cancer-institute-rohini",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-northern-railway-central-hospital",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-national-heart-institute-east-of-kailash",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-base-hospital-delhi-cantt",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-delhi-university-north-campus",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-iit-delhi",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-dtu-delhi-technological-university",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-nift-new-delhi",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-aiims-campus-delhi",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-tcs-ion-digital-zone-1-okhla",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-tcs-ion-digital-zone-2-okhla",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-tcs-ion-digital-zone-mundka",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-tcs-ion-digital-zone-dwarka",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-nta-exam-center-delhi",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-upsc-coaching-hub-mukherjee-nagar",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-allen-kota-institute-lajpat-nagar",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-barakhamba-road-business-hub",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-aerocity-worldmark-business-park",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-dlf-cyber-city-border-dhaula-kuan",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-kirti-nagar-industrial-area",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-lawrence-road-industrial-area",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-jhandewalan-extension-business-hub",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-laxmi-nagar-district-centre",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-scope-complex-cgo-complex-lodhi-road",
+      "priority": "0.8"
+    },
+    {
       "url": "/en/hotels/delhi/near-delhi-airport",
       "priority": "0.9"
     },
     {
-      "url": "/en/hotels/delhi/business",
+      "url": "/en/hotels/delhi/near-new-delhi-railway-station",
       "priority": "0.9"
     },
     {
-      "url": "/en/hotels/delhi/with-parking",
+      "url": "/en/hotels/delhi/near-delhi-airport-t3",
+      "priority": "0.9"
+    },
+    {
+      "url": "/en/hotels/delhi/near-delhi-airport-t1",
+      "priority": "0.9"
+    },
+    {
+      "url": "/en/hotels/delhi/near-delhi-airport-t2",
+      "priority": "0.9"
+    },
+    {
+      "url": "/en/hotels/delhi/near-aerocity-transit-hub",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-delhi-airport-cargo-terminal",
+      "priority": "0.9"
+    },
+    {
+      "url": "/en/hotels/delhi/near-ndls-paharganj-entrance",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-old-delhi-railway-station-dli",
+      "priority": "0.9"
+    },
+    {
+      "url": "/en/hotels/delhi/near-delhi-sarai-rohilla-railway-station-dee",
+      "priority": "0.9"
+    },
+    {
+      "url": "/en/hotels/delhi/near-delhi-cantt-railway-station-dec",
+      "priority": "0.9"
+    },
+    {
+      "url": "/en/hotels/delhi/near-major-dhyan-chand-national-stadium",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/near-indira-gandhi-indoor-arena",
       "priority": "0.8"
     },
     {
       "url": "/en/hotels/delhi/with-airport-transfer",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/couple-friendly-hotels-in-delhi",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/hourly-hotels-in-delhi",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/couple-friendly-hotels-in-paharganj",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/couple-friendly-hotels-in-aerocity",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/couple-friendly-hotels-in-mahipalpur",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/couple-friendly-hotels-in-lajpat-nagar",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/couple-friendly-hotels-in-laxmi-nagar",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/couple-friendly-hotels-in-malviya-nagar",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/couple-friendly-hotels-near-new-delhi-railway-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/couple-friendly-hotels-near-delhi-airport",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/unmarried-couple-allowed-hotels-in-south-delhi",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/unmarried-couple-allowed-hotels-in-north-delhi",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/unmarried-couple-allowed-hotels-in-east-delhi",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/unmarried-couple-allowed-hotels-in-west-delhi",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/local-id-accepted-hotels-in-paharganj",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/local-id-accepted-hotels-in-aerocity",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/local-id-accepted-hotels-in-south-delhi",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/hourly-hotels-in-paharganj",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/hourly-hotels-near-new-delhi-railway-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/hourly-hotels-in-aerocity",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/hourly-hotels-near-delhi-airport-t3",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/hourly-hotels-near-delhi-airport-t1",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/hourly-hotels-in-south-delhi",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/hourly-hotels-in-laxmi-nagar",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/hourly-hotels-near-anand-vihar-isbt",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/hourly-hotels-near-kashmiri-gate-isbt",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/day-use-rooms-near-delhi-airport",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/day-use-rooms-near-ndls-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/day-use-rooms-in-south-delhi",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/cheap-hotels-under-999-in-paharganj",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/cheap-hotels-under-999-near-ndls",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/cheap-hotels-under-999-in-mahipalpur",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/cheap-hotels-under-999-in-laxmi-nagar",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/cheap-hotels-under-1499-in-paharganj",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/cheap-hotels-under-1499-near-airport",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/cheap-hotels-under-1499-in-south-delhi",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/cheap-hotels-under-1999-in-aerocity",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/backpacker-hostels-in-paharganj",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/backpacker-hostels-in-south-delhi",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/backpacker-hostels-in-old-delhi",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/3-star-hotels-in-aerocity",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/3-star-hotels-in-south-delhi",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/4-star-hotels-in-aerocity",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/4-star-hotels-in-south-delhi",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/5-star-luxury-hotels-in-aerocity",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/boutique-hotels-in-south-delhi",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/hotels-with-swimming-pool-in-delhi",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/hotels-with-swimming-pool-in-aerocity",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/hotels-with-swimming-pool-in-south-delhi",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/hotels-with-free-breakfast-in-delhi",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/hotels-with-free-breakfast-near-airport",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/hotels-with-airport-shuttle-in-mahipalpur",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/hotels-with-airport-shuttle-in-aerocity",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/hotels-with-24-hour-check-in-near-airport",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/hotels-with-24-hour-check-in-near-ndls-station",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/hotels-with-free-parking-in-delhi",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/hotels-with-free-parking-in-south-delhi",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/hotels-with-balcony-view-in-south-delhi",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/hotels-with-kitchenette-in-south-delhi",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/pet-friendly-hotels-in-delhi",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/pet-friendly-hotels-in-south-delhi",
+      "priority": "0.8"
+    },
+    {
+      "url": "/en/hotels/delhi/delhi-micro-zone-1",
+      "priority": "0.9"
+    },
+    {
+      "url": "/en/hotels/delhi/delhi-micro-zone-2",
       "priority": "0.9"
     }
   ]

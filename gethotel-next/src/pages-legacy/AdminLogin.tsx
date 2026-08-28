@@ -147,7 +147,7 @@ export default function AdminLoginPage() {
             }
 
             // Successfully Verified PIN -> Redirect to Super Admin Dashboard
-            router("/admin/super");
+            router("/.controlhub");
         } catch (err: any) {
             setError(cleanErrorMessage(err.message));
         } finally {

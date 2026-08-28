@@ -14,7 +14,7 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api') ||
     pathname.startsWith('/static') ||
-    pathname.includes('.')
+    (!pathname.startsWith('/.controlhub') && /\.[a-zA-Z0-9]+$/.test(pathname))
   ) {
     return NextResponse.next();
   }

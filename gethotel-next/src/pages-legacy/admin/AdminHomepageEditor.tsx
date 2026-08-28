@@ -5,8 +5,9 @@ import { Loader2, Save, LayoutTemplate, Link as LinkIcon, Image as ImageIcon, Pl
 import { adminApi, homepageApi } from "@/lib/api";
 
 const DEFAULT_DESTINATIONS = [
-    { name: "Goa", image: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?q=80&w=800&auto=format&fit=crop", properties: "1,240+ Hotels", linkedHotelIds: [] },
-    { name: "Kerala", image: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?q=80&w=800&auto=format&fit=crop", properties: "850+ Hotels", linkedHotelIds: [] },
+    { name: "Indonesia", flag: "🇮🇩", image: "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?q=80&w=800&auto=format&fit=crop", properties: "1,345+ Verified Stays", linkedHotelIds: [] },
+    { name: "Goa", flag: "🌴", image: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?q=80&w=800&auto=format&fit=crop", properties: "1,240+ Verified Stays", linkedHotelIds: [] },
+    { name: "Kerala", flag: "⛵", image: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?q=80&w=800&auto=format&fit=crop", properties: "850+ Verified Stays", linkedHotelIds: [] },
 ];
 
 const DEFAULT_COLLECTIONS = [
@@ -151,7 +152,6 @@ export default function AdminHomepageEditor() {
                         setHeadlines(merged.slice(0, 3));
                     }
                     if (configRes.data.destinations) {
-                        // Ensure everyone has a linkedHotelIds array
                         const dests = configRes.data.destinations.map((d: any) => ({
                             ...d,
                             linkedHotelIds: d.linkedHotelIds || []
@@ -444,27 +444,27 @@ export default function AdminHomepageEditor() {
     const selectedIdsInModal = getLinkingTargetIds();
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500 pb-20">
+        <div className="space-y-8 animate-in fade-in duration-500 pb-20 text-neutral-100">
             {/* Header / Hero Save Config */}
-            <section className="bg-white p-8 rounded-sm border border-slate-200 shadow-sm">
-                <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
-                        <LayoutTemplate className="w-4 h-4 text-brand-600" /> Hero Section text
+            <section className="bg-[#0c0c0c] p-6 md:p-8 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)]">
+                <div className="flex items-center justify-between mb-6 pb-4 border-b border-[#1f1f1f]">
+                    <h3 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2 font-sans">
+                        <LayoutTemplate className="w-4 h-4 text-emerald-400" /> Hero Section Headlines & Carousel
                     </h3>
                     <button 
                         onClick={handleSaveConfig}
                         disabled={saving}
-                        className={`px-6 py-3 rounded-sm text-[10px] font-black uppercase tracking-widest transition-colors flex items-center gap-2 shadow-sm ${
+                        className={`px-5 py-2.5 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-all flex items-center gap-2 shadow-md cursor-pointer ${
                             saving 
-                                ? "bg-yellow-500 hover:bg-yellow-600 text-slate-900 cursor-wait" 
+                                ? "bg-amber-500 text-black cursor-wait" 
                                 : savedConfig 
-                                    ? "bg-emerald-600 hover:bg-emerald-700 text-white" 
-                                    : "bg-yellow-500 hover:bg-yellow-600 text-slate-900 font-black"
+                                    ? "bg-emerald-600 hover:bg-emerald-500 text-white" 
+                                    : "bg-white hover:bg-neutral-200 text-black"
                         }`}
                     >
                         {saving ? (
                             <>
-                                <Loader2 className="w-4 h-4 animate-spin text-slate-900" />
+                                <Loader2 className="w-4 h-4 animate-spin text-black" />
                                 Saving...
                             </>
                         ) : savedConfig ? (
@@ -474,31 +474,31 @@ export default function AdminHomepageEditor() {
                             </>
                         ) : (
                             <>
-                                <Save className="w-4 h-4 text-slate-900" />
-                                Update
+                                <Save className="w-4 h-4 text-black" />
+                                Save Changes
                             </>
                         )}
                     </button>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 mt-2 gap-4">
                     <div className="flex items-center gap-4">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Headline Cycles (Max 3)</span>
-                        <div className="flex items-center gap-1.5 bg-slate-100 px-2.5 py-1.5 rounded-sm border border-slate-200">
-                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Pause Interval</span>
+                        <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest block">Headline Cycles (Max 3)</span>
+                        <div className="flex items-center gap-1.5 bg-[#141414] px-3 py-1.5 rounded-xl border border-[#262626]">
+                            <span className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest">Pause Interval</span>
                             <select
                                 value={heroTransitionInterval}
                                 onChange={(e) => {
                                     setHeroTransitionInterval(e.target.value);
                                     setSavedConfig(false);
                                 }}
-                                className="bg-transparent text-[10px] font-black text-slate-800 uppercase tracking-wider outline-none border-none cursor-pointer"
+                                className="bg-transparent text-xs font-bold text-white uppercase tracking-wider outline-none border-none cursor-pointer"
                             >
-                                <option value="3">3 Seconds</option>
-                                <option value="4">4 Seconds</option>
-                                <option value="5">5 Seconds</option>
-                                <option value="6">6 Seconds</option>
-                                <option value="8">8 Seconds</option>
-                                <option value="10">10 Seconds</option>
+                                <option value="3" className="bg-black text-white">3 Seconds</option>
+                                <option value="4" className="bg-black text-white">4 Seconds</option>
+                                <option value="5" className="bg-black text-white">5 Seconds</option>
+                                <option value="6" className="bg-black text-white">6 Seconds</option>
+                                <option value="8" className="bg-black text-white">8 Seconds</option>
+                                <option value="10" className="bg-black text-white">10 Seconds</option>
                             </select>
                         </div>
                     </div>
@@ -506,7 +506,7 @@ export default function AdminHomepageEditor() {
                         <button 
                             type="button" 
                             onClick={handleAddHeadline}
-                            className="text-[10px] font-black text-brand-600 uppercase tracking-widest hover:underline flex items-center gap-1 self-start sm:self-auto"
+                            className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest hover:text-emerald-300 flex items-center gap-1 cursor-pointer"
                         >
                             <Plus className="w-3.5 h-3.5" /> Add Headline
                         </button>
@@ -515,27 +515,27 @@ export default function AdminHomepageEditor() {
 
                 <div className="space-y-4">
                     {headlines.map((headline: any, idx: number) => (
-                        <div key={idx} className="bg-slate-50 p-4 rounded-sm border border-slate-200 relative flex flex-col md:flex-row gap-4 items-center">
-                            <span className="text-xs font-black text-slate-400 uppercase tracking-wider md:w-16"># {idx + 1}</span>
+                        <div key={idx} className="bg-[#141414] p-4 rounded-xl border border-[#222222] relative flex flex-col md:flex-row gap-4 items-center">
+                            <span className="text-xs font-black text-neutral-500 uppercase tracking-wider md:w-16"># {idx + 1}</span>
                             <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                                 <div>
-                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Main Title Part</label>
+                                    <label className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest block mb-1">Main Title Part</label>
                                     <input 
                                         type="text" 
                                         value={headline.title}
                                         onChange={(e) => handleUpdateHeadline(idx, 'title', e.target.value)}
                                         placeholder="e.g. Where would you"
-                                        className="w-full bg-white border border-slate-200 rounded-sm px-3 py-2 text-xs font-bold outline-none focus:border-brand-500 transition-colors"
+                                        className="w-full bg-[#181818] border border-[#282828] text-white rounded-xl px-3.5 py-2.5 text-xs font-bold outline-none focus:border-neutral-400 transition-colors"
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Highlight Part (Blue & Italic)</label>
+                                    <label className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest block mb-1">Highlight Part (Blue Accent)</label>
                                     <input 
                                         type="text" 
                                         value={headline.highlight}
                                         onChange={(e) => handleUpdateHeadline(idx, 'highlight', e.target.value)}
                                         placeholder="e.g. like to stay?"
-                                        className="w-full bg-white border border-slate-200 rounded-sm px-3 py-2 text-xs font-bold outline-none focus:border-brand-500 transition-colors"
+                                        className="w-full bg-[#181818] border border-[#282828] text-white rounded-xl px-3.5 py-2.5 text-xs font-bold outline-none focus:border-neutral-400 transition-colors"
                                     />
                                 </div>
                             </div>
@@ -544,7 +544,7 @@ export default function AdminHomepageEditor() {
                                 <button 
                                     type="button"
                                     onClick={() => handleRemoveHeadline(idx)}
-                                    className="text-red-500 hover:bg-red-50 p-2 rounded-sm shrink-0 animate-pulse"
+                                    className="text-red-400 hover:text-red-300 hover:bg-[#201010] p-2 rounded-xl shrink-0 cursor-pointer"
                                 >
                                     <Trash2 className="w-4 h-4" />
                                 </button>
@@ -555,55 +555,65 @@ export default function AdminHomepageEditor() {
             </section>
 
             {/* Trending Destinations Editor */}
-            <section className="bg-white p-8 rounded-sm border border-slate-200 shadow-sm">
-                <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
-                        <ImageIcon className="w-4 h-4 text-emerald-600" /> Trending Destinations
+            <section className="bg-[#0c0c0c] p-6 md:p-8 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)]">
+                <div className="flex items-center justify-between mb-6 pb-4 border-b border-[#1f1f1f]">
+                    <h3 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
+                        <ImageIcon className="w-4 h-4 text-emerald-400" /> Destination Cards Editor
                     </h3>
-                    <button onClick={handleAddDestination} className="text-[10px] font-black text-brand-600 uppercase tracking-widest hover:underline flex items-center gap-1">
+                    <button onClick={handleAddDestination} className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest hover:text-emerald-300 flex items-center gap-1 cursor-pointer">
                         <Plus className="w-3.5 h-3.5" /> Add Destination
                     </button>
                 </div>
                 
                 <div className="space-y-4">
                     {destinations.map((dest, i) => (
-                        <div key={i} className="flex flex-col md:flex-row gap-4 items-start md:items-center bg-slate-50 p-4 rounded-sm border border-slate-200 relative group hover:border-slate-300 transition-colors">
+                        <div key={i} className="flex flex-col md:flex-row gap-4 items-start md:items-center bg-[#141414] p-4 rounded-xl border border-[#222222] relative group hover:border-neutral-700 transition-colors">
                             {/* Destination Thumbnail Preview */}
-                            <div className="w-16 h-16 rounded-lg bg-slate-200 border border-slate-300 overflow-hidden shrink-0 flex items-center justify-center relative shadow-sm">
+                            <div className="w-16 h-16 rounded-xl bg-[#1c1c1c] border border-[#2c2c2c] overflow-hidden shrink-0 flex items-center justify-center relative shadow-inner">
                                 {dest.image ? (
                                     <img src={dest.image} alt={dest.name || "Destination"} className="w-full h-full object-cover" />
                                 ) : (
-                                    <ImageIcon className="w-6 h-6 text-slate-400" />
+                                    <ImageIcon className="w-6 h-6 text-neutral-500" />
                                 )}
                             </div>
 
-                            <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+                            <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4 w-full">
                                 <div>
-                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">City Name</label>
+                                    <label className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest block mb-1">Destination</label>
                                     <input 
                                         type="text" 
                                         value={dest.name}
                                         onChange={(e) => handleUpdateDestination(i, 'name', e.target.value)}
-                                        placeholder="e.g. Goa"
-                                        className="w-full bg-white border border-slate-200 rounded-sm px-3 py-2 text-xs font-bold outline-none focus:border-brand-500 transition-colors"
+                                        placeholder="e.g. Indonesia"
+                                        className="w-full bg-[#181818] border border-[#282828] text-white rounded-xl px-3.5 py-2.5 text-xs font-bold outline-none focus:border-neutral-400 transition-colors"
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Subtitle</label>
+                                    <label className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest block mb-1">Flag / Emoji</label>
+                                    <input 
+                                        type="text" 
+                                        value={dest.flag || ""}
+                                        onChange={(e) => handleUpdateDestination(i, 'flag', e.target.value)}
+                                        placeholder="e.g. 🇮🇩"
+                                        className="w-full bg-[#181818] border border-[#282828] text-white rounded-xl px-3.5 py-2.5 text-xs font-bold outline-none focus:border-neutral-400 transition-colors"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest block mb-1">Stats Line</label>
                                     <input 
                                         type="text" 
                                         value={dest.properties}
                                         onChange={(e) => handleUpdateDestination(i, 'properties', e.target.value)}
-                                        placeholder="e.g. 1,240+ Hotels"
-                                        className="w-full bg-white border border-slate-200 rounded-sm px-3 py-2 text-xs font-bold outline-none focus:border-brand-500 transition-colors"
+                                        placeholder="e.g. 1,345 Hotels • 24 Packages"
+                                        className="w-full bg-[#181818] border border-[#282828] text-white rounded-xl px-3.5 py-2.5 text-xs font-bold outline-none focus:border-neutral-400 transition-colors"
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Image Control</label>
+                                    <label className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest block mb-1">Image Control</label>
                                     <div className="flex gap-2">
-                                        <label className="px-4 py-2 bg-slate-900 text-white hover:bg-black rounded-sm text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-1.5 cursor-pointer select-none transition-colors shrink-0">
+                                        <label className="px-3.5 py-2.5 bg-[#202020] hover:bg-[#2a2a2a] text-white rounded-xl text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer select-none transition-colors shrink-0 border border-[#333]">
                                             <Plus className="w-3.5 h-3.5" />
-                                            <span>{dest.image ? "Change Image" : "Upload Image"}</span>
+                                            <span>{dest.image ? "Change" : "Upload"}</span>
                                             <input 
                                                 type="file" 
                                                 accept="image/*"
@@ -625,7 +635,7 @@ export default function AdminHomepageEditor() {
                                             <button 
                                                 type="button"
                                                 onClick={() => handleUpdateDestination(i, 'image', '')}
-                                                className="px-3 py-2 text-red-500 hover:bg-red-50 border border-slate-200 hover:border-red-100 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all shrink-0 cursor-pointer"
+                                                className="px-3 py-2 text-red-400 hover:bg-[#201010] border border-[#301818] rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all shrink-0 cursor-pointer"
                                                 title="Clear Image"
                                             >
                                                 Remove
@@ -637,13 +647,13 @@ export default function AdminHomepageEditor() {
                             
                             {/* Link Hotels Control */}
                             <div className="w-full md:w-auto shrink-0 flex flex-col">
-                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Granular Control</span>
+                                <span className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest block mb-1">Property Link</span>
                                 <button 
                                     onClick={() => setLinkingTarget({ type: 'destination', index: i })}
-                                    className={`flex items-center gap-1.5 px-3 py-2 rounded-sm text-[10px] font-black uppercase tracking-widest border transition-all ${
+                                    className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider border transition-all cursor-pointer ${
                                         getLinkedHotelsCount('destination', i) > 0 
-                                            ? "bg-brand-50 border-brand-200 text-brand-700 hover:bg-brand-100" 
-                                            : "bg-white border-slate-200 text-slate-600 hover:bg-slate-100"
+                                            ? "bg-emerald-950/60 border-emerald-800/50 text-emerald-300" 
+                                            : "bg-[#1c1c1c] border-[#2c2c2c] text-neutral-300 hover:text-white"
                                     }`}
                                 >
                                     <LinkIcon className="w-3.5 h-3.5" />
@@ -655,7 +665,7 @@ export default function AdminHomepageEditor() {
                                 </button>
                             </div>
 
-                            <button onClick={() => handleRemoveDestination(i)} className="text-red-500 font-bold text-xs p-2 hover:bg-red-50 rounded-sm shrink-0 md:self-end md:mb-0.5">
+                            <button onClick={() => handleRemoveDestination(i)} className="text-red-400 p-2 hover:bg-[#201010] rounded-xl shrink-0 md:self-end md:mb-0.5 cursor-pointer">
                                 <Trash2 className="w-4 h-4" />
                             </button>
                         </div>
@@ -664,65 +674,65 @@ export default function AdminHomepageEditor() {
             </section>
 
             {/* Featured Collections Editor */}
-            <section className="bg-white p-8 rounded-sm border border-slate-200 shadow-sm">
-                <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
-                        <Layers className="w-4 h-4 text-brand-600" /> Featured Collections
+            <section className="bg-[#0c0c0c] p-6 md:p-8 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)]">
+                <div className="flex items-center justify-between mb-6 pb-4 border-b border-[#1f1f1f]">
+                    <h3 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
+                        <Layers className="w-4 h-4 text-blue-400" /> Featured Collections
                     </h3>
-                    <button onClick={handleAddCollection} className="text-[10px] font-black text-brand-600 uppercase tracking-widest hover:underline flex items-center gap-1">
+                    <button onClick={handleAddCollection} className="text-[10px] font-bold text-blue-400 uppercase tracking-widest hover:text-blue-300 flex items-center gap-1 cursor-pointer">
                         <Plus className="w-3.5 h-3.5" /> Add Collection
                     </button>
                 </div>
                 
                 <div className="space-y-4">
                     {collections.map((coll, i) => (
-                        <div key={i} className="flex flex-col md:flex-row gap-4 items-start md:items-center bg-slate-50 p-4 rounded-sm border border-slate-200 relative group hover:border-slate-300 transition-colors animate-in fade-in-50 duration-300">
+                        <div key={i} className="flex flex-col md:flex-row gap-4 items-start md:items-center bg-[#141414] p-4 rounded-xl border border-[#222222] relative group hover:border-neutral-700 transition-colors animate-in fade-in-50 duration-300">
                             {/* Collection Thumbnail Preview */}
-                            <div className="w-16 h-16 rounded-lg bg-slate-200 border border-slate-300 overflow-hidden shrink-0 flex items-center justify-center relative shadow-sm">
+                            <div className="w-16 h-16 rounded-xl bg-[#1c1c1c] border border-[#2c2c2c] overflow-hidden shrink-0 flex items-center justify-center relative shadow-inner">
                                 {coll.image ? (
                                     <img src={coll.image} alt={coll.title || "Collection"} className="w-full h-full object-cover" />
                                 ) : (
-                                    <ImageIcon className="w-6 h-6 text-slate-400" />
+                                    <ImageIcon className="w-6 h-6 text-neutral-500" />
                                 )}
                             </div>
 
                             <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 w-full">
                                 <div>
-                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Collection Title</label>
+                                    <label className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest block mb-1">Collection Title</label>
                                     <input 
                                         type="text" 
                                         value={coll.title}
                                         onChange={(e) => handleUpdateCollection(i, 'title', e.target.value)}
                                         placeholder="e.g. Luxury Stays"
-                                        className="w-full bg-white border border-slate-200 rounded-sm px-3 py-2 text-xs font-bold outline-none focus:border-brand-500 transition-colors"
+                                        className="w-full bg-[#181818] border border-[#282828] text-white rounded-xl px-3.5 py-2.5 text-xs font-bold outline-none focus:border-neutral-400 transition-colors"
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Subtitle</label>
+                                    <label className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest block mb-1">Subtitle</label>
                                     <input 
                                         type="text" 
                                         value={coll.subtitle}
                                         onChange={(e) => handleUpdateCollection(i, 'subtitle', e.target.value)}
                                         placeholder="e.g. Premium stays"
-                                        className="w-full bg-white border border-slate-200 rounded-sm px-3 py-2 text-xs font-bold outline-none focus:border-brand-500 transition-colors"
+                                        className="w-full bg-[#181818] border border-[#282828] text-white rounded-xl px-3.5 py-2.5 text-xs font-bold outline-none focus:border-neutral-400 transition-colors"
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Label Tag</label>
+                                    <label className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest block mb-1">Label Tag</label>
                                     <input 
                                         type="text" 
                                         value={coll.label}
                                         onChange={(e) => handleUpdateCollection(i, 'label', e.target.value)}
                                         placeholder="e.g. Premium"
-                                        className="w-full bg-white border border-slate-200 rounded-sm px-3 py-2 text-xs font-bold outline-none focus:border-brand-500 transition-colors"
+                                        className="w-full bg-[#181818] border border-[#282828] text-white rounded-xl px-3.5 py-2.5 text-xs font-bold outline-none focus:border-neutral-400 transition-colors"
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Image Control</label>
+                                    <label className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest block mb-1">Image Control</label>
                                     <div className="flex gap-2">
-                                        <label className="px-4 py-2 bg-slate-900 text-white hover:bg-black rounded-sm text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-1.5 cursor-pointer select-none transition-colors shrink-0">
+                                        <label className="px-3.5 py-2.5 bg-[#202020] hover:bg-[#2a2a2a] text-white rounded-xl text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer select-none transition-colors shrink-0 border border-[#333]">
                                             <Plus className="w-3.5 h-3.5" />
-                                            <span>{coll.image ? "Change Image" : "Upload Image"}</span>
+                                            <span>{coll.image ? "Change" : "Upload"}</span>
                                             <input 
                                                 type="file" 
                                                 accept="image/*"
@@ -744,7 +754,7 @@ export default function AdminHomepageEditor() {
                                             <button 
                                                 type="button"
                                                 onClick={() => handleUpdateCollection(i, 'image', '')}
-                                                className="px-3 py-2 text-red-500 hover:bg-red-50 border border-slate-200 hover:border-red-100 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all shrink-0 cursor-pointer"
+                                                className="px-3 py-2 text-red-400 hover:bg-[#201010] border border-[#301818] rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all shrink-0 cursor-pointer"
                                                 title="Clear Image"
                                             >
                                                 Remove
@@ -756,13 +766,13 @@ export default function AdminHomepageEditor() {
                             
                             {/* Link Hotels Control */}
                             <div className="w-full md:w-auto shrink-0 flex flex-col">
-                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Granular Control</span>
+                                <span className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest block mb-1">Property Link</span>
                                 <button 
                                     onClick={() => setLinkingTarget({ type: 'collection', index: i })}
-                                    className={`flex items-center gap-1.5 px-3 py-2 rounded-sm text-[10px] font-black uppercase tracking-widest border transition-all ${
+                                    className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider border transition-all cursor-pointer ${
                                         getLinkedHotelsCount('collection', i) > 0 
-                                            ? "bg-brand-50 border-brand-200 text-brand-700 hover:bg-brand-100" 
-                                            : "bg-white border-slate-200 text-slate-600 hover:bg-slate-100"
+                                            ? "bg-blue-950/60 border-blue-800/50 text-blue-300" 
+                                            : "bg-[#1c1c1c] border-[#2c2c2c] text-neutral-300 hover:text-white"
                                     }`}
                                 >
                                     <LinkIcon className="w-3.5 h-3.5" />
@@ -774,7 +784,7 @@ export default function AdminHomepageEditor() {
                                 </button>
                             </div>
 
-                            <button onClick={() => handleRemoveCollection(i)} className="text-red-500 font-bold text-xs p-2 hover:bg-red-50 rounded-sm shrink-0 md:self-end md:mb-0.5">
+                            <button onClick={() => handleRemoveCollection(i)} className="text-red-400 p-2 hover:bg-[#201010] rounded-xl shrink-0 md:self-end md:mb-0.5 cursor-pointer">
                                 <Trash2 className="w-4 h-4" />
                             </button>
                         </div>
@@ -782,282 +792,27 @@ export default function AdminHomepageEditor() {
                 </div>
             </section>
 
-            {/* Destination Stories Editor */}
-            <section className="bg-white p-8 rounded-sm border border-slate-200 shadow-sm">
-                <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
-                        <ImageIcon className="w-4 h-4 text-purple-600" /> Destination Stories
-                    </h3>
-                    <button onClick={handleAddStory} className="text-[10px] font-black text-brand-600 uppercase tracking-widest hover:underline flex items-center gap-1">
-                        <Plus className="w-3.5 h-3.5" /> Add Story
-                    </button>
-                </div>
-
-                <div className="space-y-4">
-                    {stories.map((story, i) => {
-                        const isExpanded = expandedStoryIndex === i;
-                        return (
-                            <div key={i} className="bg-slate-50 rounded-sm border border-slate-200 overflow-hidden transition-colors">
-                                {/* Story Header / Summary Row */}
-                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 gap-4 border-b border-slate-200/50 bg-slate-50/50">
-                                    <div className="flex items-center gap-4 min-w-0">
-                                        <div className="w-12 h-12 rounded-full border border-slate-300 overflow-hidden shrink-0 flex items-center justify-center relative bg-slate-200">
-                                            {story.image ? (
-                                                <img src={story.image} alt={story.label || "Story"} className="w-full h-full object-cover" />
-                                            ) : (
-                                                <ImageIcon className="w-5 h-5 text-slate-400" />
-                                            )}
-                                        </div>
-                                        <div>
-                                            <p className="text-xs font-black text-slate-900 truncate">{story.label || `Story #${i + 1}`}</p>
-                                            <p className="text-[10px] text-slate-400 font-bold mt-0.5">{story.slides?.length || 0} Slides • {story.badge || "No badge"}</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <button 
-                                            type="button"
-                                            onClick={() => setExpandedStoryIndex(isExpanded ? null : i)}
-                                            className="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 text-[10px] font-black uppercase tracking-wider rounded-sm hover:bg-slate-100 transition-colors"
-                                        >
-                                            {isExpanded ? "Collapse Slides" : "Edit Slides"}
-                                        </button>
-                                        <button 
-                                            type="button"
-                                            onClick={() => handleRemoveStory(i)} 
-                                            className="text-red-500 hover:bg-red-50 p-2 rounded-sm border border-transparent hover:border-red-100 transition-colors"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* Expanded Story Fields & Slides Editor */}
-                                {isExpanded && (
-                                    <div className="p-6 bg-white border-t border-slate-200 space-y-6">
-                                        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                                            <div>
-                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Story Label (City Name)</label>
-                                                <input 
-                                                    type="text" 
-                                                    value={story.label}
-                                                    onChange={(e) => handleUpdateStory(i, 'label', e.target.value)}
-                                                    placeholder="e.g. Goa"
-                                                    className="w-full bg-slate-50 border border-slate-200 rounded-sm px-3 py-2 text-xs font-bold outline-none focus:border-brand-500 transition-colors"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Link Destination (Query)</label>
-                                                <input 
-                                                    type="text" 
-                                                    value={story.query}
-                                                    onChange={(e) => handleUpdateStory(i, 'query', e.target.value)}
-                                                    placeholder="e.g. Hotels in Goa"
-                                                    className="w-full bg-slate-50 border border-slate-200 rounded-sm px-3 py-2 text-xs font-bold outline-none focus:border-brand-500 transition-colors"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Action Button Text</label>
-                                                <input 
-                                                    type="text" 
-                                                    value={story.buttonText || ''}
-                                                    onChange={(e) => handleUpdateStory(i, 'buttonText', e.target.value)}
-                                                    placeholder="e.g. Explore Goa"
-                                                    className="w-full bg-slate-50 border border-slate-200 rounded-sm px-3 py-2 text-xs font-bold outline-none focus:border-brand-500 transition-colors"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Badge (e.g. Hot, Trend)</label>
-                                                <input 
-                                                    type="text" 
-                                                    value={story.badge || ''}
-                                                    onChange={(e) => handleUpdateStory(i, 'badge', e.target.value)}
-                                                    placeholder="e.g. Hot"
-                                                    className="w-full bg-slate-50 border border-slate-200 rounded-sm px-3 py-2 text-xs font-bold outline-none focus:border-brand-500 transition-colors"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Cover Image Control</label>
-                                                <div className="flex gap-2">
-                                                    <label className="px-4 py-2 bg-slate-900 text-white hover:bg-black rounded-sm text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-1.5 cursor-pointer select-none transition-colors shrink-0">
-                                                        <Plus className="w-3.5 h-3.5" />
-                                                        <span>{story.image ? "Change Cover" : "Upload Cover"}</span>
-                                                        <input 
-                                                            type="file" 
-                                                            accept="image/*"
-                                                            className="hidden"
-                                                            onChange={(e) => {
-                                                                const file = e.target.files?.[0];
-                                                                if (file) {
-                                                                    const reader = new FileReader();
-                                                                    reader.onloadend = () => {
-                                                                        handleUpdateStory(i, 'image', reader.result);
-                                                                    };
-                                                                    reader.readAsDataURL(file);
-                                                                }
-                                                            }}
-                                                        />
-                                                    </label>
-                                                    {story.image && (
-                                                        <button 
-                                                            type="button"
-                                                            onClick={() => handleUpdateStory(i, 'image', '')}
-                                                            className="px-3 py-2 text-red-500 hover:bg-red-50 border border-slate-200 hover:border-red-100 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all shrink-0 cursor-pointer"
-                                                            title="Clear Image"
-                                                        >
-                                                            Remove
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Slide list editor */}
-                                        <div className="border-t border-slate-100 pt-4 space-y-4">
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-[10px] font-black text-slate-800 uppercase tracking-wider">Story Slides ({story.slides?.length || 0})</span>
-                                                <button 
-                                                    type="button"
-                                                    onClick={() => handleAddSlide(i)}
-                                                    className="text-[9px] font-black text-brand-600 uppercase tracking-widest hover:underline flex items-center gap-1"
-                                                >
-                                                    <Plus className="w-3.5 h-3.5" /> Add Slide
-                                                </button>
-                                            </div>
-
-                                            {story.slides && story.slides.length > 0 ? (
-                                                <div className="space-y-4">
-                                                    {story.slides.map((slide: any, sIdx: number) => (
-                                                        <div key={sIdx} className="bg-slate-50 p-4 rounded-sm border border-slate-200 relative group flex flex-col md:flex-row gap-4 items-start md:items-center">
-                                                            {/* Slide preview image */}
-                                                            <div className="w-14 h-14 rounded-md bg-slate-200 border border-slate-300 overflow-hidden shrink-0 flex items-center justify-center relative">
-                                                                {slide.image ? (
-                                                                    <img src={slide.image} alt={slide.title || "Slide"} className="w-full h-full object-cover" />
-                                                                ) : (
-                                                                    <ImageIcon className="w-5 h-5 text-slate-400" />
-                                                                )}
-                                                            </div>
-
-                                                            <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4 w-full">
-                                                                <div>
-                                                                    <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-1">Slide Type</label>
-                                                                    <select
-                                                                        value={slide.type || 'intro'}
-                                                                        onChange={(e) => handleUpdateSlide(i, sIdx, 'type', e.target.value)}
-                                                                        className="w-full bg-white border border-slate-200 rounded-sm px-2 py-1.5 text-xs font-bold outline-none focus:border-brand-500 transition-colors"
-                                                                    >
-                                                                        <option value="intro">Intro (Welcome)</option>
-                                                                        <option value="hotel">Hotel (Ad / Spotlight)</option>
-                                                                        <option value="review">Review (Feedback)</option>
-                                                                    </select>
-                                                                </div>
-                                                                <div>
-                                                                    <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-1">Slide Title</label>
-                                                                    <input 
-                                                                        type="text" 
-                                                                        value={slide.title || ''}
-                                                                        onChange={(e) => handleUpdateSlide(i, sIdx, 'title', e.target.value)}
-                                                                        placeholder="e.g. Welcome to Goa!"
-                                                                        className="w-full bg-white border border-slate-200 rounded-sm px-3 py-1.5 text-xs font-bold outline-none focus:border-brand-500 transition-colors"
-                                                                    />
-                                                                </div>
-                                                                <div>
-                                                                    <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-1">Description</label>
-                                                                    <input 
-                                                                        type="text" 
-                                                                        value={slide.description || ''}
-                                                                        onChange={(e) => handleUpdateSlide(i, sIdx, 'description', e.target.value)}
-                                                                        placeholder="e.g. Sun, sand, and spice..."
-                                                                        className="w-full bg-white border border-slate-200 rounded-sm px-3 py-1.5 text-xs font-bold outline-none focus:border-brand-500 transition-colors"
-                                                                    />
-                                                                </div>
-                                                                <div>
-                                                                    <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-1">Slide Image Control</label>
-                                                                    <div className="flex gap-2">
-                                                                        <label className="px-3 py-1.5 bg-slate-900 text-white hover:bg-black rounded-sm text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-1.5 cursor-pointer select-none transition-colors shrink-0">
-                                                                            <Plus className="w-3 h-3" />
-                                                                            <span>{slide.image ? "Change Image" : "Upload Image"}</span>
-                                                                            <input 
-                                                                                type="file" 
-                                                                                accept="image/*"
-                                                                                className="hidden"
-                                                                                onChange={(e) => {
-                                                                                    const file = e.target.files?.[0];
-                                                                                    if (file) {
-                                                                                        const reader = new FileReader();
-                                                                                        reader.onloadend = () => {
-                                                                                            handleUpdateSlide(i, sIdx, 'image', reader.result);
-                                                                                        };
-                                                                                        reader.readAsDataURL(file);
-                                                                                    }
-                                                                                }}
-                                                                            />
-                                                                        </label>
-                                                                        {slide.image && (
-                                                                            <button 
-                                                                                type="button"
-                                                                                onClick={() => handleUpdateSlide(i, sIdx, 'image', '')}
-                                                                                className="px-2 py-1.5 text-red-500 hover:bg-red-50 border border-slate-200 hover:border-red-100 rounded-sm text-[9px] font-black uppercase tracking-widest transition-all shrink-0 cursor-pointer"
-                                                                                title="Clear Image"
-                                                                            >
-                                                                                Remove
-                                                                            </button>
-                                                                        )}
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-
-                                                            <button 
-                                                                type="button"
-                                                                onClick={() => handleRemoveSlide(i, sIdx)} 
-                                                                className="text-red-500 hover:bg-red-50 p-2 rounded-sm shrink-0 md:self-end md:mb-0.5"
-                                                            >
-                                                                <Trash2 className="w-4 h-4" />
-                                                            </button>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            ) : (
-                                                <div className="py-6 border border-dashed border-slate-200 rounded-lg flex flex-col items-center justify-center text-center">
-                                                    <p className="text-[10px] font-black text-slate-500">No slides configured for this story.</p>
-                                                    <button 
-                                                        type="button"
-                                                        onClick={() => handleAddSlide(i)}
-                                                        className="mt-2 text-[9px] font-black text-brand-600 uppercase tracking-widest hover:underline flex items-center gap-1"
-                                                    >
-                                                        <Plus className="w-3 h-3" /> Create First Slide
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        );
-                    })}
-                </div>
-            </section>
-
             {/* Trending Hotels Toggle List */}
-            <section className="bg-white p-8 rounded-sm border border-slate-200 shadow-sm">
-                <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest mb-6 flex items-center gap-2">
-                    <LinkIcon className="w-4 h-4 text-amber-600" /> Choose Trending Hotels
+            <section className="bg-[#0c0c0c] p-6 md:p-8 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)]">
+                <h3 className="text-xs font-black text-white uppercase tracking-widest mb-6 pb-4 border-b border-[#1f1f1f] flex items-center gap-2">
+                    <LinkIcon className="w-4 h-4 text-amber-400" /> Choose Trending Hotels
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {hotels.map(hotel => {
                         const isSelected = selectedTrendingIds.includes(hotel.id);
                         return (
-                            <div key={hotel.id} className="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-sm">
+                            <div key={hotel.id} className="flex items-center justify-between p-4 bg-[#141414] border border-[#222222] rounded-xl hover:border-neutral-700 transition-colors">
                                 <div>
-                                    <p className="text-xs font-black text-slate-900 line-clamp-1">{hotel.name}</p>
-                                    <p className="text-[10px] text-slate-500 font-bold">{hotel.city}</p>
+                                    <p className="text-xs font-bold text-white line-clamp-1">{hotel.name}</p>
+                                    <p className="text-[10px] text-neutral-400 font-semibold">{hotel.city}</p>
                                 </div>
                                 <button
                                     type="button"
                                     onClick={() => handleToggleTrendingLocal(hotel.id)}
-                                    className={`px-3 py-1.5 rounded-sm text-[9px] font-black uppercase tracking-widest transition-colors ${
+                                    className={`px-3 py-1.5 rounded-xl text-[9px] font-extrabold uppercase tracking-wider transition-all cursor-pointer ${
                                         isSelected 
-                                        ? "bg-amber-100 text-amber-700 border border-amber-200" 
-                                        : "bg-white text-slate-400 border border-slate-200 hover:bg-slate-100"
+                                        ? "bg-amber-950/80 text-amber-300 border border-amber-800/60 shadow-sm" 
+                                        : "bg-[#202020] text-neutral-400 border border-[#303030] hover:text-white"
                                     }`}
                                 >
                                     {isSelected ? "Selected" : "Add"}
@@ -1071,17 +826,17 @@ export default function AdminHomepageEditor() {
                         type="button"
                         onClick={handleSaveTrendingBulk}
                         disabled={savingTrending}
-                        className={`px-6 py-3 rounded-sm text-[10px] font-black uppercase tracking-widest transition-colors flex items-center gap-2 shadow-sm disabled:opacity-50 ${
+                        className={`px-6 py-2.5 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-all flex items-center gap-2 shadow-md cursor-pointer disabled:opacity-50 ${
                             savingTrending 
-                                ? "bg-yellow-500 hover:bg-yellow-600 text-slate-900 cursor-wait" 
+                                ? "bg-amber-500 text-black cursor-wait" 
                                 : savedTrending 
-                                    ? "bg-emerald-600 hover:bg-emerald-700 text-white" 
-                                    : "bg-amber-600 hover:bg-amber-700 text-white"
+                                    ? "bg-emerald-600 hover:bg-emerald-500 text-white" 
+                                    : "bg-white hover:bg-neutral-200 text-black"
                         }`}
                     >
                         {savingTrending ? (
                             <>
-                                <Loader2 className="w-4 h-4 animate-spin text-slate-900" />
+                                <Loader2 className="w-4 h-4 animate-spin text-black" />
                                 Updating...
                             </>
                         ) : savedTrending ? (
@@ -1092,7 +847,7 @@ export default function AdminHomepageEditor() {
                         ) : (
                             <>
                                 <Save className="w-4 h-4" />
-                                Update
+                                Update Trending
                             </>
                         )}
                     </button>
@@ -1101,37 +856,37 @@ export default function AdminHomepageEditor() {
 
             {/* Premium Link Hotels Modal */}
             {linkingTarget && (
-                <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-300">
-                    <div className="bg-white w-full max-w-2xl rounded-2xl border border-slate-200 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden animate-in zoom-in-95 duration-300">
+                <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-300">
+                    <div className="bg-[#0c0c0c] w-full max-w-2xl rounded-2xl border border-[#262626] shadow-2xl flex flex-col max-h-[85vh] overflow-hidden animate-in zoom-in-95 duration-300">
                         {/* Modal Header */}
-                        <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                        <div className="p-6 border-b border-[#1f1f1f] flex items-center justify-between bg-[#111111]">
                             <div>
-                                <h4 className="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                                    <Hotel className="w-4 h-4 text-brand-600" /> Link Explicit Hotels
+                                <h4 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
+                                    <Hotel className="w-4 h-4 text-emerald-400" /> Link Explicit Hotels
                                 </h4>
-                                <p className="text-xs text-slate-500 font-bold mt-1">
-                                    Define exactly which hotels load for: <span className="text-brand-600 font-extrabold">"{getLinkingTargetName()}"</span>
+                                <p className="text-xs text-neutral-400 font-semibold mt-1">
+                                    Define exactly which hotels load for: <span className="text-emerald-400 font-bold">"{getLinkingTargetName()}"</span>
                                 </p>
                             </div>
                             <button 
                                 onClick={() => { setLinkingTarget(null); setHotelSearch(""); }}
-                                className="w-8 h-8 rounded-full bg-slate-200/50 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-800 transition-all active:scale-90"
+                                className="w-8 h-8 rounded-full bg-[#1f1f1f] hover:bg-[#2a2a2a] flex items-center justify-center text-neutral-400 hover:text-white transition-all cursor-pointer"
                             >
                                 <X className="w-4 h-4" />
                             </button>
                         </div>
 
                         {/* Modal Toolbar */}
-                        <div className="p-4 border-b border-slate-100 bg-white flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                        <div className="p-4 border-b border-[#1f1f1f] bg-[#0c0c0c] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                             {/* Search bar */}
                             <div className="relative flex-1">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
                                 <input 
                                     type="text" 
                                     value={hotelSearch}
                                     onChange={(e) => setHotelSearch(e.target.value)}
                                     placeholder="Search by hotel name or city..."
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-xs font-bold focus:ring-2 focus:ring-brand-500 outline-none"
+                                    className="w-full bg-[#161616] border border-[#282828] text-white rounded-xl pl-9 pr-4 py-2 text-xs font-bold focus:border-neutral-400 outline-none"
                                 />
                             </div>
 
@@ -1139,13 +894,13 @@ export default function AdminHomepageEditor() {
                             <div className="flex items-center gap-2">
                                 <button 
                                     onClick={() => handleSelectAllHotels(modalFilteredIds)}
-                                    className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[9px] font-black uppercase tracking-wider rounded-lg transition-colors active:scale-95"
+                                    className="px-3 py-2 bg-[#1c1c1c] hover:bg-[#262626] text-neutral-200 text-[9px] font-bold uppercase tracking-wider rounded-lg transition-colors cursor-pointer border border-[#303030]"
                                 >
                                     Select All Filtered
                                 </button>
                                 <button 
                                     onClick={() => handleClearAllHotels(modalFilteredIds)}
-                                    className="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 text-[9px] font-black uppercase tracking-wider rounded-lg transition-colors active:scale-95"
+                                    className="px-3 py-2 bg-red-950/50 hover:bg-red-950 text-red-300 text-[9px] font-bold uppercase tracking-wider rounded-lg transition-colors cursor-pointer border border-red-900/50"
                                 >
                                     Clear Filtered
                                 </button>
@@ -1153,17 +908,17 @@ export default function AdminHomepageEditor() {
                         </div>
 
                         {/* Modal Selection Counter Banner */}
-                        <div className="px-6 py-2.5 bg-brand-50/50 text-[10px] font-bold text-brand-700 border-b border-slate-100 flex items-center justify-between shrink-0">
-                            <span>Selected: {selectedIdsInModal.length} hotels in total</span>
+                        <div className="px-6 py-2.5 bg-[#141414] text-[10px] font-bold text-neutral-300 border-b border-[#1f1f1f] flex items-center justify-between shrink-0">
+                            <span>Selected: <strong className="text-white">{selectedIdsInModal.length}</strong> hotels in total</span>
                             {hotelSearch && (
-                                <span className="text-slate-500 font-semibold">
+                                <span className="text-neutral-500 font-semibold">
                                     Showing {modalFilteredHotels.length} of {hotels.length} hotels
                                 </span>
                             )}
                         </div>
 
                         {/* Modal Hotel List */}
-                        <div className="flex-1 overflow-y-auto p-6 bg-slate-50/30 space-y-2.5">
+                        <div className="flex-1 overflow-y-auto p-6 bg-[#080808] space-y-2.5">
                             {modalFilteredHotels.length > 0 ? (
                                 modalFilteredHotels.map(hotel => {
                                     const isSelected = selectedIdsInModal.includes(hotel.id);
@@ -1171,24 +926,24 @@ export default function AdminHomepageEditor() {
                                         <div 
                                             key={hotel.id}
                                             onClick={() => handleToggleHotelLink(hotel.id)}
-                                            className={`p-3.5 bg-white border rounded-xl flex items-center justify-between gap-4 cursor-pointer transition-all active:scale-[0.99] select-none hover:shadow-md ${
+                                            className={`p-3.5 bg-[#121212] border rounded-xl flex items-center justify-between gap-4 cursor-pointer transition-all select-none hover:border-neutral-600 ${
                                                 isSelected 
-                                                    ? "border-brand-500 shadow-sm ring-1 ring-brand-500/20" 
-                                                    : "border-slate-200 hover:border-slate-300"
+                                                    ? "border-emerald-500/80 bg-[#16201a]" 
+                                                    : "border-[#222222]"
                                             }`}
                                         >
                                             <div className="flex items-center gap-3.5 min-w-0">
                                                 {/* Checkbox circle */}
                                                 <div className={`w-5 h-5 rounded-full flex items-center justify-center border transition-all ${
                                                     isSelected 
-                                                        ? "bg-brand-600 border-brand-600 text-white" 
-                                                        : "border-slate-300 bg-slate-50 group-hover:border-slate-400"
+                                                        ? "bg-emerald-500 border-emerald-500 text-black" 
+                                                        : "border-[#404040] bg-[#1a1a1a]"
                                                 }`}>
                                                     {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
                                                 </div>
 
                                                 {/* Hotel thumbnail */}
-                                                <div className="w-11 h-11 rounded-lg bg-slate-100 overflow-hidden shrink-0 border border-slate-100 relative">
+                                                <div className="w-11 h-11 rounded-lg bg-[#202020] overflow-hidden shrink-0 border border-[#2c2c2c] relative">
                                                     {hotel.thumbnail ? (
                                                         <img 
                                                             src={hotel.thumbnail} 
@@ -1196,7 +951,7 @@ export default function AdminHomepageEditor() {
                                                             className="w-full h-full object-cover" 
                                                         />
                                                     ) : (
-                                                        <div className="w-full h-full flex items-center justify-center text-slate-400">
+                                                        <div className="w-full h-full flex items-center justify-center text-neutral-500">
                                                             <Hotel className="w-5 h-5" />
                                                         </div>
                                                     )}
@@ -1204,19 +959,19 @@ export default function AdminHomepageEditor() {
 
                                                 {/* Hotel details */}
                                                 <div className="min-w-0">
-                                                    <p className="text-xs font-black text-slate-900 leading-snug truncate">{hotel.name}</p>
-                                                    <p className="text-[10px] text-slate-500 font-bold mt-0.5">{hotel.city}, India</p>
+                                                    <p className="text-xs font-bold text-white leading-snug truncate">{hotel.name}</p>
+                                                    <p className="text-[10px] text-neutral-400 font-medium mt-0.5">{hotel.city}, India</p>
                                                 </div>
                                             </div>
 
-                                            {/* Indicators (like Featured / Stars) */}
+                                            {/* Indicators */}
                                             <div className="flex items-center gap-2 shrink-0">
                                                 {hotel.isFeatured && (
-                                                    <span className="bg-amber-50 text-amber-700 text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border border-amber-200">
+                                                    <span className="bg-amber-950/80 text-amber-300 text-[8px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full border border-amber-800/60">
                                                         Featured
                                                     </span>
                                                 )}
-                                                <span className="text-slate-400 text-[10px] font-black">
+                                                <span className="text-neutral-400 text-[10px] font-bold">
                                                     ★ {hotel.starRating || 5}
                                                 </span>
                                             </div>
@@ -1225,11 +980,11 @@ export default function AdminHomepageEditor() {
                                 })
                             ) : (
                                 <div className="py-12 flex flex-col items-center justify-center text-center">
-                                    <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mb-3">
+                                    <div className="w-12 h-12 bg-[#181818] rounded-full flex items-center justify-center text-neutral-500 mb-3">
                                         <Search className="w-5 h-5" />
                                     </div>
-                                    <p className="text-xs font-black text-slate-800">No hotels match your search</p>
-                                    <p className="text-[10px] text-slate-400 font-bold mt-1 max-w-xs">
+                                    <p className="text-xs font-bold text-neutral-300">No hotels match your search</p>
+                                    <p className="text-[10px] text-neutral-500 font-medium mt-1 max-w-xs">
                                         Try adjusting your search query or clear the filter to view all hotels.
                                     </p>
                                 </div>
@@ -1237,10 +992,10 @@ export default function AdminHomepageEditor() {
                         </div>
 
                         {/* Modal Footer */}
-                        <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-end shrink-0">
+                        <div className="p-4 border-t border-[#1f1f1f] bg-[#111111] flex items-center justify-end shrink-0">
                             <button 
                                 onClick={() => { setLinkingTarget(null); setHotelSearch(""); }}
-                                className="px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-md shadow-brand-600/10 active:scale-95"
+                                className="px-6 py-2.5 bg-white hover:bg-neutral-200 text-black text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-md cursor-pointer"
                             >
                                 Done Mapping
                             </button>
