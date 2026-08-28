@@ -77,6 +77,7 @@ RewriteRule ^(en|hi|es|fr|de|zh|ja|ar|ru|pt|bn|ta|te|mr|gu|kn|ml|pa|ur)/?$ /inde
 # 3. Dynamic Next.js Routes with language prefix
 RewriteRule ^(en|hi|es|fr|de|zh|ja|ar|ru|pt|bn|ta|te|mr|gu|kn|ml|pa|ur)?/?hotel/.*$ /hotel/1.html [L,QSA]
 RewriteRule ^(en|hi|es|fr|de|zh|ja|ar|ru|pt|bn|ta|te|mr|gu|kn|ml|pa|ur)?/?booking/.*$ /booking/details/1.html [L,QSA]
+RewriteRule ^(en|hi|es|fr|de|zh|ja|ar|ru|pt|bn|ta|te|mr|gu|kn|ml|pa|ur)?/?packages/.*$ /packages/1.html [L,QSA]
 RewriteRule ^(en|hi|es|fr|de|zh|ja|ar|ru|pt|bn|ta|te|mr|gu|kn|ml|pa|ur)?/?tour-packages/.*$ /tour-packages/1.html [L,QSA]
 RewriteRule ^(en|hi|es|fr|de|zh|ja|ar|ru|pt|bn|ta|te|mr|gu|kn|ml|pa|ur)?/?admin/.*$ /admin/dashboard.html [L,QSA]
 RewriteRule ^(en|hi|es|fr|de|zh|ja|ar|ru|pt|bn|ta|te|mr|gu|kn|ml|pa|ur)?/?partner-dashboard/.*$ /partner-dashboard/dashboard.html [L,QSA]
