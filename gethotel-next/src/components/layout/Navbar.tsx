@@ -1,6 +1,5 @@
 'use client';
 
-
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import confetti from "canvas-confetti";
@@ -53,6 +52,16 @@ export default function Navbar() {
     // Auth warning modal state
     const [actionPopup, setActionPopup] = useState<{isOpen: boolean, message: string}>({ isOpen: false, message: "" });
 
+    // Auto-close mobile menus and reset body overflow on route change
+    useEffect(() => {
+        setMobileOpen(false);
+        setProfileMobileOpen(false);
+        setActionPopup({ isOpen: false, message: "" });
+        if (typeof document !== "undefined") {
+            document.body.style.overflow = "";
+        }
+    }, [pathname]);
+
     // Lock body scroll when mobile menus or auth warning modal are open
     useEffect(() => {
         if (mobileOpen || profileMobileOpen || actionPopup.isOpen) {
@@ -73,7 +82,7 @@ export default function Navbar() {
         };
 
         // Check for login flag - use a session-based check to prevent repeats on refresh
-        const justLoggedIn = localStorage.getItem('just_logged_in');
+        const justLoggedIn = typeof window !== "undefined" ? localStorage.getItem('just_logged_in') : null;
         if (justLoggedIn === 'true') {
             // Remove it immediately so it can't be triggered again
             localStorage.removeItem('just_logged_in');
@@ -83,7 +92,7 @@ export default function Navbar() {
             // Birthday Dash (Confetti)
             const end = Date.now() + 2000;
             const colors = ["#2563eb", "#059669", "#fbbf24", "#ef4444"];
-            const isMobile = window.innerWidth < 768;
+            const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
             (function frame() {
                 confetti({
@@ -105,28 +114,25 @@ export default function Navbar() {
                     requestAnimationFrame(frame);
                 }
             })();
-
-            // Auto hide after 5 seconds
-            const timer = setTimeout(() => {
-                setShowLoginToast(false);
-            }, 5000);
-
-            document.addEventListener("mousedown", handleClickOutside);
-            return () => {
-                clearTimeout(timer);
-                document.removeEventListener("mousedown", handleClickOutside);
-            };
         }
 
+        // Auto hide after 5 seconds
+        const timer = setTimeout(() => {
+            setShowLoginToast(false);
+        }, 5000);
+
         document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
+        return () => {
+            clearTimeout(timer);
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
     }, []);
 
     const handleLogout = () => {
         logout();
         setShowLogoutConfirm(false);
         setDropdownOpen(false);
-        navigate("/");
+        navigate(`/${langCode}`);
     };
 
     return (
@@ -134,7 +140,7 @@ export default function Navbar() {
             <div className="w-full max-w-none mx-auto px-3 md:px-8 flex items-center justify-between">
                 {/* Logo Section */}
                 <Link
-                    to="/"
+                    to={`/${langCode}`}
                     className="relative z-[110] flex items-center gap-2 outline-none border-none group"
                 >
                     <span className="text-xl md:text-2xl font-black tracking-tighter text-slate-950 group-hover:text-brand-600 transition-colors">
@@ -143,13 +149,13 @@ export default function Navbar() {
                 </Link>
 
                 {/* Desktop Nav */}
-                <nav className={cn("hidden items-center gap-10 absolute left-1/2 -translate-x-1/2", pathname !== "/list-property" && "md:flex")}>
+                <nav className={cn("hidden items-center gap-10 absolute left-1/2 -translate-x-1/2", pathname !== `/${langCode}/list-property` && "md:flex")}>
                     {navLinks.map((link) => (
                         <Link
                             key={link.href}
                             to={link.href}
                             onClick={(e) => {
-                                if (link.href === "/my-bookings" && !user) {
+                                if (link.href.includes("/my-bookings") && !user) {
                                     e.preventDefault();
                                     setActionPopup({ isOpen: true, message: "Please log in first to view your bookings." });
                                 }
@@ -412,16 +418,16 @@ export default function Navbar() {
                                         
                                         <div className="h-px bg-slate-100 my-4" />
                                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-4 block mb-2">Support & Legal</span>
-                                        <Link to={`/${langCode}/privacy`} onClick={() => setProfileMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
+                                        <Link to={`/${langCode}/privacy-policy`} onClick={() => setProfileMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
                                             <Shield className="w-5 h-5 text-slate-400" /> Privacy Policy
                                         </Link>
-                                        <Link to={`/${langCode}/terms-&-conditions`} onClick={() => setProfileMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
-                                            <FileText className="w-5 h-5 text-slate-400" /> Terms & Conditions
+                                        <Link to={`/${langCode}/terms-of-service`} onClick={() => setProfileMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
+                                            <FileText className="w-5 h-5 text-slate-400" /> Terms of Service
                                         </Link>
                                         <Link to={`/${langCode}/cancellation-policy`} onClick={() => setProfileMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
                                             <AlertCircle className="w-5 h-5 text-slate-400" /> Refund & Cancellation
                                         </Link>
-                                        <Link to={`/${langCode}/contact`} onClick={() => setProfileMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
+                                        <Link to={`/${langCode}/contact-us`} onClick={() => setProfileMobileOpen(false)} className="flex items-center gap-4 px-4 py-4 rounded-[18px] hover:bg-slate-50 text-slate-900 font-bold border-b border-slate-50">
                                             <Mail className="w-5 h-5 text-slate-400" /> Contact Us
                                         </Link>
 
@@ -437,7 +443,7 @@ export default function Navbar() {
                 )}
             </AnimatePresence>
 
-            {/* Login Success Modal (Centered with Blur) */}
+            {/* Login Success Modal */}
             <AnimatePresence>
                 {showLoginToast && (
                     <>
@@ -569,7 +575,7 @@ export default function Navbar() {
                                 <button 
                                     onClick={() => {
                                         setActionPopup({ ...actionPopup, isOpen: false });
-                                        navigate("/login?redirect=/my-bookings");
+                                        navigate(`/${langCode}/login?redirect=/my-bookings`);
                                     }} 
                                     className="flex-1 py-4 bg-brand-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg hover:bg-brand-700 transition-colors"
                                 >
@@ -583,6 +589,3 @@ export default function Navbar() {
         </header>
     );
 }
-
-
-
