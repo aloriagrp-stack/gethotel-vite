@@ -24,158 +24,6 @@ export function createPackageSlug(title: string): string {
         .replace(/\s+/g, "-");
 }
 
-// Sample Packages Detailed Database with Real Verified Guest Reviews
-const ALL_PACKAGES_DB: Record<string, any> = {
-    "golden-triangle-classic-5d4n-delhi-agra-jaipur-tour-4415": {
-        id: "pkg-golden-triangle-4415",
-        slug: "golden-triangle-classic-5d4n-delhi-agra-jaipur-tour-4415",
-        title: "Golden Triangle Classic 5D4N Delhi Agra Jaipur Tour",
-        destination: "Delhi • Agra • Jaipur",
-        duration: "5 Days / 4 Nights",
-        rating: 4.85,
-        price: 14999,
-        originalPrice: 19999,
-        discountPercent: "25% OFF",
-        image: "https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=1200&q=80",
-        gallery: [
-            "https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=1200&q=80"
-        ],
-        includedStay: "4-Star Hotel Stay Included",
-        transport: "Private Chauffeur AC Sedan",
-        badge: "Bestseller",
-        overview: "Discover India's legendary Golden Triangle! Explore the historical monuments of Old & New Delhi, witness the mesmerizing Taj Mahal at sunrise in Agra, and experience the grand forts and Pink City heritage of Jaipur.",
-        inclusions: [
-            "4-Star Luxury Hotel accommodation in Delhi, Agra & Jaipur",
-            "Daily Buffet Breakfast at all hotels",
-            "Guided sunrise tour of the majestic Taj Mahal",
-            "Amer Fort & City Palace guided sightseeing in Jaipur",
-            "Private AC Sedan for entire 5 days transfers",
-            "All toll taxes, parking fees, & driver allowances included"
-        ],
-        itinerary: [
-            { day: "Day 1", title: "Arrival in Delhi & Sightseeing", desc: "Pickup from Delhi Airport/Station. Visit India Gate, Qutub Minar, and Lotus Temple. Overnight stay in Delhi." },
-            { day: "Day 2", title: "Delhi to Agra & Sunset View Taj Mahal", desc: "Drive to Agra via Yamuna Expressway. Check-in at hotel. Visit Agra Fort and enjoy sunset view of Taj Mahal from Mehtab Bagh." },
-            { day: "Day 3", title: "Taj Mahal Sunrise & Drive to Jaipur", desc: "Early morning guided tour of Taj Mahal at sunrise. Later drive to Jaipur, visiting Fatehpur Sikri enroute." },
-            { day: "Day 4", title: "Jaipur Pink City & Royal Forts", desc: "Visit Amer Fort with jeep ride, Jal Mahal, City Palace, Hawa Mahal, and local bazaars." },
-            { day: "Day 5", title: "Jaipur to Delhi Departure", desc: "Breakfast at hotel. Visit Albert Hall Museum before driving back to Delhi for airport/railway drop." }
-        ],
-        reviews: []
-    },
-    "royal-rajasthan-heritage-fort-trail": {
-        id: "pkg-1",
-        slug: "royal-rajasthan-heritage-fort-trail",
-        title: "Royal Rajasthan Heritage & Fort Trail",
-        destination: "Jaipur • Udaipur • Jodhpur",
-        duration: "6 Days / 5 Nights",
-        rating: 4.9,
-        price: 18499,
-        originalPrice: 24999,
-        discountPercent: "26% OFF",
-        image: "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80",
-        gallery: [
-            "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1603262110263-fb0112e7cc33?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1477587458883-47145ed94245?auto=format&fit=crop&w=1200&q=80"
-        ],
-        includedStay: "4-Star Heritage Haveli Hotel",
-        transport: "Private AC Sedan Included",
-        badge: "Bestseller",
-        overview: "Immerse yourself in royal Indian hospitality. Visit grand palaces, ancient forts of Amber and Mehrangarh, and enjoy romantic sunset boat cruises on Lake Pichola in Udaipur.",
-        inclusions: [
-            "4-Star Heritage Haveli stay with swimming pool",
-            "Daily Breakfast & Authentic Rajasthani Dinner",
-            "Amer Fort & City Palace Guided Sightseeing",
-            "Lake Pichola Sunset Boat Ride in Udaipur",
-            "Private AC Sedan Transfers for entire 6 days",
-            "All toll taxes, parking & driver allowances"
-        ],
-        itinerary: [
-            { day: "Day 1", title: "Arrival in Pink City Jaipur", desc: "Pickup from Jaipur Airport/Station. Check-in at Haveli. Visit Hawa Mahal and Johari Bazaar in evening." },
-            { day: "Day 2", title: "Jaipur Royal Forts & City Palace", desc: "Guided tour of Amer Fort, Nahargarh, City Palace, and Jantar Mantar observatory." },
-            { day: "Day 3", title: "Jaipur to Jodhpur (Blue City)", desc: "Drive to Jodhpur. Visit the imposing Mehrangarh Fort and Jaswant Thada monument." },
-            { day: "Day 4", title: "Jodhpur to Romantic Udaipur", desc: "Enroute visit Ranakpur Jain Temple. Check-in at lake view hotel in Udaipur." },
-            { day: "Day 5", title: "Udaipur Lake Pichola & Palaces", desc: "City Palace tour, Saheliyon Ki Bari, and evening Lake Pichola boat cruise." },
-            { day: "Day 6", title: "Departure from Udaipur", desc: "Breakfast at hotel and transfer to Udaipur Airport for onward journey." }
-        ],
-        reviews: []
-    },
-    "goa-tropical-beach-retreat-watersports": {
-        id: "pkg-2",
-        slug: "goa-tropical-beach-retreat-watersports",
-        title: "Goa Tropical Beach Retreat & Watersports",
-        destination: "North Goa • South Goa",
-        duration: "4 Days / 3 Nights",
-        rating: 4.8,
-        price: 12999,
-        originalPrice: 17999,
-        discountPercent: "28% OFF",
-        image: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1200&q=80",
-        gallery: [
-            "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&w=1200&q=80"
-        ],
-        includedStay: "Beachfront 4-Star Resort",
-        transport: "Airport Pickup & Sightseeing Cab",
-        badge: "Trending",
-        overview: "Experience Goa's golden beaches, crystal clear watersports, vibrant shacks, and romantic river cruises. Includes 4-star resort stay with pool access.",
-        inclusions: [
-            "Beachfront resort stay with infinity pool access",
-            "Scuba Diving & Parasailing Watersports combo",
-            "Mandovi River Sunset Cruise with Goan Dance",
-            "North & South Goa Guided Sightseeing tour",
-            "Airport Pickup & Drop transfers included",
-            "Buffet Breakfast included every morning"
-        ],
-        itinerary: [
-            { day: "Day 1", title: "Arrival in Goa & Sunset Shack Vibe", desc: "Airport pickup. Check-in to resort. Relax at Baga Beach and enjoy evening music." },
-            { day: "Day 2", title: "North Goa Beaches & Fort Aguada", desc: "Visit Aguada Fort, Calangute, Anjuna beach, and Chapora Fort sunset." },
-            { day: "Day 3", title: "Watersports & Mandovi River Cruise", desc: "Parasailing, Banana Ride, and evening Mandovi river luxury cruise with folk dance." },
-            { day: "Day 4", title: "South Goa & Departure", desc: "Visit Basilica of Bom Jesus and Miramar beach before airport drop." }
-        ],
-        reviews: []
-    },
-    "kashmir-paradise-srinagar-gulmarg-pahalgam": {
-        id: "pkg-3",
-        slug: "kashmir-paradise-srinagar-gulmarg-pahalgam",
-        title: "Kashmir Paradise: Srinagar, Gulmarg & Pahalgam",
-        destination: "Srinagar • Gulmarg • Pahalgam",
-        duration: "5 Days / 4 Nights",
-        rating: 4.95,
-        price: 21999,
-        originalPrice: 28999,
-        discountPercent: "24% OFF",
-        image: "https://images.unsplash.com/photo-1566837945700-30057527ade0?auto=format&fit=crop&w=1200&q=80",
-        gallery: [
-            "https://images.unsplash.com/photo-1566837945700-30057527ade0?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1597318181409-cf64d0b5d8a2?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1516048015710-7a3b4c86be43?auto=format&fit=crop&w=1200&q=80"
-        ],
-        includedStay: "Houseboat + 4-Star Resort",
-        transport: "Private SUV Mountain Transfers",
-        badge: "Popular",
-        overview: "Witness Heaven on Earth! Enjoy a romantic Shikara ride on Dal Lake, stay in a hand-carved cedar houseboat, ride the Gulmarg Gondola cable car, and trek valley pines in Pahalgam.",
-        inclusions: [
-            "1 Night Luxury Houseboat stay in Dal Lake",
-            "3 Nights 4-Star Mountain Resort stay",
-            "Gulmarg Gondola Cable Car Ride pass included",
-            "Shikara Ride on Dal Lake at Sunset",
-            "Private SUV Transfers (Innova/XYLO) for full trip",
-            "Daily Breakfast & Dinner included"
-        ],
-        itinerary: [
-            { day: "Day 1", title: "Arrival Srinagar & Dal Lake Houseboat", desc: "Pickup from Srinagar airport. Check-in to luxury houseboat. Shikara ride at sunset." },
-            { day: "Day 2", title: "Srinagar to Gulmarg Snow Pass", desc: "Drive to Gulmarg. Ride Phase 1 & 2 Gondola Cable Car. Enjoy snow biking and views." },
-            { day: "Day 3", title: "Gulmarg to Pahalgam Valley of Shepherds", desc: "Drive along saffron fields to Pahalgam. Visit Lido river bank and local markets." },
-            { day: "Day 4", title: "Betaab & Aru Valley Excursion", desc: "Visit Betaab Valley, Aru Valley and Chandanwari pine forests." },
-            { day: "Day 5", title: "Mughal Gardens & Departure", desc: "Visit Shalimar and Nishat Bagh in Srinagar before airport drop." }
-        ],
-        reviews: []
-    }
-};
-
 const GUEST_OPTIONS = [
     { value: 1, label: "1 Guest", desc: "Solo Traveler" },
     { value: 2, label: "2 Guests", desc: "Couple / Pair" },
@@ -208,7 +56,7 @@ export default function TourPackageDetails() {
     const dropdownRef = useRef<HTMLDivElement>(null);
     const bookingCardRef = useRef<HTMLDivElement>(null);
 
-    // Dynamic Package Resolution effect
+    // Dynamic Package Resolution from API
     useEffect(() => {
         const loadPackage = async () => {
             if (!id) {
@@ -220,23 +68,17 @@ export default function TourPackageDetails() {
             const cleanId = id.toLowerCase().trim();
             let foundPkg: any = null;
 
-            // 1. Check ALL_PACKAGES_DB by exact key
-            if (ALL_PACKAGES_DB[cleanId]) {
-                foundPkg = ALL_PACKAGES_DB[cleanId];
-            } else {
-                // 2. Search values in ALL_PACKAGES_DB by slug/id/title match
-                foundPkg = Object.values(ALL_PACKAGES_DB).find(
-                    (p) => 
-                        p.slug === cleanId || 
-                        p.id === cleanId || 
-                        createPackageSlug(p.title) === cleanId ||
-                        cleanId.includes(p.slug) ||
-                        p.slug.includes(cleanId) ||
-                        cleanId.includes(createPackageSlug(p.title))
-                );
+            // 1. Fetch real package from backend API
+            try {
+                const res = await packageApi.getPackage(id);
+                if (res && res.success && res.data) {
+                    foundPkg = res.data;
+                }
+            } catch (err) {
+                console.warn("Backend API package detail fetch failed:", err);
             }
 
-            // 3. Search local storage (Admin created packages)
+            // 2. Search local storage for admin saved packages
             if (!foundPkg) {
                 try {
                     const saved = localStorage.getItem("ghs_admin_tour_packages");
@@ -245,24 +87,13 @@ export default function TourPackageDetails() {
                         foundPkg = localPackages.find(
                             (p: any) => 
                                 p.slug === cleanId || 
-                                p.id === cleanId || 
-                                createPackageSlug(p.title) === cleanId ||
-                                cleanId.includes(p.slug)
+                                String(p.id) === cleanId || 
+                                createPackageSlug(p.title) === cleanId
                         );
                     }
                 } catch (e) {
                     console.error("Localstorage search error", e);
                 }
-            }
-
-            // 4. Try API fetch from backend
-            try {
-                const res = await packageApi.getPackage(id);
-                if (res && res.success && res.data) {
-                    foundPkg = res.data;
-                }
-            } catch (err) {
-                console.warn("Backend API package detail fetch failed:", err);
             }
 
             if (foundPkg) {

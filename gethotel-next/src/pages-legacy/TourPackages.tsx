@@ -24,12 +24,11 @@ export function createPackageSlug(title: string): string {
 // Circle Story Avatars Data
 const DESTINATION_STORIES = [
     { name: "All", image: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=200&q=80" },
-    { name: "Goa", image: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=200&q=80" },
-    { name: "Rajasthan", image: "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=200&q=80" },
-    { name: "Kashmir", image: "https://images.unsplash.com/photo-1566837945700-30057527ade0?auto=format&fit=crop&w=200&q=80" },
+    { name: "Delhi", image: "https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=200&q=80" },
+    { name: "Jaipur", image: "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=200&q=80" },
+    { name: "Udaipur", image: "https://images.unsplash.com/photo-1603262110263-fb0112e7cc33?auto=format&fit=crop&w=200&q=80" },
     { name: "Manali", image: "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=200&q=80" },
-    { name: "Kerala", image: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=200&q=80" },
-    { name: "Ladakh", image: "https://images.unsplash.com/photo-1581793745862-99fde7fa73d2?auto=format&fit=crop&w=200&q=80" }
+    { name: "Shimla", image: "https://images.unsplash.com/photo-1566837945700-30057527ade0?auto=format&fit=crop&w=200&q=80" }
 ];
 
 export default function TourPackages() {
@@ -342,11 +341,11 @@ export default function TourPackages() {
                             ))}
                         </div>
                     ) : packages.length === 0 ? (
-                        <div className="bg-white rounded-3xl p-16 text-center border border-slate-200/80 space-y-4 shadow-sm">
-                            <Search className="w-10 h-10 text-slate-300 mx-auto" />
-                            <h3 className="text-base font-bold text-slate-800">No Available Tours</h3>
-                            <p className="text-xs text-slate-500 max-w-md mx-auto">
-                                Tour packages will appear here once added by the admin.
+                        <div className="bg-white rounded-3xl p-16 text-center border border-slate-200/80 space-y-3 shadow-sm">
+                            <Sparkles className="w-10 h-10 text-brand-600 mx-auto" />
+                            <h3 className="text-lg font-black text-slate-900">Custom Tour Packages Coming Soon</h3>
+                            <p className="text-xs sm:text-sm text-slate-500 max-w-md mx-auto">
+                                Handcrafted holiday packages with verified stays, transfers and itineraries will be available soon.
                             </p>
                         </div>
                     ) : filteredPackages.length === 0 ? (
