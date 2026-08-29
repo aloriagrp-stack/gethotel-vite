@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { X, User, ShieldCheck, CreditCard, Sparkles, AlertCircle, Loader, Building } from 'lucide-react';
+import { X, ShieldCheck, CreditCard, AlertCircle, Loader, Building2 } from 'lucide-react';
 import { bookingApi, paymentApi, aiApi } from '../lib/api';
 
 interface InChatBookingDrawerProps {
@@ -78,7 +78,6 @@ export default function InChatBookingDrawer({
   const [guestName, setGuestName] = useState(user?.name || user?.displayName || '');
   const [guestEmail, setGuestEmail] = useState(user?.email || '');
   const [guestPhone, setGuestPhone] = useState(user?.phone || user?.phoneNumber || '');
-  const [specialRequests, setSpecialRequests] = useState('');
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -177,7 +176,7 @@ export default function InChatBookingDrawer({
           fullName: guestName.trim(),
           email: guestEmail.trim(),
           phone: guestPhone.trim(),
-          specialRequests: specialRequests.trim()
+          specialRequests: "Booked via ChatGHS"
         },
         stayType: 'standard',
         paymentStatus: paymentType === 'full' ? 'paid' : 'partial'
@@ -208,8 +207,8 @@ export default function InChatBookingDrawer({
         key: razorpayKey,
         amount: order.amount,
         currency: order.currency || 'INR',
-        name: 'GetHotelStays AI Concierge',
-        description: `Reservation for ${hotel.name} (${nights} Night${nights > 1 ? 's' : ''})`,
+        name: 'GetHotelStays',
+        description: `${hotel.name} (${nights} Night${nights > 1 ? 's' : ''})`,
         image: 'https://gethotelstays.com/logo.png',
         order_id: order.id,
         prefill: {
@@ -223,7 +222,7 @@ export default function InChatBookingDrawer({
         modal: {
           ondismiss: () => {
             setIsProcessing(false);
-            setErrorMessage('Payment window closed. You can tap "Pay Online" to retry.');
+            setErrorMessage('Payment window closed. Tap below to retry.');
           }
         },
         handler: async (response: any) => {
@@ -269,7 +268,7 @@ export default function InChatBookingDrawer({
       const rzp = new (window as any).Razorpay(rzpOptions);
       rzp.on('payment.failed', (failRes: any) => {
         setIsProcessing(false);
-        setErrorMessage(failRes.error?.description || 'Payment was declined by your bank.');
+        setErrorMessage(failRes.error?.description || 'Payment was declined.');
       });
       rzp.open();
 
@@ -281,298 +280,225 @@ export default function InChatBookingDrawer({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/60 backdrop-blur-sm transition-opacity duration-300">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3.5 sm:p-4 bg-black/75 backdrop-blur-md transition-opacity duration-200">
       <div
-        className={`w-full max-w-lg h-full overflow-y-auto custom-scrollbar flex flex-col shadow-2xl transition-transform duration-300 ${
-          theme === 'dark' ? 'bg-[#0f0f13] text-slate-100 border-l border-slate-800' : 'bg-white text-slate-900 border-l border-slate-200'
+        className={`w-full max-w-md max-h-[92vh] flex flex-col rounded-3xl border shadow-2xl overflow-hidden transition-transform duration-200 ${
+          theme === 'dark' ? 'bg-[#121216] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900'
         }`}
       >
-        {/* Drawer Header */}
-        <div className={`p-4 border-b flex items-center justify-between sticky top-0 z-10 backdrop-blur-md ${
-          theme === 'dark' ? 'bg-[#0f0f13]/90 border-slate-800' : 'bg-white/90 border-slate-200'
-        }`}>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-brand-500/20 text-brand-400 flex items-center justify-center font-black">
-              <Sparkles className="w-4 h-4" />
-            </div>
-            <div>
-              <h3 className="text-sm font-extrabold leading-tight">Instant In-Chat Reservation</h3>
-              <p className="text-[10px] text-slate-400 font-medium">Guaranteed Best Rate • Instant Confirmation</p>
-            </div>
+        {/* Minimal Header */}
+        <div className="px-5 py-3.5 border-b border-white/5 flex items-center justify-between shrink-0">
+          <div>
+            <h3 className="text-sm font-bold leading-tight">Quick Reserve</h3>
+            <p className="text-[11px] text-slate-400">Instant confirmation via Razorpay</p>
           </div>
 
           <button
             type="button"
             onClick={onClose}
-            className={`p-2 rounded-xl border transition-all cursor-pointer ${
-              theme === 'dark' ? 'bg-slate-800 border-slate-700 hover:bg-slate-700 text-slate-300' : 'bg-slate-100 border-slate-200 hover:bg-slate-200 text-slate-600'
-            }`}
+            className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 flex items-center justify-center transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Drawer Body Form */}
-        <form onSubmit={handlePayAndBook} className="p-5 space-y-5 flex-1">
-          {/* Hotel Snapshot Card */}
-          <div className={`p-3.5 rounded-2xl border flex gap-3.5 items-center ${
-            theme === 'dark' ? 'bg-[#15151a] border-slate-800' : 'bg-slate-50 border-slate-200'
-          }`}>
+        {/* Scrollable Minimal Content */}
+        <form onSubmit={handlePayAndBook} className="p-4 space-y-3.5 overflow-y-auto custom-scrollbar flex-1">
+          {/* Hotel & Room Single-Row Summary */}
+          <div className="p-2.5 rounded-2xl bg-white/5 border border-white/5 flex items-center gap-3">
             {hotel.thumbnail ? (
-              <img src={hotel.thumbnail} alt={hotel.name} className="w-16 h-16 rounded-xl object-cover shrink-0 shadow-sm" />
+              <img src={hotel.thumbnail} alt={hotel.name} className="w-11 h-11 rounded-xl object-cover shrink-0" />
             ) : (
-              <div className="w-16 h-16 rounded-xl bg-brand-500/15 text-brand-400 flex items-center justify-center shrink-0">
-                <Building className="w-7 h-7" />
+              <div className="w-11 h-11 rounded-xl bg-brand-500/20 text-brand-400 flex items-center justify-center shrink-0">
+                <Building2 className="w-5 h-5" />
               </div>
             )}
             <div className="min-w-0 flex-1">
-              <h4 className="text-xs font-black truncate">{hotel.name}</h4>
-              <p className="text-[11px] text-slate-400 font-medium">{hotel.city}</p>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-xs font-black text-brand-500">₹{basePrice.toLocaleString()}<span className="text-[10px] text-slate-400 font-normal"> / night</span></span>
-                {hotel.guestRating && (
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400">
-                    ★ {hotel.guestRating}
-                  </span>
-                )}
-              </div>
+              <h4 className="text-xs font-bold truncate">{hotel.name}</h4>
+              <p className="text-[11px] text-slate-400 truncate">
+                {activeRoom.name} • 📍 {hotel.city}
+              </p>
+            </div>
+            <div className="text-right shrink-0">
+              <span className="text-xs font-black text-brand-400">₹{basePrice.toLocaleString()}</span>
+              <span className="text-[9px] text-slate-400 block">/night</span>
             </div>
           </div>
 
-          {/* Room Selection */}
+          {/* Room Selector if multiple exist */}
           {availableRooms.length > 1 && (
-            <div className="space-y-2">
-              <label className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block">
-                Select Room Category
+            <div>
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                Room Category
               </label>
-              <div className="grid grid-cols-1 gap-2">
+              <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
                 {availableRooms.map((r) => (
                   <button
                     key={r.id}
                     type="button"
                     onClick={() => setSelectedRoomId(r.id)}
-                    className={`p-3 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all border cursor-pointer ${
                       selectedRoomId === r.id
-                        ? (theme === 'dark' ? 'bg-brand-500/20 border-brand-500/50 text-white' : 'bg-brand-50 border-brand-400 text-brand-900 font-bold')
-                        : (theme === 'dark' ? 'bg-[#15151a] border-slate-800 text-slate-300 hover:border-slate-700' : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300')
+                        ? 'bg-brand-600 text-white border-brand-500 shadow-sm'
+                        : 'bg-white/5 border-white/10 text-slate-300 hover:border-white/20'
                     }`}
                   >
-                    <div>
-                      <p className="text-xs font-bold">{r.name}</p>
-                      <p className="text-[10px] text-slate-400">Max Occupancy: {r.maxOccupancy || 2} Guests</p>
-                    </div>
-                    <span className="text-xs font-black text-brand-500">₹{r.pricePerNight?.toLocaleString()}</span>
+                    {r.name} (₹{r.pricePerNight?.toLocaleString()})
                   </button>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Dates & Occupancy Selector */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block">Check-in</label>
+          {/* Dates & Guests Compact 2x2 Grid */}
+          <div className="grid grid-cols-2 gap-2 text-left">
+            <div>
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Check-in</label>
               <input
                 type="date"
                 min={new Date().toISOString().split('T')[0]}
                 value={checkIn}
                 onChange={(e) => setCheckIn(e.target.value)}
                 required
-                className={`w-full px-3 py-2 text-xs font-bold border rounded-xl outline-none ${
-                  theme === 'dark' ? 'bg-[#15151a] border-slate-800 text-white focus:border-brand-500' : 'bg-white border-slate-200 text-slate-900 focus:border-brand-500'
-                }`}
+                className="w-full px-3 py-2 text-xs font-bold rounded-xl bg-white/5 border border-white/10 text-white outline-none focus:border-brand-500"
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block">Check-out</label>
+            <div>
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Check-out</label>
               <input
                 type="date"
                 min={checkIn}
                 value={checkOut}
                 onChange={(e) => setCheckOut(e.target.value)}
                 required
-                className={`w-full px-3 py-2 text-xs font-bold border rounded-xl outline-none ${
-                  theme === 'dark' ? 'bg-[#15151a] border-slate-800 text-white focus:border-brand-500' : 'bg-white border-slate-200 text-slate-900 focus:border-brand-500'
-                }`}
+                className="w-full px-3 py-2 text-xs font-bold rounded-xl bg-white/5 border border-white/10 text-white outline-none focus:border-brand-500"
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block">Rooms</label>
+            <div>
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Rooms</label>
               <select
                 value={roomsCount}
                 onChange={(e) => setRoomsCount(parseInt(e.target.value))}
-                className={`w-full px-3 py-2 text-xs font-bold border rounded-xl outline-none ${
-                  theme === 'dark' ? 'bg-[#15151a] border-slate-800 text-white focus:border-brand-500' : 'bg-white border-slate-200 text-slate-900 focus:border-brand-500'
-                }`}
+                className="w-full px-3 py-2 text-xs font-bold rounded-xl bg-[#1a1a22] border border-white/10 text-white outline-none focus:border-brand-500"
               >
-                {[1, 2, 3, 4, 5].map((n) => (
+                {[1, 2, 3, 4].map((n) => (
                   <option key={n} value={n}>{n} Room{n > 1 ? 's' : ''}</option>
                 ))}
               </select>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block">Total Guests</label>
+            <div>
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Guests</label>
               <select
                 value={guestsCount}
                 onChange={(e) => setGuestsCount(parseInt(e.target.value))}
-                className={`w-full px-3 py-2 text-xs font-bold border rounded-xl outline-none ${
-                  theme === 'dark' ? 'bg-[#15151a] border-slate-800 text-white focus:border-brand-500' : 'bg-white border-slate-200 text-slate-900 focus:border-brand-500'
-                }`}
+                className="w-full px-3 py-2 text-xs font-bold rounded-xl bg-[#1a1a22] border border-white/10 text-white outline-none focus:border-brand-500"
               >
-                {[1, 2, 3, 4, 6, 8, 10].map((n) => (
+                {[1, 2, 3, 4, 6, 8].map((n) => (
                   <option key={n} value={n}>{n} Guest{n > 1 ? 's' : ''}</option>
                 ))}
               </select>
             </div>
           </div>
 
-          {/* Guest Information */}
-          <div className="space-y-3 pt-2">
-            <h4 className="text-xs font-extrabold text-brand-500 uppercase tracking-wider flex items-center gap-1.5">
-              <User className="w-3.5 h-3.5" /> Primary Guest Details
-            </h4>
-
-            <div className="space-y-2.5">
+          {/* Guest Minimal Inputs */}
+          <div className="space-y-2 pt-1">
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Guest Information</label>
+            <input
+              type="text"
+              placeholder="Full Name *"
+              value={guestName}
+              onChange={(e) => setGuestName(e.target.value)}
+              required
+              className="w-full px-3 py-2 text-xs rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-slate-500 outline-none focus:border-brand-500"
+            />
+            <div className="grid grid-cols-2 gap-2">
               <input
-                type="text"
-                placeholder="Full Name (as per Govt ID) *"
-                value={guestName}
-                onChange={(e) => setGuestName(e.target.value)}
+                type="tel"
+                placeholder="10-digit Mobile *"
+                value={guestPhone}
+                onChange={(e) => setGuestPhone(e.target.value)}
                 required
-                className={`w-full px-3.5 py-2.5 text-xs font-medium border rounded-xl outline-none ${
-                  theme === 'dark' ? 'bg-[#15151a] border-slate-800 text-white focus:border-brand-500' : 'bg-white border-slate-200 text-slate-900 focus:border-brand-500'
-                }`}
+                className="w-full px-3 py-2 text-xs rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-slate-500 outline-none focus:border-brand-500"
               />
-
-              <div className="grid grid-cols-2 gap-2.5">
-                <input
-                  type="email"
-                  placeholder="Email Address *"
-                  value={guestEmail}
-                  onChange={(e) => setGuestEmail(e.target.value)}
-                  required
-                  className={`w-full px-3.5 py-2.5 text-xs font-medium border rounded-xl outline-none ${
-                    theme === 'dark' ? 'bg-[#15151a] border-slate-800 text-white focus:border-brand-500' : 'bg-white border-slate-200 text-slate-900 focus:border-brand-500'
-                  }`}
-                />
-
-                <input
-                  type="tel"
-                  placeholder="10-digit Phone *"
-                  value={guestPhone}
-                  onChange={(e) => setGuestPhone(e.target.value)}
-                  required
-                  className={`w-full px-3.5 py-2.5 text-xs font-medium border rounded-xl outline-none ${
-                    theme === 'dark' ? 'bg-[#15151a] border-slate-800 text-white focus:border-brand-500' : 'bg-white border-slate-200 text-slate-900 focus:border-brand-500'
-                  }`}
-                />
-              </div>
-
               <input
-                type="text"
-                placeholder="Special Requests (e.g. Quiet Room, High Floor, Early Arrival)"
-                value={specialRequests}
-                onChange={(e) => setSpecialRequests(e.target.value)}
-                className={`w-full px-3.5 py-2 text-xs font-medium border rounded-xl outline-none ${
-                  theme === 'dark' ? 'bg-[#15151a] border-slate-800 text-white focus:border-brand-500' : 'bg-white border-slate-200 text-slate-900 focus:border-brand-500'
-                }`}
+                type="email"
+                placeholder="Email Address *"
+                value={guestEmail}
+                onChange={(e) => setGuestEmail(e.target.value)}
+                required
+                className="w-full px-3 py-2 text-xs rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-slate-500 outline-none focus:border-brand-500"
               />
             </div>
           </div>
 
-          {/* Payment Type Choice */}
-          <div className="space-y-2 pt-2">
-            <label className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block">
-              Payment Choice
-            </label>
-            <div className="grid grid-cols-2 gap-2.5">
+          {/* Payment Choice Toggle (2-Pill Segment) */}
+          <div className="pt-1">
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Payment Option</label>
+            <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => setPaymentType('deposit')}
-                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                   paymentType === 'deposit'
-                    ? (theme === 'dark' ? 'bg-brand-500/20 border-brand-500 text-white ring-1 ring-brand-500' : 'bg-brand-50 border-brand-500 text-brand-900 font-bold ring-1 ring-brand-500')
-                    : (theme === 'dark' ? 'bg-[#15151a] border-slate-800 text-slate-400' : 'bg-white border-slate-200 text-slate-600')
+                    ? 'bg-brand-600/20 border-brand-500 text-white ring-1 ring-brand-500'
+                    : 'bg-white/5 border-white/10 text-slate-400 hover:border-white/20'
                 }`}
               >
-                <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-500 inline-block mb-1">
-                  Most Popular
-                </span>
-                <p className="text-xs font-black">Pay 12% Deposit</p>
-                <p className="text-sm font-black text-brand-500 mt-1">₹{depositAmount.toLocaleString()}</p>
-                <p className="text-[10px] text-slate-400 mt-0.5">Pay ₹{balanceAtHotel.toLocaleString()} at hotel</p>
+                <div className="text-[10px] font-bold text-amber-400">12% Deposit</div>
+                <div className="text-xs font-black text-white mt-0.5">₹{depositAmount.toLocaleString()}</div>
+                <div className="text-[9px] text-slate-400">Pay ₹{balanceAtHotel.toLocaleString()} at stay</div>
               </button>
 
               <button
                 type="button"
                 onClick={() => setPaymentType('full')}
-                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                   paymentType === 'full'
-                    ? (theme === 'dark' ? 'bg-brand-500/20 border-brand-500 text-white ring-1 ring-brand-500' : 'bg-brand-50 border-brand-500 text-brand-900 font-bold ring-1 ring-brand-500')
-                    : (theme === 'dark' ? 'bg-[#15151a] border-slate-800 text-slate-400' : 'bg-white border-slate-200 text-slate-600')
+                    ? 'bg-brand-600/20 border-brand-500 text-white ring-1 ring-brand-500'
+                    : 'bg-white/5 border-white/10 text-slate-400 hover:border-white/20'
                 }`}
               >
-                <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-500 inline-block mb-1">
-                  100% Prepaid
-                </span>
-                <p className="text-xs font-black">Pay Full Online</p>
-                <p className="text-sm font-black text-brand-500 mt-1">₹{grandTotal.toLocaleString()}</p>
-                <p className="text-[10px] text-slate-400 mt-0.5">Zero balance at check-in</p>
+                <div className="text-[10px] font-bold text-emerald-400">100% Full</div>
+                <div className="text-xs font-black text-white mt-0.5">₹{grandTotal.toLocaleString()}</div>
+                <div className="text-[9px] text-slate-400">Zero check-in hassle</div>
               </button>
             </div>
           </div>
 
-          {/* Pricing Breakdown Summary */}
-          <div className={`p-4 rounded-2xl border space-y-2 text-xs ${
-            theme === 'dark' ? 'bg-[#15151a] border-slate-800' : 'bg-slate-50 border-slate-200'
-          }`}>
-            <div className="flex justify-between text-slate-400">
-              <span>{activeRoom.name} × {nights} Night{nights > 1 ? 's' : ''} ({roomsCount} Room)</span>
-              <span className="font-bold text-slate-200">₹{roomTotal.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between text-slate-400">
-              <span>Taxes & GST (12%)</span>
-              <span className="font-bold text-slate-200">₹{taxes.toLocaleString()}</span>
-            </div>
-            <div className="border-t border-slate-700/50 pt-2 flex justify-between font-black text-sm">
-              <span>Total Booking Value</span>
-              <span className="text-brand-400">₹{grandTotal.toLocaleString()}</span>
-            </div>
-          </div>
-
           {errorMessage && (
-            <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2">
+            <div className="p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMessage}</span>
             </div>
           )}
 
-          {/* Checkout Action Button */}
-          <div className="pt-2 sticky bottom-0 bg-transparent pb-3">
+          {/* Action Button */}
+          <div className="pt-2">
             <button
               type="submit"
               disabled={isProcessing}
-              className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-brand-600 via-indigo-600 to-purple-600 hover:from-brand-700 hover:to-purple-700 active:scale-[0.98] text-white font-extrabold text-sm shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 px-5 rounded-2xl bg-brand-600 hover:bg-brand-500 active:scale-[0.98] text-white font-extrabold text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isProcessing ? (
                 <>
-                  <Loader className="w-5 h-5 animate-spin" />
-                  <span>Securing Reservation & Order...</span>
+                  <Loader className="w-4 h-4 animate-spin" />
+                  <span>Opening Razorpay...</span>
                 </>
               ) : (
                 <>
-                  <CreditCard className="w-5 h-5" />
-                  <span>Pay ₹{amountToPayNow.toLocaleString()} & Confirm Booking 💳</span>
+                  <CreditCard className="w-4 h-4" />
+                  <span>Pay ₹{amountToPayNow.toLocaleString()} & Confirm Booking</span>
                 </>
               )}
             </button>
-            <p className="text-[10px] text-center text-slate-400 font-medium mt-2 flex items-center justify-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-              256-Bit SSL Encrypted Razorpay Secure Checkout
-            </p>
+
+            <div className="flex items-center justify-center gap-1 text-[10px] text-slate-400 mt-2">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <span>256-Bit SSL Encrypted Razorpay Checkout</span>
+            </div>
           </div>
         </form>
       </div>

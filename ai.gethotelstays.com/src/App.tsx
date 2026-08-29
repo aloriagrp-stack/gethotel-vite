@@ -1564,43 +1564,36 @@ export default function App() {
                           if (allRooms.length > 0) {
                             console.log('[AI Chat] Rendering room cards:', allRooms.length, 'rooms');
                             return (
-                              <div className="mt-4 select-none">
-                                {/* Header Title */}
-                                <div className="flex items-center justify-between mb-4 px-0.5">
-                                  <div>
-                                    <h3 className={`text-base font-extrabold tracking-tight ${theme === 'dark' ? 'text-slate-100' : 'text-slate-900'}`}>
-                                      Available Room Categories ({allRooms.length})
-                                    </h3>
-                                    <p className="text-[11px] text-slate-400 font-medium">Select a room to view pricing with taxes and begin reservation</p>
-                                  </div>
+                              <div className="mt-3 select-none">
+                                <div className="flex items-center justify-between mb-2.5 px-0.5">
+                                  <h3 className={`text-xs font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
+                                    Available Rooms ({allRooms.length})
+                                  </h3>
                                 </div>
 
-                                {/* Responsive Room Cards Grid */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                  {allRooms.map((r, idx) => {
+                                {/* Minimal Clean Room Grid */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                  {allRooms.map((r) => {
                                     const roomImage = r.images && r.images.length > 0
                                       ? r.images[0]
                                       : "https://images.unsplash.com/photo-1611891487122-207579d67d98?auto=format&fit=crop&w=600&q=80";
-                                    const isRecommended = idx === 0;
                                     const isSelected = composerAttachment?.id === r.id && composerAttachment?.name.includes(r.name);
                                     const roomBasePrice = r.promotionalPrice || r.pricePerNight || 2499;
-                                    const gstPercent = roomBasePrice > 7500 ? 18 : (roomBasePrice > 1000 ? 12 : 0);
-                                    const gstAmount = Math.round(roomBasePrice * (gstPercent / 100));
 
                                     return (
                                       <div
                                         key={r.id}
                                         onClick={() => handleRoomSelect(r)}
-                                        className={`rounded-3xl overflow-hidden relative border transition-all duration-300 group flex flex-col shadow-md cursor-pointer backdrop-blur-md ${
+                                        className={`rounded-2xl overflow-hidden border transition-all duration-200 group flex flex-col cursor-pointer ${
                                           isSelected
-                                            ? "ring-2 ring-blue-500 border-blue-500/50 " + (theme === 'dark' ? "bg-[#121214]/80" : "bg-white/80")
+                                            ? "ring-2 ring-brand-500 border-brand-500 " + (theme === 'dark' ? "bg-[#141418]" : "bg-white")
                                             : theme === 'dark'
-                                              ? "bg-[#121214]/65 border-white/10 text-white"
-                                              : "bg-white/70 border-slate-200/50 text-slate-900"
+                                              ? "bg-[#131317] border-white/10 hover:border-white/20 text-white"
+                                              : "bg-white border-slate-200/80 hover:border-slate-300 text-slate-900 shadow-sm"
                                         }`}
                                       >
-                                        {/* Top: Image Container */}
-                                        <div className="relative w-full h-[190px] overflow-hidden shrink-0">
+                                        {/* Image */}
+                                        <div className="relative w-full h-[130px] overflow-hidden shrink-0 bg-slate-800">
                                           <img 
                                             src={roomImage} 
                                             alt={r.name} 
@@ -1609,74 +1602,32 @@ export default function App() {
                                               const gallery = r.images && r.images.length > 0 ? r.images : [roomImage];
                                               setPreviewState({ images: gallery, activeIndex: 0 });
                                             }}
-                                            className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500 cursor-zoom-in" 
-                                            title="Click to view photo gallery"
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 cursor-zoom-in" 
                                           />
-                                          
-                                          {isRecommended && (
-                                            <div className="absolute top-4 left-4 z-10 flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-extrabold bg-[#10b981]/90 text-white backdrop-blur-md uppercase tracking-wider select-none">
-                                              ★ Top Choice
+                                          {r.promotionalPrice && r.promotionalPrice < r.pricePerNight && (
+                                            <div className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-md text-[9px] font-black bg-brand-600 text-white uppercase tracking-wider shadow-sm">
+                                              Special Offer
                                             </div>
                                           )}
-
-                                          {/* Save/Bookmark icon on the image */}
-                                          <button
-                                            type="button"
-                                            onClick={(e) => { e.stopPropagation(); handleRoomSelect(r); }}
-                                            className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-black/40 text-white/90 backdrop-blur-md flex items-center justify-center hover:bg-white hover:text-slate-900 transition-all shadow-md shrink-0 cursor-pointer"
-                                          >
-                                            <Bookmark className="w-4.5 h-4.5" fill={isSelected ? "currentColor" : "none"} />
-                                          </button>
                                         </div>
 
-                                        {/* Bottom: Info Content */}
-                                        <div className="p-5 flex flex-col justify-between flex-1 gap-4">
+                                        {/* Minimal Content */}
+                                        <div className="p-3.5 flex flex-col justify-between flex-1 gap-2.5">
                                           <div>
-                                            {/* Room Name */}
-                                            <h4 className={`text-[15px] font-bold leading-snug tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`} title={r.name}>
+                                            <h4 className="text-[14px] font-bold leading-tight truncate" title={r.name}>
                                               {r.name}
                                             </h4>
-
-                                            {/* Specs Row */}
-                                            <div className={`flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] font-medium mt-3 pb-3 border-b select-none ${
-                                              theme === 'dark' ? "text-slate-300 border-white/10" : "text-slate-700 border-slate-100"
-                                            }`}>
-                                              <span className="flex items-center gap-1"><AppleEmoji symbol="👤" className="w-3.5 h-3.5" /> {r.maxOccupancy || 2} Guests</span>
-                                              <span className={theme === 'dark' ? "text-white/20" : "text-slate-300"}>|</span>
-                                              <span className="flex items-center gap-1"><AppleEmoji symbol="🛏️" className="w-3.5 h-3.5" /> King Bed</span>
-                                              <span className={theme === 'dark' ? "text-white/20" : "text-slate-300"}>|</span>
-                                              <span className="flex items-center gap-1"><AppleEmoji symbol="📐" className="w-3.5 h-3.5" /> 320 sq.ft</span>
-                                            </div>
-
-                                            {/* Amenity Highlights Row */}
-                                            <div className={`flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] font-medium mt-3 pb-3 border-b select-none ${
-                                              theme === 'dark' ? "text-slate-300 border-white/10" : "text-slate-700 border-slate-100"
-                                            }`}>
-                                              <span className="flex items-center gap-1"><AppleEmoji symbol="☕" className="w-3.5 h-3.5" /> Breakfast Included</span>
-                                              <span className={theme === 'dark' ? "text-white/20" : "text-slate-300"}>|</span>
-                                              <span className="flex items-center gap-1"><AppleEmoji symbol="🛡️" className="w-3.5 h-3.5" /> Free Cancellation</span>
-                                            </div>
-
-                                            {/* Rating / Verified Badge */}
-                                            <div className={`flex items-center gap-1 text-[11px] font-bold mt-3 ${theme === 'dark' ? 'text-[#fbbf24]' : 'text-amber-500'}`}>
-                                              <AppleEmoji symbol="⭐" className="w-3.5 h-3.5" /> 4.8 Verified Room
-                                            </div>
+                                            <p className="text-[11px] text-slate-400 mt-1 truncate">
+                                              👤 {r.maxOccupancy || 2} Guests • 🛏️ King Bed • Free Breakfast
+                                            </p>
                                           </div>
 
-                                          {/* Pricing and Action Button */}
-                                          <div className="flex items-center justify-between mt-1 pt-1.5 border-t border-slate-100 dark:border-white/5">
+                                          {/* Price & Reserve Button */}
+                                          <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-white/5">
                                             <div>
-                                              {r.promotionalPrice && r.promotionalPrice < r.pricePerNight ? (
-                                                <div className="text-[10px] line-through text-slate-400 font-extrabold">
-                                                  ₹{r.pricePerNight.toLocaleString()}
-                                                </div>
-                                              ) : null}
-                                              <div className={`text-lg font-black leading-none ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                                                ₹{roomBasePrice.toLocaleString()}
-                                                <span className="text-[10px] font-semibold text-slate-500 ml-0.5">/night</span>
-                                              </div>
-                                              <div className="text-[10px] font-extrabold text-emerald-500 mt-1 flex items-center gap-1">
-                                                <span>+ ₹{gstAmount.toLocaleString()} ({gstPercent}% GST)</span>
+                                              <div className="flex items-baseline gap-1">
+                                                <span className="text-[15px] font-black">₹{roomBasePrice.toLocaleString()}</span>
+                                                <span className="text-[10px] text-slate-400 font-medium">/night</span>
                                               </div>
                                             </div>
 
@@ -1686,15 +1637,9 @@ export default function App() {
                                                 e.stopPropagation();
                                                 handleRoomSelect(r);
                                               }}
-                                              className={`px-4.5 py-2.5 rounded-xl text-xs font-extrabold active:scale-95 transition-all cursor-pointer flex items-center gap-1.5 border ${
-                                                isSelected
-                                                  ? "bg-[#2563eb] text-white border-[#2563eb]"
-                                                  : theme === 'dark'
-                                                    ? "border-blue-500/50 text-[#60a5fa] hover:bg-blue-500/10"
-                                                    : "border-blue-600 text-[#2563eb] hover:bg-blue-50"
-                                              }`}
+                                              className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-brand-600 hover:bg-brand-500 text-white active:scale-95 transition-all cursor-pointer flex items-center gap-1 shadow-sm"
                                             >
-                                              {isSelected ? "Selected ✓" : "Reserve"} <ArrowRight className="w-3.5 h-3.5" />
+                                              Reserve <ArrowRight className="w-3 h-3" />
                                             </button>
                                           </div>
                                         </div>
