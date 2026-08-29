@@ -1,8 +1,12 @@
 'use client';
 
 import React, { useCallback } from "react";
+import { useLocation } from "react-router-dom";
 
 export default function AICopilot() {
+  const location = useLocation();
+  const path = location.pathname.toLowerCase();
+
   const handleOpenAIMode = useCallback(() => {
     if (typeof window === "undefined") return;
     const isProd = window.location.hostname === "gethotelstays.com" || window.location.hostname.endsWith(".gethotelstays.com");
@@ -12,6 +16,11 @@ export default function AICopilot() {
 
     window.open(targetUrl, "_blank", "noopener,noreferrer");
   }, []);
+
+  // Hide floating AI Mode button on Packages & Tour Package detail pages
+  if (path.includes('/packages') || path.includes('/tour-packages')) {
+    return null;
+  }
 
   return (
     <button

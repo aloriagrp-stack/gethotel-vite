@@ -395,6 +395,24 @@ export default function TourPackageDetails() {
                             </ul>
                         </div>
 
+                        {/* What's Excluded */}
+                        {Array.isArray(pkg.exclusions) && pkg.exclusions.length > 0 && (
+                            <div className="space-y-3 pt-2">
+                                <h3 className="text-sm font-black text-slate-950 uppercase tracking-wider flex items-center gap-2">
+                                    <X className="w-4.5 h-4.5 text-rose-500" />
+                                    What's Excluded
+                                </h3>
+                                <ul className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                                    {pkg.exclusions.map((exc: string, idx: number) => (
+                                        <li key={idx} className="flex items-start gap-2 text-xs font-semibold text-slate-600 bg-rose-50/40 p-3 rounded-2xl border border-rose-100/40">
+                                            <X className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+                                            <span>{exc}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+
                         {/* Day-Wise Itinerary */}
                         <div className="space-y-4 pt-2">
                             <h3 className="text-sm font-black text-slate-950 uppercase tracking-wider flex items-center gap-2">
@@ -429,13 +447,13 @@ export default function TourPackageDetails() {
                             <div className="flex items-baseline justify-between border-b border-slate-100 pb-4">
                                 <div>
                                     <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Package Rate</span>
-                                    <div className="flex items-baseline gap-2 mt-0.5">
-                                        <span className="text-2xl font-black text-slate-950">₹{pkg.price?.toLocaleString()}</span>
-                                        {pkg.originalPrice && (
-                                            <span className="text-xs text-slate-400 line-through">₹{pkg.originalPrice?.toLocaleString()}</span>
+                                    <div className="flex flex-col mt-0.5">
+                                        <span className="text-2xl font-black text-slate-950 leading-tight">₹{pkg.price?.toLocaleString()}</span>
+                                        {pkg.originalPrice && pkg.originalPrice > pkg.price && (
+                                            <span className="text-xs text-slate-400 line-through font-semibold mt-0.5">₹{pkg.originalPrice?.toLocaleString()}</span>
                                         )}
                                     </div>
-                                    <span className="text-[10px] text-slate-500 font-semibold">per guest (all taxes incl.)</span>
+                                    <span className="text-[10px] text-slate-500 font-semibold block mt-1">per guest (all taxes incl.)</span>
                                 </div>
                                 <span className="px-2.5 py-1 bg-blue-50 text-blue-700 font-black text-[10px] rounded-lg border border-blue-100">
                                     {pkg.discountPercent || "BEST DEAL"}
@@ -562,21 +580,17 @@ export default function TourPackageDetails() {
                                     </div>
                                 </div>
 
-                                {/* Added to Cart Toast Notification */}
-                                {addedToCartToast && (
-                                    <div className="p-2.5 bg-blue-600 text-white text-xs font-bold text-center rounded-xl animate-bounce shadow-md">
-                                        ✓ Added to Cart & Saved!
-                                    </div>
-                                )}
-
                                 {/* BUTTONS */}
-                                <div className="space-y-2.5 pt-1">
+                                <div className="space-y-2.5 pt-2">
                                     <button
                                         onClick={handleAddToCart}
-                                        className="w-full py-3.5 bg-brand-600 hover:bg-brand-700 backdrop-blur-xl border border-white/30 text-white font-black text-xs uppercase tracking-wider rounded-2xl transition-all duration-300 cursor-pointer shadow-lg shadow-brand-600/30 hover:scale-[1.01] active:scale-[0.99] text-center flex items-center justify-center gap-2"
+                                        className={`w-full py-3.5 border text-xs font-black uppercase tracking-wider rounded-2xl transition-all duration-300 cursor-pointer shadow-md text-center flex items-center justify-center ${
+                                            isPkgInCart
+                                                ? "bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-500 shadow-emerald-600/30"
+                                                : "bg-brand-600 hover:bg-brand-700 text-white border-white/30 shadow-brand-600/30"
+                                        }`}
                                     >
-                                        <ShoppingBag className="w-4 h-4" />
-                                        ADD TO CART
+                                        <span>{isPkgInCart ? "✓ ADDED TO CART" : "ADD TO CART"}</span>
                                     </button>
 
                                     <button
@@ -757,10 +771,13 @@ export default function TourPackageDetails() {
                             </div>
                             <button
                                 onClick={handleAddToCart}
-                                className="py-2.5 px-5 bg-brand-600 hover:bg-brand-700 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-md transition-all cursor-pointer flex items-center gap-2"
+                                className={`py-2.5 px-5 font-black text-xs uppercase tracking-wider rounded-xl shadow-md transition-all cursor-pointer flex items-center justify-center ${
+                                    isPkgInCart
+                                        ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                                        : "bg-brand-600 hover:bg-brand-700 text-white"
+                                }`}
                             >
-                                <ShoppingBag className="w-4 h-4" />
-                                ADD TO CART
+                                <span>{isPkgInCart ? "✓ ADDED TO CART" : "ADD TO CART"}</span>
                             </button>
                         </div>
                     </motion.div>

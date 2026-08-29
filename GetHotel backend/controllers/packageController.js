@@ -34,6 +34,9 @@ const ensureTableExists = async () => {
         } catch (e) {
             // Column already exists
         }
+        try {
+            await prisma.$executeRawUnsafe(`DELETE FROM tour_packages WHERE price = 145000 OR slug LIKE '%palace-on-wheels%';`);
+        } catch (e) {}
     } catch (err) {
         console.error('[PackageController] Table initialization error:', err.message);
     }
