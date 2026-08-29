@@ -146,7 +146,6 @@ export default function HotelDetailsDrawer({
   };
 
   const startingPrice = hotel.promotionalPrice || hotel.pricePerNight;
-  const ratingValue = hotel.guestRating && hotel.guestRating > 0 ? hotel.guestRating : (hotel.starRating || 4.5);
 
   return (
     <>
@@ -258,17 +257,17 @@ export default function HotelDetailsDrawer({
             {/* 2. Hotel Overview & Quick Actions */}
             <div className="space-y-3 pb-4 border-b border-zinc-800/70">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg sm:text-xl font-black text-white">{hotel.name}</span>
-                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-black bg-amber-500/20 text-amber-400 border border-amber-500/20">
-                      <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                      {ratingValue.toFixed(1)}
+                <div className="space-y-1">
+                  <span className="text-lg sm:text-xl font-black text-white block leading-tight">{hotel.name}</span>
+                  {/* Minimal star rating icons without badge */}
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: Math.min(5, Math.max(1, Math.round(hotel.starRating || 3))) }).map((_, idx) => (
+                      <Star key={idx} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                    ))}
+                    <span className="text-[11px] font-semibold text-zinc-400 ml-1">
+                      {hotel.starRating ? `${hotel.starRating}-Star Hotel` : 'Hotel'}
                     </span>
                   </div>
-                  <p className="text-xs text-zinc-400 mt-0.5">
-                    📍 {hotel.address ? `${hotel.address}, ${hotel.city}` : hotel.city}
-                  </p>
                 </div>
 
                 {/* Attach Hotel to Chat CTA */}
