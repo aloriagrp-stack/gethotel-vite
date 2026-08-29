@@ -150,10 +150,10 @@ export default function HotelDetailsDrawer({
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 bg-black/85 backdrop-blur-xl transition-all duration-300 animate-fade-in">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 bg-black/85 backdrop-blur-xl animate-backdrop-smooth">
         {/* Full Page Drawer Container on Mobile, Spacious Centered Sheet on Desktop */}
         <div
-          className={`w-full h-full sm:h-[90vh] max-w-2xl flex flex-col rounded-none sm:rounded-3xl border-0 sm:border shadow-2xl overflow-hidden transition-all duration-300 ${
+          className={`w-full h-full sm:h-[90vh] max-w-2xl flex flex-col rounded-none sm:rounded-3xl border-0 sm:border shadow-2xl overflow-hidden animate-drawer-spring ${
             theme === 'dark' ? 'bg-[#0B0B0E] sm:border-zinc-800 text-white' : 'bg-white sm:border-slate-200 text-slate-900'
           }`}
         >

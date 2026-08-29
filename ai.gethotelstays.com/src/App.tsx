@@ -698,11 +698,11 @@ export default function App() {
       setMessages([...sessionMessages, initialAiMsg]);
 
       try {
+        setIsTyping(true);
         streamData = await aiApi.chatStream(historyPayload, {
           userMemory: userMemoryPayload,
           conversationId: targetConversationId || undefined,
           onToken: (token: string) => {
-            setIsTyping(false);
             accumulatedText += token;
             setMessages(prev =>
               prev.map(m => (m.id === aiMsgId ? { ...m, text: accumulatedText } : m))
@@ -729,6 +729,8 @@ export default function App() {
         console.warn("[AI Chat] Stream failed, falling back to standard API:", streamErr);
         streamData = await aiApi.chat(historyPayload, userMemoryPayload, targetConversationId || undefined);
         accumulatedText = streamData?.reply || "";
+      } finally {
+        setIsTyping(false);
       }
 
       const finalReplyText = accumulatedText || streamData?.reply || "I'm here to help you plan your trip! Which city or hotel would you like to explore?";
@@ -1455,7 +1457,7 @@ export default function App() {
 
           {messages.length > 0 && (
             <div className="max-w-3xl mx-auto space-y-6 md:space-y-8 pt-4 pb-36">
-              {messages.map((msg) => (
+              {messages.map((msg, index) => (
                 <div key={msg.id} className="space-y-4">
                   {/* User Bubble */}
                   {msg.sender === "user" && (
@@ -1501,17 +1503,22 @@ export default function App() {
                   {/* AI Assistant Bubble */}
                   {msg.sender === "ai" && (
                     <div className="w-full py-2">
-                      {msg.text && msg.text.trim().length > 0 ? (
+                      {(msg.text && msg.text.trim().length > 0) || (isTyping && index === messages.length - 1) ? (
                         <>
                           <div className={`text-[16px] leading-[1.75] font-medium tracking-wide transition-colors ${
                             theme === 'dark' ? "text-slate-100" : "text-[#1f2937]"
                           }`}>
-                            <MarkdownRenderer text={msg.text} />
+                            <MarkdownRenderer 
+                              text={msg.text} 
+                              isStreaming={isTyping && index === messages.length - 1} 
+                            />
                           </div>
 
-                          <div className="flex items-center gap-3 mt-1.5">
-                            <CopyButton text={msg.text} theme={theme} />
-                          </div>
+                          {msg.text && msg.text.trim().length > 0 && !isTyping && (
+                            <div className="flex items-center gap-3 mt-1.5">
+                              <CopyButton text={msg.text} theme={theme} />
+                            </div>
+                          )}
                         </>
                       ) : null}
 
