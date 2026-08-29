@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import SEOHead from "@/components/common/SEOHead";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useLocale } from "@/context/LocaleContext";
 import {
     MapPin, Clock, Star, Hotel, Car, X, CheckCircle2,
@@ -140,6 +140,7 @@ const DEFAULT_DESTINATION_STORIES: DestinationStory[] = [
 ];
 
 export default function TourPackages() {
+    const navigate = useNavigate();
     const { langCode } = useLocale();
     const [packages, setPackages] = useState<any[]>([]);
     const [packagesLoading, setPackagesLoading] = useState<boolean>(true);
@@ -304,19 +305,11 @@ export default function TourPackages() {
         };
     }, [activeStoryIndex, isStoryPaused, handleNextStory]);
 
-    // Handle Explore Click in Story Modal
-    const handleExploreFromStory = (destinationName: string) => {
+    // Handle Explore Click in Story Modal - Navigates to dedicated destination tours page
+    const handleExploreFromStory = (story: DestinationStory) => {
         setActiveStoryIndex(null);
-        setSelectedDestination(destinationName);
-        setSearchQuery("");
-        setSelectedFilterTag("All");
-
-        // Smooth scroll to packages grid
-        setTimeout(() => {
-            if (packagesGridRef.current) {
-                packagesGridRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-            }
-        }, 150);
+        const destSlug = story.slug || `${story.name.toLowerCase()}-tours`;
+        navigate(`/${langCode}/packages/${destSlug}`);
     };
 
     const currentStory = activeStoryIndex !== null ? destinationStories[activeStoryIndex] : null;
@@ -735,7 +728,7 @@ export default function TourPackages() {
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            handleExploreFromStory(currentStory.name);
+                                            handleExploreFromStory(currentStory);
                                         }}
                                         className="flex-1 py-3.5 px-5 bg-gradient-to-r from-brand-600 via-blue-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-xl shadow-brand-600/40 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 border border-white/20"
                                     >

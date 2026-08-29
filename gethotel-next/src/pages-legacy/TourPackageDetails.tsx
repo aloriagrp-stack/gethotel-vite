@@ -13,6 +13,7 @@ import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { useLocale } from "@/context/LocaleContext";
 import { packageApi } from "@/lib/api";
+import DestinationToursLanding from "./destinations/DestinationToursLanding";
 
 // Helper function to generate clean SEO Slugs
 export function createPackageSlug(title: string): string {
@@ -38,6 +39,13 @@ export default function TourPackageDetails() {
     const { user } = useAuth();
     const { langCode } = useLocale();
     const { addToCart, cartItems } = useCart();
+
+    const cleanId = (id || "").toLowerCase().trim();
+    const isDestinationRoute = cleanId.endsWith("-tours") || cleanId.startsWith("destinations/") || ["agra", "delhi", "jaipur", "udaipur", "jodhpur", "jaisalmer", "ranthambore", "mount-abu", "bikaner", "rajasthan"].includes(cleanId);
+
+    if (isDestinationRoute) {
+        return <DestinationToursLanding />;
+    }
 
     const [packageData, setPackageData] = useState<any | null>(null);
     const [loading, setLoading] = useState(true);
