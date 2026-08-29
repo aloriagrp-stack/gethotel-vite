@@ -78,16 +78,16 @@ export default function RoomCategoryCard({
         </div>
       </div>
 
-      {/* ================= RIGHT SIDE: Room Details & Action Buttons (Right-Aligned) ================= */}
-      <div className="flex-1 min-w-0 flex flex-col justify-between items-end text-right gap-2">
-        <div className="w-full flex flex-col items-end">
+      {/* ================= RIGHT SIDE: Room Details (Left-Aligned) & Action Buttons (Right-Aligned) ================= */}
+      <div className="flex-1 min-w-0 flex flex-col justify-between gap-2">
+        <div className="w-full flex flex-col items-start text-left">
           {/* Room Name */}
-          <h5 className="text-sm font-extrabold leading-snug line-clamp-1 text-white text-right" title={room.name}>
+          <h5 className="text-sm font-extrabold leading-snug line-clamp-1 text-white text-left" title={room.name}>
             {room.name}
           </h5>
 
           {/* Occupancy & Inclusions */}
-          <p className="text-[11px] text-zinc-400 mt-1 flex flex-wrap items-center justify-end gap-1.5 font-medium text-right">
+          <p className="text-[11px] text-zinc-400 mt-1 flex flex-wrap items-center justify-start gap-1.5 font-medium text-left">
             <span>👤 {room.maxOccupancy || 2} Guests</span>
             <span>•</span>
             <span>🛏️ King Bed</span>
@@ -96,7 +96,7 @@ export default function RoomCategoryCard({
           </p>
 
           {/* Price per night */}
-          <div className="flex items-baseline justify-end gap-1 mt-1.5">
+          <div className="flex items-baseline justify-start gap-1 mt-1.5 text-left">
             <span className="text-sm sm:text-base font-black text-white">₹{roomPrice.toLocaleString()}</span>
             <span className="text-[10px] text-zinc-400 font-medium">/night</span>
           </div>
