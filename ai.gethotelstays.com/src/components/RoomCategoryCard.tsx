@@ -47,17 +47,17 @@ export default function RoomCategoryCard({
 
   return (
     <div
-      className={`p-3.5 sm:p-4 rounded-2xl border transition-all duration-200 flex flex-row gap-3 sm:gap-4 items-stretch justify-between ${
+      className={`py-4 transition-all duration-200 flex flex-row gap-3 sm:gap-4 items-stretch justify-between border-b ${
         theme === 'dark' 
-          ? 'bg-[#111116] hover:bg-[#15151B] border-zinc-800/90 hover:border-zinc-700 text-white shadow-lg' 
-          : 'bg-white border-slate-200/90 hover:border-slate-300 text-slate-900 shadow-sm'
+          ? 'border-zinc-800/70 text-white' 
+          : 'border-slate-200 text-slate-900'
       }`}
     >
       {/* ================= LEFT SIDE: Room Details & Action Buttons ================= */}
-      <div className="flex-1 min-w-0 flex flex-col justify-between gap-2.5">
+      <div className="flex-1 min-w-0 flex flex-col justify-between gap-2">
         <div>
           {/* Room Name */}
-          <h5 className="text-xs sm:text-sm font-extrabold leading-snug line-clamp-1 text-white" title={room.name}>
+          <h5 className="text-sm font-extrabold leading-snug line-clamp-1 text-white" title={room.name}>
             {room.name}
           </h5>
 
@@ -78,24 +78,24 @@ export default function RoomCategoryCard({
         </div>
 
         {/* Action Buttons Row */}
-        <div className="flex items-center gap-2 pt-2 border-t border-zinc-800/80">
+        <div className="flex items-center gap-2 pt-1">
           <button
             type="button"
             onClick={() => onAttachToChat(room)}
-            className="flex-1 px-2.5 py-1.5 rounded-xl text-[11px] font-bold border border-zinc-700 bg-[#181822] hover:bg-[#22222E] active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1 text-zinc-200"
+            className="px-3 py-1.5 rounded-xl text-[11px] font-bold border border-zinc-700 bg-zinc-900/80 hover:bg-zinc-800 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5 text-zinc-200"
             title="Attach this room to chat to ask AI anything"
           >
             <MessageSquarePlus className="w-3.5 h-3.5 text-blue-400" />
-            <span className="truncate">Attach</span>
+            <span>Attach</span>
           </button>
 
           <button
             type="button"
             onClick={() => onBookRoom(room)}
-            className="flex-1 px-3 py-1.5 rounded-xl text-[11px] font-extrabold bg-blue-600 hover:bg-blue-500 active:scale-95 text-white transition-all cursor-pointer flex items-center justify-center gap-1 shadow-md"
+            className="px-4 py-1.5 rounded-xl text-[11px] font-extrabold bg-blue-600 hover:bg-blue-500 active:scale-95 text-white transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-md"
           >
             <CreditCard className="w-3.5 h-3.5" />
-            <span className="truncate">Book</span>
+            <span>Book</span>
           </button>
         </div>
       </div>

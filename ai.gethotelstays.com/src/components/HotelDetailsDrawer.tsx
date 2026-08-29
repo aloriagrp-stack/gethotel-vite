@@ -320,7 +320,7 @@ export default function HotelDetailsDrawer({
                   Standard rooms available at front desk. You can attach this hotel to chat to ask AI!
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="flex flex-col">
                   {rooms.map((r) => (
                     <RoomCategoryCard
                       key={r.id}
