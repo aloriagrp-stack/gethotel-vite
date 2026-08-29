@@ -61,8 +61,8 @@ exports.createBooking = async (req, res) => {
         // Fallback: If no specific rooms provided, use the first available room
         let activeRooms = Array.isArray(rooms) ? rooms.map(room => ({
             ...room,
-            id: parseInt(room.id),
-            quantity: Math.max(1, parseInt(room.quantity) || 1)
+            id: parseInt(room.id || room.roomId),
+            quantity: Math.max(1, parseInt(room.quantity || room.count) || 1)
         })) : rooms;
         if (!activeRooms || activeRooms.length === 0) {
             if (hotel.room && hotel.room.length > 0) {
@@ -73,9 +73,20 @@ exports.createBooking = async (req, res) => {
             }
         }
 
-        if (!guestInfo?.firstName || !guestInfo?.lastName || !guestInfo?.email || !guestInfo?.phone) {
+        let guestFirstName = guestInfo?.firstName;
+        let guestLastName = guestInfo?.lastName;
+        if (!guestFirstName && guestInfo?.fullName) {
+            const parts = guestInfo.fullName.trim().split(' ');
+            guestFirstName = parts[0];
+            guestLastName = parts.slice(1).join(' ') || 'Guest';
+        }
+
+        if (!guestFirstName || !guestInfo?.email || !guestInfo?.phone) {
             return res.status(400).json({ success: false, message: "Guest name, email, and phone are required." });
         }
+        if (!guestLastName) guestLastName = 'Guest';
+        guestInfo.firstName = guestFirstName;
+        guestInfo.lastName = guestLastName;
 
         let calculatedSubtotal = 0;
         let totalMaxOccupancy = 0;
@@ -401,7 +412,7 @@ exports.createBooking = async (req, res) => {
             }
         }
 
-        res.status(201).json({ success: true, data: booking });
+        res.status(201).json({ success: true, booking, data: booking });
     } catch (error) {
         console.error("Booking Error:", error);
         res.status(400).json({ success: false, message: error.message || "Booking failed." });

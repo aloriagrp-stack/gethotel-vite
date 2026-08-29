@@ -63,10 +63,12 @@ exports.createOrder = async (req, res) => {
 
         res.status(200).json({
             success: true,
+            order: order,
             orderId: order.id,
             amount: order.amount,
             currency: order.currency,
-            bookingId: booking.id
+            bookingId: booking.id,
+            keyId: process.env.RAZORPAY_KEY_ID || 'rzp_live_T16NuPtvvs9cRV'
         });
     } catch (err) {
         console.error(err);

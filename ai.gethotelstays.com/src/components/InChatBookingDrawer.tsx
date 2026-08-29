@@ -144,6 +144,18 @@ export default function InChatBookingDrawer({
 
   if (!isOpen || !hotel) return null;
 
+  const loadRazorpayScript = (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      if (typeof window === 'undefined') return resolve(false);
+      if ((window as any).Razorpay) return resolve(true);
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
   const handlePayAndBook = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
@@ -166,14 +178,26 @@ export default function InChatBookingDrawer({
 
     try {
       // 1. Create reservation in backend
+      const nameParts = guestName.trim().split(' ');
+      const firstName = nameParts[0] || guestName.trim();
+      const lastName = nameParts.slice(1).join(' ') || 'Guest';
+
       const bookingPayload = {
         hotelId: hotel.id,
-        rooms: [{ roomId: activeRoom.id || selectedRoomId || 1, count: roomsCount, price: basePrice }],
+        rooms: [{
+          id: activeRoom.id || selectedRoomId || 1,
+          roomId: activeRoom.id || selectedRoomId || 1,
+          count: roomsCount,
+          quantity: roomsCount,
+          price: basePrice
+        }],
         checkIn,
         checkOut,
         totalGuests: guestsCount,
         guestInfo: {
           fullName: guestName.trim(),
+          firstName,
+          lastName,
           email: guestEmail.trim(),
           phone: guestPhone.trim(),
           specialRequests: "Booked via ChatGHS"
@@ -183,34 +207,38 @@ export default function InChatBookingDrawer({
       };
 
       const bookingRes = await bookingApi.createBooking(bookingPayload);
-      if (!bookingRes.success || !bookingRes.booking?.id) {
+      const bookingData = bookingRes.booking || bookingRes.data;
+      if (!bookingRes.success || !bookingData?.id) {
         throw new Error(bookingRes.message || 'Failed to initialize booking.');
       }
 
-      const bookingId = bookingRes.booking.id;
+      const bookingId = bookingData.id;
 
       // 2. Create Razorpay Order
       const orderRes = await paymentApi.createOrder(bookingId);
-      if (!orderRes.success || !orderRes.order?.id) {
+      const orderId = orderRes.orderId || orderRes.order?.id || orderRes.id;
+      const orderAmount = orderRes.amount || orderRes.order?.amount;
+
+      if (!orderRes.success || !orderId) {
         throw new Error(orderRes.message || 'Failed to generate online payment order.');
       }
 
-      const order = orderRes.order;
-      const razorpayKey = orderRes.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_1DP5mmOlF5G5ag';
+      const razorpayKey = orderRes.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_live_T16NuPtvvs9cRV';
 
       // 3. Open Razorpay Checkout Modal
-      if (typeof window === 'undefined' || !(window as any).Razorpay) {
+      const isLoaded = await loadRazorpayScript();
+      if (!isLoaded || !(window as any).Razorpay) {
         throw new Error('Razorpay SDK failed to load. Please refresh the page.');
       }
 
       const rzpOptions = {
         key: razorpayKey,
-        amount: order.amount,
-        currency: order.currency || 'INR',
+        amount: orderAmount,
+        currency: orderRes.currency || orderRes.order?.currency || 'INR',
         name: 'GetHotelStays',
         description: `${hotel.name} (${nights} Night${nights > 1 ? 's' : ''})`,
         image: 'https://gethotelstays.com/logo.png',
-        order_id: order.id,
+        order_id: orderId,
         prefill: {
           name: guestName,
           email: guestEmail,
@@ -258,7 +286,7 @@ export default function InChatBookingDrawer({
               setErrorMessage(verifyRes.message || 'Payment verification failed.');
             }
           } catch (verifyErr: any) {
-            setErrorMessage(verifyErr.message || 'Verification error occurred.');
+            setErrorMessage(verifyErr.message || 'Payment verification failed.');
           } finally {
             setIsProcessing(false);
           }
@@ -266,15 +294,14 @@ export default function InChatBookingDrawer({
       };
 
       const rzp = new (window as any).Razorpay(rzpOptions);
-      rzp.on('payment.failed', (failRes: any) => {
+      rzp.on('payment.failed', function (resp: any) {
         setIsProcessing(false);
-        setErrorMessage(failRes.error?.description || 'Payment was declined.');
+        setErrorMessage(resp.error?.description || 'Payment failed. Please try again.');
       });
       rzp.open();
-
     } catch (err: any) {
-      console.error('[BookingDrawer Error]:', err);
-      setErrorMessage(err.message || 'Something went wrong while initiating payment.');
+      console.error('[InChatBookingDrawer Payment Error]:', err);
+      setErrorMessage(err.message || 'Something went wrong during payment. Please try again.');
       setIsProcessing(false);
     }
   };
