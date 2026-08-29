@@ -697,6 +697,7 @@ export default function App() {
           userMemory: userMemoryPayload,
           conversationId: targetConversationId || undefined,
           onToken: (token: string) => {
+            setIsTyping(false);
             accumulatedText += token;
             setMessages(prev =>
               prev.map(m => (m.id === aiMsgId ? { ...m, text: accumulatedText } : m))
@@ -1500,15 +1501,19 @@ export default function App() {
                   {/* AI Assistant Bubble */}
                   {msg.sender === "ai" && (
                     <div className="w-full py-2">
-                      <div className={`text-[16px] leading-[1.75] font-medium tracking-wide transition-colors ${
-                        theme === 'dark' ? "text-slate-100" : "text-[#1f2937]"
-                      }`}>
-                        <MarkdownRenderer text={msg.text} />
-                      </div>
+                      {msg.text && msg.text.trim().length > 0 ? (
+                        <>
+                          <div className={`text-[16px] leading-[1.75] font-medium tracking-wide transition-colors ${
+                            theme === 'dark' ? "text-slate-100" : "text-[#1f2937]"
+                          }`}>
+                            <MarkdownRenderer text={msg.text} />
+                          </div>
 
-                      <div className="flex items-center gap-3 mt-1.5">
-                        <CopyButton text={msg.text} theme={theme} />
-                      </div>
+                          <div className="flex items-center gap-3 mt-1.5">
+                            <CopyButton text={msg.text} theme={theme} />
+                          </div>
+                        </>
+                      ) : null}
 
                       {/* Type-based Renderer: flights | tourPackage | hotels | rooms | general */}
                       {msg.flights && (
