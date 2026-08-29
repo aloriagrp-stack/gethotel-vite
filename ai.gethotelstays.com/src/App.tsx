@@ -656,20 +656,13 @@ export default function App() {
       );
 
       const history = validMessages.map((m, idx) => {
-        let content = m.text;
-        if (idx === validMessages.length - 1) {
-          if (aiVibe === 'Precise') {
-            content += "\n\n[Instruction: Keep your response precise, brief, factual, and list prices directly with minimal fluff.]";
-          } else if (aiVibe === 'Creative') {
-            content += "\n\n[Instruction: Be creative, descriptive, suggest detailed packages/itineraries, tell me about local tourist sights, culture, and make the travel recommendations sound exciting and luxurious.]";
-          }
-          if (composerAttachment) {
-            const isRoomAttachment = composerAttachment.type === 'room' || /\b(room|suite|deluxe|standard|executive|king|queen)\b/i.test(composerAttachment.name);
-            if (isRoomAttachment) {
-              content += `\n\n[SELECTED ROOM: ${composerAttachment.name} (ID: ${composerAttachment.id}, Price: ₹${composerAttachment.pricePerNight}/night)]`;
-            } else {
-              content += `\n\n[SELECTED HOTEL: ${composerAttachment.name} (ID: ${composerAttachment.id}, City: ${composerAttachment.city}, Price: ₹${composerAttachment.pricePerNight}/night)]`;
-            }
+        let content = (m.text || '').replace(/\[Instruction:[^\]]+\]/gi, '').replace(/\[SELECTED (?:ROOM|HOTEL):[^\]]+\]/gi, '').trim();
+        if (idx === validMessages.length - 1 && composerAttachment) {
+          const isRoomAttachment = composerAttachment.type === 'room' || /\b(room|suite|deluxe|standard|executive|king|queen)\b/i.test(composerAttachment.name);
+          if (isRoomAttachment) {
+            content += `\n\n[SELECTED ROOM: ${composerAttachment.name} (ID: ${composerAttachment.id}, Price: ₹${composerAttachment.pricePerNight}/night)]`;
+          } else {
+            content += `\n\n[SELECTED HOTEL: ${composerAttachment.name} (ID: ${composerAttachment.id}, City: ${composerAttachment.city}, Price: ₹${composerAttachment.pricePerNight}/night)]`;
           }
         }
         return { role: m.sender === 'ai' ? 'ai' : 'user', content };

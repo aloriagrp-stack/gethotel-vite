@@ -164,27 +164,19 @@ function sanitizeHotels(hotels) {
  */
 async function searchHotelsInDatabase(messages) {
     const destination = extractDestination(messages);
-    const lastUserMsg = (messages[messages.length - 1]?.content || '').toLowerCase();
+    const allQueryText = messages.map(m => (m.content || m.text || '')).join(' ').toLowerCase();
+    const lastUserMsg = (messages[messages.length - 1]?.content || messages[messages.length - 1]?.text || '').toLowerCase();
     
     // Extract price condition if specified
-    const priceUnderMatch = lastUserMsg.match(/(?:under|below|less than|max|budget)\s*(?:rs\.?|inr|₹)?\s*(\d+)/i);
+    const priceUnderMatch = lastUserMsg.match(/(?:under|below|less than|max|budget)\s*(?:rs\.?|inr|₹)?\s*(\d+)/i) ||
+                           allQueryText.match(/(?:under|below|less than|max|budget)\s*(?:rs\.?|inr|₹)?\s*(\d+)/i);
     const maxPriceLimit = priceUnderMatch ? parseInt(priceUnderMatch[1]) : null;
 
-    const whereClause = { isActive: true };
-
-    if (destination) {
-        whereClause.city = { contains: destination };
-    }
-
-    if (maxPriceLimit) {
-        whereClause.pricePerNight = { lte: maxPriceLimit };
-    }
-
     const HOTEL_SELECT_FIELDS = {
-        id: true, name: true, city: true, description: true,
+        id: true, name: true, city: true, address: true, description: true,
         pricePerNight: true, starRating: true, guestRating: true,
         reviewCount: true, amenities: true, mainAmenities: true, isActive: true,
-        thumbnail: true,
+        thumbnail: true, slug: true,
         room: {
             where: { status: 'active' },
             select: {
@@ -205,22 +197,87 @@ async function searchHotelsInDatabase(messages) {
     };
 
     let dbHotels = [];
-    try {
-        dbHotels = await prisma.hotel.findMany({
-            where: whereClause,
-            select: HOTEL_SELECT_FIELDS,
-            take: 25
-        });
-    } catch (err) {
-        logger.warn('HotelSearch', 'DB query failed', { error: err.message });
-        return { status: 'error', hotels: [], error: err.message };
+
+    // Attempt 1: Target Destination Match
+    if (destination) {
+        try {
+            const conditions = [
+                { city: { contains: destination } },
+                { name: { contains: destination } }
+            ];
+
+            dbHotels = await prisma.hotel.findMany({
+                where: {
+                    isActive: true,
+                    OR: conditions
+                },
+                select: HOTEL_SELECT_FIELDS,
+                orderBy: [
+                    { guestRating: 'desc' },
+                    { starRating: 'desc' },
+                    { pricePerNight: 'asc' }
+                ],
+                take: 20
+            });
+        } catch (err) {
+            logger.warn('HotelSearch', 'Destination query error', { error: err.message });
+        }
+    }
+
+    // Attempt 2: If no destination or 0 results, search by keyword or popular locations
+    if (dbHotels.length === 0) {
+        try {
+            // Check if any known city keyword is in the full query text
+            for (const city of KNOWN_CITIES) {
+                if (allQueryText.includes(city)) {
+                    dbHotels = await prisma.hotel.findMany({
+                        where: {
+                            isActive: true,
+                            city: { contains: city }
+                        },
+                        select: HOTEL_SELECT_FIELDS,
+                        take: 15
+                    });
+                    if (dbHotels.length > 0) break;
+                }
+            }
+        } catch (err) {
+            logger.warn('HotelSearch', 'Keyword search error', { error: err.message });
+        }
+    }
+
+    // Attempt 3: General Top Active Inventory Fallback (Guarantees zero empty card drops)
+    if (dbHotels.length === 0) {
+        try {
+            dbHotels = await prisma.hotel.findMany({
+                where: { isActive: true },
+                select: HOTEL_SELECT_FIELDS,
+                orderBy: [
+                    { guestRating: 'desc' },
+                    { starRating: 'desc' }
+                ],
+                take: 10
+            });
+        } catch (err) {
+            logger.warn('HotelSearch', 'Fallback inventory query failed', { error: err.message });
+            return { status: 'error', hotels: [], error: err.message };
+        }
     }
 
     if (dbHotels.length === 0) {
         return { status: 'no_results', hotels: [] };
     }
 
-    return { status: 'success', hotels: sanitizeHotels(dbHotels) };
+    // Filter by price in memory if possible, otherwise keep closest
+    let sanitized = sanitizeHotels(dbHotels);
+    if (maxPriceLimit && maxPriceLimit > 500) {
+        const withinBudget = sanitized.filter(h => (h.promotionalPrice || h.pricePerNight) <= maxPriceLimit * 1.15);
+        if (withinBudget.length > 0) {
+            sanitized = withinBudget;
+        }
+    }
+
+    return { status: 'success', hotels: sanitized };
 }
 
 /**
