@@ -49,7 +49,7 @@ export default function RoomCategoryCard({
     <div
       className={`p-3.5 sm:p-4 rounded-2xl border transition-all duration-200 flex flex-row gap-3 sm:gap-4 items-stretch justify-between ${
         theme === 'dark' 
-          ? 'bg-white/[0.04] border-white/10 hover:border-white/20 text-white' 
+          ? 'bg-[#111116] hover:bg-[#15151B] border-zinc-800/90 hover:border-zinc-700 text-white shadow-lg' 
           : 'bg-white border-slate-200/90 hover:border-slate-300 text-slate-900 shadow-sm'
       }`}
     >
@@ -57,12 +57,12 @@ export default function RoomCategoryCard({
       <div className="flex-1 min-w-0 flex flex-col justify-between gap-2.5">
         <div>
           {/* Room Name */}
-          <h5 className="text-xs sm:text-sm font-extrabold leading-snug line-clamp-1" title={room.name}>
+          <h5 className="text-xs sm:text-sm font-extrabold leading-snug line-clamp-1 text-white" title={room.name}>
             {room.name}
           </h5>
 
           {/* Occupancy & Inclusions */}
-          <p className="text-[11px] text-slate-400 mt-1 flex flex-wrap items-center gap-1.5 font-medium">
+          <p className="text-[11px] text-zinc-400 mt-1 flex flex-wrap items-center gap-1.5 font-medium">
             <span>👤 {room.maxOccupancy || 2} Guests</span>
             <span>•</span>
             <span>🛏️ King Bed</span>
@@ -72,27 +72,27 @@ export default function RoomCategoryCard({
 
           {/* Price per night */}
           <div className="flex items-baseline gap-1 mt-1.5">
-            <span className="text-sm sm:text-base font-black">₹{roomPrice.toLocaleString()}</span>
-            <span className="text-[10px] text-slate-400 font-medium">/night</span>
+            <span className="text-sm sm:text-base font-black text-white">₹{roomPrice.toLocaleString()}</span>
+            <span className="text-[10px] text-zinc-400 font-medium">/night</span>
           </div>
         </div>
 
         {/* Action Buttons Row */}
-        <div className="flex items-center gap-2 pt-2 border-t border-white/5">
+        <div className="flex items-center gap-2 pt-2 border-t border-zinc-800/80">
           <button
             type="button"
             onClick={() => onAttachToChat(room)}
-            className="flex-1 px-2.5 py-1.5 rounded-xl text-[11px] font-bold border border-white/15 hover:bg-white/10 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1 text-slate-300"
+            className="flex-1 px-2.5 py-1.5 rounded-xl text-[11px] font-bold border border-zinc-700 bg-[#181822] hover:bg-[#22222E] active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1 text-zinc-200"
             title="Attach this room to chat to ask AI anything"
           >
-            <MessageSquarePlus className="w-3.5 h-3.5" />
+            <MessageSquarePlus className="w-3.5 h-3.5 text-blue-400" />
             <span className="truncate">Attach</span>
           </button>
 
           <button
             type="button"
             onClick={() => onBookRoom(room)}
-            className="flex-1 px-3 py-1.5 rounded-xl text-[11px] font-extrabold bg-brand-600 hover:bg-brand-500 active:scale-95 text-white transition-all cursor-pointer flex items-center justify-center gap-1 shadow-sm"
+            className="flex-1 px-3 py-1.5 rounded-xl text-[11px] font-extrabold bg-blue-600 hover:bg-blue-500 active:scale-95 text-white transition-all cursor-pointer flex items-center justify-center gap-1 shadow-md"
           >
             <CreditCard className="w-3.5 h-3.5" />
             <span className="truncate">Book</span>
@@ -103,7 +103,7 @@ export default function RoomCategoryCard({
       {/* ================= RIGHT SIDE: Room Photo & Gallery Trigger ================= */}
       <div 
         onClick={() => onOpenGallery(roomImages, `${room.name} (${hotelName})`)}
-        className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden shrink-0 bg-slate-800 cursor-zoom-in group shadow-md"
+        className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden shrink-0 bg-[#0D0D11] border border-zinc-800 cursor-zoom-in group shadow-md"
         title="Click to view all room photos in fullscreen"
       >
         <img
@@ -113,14 +113,14 @@ export default function RoomCategoryCard({
         />
 
         {/* Dark Hover Overlay with Zoom Icon */}
-        <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-          <div className="w-7 h-7 rounded-full bg-black/60 backdrop-blur-md text-white flex items-center justify-center opacity-80 group-hover:opacity-100 transition-opacity">
+        <div className="absolute inset-0 bg-black/35 group-hover:bg-black/15 transition-colors flex items-center justify-center">
+          <div className="w-7 h-7 rounded-full bg-black/70 backdrop-blur-md text-white flex items-center justify-center opacity-80 group-hover:opacity-100 transition-opacity border border-white/10">
             <ZoomIn className="w-3.5 h-3.5" />
           </div>
         </div>
 
         {/* Photo Count Badge */}
-        <div className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded-md bg-black/70 backdrop-blur-md text-[9px] font-bold text-white">
+        <div className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded-md bg-black/80 backdrop-blur-md text-[9px] font-bold text-white border border-white/10">
           {roomImages.length} {roomImages.length > 1 ? 'Photos' : 'Photo'}
         </div>
       </div>

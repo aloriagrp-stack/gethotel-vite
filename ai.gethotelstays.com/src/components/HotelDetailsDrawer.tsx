@@ -150,19 +150,19 @@ export default function HotelDetailsDrawer({
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md transition-all duration-300 animate-fade-in">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 bg-black/85 backdrop-blur-xl transition-all duration-300 animate-fade-in">
         {/* Full Page Drawer Container on Mobile, Spacious Centered Sheet on Desktop */}
         <div
           className={`w-full h-full sm:h-[90vh] max-w-2xl flex flex-col rounded-none sm:rounded-3xl border-0 sm:border shadow-2xl overflow-hidden transition-all duration-300 ${
-            theme === 'dark' ? 'bg-[#111115] sm:border-white/10 text-white' : 'bg-white sm:border-slate-200 text-slate-900'
+            theme === 'dark' ? 'bg-[#0B0B0E] sm:border-zinc-800 text-white' : 'bg-white sm:border-slate-200 text-slate-900'
           }`}
         >
-          {/* Top Header - Ultra Clean without icon box */}
-          <div className="px-5 py-3.5 border-b border-white/10 flex items-center justify-between shrink-0 bg-white/5 backdrop-blur-md">
+          {/* Top Header - Ultra Clean without icon box (Obsidian Grey Header) */}
+          <div className="px-5 py-3.5 border-b border-zinc-800/80 flex items-center justify-between shrink-0 bg-[#101014] backdrop-blur-md">
             <div className="min-w-0 pr-3">
-              <h3 className="text-sm sm:text-base font-extrabold truncate leading-tight">{hotel.name}</h3>
-              <p className="text-[11px] text-slate-400 font-medium flex items-center gap-1 mt-0.5">
-                <MapPin className="w-3 h-3 text-brand-400 shrink-0" />
+              <h3 className="text-sm sm:text-base font-extrabold truncate leading-tight text-white">{hotel.name}</h3>
+              <p className="text-[11px] text-zinc-400 font-medium flex items-center gap-1 mt-0.5">
+                <MapPin className="w-3 h-3 text-blue-400 shrink-0" />
                 <span className="truncate">{hotel.address ? `${hotel.address}, ${hotel.city}` : hotel.city}</span>
               </p>
             </div>
@@ -170,7 +170,7 @@ export default function HotelDetailsDrawer({
             <button
               type="button"
               onClick={onClose}
-              className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 text-slate-200 flex items-center justify-center transition-colors cursor-pointer shrink-0"
+              className="w-9 h-9 rounded-full bg-zinc-800/80 hover:bg-zinc-700 active:scale-95 text-zinc-200 flex items-center justify-center transition-colors cursor-pointer shrink-0 border border-zinc-700/50"
               title="Close"
             >
               <X className="w-5 h-5" />
@@ -186,11 +186,11 @@ export default function HotelDetailsDrawer({
           )}
 
           {/* Scrollable Drawer Content */}
-          <div className="p-4 sm:p-5 space-y-5 overflow-y-auto custom-scrollbar flex-1">
+          <div className="p-4 sm:p-5 space-y-5 overflow-y-auto custom-scrollbar flex-1 bg-[#0B0B0E]">
             {/* 1. Hotel Photo Gallery Carousel with Click-to-Fullscreen */}
             <div 
               onClick={() => handleOpenFullscreenGallery(hotelGallery, hotel.name, activePhotoIdx)}
-              className="relative w-full h-[230px] sm:h-[280px] rounded-2xl overflow-hidden bg-slate-900 shadow-md group cursor-zoom-in"
+              className="relative w-full h-[230px] sm:h-[280px] rounded-2xl overflow-hidden bg-[#121218] border border-zinc-800 shadow-md group cursor-zoom-in"
               title="Click to view fullscreen gallery"
             >
               <img
@@ -205,7 +205,7 @@ export default function HotelDetailsDrawer({
               </div>
 
               {/* Bottom Photo Counter */}
-              <div className="absolute bottom-3 right-3 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-[10px] font-bold text-white">
+              <div className="absolute bottom-3 right-3 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md text-[10px] font-bold text-white border border-white/10">
                 {activePhotoIdx + 1} / {hotelGallery.length} Photos
               </div>
 
@@ -218,7 +218,7 @@ export default function HotelDetailsDrawer({
                       e.stopPropagation();
                       setActivePhotoIdx(prev => (prev - 1 + hotelGallery.length) % hotelGallery.length);
                     }}
-                    className="absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/50 hover:bg-black/75 text-white flex items-center justify-center transition-colors cursor-pointer"
+                    className="absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 hover:bg-black/85 text-white flex items-center justify-center transition-colors cursor-pointer border border-white/10"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
@@ -228,7 +228,7 @@ export default function HotelDetailsDrawer({
                       e.stopPropagation();
                       setActivePhotoIdx(prev => (prev + 1) % hotelGallery.length);
                     }}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/50 hover:bg-black/75 text-white flex items-center justify-center transition-colors cursor-pointer"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 hover:bg-black/85 text-white flex items-center justify-center transition-colors cursor-pointer border border-white/10"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </button>
@@ -245,7 +245,7 @@ export default function HotelDetailsDrawer({
                     type="button"
                     onClick={() => setActivePhotoIdx(i)}
                     className={`w-16 h-12 rounded-lg overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
-                      activePhotoIdx === i ? 'border-brand-500 scale-105 shadow-md' : 'border-transparent opacity-60 hover:opacity-100'
+                      activePhotoIdx === i ? 'border-blue-500 scale-105 shadow-md ring-2 ring-blue-500/30' : 'border-zinc-800 opacity-60 hover:opacity-100'
                     }`}
                   >
                     <img src={img} alt="thumbnail" className="w-full h-full object-cover" />
@@ -255,17 +255,17 @@ export default function HotelDetailsDrawer({
             )}
 
             {/* 2. Hotel Overview & Quick Actions */}
-            <div className="space-y-3 pb-4 border-b border-white/10">
+            <div className="space-y-3 pb-4 border-b border-zinc-800/70">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-lg sm:text-xl font-black">{hotel.name}</span>
-                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-black bg-amber-500/20 text-amber-400">
+                    <span className="text-lg sm:text-xl font-black text-white">{hotel.name}</span>
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-black bg-amber-500/20 text-amber-400 border border-amber-500/20">
                       <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                       {ratingValue.toFixed(1)}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs text-zinc-400 mt-0.5">
                     📍 {hotel.address ? `${hotel.address}, ${hotel.city}` : hotel.city}
                   </p>
                 </div>
@@ -274,16 +274,16 @@ export default function HotelDetailsDrawer({
                 <button
                   type="button"
                   onClick={handleAttachHotel}
-                  className="px-3.5 py-2 rounded-xl text-xs font-bold border border-brand-500/40 text-brand-400 hover:bg-brand-500/10 active:scale-95 transition-all cursor-pointer flex items-center gap-1.5"
+                  className="px-3.5 py-2 rounded-xl text-xs font-bold border border-zinc-700 bg-[#16161D] hover:bg-[#1E1E26] text-zinc-200 active:scale-95 transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
                 >
-                  <MessageSquarePlus className="w-4 h-4" />
+                  <MessageSquarePlus className="w-4 h-4 text-blue-400" />
                   <span>Attach Hotel to Chat</span>
                 </button>
               </div>
 
               {/* Description */}
               {hotel.description && (
-                <p className="text-xs leading-relaxed text-slate-300 line-clamp-3">
+                <p className="text-xs leading-relaxed text-zinc-300 line-clamp-3">
                   {hotel.description}
                 </p>
               )}
@@ -293,7 +293,7 @@ export default function HotelDetailsDrawer({
                 {['Free Wi-Fi', 'Air Conditioning', 'Couple Friendly', '24/7 Room Service', 'Power Backup'].map((am, idx) => (
                   <span
                     key={idx}
-                    className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white/5 border border-white/5 text-slate-300"
+                    className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-[#14141A] border border-zinc-800 text-zinc-300"
                   >
                     ✓ {am}
                   </span>
@@ -304,19 +304,19 @@ export default function HotelDetailsDrawer({
             {/* 3. Available Rooms Section */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
                   Available Room Categories ({rooms.length})
                 </h4>
-                <span className="text-[11px] text-slate-400">Starts from ₹{startingPrice.toLocaleString()}/night</span>
+                <span className="text-[11px] text-zinc-400 font-medium">Starts from ₹{startingPrice.toLocaleString()}/night</span>
               </div>
 
               {isLoadingRooms ? (
-                <div className="p-8 text-center text-slate-400 flex flex-col items-center gap-2">
-                  <Loader className="w-6 h-6 animate-spin text-brand-400" />
+                <div className="p-8 text-center text-zinc-400 flex flex-col items-center gap-2">
+                  <Loader className="w-6 h-6 animate-spin text-blue-400" />
                   <span className="text-xs font-medium">Loading live room inventory...</span>
                 </div>
               ) : rooms.length === 0 ? (
-                <div className="p-5 rounded-2xl bg-white/5 text-center text-xs text-slate-400">
+                <div className="p-5 rounded-2xl bg-[#14141A] border border-zinc-800 text-center text-xs text-zinc-400">
                   Standard rooms available at front desk. You can attach this hotel to chat to ask AI!
                 </div>
               ) : (

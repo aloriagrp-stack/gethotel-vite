@@ -307,55 +307,55 @@ export default function InChatBookingDrawer({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3.5 sm:p-4 bg-black/75 backdrop-blur-md transition-opacity duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3.5 sm:p-4 bg-black/85 backdrop-blur-xl transition-opacity duration-200">
       <div
         className={`w-full max-w-md max-h-[92vh] flex flex-col rounded-3xl border shadow-2xl overflow-hidden transition-transform duration-200 ${
-          theme === 'dark' ? 'bg-[#121216] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900'
+          theme === 'dark' ? 'bg-[#0B0B0E] border-zinc-800 text-white' : 'bg-white border-slate-200 text-slate-900'
         }`}
       >
         {/* Minimal Header */}
-        <div className="px-5 py-3.5 border-b border-white/5 flex items-center justify-between shrink-0">
+        <div className="px-5 py-3.5 border-b border-zinc-800/80 flex items-center justify-between shrink-0 bg-[#101014]">
           <div>
-            <h3 className="text-sm font-bold leading-tight">Quick Reserve</h3>
-            <p className="text-[11px] text-slate-400">Instant confirmation via Razorpay</p>
+            <h3 className="text-sm font-extrabold leading-tight text-white">Quick Reserve</h3>
+            <p className="text-[11px] text-zinc-400">Instant confirmation via Razorpay</p>
           </div>
 
           <button
             type="button"
             onClick={onClose}
-            className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 flex items-center justify-center transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full bg-zinc-800/80 hover:bg-zinc-700 active:scale-95 text-zinc-300 flex items-center justify-center transition-colors cursor-pointer border border-zinc-700/50"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Scrollable Minimal Content */}
-        <form onSubmit={handlePayAndBook} className="p-4 space-y-3.5 overflow-y-auto custom-scrollbar flex-1">
+        <form onSubmit={handlePayAndBook} className="p-4 space-y-3.5 overflow-y-auto custom-scrollbar flex-1 bg-[#0B0B0E]">
           {/* Hotel & Room Single-Row Summary */}
-          <div className="p-2.5 rounded-2xl bg-white/5 border border-white/5 flex items-center gap-3">
+          <div className="p-2.5 rounded-2xl bg-[#14141A] border border-zinc-800 flex items-center gap-3">
             {hotel.thumbnail ? (
               <img src={hotel.thumbnail} alt={hotel.name} className="w-11 h-11 rounded-xl object-cover shrink-0" />
             ) : (
-              <div className="w-11 h-11 rounded-xl bg-brand-500/20 text-brand-400 flex items-center justify-center shrink-0">
+              <div className="w-11 h-11 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
                 <Building2 className="w-5 h-5" />
               </div>
             )}
             <div className="min-w-0 flex-1">
-              <h4 className="text-xs font-bold truncate">{hotel.name}</h4>
-              <p className="text-[11px] text-slate-400 truncate">
+              <h4 className="text-xs font-bold truncate text-white">{hotel.name}</h4>
+              <p className="text-[11px] text-zinc-400 truncate">
                 {activeRoom.name} • 📍 {hotel.city}
               </p>
             </div>
             <div className="text-right shrink-0">
-              <span className="text-xs font-black text-brand-400">₹{basePrice.toLocaleString()}</span>
-              <span className="text-[9px] text-slate-400 block">/night</span>
+              <span className="text-xs font-black text-blue-400">₹{basePrice.toLocaleString()}</span>
+              <span className="text-[9px] text-zinc-400 block">/night</span>
             </div>
           </div>
 
           {/* Room Selector if multiple exist */}
           {availableRooms.length > 1 && (
             <div>
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+              <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">
                 Room Category
               </label>
               <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
@@ -366,8 +366,8 @@ export default function InChatBookingDrawer({
                     onClick={() => setSelectedRoomId(r.id)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all border cursor-pointer ${
                       selectedRoomId === r.id
-                        ? 'bg-brand-600 text-white border-brand-500 shadow-sm'
-                        : 'bg-white/5 border-white/10 text-slate-300 hover:border-white/20'
+                        ? 'bg-blue-600 text-white border-blue-500 shadow-sm'
+                        : 'bg-[#14141A] border-zinc-800 text-zinc-300 hover:border-zinc-700'
                     }`}
                   >
                     {r.name} (₹{r.pricePerNight?.toLocaleString()})
@@ -380,35 +380,35 @@ export default function InChatBookingDrawer({
           {/* Dates & Guests Compact 2x2 Grid */}
           <div className="grid grid-cols-2 gap-2 text-left">
             <div>
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Check-in</label>
+              <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">Check-in</label>
               <input
                 type="date"
                 min={new Date().toISOString().split('T')[0]}
                 value={checkIn}
                 onChange={(e) => setCheckIn(e.target.value)}
                 required
-                className="w-full px-3 py-2 text-xs font-bold rounded-xl bg-white/5 border border-white/10 text-white outline-none focus:border-brand-500"
+                className="w-full px-3 py-2 text-xs font-bold rounded-xl bg-[#14141A] border border-zinc-800 text-white outline-none focus:border-blue-500"
               />
             </div>
 
             <div>
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Check-out</label>
+              <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">Check-out</label>
               <input
                 type="date"
                 min={checkIn}
                 value={checkOut}
                 onChange={(e) => setCheckOut(e.target.value)}
                 required
-                className="w-full px-3 py-2 text-xs font-bold rounded-xl bg-white/5 border border-white/10 text-white outline-none focus:border-brand-500"
+                className="w-full px-3 py-2 text-xs font-bold rounded-xl bg-[#14141A] border border-zinc-800 text-white outline-none focus:border-blue-500"
               />
             </div>
 
             <div>
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Rooms</label>
+              <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">Rooms</label>
               <select
                 value={roomsCount}
                 onChange={(e) => setRoomsCount(parseInt(e.target.value))}
-                className="w-full px-3 py-2 text-xs font-bold rounded-xl bg-[#1a1a22] border border-white/10 text-white outline-none focus:border-brand-500"
+                className="w-full px-3 py-2 text-xs font-bold rounded-xl bg-[#14141A] border border-zinc-800 text-white outline-none focus:border-blue-500"
               >
                 {[1, 2, 3, 4].map((n) => (
                   <option key={n} value={n}>{n} Room{n > 1 ? 's' : ''}</option>
@@ -417,11 +417,11 @@ export default function InChatBookingDrawer({
             </div>
 
             <div>
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Guests</label>
+              <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">Guests</label>
               <select
                 value={guestsCount}
                 onChange={(e) => setGuestsCount(parseInt(e.target.value))}
-                className="w-full px-3 py-2 text-xs font-bold rounded-xl bg-[#1a1a22] border border-white/10 text-white outline-none focus:border-brand-500"
+                className="w-full px-3 py-2 text-xs font-bold rounded-xl bg-[#14141A] border border-zinc-800 text-white outline-none focus:border-blue-500"
               >
                 {[1, 2, 3, 4, 6, 8].map((n) => (
                   <option key={n} value={n}>{n} Guest{n > 1 ? 's' : ''}</option>
@@ -432,14 +432,14 @@ export default function InChatBookingDrawer({
 
           {/* Guest Minimal Inputs */}
           <div className="space-y-2 pt-1">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Guest Information</label>
+            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Guest Information</label>
             <input
               type="text"
               placeholder="Full Name *"
               value={guestName}
               onChange={(e) => setGuestName(e.target.value)}
               required
-              className="w-full px-3 py-2 text-xs rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-slate-500 outline-none focus:border-brand-500"
+              className="w-full px-3 py-2 text-xs rounded-xl bg-[#14141A] border border-zinc-800 text-white placeholder:text-zinc-500 outline-none focus:border-blue-500"
             />
             <div className="grid grid-cols-2 gap-2">
               <input
@@ -448,7 +448,7 @@ export default function InChatBookingDrawer({
                 value={guestPhone}
                 onChange={(e) => setGuestPhone(e.target.value)}
                 required
-                className="w-full px-3 py-2 text-xs rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-slate-500 outline-none focus:border-brand-500"
+                className="w-full px-3 py-2 text-xs rounded-xl bg-[#14141A] border border-zinc-800 text-white placeholder:text-zinc-500 outline-none focus:border-blue-500"
               />
               <input
                 type="email"
@@ -456,27 +456,27 @@ export default function InChatBookingDrawer({
                 value={guestEmail}
                 onChange={(e) => setGuestEmail(e.target.value)}
                 required
-                className="w-full px-3 py-2 text-xs rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-slate-500 outline-none focus:border-brand-500"
+                className="w-full px-3 py-2 text-xs rounded-xl bg-[#14141A] border border-zinc-800 text-white placeholder:text-zinc-500 outline-none focus:border-blue-500"
               />
             </div>
           </div>
 
           {/* Payment Choice Toggle (2-Pill Segment) */}
           <div className="pt-1">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Payment Option</label>
+            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1.5">Payment Option</label>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => setPaymentType('deposit')}
                 className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                   paymentType === 'deposit'
-                    ? 'bg-brand-600/20 border-brand-500 text-white ring-1 ring-brand-500'
-                    : 'bg-white/5 border-white/10 text-slate-400 hover:border-white/20'
+                    ? 'bg-blue-600/20 border-blue-500 text-white ring-1 ring-blue-500'
+                    : 'bg-[#14141A] border-zinc-800 text-zinc-400 hover:border-zinc-700'
                 }`}
               >
                 <div className="text-[10px] font-bold text-amber-400">12% Deposit</div>
                 <div className="text-xs font-black text-white mt-0.5">₹{depositAmount.toLocaleString()}</div>
-                <div className="text-[9px] text-slate-400">Pay ₹{balanceAtHotel.toLocaleString()} at stay</div>
+                <div className="text-[9px] text-zinc-400">Pay ₹{balanceAtHotel.toLocaleString()} at stay</div>
               </button>
 
               <button
@@ -484,13 +484,13 @@ export default function InChatBookingDrawer({
                 onClick={() => setPaymentType('full')}
                 className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                   paymentType === 'full'
-                    ? 'bg-brand-600/20 border-brand-500 text-white ring-1 ring-brand-500'
-                    : 'bg-white/5 border-white/10 text-slate-400 hover:border-white/20'
+                    ? 'bg-blue-600/20 border-blue-500 text-white ring-1 ring-blue-500'
+                    : 'bg-[#14141A] border-zinc-800 text-zinc-400 hover:border-zinc-700'
                 }`}
               >
                 <div className="text-[10px] font-bold text-emerald-400">100% Full</div>
                 <div className="text-xs font-black text-white mt-0.5">₹{grandTotal.toLocaleString()}</div>
-                <div className="text-[9px] text-slate-400">Zero check-in hassle</div>
+                <div className="text-[9px] text-zinc-400">Zero check-in hassle</div>
               </button>
             </div>
           </div>
@@ -507,7 +507,7 @@ export default function InChatBookingDrawer({
             <button
               type="submit"
               disabled={isProcessing}
-              className="w-full py-3 px-5 rounded-2xl bg-brand-600 hover:bg-brand-500 active:scale-[0.98] text-white font-extrabold text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 px-5 rounded-2xl bg-blue-600 hover:bg-blue-500 active:scale-[0.98] text-white font-extrabold text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isProcessing ? (
                 <>
@@ -522,8 +522,8 @@ export default function InChatBookingDrawer({
               )}
             </button>
 
-            <div className="flex items-center justify-center gap-1 text-[10px] text-slate-400 mt-2">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <div className="flex items-center justify-center gap-1 text-[10px] text-zinc-500 mt-2">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
               <span>256-Bit SSL Encrypted Razorpay Checkout</span>
             </div>
           </div>
