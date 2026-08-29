@@ -1456,28 +1456,26 @@ export default function App() {
                         {parseTextWithIcons(cleanMsgText(msg.text))}
                         {/* Render attached hotel card inside user message */}
                         {msg.attachments && msg.attachments.length > 0 && msg.attachments.map(att => (
-                          <div key={att.id} className={`mt-2 flex items-center gap-3 p-3 rounded-xl border ${
+                          <div key={att.id} className={`mt-2.5 flex items-center gap-3 p-2.5 rounded-xl border transition-colors ${
                             theme === 'dark'
-                              ? "bg-[#131316] border-[#232329]"
-                              : "bg-white border-slate-200/60"
+                              ? "bg-black/35 border-white/10"
+                              : "bg-white/80 border-slate-200"
                           }`}>
                             {att.thumbnail ? (
-                              <img src={att.thumbnail} alt={att.name} className="w-12 h-12 rounded-lg object-cover shrink-0" />
+                              <img src={att.thumbnail} alt={att.name} className="w-11 h-11 rounded-lg object-cover shrink-0 shadow-sm" />
                             ) : (
-                              <div className="w-12 h-12 rounded-lg bg-slate-200 flex items-center justify-center text-xs text-slate-500 font-bold shrink-0">
+                              <div className="w-11 h-11 rounded-lg bg-zinc-800 flex items-center justify-center text-xs text-zinc-300 font-bold shrink-0">
                                 {att.name.charAt(0)}
                               </div>
                             )}
                             <div className="flex-1 min-w-0">
-                              <div className={`text-[13px] font-bold truncate ${theme === 'dark' ? "text-slate-100" : "text-slate-800"}`}>
-                                🏨 {att.name}
+                              <div className={`text-[13px] font-bold truncate leading-tight ${theme === 'dark' ? "text-white" : "text-slate-900"}`}>
+                                {att.name}
                               </div>
-                              <div className="flex items-center gap-2 text-[10px] font-semibold text-slate-400 mt-0.5">
-                                <span>📍 {att.city}</span>
+                              <div className="flex items-center gap-1.5 text-[11px] font-medium text-zinc-400 mt-0.5">
+                                <span>{att.city}</span>
                                 <span>•</span>
-                                <span>⭐ {att.starRating}</span>
-                                <span>•</span>
-                                <span>₹{att.pricePerNight.toLocaleString()}/night</span>
+                                <span className="font-semibold text-zinc-300">₹{att.pricePerNight.toLocaleString()}/night</span>
                               </div>
                             </div>
                           </div>
@@ -1869,7 +1867,7 @@ export default function App() {
                         {composerAttachment.name}
                       </span>
                       <span className="text-[10px] font-semibold opacity-75 truncate">
-                        📍 {composerAttachment.city} • ₹{composerAttachment.pricePerNight.toLocaleString()}/night
+                        {composerAttachment.city} • ₹{composerAttachment.pricePerNight.toLocaleString()}/night
                       </span>
                     </div>
 
