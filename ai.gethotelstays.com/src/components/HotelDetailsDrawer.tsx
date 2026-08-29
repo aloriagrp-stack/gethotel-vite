@@ -157,13 +157,14 @@ export default function HotelDetailsDrawer({
             theme === 'dark' ? 'bg-[#0B0B0E] sm:border-zinc-800 text-white' : 'bg-white sm:border-slate-200 text-slate-900'
           }`}
         >
-          {/* Top Header - Ultra Clean without icon box (Obsidian Grey Header) */}
+          {/* Top Header - Ultra Clean: Hotel Name | Location */}
           <div className="px-5 py-3.5 border-b border-zinc-800/80 flex items-center justify-between shrink-0 bg-[#101014] backdrop-blur-md">
-            <div className="min-w-0 pr-3">
-              <h3 className="text-sm sm:text-base font-extrabold truncate leading-tight text-white">{hotel.name}</h3>
-              <p className="text-[11px] text-zinc-400 font-medium flex items-center gap-1 mt-0.5">
+            <div className="min-w-0 pr-3 flex items-center gap-2 truncate">
+              <h3 className="text-xs sm:text-sm font-extrabold text-white truncate leading-none">{hotel.name}</h3>
+              <span className="text-zinc-600 shrink-0 select-none">|</span>
+              <p className="text-[11px] sm:text-xs text-zinc-400 font-medium flex items-center gap-1 shrink-0">
                 <MapPin className="w-3 h-3 text-blue-400 shrink-0" />
-                <span className="truncate">{hotel.address ? `${hotel.address}, ${hotel.city}` : hotel.city}</span>
+                <span className="truncate">{hotel.city || hotel.address}</span>
               </p>
             </div>
 
