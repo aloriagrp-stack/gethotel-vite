@@ -6,7 +6,7 @@ import SEOHead from "@/components/common/SEOHead";
 import { useLocale } from "@/context/LocaleContext";
 import {
     MapPin, Clock, Star, ArrowRight, Heart,
-    Image as ImageIcon, ArrowLeft, Sparkles, Filter
+    Image as ImageIcon, Sparkles
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { packageApi } from "@/lib/api";
@@ -44,8 +44,8 @@ export default function DestinationToursLanding() {
     const navigate = useNavigate();
     const { langCode } = useLocale();
 
-    // Extract destination identifier (e.g. "agra-tours" -> "Agra" or "delhi-tours" -> "Delhi")
-    const rawSlug = (params.slug || params.id || "delhi-tours").toLowerCase();
+    // Extract destination identifier (e.g. "bikaner-tours" -> "Bikaner")
+    const rawSlug = (params.slug || params.id || "bikaner-tours").toLowerCase();
     const cityKey = rawSlug.replace(/-tours$/, "").replace(/^destinations?\//, "").trim();
 
     // Find formatted destination name
@@ -105,66 +105,22 @@ export default function DestinationToursLanding() {
                 description={`Explore verified ${cityName} tour packages and handcrafted itineraries with hotels and private transfers.`}
             />
 
-            {/* CLEAN COMPACT TOP HEADER */}
-            <div className="bg-white border-b border-slate-200/80 sticky top-0 z-30 shadow-xs">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-3">
-                    <Link
-                        to={`/${langCode}/packages`}
-                        className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-brand-600 transition-colors py-1 px-2.5 rounded-xl hover:bg-slate-100"
-                    >
-                        <ArrowLeft className="w-4 h-4" />
-                        <span>All Packages</span>
-                    </Link>
-
-                    <div className="text-center">
-                        <h1 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
-                            {cityName} Tour Packages
-                        </h1>
-                    </div>
-
-                    <span className="px-2.5 py-1 bg-brand-50 text-brand-700 text-[11px] font-black rounded-lg border border-brand-100">
-                        {destinationPackages.length} Tours
-                    </span>
-                </div>
-
-                {/* DESTINATION QUICK-SWITCH BAR */}
-                <div className="border-t border-slate-100 bg-slate-50/70 overflow-x-auto no-scrollbar py-2.5 px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center gap-2 max-w-7xl mx-auto">
-                        <Link
-                            to={`/${langCode}/packages`}
-                            className="px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 transition-all"
-                        >
-                            All Cities
-                        </Link>
-                        {DESTINATIONS_LIST.map((dest) => {
-                            const isCurrent = dest.name.toLowerCase() === cityName.toLowerCase();
-                            return (
-                                <Link
-                                    key={dest.slug}
-                                    to={`/${langCode}/packages/${dest.slug}`}
-                                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold shrink-0 transition-all flex items-center gap-1.5 ${
-                                        isCurrent
-                                            ? "bg-brand-600 text-white shadow-sm font-extrabold"
-                                            : "bg-white border border-slate-200/80 text-slate-700 hover:bg-brand-50 hover:text-brand-600 hover:border-brand-200"
-                                    }`}
-                                >
-                                    <span>{dest.name}</span>
-                                </Link>
-                            );
-                        })}
-                    </div>
-                </div>
-            </div>
-
-            {/* MAIN CONTENT AREA */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
-                {/* SUB HEADER & FILTER PILLS */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            {/* MAIN CONTENT AREA - ZERO TOP CLUTTER */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 space-y-6">
+                {/* HEADER & FILTER PILLS */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                        <h2 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-                            <span>Handcrafted {cityName} Circuits</span>
-                        </h2>
-                        <p className="text-xs text-slate-500 font-medium">
+                        <div className="flex items-center gap-2">
+                            <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
+                                {cityName} Tour Packages
+                            </h1>
+                            {!loading && (
+                                <span className="px-2.5 py-0.5 rounded-lg bg-brand-50 text-brand-700 text-xs font-black border border-brand-200">
+                                    {destinationPackages.length}
+                                </span>
+                            )}
+                        </div>
+                        <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
                             Private AC vehicle transfers, heritage stays & monument sightseeing
                         </p>
                     </div>
@@ -175,7 +131,7 @@ export default function DestinationToursLanding() {
                             <button
                                 key={tag}
                                 onClick={() => setSelectedFilterTag(tag)}
-                                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                                     selectedFilterTag === tag
                                         ? "bg-slate-900 text-white shadow-xs"
                                         : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-100"
@@ -309,6 +265,32 @@ export default function DestinationToursLanding() {
                         })}
                     </div>
                 )}
+
+                {/* BOTTOM EXPLORE OTHER DESTINATIONS */}
+                <div className="pt-10 border-t border-slate-200/80 space-y-3">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Explore Other Destinations</h3>
+                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+                        <Link
+                            to={`/${langCode}/packages`}
+                            className="px-3.5 py-2 rounded-xl text-xs font-bold shrink-0 bg-white border border-slate-200 text-slate-700 hover:bg-slate-100"
+                        >
+                            All Packages
+                        </Link>
+                        {DESTINATIONS_LIST.map((dest) => {
+                            const isCurrent = dest.name.toLowerCase() === cityName.toLowerCase();
+                            if (isCurrent) return null;
+                            return (
+                                <Link
+                                    key={dest.slug}
+                                    to={`/${langCode}/packages/${dest.slug}`}
+                                    className="px-3.5 py-2 rounded-xl text-xs font-bold shrink-0 bg-white border border-slate-200 text-slate-700 hover:bg-brand-50 hover:text-brand-600 hover:border-brand-200 transition-all"
+                                >
+                                    {dest.name} Tours
+                                </Link>
+                            );
+                        })}
+                    </div>
+                </div>
             </div>
         </div>
     );
