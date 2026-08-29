@@ -687,50 +687,25 @@ export default function TourPackages() {
                                 />
                             </div>
 
-                            {/* Bottom Story Content & Action Card */}
-                            <div className="relative z-30 p-4 sm:p-5 space-y-3.5 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent">
-                                {currentStory.badge && (
-                                    <span className="inline-block px-3 py-1 bg-amber-500/90 text-slate-950 font-black text-[10px] uppercase tracking-wider rounded-lg shadow-md">
-                                        ⭐ {currentStory.badge}
-                                    </span>
-                                )}
-
+                            {/* Minimal Bottom Story Content & Action */}
+                            <div className="relative z-30 p-4 sm:p-6 space-y-3 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
                                 <div>
-                                    <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight">
+                                    <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight drop-shadow-md">
                                         {currentStory.name}
                                     </h2>
-                                    <p className="text-xs sm:text-sm text-white/80 font-medium mt-1">
+                                    <p className="text-xs sm:text-sm text-white/80 font-medium drop-shadow-sm mt-0.5">
                                         {currentStory.tagline}
                                     </p>
                                 </div>
 
-                                {/* Highlights Chips */}
-                                {Array.isArray(currentStory.highlights) && currentStory.highlights.length > 0 && (
-                                    <div className="flex flex-wrap gap-1.5">
-                                        {currentStory.highlights.map((hl, hIdx) => (
-                                            <span
-                                                key={hIdx}
-                                                className="px-2.5 py-1 bg-white/15 backdrop-blur-md rounded-lg text-[11px] font-semibold text-white/90 border border-white/10"
-                                            >
-                                                ✓ {hl}
-                                            </span>
-                                        ))}
-                                    </div>
-                                )}
-
-                                {/* Price & Direct Explore Action Button */}
-                                <div className="pt-2 flex items-center justify-between gap-3 border-t border-white/15">
-                                    <div>
-                                        <span className="text-[10px] uppercase tracking-wider text-white/60 font-bold block">Starting From</span>
-                                        <span className="text-lg font-black text-white">{currentStory.startingPrice}</span>
-                                    </div>
-
+                                {/* Minimal Direct Explore Button */}
+                                <div className="pt-1">
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             handleExploreFromStory(currentStory);
                                         }}
-                                        className="flex-1 py-3.5 px-5 bg-gradient-to-r from-brand-600 via-blue-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-xl shadow-brand-600/40 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 border border-white/20"
+                                        className="w-full py-3 px-5 bg-white/20 hover:bg-white text-white hover:text-slate-950 backdrop-blur-xl border border-white/40 font-black text-xs uppercase tracking-wider rounded-2xl shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2"
                                     >
                                         <span>Explore {currentStory.name} Tours</span>
                                         <ArrowRight className="w-4 h-4" />
