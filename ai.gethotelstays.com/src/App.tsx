@@ -852,20 +852,6 @@ export default function App() {
     }
   }, [activeConversationId]);
 
-  const handleRoomSelect = useCallback((room: { id: number; name: string; hotelName: string; pricePerNight: number; images?: string[] }) => {
-    if (!user) {
-      setShowLoginModal(true);
-      return;
-    }
-    const matchingHotel = messages.flatMap(m => m.hotels || []).find(h => h.id === (room as any).hotelId) || {
-      id: (room as any).hotelId || 1,
-      name: room.hotelName,
-      city: 'Delhi',
-      pricePerNight: room.pricePerNight
-    };
-    handleOpenBookingDrawer(matchingHotel, room);
-  }, [user, messages, handleOpenBookingDrawer]);
-
   const handleSend = useCallback((textVal: string) => {
     const q = textVal.trim();
     if (!q) return;
@@ -1781,89 +1767,6 @@ export default function App() {
                               </div>
                             </div>
                           );
-                        }
-
-                        // ==================== ROOM CARDS (Only when explicit room inquiry) ====================
-                        if (msg.responseType === 'rooms' || msg.cards?.some((c: any) => c.type === 'room')) {
-                          let allRooms = msg.cards?.filter((c: any) => c.type === 'room').map((c: any) => ({
-                            ...(c.payload || {}),
-                            id: c.id,
-                            name: c.title || c.payload?.name || "Standard Room",
-                            hotelName: c.hotelName || "Hotel",
-                            hotelId: c.hotelId,
-                            pricePerNight: c.pricePerNight || 2499,
-                            maxOccupancy: c.payload?.maxOccupancy || 2
-                          })) || [];
-
-                          if (allRooms.length > 0) {
-                            return (
-                              <div className="mt-3 select-none">
-                                <div className="flex items-center justify-between mb-2.5 px-0.5">
-                                  <h3 className={`text-xs font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
-                                    Available Rooms ({allRooms.length})
-                                  </h3>
-                                </div>
-
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                  {allRooms.map((r) => {
-                                    const roomImage = r.images && r.images.length > 0
-                                      ? r.images[0]
-                                      : "https://images.unsplash.com/photo-1611891487122-207579d67d98?auto=format&fit=crop&w=600&q=80";
-                                    const isSelected = composerAttachment?.id === r.id && composerAttachment?.name.includes(r.name);
-                                    const roomBasePrice = r.promotionalPrice || r.pricePerNight || 2499;
-
-                                    return (
-                                      <div
-                                        key={r.id}
-                                        onClick={() => handleRoomSelect(r)}
-                                        className={`rounded-2xl overflow-hidden border transition-all duration-200 group flex flex-col cursor-pointer ${
-                                          isSelected
-                                            ? "ring-2 ring-brand-500 border-brand-500 " + (theme === 'dark' ? "bg-[#141418]" : "bg-white")
-                                            : theme === 'dark'
-                                              ? "bg-[#131317] border-white/10 hover:border-white/20 text-white"
-                                              : "bg-white border-slate-200/80 hover:border-slate-300 text-slate-900 shadow-sm"
-                                        }`}
-                                      >
-                                        <div className="relative w-full h-[130px] overflow-hidden shrink-0 bg-slate-800">
-                                          <img 
-                                            src={roomImage} 
-                                            alt={r.name} 
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
-                                          />
-                                        </div>
-
-                                        <div className="p-3.5 flex flex-col justify-between flex-1 gap-2.5">
-                                          <div>
-                                            <h4 className="text-[14px] font-bold leading-tight truncate">
-                                              {r.name}
-                                            </h4>
-                                            <p className="text-[11px] text-slate-400 mt-1 truncate">
-                                              👤 {r.maxOccupancy || 2} Guests • 🛏️ King Bed • Free Breakfast
-                                            </p>
-                                          </div>
-
-                                          <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-white/5">
-                                            <span className="text-[15px] font-black">₹{roomBasePrice.toLocaleString()}<span className="text-[10px] text-slate-400 font-medium">/night</span></span>
-
-                                            <button
-                                              type="button"
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleRoomSelect(r);
-                                              }}
-                                              className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-brand-600 hover:bg-brand-500 text-white active:scale-95 transition-all cursor-pointer flex items-center gap-1 shadow-sm"
-                                            >
-                                              Reserve <ArrowRight className="w-3 h-3" />
-                                            </button>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            );
-                          }
                         }
 
                         {/* ==================== IN-CHAT FLIGHT CARDS RENDERER ==================== */}
