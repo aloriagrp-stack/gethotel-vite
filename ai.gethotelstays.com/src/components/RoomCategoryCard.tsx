@@ -53,7 +53,32 @@ export default function RoomCategoryCard({
           : 'border-slate-200 text-slate-900'
       }`}
     >
-      {/* ================= LEFT SIDE: Room Details & Action Buttons ================= */}
+      {/* ================= LEFT SIDE: Room Photo & Gallery Trigger ================= */}
+      <div 
+        onClick={() => onOpenGallery(roomImages, `${room.name} (${hotelName})`)}
+        className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden shrink-0 bg-[#0D0D11] border border-zinc-800 cursor-zoom-in group shadow-md"
+        title="Click to view all room photos in fullscreen"
+      >
+        <img
+          src={primaryImage}
+          alt={room.name}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        />
+
+        {/* Dark Hover Overlay with Zoom Icon */}
+        <div className="absolute inset-0 bg-black/35 group-hover:bg-black/15 transition-colors flex items-center justify-center">
+          <div className="w-7 h-7 rounded-full bg-black/70 backdrop-blur-md text-white flex items-center justify-center opacity-80 group-hover:opacity-100 transition-opacity border border-white/10">
+            <ZoomIn className="w-3.5 h-3.5" />
+          </div>
+        </div>
+
+        {/* Photo Count Badge */}
+        <div className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded-md bg-black/80 backdrop-blur-md text-[9px] font-bold text-white border border-white/10">
+          {roomImages.length} {roomImages.length > 1 ? 'Photos' : 'Photo'}
+        </div>
+      </div>
+
+      {/* ================= RIGHT SIDE: Room Details & Action Buttons ================= */}
       <div className="flex-1 min-w-0 flex flex-col justify-between gap-2">
         <div>
           {/* Room Name */}
@@ -97,31 +122,6 @@ export default function RoomCategoryCard({
             <CreditCard className="w-3.5 h-3.5" />
             <span>Book</span>
           </button>
-        </div>
-      </div>
-
-      {/* ================= RIGHT SIDE: Room Photo & Gallery Trigger ================= */}
-      <div 
-        onClick={() => onOpenGallery(roomImages, `${room.name} (${hotelName})`)}
-        className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden shrink-0 bg-[#0D0D11] border border-zinc-800 cursor-zoom-in group shadow-md"
-        title="Click to view all room photos in fullscreen"
-      >
-        <img
-          src={primaryImage}
-          alt={room.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-        />
-
-        {/* Dark Hover Overlay with Zoom Icon */}
-        <div className="absolute inset-0 bg-black/35 group-hover:bg-black/15 transition-colors flex items-center justify-center">
-          <div className="w-7 h-7 rounded-full bg-black/70 backdrop-blur-md text-white flex items-center justify-center opacity-80 group-hover:opacity-100 transition-opacity border border-white/10">
-            <ZoomIn className="w-3.5 h-3.5" />
-          </div>
-        </div>
-
-        {/* Photo Count Badge */}
-        <div className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded-md bg-black/80 backdrop-blur-md text-[9px] font-bold text-white border border-white/10">
-          {roomImages.length} {roomImages.length > 1 ? 'Photos' : 'Photo'}
         </div>
       </div>
     </div>
