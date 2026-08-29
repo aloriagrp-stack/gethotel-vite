@@ -11,6 +11,8 @@ import OfflineBanner from "./components/OfflineBanner";
 import SearchBar from "./components/SearchBar";
 import FlightCard from "./components/FlightCard";
 import TourPackageCard from "./components/TourPackageCard";
+import InChatBookingDrawer from "./components/InChatBookingDrawer";
+import BookingConfirmationCard, { type BookingConfirmationDetails } from "./components/BookingConfirmationCard";
 import { SEOManager } from "./components/SEOManager";
 
 // Dynamic Apple Emoji CDN Parser
@@ -181,6 +183,7 @@ interface Message {
   flights?: any;
   tourPackage?: any;
   cards?: any[];
+  bookingConfirmation?: BookingConfirmationDetails;
 }
 
 interface ConversationListItem {
@@ -265,6 +268,11 @@ export default function App() {
   const [checkoutData, setCheckoutData] = useState<any>(null);
   const [checkoutStatus, setCheckoutStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
+
+  // In-Chat Instant Booking Drawer & Payment State
+  const [bookingDrawerOpen, setBookingDrawerOpen] = useState(false);
+  const [bookingDrawerHotel, setBookingDrawerHotel] = useState<any>(null);
+  const [bookingDrawerRoom, setBookingDrawerRoom] = useState<any>(null);
 
   // Persistent User Travel Memory & Settings state
   const [activeSettingsTab, setActiveSettingsTab] = useState<'general' | 'personalization' | 'account'>('general');
@@ -812,13 +820,55 @@ export default function App() {
     });
   }, [messages]);
 
+  const handleOpenBookingDrawer = useCallback((hotel: any, room?: any) => {
+    if (!user) {
+      setShowLoginModal(true);
+      return;
+    }
+    setBookingDrawerHotel(hotel);
+    setBookingDrawerRoom(room || null);
+    setBookingDrawerOpen(true);
+  }, [user]);
+
+  const handleBookingPaymentSuccess = useCallback(async (summary: BookingConfirmationDetails) => {
+    const confirmMsg: Message = {
+      id: `a-bk-${Date.now()}`,
+      sender: "ai",
+      timestamp: Date.now(),
+      text: `🎉 **Woohoo ${summary.guestName}! Your reservation at ${summary.hotelName} is Confirmed!**\n\nYour Booking Reference ID is **GHS-BK-${summary.bookingId}**. We've sent your official booking confirmation voucher to **${summary.guestEmail}**. You can view your live voucher below or chat with the hotel on WhatsApp! ✨`,
+      bookingConfirmation: summary
+    };
+
+    setMessages(prev => [...prev, confirmMsg]);
+
+    if (activeConversationId) {
+      try {
+        await conversationApi.saveMessage(activeConversationId, {
+          role: "ai",
+          content: confirmMsg.text,
+          metadata: {
+            bookingConfirmation: summary
+          }
+        });
+      } catch (saveErr) {
+        console.warn('[Conversation] Failed to save booking confirmation turn:', saveErr);
+      }
+    }
+  }, [activeConversationId]);
+
   const handleRoomSelect = useCallback((room: { id: number; name: string; hotelName: string; pricePerNight: number; images?: string[] }) => {
     if (!user) {
       setShowLoginModal(true);
       return;
     }
-    executeSend(`Book room: ${room.name} (Room ID: ${room.id})`, activeConversationId);
-  }, [user, activeConversationId, executeSend]);
+    const matchingHotel = messages.flatMap(m => m.hotels || []).find(h => h.id === (room as any).hotelId) || {
+      id: (room as any).hotelId || 1,
+      name: room.hotelName,
+      city: 'Delhi',
+      pricePerNight: room.pricePerNight
+    };
+    handleOpenBookingDrawer(matchingHotel, room);
+  }, [user, messages, handleOpenBookingDrawer]);
 
   const handleSend = useCallback((textVal: string) => {
     const q = textVal.trim();
@@ -1488,6 +1538,11 @@ export default function App() {
                         />
                       )}
 
+                      {/* In-Chat Confirmed Booking Voucher Card */}
+                      {msg.bookingConfirmation && (
+                        <BookingConfirmationCard details={msg.bookingConfirmation} theme={theme} />
+                      )}
+
                       {(() => {
                         const responseType = msg.responseType || 'general';
                         const hasSingleHotel = Boolean(msg.hotels && msg.hotels.length === 1 && ((msg.hotels[0] as any).rooms || (msg.hotels[0] as any).room || []).length > 0);
@@ -1864,7 +1919,7 @@ export default function App() {
                                                 type="button"
                                                 onClick={(e) => {
                                                   e.stopPropagation();
-                                                  handleSend(`I want to reserve ${h.name} (ID: ${h.id})`);
+                                                  handleOpenBookingDrawer(h);
                                                 }}
                                                 className="px-4.5 py-2.5 rounded-xl text-xs font-extrabold bg-[#2563eb] hover:bg-blue-600 text-white active:scale-95 transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 shadow-sm"
                                               >
@@ -2906,6 +2961,17 @@ export default function App() {
             </div>
           </div>
         )}
+
+        {/* In-Chat Instant Reservation & Razorpay Payment Drawer */}
+        <InChatBookingDrawer
+          isOpen={bookingDrawerOpen}
+          onClose={() => setBookingDrawerOpen(false)}
+          hotel={bookingDrawerHotel}
+          room={bookingDrawerRoom}
+          user={user}
+          theme={theme}
+          onPaymentSuccess={handleBookingPaymentSuccess}
+        />
 
       </div>
     </div>
