@@ -62,6 +62,78 @@ export const authApi = {
 export const aiApi = {
     chat: (messages: { role: string; content: string }[], userMemory?: any, conversationId?: string) =>
         apiFetch('/ai/chat', { method: 'POST', body: JSON.stringify({ messages, userMemory, conversationId }) }),
+    chatStream: async (
+        messages: { role: string; content: string }[],
+        options: {
+            userMemory?: any;
+            conversationId?: string;
+            signal?: AbortSignal;
+            onToken?: (token: string) => void;
+            onEvent?: (event: string, data: any) => void;
+        } = {}
+    ) => {
+        const token = typeof window !== 'undefined' ? (sessionStorage.getItem('token') || localStorage.getItem('token')) : null;
+        const response = await fetch(`${API_URL}/ai/chat/stream`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token && { Authorization: `Bearer ${token}` }),
+            },
+            body: JSON.stringify({
+                messages,
+                userMemory: options.userMemory,
+                conversationId: options.conversationId,
+            }),
+            signal: options.signal,
+        });
+
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({ message: 'Stream connection failed' }));
+            throw new Error(err.message || 'Stream connection failed');
+        }
+
+        const reader = response.body?.getReader();
+        if (!reader) throw new Error('ReadableStream not supported on this browser');
+
+        const decoder = new TextDecoder('utf-8');
+        let buffer = '';
+        let finalDonePayload: any = null;
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n\n');
+            buffer = lines.pop() || '';
+
+            for (const line of lines) {
+                if (!line.trim()) continue;
+                const matchEvent = line.match(/^event:\s*([^\n]+)/m);
+                const matchData = line.match(/^data:\s*([\s\S]+)/m);
+
+                const eventName = matchEvent ? matchEvent[1].trim() : 'message';
+                let dataObj: any = null;
+                if (matchData) {
+                    try {
+                        dataObj = JSON.parse(matchData[1].trim());
+                    } catch {
+                        dataObj = matchData[1].trim();
+                    }
+                }
+
+                if (eventName === 'token' && dataObj?.token) {
+                    options.onToken?.(dataObj.token);
+                } else if (eventName === 'done') {
+                    finalDonePayload = dataObj;
+                }
+
+                options.onEvent?.(eventName, dataObj);
+            }
+        }
+
+        return finalDonePayload;
+    },
     getRooms: (hotelId: number) =>
         apiFetch('/ai/rooms', { method: 'POST', body: JSON.stringify({ hotelId }) }),
 };

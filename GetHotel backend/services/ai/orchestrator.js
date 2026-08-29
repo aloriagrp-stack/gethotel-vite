@@ -1,6 +1,6 @@
 const { detectIntent } = require('./intentDetector');
 const { buildDynamicSystemPrompt, buildUserQueryWithContext } = require('./promptBuilder');
-const { generateChatCompletion } = require('./llmGateway');
+const { generateChatCompletion, streamChatCompletion } = require('./llmGateway');
 const { formatAiResponse } = require('./responseFormatter');
 const { buildWorkflowContext, buildWorkflowFromMemory } = require('./workflowManager');
 const { decideNextAction } = require('./decisionEngine');
@@ -377,6 +377,163 @@ async function processUserMessage({ messages = [], userId = null, conversationId
     };
 }
 
+/**
+ * Processes message with real-time SSE token streaming and tool event hooks.
+ */
+async function processUserMessageStream({ messages = [], userId = null, conversationId = null, userMemory = null, onToken = () => {}, onEvent = () => {} }) {
+    const normalizedMessages = validateMessages(messages);
+    const lastMsg = getLastUserMessage(normalizedMessages);
+    const userQuery = lastMsg.content || '';
+
+    // 1. Build initial workflow & load memory
+    let workflow = buildWorkflowContext({ messages: normalizedMessages, intent: 'GENERAL_CHAT' });
+    const memory = await loadConversationMemory({
+        conversationId,
+        userId,
+        messages: normalizedMessages,
+        derivedMemory: workflow.memory
+    });
+
+    // 2. Detect Intent
+    const intent = detectIntent(userQuery, normalizedMessages, memory);
+    workflow = buildWorkflowFromMemory({ memory, intent });
+    const persistentUserProfile = await loadUserProfile(userId);
+
+    // 3. Decide and run deterministic tools
+    const decision = decideNextAction({ intent, workflow, memory });
+    if (decision.toolName && decision.toolName !== 'NONE') {
+        onEvent('tool_start', {
+            tool: decision.toolName,
+            status: 'running',
+            text: decision.toolName === 'HOTEL_SEARCH' ? 'Searching live hotel inventory...' :
+                  decision.toolName === 'INDIA_TOUR_PLANNER' ? 'Curating verified tour packages...' :
+                  decision.toolName === 'HOURLY_STAY_SEARCH' ? 'Finding hourly micro-stays...' :
+                  decision.toolName === 'FLIGHT_SEARCH' ? 'Searching fastest flights...' : 'Processing request...'
+        });
+    }
+
+    let toolResult;
+    try {
+        toolResult = await executeTool({ decision, messages: normalizedMessages, memory });
+    } catch (err) {
+        toolResult = { toolName: decision.toolName, status: 'error', hotels: [], error: err.message };
+    }
+
+    const dbHotels = toolResult.hotels || [];
+    onEvent('tool_result', {
+        tool: toolResult.toolName,
+        status: toolResult.status,
+        hotels: dbHotels,
+        tourPackage: toolResult.tourPackage || null,
+        flights: toolResult.flights || null
+    });
+
+    // If tool errored
+    if (toolResult.status === 'error') {
+        const errorReply = "I'm having trouble reaching our inventory database right now. Give it a moment and try again! 🔄";
+        onToken(errorReply);
+        return {
+            reply: errorReply,
+            hotels: [],
+            cards: [],
+            responseType: 'service_unavailable',
+            conversationId: memory.conversationId
+        };
+    }
+
+    // 4. Build Context & Dynamic Prompt
+    const userQueryWithContext = buildUserQueryWithContext(userQuery, dbHotels, {
+        intent,
+        workflowState: workflow.workflowState,
+        nextRequiredSlot: workflow.nextRequiredSlot,
+        completedSlots: workflow.completedSlots,
+        memory
+    });
+
+    const dynamicPrompt = buildDynamicSystemPrompt({
+        intent,
+        workflowState: workflow.workflowState,
+        nextRequiredSlot: workflow.nextRequiredSlot,
+        userMemory,
+        userProfile: persistentUserProfile
+    });
+
+    // 5. Stream LLM Response
+    let streamedReply = "";
+    try {
+        streamedReply = await streamChatCompletion({
+            systemInstruction: dynamicPrompt,
+            history: normalizedMessages.slice(0, -1),
+            userQuery: userQueryWithContext,
+            onToken: (token) => {
+                onToken(token);
+            }
+        });
+    } catch (err) {
+        logger.error('OrchestratorStream', 'Stream LLM error:', err.message);
+        streamedReply = "Hey! I've loaded the details for you below.";
+        onToken(streamedReply);
+    }
+
+    let humanSanitizedReply = sanitizeHumanPersonaReply(streamedReply);
+    humanSanitizedReply = sanitizeHallucinatedHotels(humanSanitizedReply, dbHotels, intent);
+
+    // 6. Booking Confirmation Check
+    let finalAction = undefined;
+    let finalReply = humanSanitizedReply;
+    try {
+        const bookingResult = await processAiBookingConfirmation({
+            reply: humanSanitizedReply,
+            userId,
+            messages: normalizedMessages,
+            memory: workflow.memory
+        });
+        if (bookingResult) {
+            if (bookingResult.action) finalAction = bookingResult.action;
+            if (bookingResult.modifiedReply) finalReply = sanitizeHumanPersonaReply(bookingResult.modifiedReply);
+        }
+    } catch (err) {}
+
+    // 7. Format Output
+    const formattedResult = await formatAiResponse({
+        reply: finalReply,
+        lastUserQuery: userQuery,
+        dbHotels,
+        workflowState: workflow.workflowState,
+        intent,
+        actions: finalAction,
+        memory,
+        selectedHotel: memory.selectedHotelId ? { id: memory.selectedHotelId } : null,
+        selectedRoom: memory.selectedRoomId ? { id: memory.selectedRoomId } : null
+    });
+
+    if (toolResult.flights) formattedResult.flights = toolResult.flights;
+    if (toolResult.tourPackage) formattedResult.tourPackage = toolResult.tourPackage;
+
+    // 8. Save Conversation Turn
+    const persistenceResult = await saveConversationTurn({
+        userId,
+        messages: normalizedMessages,
+        workflow,
+        intent,
+        decision,
+        response: {
+            ...formattedResult,
+            memory
+        }
+    });
+
+    return {
+        ...formattedResult,
+        action: formattedResult.actions || finalAction,
+        workflowState: workflow.workflowState,
+        nextRequiredSlot: workflow.nextRequiredSlot,
+        conversationId: memory.conversationId,
+        memoryPersistence: persistenceResult.persisted ? 'persistent' : memory.persistence
+    };
+}
+
 module.exports = {
-    processUserMessage
+    processUserMessage,
+    processUserMessageStream
 };

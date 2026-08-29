@@ -1,4 +1,8 @@
 const logger = require('./logger');
+let prisma;
+try {
+    prisma = require('../../config/db');
+} catch (e) {}
 
 const INDIAN_DESTINATIONS = [
     'goa', 'kerala', 'jaipur', 'udaipur', 'jaisalmer', 'manali', 'shimla', 'dharamsala',
@@ -414,15 +418,83 @@ async function generateIndiaTourPackage({ destination = 'Goa', durationDays = 4,
         };
     }
 
-    // 2. Check Geographic Route Conflict
+    // 2. Query Live MySQL Database for Curated Tour Packages
+    try {
+        if (prisma) {
+            const destLower = destClean.toLowerCase();
+            const dbPackages = await prisma.$queryRawUnsafe(`SELECT * FROM tour_packages WHERE is_active = 1`);
+            if (Array.isArray(dbPackages) && dbPackages.length > 0) {
+                const matchedPkg = dbPackages.find(p => {
+                    const pTitle = (p.title || '').toLowerCase();
+                    const pDest = (p.destination || '').toLowerCase();
+                    return pTitle.includes(destLower) || pDest.includes(destLower) ||
+                        (destLower.includes('golden triangle') && pTitle.includes('golden triangle')) ||
+                        (destLower.includes('delhi') && (pTitle.includes('delhi') || pDest.includes('delhi'))) ||
+                        (destLower.includes('agra') && (pTitle.includes('agra') || pDest.includes('agra'))) ||
+                        (destLower.includes('jaipur') && (pTitle.includes('jaipur') || pDest.includes('jaipur'))) ||
+                        (destLower.includes('udaipur') && (pTitle.includes('udaipur') || pDest.includes('udaipur'))) ||
+                        (destLower.includes('ranthambore') && (pTitle.includes('ranthambore') || pDest.includes('ranthambore'))) ||
+                        (destLower.includes('jaisalmer') && (pTitle.includes('jaisalmer') || pDest.includes('jaisalmer'))) ||
+                        (destLower.includes('jodhpur') && (pTitle.includes('jodhpur') || pDest.includes('jodhpur'))) ||
+                        (destLower.includes('bikaner') && (pTitle.includes('bikaner') || pDest.includes('bikaner'))) ||
+                        (destLower.includes('mount abu') && (pTitle.includes('mount abu') || pDest.includes('mount abu'))) ||
+                        (destLower.includes('pushkar') && (pTitle.includes('pushkar') || pDest.includes('pushkar'))) ||
+                        (destLower.includes('rajasthan') && (pTitle.includes('rajasthan') || pTitle.includes('desert')));
+                });
+
+                if (matchedPkg) {
+                    const itineraryList = typeof matchedPkg.itinerary === 'string' ? JSON.parse(matchedPkg.itinerary || '[]') : (matchedPkg.itinerary || []);
+                    const inclusionsList = typeof matchedPkg.inclusions === 'string' ? JSON.parse(matchedPkg.inclusions || '[]') : (matchedPkg.inclusions || []);
+                    const exclusionsList = typeof matchedPkg.exclusions === 'string' ? JSON.parse(matchedPkg.exclusions || '[]') : (matchedPkg.exclusions || []);
+                    const galleryList = typeof matchedPkg.gallery === 'string' ? JSON.parse(matchedPkg.gallery || '[]') : (matchedPkg.gallery || []);
+
+                    return {
+                        isIndiaOnlyRestriction: false,
+                        id: matchedPkg.id,
+                        tour_title: matchedPkg.title,
+                        slug: matchedPkg.slug,
+                        package_url: `https://gethotelstays.com/en/packages/${matchedPkg.slug}`,
+                        destination: matchedPkg.destination,
+                        duration: matchedPkg.duration,
+                        durationDays: parseInt(matchedPkg.duration) || durationDays,
+                        tour_overview: matchedPkg.overview,
+                        travelerCount,
+                        perPersonPrice: Math.round(parseFloat(matchedPkg.price) / travelerCount),
+                        bundledTotalPrice: parseFloat(matchedPkg.price),
+                        originalPrice: matchedPkg.original_price ? parseFloat(matchedPkg.original_price) : Math.round(parseFloat(matchedPkg.price) * 1.25),
+                        discountPercent: matchedPkg.discount_percent || "24% OFF",
+                        badge: matchedPkg.badge || "Bestseller",
+                        rating: parseFloat(matchedPkg.rating || 4.8),
+                        reviewsCount: parseInt(matchedPkg.reviews_count || 45),
+                        image: matchedPkg.image,
+                        gallery: galleryList,
+                        highlights: inclusionsList.slice(0, 4),
+                        included: inclusionsList,
+                        excluded: exclusionsList,
+                        days: itineraryList.map((item, idx) => ({
+                            day: idx + 1,
+                            title: item.title || `Day ${idx + 1}`,
+                            summary: item.desc || item.title || '',
+                            highlights: [item.title || 'Sightseeing']
+                        })),
+                        itineraryTimeline: itineraryList
+                    };
+                }
+            }
+        }
+    } catch (dbErr) {
+        logger.warn('IndiaTourPlanner', 'DB tour package fetch notice:', dbErr.message);
+    }
+
+    // 3. Check Geographic Route Conflict
     const conflictCheck = detectGeographicConflict(destClean);
 
-    // 3. Special Himachal Circuit Engine (Shimla / Manali)
+    // 4. Special Himachal Circuit Engine (Shimla / Manali)
     if (/shimla|manali|kufri|solang|himachal/i.test(destClean) || (conflictCheck.hasConflict && /himachal|shimla|manali/i.test(conflictCheck.notice))) {
         return buildHimachalItinerary(4, travelerCount, budget, conflictCheck.notice);
     }
 
-    // 4. Special Golden Triangle Chronological Reasoning Engine
+    // 5. Special Golden Triangle Chronological Reasoning Engine
     if (/golden\s*triangle|delhi\s*to\s*agra|agra\s*jaipur|jaipur\s*delhi/i.test(destClean) || (destClean.toLowerCase().includes('delhi') && destClean.toLowerCase().includes('agra'))) {
         return buildGoldenTriangleItinerary(5, travelerCount, budget);
     }

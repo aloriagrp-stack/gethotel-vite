@@ -280,8 +280,71 @@ const generateStructuredJSON = async ({ systemInstruction, prompt, schema, tempe
     }
 };
 
+/**
+ * Stream chat completion with Gemini streaming & fallbacks.
+ * Emits token chunks via `onToken(token)`.
+ *
+ * @param {{ systemInstruction: string, history: Array, userQuery: string, onToken: Function }} params
+ * @returns {Promise<string>} Full reply string
+ */
+const streamChatCompletion = async ({ systemInstruction, history = [], userQuery, onToken }) => {
+    let fullText = "";
+
+    // 1. Try Gemini Streaming first
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (apiKey) {
+        const modelsToTry = [
+            process.env.GEMINI_TUNED_MODEL_ID || 'gemini-2.5-flash',
+            'gemini-2.5-flash',
+            'gemini-2.5-flash-lite',
+            'gemini-1.5-flash'
+        ];
+        const uniqueModels = Array.from(new Set(modelsToTry.filter(Boolean)));
+
+        for (const modelName of uniqueModels) {
+            try {
+                const genAI = new GoogleGenerativeAI(apiKey);
+                const model = genAI.getGenerativeModel({ model: modelName, systemInstruction });
+                const formattedHistory = history.map(m => ({
+                    role: m.role === 'ai' || m.role === 'model' ? 'model' : 'user',
+                    parts: [{ text: m.content || m.text || '' }]
+                }));
+
+                const chat = model.startChat({ history: formattedHistory });
+                const streamResult = await chat.sendMessageStream(userQuery);
+
+                for await (const chunk of streamResult.stream) {
+                    const chunkText = chunk.text();
+                    if (chunkText) {
+                        fullText += chunkText;
+                        if (onToken) onToken(chunkText);
+                    }
+                }
+
+                if (fullText.trim()) {
+                    return fullText;
+                }
+            } catch (geminiErr) {
+                console.error(`[LLM STREAM DEBUG Gemini ${modelName} error]:`, geminiErr.message);
+            }
+        }
+    }
+
+    // 2. Fallback to Groq / DeepSeek / Non-streaming completion if stream fails
+    const fallbackText = await generateChatCompletion({ systemInstruction, history, userQuery });
+    if (fallbackText && onToken && !fullText) {
+        const words = fallbackText.split(' ');
+        for (const word of words) {
+            onToken(word + ' ');
+            await new Promise(r => setTimeout(r, 12));
+        }
+    }
+    return fallbackText || ALL_PROVIDERS_DOWN_REPLY;
+};
+
 module.exports = {
     runGeminiWithFallback,
     generateChatCompletion,
+    streamChatCompletion,
     generateStructuredJSON
 };

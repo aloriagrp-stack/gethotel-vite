@@ -714,6 +714,9 @@ app.get('/api/ai/restart', (req, res) => {
     setTimeout(() => process.exit(0), 100);
 });
 const mountAiRoutes = (prefix) => {
+    const aiChatController = require('./controllers/aiController');
+    app.post(`${prefix}/ai/chat`, aiChatController.chat);
+    app.post(`${prefix}/ai/chat/stream`, aiChatController.chatStream);
     app.get(`${prefix}/ai/debug-hotels`, async (req, res) => {
         try {
             const total = await prisma.hotel.count();

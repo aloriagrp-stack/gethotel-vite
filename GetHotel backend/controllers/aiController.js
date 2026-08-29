@@ -6,8 +6,7 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const Razorpay = require('razorpay');
-const jwt = require('jsonwebtoken');
-const { processUserMessage } = require('../services/ai/orchestrator');
+const { processUserMessage, processUserMessageStream } = require('../services/ai/orchestrator');
 
 let razorpay;
 if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
@@ -1191,6 +1190,81 @@ exports.chat = async (req, res) => {
             hotels: [],
             responseType: 'general'
         });
+    }
+};
+
+/**
+ * @desc    Streaming AI Chat Conversation Endpoint (Server-Sent Events)
+ * @route   POST /api/ai/chat/stream
+ * @access  Public / Authenticated
+ */
+exports.chatStream = async (req, res) => {
+    const { messages, conversationId, sessionId, userMemory } = req.body;
+    let userId = null;
+
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+        try {
+            const token = req.headers.authorization.split(' ')[1];
+            const jwt = require('jsonwebtoken');
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            userId = decoded.id;
+        } catch (e) {}
+    }
+
+    // Set SSE HTTP Headers
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
+    if (res.flushHeaders) res.flushHeaders();
+
+    const sendEvent = (event, data) => {
+        try {
+            res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+            if (res.flush) res.flush();
+        } catch (e) {}
+    };
+
+    try {
+        const result = await processUserMessageStream({
+            messages,
+            userId,
+            conversationId: conversationId || sessionId,
+            userMemory,
+            onToken: (token) => {
+                sendEvent('token', { token });
+            },
+            onEvent: (event, payload) => {
+                sendEvent(event, payload);
+            }
+        });
+
+        // Send final done payload
+        sendEvent('done', {
+            success: true,
+            reply: result.reply,
+            hotels: result.hotels || [],
+            tourPackage: result.tourPackage || null,
+            flights: result.flights || null,
+            cards: result.cards || [],
+            responseType: result.responseType || 'general',
+            workflowState: result.workflowState,
+            nextRequiredSlot: result.nextRequiredSlot,
+            conversationId: result.conversationId,
+            action: result.action || null
+        });
+
+        res.end();
+    } catch (err) {
+        console.error('[AI Controller] Stream execution error:', err.message);
+        sendEvent('token', { token: "I'm having a brief connection issue. Please try again! 🙏" });
+        sendEvent('done', {
+            success: false,
+            reply: "I'm having a brief connection issue. Please try again! 🙏",
+            hotels: [],
+            responseType: 'general'
+        });
+        res.end();
     }
 };
 

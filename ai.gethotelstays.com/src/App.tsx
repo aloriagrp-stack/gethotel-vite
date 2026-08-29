@@ -677,44 +677,90 @@ export default function App() {
         aiVibe
       };
 
-      const data = await aiApi.chat(historyPayload, userMemoryPayload, targetConversationId || undefined);
-      console.log('[AI Chat] Raw API Response:', data);
+      const aiMsgId = `a-${Date.now()}`;
+      let accumulatedText = "";
+      let streamData: any = null;
 
-      const aiMsg: Message = {
-        id: `a-${Date.now()}`,
+      // Add empty streaming AI placeholder immediately for instant typing
+      const initialAiMsg: Message = {
+        id: aiMsgId,
         sender: "ai",
         timestamp: Date.now(),
-        text: data.reply || "I'm here to help you plan your trip! Which city or hotel would you like to explore?",
-        responseType: data.responseType || 'general',
-        hotels: data.hotels || [],
-        ...(data.flights && { flights: data.flights }),
-        ...(data.tourPackage && { tourPackage: data.tourPackage })
+        text: "",
+        hotels: []
+      };
+      setMessages([...sessionMessages, initialAiMsg]);
+
+      try {
+        streamData = await aiApi.chatStream(historyPayload, {
+          userMemory: userMemoryPayload,
+          conversationId: targetConversationId || undefined,
+          onToken: (token: string) => {
+            accumulatedText += token;
+            setMessages(prev =>
+              prev.map(m => (m.id === aiMsgId ? { ...m, text: accumulatedText } : m))
+            );
+          },
+          onEvent: (event: string, data: any) => {
+            if (event === "tool_result" && data) {
+              setMessages(prev =>
+                prev.map(m =>
+                  m.id === aiMsgId
+                    ? {
+                        ...m,
+                        ...(data.hotels && { hotels: data.hotels }),
+                        ...(data.tourPackage && { tourPackage: data.tourPackage }),
+                        ...(data.flights && { flights: data.flights })
+                      }
+                    : m
+                )
+              );
+            }
+          }
+        });
+      } catch (streamErr) {
+        console.warn("[AI Chat] Stream failed, falling back to standard API:", streamErr);
+        streamData = await aiApi.chat(historyPayload, userMemoryPayload, targetConversationId || undefined);
+        accumulatedText = streamData?.reply || "";
+      }
+
+      const finalReplyText = accumulatedText || streamData?.reply || "I'm here to help you plan your trip! Which city or hotel would you like to explore?";
+
+      const aiMsg: Message = {
+        id: aiMsgId,
+        sender: "ai",
+        timestamp: Date.now(),
+        text: finalReplyText,
+        responseType: streamData?.responseType || "general",
+        hotels: streamData?.hotels || [],
+        ...(streamData?.flights && { flights: streamData.flights }),
+        ...(streamData?.tourPackage && { tourPackage: streamData.tourPackage })
       };
 
-      let actionToTrigger = data.action;
+      let actionToTrigger = streamData?.action;
       if (!actionToTrigger && (
-        (data.reply || '').includes("Launching your Razorpay payment window") ||
-        (data.reply || '').includes("12% deposit payment window") ||
-        data.responseType === 'payment_trigger'
+        (finalReplyText || "").includes("Launching your Razorpay payment window") ||
+        (finalReplyText || "").includes("12% deposit payment window") ||
+        streamData?.responseType === "payment_trigger"
       )) {
         actionToTrigger = {
-          type: 'RAZORPAY_PAYMENT',
+          type: "RAZORPAY_PAYMENT",
           bookingId: Date.now(),
           razorpayOrderId: null,
           amount: 100, // ₹1 test deposit in paisa
-          currency: 'INR',
-          keyId: '',
-          guestName: 'Shriyansh',
-          guestEmail: 'aloriagrp@gmail.com',
-          guestPhone: '9318485680',
-          hotelName: 'Hotel Haris Court (Lajpat Nagar)',
+          currency: "INR",
+          keyId: "",
+          guestName: "Shriyansh",
+          guestEmail: "aloriagrp@gmail.com",
+          guestPhone: "9318485680",
+          hotelName: "Hotel Haris Court (Lajpat Nagar)",
           depositAmount: 1,
           balanceAmount: 0
         };
       }
 
       if (actionToTrigger) {
-        if (actionToTrigger.type === 'REQUIRE_SIGN_IN') {
+        if (actionToTrigger.type === "REQUIRE_SIGN_IN") {
           setShowLoginModal(true);
         } else {
           aiMsg.action = actionToTrigger;
@@ -725,7 +771,7 @@ export default function App() {
       if (targetConversationId) {
         try {
           await conversationApi.saveMessage(targetConversationId, {
-            role: 'ai',
+            role: "ai",
             content: aiMsg.text,
             metadata: {
               responseType: aiMsg.responseType,
@@ -736,12 +782,11 @@ export default function App() {
             }
           });
         } catch (saveAiErr) {
-          console.warn('[Conversation] Failed to save AI response to DB:', saveAiErr);
+          console.warn("[Conversation] Failed to save AI response to DB:", saveAiErr);
         }
       }
 
-      const finalMessages = [...sessionMessages, aiMsg];
-      setMessages(finalMessages);
+      setMessages(prev => prev.map(m => (m.id === aiMsgId ? aiMsg : m)));
       setComposerAttachment(null);
     } catch (err: any) {
       console.error("[AI Chat Error]:", err.message);
