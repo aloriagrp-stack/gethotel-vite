@@ -171,6 +171,21 @@ async function generateSitemap(prisma) {
             baseUrls.push(`  <url>\n    <loc>https://gethotelstays.com/hotel/${slug}</loc>\n    <lastmod>${date}</lastmod>\n    <changefreq>daily</changefreq>\n    <priority>0.90</priority>\n  </url>`);
         });
 
+        // Append dynamic Tour Package URLs
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            const pkgRows = await prisma.$queryRawUnsafe(`SELECT slug, updated_at FROM tour_packages WHERE is_active = 1`);
+            if (Array.isArray(pkgRows) && pkgRows.length > 0) {
+                pkgRows.forEach(p => {
+                    const pDate = p.updated_at ? new Date(p.updated_at).toISOString().split('T')[0] : today;
+                    baseUrls.push(`  <url>\n    <loc>https://gethotelstays.com/en/packages/${p.slug}</loc>\n    <lastmod>${pDate}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.90</priority>\n  </url>`);
+                });
+                console.log(`[sitemap] Added ${pkgRows.length} tour package URLs to sitemap.`);
+            }
+        } catch (pkgErr) {
+            console.warn('[sitemap] Tour packages sitemap fetch notice:', pkgErr.message);
+        }
+
         // Delhi SEO ecosystem pages — inventory-gated indexability (live DB)
         const delhiConfig = loadDelhiConfig();
         if (delhiConfig && delhiConfig.hub && Array.isArray(delhiConfig.pages)) {
