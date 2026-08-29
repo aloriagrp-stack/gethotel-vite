@@ -345,8 +345,8 @@ export default function TourPackages() {
                                     }}
                                     className="flex flex-col items-center gap-2 group shrink-0 cursor-pointer text-center outline-none focus:outline-none"
                                 >
-                                    {/* Instagram Vibrant Gradient Story Ring */}
-                                    <div className="p-0.5 rounded-full bg-gradient-to-tr from-amber-500 via-rose-500 to-fuchsia-600 group-hover:scale-108 group-active:scale-95 transition-all duration-300 shadow-md">
+                                    {/* Brand Shiny Shimmer Blue Story Ring */}
+                                    <div className="relative p-[2.5px] rounded-full bg-gradient-to-tr from-blue-600 via-sky-400 to-indigo-600 group-hover:from-sky-400 group-hover:via-cyan-300 group-hover:to-blue-600 group-hover:scale-108 group-active:scale-95 transition-all duration-500 shadow-md shadow-sky-500/20 group-hover:shadow-xl group-hover:shadow-sky-500/40">
                                         <div className="w-18 h-18 sm:w-22 sm:h-22 md:w-24 md:h-24 rounded-full overflow-hidden border-2 border-white bg-white p-0.5 shadow-inner">
                                             <img
                                                 src={item.image}
@@ -640,7 +640,7 @@ export default function TourPackages() {
                                 {/* Story Header Bar */}
                                 <div className="flex items-center justify-between text-white">
                                     <div className="flex items-center gap-2.5">
-                                        <div className="w-10 h-10 rounded-full p-0.5 bg-gradient-to-tr from-amber-400 to-rose-500">
+                                        <div className="w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-blue-600 via-sky-400 to-indigo-600 shadow-md shadow-sky-500/30">
                                             <img
                                                 src={currentStory.image}
                                                 alt={currentStory.name}
