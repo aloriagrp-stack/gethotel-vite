@@ -71,24 +71,29 @@ RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
 
-# 2. Language Root URLs (e.g. /en, /hi, /es, etc. -> /index.html)
-RewriteRule ^(en|hi|es|fr|de|zh|ja|ar|ru|pt|bn|ta|te|mr|gu|kn|ml|pa|ur)/?$ /index.html [L,QSA]
+# 2. Specific Admin & ControlHub Static Routes (Exact Matches First)
+RewriteRule ^admin/login/?$ /admin/login.html [L,QSA]
+RewriteRule ^admin/dashboard/?$ /admin/dashboard.html [L,QSA]
+RewriteRule ^admin/?$ /admin.html [L,QSA]
+RewriteRule ^controlhub/?$ /controlhub.html [L,QSA]
+RewriteRule ^superadmin/?$ /superadmin.html [L,QSA]
+RewriteRule ^partner-dashboard/dashboard/?$ /partner-dashboard/dashboard.html [L,QSA]
+RewriteRule ^partner-dashboard/?$ /partner-dashboard.html [L,QSA]
 
-# 3. Dynamic Next.js Routes with language prefix
-RewriteRule ^(en|hi|es|fr|de|zh|ja|ar|ru|pt|bn|ta|te|mr|gu|kn|ml|pa|ur)?/?hotel/.*$ /hotel/1.html [L,QSA]
-RewriteRule ^(en|hi|es|fr|de|zh|ja|ar|ru|pt|bn|ta|te|mr|gu|kn|ml|pa|ur)?/?booking/.*$ /booking/details/1.html [L,QSA]
-RewriteRule ^(en|hi|es|fr|de|zh|ja|ar|ru|pt|bn|ta|te|mr|gu|kn|ml|pa|ur)?/?packages/.*$ /packages/1.html [L,QSA]
-RewriteRule ^(en|hi|es|fr|de|zh|ja|ar|ru|pt|bn|ta|te|mr|gu|kn|ml|pa|ur)?/?tour-packages/.*$ /tour-packages/1.html [L,QSA]
-RewriteRule ^(en|hi|es|fr|de|zh|ja|ar|ru|pt|bn|ta|te|mr|gu|kn|ml|pa|ur)?/?admin/.*$ /admin/dashboard.html [L,QSA]
-RewriteRule ^(en|hi|es|fr|de|zh|ja|ar|ru|pt|bn|ta|te|mr|gu|kn|ml|pa|ur)?/?partner-dashboard/.*$ /partner-dashboard/dashboard.html [L,QSA]
+# 3. Dynamic Dynamic Next.js Dynamic Catch-alls
+RewriteRule ^hotel/.*$ /hotel/1.html [L,QSA]
+RewriteRule ^booking/.*$ /booking/details/1.html [L,QSA]
+RewriteRule ^bookings/.*$ /bookings/details/1.html [L,QSA]
+RewriteRule ^packages/.*$ /packages/1.html [L,QSA]
+RewriteRule ^tour-packages/.*$ /tour-packages/1.html [L,QSA]
 
-# 4. Multilingual Static HTML Pages (e.g. /en/hotels -> /hotels.html, /en/delhi-hotels -> /delhi-hotels.html)
-RewriteCond %{DOCUMENT_ROOT}/$2.html -f
-RewriteRule ^(en|hi|es|fr|de|zh|ja|ar|ru|pt|bn|ta|te|mr|gu|kn|ml|pa|ur)/(.*)$ /$2.html [L,QSA]
+# 4. Multilingual /en/ 301 Redirects to Root (Enforce Canonical)
+RewriteRule ^(en|hi|es|fr|de|zh|ja|ar|ru|pt|bn|ta|te|mr|gu|kn|ml|pa|ur)/?$ / [R=301,L]
+RewriteRule ^(en|hi|es|fr|de|zh|ja|ar|ru|pt|bn|ta|te|mr|gu|kn|ml|pa|ur)/(.*)$ /$2 [R=301,L]
 
-# 5. Non-prefixed Clean HTML Pages (e.g. /hotels -> /hotels.html)
+# 5. Clean HTML Pages (e.g. /hotels -> /hotels.html, /contact-us -> /contact-us.html)
 RewriteCond %{DOCUMENT_ROOT}/$1.html -f
-RewriteRule ^(.*)$ /$1.html [L,QSA]
+RewriteRule ^(.*?)/?$ /$1.html [L,QSA]
 
 # 6. Fallback to index.html for Client Routing
 RewriteRule . /index.html [L]
