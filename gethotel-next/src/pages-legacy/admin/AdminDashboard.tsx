@@ -126,7 +126,6 @@ export default function SuperAdminDashboard() {
     const [isReseting, setIsReseting] = useState(false);
     const [showPass, setShowPass] = useState(false);
 
-
     // Customer Detail Modal
     const [customerModal, setCustomerModal] = useState<{ show: boolean, customer: any }>({ show: false, customer: null });
     const [showPasswordHash, setShowPasswordHash] = useState(false);
@@ -138,12 +137,14 @@ export default function SuperAdminDashboard() {
     const [reviewsSubTab, setReviewsSubTab] = useState<"list" | "import">("list");
 
     useEffect(() => {
-        const path = location.pathname.split('/').pop();
         const tabFromUrl = searchParams.get("tab");
-        if (path && path !== 'super') {
-            setActiveTab(path);
-        } else if (tabFromUrl) {
+        if (tabFromUrl) {
             setActiveTab(tabFromUrl);
+            return;
+        }
+        const path = location.pathname.split('/').filter(Boolean).pop();
+        if (path && !['super', 'controlhub', '.controlhub', 'admin', 'superadmin'].includes(path)) {
+            setActiveTab(path);
         } else {
             setActiveTab("overview");
         }
@@ -163,7 +164,6 @@ export default function SuperAdminDashboard() {
         if (normalizedTab === "reviews") return !!loadedSections.reviews;
         return true;
     };
-
     const fetchDashboardData = async (tab = activeTab, force = false) => {
         try {
             const normalizedTab = tab === "partners" ? "users" : tab;

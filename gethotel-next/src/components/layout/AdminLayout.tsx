@@ -36,11 +36,13 @@ export default function AdminLayout({ children }: { children?: React.ReactNode }
     const sidebarNavRef = useRef<HTMLElement>(null);
     const scrollPosRef = useRef(0);
 
-    const handleNavClick = (href: string) => {
+    const handleNavClick = (tabId: string) => {
         if (sidebarNavRef.current) {
             scrollPosRef.current = sidebarNavRef.current.scrollTop;
         }
-        router(href);
+        const currentPath = typeof window !== 'undefined' ? window.location.pathname : pathname;
+        const targetUrl = tabId === 'overview' ? currentPath : `${currentPath}?tab=${tabId}`;
+        router(targetUrl);
     };
 
     useEffect(() => {
@@ -52,56 +54,46 @@ export default function AdminLayout({ children }: { children?: React.ReactNode }
     // Auth Protection
     useEffect(() => {
         if (!authLoading && (!user || user.role !== 'super_admin')) {
-            router('/.controlhub');
+            router('/controlhub');
         }
     }, [user, authLoading, router]);
 
     const navItems = [
-        { id: "overview", label: "Dashboard", icon: LayoutDashboard, href: "/admin/super" },
-        { id: "hotel-importer", label: "Hotel Importer (Agent)", icon: Download, href: "/admin/super/hotel-importer" },
-        { id: "tour-packages", label: "Tour Packages Manager", icon: Palmtree, href: "/admin/super/tour-packages" },
-        { id: "destinations", label: "Destinations Cards Manager", icon: MapPin, href: "/admin/super?tab=destinations" },
-        { id: "requests", label: "Partner Requests", icon: Clock, href: "/admin/super/requests" },
-        { id: "controlhub", label: "Manager", icon: SlidersHorizontal, href: "/admin/super/controlhub" },
-        { id: "ai-chats", label: "AI Chat Analytics", icon: Bot, href: "/admin/super/ai-chats" },
-        { id: "hotels", label: "Hotels", icon: Hotel, href: "/admin/super?tab=hotels" },
-        { id: "promotions", label: "Promotions & Coupons", icon: Percent, href: "/admin/super?tab=promotions" },
-        { id: "multi-room", label: "Multi Room Setup", icon: LayoutGrid, href: "/admin/super/multi-room" },
-        { id: "ai-copilot", label: "AI Room Onboarding", icon: Sparkles, href: "/admin/super/ai-copilot" },
-        { id: "bookings", label: "All Bookings", icon: Calendar, href: "/admin/super/bookings" },
-        { id: "reviews", label: "Global Reviews", icon: Star, href: "/admin/super/reviews" },
-        { id: "users", label: "Users", icon: Users, href: "/admin/super?tab=users" },
-        { id: "addPartner", label: "Add Partner", icon: Plus, href: "/admin/super?tab=addPartner" },
-        { id: "destination-analytics", label: "Top Destinations Analytics", icon: Globe, href: "/admin/super/destination-analytics" },
-        { id: "delhi-seo", label: "Delhi SEO Dashboard", icon: Search, href: "/admin/super/delhi-seo" },
-        { id: "analytics", label: "Stats", icon: BarChart3, href: "/admin/super/stats" },
-        { id: "finance", label: "Financial Hub", icon: CreditCard, href: "/admin/super/finance" },
-        { id: "homepage", label: "Homepage Editor", icon: LayoutTemplate, href: "/admin/super/homepage" },
-        { id: "disputes", label: "Disputes", icon: AlertCircle, href: "/admin/super/disputes" },
-        { id: "notifications", label: "Notifications", icon: Bell, href: "/admin/super/notifications" },
-        { id: "settings", label: "Settings", icon: Settings, href: "/admin/super/settings" },
+        { id: "overview", label: "Dashboard", icon: LayoutDashboard, tab: "overview" },
+        { id: "hotel-importer", label: "Hotel Importer (Agent)", icon: Download, tab: "hotel-importer" },
+        { id: "tour-packages", label: "Tour Packages Manager", icon: Palmtree, tab: "tour-packages" },
+        { id: "destinations", label: "Destinations Cards Manager", icon: MapPin, tab: "destinations" },
+        { id: "requests", label: "Partner Requests", icon: Clock, tab: "requests" },
+        { id: "controlhub", label: "Manager", icon: SlidersHorizontal, tab: "controlhub" },
+        { id: "ai-chats", label: "AI Chat Analytics", icon: Bot, tab: "ai-chats" },
+        { id: "hotels", label: "Hotels", icon: Hotel, tab: "hotels" },
+        { id: "promotions", label: "Promotions & Coupons", icon: Percent, tab: "promotions" },
+        { id: "multi-room", label: "Multi Room Setup", icon: LayoutGrid, tab: "multi-room" },
+        { id: "ai-copilot", label: "AI Room Onboarding", icon: Sparkles, tab: "ai-copilot" },
+        { id: "bookings", label: "All Bookings", icon: Calendar, tab: "bookings" },
+        { id: "reviews", label: "Global Reviews", icon: Star, tab: "reviews" },
+        { id: "users", label: "Users", icon: Users, tab: "users" },
+        { id: "addPartner", label: "Add Partner", icon: Plus, tab: "addPartner" },
+        { id: "destination-analytics", label: "Top Destinations Analytics", icon: Globe, tab: "destination-analytics" },
+        { id: "delhi-seo", label: "Delhi SEO Dashboard", icon: Search, tab: "delhi-seo" },
+        { id: "analytics", label: "Stats", icon: BarChart3, tab: "stats" },
+        { id: "finance", label: "Financial Hub", icon: CreditCard, tab: "finance" },
+        { id: "homepage", label: "Homepage Editor", icon: LayoutTemplate, tab: "homepage" },
+        { id: "disputes", label: "Disputes", icon: AlertCircle, tab: "disputes" },
+        { id: "notifications", label: "Notifications", icon: Bell, tab: "notifications" },
+        { id: "settings", label: "Settings", icon: Settings, tab: "settings" },
     ];
 
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-    const activeItem = navItems.find(item => {
-        const searchParams = new URLSearchParams(location.search);
-        const currentTab = searchParams.get("tab");
-        const cleanPathname = pathname.replace(/^\/[a-z]{2}(?=\/|$)/i, "");
-        if (item.href.includes("?tab=")) {
-            const itemTab = new URLSearchParams(item.href.split("?")[1]).get("tab");
-            return (cleanPathname === "/admin/super" || cleanPathname === "/admin/super/") && currentTab === itemTab;
-        } else if (item.href === "/admin/super") {
-            return (cleanPathname === "/admin/super" || cleanPathname === "/admin/super/") && (!currentTab || currentTab === "overview");
-        } else {
-            return cleanPathname === item.href || cleanPathname === `${item.href}/`;
-        }
-    }) || navItems[0];
+    const searchParams = new URLSearchParams(location.search);
+    const currentTab = searchParams.get("tab") || "overview";
+    const activeItem = navItems.find(item => item.tab === currentTab) || navItems[0];
 
     const handleLogout = () => {
         logout();
         setShowLogoutConfirm(false);
-        router("/.controlhub");
+        router("/controlhub");
     };
 
     if (authLoading) {
@@ -141,23 +133,12 @@ export default function AdminLayout({ children }: { children?: React.ReactNode }
                 <nav ref={sidebarNavRef} className="flex-1 p-3 space-y-1.5 overflow-y-auto custom-scrollbar">
                     {navItems.map((item) => {
                         const Icon = item.icon;
-                        const searchParams = new URLSearchParams(location.search);
-                        const currentTab = searchParams.get("tab");
-                        const cleanPathname = pathname.replace(/^\/[a-z]{2}(?=\/|$)/i, "");
-                        let isActive = false;
-                        if (item.href.includes("?tab=")) {
-                            const itemTab = new URLSearchParams(item.href.split("?")[1]).get("tab");
-                            isActive = (cleanPathname === "/admin/super" || cleanPathname === "/admin/super/") && currentTab === itemTab;
-                        } else if (item.href === "/admin/super") {
-                            isActive = (cleanPathname === "/admin/super" || cleanPathname === "/admin/super/") && (!currentTab || currentTab === "overview");
-                        } else {
-                            isActive = cleanPathname === item.href || cleanPathname === `${item.href}/`;
-                        }
+                        const isActive = item.tab === currentTab;
 
                         return (
                             <button
                                 key={item.id}
-                                onClick={() => handleNavClick(item.href)}
+                                onClick={() => handleNavClick(item.tab)}
                                 className={cn(
                                     "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold tracking-wide transition-all cursor-pointer relative",
                                     isActive
@@ -240,24 +221,13 @@ export default function AdminLayout({ children }: { children?: React.ReactNode }
                             <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
                                 {navItems.map((item) => {
                                     const Icon = item.icon;
-                                    const searchParams = new URLSearchParams(location.search);
-                                    const currentTab = searchParams.get("tab");
-                                    const cleanPathname = pathname.replace(/^\/[a-z]{2}(?=\/|$)/i, "");
-                                    let isActive = false;
-                                    if (item.href.includes("?tab=")) {
-                                        const itemTab = new URLSearchParams(item.href.split("?")[1]).get("tab");
-                                        isActive = (cleanPathname === "/admin/super" || cleanPathname === "/admin/super/") && currentTab === itemTab;
-                                    } else if (item.href === "/admin/super") {
-                                        isActive = (cleanPathname === "/admin/super" || cleanPathname === "/admin/super/") && (!currentTab || currentTab === "overview");
-                                    } else {
-                                        isActive = cleanPathname === item.href || cleanPathname === `${item.href}/`;
-                                    }
+                                    const isActive = item.tab === currentTab;
 
                                     return (
                                         <button
                                             key={item.id}
                                             onClick={() => {
-                                                router(item.href);
+                                                handleNavClick(item.tab);
                                                 setIsMobileMenuOpen(false);
                                             }}
                                             className={cn(
