@@ -13,22 +13,6 @@ const TOOL_NAMES = {
  * Decides which deterministic backend tool should run before the LLM writes prose.
  */
 function decideNextAction({ intent, workflow }) {
-    // If we are in the booking details collection states, do not run any search tools
-    const isCollectingDetails = [
-        'COLLECT_GUEST_NAME',
-        'COLLECT_PHONE',
-        'COLLECT_EMAIL',
-        'PAYMENT_SELECTION',
-        'PAYMENT_PENDING'
-    ].includes(workflow?.workflowState);
-
-    if (isCollectingDetails) {
-        return {
-            toolName: TOOL_NAMES.NONE,
-            reason: 'User is in the booking flow, collecting guest details.'
-        };
-    }
-
     if (intent === INTENTS.HOURLY_STAY_SEARCH) {
         return {
             toolName: TOOL_NAMES.HOURLY_STAY_SEARCH,
@@ -64,6 +48,22 @@ function decideNextAction({ intent, workflow }) {
         return {
             toolName: TOOL_NAMES.HOTEL_SEARCH,
             reason: 'User needs grounded hotel inventory context.'
+        };
+    }
+
+    // If we are strictly in booking detail collection states and user is providing info
+    const isCollectingDetails = [
+        'COLLECT_GUEST_NAME',
+        'COLLECT_PHONE',
+        'COLLECT_EMAIL',
+        'PAYMENT_SELECTION',
+        'PAYMENT_PENDING'
+    ].includes(workflow?.workflowState);
+
+    if (isCollectingDetails) {
+        return {
+            toolName: TOOL_NAMES.NONE,
+            reason: 'User is in the booking flow, collecting guest details.'
         };
     }
 

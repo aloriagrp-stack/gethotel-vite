@@ -61,7 +61,8 @@ function inferBookingState(memory = {}, intent, previousState = null) {
     if (memory.paymentSuccess) inferred = BOOKING_STATES.PAYMENT_SUCCESS;
     else if (memory.bookingConfirmed) inferred = BOOKING_STATES.BOOKING_CONFIRMED;
     else if (memory.paymentPending) inferred = BOOKING_STATES.PAYMENT_PENDING;
-    else if (memory.selectedRoomId) {
+    else if (intent === 'HOTEL_SEARCH') inferred = BOOKING_STATES.SEARCH_HOTELS;
+    else if (memory.selectedRoomId && intent !== 'HOTEL_SEARCH' && intent !== 'ROOM_SEARCH') {
         if (!memory.guestName) inferred = BOOKING_STATES.COLLECT_GUEST_NAME;
         else if (!memory.guestPhone) inferred = BOOKING_STATES.COLLECT_PHONE;
         else if (!memory.guestEmail) inferred = BOOKING_STATES.COLLECT_EMAIL;
@@ -69,7 +70,7 @@ function inferBookingState(memory = {}, intent, previousState = null) {
         else inferred = BOOKING_STATES.PAYMENT_PENDING;
     } else if (memory.selectedHotelId && intent === 'ROOM_SEARCH') {
         inferred = BOOKING_STATES.SHOW_ROOMS;
-    } else if (memory.selectedHotelId) {
+    } else if (memory.selectedHotelId && intent !== 'HOTEL_SEARCH') {
         inferred = BOOKING_STATES.HOTEL_SELECTED;
     } else if (memory.destination) {
         inferred = BOOKING_STATES.SEARCH_HOTELS;

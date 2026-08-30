@@ -28,6 +28,13 @@ function detectIntent(userQuery = '', history = [], memory = {}) {
         return INTENTS.GENERAL_CHAT;
     }
 
+    // 0. Check card inquiry or missing card complaint (e.g. "I haven't seeing any cards", "no cards", "cards nahi dikhre", "show cards")
+    const isCardInquiry = /\b(card|cards|photos?|images?|pics?|tasveer|pictures?|dikh|dikha|dikhao|options?|recommendations?)\b/i.test(text) ||
+                          /\b(haven'?t\s+see|didn'?t\s+see|not\s+see|don'?t\s+see|can'?t\s+see|no\s+cards?|cards?\s+nahi|kaha\s+hai|kaha\s+h|where\s+are)\b/i.test(text);
+    if (isCardInquiry) {
+        return memory?.selectedHotelId ? INTENTS.ROOM_SEARCH : INTENTS.HOTEL_SEARCH;
+    }
+
     // 1. Check Hourly Stay intent
     const isHourlyQuery = /\b(3\s*ghant|6\s*ghant|12\s*ghant|hourly|microstay|transit\s*room|layover\s*stay|day\s*use|few\s*hours)\b/i.test(text);
     if (isHourlyQuery) return INTENTS.HOURLY_STAY_SEARCH;
@@ -45,20 +52,20 @@ function detectIntent(userQuery = '', history = [], memory = {}) {
         return INTENTS.ROOM_SEARCH;
     }
 
-    // Check booking / reservation / guest details keywords
-    const isBookingQuery = /book|booking|reserve|reservation|confirm|email|phone|mobile|name\s+is|contact/i.test(text) ||
+    // Check booking / reservation / guest details keywords (only if user provides details, not when asking for cards)
+    const isBookingQuery = (/book|booking|reserve|reservation|confirm|email|phone|mobile|name\s+is|contact/i.test(text) ||
         /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/.test(text) ||
-        /(?:\+91[\s-]?)?[6-9]\d{9}\b/.test(text);
+        /(?:\+91[\s-]?)?[6-9]\d{9}\b/.test(text)) && !isCardInquiry;
 
     // Check payment keywords
-    const isPaymentQuery = /pay|payment|razorpay|card|upi/i.test(text);
+    const isPaymentQuery = /pay|payment|razorpay|card\s+number|upi|cvv/i.test(text);
 
     // Check known cities or travel parameters (weekend, under X, breakfast, guests)
     const hasKnownCity = KNOWN_CITIES.some(city => new RegExp(`\\b${city}\\b`, 'i').test(text));
     const hasTravelParams = /weekend|vacation|trip|getaway|under\s*\d+|below\s*\d+|breakfast|guests|people|couple/i.test(text);
 
     // Check hotel search keywords
-    const isHotelQuery = /hotel|hotels|resort|resorts|stay|stays|place|places|find|search|dikha|dikhao/i.test(text) || hasKnownCity || hasTravelParams;
+    const isHotelQuery = /hotel|hotels|resort|resorts|stay|stays|place|places|find|search|dikha|dikhao|card|cards|options?|recommendations?/i.test(text) || hasKnownCity || hasTravelParams;
 
     if (isPaymentQuery) return INTENTS.PAYMENT_PROCESSING;
     if (isBookingQuery) return INTENTS.BOOKING_INQUIRY;

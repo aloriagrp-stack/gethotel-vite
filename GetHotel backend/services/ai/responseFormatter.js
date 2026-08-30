@@ -42,19 +42,45 @@ async function formatAiResponse({
         }
     }
 
-    if (recommendedHotels.length === 0 && dbHotels.length > 0) {
-        // Match hotels by exact name or key name words mentioned in AI reply or user query
-        const combinedText = (reply + ' ' + lastQuery).toLowerCase();
-        recommendedHotels = dbHotels.filter(h => {
-            const fullNameMatch = new RegExp(h.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i').test(combinedText);
-            if (fullNameMatch) return true;
-            const keyWords = h.name.toLowerCase().split(/\s+/).filter(w => w.length > 3 && !['hotel', 'resort', 'stay', 'inn', 'suites', 'trend'].includes(w));
-            return keyWords.length > 0 && keyWords.every(w => combinedText.includes(w));
-        });
-        // If fuzzy match found nothing, fallback to dbHotels
-        if (recommendedHotels.length === 0) {
-            recommendedHotels = dbHotels;
+    // If recommendedHotels is still empty, search for hotel names mentioned in reply or user query from database
+    if (recommendedHotels.length === 0) {
+        try {
+            const combinedText = (reply + ' ' + lastQuery).toLowerCase();
+            // Look for bolded hotel names e.g. **Hotel Name** or numbered hotel lists
+            const boldMatches = Array.from(reply.matchAll(/\*\*([A-Za-z0-9\s'&.-]{3,50})\*\*/g)).map(m => m[1].trim());
+            const numberedMatches = Array.from(reply.matchAll(/\d+\.\s+\*?\*?([A-Za-z0-9\s'&.-]{3,50})\*?\*?:/g)).map(m => m[1].trim());
+            const candidateNames = Array.from(new Set([...boldMatches, ...numberedMatches])).filter(n => n.length > 3);
+
+            if (candidateNames.length > 0) {
+                const foundHotels = await prisma.hotel.findMany({
+                    where: {
+                        isActive: true,
+                        OR: candidateNames.map(name => ({ name: { contains: name } }))
+                    },
+                    select: {
+                        id: true, name: true, city: true, address: true, description: true,
+                        pricePerNight: true, starRating: true, guestRating: true,
+                        reviewCount: true, amenities: true, mainAmenities: true, isActive: true,
+                        thumbnail: true, slug: true,
+                        room: {
+                            where: { status: 'active' },
+                            select: { id: true, name: true, pricePerNight: true, maxOccupancy: true, images: true, description: true }
+                        }
+                    },
+                    take: 5
+                });
+                if (foundHotels.length > 0) {
+                    const { sanitizeHotels } = require('./hotelSearchService');
+                    recommendedHotels = sanitizeHotels(foundHotels);
+                }
+            }
+        } catch (nameMatchErr) {
+            console.warn('[ResponseFormatter] Hotel name lookup fallback failed:', nameMatchErr.message);
         }
+    }
+
+    if (recommendedHotels.length === 0 && dbHotels.length > 0) {
+        recommendedHotels = dbHotels;
     }
 
     const queryMentionsRooms = /\b(room|rooms|kamra|kamre|deluxe|suite|executive|king|queen|double|single|category|categories|option|options|tariff|rate|rates|price|types|view rooms|show rooms|room categories)\b/i.test(lastQuery) ||
@@ -63,21 +89,17 @@ async function formatAiResponse({
                                 Boolean(explicitIdMatch) ||
                                 (recommendedHotels.length === 1 && !/\b(hotels|list|all|other)\b/i.test(lastQuery));
 
-    // Suppress room/hotel card rendering if collecting guest details OR if intent is non-hotel (Tours, General Chat)
-    const isNonHotelQuery = ['INDIA_TOUR_PLANNER'].includes(intent);
-    const isCollectingPersonalDetails = ['COLLECT_GUEST_NAME', 'COLLECT_PHONE', 'COLLECT_EMAIL', 'BOOKING_CONFIRMED'].includes(workflowState) ||
-                                          /poora naam|full name|guest name|mobile number|email address|enter your name|share your email/i.test(reply);
-
-    const queryMentionsStays = /\b(hotel|hotels|resort|room|rooms|stay|stays|inn|suites|kamra|kamre|price|budget|book|jaipur|goa|udaipur|shimla|manali|delhi|mumbai|bangalore|pune|agra|varanasi)\b/i.test(lastQuery);
+    // Only suppress cards if booking is fully confirmed or user is on payment selection step
+    const isPaymentOrConfirmed = ['PAYMENT_SUCCESS', 'BOOKING_CONFIRMED'].includes(workflowState);
 
     let responseType = 'general';
     let outputHotels = [];
 
-    if (!isCollectingPersonalDetails) {
+    if (!isPaymentOrConfirmed) {
         if (recommendedHotels.length > 0) {
             outputHotels = recommendedHotels;
             responseType = (queryMentionsRooms || intent === 'ROOM_SEARCH' || Boolean(explicitIdMatch)) ? 'rooms' : 'hotels';
-        } else if (dbHotels.length > 0 && (queryMentionsStays || !isNonHotelQuery)) {
+        } else if (dbHotels.length > 0) {
             outputHotels = dbHotels.slice(0, 5);
             responseType = (queryMentionsRooms || intent === 'ROOM_SEARCH') ? 'rooms' : 'hotels';
         }
