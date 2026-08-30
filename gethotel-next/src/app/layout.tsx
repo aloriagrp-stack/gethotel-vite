@@ -58,7 +58,7 @@ export const metadata: Metadata = {
     images: ["https://gethotelstays.com/og-image.jpg"],
   },
   alternates: {
-    canonical: "https://gethotelstays.com",
+    canonical: "/",
     languages: {
       "en-IN": "https://gethotelstays.com",
       "en-US": "https://gethotelstays.com",

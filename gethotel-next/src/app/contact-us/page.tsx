@@ -4,6 +4,9 @@ import ContactUs from "@/pages-legacy/ContactUs";
 export const metadata: Metadata = {
   title: "Contact Us & 24/7 Support | GetHotelStays",
   description: "Get in touch with GetHotelStays customer care team for instant booking assistance, partner inquiries, or support.",
+  alternates: {
+    canonical: "https://gethotelstays.com/contact-us",
+  },
 };
 
 export default function Page() {

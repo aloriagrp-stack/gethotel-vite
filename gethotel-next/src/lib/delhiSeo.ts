@@ -108,11 +108,11 @@ export function isHubPage(page: DelhiPageLike): page is DelhiHubPage {
     return page.type === "hub";
 }
 
-export function delhiPagePath(lang: string, slug?: string): string {
-    return `/${lang}/hotels/delhi${slug ? `/${slug}` : ""}`;
+export function delhiPagePath(lang = "en", slug?: string): string {
+    return `/hotels/delhi${slug ? `/${slug}` : ""}`;
 }
 
-export function delhiCanonicalUrl(lang: string, slug?: string): string {
+export function delhiCanonicalUrl(lang = "en", slug?: string): string {
     return `${SITE.url}${delhiPagePath(lang, slug)}`;
 }
 
@@ -278,8 +278,8 @@ export function buildDelhiSchemas(ctx: DelhiRenderContext, lang: string): object
 
     const crumbs = [
         { name: "Home", url: "/" },
-        { name: "Hotels", url: `/${lang}/hotels` },
-        { name: "Hotels in Delhi", url: `/${lang}/hotels/delhi` },
+        { name: "Hotels", url: `/hotels` },
+        { name: "Hotels in Delhi", url: `/hotels/delhi` },
     ];
     if (!isHubPage(page)) {
         crumbs.push({ name: ctx.h1.split("—")[0].trim(), url: path });

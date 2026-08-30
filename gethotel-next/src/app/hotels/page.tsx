@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   title: PAGE_SEO.hotels.title,
   description: PAGE_SEO.hotels.description,
   keywords: PAGE_SEO.hotels.keywords,
+  alternates: {
+    canonical: "https://gethotelstays.com/hotels",
+  },
 };
 
 export default function Page() {
