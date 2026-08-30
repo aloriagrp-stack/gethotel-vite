@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback, memo, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Plus, Settings, HelpCircle, Menu, Trash2, Calendar, User, Mail, CreditCard, Check, X, ArrowRight, Loader, ChevronLeft, ChevronRight, ArrowUp, Bookmark } from "lucide-react";
+import { Plus, Settings, HelpCircle, Menu, Trash2, Calendar, User, Mail, CreditCard, Check, X, ArrowRight, Loader, ChevronLeft, ChevronRight, ArrowUp } from "lucide-react";
 import { aiApi, authApi, bookingApi, paymentApi, conversationApi } from "./lib/api";
 import { auth, googleProvider } from "./lib/firebase";
 import { signInWithPopup } from "firebase/auth";
@@ -10,6 +10,7 @@ import CopyButton from "./components/CopyButton";
 import OfflineBanner from "./components/OfflineBanner";
 import SearchBar from "./components/SearchBar";
 import FlightCard from "./components/FlightCard";
+import HotelCard from "./components/HotelCard";
 import TourPackageCard from "./components/TourPackageCard";
 import InChatBookingDrawer from "./components/InChatBookingDrawer";
 import HotelDetailsDrawer from "./components/HotelDetailsDrawer";
@@ -1506,7 +1507,16 @@ export default function App() {
                         </>
                       ) : null}
 
-                      {/* Type-based Renderer: flights | tourPackage | hotels | rooms | general */}
+                      {/* 1. Interactive Hotel Cards */}
+                      {msg.hotels && msg.hotels.length > 0 && (
+                        <HotelCard
+                          hotels={msg.hotels}
+                          theme={theme}
+                          onOpenDetails={handleOpenHotelDetails}
+                        />
+                      )}
+
+                      {/* 2. Flight Cards */}
                       {msg.flights && (
                         <FlightCard
                           flightData={msg.flights}
@@ -1517,6 +1527,7 @@ export default function App() {
                         />
                       )}
 
+                      {/* 3. Tour Package Cards */}
                       {msg.tourPackage && (
                         <TourPackageCard
                           tourPackage={msg.tourPackage}
@@ -1527,288 +1538,28 @@ export default function App() {
                         />
                       )}
 
-                      {/* In-Chat Confirmed Booking Voucher Card */}
+                      {/* 4. In-Chat Confirmed Booking Voucher Card */}
                       {msg.bookingConfirmation && (
                         <BookingConfirmationCard details={msg.bookingConfirmation} theme={theme} />
                       )}
 
-                      {(() => {
-                        // ==================== HOTEL CARDS (Always First: Mobile Horizontal Carousel vs Desktop Cards) ====================
-                        if (msg.hotels && msg.hotels.length > 0) {
-                          console.log('[AI Chat] Rendering hotel cards:', msg.hotels.length);
-                          return (
-                            <div className="mt-4 select-none w-full">
-                              
-                              {/* ---------------- MOBILE VIEW ONLY (Horizontal Scroll Carousel) ---------------- */}
-                              <div className="flex md:hidden overflow-x-auto gap-3.5 pb-2 pt-1 px-1 snap-x snap-mandatory no-scrollbar w-full">
-                                {msg.hotels.map((h) => {
-                                  const hotelPhoto = h.thumbnail || (h.images && h.images[0]) || "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80";
-                                  const hasDiscount = Boolean(h.promotionalPrice && h.promotionalPrice < h.pricePerNight);
-                                  const finalPrice = h.promotionalPrice || h.pricePerNight;
-
-                                  return (
-                                    <div
-                                      key={h.id}
-                                      onClick={() => handleOpenHotelDetails(h)}
-                                      className="w-[210px] aspect-[4/5] shrink-0 snap-start relative rounded-2xl overflow-hidden shadow-xl border border-slate-200/50 dark:border-white/10 cursor-pointer group transition-transform active:scale-[0.97]"
-                                    >
-                                      {/* Photo Background */}
-                                      <img
-                                        src={hotelPhoto}
-                                        alt={h.name}
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                      />
-
-                                      {/* Top Rating Badge */}
-                                      <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between z-10">
-                                        <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-black/60 text-amber-400 backdrop-blur-md border border-white/10">
-                                          ★ {(h.guestRating > 0 ? h.guestRating : (h.starRating || 4.5)).toFixed(1)}
-                                        </div>
-                                        {hasDiscount && (
-                                          <div className="px-2 py-0.5 rounded-full text-[9px] font-black bg-red-600 text-white shadow-md uppercase tracking-wider">
-                                            Offer
-                                          </div>
-                                        )}
-                                      </div>
-
-                                      {/* Dark Bottom Gradient Overlay */}
-                                      <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-transparent pointer-events-none" />
-
-                                      {/* Bottom Content Area */}
-                                      <div className="absolute bottom-0 left-0 right-0 p-3 z-10 flex flex-col justify-end gap-1">
-                                        {/* Hotel Name */}
-                                        <h3 className="text-xs font-bold text-white leading-snug line-clamp-1">
-                                          {h.name}
-                                        </h3>
-
-                                        <div className="flex items-center justify-between gap-1.5">
-                                          {/* City Sub-heading */}
-                                          <p className="text-[11px] text-slate-300 font-medium truncate flex-1">
-                                            📍 {h.city}
-                                          </p>
-
-                                          {/* Right Bottom: Price with Promotional Strikethrough */}
-                                          <div className="text-right shrink-0">
-                                            {hasDiscount && (
-                                              <span className="text-[9px] line-through text-slate-400 font-semibold mr-1">
-                                                ₹{h.pricePerNight.toLocaleString()}
-                                              </span>
-                                            )}
-                                            <span className="text-xs font-black text-white">
-                                              ₹{finalPrice.toLocaleString()}
-                                            </span>
-                                            <span className="text-[8px] font-medium text-slate-300 ml-0.5">/night</span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-
-                              {/* ---------------- DESKTOP VIEW ONLY (Horizontal Full Cards) ---------------- */}
-                              <div className="hidden md:flex flex-col w-full space-y-4">
-                                {msg.hotels.map((h) => {
-                                  const isAttached = composerAttachment?.id === h.id;
-
-                                  return (
-                                    <div
-                                      key={h.id}
-                                      onClick={() => handleOpenHotelDetails(h)}
-                                      className={`w-full rounded-3xl overflow-hidden relative border transition-all duration-300 group flex flex-row shadow-lg backdrop-blur-md cursor-pointer ${
-                                        isAttached
-                                          ? "ring-2 ring-blue-500 border-blue-500/50 " + (theme === 'dark' ? "bg-[#121214]/80" : "bg-white/80")
-                                          : theme === 'dark'
-                                            ? "bg-[#121214]/65 border-white/10 hover:border-white/20 text-white"
-                                            : "bg-white/70 border-slate-200/50 hover:border-slate-300 text-slate-900"
-                                      }`}
-                                    >
-                                      {/* Left Side: Hotel Image */}
-                                      <div className="relative w-[32%] min-h-full shrink-0">
-                                        {h.thumbnail ? (
-                                          <img 
-                                            src={h.thumbnail} 
-                                            alt={h.name} 
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              handleOpenHotelDetails(h);
-                                            }}
-                                            className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500 cursor-pointer"
-                                            title="Click to view hotel details and rooms"
-                                          />
-                                        ) : (
-                                          <div className={`w-full h-full flex items-center justify-center ${theme === 'dark' ? "bg-slate-800/40" : "bg-slate-100/60"}`}>
-                                            <span className="text-slate-400 text-xs">No preview</span>
-                                          </div>
-                                        )}
-                                        
-                                        {/* AI Pick Badge */}
-                                        <div className={`absolute top-4 left-4 z-10 flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold backdrop-blur-md border uppercase tracking-wider select-none ${
-                                          theme === 'dark'
-                                            ? "bg-[#1e293b]/70 text-[#3b82f6] border-blue-500/20"
-                                            : "bg-blue-50/70 text-blue-600 border-blue-100"
-                                        }`}>
-                                          <AppleEmoji symbol="✨" className="w-3.5 h-3.5" /> AI PICK
-                                        </div>
-                                      </div>
-
-                                      {/* Right Side: Content info */}
-                                      <div className="flex-1 p-5 md:p-6 flex flex-col justify-between">
-                                        <div>
-                                          {/* Title, rating and save icon */}
-                                          <div className="flex items-start justify-between gap-4">
-                                            <div className="flex flex-wrap items-center gap-2.5">
-                                              <h3 className={`text-lg md:text-xl font-bold tracking-tight ${theme === 'dark' ? "text-white" : "text-slate-900"}`}>{h.name}</h3>
-                                              <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[11px] font-extrabold bg-[#27272a]/80 text-[#fbbf24] backdrop-blur-sm">
-                                                ★ {h.guestRating > 0 ? h.guestRating.toFixed(1) : (h.starRating || 4.5).toFixed(1)}
-                                              </div>
-                                            </div>
-                                            <button 
-                                              type="button" 
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                setComposerAttachment(prev => {
-                                                  if (prev?.id === h.id) return null;
-                                                  return { id: h.id, name: h.name, city: h.city, thumbnail: h.thumbnail, pricePerNight: h.pricePerNight, starRating: h.starRating, guestRating: h.guestRating, reviewCount: h.reviewCount, type: 'hotel' };
-                                                });
-                                              }}
-                                              className={`transition-colors shrink-0 ${isAttached ? 'text-blue-500' : theme === 'dark' ? 'text-slate-400 hover:text-white' : 'text-slate-400 hover:text-slate-800'}`}
-                                              title="Attach to chat"
-                                            >
-                                              <Bookmark className="w-5 h-5" fill={isAttached ? "currentColor" : "none"} />
-                                            </button>
-                                          </div>
-
-                                          {/* Location Pin */}
-                                          <div className={`flex items-center gap-1.5 text-xs mt-2 font-medium ${theme === 'dark' ? "text-slate-400" : "text-slate-500"}`}>
-                                            <AppleEmoji symbol="📍" className="w-3.5 h-3.5" />
-                                            <span>{h.city}</span>
-                                            <span>•</span>
-                                            <span>Prime Location</span>
-                                          </div>
-
-                                          {/* Highlights Row */}
-                                          <div className={`flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] font-medium mt-4 pb-4 border-b select-none ${
-                                            theme === 'dark' ? "text-slate-300 border-white/10" : "text-slate-700 border-slate-100"
-                                          }`}>
-                                            <span className="flex items-center gap-1"><AppleEmoji symbol="☕" className="w-3.5 h-3.5" /> Breakfast Included</span>
-                                            <span className={theme === 'dark' ? "text-white/20" : "text-slate-300"}>|</span>
-                                            <span className="flex items-center gap-1"><AppleEmoji symbol="🛡️" className="w-3.5 h-3.5" /> Free Cancellation</span>
-                                            <span className={theme === 'dark' ? "text-white/20" : "text-slate-300"}>|</span>
-                                            <span className="flex items-center gap-1"><AppleEmoji symbol="❤️" className="w-3.5 h-3.5" /> Couple Friendly</span>
-                                          </div>
-                                        </div>
-
-                                        {/* Why ChatGHS Picked & Price/CTA */}
-                                        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-5 mt-4">
-                                          {/* Why Picked Block */}
-                                          <div className="flex-1 min-w-0 pr-0 md:pr-4">
-                                            <div className={`flex items-center gap-1.5 text-xs font-bold ${theme === 'dark' ? "text-[#3b82f6]" : "text-blue-600"}`}>
-                                              <AppleEmoji symbol="💙" className="w-3.5 h-3.5" /> Why ChatGHS picked this
-                                            </div>
-                                            <p className={`text-xs mt-1.5 leading-relaxed ${theme === 'dark' ? "text-slate-400" : "text-slate-500"}`}>
-                                              {h.description ? (h.description.slice(0, 140) + (h.description.length > 140 ? '...' : '')) : "Best value stay with excellent reviews, premium rooms, and great hospitality."}
-                                            </p>
-                                          </div>
-
-                                          {/* Price & CTA Block */}
-                                          <div className="flex flex-col items-end shrink-0 w-full md:w-auto text-right">
-                                            <div>
-                                              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">From</span>
-                                              {h.promotionalPrice && h.promotionalPrice < h.pricePerNight && (
-                                                <div className="flex items-center gap-1.5 justify-end my-0.5">
-                                                  <span className="text-xs line-through text-slate-400 font-extrabold">₹{h.pricePerNight.toLocaleString()}</span>
-                                                  <span className="text-[9px] font-black bg-red-600 text-white px-1.5 py-0.5 rounded uppercase tracking-wide shadow-sm">
-                                                    {Math.round(((h.pricePerNight - h.promotionalPrice) / h.pricePerNight) * 100)}% OFF
-                                                  </span>
-                                                </div>
-                                              )}
-                                              <div className={`text-xl md:text-2xl font-black leading-none ${theme === 'dark' ? "text-white" : "text-slate-900"}`}>
-                                                ₹{(h.promotionalPrice || h.pricePerNight).toLocaleString()}
-                                                <span className="text-xs font-semibold text-slate-500 ml-0.5">/night</span>
-                                              </div>
-                                            </div>
-
-                                            {/* Buttons Row */}
-                                            <div className="flex items-center gap-2 mt-3.5 w-full md:w-auto justify-end">
-                                              <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  handleOpenHotelDetails(h);
-                                                }}
-                                                className={`px-4 py-2.5 rounded-xl text-xs font-extrabold border active:scale-95 transition-all cursor-pointer whitespace-nowrap ${
-                                                  theme === 'dark'
-                                                    ? "border-slate-700 text-white hover:bg-[#1e1e22]"
-                                                    : "border-slate-300 text-slate-700 hover:bg-slate-50"
-                                                }`}
-                                              >
-                                                View Hotel & Rooms
-                                              </button>
-                                              <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  handleOpenBookingDrawer(h);
-                                                }}
-                                                className="px-4.5 py-2.5 rounded-xl text-xs font-extrabold bg-[#2563eb] hover:bg-blue-600 text-white active:scale-95 transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 shadow-sm"
-                                              >
-                                                Book Now <ArrowRight className="w-3.5 h-3.5" />
-                                              </button>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          );
-                        }
-
-                        {/* ==================== IN-CHAT FLIGHT CARDS RENDERER ==================== */}
-                        {msg.flights && (
-                          <FlightCard
-                            flightData={msg.flights}
-                            theme={theme}
-                            onBookFlight={(f) => {
-                              handleSend(`I want to book ${f.airline} flight ${f.flightNumber} from ${f.originCity} to ${f.destinationCity}`);
-                            }}
-                          />
-                        )}
-
-                        {/* ==================== IN-CHAT TOUR PACKAGE CARDS RENDERER ==================== */}
-                        {msg.tourPackage && (
-                          <TourPackageCard
-                            tourPackage={msg.tourPackage}
-                            theme={theme}
-                            onBookPackage={(pkg) => {
-                              handleSend(`I want to book ${pkg.destination} tour package for ${pkg.durationDays} days`);
-                            }}
-                          />
-                        )}
-
-                        {/* ==================== IN-CHAT PAYMENT ACTION CARD ==================== */}
-                        {msg.action && (
-                          <div className="mt-4 p-4 rounded-3xl bg-gradient-to-r from-brand-600 to-indigo-600 text-white shadow-lg flex flex-col md:flex-row items-center justify-between gap-4 select-none animate-slide-up">
-                            <div>
-                              <div className="text-[10px] font-extrabold uppercase tracking-widest text-brand-200">Secure Online Checkout</div>
-                              <h4 className="text-base font-extrabold mt-0.5">{msg.action.hotelName || "Hotel Haris Court"}</h4>
-                              <p className="text-xs text-white/80 font-medium">12% Deposit: ₹{msg.action.depositAmount?.toLocaleString() || '300'} • Balance at check-in: ₹{msg.action.balanceAmount?.toLocaleString() || '2,200'}</p>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => triggerInChatRazorpay(msg.action)}
-                              className="px-6 py-3 bg-white text-brand-600 hover:bg-slate-100 font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-md transition-all active:scale-95 shrink-0 flex items-center gap-2 cursor-pointer"
-                            >
-                              💳 Pay 12% Deposit Now
-                            </button>
+                      {/* 5. In-Chat Payment Action Card */}
+                      {msg.action && (
+                        <div className="mt-4 p-4 rounded-3xl bg-gradient-to-r from-brand-600 to-indigo-600 text-white shadow-lg flex flex-col md:flex-row items-center justify-between gap-4 select-none animate-slide-up">
+                          <div>
+                            <div className="text-[10px] font-extrabold uppercase tracking-widest text-brand-200">Secure Online Checkout</div>
+                            <h4 className="text-base font-extrabold mt-0.5">{msg.action.hotelName || "Hotel Haris Court"}</h4>
+                            <p className="text-xs text-white/80 font-medium">12% Deposit: ₹{msg.action.depositAmount?.toLocaleString() || '300'} • Balance at check-in: ₹{msg.action.balanceAmount?.toLocaleString() || '2,200'}</p>
                           </div>
-                        )}
-
-                        return null;
-                      })()}
+                          <button
+                            type="button"
+                            onClick={() => triggerInChatRazorpay(msg.action)}
+                            className="px-6 py-3 bg-white text-brand-600 hover:bg-slate-100 font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-md transition-all active:scale-95 shrink-0 flex items-center gap-2 cursor-pointer"
+                          >
+                            💳 Pay 12% Deposit Now
+                          </button>
+                        </div>
+                      )}
 
                     </div>
                   )}
