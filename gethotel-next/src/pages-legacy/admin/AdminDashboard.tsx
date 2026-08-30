@@ -33,6 +33,8 @@ import AdminTourPackages from "./AdminTourPackages";
 import AdminSettings from "./AdminSettings";
 import AdminNotifications from "./AdminNotifications";
 import AdminDisputes from "./AdminDisputes";
+import AdminHotelImporter from "./AdminHotelImporter";
+import AdminDelhiSeo from "./AdminDelhiSeo";
 
 function formatDateSafe(rawDate: string | Date | null | undefined, opts?: Intl.DateTimeFormatOptions): string {
     if (!rawDate) return "—";
@@ -512,6 +514,9 @@ export default function SuperAdminDashboard() {
                     {activeTab === "tour-packages" && <AdminTourPackages />}
                     {activeTab === "destinations" && <AdminDestinationsManager />}
                     {activeTab === "destination-analytics" && <AdminDestinationAnalytics />}
+                    {activeTab === "ai-chats" && <AdminAIChats />}
+                    {activeTab === "hotel-importer" && <AdminHotelImporter />}
+                    {activeTab === "delhi-seo" && <AdminDelhiSeo />}
 
                     {activeTab === "overview" && (
                 <>
@@ -673,9 +678,6 @@ export default function SuperAdminDashboard() {
                     </div>
                 </>
             )}
-
-            {activeTab === "ai-chats" && <AdminAIChats />}
-            {activeTab === "tour-packages" && <AdminTourPackages />}
 
             {activeTab === "requests" && (
                 <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] overflow-hidden">

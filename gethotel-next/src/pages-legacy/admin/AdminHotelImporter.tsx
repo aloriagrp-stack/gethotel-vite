@@ -647,3 +647,5 @@ export const AdminHotelImporter: React.FC = () => {
         </div>
     );
 };
+
+export default AdminHotelImporter;
