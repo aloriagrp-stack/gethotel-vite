@@ -15,9 +15,9 @@ import { hotelApi } from "@/lib/api";
 const parseComment = (commentStr: string) => {
     if (!commentStr) return { likes: "", dislikes: "", overall: "" };
     
-    const likesMatch = commentStr.match(/Likes:\s*(.*?)(?=\nDislikes:|$)/is);
-    const dislikesMatch = commentStr.match(/Dislikes:\s*(.*?)(?=\nOverall:|$)/is);
-    const overallMatch = commentStr.match(/Overall:\s*(.*?)$/is);
+    const likesMatch = commentStr.match(/Likes:\s*([\s\S]*?)(?=\nDislikes:|$)/i);
+    const dislikesMatch = commentStr.match(/Dislikes:\s*([\s\S]*?)(?=\nOverall:|$)/i);
+    const overallMatch = commentStr.match(/Overall:\s*([\s\S]*?)$/i);
     
     if (likesMatch || dislikesMatch || overallMatch) {
         return {

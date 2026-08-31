@@ -33,7 +33,7 @@ const formatDateLabel = (ci: string, co: string) => {
 
 const parseComment = (commentStr: string) => {
     if (!commentStr) return "";
-    const overallMatch = commentStr.match(/Overall:\s*(.*?)$/is);
+    const overallMatch = commentStr.match(/Overall:\s*([\s\S]*?)$/i);
     if (overallMatch) {
         return overallMatch[1].trim();
     }
