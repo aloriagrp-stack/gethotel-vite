@@ -1,8 +1,7 @@
 'use client';
 
-
 import { useState, useEffect } from "react";
-import { useNavigate as useRouter } from "react-router-dom";
+import { useNavigate as useRouter, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import {
     Hotel, MapPin, DollarSign, Star,
@@ -12,12 +11,20 @@ import {
     TrendingUp, History, UserCheck,
     CreditCard, CheckCircle2, XCircle, Clock
 } from "lucide-react";
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { authApi, adminApi } from "@/lib/api";
 
-export default function HotelDetailPage() {
-    const { id } = useParams();
+interface AdminHotelDetailsProps {
+    hotelId?: string | number;
+    onBack?: () => void;
+}
+
+export default function HotelDetailPage({ hotelId, onBack }: AdminHotelDetailsProps = {}) {
+    const params = useParams();
+    const location = useLocation();
+    const searchParams = new URLSearchParams(location?.search || "");
+    const id = hotelId ? String(hotelId) : (params.id || searchParams.get("hotelId"));
     const { user: authUser, loading: authLoading } = useAuth();
     const router = useRouter();
     const [hotel, setHotel] = useState<any>(null);
@@ -30,6 +37,14 @@ export default function HotelDetailPage() {
     const [deleteStep, setDeleteStep] = useState(0);
     const [confirmHotelName, setConfirmHotelName] = useState("");
 
+    const handleBack = () => {
+        if (onBack) {
+            onBack();
+        } else {
+            router('?tab=hotels');
+        }
+    };
+
     // Calculate total revenue from bookings if backend field is missing
     const calculatedRevenue = hotel?.booking?.reduce((sum: number, b: any) =>
         b.status === 'confirmed' || b.status === 'checked-in' || b.status === 'checked-out' ? sum + Number(b.totalPrice || 0) : sum, 0
@@ -39,8 +54,12 @@ export default function HotelDetailPage() {
 
     useEffect(() => {
         const fetchHotel = async () => {
+            if (!id) {
+                setLoading(false);
+                return;
+            }
             try {
-                const resData = await adminApi.getHotelDetails(id!);
+                const resData = await adminApi.getHotelDetails(id);
                 if (resData.success) {
                     setHotel(resData.data);
                     setQualityScore(resData.data.qualityScore || 85);
@@ -58,7 +77,6 @@ export default function HotelDetailPage() {
                 fetchHotel();
             } else {
                 setLoading(false);
-                // Optionally redirect to login or dashboard
             }
         }
     }, [id, authUser, authLoading]);
@@ -149,7 +167,7 @@ export default function HotelDetailPage() {
             const res = await adminApi.deleteHotel(id!);
             if (res.success) {
                 alert("Hotel permanently deleted.");
-                router('/admin/super');
+                handleBack();
             }
         } catch (err) {
             alert("Failed to delete property");
@@ -159,7 +177,7 @@ export default function HotelDetailPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-[#050505]">
+            <div className="min-h-[400px] flex items-center justify-center bg-[#050505]">
                 <Loader2 className="w-10 h-10 animate-spin text-emerald-400" />
             </div>
         );
@@ -167,24 +185,24 @@ export default function HotelDetailPage() {
 
     if (!hotel) {
         return (
-            <div className="flex flex-col items-center justify-center py-20 bg-[#050505] min-h-screen text-white">
+            <div className="flex flex-col items-center justify-center py-20 bg-[#050505] text-white">
                 <h1 className="text-2xl font-black text-white mb-4">Hotel Not Found</h1>
-                <Link to="/admin/super" className="text-neutral-400 hover:text-white font-bold text-xs uppercase tracking-widest flex items-center gap-2">
-                    <ArrowLeft className="w-4 h-4" /> Back to Dashboard
-                </Link>
+                <button onClick={handleBack} className="text-neutral-400 hover:text-white font-bold text-xs uppercase tracking-widest flex items-center gap-2 cursor-pointer">
+                    <ArrowLeft className="w-4 h-4" /> Back to Hotels
+                </button>
             </div>
         );
     }
 
     return (
-        <div className="p-8 md:p-10 bg-[#050505] text-neutral-100 min-h-screen font-sans">
+        <div className="p-4 md:p-8 bg-[#050505] text-neutral-100 min-h-screen font-sans animate-in fade-in duration-200">
             <div className="max-w-7xl mx-auto">
 
                 {/* Header Navigation */}
-                <div className="flex items-center justify-between mb-10">
-                    <Link to="/admin/super" className="inline-flex items-center gap-2 text-neutral-400 hover:text-white font-bold text-xs uppercase tracking-widest transition-colors">
-                        <ArrowLeft className="w-4 h-4" /> Back to Dashboard
-                    </Link>
+                <div className="flex items-center justify-between mb-8 pb-4 border-b border-[#1c1c1c]">
+                    <button onClick={handleBack} className="inline-flex items-center gap-2 text-neutral-400 hover:text-white font-bold text-xs uppercase tracking-widest transition-colors cursor-pointer">
+                        <ArrowLeft className="w-4 h-4 text-emerald-400" /> Back to Hotels List
+                    </button>
                     <div className="flex gap-3">
                         <span className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest border ${hotel.isFeatured ? 'bg-amber-950/60 text-amber-400 border-amber-800/40' : 'bg-[#141414] text-neutral-400 border-[#262626]'}`}>
                             {hotel.isFeatured ? 'Featured Property' : 'Standard Property'}
@@ -344,8 +362,8 @@ export default function HotelDetailPage() {
                                                 <td className="px-8 py-4">
                                                     <div className="flex items-center justify-between">
                                                         <div>
-                                                            <p className="text-xs font-bold text-white">{booking.user.name}</p>
-                                                            <p className="text-[10px] text-neutral-400 font-medium">{booking.user.email}</p>
+                                                            <p className="text-xs font-bold text-white">{booking.user?.name || "Guest"}</p>
+                                                            <p className="text-[10px] text-neutral-400 font-medium">{booking.user?.email || booking.guestEmail}</p>
                                                         </div>
                                                         <a
                                                             href={`https://wa.me/${booking.guestPhone?.replace(/\D/g, '')}`}
@@ -358,7 +376,7 @@ export default function HotelDetailPage() {
                                                     </div>
                                                 </td>
                                                 <td className="px-8 py-4">
-                                                    <span className="text-xs font-medium text-neutral-300">{booking.room.name}</span>
+                                                    <span className="text-xs font-medium text-neutral-300">{booking.room?.name || "Standard Room"}</span>
                                                 </td>
                                                 <td className="px-8 py-4 text-xs font-medium text-neutral-400 italic">
                                                     {new Date(booking.checkIn).toLocaleDateString()} — {new Date(booking.checkOut).toLocaleDateString()}
@@ -400,32 +418,31 @@ export default function HotelDetailPage() {
                             <div className="space-y-6">
                                 <div>
                                     <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Primary Contact</p>
-                                    <p className="text-xl font-bold text-white">{hotel.user.name}</p>
+                                    <p className="text-xl font-bold text-white">{hotel.user?.name || "Partner"}</p>
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Identity Verified</p>
-                                    <p className="text-sm font-medium text-neutral-300 break-all">{hotel.user.email}</p>
+                                    <p className="text-sm font-medium text-neutral-300 break-all">{hotel.user?.email || "N/A"}</p>
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Partner Since</p>
-                                    <p className="text-sm font-medium text-neutral-300">{new Date(hotel.user.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                                    <p className="text-sm font-medium text-neutral-300">{hotel.user?.createdAt ? new Date(hotel.user.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : "N/A"}</p>
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Hotel Joining Date</p>
-                                    <p className="text-sm font-medium text-neutral-300">{new Date(hotel.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                                    <p className="text-sm font-medium text-neutral-300">{hotel.createdAt ? new Date(hotel.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : "N/A"}</p>
                                 </div>
                             </div>
 
                             <div className="mt-10 pt-8 border-t border-[#1f1f1f] space-y-3">
-                                <button
-                                    onClick={handleImpersonate}
-                                    className="w-full py-4 bg-neutral-100 text-black font-bold text-[10px] uppercase tracking-widest rounded-xl hover:bg-white transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
-                                >
-                                    <UserCheck className="w-4 h-4" /> Login as Partner
-                                </button>
-                                <button className="w-full py-4 bg-[#181818] border border-[#2a2a2a] text-white font-bold text-[10px] uppercase tracking-widest rounded-xl hover:bg-[#222222] transition-all cursor-pointer">
-                                    Account Audit
-                                </button>
+                                {hotel.user?.id && (
+                                    <button
+                                        onClick={handleImpersonate}
+                                        className="w-full py-4 bg-neutral-100 text-black font-bold text-[10px] uppercase tracking-widest rounded-xl hover:bg-white transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                                    >
+                                        <UserCheck className="w-4 h-4" /> Login as Partner
+                                    </button>
+                                )}
                             </div>
                         </section>
 

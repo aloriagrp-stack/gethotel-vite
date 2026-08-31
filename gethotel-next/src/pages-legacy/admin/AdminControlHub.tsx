@@ -2,8 +2,8 @@
 import { useState } from "react";
 import { Hotel, Clock, Calendar, Search, ArrowRight, ShieldAlert, SlidersHorizontal, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useNavigate as useRouter } from "react-router-dom";
 import Image from "@/components/common/Image";
+import AdminHotelDetails from "./AdminHotelDetails";
 
 interface AdminControlHubProps {
     hotels: any[];
@@ -11,9 +11,13 @@ interface AdminControlHubProps {
 }
 
 export default function AdminControlHub({ hotels, loading = false }: AdminControlHubProps) {
-    const router = useRouter();
+    const [selectedHotelId, setSelectedHotelId] = useState<string | number | null>(null);
     const [subTab, setSubTab] = useState<"nightly" | "hourly" | "both">("nightly");
     const [searchQuery, setSearchQuery] = useState("");
+
+    if (selectedHotelId) {
+        return <AdminHotelDetails hotelId={selectedHotelId} onBack={() => setSelectedHotelId(null)} />;
+    }
 
     // Classification logic
     const classifyHotel = (hotel: any) => {
@@ -173,7 +177,7 @@ export default function AdminControlHub({ hotels, loading = false }: AdminContro
                                 return (
                                     <tr 
                                         key={hotel.id} 
-                                        onClick={() => router(`/admin/super/hotels/${hotel.id}`)}
+                                        onClick={() => setSelectedHotelId(hotel.id)}
                                         className="hover:bg-[#121212] transition-none cursor-pointer group"
                                     >
                                         <td className="px-6 py-4">
@@ -235,7 +239,13 @@ export default function AdminControlHub({ hotels, loading = false }: AdminContro
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            <button className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 group-hover:text-white border border-[#2a2a2a] bg-[#141414] group-hover:bg-[#1f1f1f] px-3.5 py-1.5 rounded-lg transition-all shadow-sm">
+                                            <button 
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setSelectedHotelId(hotel.id);
+                                                }}
+                                                className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 group-hover:text-white border border-[#2a2a2a] bg-[#141414] group-hover:bg-[#1f1f1f] px-3.5 py-1.5 rounded-lg transition-all shadow-sm cursor-pointer"
+                                            >
                                                 Manage Hotel
                                             </button>
                                         </td>

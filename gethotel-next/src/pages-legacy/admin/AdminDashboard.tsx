@@ -35,6 +35,7 @@ import AdminNotifications from "./AdminNotifications";
 import AdminDisputes from "./AdminDisputes";
 import AdminHotelImporter from "./AdminHotelImporter";
 import AdminDelhiSeo from "./AdminDelhiSeo";
+import AdminHotelDetails from "./AdminHotelDetails";
 
 function formatDateSafe(rawDate: string | Date | null | undefined, opts?: Intl.DateTimeFormatOptions): string {
     if (!rawDate) return "—";
@@ -94,6 +95,7 @@ export default function SuperAdminDashboard() {
         initialTab = "tour-packages";
     }
     const [activeTab, setActiveTab] = useState(initialTab);
+    const [selectedHotelId, setSelectedHotelId] = useState<string | number | null>(null);
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
 
@@ -140,6 +142,10 @@ export default function SuperAdminDashboard() {
 
     useEffect(() => {
         const tabFromUrl = searchParams.get("tab");
+        const hotelIdFromUrl = searchParams.get("hotelId");
+        if (hotelIdFromUrl) {
+            setSelectedHotelId(hotelIdFromUrl);
+        }
         if (tabFromUrl) {
             setActiveTab(tabFromUrl);
             return;
@@ -1178,53 +1184,63 @@ export default function SuperAdminDashboard() {
             )}
 
             {activeTab === "hotels" && (
-                <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] overflow-hidden">
-                    <div className="px-6 py-4 border-b border-[#1f1f1f] bg-[#0e0e0e] flex items-center justify-between">
-                        <h3 className="text-sm font-bold text-white uppercase tracking-wider">Property Management</h3>
-                    </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead className="bg-[#0e0e0e] border-b border-[#1f1f1f]">
-                                <tr>
-                                    <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Hotel Name</th>
-                                    <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Location</th>
-                                    <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Price</th>
-                                    <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-[#181818]">
-                                {smartFilter(hotels, searchQuery, ['name', 'city', 'hotelUsername', 'address', 'id'])
-                                    .map((hotel) => (
-                                        <tr
-                                            key={hotel.id}
-                                            onClick={() => router(`/admin/super/hotels/${hotel.id}`)}
-                                            className="hover:bg-[#121212] transition-none cursor-pointer group"
-                                        >
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-9 h-9 bg-[#161616] border border-[#282828] rounded-xl flex items-center justify-center overflow-hidden shrink-0">
-                                                        {hotel.thumbnail ? (
-                                                            <Image src={hotel.thumbnail} alt={hotel.name} width={36} height={36} className="object-cover w-full h-full group-hover:scale-110 transition-transform" />
-                                                        ) : (
-                                                            <Hotel className="w-4 h-4 text-neutral-400" />
-                                                        )}
+                selectedHotelId ? (
+                    <AdminHotelDetails hotelId={selectedHotelId} onBack={() => setSelectedHotelId(null)} />
+                ) : (
+                    <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] overflow-hidden">
+                        <div className="px-6 py-4 border-b border-[#1f1f1f] bg-[#0e0e0e] flex items-center justify-between">
+                            <h3 className="text-sm font-bold text-white uppercase tracking-wider">Property Management</h3>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left">
+                                <thead className="bg-[#0e0e0e] border-b border-[#1f1f1f]">
+                                    <tr>
+                                        <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Hotel Name</th>
+                                        <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Location</th>
+                                        <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Price</th>
+                                        <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-[#181818]">
+                                    {smartFilter(hotels, searchQuery, ['name', 'city', 'hotelUsername', 'address', 'id'])
+                                        .map((hotel) => (
+                                            <tr
+                                                key={hotel.id}
+                                                onClick={() => setSelectedHotelId(hotel.id)}
+                                                className="hover:bg-[#121212] transition-none cursor-pointer group"
+                                            >
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-9 h-9 bg-[#161616] border border-[#282828] rounded-xl flex items-center justify-center overflow-hidden shrink-0">
+                                                            {hotel.thumbnail ? (
+                                                                <Image src={hotel.thumbnail} alt={hotel.name} width={36} height={36} className="object-cover w-full h-full group-hover:scale-110 transition-transform" />
+                                                            ) : (
+                                                                <Hotel className="w-4 h-4 text-neutral-400" />
+                                                            )}
+                                                        </div>
+                                                        <span className="text-xs font-bold text-white group-hover:text-emerald-400 transition-colors">{hotel.name}</span>
                                                     </div>
-                                                    <span className="text-xs font-bold text-white group-hover:text-emerald-400 transition-colors">{hotel.name}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 text-xs font-medium text-neutral-400">{hotel.city}</td>
-                                            <td className="px-6 py-4 text-xs font-bold text-emerald-400">₹{hotel.pricePerNight}</td>
-                                            <td className="px-6 py-4 text-xs font-bold text-neutral-400 text-right">
-                                                <button className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 group-hover:text-white transition-colors cursor-pointer">
-                                                    View Details
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                            </tbody>
-                        </table>
+                                                </td>
+                                                <td className="px-6 py-4 text-xs font-medium text-neutral-400">{hotel.city}</td>
+                                                <td className="px-6 py-4 text-xs font-bold text-emerald-400">₹{hotel.pricePerNight}</td>
+                                                <td className="px-6 py-4 text-xs font-bold text-neutral-400 text-right">
+                                                    <button 
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setSelectedHotelId(hotel.id);
+                                                        }}
+                                                        className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 group-hover:text-white transition-colors cursor-pointer"
+                                                    >
+                                                        View Details
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
+                )
             )}
 
             {/* ─── Global Reviews Tab ──────────────────────────────────────────────── */}

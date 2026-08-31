@@ -230,7 +230,20 @@ export const adminApi = {
     toggleTrending: (id: string) => apiFetch(`/admin/hotels/${id}/trending`, { method: 'PUT' }),
     toggleFeatured: (id: string) => apiFetch(`/admin/hotels/${id}/featured`, { method: 'PUT' }),
     updateHomepageConfig: (data: any) => apiFetch('/admin/homepage/config', { method: 'PUT', body: JSON.stringify(data) }),
+    createPartner: (data: any) => apiFetch('/admin/partners/quick', { method: 'POST', body: JSON.stringify(data) }),
     createQuickPartner: (data: any) => apiFetch('/admin/partners/quick', { method: 'POST', body: JSON.stringify(data) }),
+    createHotel: async (data: any) => {
+        const ownerId = data.ownerId || data.userId;
+        const payload = {
+            ownerId,
+            hotels: Array.isArray(data.hotels) ? data.hotels : [data]
+        };
+        const res = await apiFetch('/admin/hotels/bulk', { method: 'POST', body: JSON.stringify(payload) });
+        if (res.success && res.data && res.data.length > 0) {
+            return { success: true, data: res.data[0] };
+        }
+        return res;
+    },
     createBulkPartnersWithHotels: (data: any) => apiFetch('/admin/partners/bulk-with-hotels', { method: 'POST', body: JSON.stringify(data) }),
     assignHotelsToPartner: (partnerId: number, hotelIds: number[]) => apiFetch(`/admin/partners/${partnerId}/assign-hotels`, { method: 'PUT', body: JSON.stringify({ hotelIds }) }),
     createBulkHotels: (data: any) => apiFetch('/admin/hotels/bulk', { method: 'POST', body: JSON.stringify(data) }),

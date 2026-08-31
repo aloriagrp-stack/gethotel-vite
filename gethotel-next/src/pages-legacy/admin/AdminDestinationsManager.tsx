@@ -126,7 +126,7 @@ export default function AdminDestinationsManager() {
             try {
                 const [configRes, hotelsRes] = await Promise.all([
                     homepageApi.getConfig(),
-                    adminApi.getHotels(),
+                    adminApi.getAllHotels(),
                 ]);
 
                 if (configRes.success && configRes.data?.destinations?.length > 0) {

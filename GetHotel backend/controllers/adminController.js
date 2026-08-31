@@ -646,8 +646,8 @@ exports.createQuickPartner = async (req, res) => {
     try {
         const { name, email, password, phone } = req.body;
 
-        if (!name || !email || !password || !phone) {
-            return res.status(400).json({ success: false, message: 'All fields (name, email, password, phone) are required.' });
+        if (!name || !email || !password) {
+            return res.status(400).json({ success: false, message: 'Name, email, and password are required.' });
         }
 
         const existingUser = await prisma.user.findUnique({ where: { email } });
