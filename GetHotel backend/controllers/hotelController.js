@@ -492,7 +492,8 @@ exports.getHotel = async (req, res, next) => {
                             }
                         }
                     }
-                }
+                },
+                coupon: true
             }
         });
 

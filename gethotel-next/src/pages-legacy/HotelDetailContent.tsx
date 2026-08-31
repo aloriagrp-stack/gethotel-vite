@@ -328,7 +328,14 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
         const fetchHotel = async () => {
             try {
                 const res = await hotelApi.getHotel(id);
-                setHotel(res.data);
+                const hotelData = res.data || res;
+                if (hotelData) {
+                    setHotel(hotelData);
+                    const hotelCoupons = hotelData.coupon || hotelData.coupons;
+                    if (Array.isArray(hotelCoupons) && hotelCoupons.length > 0) {
+                        setCoupons(hotelCoupons);
+                    }
+                }
             } catch (err) { console.error(err); }
         };
         fetchHotel();
@@ -344,7 +351,8 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                 if (checkInParam) params.checkIn = checkInParam;
                 if (checkOutParam) params.checkOut = checkOutParam;
 
-                const res = await hotelApi.getRooms(hotel?.id?.toString() || id, params);
+                const targetId = hotel?.id?.toString() || id;
+                const res = await hotelApi.getRooms(targetId, params);
                 setRooms(res.data || []);
             } catch (err) { console.error(err); }
             finally { 
@@ -355,28 +363,39 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
 
         const fetchCoupons = async () => {
             try {
-                const res = await couponApi.getCoupons(hotel?.id || Number(id));
-                // Resilient data extraction: handle res.data or res.data.coupons or res directly
+                const targetHotelId = hotel?.id || (typeof id === 'string' && !isNaN(Number(id)) ? Number(id) : null);
+                if (!targetHotelId) return;
+                const res = await couponApi.getCoupons(targetHotelId);
                 const rawData = res.data?.coupons || res.data || res;
                 const couponList = Array.isArray(rawData) ? rawData : [];
                 
                 const today = new Date();
                 const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
-                setCoupons(couponList.filter((c: any) => {
+                const activeCoupons = couponList.filter((c: any) => {
                     const isActive = c.isActive !== false && c.is_active !== false;
                     if (!isActive) return false;
                     const startStr = typeof c.startDate === 'string' ? c.startDate.split('T')[0] : '';
                     const endStr = typeof c.endDate === 'string' ? c.endDate.split('T')[0] : '';
                     if (startStr && endStr && (todayStr < startStr || todayStr > endStr)) return false;
                     return true;
-                }));
+                });
+
+                if (activeCoupons.length > 0) {
+                    setCoupons(prev => {
+                        const map = new Map();
+                        [...prev, ...activeCoupons].forEach((c: any) => {
+                            if (c && (c.id || c.code)) map.set(c.id || c.code, c);
+                        });
+                        return Array.from(map.values());
+                    });
+                }
             } catch (err) { console.error("Failed to fetch coupons", err); }
         };
 
         fetchRooms();
         fetchCoupons();
-    }, [id, searchParams]);
+    }, [id, hotel?.id, searchParams]);
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 500);
