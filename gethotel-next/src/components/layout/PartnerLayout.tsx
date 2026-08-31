@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useEffect } from "react";
-import { useNavigate as useRouter, useLocation, Outlet } from "react-router-dom";
+import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { 
     LayoutDashboard, Calendar, Bed, 
@@ -13,13 +14,12 @@ import {
     Clock, Lock, XCircle, CheckCircle2, Globe
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function PartnerLayout({ children }: { children?: React.ReactNode }) {
     const { user, loading: authLoading, logout } = useAuth();
     const router = useRouter();
-    const pathname = useLocation().pathname;
+    const pathname = usePathname() || (typeof window !== 'undefined' ? window.location.pathname : '/partner-dashboard');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -130,7 +130,7 @@ export default function PartnerLayout({ children }: { children?: React.ReactNode
                         return (
                             <Link
                                 key={item.id}
-                                to={isDisabled ? "#" : item.href}
+                                href={isDisabled ? "#" : item.href}
                                 className={cn(
                                     "w-full flex items-center justify-between px-4 py-3.5 rounded-none text-sm font-bold group transition-all",
                                     isActive 
@@ -206,15 +206,16 @@ export default function PartnerLayout({ children }: { children?: React.ReactNode
                             <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
                                 {navItems.map((item) => {
                                     const Icon = item.icon;
-                                    const isActive = pathname === item.href;
+                                    const itemCleanHref = item.href.replace(/\/+$/, '');
+                                    const isMobileActive = currentPath === itemCleanHref || (itemCleanHref === '/partner-dashboard' && (currentPath === '/partner-dashboard' || currentPath === '/partner-dashboard/dashboard'));
                                     return (
                                         <Link
                                             key={item.id}
-                                            to={item.href}
+                                            href={item.href}
                                             onClick={() => setIsMobileMenuOpen(false)}
                                             className={cn(
                                                 "flex items-center gap-3 px-4 py-4 rounded-none text-sm font-bold transition-all",
-                                                isActive ? "bg-stone-900 text-white" : "text-stone-500 hover:bg-stone-50"
+                                                isMobileActive ? "bg-stone-900 text-white" : "text-stone-500 hover:bg-stone-50"
                                             )}
                                         >
                                             <Icon className="w-5 h-5" />
