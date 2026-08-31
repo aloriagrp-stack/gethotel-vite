@@ -167,7 +167,7 @@ export default function BookingDetailsPage({ bookingId }: BookingDetailsPageProp
     const checkInDate = booking ? formatDate(booking.checkIn) : "16 May 2026";
     const checkOutDate = booking ? formatDate(booking.checkOut) : "17 May 2026";
     const totalPrice = booking ? formatPrice(booking.totalPrice) : "₹2,940";
-    const bookingId = booking ? `#GH-${booking.id + 10000}` : `#GH-10011`;
+    const displayBookingId = booking ? `#GH-${booking.id + 10000}` : `#GH-10011`;
     const roomName = booking?.room?.name || "Double Deluxe Room";
     const status = booking?.status || "confirmed";
     const totalPriceVal = booking?.totalPrice || 2940;
@@ -233,7 +233,7 @@ export default function BookingDetailsPage({ bookingId }: BookingDetailsPageProp
                                  paymentStatus === 'partial' ? '12% Deposit Paid' :
                                  'Pay At Hotel'}
                             </span>
-                            <span className="text-slate-400 text-[10px] font-bold font-mono">ID: {bookingId}</span>
+                            <span className="text-slate-400 text-[10px] font-bold font-mono">ID: {displayBookingId}</span>
                         </div>
                         
                         <h1 className="text-2xl sm:text-3xl font-display font-black text-slate-900 tracking-tight uppercase leading-tight italic">
@@ -484,7 +484,7 @@ export default function BookingDetailsPage({ bookingId }: BookingDetailsPageProp
                                                 <span className="text-[8px] font-black text-slate-500 uppercase tracking-wider">Guest Key</span>
                                                 <p className="text-[10px] font-bold tracking-wide uppercase">{booking?.guestFirstName || "Shriyansh"} {booking?.guestLastName || ""}</p>
                                             </div>
-                                            <span className="text-[9px] font-mono text-slate-400">{bookingId}</span>
+                                            <span className="text-[9px] font-mono text-slate-400">{displayBookingId}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -526,7 +526,7 @@ export default function BookingDetailsPage({ bookingId }: BookingDetailsPageProp
                                 <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Call Helpline</span>
                             </a>
                             <a 
-                                href={`mailto:reservations@gethotelstays.com?subject=Booking ${bookingId} inquiry`}
+                                href={`mailto:reservations@gethotelstays.com?subject=Booking ${displayBookingId} inquiry`}
                                 className="flex flex-col items-center gap-3 p-4 bg-slate-50 hover:bg-slate-100 border border-slate-100 rounded-2xl transition-all text-center group active:scale-[0.98]"
                             >
                                 <div className="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 shrink-0 group-hover:scale-110 transition-transform">
@@ -591,7 +591,7 @@ export default function BookingDetailsPage({ bookingId }: BookingDetailsPageProp
                             <span className="px-3 py-1 bg-blue-50 text-blue-700 text-[10px] font-black uppercase tracking-widest rounded border border-blue-100">
                                 {paymentStatus === 'paid' ? 'Fully Paid' : paymentStatus === 'partial' ? '12% Deposit Paid' : 'Pay At Hotel'}
                             </span>
-                            <p className="text-[10px] font-mono text-slate-400 mt-2">Voucher ID: {bookingId}</p>
+                            <p className="text-[10px] font-mono text-slate-400 mt-2">Voucher ID: {displayBookingId}</p>
                         </div>
                     </div>
 

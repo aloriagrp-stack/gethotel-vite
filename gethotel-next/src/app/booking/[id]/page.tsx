@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import BookingIDPage from "@/pages-legacy/BookingIDPage";
 
+export function generateStaticParams() {
+  return [{ id: "1" }];
+}
+
 export const metadata: Metadata = {
   title: "Complete Your Hotel Booking | GetHotelStays — 12% Deposit Online",
   description: "Secure your reservation with just 12% advance deposit. Instant booking confirmation and 24/7 customer care.",
