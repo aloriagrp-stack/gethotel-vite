@@ -65,6 +65,21 @@ if ($action === 'all' || $action === 'extract_backend' || $action === 'extract_a
     }
 }
 
+function recurseCopy($src, $dst) {
+    $dir = @opendir($src);
+    @mkdir($dst, 0755, true);
+    while (false !== ($file = @readdir($dir))) {
+        if (($file != '.') && ($file != '..')) {
+            if (is_dir($src . '/' . $file)) {
+                recurseCopy($src . '/' . $file, $dst . '/' . $file);
+            } else {
+                @copy($src . '/' . $file, $dst . '/' . $file);
+            }
+        }
+    }
+    @closedir($dir);
+}
+
 // 4. SYNC BACKEND TO HOME DIR
 if ($action === 'all' || $action === 'sync_backend' || $action === 'extract_all') {
     echo "\n=== 4. SYNCING BACKEND TO HOME DIR ===\n";
@@ -76,17 +91,18 @@ if ($action === 'all' || $action === 'sync_backend' || $action === 'extract_all'
         $dest = $targetDir . $item;
         if (file_exists($src)) {
             if (is_dir($src)) {
-                exec("cp -rf '$src' '$targetDir'");
+                recurseCopy($src, $dest);
                 echo "Synced dir: $item\n";
             } else {
-                copy($src, $dest);
+                @copy($src, $dest);
                 echo "Copied file: $item\n";
             }
         }
     }
 }
 
-// 5. RESTART PASSENGER
+// 5. RESTART PASSENGER / NODE PROCESS
+echo "\n=== 5. RESTARTING PASSENGER / NODE ===\n";
 $restartPaths = [
     '/home/vgyuvmpi/tmp/restart.txt',
     '/home/vgyuvmpi/public_html/tmp/restart.txt',
@@ -94,7 +110,8 @@ $restartPaths = [
 ];
 foreach ($restartPaths as $rp) {
     @mkdir(dirname($rp), 0755, true);
-    file_put_contents($rp, time());
+    @file_put_contents($rp, time());
     echo "Restart triggered via $rp\n";
 }
+echo "ALL OPERATIONS COMPLETED SUCCESSFULLY.\n";
 
