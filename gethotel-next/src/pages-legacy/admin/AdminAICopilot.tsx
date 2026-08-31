@@ -559,10 +559,11 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
             const res = await hotelApi.bulkUpdateRooms(Number(selectedHotelId), formattedRooms, deleteIds);
 
             if (res.success) {
+                const count = Array.isArray(res.data) ? res.data.length : formattedRooms.length;
                 setMessages(prev => 
                     prev.map(msg => msg.id === messageId ? { ...msg, status: "saved" } : msg)
                 );
-                alert("Rooms setup updated successfully!");
+                alert(`✅ Successfully saved ${count} room categories to hotel database!`);
                 // Refresh existing rooms
                 const freshRooms = await hotelApi.getRooms(selectedHotelId.toString());
                 if (freshRooms.success && Array.isArray(freshRooms.data)) {
