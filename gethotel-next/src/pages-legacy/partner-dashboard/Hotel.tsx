@@ -89,11 +89,18 @@ export default function PartnerHotelPage() {
     useEffect(() => {
         const fetchHotel = async () => {
             try {
-                const res = await hotelApi.getMyHotels({ light: true });
+                const activeHotelId = typeof window !== 'undefined' 
+                    ? (sessionStorage.getItem('activeHotelId') || localStorage.getItem('activeHotelId'))
+                    : null;
+                const res = await hotelApi.getMyHotels({ light: true, hotelId: activeHotelId || undefined });
                 if (res.success && res.data && res.data.length > 0) {
-                    const myHotel = res.data[0];
+                    const myHotel = (activeHotelId ? res.data.find((h: any) => String(h.id) === String(activeHotelId)) : null) || res.data[0];
                     setHotel(myHotel);
                     setEditData(myHotel);
+                    if (myHotel && typeof window !== 'undefined') {
+                        sessionStorage.setItem('activeHotelId', String(myHotel.id));
+                        localStorage.setItem('activeHotelId', String(myHotel.id));
+                    }
                 }
             } catch (err) {
                 console.error("Failed to fetch hotel details", err);
@@ -360,7 +367,7 @@ export default function PartnerHotelPage() {
                                                 className="flex-1 px-4 py-3 bg-slate-50 rounded-none text-sm font-bold border border-slate-200 focus:bg-white focus:border-blue-600 outline-none" 
                                             />
                                             <button 
-                                                type="button"
+                                                type="button" 
                                                 onClick={handleAddCustomFacility} 
                                                 className="px-6 py-3 bg-slate-900 text-white rounded-none text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-colors"
                                             >

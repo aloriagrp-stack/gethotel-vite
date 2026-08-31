@@ -1,6 +1,5 @@
 'use client';
 
-
 import { useState, useEffect } from "react";
 import { useNavigate as useRouter } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -40,11 +39,27 @@ export default function PartnerInventoryPage() {
 
     const fetchInventory = async () => {
         try {
-            const res = await hotelApi.getMyHotels({ light: true });
+            const activeHotelId = typeof window !== 'undefined' 
+                ? (sessionStorage.getItem('activeHotelId') || localStorage.getItem('activeHotelId'))
+                : null;
+            const res = await hotelApi.getMyHotels({ light: true, hotelId: activeHotelId || undefined });
             if (res.success && res.data && res.data.length > 0) {
-                const myHotel = res.data[0];
+                const myHotel = (activeHotelId ? res.data.find((h: any) => String(h.id) === String(activeHotelId)) : null) || res.data[0];
                 setHotel(myHotel);
-                const hotelRooms = myHotel.room || myHotel.rooms || [];
+                if (myHotel && typeof window !== 'undefined') {
+                    sessionStorage.setItem('activeHotelId', String(myHotel.id));
+                    localStorage.setItem('activeHotelId', String(myHotel.id));
+                }
+
+                let hotelRooms = myHotel.room || myHotel.rooms || [];
+                try {
+                    const roomsRes = await hotelApi.getRooms(String(myHotel.id));
+                    if (roomsRes.success && Array.isArray(roomsRes.data)) {
+                        hotelRooms = roomsRes.data;
+                    }
+                } catch (roomErr) {
+                    console.warn("Using relation rooms fallback", roomErr);
+                }
                 setRooms(hotelRooms);
 
                 // Fetch rates for the next 30 days
@@ -169,8 +184,6 @@ export default function PartnerInventoryPage() {
     }
 
     const dates = getDates();
-
-    console.log(">>> Inventory Page rendering. Rooms:", rooms, "InventoryData:", inventoryData);
 
     return (
         <div className="space-y-10 animate-fade-in pb-20">
@@ -319,7 +332,9 @@ export default function PartnerInventoryPage() {
                         </tbody>
                     </table>
                 </div>
-            </div>            {/* Bulk Update Modal */}
+            </div>
+
+            {/* Bulk Update Modal */}
             {isBulkModalOpen && (
                 <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
                     <div className="bg-white w-full max-w-md rounded-none shadow-2xl overflow-hidden animate-slide-up">

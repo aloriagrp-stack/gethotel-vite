@@ -88,6 +88,10 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
     useEffect(() => {
         let progressInterval: any = null;
         if (selectedHotelId) {
+            if (typeof window !== 'undefined') {
+                sessionStorage.setItem('activeHotelId', String(selectedHotelId));
+                localStorage.setItem('activeHotelId', String(selectedHotelId));
+            }
             setLoadingRoomsPercent(0);
             let progress = 0;
             progressInterval = setInterval(() => {

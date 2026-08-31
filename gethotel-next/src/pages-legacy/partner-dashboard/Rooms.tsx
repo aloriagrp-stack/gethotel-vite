@@ -298,12 +298,30 @@ export default function PartnerRoomsPage() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await hotelApi.getMyHotels({ light: true });
+                const activeHotelId = typeof window !== 'undefined' 
+                    ? (sessionStorage.getItem('activeHotelId') || localStorage.getItem('activeHotelId'))
+                    : null;
+
+                const res = await hotelApi.getMyHotels({ light: true, hotelId: activeHotelId || undefined });
                 if (res.success && res.data && res.data.length > 0) {
-                    const myHotel = res.data[0];
+                    const myHotel = (activeHotelId ? res.data.find((h: any) => String(h.id) === String(activeHotelId)) : null) || res.data[0];
                     setHotel(myHotel);
-                    // Prisma returns room[] as 'room' singular in the relation
-                    setRooms(myHotel.rooms || myHotel.room || []);
+                    if (myHotel && typeof window !== 'undefined') {
+                        sessionStorage.setItem('activeHotelId', String(myHotel.id));
+                        localStorage.setItem('activeHotelId', String(myHotel.id));
+                    }
+
+                    // Directly fetch latest rooms for this hotel to guarantee 100% up-to-date rooms list
+                    try {
+                        const roomsRes = await hotelApi.getRooms(String(myHotel.id));
+                        if (roomsRes.success && Array.isArray(roomsRes.data)) {
+                            setRooms(roomsRes.data);
+                        } else {
+                            setRooms(myHotel.rooms || myHotel.room || []);
+                        }
+                    } catch (roomErr) {
+                        setRooms(myHotel.rooms || myHotel.room || []);
+                    }
                 }
             } catch (err) {
                 console.error("Failed to fetch rooms", err);

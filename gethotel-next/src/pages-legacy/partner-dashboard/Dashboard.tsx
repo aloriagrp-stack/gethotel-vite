@@ -20,9 +20,17 @@ export default function PartnerDashboardHome() {
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const res = await hotelApi.getMyHotels({ includeBookings: true });
+                const activeHotelId = typeof window !== 'undefined' 
+                    ? (sessionStorage.getItem('activeHotelId') || localStorage.getItem('activeHotelId'))
+                    : null;
+                const res = await hotelApi.getMyHotels({ includeBookings: true, hotelId: activeHotelId || undefined });
                 if (res.success && res.data && res.data.length > 0) {
-                    setHotel(res.data[0]);
+                    const myHotel = (activeHotelId ? res.data.find((h: any) => String(h.id) === String(activeHotelId)) : null) || res.data[0];
+                    setHotel(myHotel);
+                    if (myHotel && typeof window !== 'undefined') {
+                        sessionStorage.setItem('activeHotelId', String(myHotel.id));
+                        localStorage.setItem('activeHotelId', String(myHotel.id));
+                    }
                 }
             } catch (err) {
                 console.error("Dashboard fetch failed", err);
@@ -273,11 +281,10 @@ export default function PartnerDashboardHome() {
                                     {pendingArrivalsCount === 0 && <div className="text-[8px] font-bold text-slate-400 uppercase tracking-widest italic">No arrivals today</div>}
                                 </div>
                             </div>
-
-                            </div>
                         </div>
                     </div>
                 </div>
+            </div>
         </div>
     );
 }

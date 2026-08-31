@@ -118,7 +118,7 @@ export const hotelApi = {
     getHotel: (id: string) => apiFetch(`/hotels/${id}`),
     searchHotels: (params: any) => apiFetch(`/hotels/search?${new URLSearchParams(params).toString()}`),
     getSearchSuggestions: (query: string) => apiFetch(`/hotels/search-suggestions?query=${encodeURIComponent(query)}`),
-    getMyHotels: async (params?: { light?: boolean; includeBookings?: boolean }) => {
+    getMyHotels: async (params?: { light?: boolean; includeBookings?: boolean; hotelId?: string | number }) => {
         const query = params ? `?${new URLSearchParams(
             Object.entries(params).reduce((acc, [key, value]) => {
                 if (value !== undefined) acc[key] = String(value);
@@ -158,7 +158,19 @@ export const hotelApi = {
         });
     },
     deleteRoom: (hotelId: number, roomId: number) => apiFetch(`/hotels/${hotelId}/rooms/${roomId}`, { method: 'DELETE' }),
-    bulkUpdateRooms: (hotelId: number, rooms: any[], deleteIds: number[]) => apiFetch(`/hotels/${hotelId}/rooms/bulk`, { method: 'POST', body: JSON.stringify({ rooms, deleteIds }) }),
+    bulkUpdateRooms: async (hotelId: number, rooms: any[], deleteIds: number[]) => {
+        // Use WAF-Bypass Top-Level Route: POST /v2-bulk-rooms with fallback to nested route
+        try {
+            const res = await apiFetch('/v2-bulk-rooms', { 
+                method: 'POST', 
+                body: JSON.stringify({ _hotelId: hotelId, hotelId, rooms, deleteIds }) 
+            });
+            if (res && (res.success || Array.isArray(res.data))) return res;
+        } catch (err) {
+            console.warn('[bulkUpdateRooms] Top-level /v2-bulk-rooms failed, trying fallback nested route...', err);
+        }
+        return await apiFetch(`/hotels/${hotelId}/rooms/bulk`, { method: 'POST', body: JSON.stringify({ rooms, deleteIds }) });
+    },
     getStaff: (hotelId: number) => apiFetch(`/hotels/${hotelId}/staff`),
     addStaff: (hotelId: number, staffData: any) => apiFetch(`/hotels/${hotelId}/staff`, { method: 'POST', body: JSON.stringify(staffData) }),
     removeStaff: (hotelId: number, staffId: number) => apiFetch(`/hotels/${hotelId}/staff/${staffId}`, { method: 'DELETE' }),
