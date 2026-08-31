@@ -16,16 +16,19 @@ export default function HotelDetailPage({ hotelId }: HotelDetailPageProps = {}) 
     const navParams = useParams<{ id?: string }>();
     const location = useLocation();
 
-    // Resolve id from prop, next navigation params, or window pathname
-    let rawId = hotelId || (typeof navParams?.id === 'string' ? navParams.id : undefined);
-    if (!rawId && typeof window !== 'undefined') {
+    // Resolve id dynamically: prioritize actual window URL pathname over hardcoded static params
+    let extracted = '';
+    if (typeof window !== 'undefined') {
         const pathname = location?.pathname || window.location.pathname;
         const match = pathname.match(/\/hotel\/([^\/\?]+)/);
         if (match && match[1]) {
-            rawId = match[1];
+            extracted = match[1];
         }
     }
-    const id = rawId ? decodeURIComponent(rawId).trim() : "";
+    if (!extracted) {
+        extracted = (typeof navParams?.id === 'string' ? navParams.id : '') || hotelId || '';
+    }
+    const id = extracted ? decodeURIComponent(extracted).trim() : "";
 
     const [hotel, setHotel] = useState<any>(null);
     const [loading, setLoading] = useState(true);
@@ -44,12 +47,39 @@ export default function HotelDetailPage({ hotelId }: HotelDetailPageProps = {}) 
                 if (json.success && json.data) {
                     setHotel(json.data);
                     setError(false);
-                } else {
+                    return;
+                }
+                throw new Error(json.message || "Hotel not found via direct ID");
+            } catch (err) {
+                console.error("Direct fetch failed, attempting fallback lookup:", err);
+                try {
+                    const slugify = (s: string) => String(s || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                    const cleanSlug = slugify(id);
+
+                    // Fallback 1: Query full hotels list
+                    const listRes = await hotelApi.getHotels();
+                    const hotelsList: any[] = listRes.data || [];
+                    
+                    const matched = hotelsList.find((h: any) => 
+                        String(h.id) === id || 
+                        slugify(h.name) === cleanSlug || 
+                        slugify(h.name).includes(cleanSlug) || 
+                        cleanSlug.includes(slugify(h.name))
+                    );
+
+                    if (matched) {
+                        const fullRes = await hotelApi.getHotel(String(matched.id));
+                        if (fullRes.success && fullRes.data) {
+                            setHotel(fullRes.data);
+                            setError(false);
+                            return;
+                        }
+                    }
+                    setError(true);
+                } catch (fallbackErr) {
+                    console.error("Fallback lookup failed:", fallbackErr);
                     setError(true);
                 }
-            } catch (err) {
-                console.error("Backend fetch failed:", err);
-                setError(true);
             } finally {
                 setLoading(false);
             }
