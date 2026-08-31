@@ -102,7 +102,7 @@ export default function PartnerHotelPage() {
             }
         };
 
-        if (!authLoading && authUser?.role === 'hotel_admin') {
+        if (!authLoading && (authUser?.role === 'hotel_admin' || authUser?.role === 'super_admin')) {
             fetchHotel();
         } else if (!authLoading && !authUser) {
             router("/partner");

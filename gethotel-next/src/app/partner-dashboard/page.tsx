@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import PartnerDashboard from "@/pages-legacy/partner-dashboard/Dashboard";
+import PartnerPageRouter from "@/components/partner/PartnerPageRouter";
 import PartnerLayout from "@/components/layout/PartnerLayout";
 
 export const metadata: Metadata = {
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default function Page() {
   return (
     <PartnerLayout>
-      <PartnerDashboard />
+      <PartnerPageRouter />
     </PartnerLayout>
   );
 }

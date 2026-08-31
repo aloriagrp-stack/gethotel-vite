@@ -37,11 +37,18 @@ export default function PartnerLayout({ children }: { children?: React.ReactNode
 
             const activeHotelId = sessionStorage.getItem('activeHotelId') || localStorage.getItem('activeHotelId');
 
-            if (!user || user.role !== 'hotel_admin') {
+            if (!user || (user.role !== 'hotel_admin' && user.role !== 'super_admin')) {
                 router('/partner');
             } else if (!activeHotelId) {
-                // No hotel selected yet — force selector screen
-                router('/partner-select');
+                if (user.hotel && user.hotel.length === 1) {
+                    const singleId = String(user.hotel[0].id);
+                    sessionStorage.setItem('activeHotelId', singleId);
+                    localStorage.setItem('activeHotelId', singleId);
+                } else if (user.role === 'hotel_admin' && (!user.hotel || user.hotel.length === 0)) {
+                    // Pending approval / no property view
+                } else if (user.role === 'hotel_admin') {
+                    router('/partner-select');
+                }
             }
         }
     }, [user, authLoading, router]);

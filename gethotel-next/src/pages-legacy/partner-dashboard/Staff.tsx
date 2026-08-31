@@ -49,7 +49,7 @@ export default function PartnerStaffPage() {
     };
 
     useEffect(() => {
-        if (!authLoading && authUser?.role === 'hotel_admin') {
+        if (!authLoading && (authUser?.role === 'hotel_admin' || authUser?.role === 'super_admin')) {
             fetchStaff();
         } else if (!authLoading && !authUser) {
             router("/partner");

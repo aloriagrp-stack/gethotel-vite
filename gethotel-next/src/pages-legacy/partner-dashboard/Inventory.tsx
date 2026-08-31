@@ -80,7 +80,7 @@ export default function PartnerInventoryPage() {
     };
 
     useEffect(() => {
-        if (!authLoading && authUser?.role === 'hotel_admin') {
+        if (!authLoading && (authUser?.role === 'hotel_admin' || authUser?.role === 'super_admin')) {
             fetchInventory();
         } else if (!authLoading && !authUser) {
             router("/partner");

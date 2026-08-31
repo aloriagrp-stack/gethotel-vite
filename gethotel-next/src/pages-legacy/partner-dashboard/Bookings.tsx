@@ -38,7 +38,7 @@ export default function PartnerBookingsPage() {
     };
 
     useEffect(() => {
-        if (!authLoading && authUser?.role === 'hotel_admin') {
+        if (!authLoading && (authUser?.role === 'hotel_admin' || authUser?.role === 'super_admin')) {
             fetchBookings();
         } else if (!authLoading && !authUser) {
             router("/partner");

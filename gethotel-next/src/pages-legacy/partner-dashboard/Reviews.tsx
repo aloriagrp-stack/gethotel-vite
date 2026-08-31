@@ -56,7 +56,7 @@ export default function PartnerReviewsPage() {
     };
 
     useEffect(() => {
-        if (!authLoading && authUser?.role === 'hotel_admin') {
+        if (!authLoading && (authUser?.role === 'hotel_admin' || authUser?.role === 'super_admin')) {
             fetchReviews();
         } else if (!authLoading && !authUser) {
             router("/partner");

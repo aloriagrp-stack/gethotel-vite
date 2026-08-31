@@ -312,7 +312,7 @@ export default function PartnerRoomsPage() {
             }
         };
 
-        if (!authLoading && authUser?.role === 'hotel_admin') {
+        if (!authLoading && (authUser?.role === 'hotel_admin' || authUser?.role === 'super_admin')) {
             fetchData();
         } else if (!authLoading && !authUser) {
             router("/partner");

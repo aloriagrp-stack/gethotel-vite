@@ -38,7 +38,7 @@ export default function PartnerAnalyticsPage() {
     };
 
     useEffect(() => {
-        if (!authLoading && authUser?.role === 'hotel_admin') {
+        if (!authLoading && (authUser?.role === 'hotel_admin' || authUser?.role === 'super_admin')) {
             fetchAnalytics();
         } else if (!authLoading && !authUser) {
             router("/partner");
