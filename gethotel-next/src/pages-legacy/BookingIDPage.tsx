@@ -330,7 +330,7 @@ function BookingContent() {
                 
                 // 3. Open Razorpay Checkout
                 const options = {
-                    key: import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_live_T16NuPtvvs9cRV",
+                    key: (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_RAZORPAY_KEY_ID) || "rzp_live_T16NuPtvvs9cRV",
                     amount: orderRes.amount,
                     currency: orderRes.currency,
                     name: "GetHotel.",

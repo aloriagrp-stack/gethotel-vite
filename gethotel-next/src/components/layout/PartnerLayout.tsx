@@ -39,7 +39,7 @@ export default function PartnerLayout({ children }: { children?: React.ReactNode
             const activeHotelId = sessionStorage.getItem('activeHotelId') || localStorage.getItem('activeHotelId');
 
             if (!user || (user.role !== 'hotel_admin' && user.role !== 'super_admin')) {
-                router('/partner');
+                router.push('/partner');
             } else if (!activeHotelId) {
                 if (user.hotel && user.hotel.length === 1) {
                     const singleId = String(user.hotel[0].id);
@@ -48,7 +48,7 @@ export default function PartnerLayout({ children }: { children?: React.ReactNode
                 } else if (user.role === 'hotel_admin' && (!user.hotel || user.hotel.length === 0)) {
                     // Pending approval / no property view
                 } else if (user.role === 'hotel_admin') {
-                    router('/partner-select');
+                    router.push('/partner-select');
                 }
             }
         }
@@ -74,7 +74,7 @@ export default function PartnerLayout({ children }: { children?: React.ReactNode
     const handleLogout = () => {
         logout();
         setShowLogoutConfirm(false);
-        router("/partner");
+        router.push("/partner");
     };
 
     if (authLoading) {
@@ -308,7 +308,7 @@ export default function PartnerLayout({ children }: { children?: React.ReactNode
                             </div>
                         </div>
                     ) : (
-                        children || <Outlet />
+                        children
                     )}
                 </main>
 
