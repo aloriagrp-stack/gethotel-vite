@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect, Suspense, useCallback, useMemo } from "react";
-import { useSearchParams, useParams, Link } from "react-router-dom";
+import { useSearchParams, useParams, Link } from "@/lib/navigation";
 import { ArrowUpDown, MapPin, Hotel, X, SlidersHorizontal } from "lucide-react";
 import type { FilterState, SortOption, Hotel as HotelType } from "@/types";
 import { useStayMode } from "@/context/StayModeContext";

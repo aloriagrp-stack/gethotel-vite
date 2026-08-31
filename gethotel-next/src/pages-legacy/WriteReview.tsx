@@ -1,8 +1,7 @@
 'use client';
 import { useState, useEffect } from "react";
-import { useNavigate as useRouter, useParams } from 'react-router-dom';
+import { useNavigate as useRouter, useParams, Link, useLocation } from "@/lib/navigation";
 import Image from "@/components/common/Image";
-import { Link } from "react-router-dom";
 import { 
     Star, 
     ChevronLeft, 
@@ -19,9 +18,15 @@ import { cn, getHotelUrl } from "@/lib/utils";
 import { motion } from "framer-motion";
 
 export default function WriteReviewPage() {
-    const params = useParams();
+    const navParams = useParams<{ id?: string }>();
+    const location = useLocation();
+    let rawId = navParams?.id;
+    if (!rawId && typeof window !== 'undefined') {
+        const match = (location?.pathname || window.location.pathname).match(/\/hotel\/([^\/\?]+)/);
+        if (match && match[1]) rawId = match[1];
+    }
+    const id = rawId || "";
     const router = useRouter();
-    const id = params.id as string;
 
     const [hotel, setHotel] = useState<any>(null);
     const [rating, setRating] = useState(0);
@@ -30,7 +35,7 @@ export default function WriteReviewPage() {
     // Sub-ratings
     const [cleanliness, setCleanliness] = useState(0);
     const [comfort, setComfort] = useState(0);
-    const [location, setLocation] = useState(0);
+    const [locationRating, setLocationRating] = useState(0);
     const [staff, setStaff] = useState(0);
     const [valueForMoney, setValueForMoney] = useState(0);
 
@@ -46,6 +51,7 @@ export default function WriteReviewPage() {
 
     useEffect(() => {
         const fetchHotel = async () => {
+            if (!id) return;
             try {
                 const res = await hotelApi.getHotel(id);
                 setHotel(res.data);
@@ -70,12 +76,12 @@ export default function WriteReviewPage() {
             setSubmitting(true);
             setError(null);
             const combinedComment = `Likes: ${likes}\nDislikes: ${dislikes}\nOverall: ${comment}`;
-            await hotelApi.createReview(parseInt(id), { 
+            await hotelApi.createReview(parseInt(hotel?.id || id), { 
                 rating, 
                 comment: combinedComment,
                 cleanliness,
                 comfort,
-                location,
+                location: locationRating,
                 staff,
                 valueForMoney
             });
@@ -169,7 +175,7 @@ export default function WriteReviewPage() {
                         <div className="relative z-10">
                             <h1 className="text-3xl font-bold text-black mb-2 tracking-tight">How was your stay?</h1>
                             <p className="text-black font-medium text-sm mb-8">Share your authentic experience and help other travelers discover the best.</p>
- 
+
                             <form onSubmit={handleSubmit} className="space-y-8">
                                     {/* Overall Rating Section */}
                                     <div className="space-y-4">
@@ -206,17 +212,17 @@ export default function WriteReviewPage() {
                                             </p>
                                         </div>
                                     </div>
- 
+
                                     {/* Category Sub-Ratings */}
                                     <div className="space-y-4 bg-slate-50 p-6 rounded-md border border-slate-200">
                                         <label className="text-xs font-bold uppercase text-black tracking-wider block ml-1 mb-1">Category Ratings</label>
                                         <StarRatingSelector label="Cleanliness" value={cleanliness} onChange={setCleanliness} />
                                         <StarRatingSelector label="Comfort" value={comfort} onChange={setComfort} />
-                                        <StarRatingSelector label="Location" value={location} onChange={setLocation} />
+                                        <StarRatingSelector label="Location" value={locationRating} onChange={setLocationRating} />
                                         <StarRatingSelector label="Staff / Behavior" value={staff} onChange={setStaff} />
                                         <StarRatingSelector label="Value For Money" value={valueForMoney} onChange={setValueForMoney} />
                                     </div>
- 
+
                                     {/* Likes / Dislikes */}
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-2">
@@ -242,7 +248,7 @@ export default function WriteReviewPage() {
                                             />
                                         </div>
                                     </div>
- 
+
                                     {/* Comment Section */}
                                     <div className="space-y-3">
                                         <div className="flex items-center justify-between px-1">
@@ -261,7 +267,7 @@ export default function WriteReviewPage() {
                                             maxLength={2000}
                                         />
                                     </div>
- 
+
                                     {/* Verification Notice */}
                                     <div className="flex items-center gap-3 p-4 bg-emerald-50 rounded-md border border-emerald-100">
                                         <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
@@ -269,14 +275,14 @@ export default function WriteReviewPage() {
                                             Your review will be published as an authentic user. Fake or offensive content will be moderated and removed.
                                         </p>
                                     </div>
- 
+
                                     {error && (
                                         <div className="p-4 bg-red-50 text-red-600 rounded-md text-xs font-bold border border-red-100 flex items-center gap-2">
                                             <Info className="w-4 h-4" />
                                             {error}
                                         </div>
                                     )}
- 
+
                                     {/* Submit Button */}
                                     <button
                                         type="submit"

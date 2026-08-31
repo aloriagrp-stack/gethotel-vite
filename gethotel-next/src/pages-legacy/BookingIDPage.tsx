@@ -1,11 +1,9 @@
 'use client';
 
-
-import { useState, useEffect, Suspense, Fragment } from "react";
-import { useParams, useSearchParams, useNavigate as useRouter } from "react-router-dom";
+import { useState, useEffect, Suspense, Fragment, useRef } from "react";
+import { useParams, useSearchParams, useNavigate as useRouter, Link } from "@/lib/navigation";
 import Loader from "@/components/common/Loader";
 import Image from "@/components/common/Image";
-import { Link } from "react-router-dom";
 import { 
     ChevronLeft, 
     Calendar, 
@@ -33,7 +31,6 @@ import { formatPrice, formatDate, cn, safeParse, getHotelUrl } from "@/lib/utils
 import { motion, AnimatePresence } from "framer-motion";
 import { countries } from "@/lib/countries";
 import { InvoiceTemplate } from "@/components/booking/InvoiceTemplate";
-import { useRef } from "react";
 import { validateCoupon } from "@/lib/promoUtils";
 import { loadRazorpay } from "@/lib/load-razorpay";
 
@@ -42,7 +39,13 @@ function BookingContent() {
     const [searchParams] = useSearchParams();
     const router = useRouter();
     
-    const hotelId = params.id as string;
+    let hotelId = (params?.id || "") as string;
+    if (!hotelId && typeof window !== 'undefined') {
+        const match = window.location.pathname.match(/\/booking\/([^\/\?]+)/);
+        if (match && match[1]) {
+            hotelId = match[1];
+        }
+    }
     const checkInStr = searchParams.get("checkIn");
     const checkOutStr = searchParams.get("checkOut");
     const guestsCount = searchParams.get("guests") || "2";
@@ -71,7 +74,6 @@ function BookingContent() {
     const [createdBookingId, setCreatedBookingId] = useState<string | null>(null);
     const [currentBooking, setCurrentBooking] = useState<any>(null);
     const invoiceRef = useRef<HTMLDivElement>(null);
-    
     // Interactive Booking State
     const [checkIn, setCheckIn] = useState(searchParams.get("checkIn") || "");
     const [checkOut, setCheckOut] = useState(searchParams.get("checkOut") || "");

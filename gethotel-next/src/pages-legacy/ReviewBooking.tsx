@@ -1,7 +1,7 @@
 'use client';
 
 
-import { useNavigate as useRouter, useParams } from 'react-router-dom';;
+import { useNavigate as useRouter, useParams, Link } from '@/lib/navigation';
 import { hotels } from "@/data/hotels";
 import { 
     ChevronLeft, Star, MessageSquare, 

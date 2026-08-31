@@ -416,15 +416,8 @@ exports.searchHotels = async (req, res, next) => {
 
 const resolveHotelId = async (idOrSlug) => {
     if (!idOrSlug) return null;
-    const parsedId = parseInt(idOrSlug);
-    if (!isNaN(parsedId)) {
-        return parsedId;
-    }
-    
-    const hotels = await prisma.hotel.findMany({
-        select: { id: true, name: true }
-    });
-    
+    const trimmed = String(idOrSlug).trim();
+
     const slugify = (text) => {
         return text
             .toString()
@@ -436,9 +429,35 @@ const resolveHotelId = async (idOrSlug) => {
             .replace(/^-+/, '')
             .replace(/-+$/, '');
     };
+
+    const parsedId = parseInt(trimmed);
+    if (!isNaN(parsedId) && String(parsedId) === trimmed) {
+        return parsedId;
+    }
     
-    const target = hotels.find(h => slugify(h.name) === idOrSlug);
-    return target ? target.id : null;
+    const hotels = await prisma.hotel.findMany({
+        select: { id: true, name: true }
+    });
+    
+    const cleanQuery = slugify(trimmed);
+    const target = hotels.find(h => slugify(h.name) === cleanQuery || slugify(h.name) === trimmed);
+    if (target) return target.id;
+    
+    // Fuzzy matching fallback
+    const normalizedQuery = cleanQuery.replace(/-/g, ' ');
+    const fuzzyTarget = hotels.find(h => {
+        const hName = h.name.toLowerCase();
+        return hName.includes(normalizedQuery) || normalizedQuery.includes(hName);
+    });
+    if (fuzzyTarget) return fuzzyTarget.id;
+
+    // If string started with ID (e.g. 108-hotel-name)
+    if (!isNaN(parsedId)) {
+        const byId = hotels.find(h => h.id === parsedId);
+        if (byId) return byId.id;
+    }
+
+    return null;
 };
 
 // @desc    Get single hotel

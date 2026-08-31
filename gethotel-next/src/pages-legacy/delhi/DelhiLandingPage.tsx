@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams } from "@/lib/navigation";
 import { MapPin, ArrowRight, HelpCircle, AlertCircle, Landmark, Train, Bus, Wallet, ShieldCheck } from "lucide-react";
 import { hotelApi } from "@/lib/api";
 import SEOHead from "@/components/common/SEOHead";

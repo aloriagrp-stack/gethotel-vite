@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, Link, useLocation } from "@/lib/navigation";
 import SEOHead from "@/components/common/SEOHead";
 import {
     MapPin, Clock, Star, Hotel, Car, Check, ChevronLeft, ChevronRight,
@@ -34,7 +34,17 @@ const GUEST_OPTIONS = [
 ];
 
 export default function TourPackageDetails() {
-    const { id } = useParams();
+    const navParams = useParams<{ id?: string }>();
+    const location = useLocation();
+    let rawId = typeof navParams?.id === 'string' ? navParams.id : undefined;
+    if (!rawId && typeof window !== 'undefined') {
+        const pathname = location?.pathname || window.location.pathname;
+        const match = pathname.match(/\/(?:tour-packages|packages|package)\/([^\/\?]+)/);
+        if (match && match[1]) {
+            rawId = match[1];
+        }
+    }
+    const id = rawId || "";
     const navigate = useNavigate();
     const { user } = useAuth();
     const { langCode } = useLocale();

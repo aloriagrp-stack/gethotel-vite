@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, Link } from "@/lib/navigation";
 import SEOHead from "@/components/common/SEOHead";
 import { useLocale } from "@/context/LocaleContext";
 import {

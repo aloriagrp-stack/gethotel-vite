@@ -1,15 +1,27 @@
 'use client';
-import { useParams, Navigate } from "react-router-dom";
+import { useParams } from "@/lib/navigation";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import DestinationLanding from "./DestinationLanding";
 import { getCityBySlug, getCitySEO, CITIES } from "@/lib/cityData";
 
 export default function CityPage() {
-    const { citySlug, filterSlug, lang } = useParams<{ citySlug: string; filterSlug?: string; lang?: string }>();
+    const params = useParams<{ citySlug?: string; filterSlug?: string; lang?: string }>();
+    const router = useRouter();
+    const citySlug = params?.citySlug;
+    const filterSlug = params?.filterSlug;
+    const lang = params?.lang;
     const currentLang = lang || "en";
     const cityData = getCityBySlug(citySlug || "");
 
+    useEffect(() => {
+        if (!cityData) {
+            router.replace(`/${currentLang}/hotels`);
+        }
+    }, [cityData, currentLang, router]);
+
     if (!cityData) {
-        return <Navigate to={`/${currentLang}/hotels`} replace />;
+        return null;
     }
 
     const seoData = getCitySEO(cityData, filterSlug);
