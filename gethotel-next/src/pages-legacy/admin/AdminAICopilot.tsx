@@ -493,7 +493,13 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
     const handleSaveRooms = async (messageId: string, roomList: any[]) => {
         if (!selectedHotelId) return;
 
-        // Check if there are already rooms configured for this hotel
+        // If the only existing room is the default unconfigured dummy room (price 0 or Standard Room), auto-replace it
+        if (existingRooms.length === 1 && (Number(existingRooms[0].pricePerNight || 0) === 0 || existingRooms[0].name === "Standard Room")) {
+            await executeSave(messageId, roomList, [existingRooms[0].id]);
+            return;
+        }
+
+        // Check if there are already multiple real rooms configured for this hotel
         if (existingRooms.length > 0) {
             setConfirmModal({
                 show: true,
@@ -518,6 +524,8 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
         );
 
         try {
+            const existingRoomIdSet = new Set(existingRooms.map((er: any) => Number(er.id)));
+
             // Prepare schema records for bulk inserting
             const formattedRooms = roomList.map(r => {
                 const rawVariants = Array.isArray(r.variants) ? r.variants : [];
@@ -528,7 +536,8 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                     policy: v.policy || "Free cancellation till 24h"
                 }));
 
-                const validRoomId = (r.id && Number(r.id) > 0) ? Number(r.id) : undefined;
+                // ONLY attach ID if this room actually exists in the database for this hotel
+                const validRoomId = (r.id && existingRoomIdSet.has(Number(r.id))) ? Number(r.id) : undefined;
                 const roomName = (r.name || r.roomName || r.title || r.category || r.roomType || "Standard Room").trim();
                 const roomDesc = (r.description !== undefined && r.description !== null && String(r.description).trim() !== "")
                     ? String(r.description)
