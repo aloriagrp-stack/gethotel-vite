@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useNavigate as useRouter, useParams } from 'react-router-dom';
+import { useNavigate as useRouter, useParams, Link, useLocation } from '@/lib/navigation';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { 
@@ -11,12 +11,22 @@ import {
 } from "lucide-react";
 import Image from "@/components/common/Image";
 import Loader from "@/components/common/Loader";
-import { Link } from "react-router-dom";
 import { bookingApi, paymentApi } from "@/lib/api";
 import { formatDate, formatPrice } from "@/lib/utils";
 
-export default function BookingDetailsPage() {
-    const params = useParams();
+interface BookingDetailsPageProps {
+    bookingId?: string;
+}
+
+export default function BookingDetailsPage({ bookingId }: BookingDetailsPageProps = {}) {
+    const navParams = useParams<{ id?: string }>();
+    const location = useLocation();
+    let rawId = bookingId || navParams?.id;
+    if (!rawId && typeof window !== 'undefined') {
+        const match = (location?.pathname || window.location.pathname).match(/\/bookings?\/details\/([^\/\?]+)/);
+        if (match && match[1]) rawId = match[1];
+    }
+    const id = rawId || "";
     const router = useRouter();
     const [booking, setBooking] = useState<any>(null);
     const [loading, setLoading] = useState(true);
@@ -59,9 +69,8 @@ export default function BookingDetailsPage() {
                 return;
             }
 
-            // Generate PDF using html2canvas and jspdf
             const canvas = await html2canvas(element, {
-                scale: 2, // High resolution
+                scale: 2,
                 useCORS: true,
                 allowTaint: true,
                 backgroundColor: "#ffffff"
@@ -88,9 +97,9 @@ export default function BookingDetailsPage() {
     const [verificationMessage, setVerificationMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
 
     const fetchBookingDetails = async () => {
-        if (!params.id) return;
+        if (!id) return;
         try {
-            const res = await bookingApi.getBooking(params.id);
+            const res = await bookingApi.getBooking(id);
             const bookingData = res.data || res;
             if (bookingData) {
                 setBooking(bookingData);
@@ -100,7 +109,7 @@ export default function BookingDetailsPage() {
             try {
                 const listRes = await bookingApi.getMyBookings();
                 const bookingsList = listRes.data || [];
-                const found = bookingsList.find((b: any) => String(b.id) === String(params.id));
+                const found = bookingsList.find((b: any) => String(b.id) === String(id));
                 if (found) {
                     setBooking(found);
                 }
@@ -114,7 +123,7 @@ export default function BookingDetailsPage() {
 
     useEffect(() => {
         fetchBookingDetails();
-    }, [params.id]);
+    }, [id]);
 
     const handleVerifyPaymentStatus = async () => {
         if (!booking?.id) return;
