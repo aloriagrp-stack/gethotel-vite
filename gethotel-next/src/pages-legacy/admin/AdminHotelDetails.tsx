@@ -87,9 +87,9 @@ export default function HotelDetailPage({ hotelId, onBack }: AdminHotelDetailsPr
             const res = await authApi.impersonate(hotel.user.id);
             if (res.success) {
                 if (newTab) {
-                    newTab.location.href = `/partner-dashboard?activeHotelId=${hotel.id}&impersonateToken=${res.token}`;
+                    newTab.location.href = `/partner-dashboard/?activeHotelId=${hotel.id}&impersonateToken=${res.token}`;
                 } else {
-                    window.open(`/partner-dashboard?activeHotelId=${hotel.id}&impersonateToken=${res.token}`, "_blank");
+                    window.open(`/partner-dashboard/?activeHotelId=${hotel.id}&impersonateToken=${res.token}`, "_blank");
                 }
             } else {
                 if (newTab) newTab.close();

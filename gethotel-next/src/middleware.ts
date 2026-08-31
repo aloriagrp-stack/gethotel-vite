@@ -26,7 +26,7 @@ const LEGACY_301_MAP: Record<string, string> = {
 };
 
 export function middleware(request: NextRequest) {
-  const { pathname, search } = request.nextUrl;
+  const { pathname, search, origin } = request.nextUrl;
 
   // 1. Bypass static assets, next internals, api, and files with extensions
   if (
@@ -40,40 +40,35 @@ export function middleware(request: NextRequest) {
 
   let cleanPath = pathname;
 
-  // 2. Normalize Trailing Slashes (Enforce non-trailing slash strictly)
-  if (cleanPath.length > 1 && cleanPath.endsWith('/')) {
-    cleanPath = cleanPath.slice(0, -1);
-  }
-
-  // 3. Normalize Lowercase URLs
+  // 2. Normalize Lowercase URLs
   if (cleanPath !== cleanPath.toLowerCase()) {
     cleanPath = cleanPath.toLowerCase();
   }
 
-  // 4. Handle Language Prefixes (/en/hotels -> /hotels)
+  // 3. Handle Language Prefixes (/en/hotels -> /hotels)
   const segments = cleanPath.split('/').filter(Boolean);
   const firstSegment = segments[0];
 
   if (firstSegment && REDIRECT_LANGS.has(firstSegment.toLowerCase())) {
     const remainingSegments = segments.slice(1);
     const targetPath = remainingSegments.length > 0 ? '/' + remainingSegments.join('/') : '/';
-    const destination = new URL(targetPath + search, SITE_URL);
+    const destination = new URL(targetPath + search, origin);
     return NextResponse.redirect(destination, { status: 301 });
   }
 
-  // 5. Handle Legacy 301 Redirections
+  // 4. Handle Legacy 301 Redirections
   if (LEGACY_301_MAP[cleanPath]) {
-    const destination = new URL(LEGACY_301_MAP[cleanPath] + search, SITE_URL);
+    const destination = new URL(LEGACY_301_MAP[cleanPath] + search, origin);
     return NextResponse.redirect(destination, { status: 301 });
   }
 
-  // 6. Execute 301 Redirect if cleanPath differed from original pathname
+  // 5. Execute 301 Redirect if cleanPath differed from original pathname
   if (cleanPath !== pathname) {
-    const destination = new URL(cleanPath + search, SITE_URL);
+    const destination = new URL(cleanPath + search, origin);
     return NextResponse.redirect(destination, { status: 301 });
   }
 
-  // 7. Inject Canonical Link HTTP Header on clean 200 responses
+  // 6. Inject Canonical Link HTTP Header on clean 200 responses
   const canonicalUrl = `${SITE_URL}${cleanPath === '/' ? '' : cleanPath}`;
   const response = NextResponse.next();
   response.headers.set('Link', `<${canonicalUrl}>; rel="canonical"`);

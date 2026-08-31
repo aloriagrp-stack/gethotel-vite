@@ -95,6 +95,18 @@ export default function SuperAdminDashboard() {
         initialTab = "tour-packages";
     }
     const [activeTab, setActiveTab] = useState(initialTab);
+
+    useEffect(() => {
+        let currentTab = searchParams.get("tab") || "overview";
+        if (location.pathname.includes('/admin/super/ai-chats')) {
+            currentTab = "ai-chats";
+        }
+        if (location.pathname.includes('/admin/super/tour-packages')) {
+            currentTab = "tour-packages";
+        }
+        setActiveTab(currentTab);
+    }, [searchParams, location.pathname, location.search]);
+
     const [selectedHotelId, setSelectedHotelId] = useState<string | number | null>(null);
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();

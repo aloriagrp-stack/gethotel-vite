@@ -1,6 +1,5 @@
 'use client';
 
-
 import { useState, useEffect } from "react";
 import { 
     CheckCircle2, 
@@ -11,7 +10,6 @@ import {
     Mail, 
     Phone, 
     MapPin, 
-    ChevronRight,
     Loader2,
     ShieldCheck,
     Search,
@@ -20,13 +18,11 @@ import {
     LogIn
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { useNavigate as useRouter } from "react-router-dom";
 import { adminApi, authApi } from "@/lib/api";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 export default function PartnerRequestsPage() {
-    const { user: authUser, loading: authIsLoading, login } = useAuth();
-    const navigation = useRouter();
+    const { user: authUser } = useAuth();
     const [reqList, setReqList] = useState<any[]>([]);
     const [pageLoading, setPageLoading] = useState(true);
     const [actionIsLoading, setActionIsLoading] = useState<string | null>(null);
@@ -82,9 +78,9 @@ export default function PartnerRequestsPage() {
             const res = await authApi.login({ email, partnerpassword: pass, portal: 'partner' });
             if (res.success) {
                 if (newTab) {
-                    newTab.location.href = `/partner-dashboard?impersonateToken=${res.token}`;
+                    newTab.location.href = `/partner-dashboard/?impersonateToken=${res.token}`;
                 } else {
-                    window.open(`/partner-dashboard?impersonateToken=${res.token}`, "_blank");
+                    window.open(`/partner-dashboard/?impersonateToken=${res.token}`, "_blank");
                 }
             } else {
                 if (newTab) newTab.close();
@@ -99,9 +95,9 @@ export default function PartnerRequestsPage() {
     };
 
     const filteredReqs = reqList.filter(r => 
-        r.hotelName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        r.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        r.userEmail.toLowerCase().includes(searchQuery.toLowerCase())
+        (r.hotelName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (r.userName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (r.userEmail || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     return (
@@ -269,6 +265,3 @@ export default function PartnerRequestsPage() {
         </div>
     );
 }
-
-
-

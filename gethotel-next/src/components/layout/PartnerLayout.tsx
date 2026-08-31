@@ -20,6 +20,7 @@ export default function PartnerLayout({ children }: { children?: React.ReactNode
     const { user, loading: authLoading, logout } = useAuth();
     const router = useRouter();
     const pathname = usePathname() || (typeof window !== 'undefined' ? window.location.pathname : '/partner-dashboard');
+    const currentPath = (pathname || '').replace(/\/+$/, '') || '/partner-dashboard';
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -68,7 +69,6 @@ export default function PartnerLayout({ children }: { children?: React.ReactNode
         { id: "switch", label: "Switch Property", icon: ChevronRight, href: "/partner-select" },
     ];
 
-    const currentPath = typeof window !== 'undefined' ? window.location.pathname.replace(/\/+$/, '') : pathname.replace(/\/+$/, '');
     const activeItem = navItems.find(item => currentPath === item.href.replace(/\/+$/, '')) || navItems[0];
 
     const handleLogout = () => {
@@ -132,10 +132,10 @@ export default function PartnerLayout({ children }: { children?: React.ReactNode
                                 key={item.id}
                                 href={isDisabled ? "#" : item.href}
                                 className={cn(
-                                    "w-full flex items-center justify-between px-4 py-3.5 rounded-none text-sm font-bold group transition-all",
+                                    "w-full flex items-center justify-between px-4 py-3 rounded-none text-sm font-bold group transition-all",
                                     isActive 
-                                        ? "bg-stone-900 text-white shadow-none" 
-                                        : "text-stone-500 hover:text-stone-900 hover:bg-stone-50",
+                                        ? "bg-stone-100 text-stone-950 font-black border-l-2 border-stone-900" 
+                                        : "text-stone-500 hover:text-stone-900 hover:bg-stone-50/80",
                                     isCollapsed && "justify-center",
                                     isDisabled && "opacity-50 cursor-not-allowed"
                                 )}
@@ -145,11 +145,10 @@ export default function PartnerLayout({ children }: { children?: React.ReactNode
                                 title={isCollapsed ? item.label : ""}
                             >
                                 <div className="flex items-center gap-3">
-                                    <Icon className={cn("w-5 h-5 shrink-0", isActive ? "text-white" : "text-stone-400 group-hover:text-stone-900")} />
+                                    <Icon className={cn("w-5 h-5 shrink-0 transition-colors", isActive ? "text-stone-950" : "text-stone-400 group-hover:text-stone-900")} />
                                     {!isCollapsed && <span>{item.label}</span>}
                                 </div>
                                 {isDisabled && !isCollapsed && <Lock className="w-3 h-3 text-stone-300" />}
-                                {(isActive && !isCollapsed) && <div className="w-1.5 h-1.5 rounded-none bg-white/70" />}
                             </Link>
                         );
                     })}
@@ -214,8 +213,8 @@ export default function PartnerLayout({ children }: { children?: React.ReactNode
                                             href={item.href}
                                             onClick={() => setIsMobileMenuOpen(false)}
                                             className={cn(
-                                                "flex items-center gap-3 px-4 py-4 rounded-none text-sm font-bold transition-all",
-                                                isMobileActive ? "bg-stone-900 text-white" : "text-stone-500 hover:bg-stone-50"
+                                                "flex items-center gap-3 px-4 py-3.5 rounded-none text-sm font-bold transition-all",
+                                                isMobileActive ? "bg-stone-100 text-stone-950 font-black border-l-2 border-stone-900" : "text-stone-500 hover:bg-stone-50"
                                             )}
                                         >
                                             <Icon className="w-5 h-5" />

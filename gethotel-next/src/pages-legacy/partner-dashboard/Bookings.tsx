@@ -3,12 +3,11 @@ import { useState, useEffect } from "react";
 import { useNavigate as useRouter } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { 
-    Calendar, User, CreditCard, Clock, 
-    Search, CheckCircle2, XCircle, 
-    AlertCircle, Loader2, 
+    Calendar, User, 
+    Search, Loader2, 
     ChevronRight, Phone, Mail,
     Printer, Eye, Check,
-    LogIn, LogOut, Ban, Bed, Users, ShieldAlert, MessageSquare
+    Ban, Bed, Users, ShieldAlert, MessageSquare, Clock
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { hotelApi, bookingApi } from "@/lib/api";
@@ -113,10 +112,10 @@ export default function PartnerBookingsPage() {
                                     key={status}
                                     onClick={() => setStatusFilter(status)}
                                     className={cn(
-                                        "px-4 py-2.5 rounded-none text-[10px] font-black uppercase tracking-widest border transition-all whitespace-nowrap",
+                                        "px-4 py-2.5 rounded-none text-[10px] font-black uppercase tracking-widest border transition-all whitespace-nowrap cursor-pointer",
                                         statusFilter === status 
-                                            ? "bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-100" 
-                                            : "bg-white text-slate-500 border-slate-100 hover:border-slate-300"
+                                            ? "bg-slate-100 text-slate-950 font-black border-slate-300 shadow-none" 
+                                            : "bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:text-slate-900"
                                     )}
                                 >
                                     {status}
@@ -237,7 +236,7 @@ export default function PartnerBookingsPage() {
                                                                     return (
                                                                         <button 
                                                                             onClick={() => {
-                                                                                if (confirm("Bhai, kya aap sach mein ye booking cancel/reject karna chahte ho?")) {
+                                                                                if (confirm("Kya aap sach mein ye booking cancel karna chahte ho?")) {
                                                                                     handleUpdateStatus(booking.id, 'cancelled');
                                                                                 }
                                                                             }}
