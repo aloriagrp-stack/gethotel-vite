@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import Dashboard from "@/pages-legacy/partner-dashboard/Dashboard";
+import Bookings from "@/pages-legacy/partner-dashboard/Bookings";
 import PartnerLayout from "@/components/layout/PartnerLayout";
 
 export const metadata: Metadata = {
-  title: "Partner Overview | GetHotelStays",
+  title: "Partner Bookings | GetHotelStays",
   robots: {
     index: false,
     follow: false,
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default function Page() {
   return (
     <PartnerLayout>
-      <Dashboard />
+      <Bookings />
     </PartnerLayout>
   );
 }

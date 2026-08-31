@@ -68,7 +68,8 @@ export default function PartnerLayout({ children }: { children?: React.ReactNode
         { id: "switch", label: "Switch Property", icon: ChevronRight, href: "/partner-select" },
     ];
 
-    const activeItem = navItems.find(item => pathname === item.href) || navItems[0];
+    const currentPath = typeof window !== 'undefined' ? window.location.pathname.replace(/\/+$/, '') : pathname.replace(/\/+$/, '');
+    const activeItem = navItems.find(item => currentPath === item.href.replace(/\/+$/, '')) || navItems[0];
 
     const handleLogout = () => {
         logout();
@@ -120,7 +121,8 @@ export default function PartnerLayout({ children }: { children?: React.ReactNode
                 <nav className="flex-1 p-6 space-y-1 overflow-y-auto custom-scrollbar">
                     {navItems.map((item) => {
                         const Icon = item.icon;
-                        const isActive = pathname === item.href;
+                        const itemCleanHref = item.href.replace(/\/+$/, '');
+                        const isActive = currentPath === itemCleanHref || (itemCleanHref === '/partner-dashboard' && (currentPath === '/partner-dashboard' || currentPath === '/partner-dashboard/dashboard'));
                         const isPending = user?.role === 'hotel_admin' && (!user.hotel || user.hotel.length === 0);
                         const isRejected = user?.partnerRequestStatus === 'rejected';
                         const isDisabled = isPending || isRejected;
