@@ -248,13 +248,18 @@ exports.addRoom = async (req, res, next) => {
             seoTitle, seoDescription, slug
         } = req.body;
         
+        const roomName = (name || req.body.roomName || req.body.title || req.body.category || req.body.roomType || "Standard Room").trim();
+        const roomDesc = (description !== undefined && description !== null && String(description).trim() !== "")
+            ? String(description)
+            : `${roomName} with modern amenities and comfortable bedding.`;
+
         const roomData = {
-            hotelId,
-            name,
-            description,
-            pricePerNight: parseFloat(pricePerNight) || 0,
-            maxOccupancy: parseInt(maxOccupancy) || 2,
-            bedConfiguration: bedConfiguration || "1 King Bed",
+            hotelId: parseInt(hotelId),
+            name: roomName,
+            description: roomDesc,
+            pricePerNight: Math.max(0, parseFloat(pricePerNight || req.body.price || req.body.basePrice) || 0),
+            maxOccupancy: Math.max(1, parseInt(maxOccupancy || req.body.maxGuests || req.body.capacityAdults) || 2),
+            bedConfiguration: bedConfiguration || req.body.bedType || "1 King Bed",
             sizeM2: parseInt(sizeM2) || 0,
             amenities: normalizeJsonField(amenities),
             images: normalizeJsonField(images),
@@ -270,11 +275,11 @@ exports.addRoom = async (req, res, next) => {
 
             // New Mappings
             status: status || 'active',
-            totalInventory: parseInt(totalInventory) || 1,
+            totalInventory: Math.max(1, parseInt(totalInventory) || 1),
             viewType: viewType || null,
-            floorNumber: parseInt(floorNumber) || null,
+            floorNumber: (floorNumber !== undefined && floorNumber !== null && !isNaN(parseInt(floorNumber))) ? parseInt(floorNumber) : null,
             isCornerRoom: isCornerRoom === true || isCornerRoom === 'true',
-            capacityAdults: parseInt(capacityAdults) || 2,
+            capacityAdults: Math.max(1, parseInt(capacityAdults) || 2),
             capacityChildren: parseInt(capacityChildren) || 0,
             capacityInfants: parseInt(capacityInfants) || 0,
             extraMattress: extraMattress === true || extraMattress === 'true',
@@ -528,27 +533,32 @@ exports.bulkUpdateRooms = async (req, res, next) => {
         const savedRooms = [];
         if (Array.isArray(rooms)) {
             for (const r of rooms) {
+                const roomName = (r.name || r.roomName || r.title || r.category || r.roomType || "Standard Room").trim();
+                const roomDesc = (r.description !== undefined && r.description !== null && String(r.description).trim() !== "")
+                    ? String(r.description)
+                    : `${roomName} with comfortable bedding and essential amenities.`;
+
                 const roomData = {
-                    name: r.name,
-                    description: r.description || "",
-                    pricePerNight: parseFloat(r.pricePerNight) || 0,
-                    maxOccupancy: parseInt(r.maxOccupancy) || 2,
-                    bedConfiguration: r.bedConfiguration || "1 King Bed",
+                    name: roomName,
+                    description: roomDesc,
+                    pricePerNight: Math.max(0, parseFloat(r.pricePerNight || r.price || r.basePrice) || 0),
+                    maxOccupancy: Math.max(1, parseInt(r.maxOccupancy || r.maxGuests || r.capacityAdults) || 2),
+                    bedConfiguration: r.bedConfiguration || r.bedType || "1 King Bed",
                     sizeM2: parseInt(r.sizeM2) || 0,
                     amenities: normalizeJsonField(r.amenities),
                     images: normalizeJsonField(r.images),
                     highlights: normalizeJsonField(r.highlights),
                     trustPoints: normalizeJsonField(r.trustPoints),
                     status: r.status || 'active',
-                    totalInventory: parseInt(r.totalInventory) || 1,
+                    totalInventory: Math.max(1, parseInt(r.totalInventory) || 1),
                     isHourlyEnabled: r.isHourlyEnabled === true || r.isHourlyEnabled === 'true',
                     hourlyRates: typeof r.hourlyRates === 'string' ? r.hourlyRates : JSON.stringify(r.hourlyRates || {}),
                     
                     // Advanced room fields mappings
                     viewType: r.viewType || null,
-                    floorNumber: r.floorNumber !== undefined && r.floorNumber !== null ? parseInt(r.floorNumber) : null,
+                    floorNumber: (r.floorNumber !== undefined && r.floorNumber !== null && !isNaN(parseInt(r.floorNumber))) ? parseInt(r.floorNumber) : null,
                     isCornerRoom: r.isCornerRoom === true || r.isCornerRoom === 'true',
-                    capacityAdults: parseInt(r.capacityAdults) || 2,
+                    capacityAdults: Math.max(1, parseInt(r.capacityAdults) || 2),
                     capacityChildren: parseInt(r.capacityChildren) || 0,
                     capacityInfants: parseInt(r.capacityInfants) || 0,
                     extraMattress: r.extraMattress === true || r.extraMattress === 'true',

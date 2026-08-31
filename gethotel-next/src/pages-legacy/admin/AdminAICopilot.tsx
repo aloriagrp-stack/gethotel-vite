@@ -525,23 +525,28 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                 const parsedVariants = rawVariants.map((v: any, index: number) => ({
                     id: index + 1,
                     mealPlan: v.mealPlan || "Room Only",
-                    price: Number(v.price) || Number(r.pricePerNight),
+                    price: Number(v.price) || Number(r.pricePerNight) || Number(r.price) || 0,
                     policy: v.policy || "Free cancellation till 24h"
                 }));
 
                 const validRoomId = (r.id && Number(r.id) > 0) ? Number(r.id) : undefined;
+                const roomName = (r.name || r.roomName || r.title || r.category || r.roomType || "Standard Room").trim();
+                const roomDesc = (r.description !== undefined && r.description !== null && String(r.description).trim() !== "")
+                    ? String(r.description)
+                    : `${roomName} featuring modern amenities and comfortable bedding.`;
+
                 return {
                     id: validRoomId, // Preserve ID if editing, omit if new category
-                    name: r.name,
-                    description: r.description || "",
-                    pricePerNight: Number(r.pricePerNight),
-                    maxOccupancy: Number(r.maxOccupancy) || 2,
-                    bedConfiguration: r.bedConfiguration || "1 King Bed",
+                    name: roomName,
+                    description: roomDesc,
+                    pricePerNight: Number(r.pricePerNight || r.price || r.basePrice) || 0,
+                    maxOccupancy: Number(r.maxOccupancy || r.maxGuests || r.capacityAdults) || 2,
+                    bedConfiguration: r.bedConfiguration || r.bedType || "1 King Bed",
                     sizeM2: Number(r.sizeM2) || 18,
-                    amenities: r.amenities, 
-                    images: r.images || "[]",
-                    highlights: r.highlights || "[]",
-                    trustPoints: r.trustPoints || "[]",
+                    amenities: typeof r.amenities === 'string' ? r.amenities : JSON.stringify(r.amenities || []), 
+                    images: typeof r.images === 'string' ? r.images : JSON.stringify(r.images || []),
+                    highlights: typeof r.highlights === 'string' ? r.highlights : JSON.stringify(r.highlights || []),
+                    trustPoints: typeof r.trustPoints === 'string' ? r.trustPoints : JSON.stringify(r.trustPoints || []),
                     status: r.status || "active",
                     totalInventory: Number(r.totalInventory) || 5,
                     isHourlyEnabled: r.isHourlyEnabled || false,
