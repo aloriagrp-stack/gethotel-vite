@@ -445,9 +445,9 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
     const arrivalTime = searchParams.get("arrivalTime") || "12:00";
     const searchedGuests = parseInt(adults);
 
-    const calculateStayPrice = (basePrice: any, room: any, activePromos: any[] = allAvailableCoupons) => {
-        const promoList = activePromos && activePromos.length > 0 ? activePromos : allAvailableCoupons;
-        const priceDiff = room.dynamicPricePerNight ? (room.dynamicPricePerNight - room.pricePerNight) : 0;
+    const calculateStayPrice = (basePrice: any, room: any, activePromos?: any[]) => {
+        const promoList = Array.isArray(activePromos) && activePromos.length > 0 ? activePromos : allAvailableCoupons;
+        const priceDiff = room?.dynamicPricePerNight ? (room.dynamicPricePerNight - room.pricePerNight) : 0;
         const parsedBase = room?.selectedVariant?.price ? parseFloat(room.selectedVariant.price) : parseFloat(basePrice);
         const actualPrice = parsedBase + priceDiff;
 
@@ -509,6 +509,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
         let mobileRestrictedPromo: any = null;
 
         promoList.forEach(p => {
+            if (!p || p.isActive === false || p.is_active === false) return;
             // Check basic constraints bypassing the mobile check
             const copyPromo = { ...p, promoType: p.promoType === 'mobile_only' ? 'standard' : p.promoType };
             const basicCheck = validateCoupon(copyPromo, stayDetails);
@@ -525,10 +526,10 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
             }
         });
 
-        // 2. Sort fully valid promos to find the best applicable one (fallback to promoList if dates not set yet)
+        // 2. Sort fully valid promos to find the best applicable one (fallback to promoList if dates not strictly validated)
         if (fullyValidPromos.length === 0 && promoList.length > 0) {
             promoList.forEach(p => {
-                if (p.isActive !== false && p.is_active !== false) {
+                if (p && p.isActive !== false && p.is_active !== false) {
                     fullyValidPromos.push(p);
                 }
             });
@@ -539,10 +540,8 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
 
         // 3. Calculate final display results
         if (mobileRestrictedPromo && !isMobile) {
-            // Desktop view, show MOBILE ONLY badge, but do NOT apply mobile discount
             const title = `MOBILE ONLY: ${mobileRestrictedPromo.discountValue}${mobileRestrictedPromo.discountType === 'percentage' ? '%' : '₹'} OFF`;
             
-            // If there's another fully valid coupon, apply that one instead to the price
             if (bestPromo) {
                 const fPrice = applyDiscount(actualPrice, Number(bestPromo.discountValue), bestPromo.discountType);
                 return {
@@ -569,7 +568,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
             const fPrice = applyDiscount(actualPrice, Number(bestPromo.discountValue), bestPromo.discountType);
             const label = isMobilePromo 
                 ? `MOBILE ONLY: ${bestPromo.discountValue}${bestPromo.discountType === 'percentage' ? '%' : '₹'} OFF` 
-                : `${bestPromo.discountValue}${bestPromo.discountType === 'percentage' ? '%' : '₹'} OFF (${bestPromo.code})`;
+                : `${bestPromo.discountValue}${bestPromo.discountType === 'percentage' ? '%' : '₹'} OFF (${bestPromo.code || 'PROMO'})`;
             
             return { 
                 finalPrice: fPrice, 
@@ -581,47 +580,28 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
             };
         }
 
-        // 4. Default to Weekly/Monthly potential discounts if no promo matches
-        if (!hasDates) {
-            if (room.monthlyDiscount > 0) {
-                return { 
-                    finalPrice: applyDiscount(actualPrice, room.monthlyDiscount, 'percentage'), 
-                    originalPrice: actualPrice, 
-                    discountLabel: `${room.monthlyDiscount}% MONTHLY SAVINGS`, 
-                    isMobileOnly: false,
-                    promoType: 'standard',
-                    promoTypeLabel: 'Monthly Deal'
-                };
-            } else if (room.weeklyDiscount > 0) {
-                return { 
-                    finalPrice: applyDiscount(actualPrice, room.weeklyDiscount, 'percentage'), 
-                    originalPrice: actualPrice, 
-                    discountLabel: `${room.weeklyDiscount}% WEEKLY DEAL`, 
-                    isMobileOnly: false,
-                    promoType: 'standard',
-                    promoTypeLabel: 'Weekly Deal'
-                };
-            }
-        } else {
-            if (stayNights >= 30 && room.monthlyDiscount > 0) {
-                return { 
-                    finalPrice: applyDiscount(actualPrice, room.monthlyDiscount, 'percentage'), 
-                    originalPrice: actualPrice, 
-                    discountLabel: `${room.monthlyDiscount}% MONTHLY DISCOUNT`, 
-                    isMobileOnly: false,
-                    promoType: 'standard',
-                    promoTypeLabel: 'Monthly Deal'
-                };
-            } else if (stayNights >= 7 && room.weeklyDiscount > 0) {
-                return { 
-                    finalPrice: applyDiscount(actualPrice, room.weeklyDiscount, 'percentage'), 
-                    originalPrice: actualPrice, 
-                    discountLabel: `${room.weeklyDiscount}% WEEKLY DISCOUNT`, 
-                    isMobileOnly: false,
-                    promoType: 'standard',
-                    promoTypeLabel: 'Weekly Deal'
-                };
-            }
+        // 4. Default to Weekly/Monthly potential room discounts if no promo coupon applies
+        const mDisc = Number(room?.monthlyDiscount || room?.monthly_discount || 0);
+        const wDisc = Number(room?.weeklyDiscount || room?.weekly_discount || 0);
+
+        if (mDisc > 0) {
+            return { 
+                finalPrice: applyDiscount(actualPrice, mDisc, 'percentage'), 
+                originalPrice: actualPrice, 
+                discountLabel: `${mDisc}% SPECIAL SAVINGS`, 
+                isMobileOnly: false,
+                promoType: 'standard',
+                promoTypeLabel: 'Special Deal'
+            };
+        } else if (wDisc > 0) {
+            return { 
+                finalPrice: applyDiscount(actualPrice, wDisc, 'percentage'), 
+                originalPrice: actualPrice, 
+                discountLabel: `${wDisc}% SPECIAL DEAL`, 
+                isMobileOnly: false,
+                promoType: 'standard',
+                promoTypeLabel: 'Special Deal'
+            };
         }
 
         return { 
@@ -632,7 +612,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
             promoType: null,
             promoTypeLabel: null
         };
-    };;
+    };
 
     // Resilient Image Extraction
     const getImages = (data: any) => {
@@ -1313,7 +1293,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                                                     const rates = typeof room.hourlyRates === 'string' ? safeParse(room.hourlyRates, {}) : (room.hourlyRates || safeParse(room.hourly_rates, {}));
                                                     const isHourly = stayType === 'hourly';
                                                     const hourlyPrice = isHourly ? Number(rates[duration] || rates[String(duration)] || room.pricePerNight / 2) : 0;
-                                                    const stayInfo = calculateStayPrice(isHourly ? hourlyPrice : variant.price, room, coupons);
+                                                    const stayInfo = calculateStayPrice(isHourly ? hourlyPrice : variant.price, room, allAvailableCoupons);
                                                     const finalDisplayPrice = stayInfo.finalPrice;
 
                                                     return (
@@ -1473,7 +1453,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                                                                     {(() => {
                                                                         const rates = typeof room.hourlyRates === 'string' ? safeParse(room.hourlyRates, {}) : (room.hourlyRates || safeParse(room.hourly_rates, {}));
                                                                         const bPrice = stayType === 'hourly' ? (rates[duration] || rates[String(duration)] || room.pricePerNight / 2) : variant.price;
-                                                                        const sInfo = calculateStayPrice(bPrice, room, coupons);
+                                                                        const sInfo = calculateStayPrice(bPrice, room, allAvailableCoupons);
                                                                         if (!sInfo.discountLabel || !sInfo.promoTypeLabel) return null;
                                                                         return (
                                                                             <div className="bg-slate-900/95 backdrop-blur-sm text-white px-1.5 py-0.5 rounded text-[6px] font-black uppercase tracking-widest leading-none shadow-sm">
