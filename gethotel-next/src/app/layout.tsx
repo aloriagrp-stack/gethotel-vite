@@ -70,6 +70,15 @@ export const metadata: Metadata = {
       "x-default": "https://gethotelstays.com",
     },
   },
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.png", type: "image/png" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: "/favicon.png",
+  },
   other: {
     "google-site-verification": "M-yaXU14rnDoh4-JXkMQrwiSlWOqoo3ei2PTnrNSAFs",
     "msvalidate.01": "854D75231F8CB4CCD136C72C68768B36",
@@ -91,8 +100,10 @@ export default function RootLayout({
   return (
     <html lang="en-IN" prefix="og: https://ogp.me/ns#">
       <head>
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="icon" href="/favicon.png" type="image/png" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="icon" type="image/png" href="/favicon.png" />
+        <link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="any" />
+        <link rel="shortcut icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/favicon.png" />
         {/* JSON-LD Global Schemas for Google & AEO Answer Engines */}
         <script
