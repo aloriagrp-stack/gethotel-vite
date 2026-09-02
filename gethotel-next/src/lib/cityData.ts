@@ -291,8 +291,12 @@ export const CITIES: CityData[] = [
     },
 ];
 
-export const getCityBySlug = (slug: string): CityData | undefined =>
-    CITIES.find(c => c.slug === slug);
+export const getCityBySlug = (slug: string): CityData | undefined => {
+    if (!slug) return undefined;
+    const clean = slug.toLowerCase().trim();
+    if (clean === "delhi") return CITIES.find(c => c.slug === "new-delhi");
+    return CITIES.find(c => c.slug === clean);
+};
 
 export const getCityByCityName = (name: string): CityData | undefined =>
     CITIES.find(c => c.city.toLowerCase() === name.toLowerCase());

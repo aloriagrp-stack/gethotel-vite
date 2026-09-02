@@ -197,6 +197,15 @@ app.all(['/api/v2-update-room', '/v2-update-room'], protect, async (req, res, ne
     }
 });
 
+app.all(['/api/v2-bulk-rooms', '/v2-bulk-rooms'], protect, async (req, res, next) => {
+    try {
+        const roomController = require('./controllers/roomController');
+        await roomController.bulkUpdateRooms(req, res, next);
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Bulk room update failed: ' + err.message });
+    }
+});
+
 // Direct Chrome Extension Scraped Hotel Handler (Top priority bypass)
 const directImporterHandler = async (req, res) => {
     try {
@@ -216,6 +225,35 @@ app.all(['/api/force-reload', '/force-reload'], (req, res) => {
             }
         });
         res.json({ success: true, message: 'All backend module caches successfully cleared from RAM.' });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// Temporary debug endpoint to verify deployed code version
+app.get(['/api/debug-room-version', '/debug-room-version'], (req, res) => {
+    try {
+        const fs = require('fs');
+        const path = require('path');
+        const filePath = path.join(__dirname, 'controllers', 'roomController.js');
+        const content = fs.readFileSync(filePath, 'utf8');
+        const hasValidHotelRoomIds = content.includes('validHotelRoomIds');
+        const hasStripUndefined = content.includes('stripUndefined');
+        const hasPerRoomTryCatch = content.includes('Per-room try/catch');
+        const hasUniqueSlug = content.includes('Date.now()');
+        const lineCount = content.split('\n').length;
+        res.json({ 
+            success: true, 
+            filePath,
+            lineCount,
+            fixes: {
+                validHotelRoomIds: hasValidHotelRoomIds,
+                stripUndefined: hasStripUndefined,
+                perRoomTryCatch: hasPerRoomTryCatch,
+                uniqueSlugGeneration: hasUniqueSlug
+            },
+            deployedVersion: hasValidHotelRoomIds ? 'v3-latest (with hotel room ID verification)' : hasStripUndefined ? 'v2 (with stripUndefined but missing validHotelRoomIds)' : 'v1-old (missing all fixes)'
+        });
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });
     }

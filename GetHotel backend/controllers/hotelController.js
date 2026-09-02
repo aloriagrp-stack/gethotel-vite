@@ -693,9 +693,17 @@ exports.getMyHotels = async (req, res, next) => {
     try {
         const includeBookings = req.query.includeBookings === 'true';
         const light = req.query.light === 'true';
+        const queryHotelId = req.query.hotelId ? parseInt(req.query.hotelId) : undefined;
+
+        let whereClause = { userId: req.user.id };
+        if (['super_admin', 'superadmin', 'admin'].includes(req.user.role)) {
+            whereClause = queryHotelId ? { id: queryHotelId } : {};
+        } else if (queryHotelId) {
+            whereClause = { id: queryHotelId, userId: req.user.id };
+        }
 
         const hotels = await prisma.hotel.findMany({
-            where: { userId: req.user.id },
+            where: whereClause,
             include: { 
                 room: {
                     select: {

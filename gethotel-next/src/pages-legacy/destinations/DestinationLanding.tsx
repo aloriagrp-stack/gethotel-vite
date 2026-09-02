@@ -109,8 +109,10 @@ export default function DestinationLanding({
             try {
                 setLoading(true);
                 let response;
+                const isDelhiVariant = city.toLowerCase() === "new delhi" || city.toLowerCase() === "delhi";
+                const queryCity = isDelhiVariant ? "Delhi" : city;
                 const params: any = {
-                    city,
+                    city: queryCity,
                     limit: "50",
                 };
 
@@ -203,12 +205,13 @@ export default function DestinationLanding({
         /^\/+/,
         ""
     );
-    const pagePath = `/${currentLang}/${rawPath}`;
+    const langPrefix = currentLang === "en" ? "" : `/${currentLang}`;
+    const pagePath = `${langPrefix}/${rawPath}`;
 
     const breadcrumbs = [
-        { name: "Home", url: `/${currentLang}` },
-        { name: "Hotels", url: `/${currentLang}/hotels` },
-        { name: `${city} Hotels`, url: isSubPage ? `/${currentLang}/${city.toLowerCase()}-hotels` : pagePath },
+        { name: "Home", url: `${langPrefix}/` },
+        { name: "Hotels", url: `${langPrefix}/hotels` },
+        { name: `${city} Hotels`, url: isSubPage ? `${langPrefix}/${city.toLowerCase()}-hotels` : pagePath },
     ];
     if (isSubPage && h1) {
         breadcrumbs.push({ name: h1.split("—")[0].trim(), url: pagePath });

@@ -3,7 +3,11 @@ $projectDir = "D:\shriyansh stock\travell app project"
 $timestamp = Get-Date -Format 'yyyy-MM-dd_HHmm'
 
 # --- Frontend Dist ZIP ---
-$frontendDistSrc = Join-Path $projectDir "GetHotel-Vite\dist"
+$frontendDistSrc = if (Test-Path (Join-Path $projectDir "gethotel-next\out")) {
+    Join-Path $projectDir "gethotel-next\out"
+} else {
+    Join-Path $projectDir "GetHotel-Vite\dist"
+}
 $frontendZip = Join-Path $projectDir "GetHotel_Frontend_$timestamp.zip"
 
 Write-Host "Creating Frontend dist ZIP..."

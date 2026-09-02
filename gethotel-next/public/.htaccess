@@ -79,6 +79,10 @@ RewriteRule ^booking/.*$ /booking/details/1/index.html [L,QSA]
 RewriteRule ^bookings/.*$ /bookings/details/1/index.html [L,QSA]
 RewriteRule ^packages/.*$ /packages/1/index.html [L,QSA]
 RewriteRule ^tour-packages/.*$ /tour-packages/1/index.html [L,QSA]
+RewriteRule ^hotels-in/([^/]+)/([^/]+)/?$ /hotels-in/$1/$2/index.html [L,QSA]
+RewriteRule ^hotels-in/([^/]+)/?$ /hotels-in/$1/index.html [L,QSA]
+RewriteRule ^hotels/delhi/([^/]+)/?$ /hotels/delhi/$1/index.html [L,QSA]
+
 
 # 3. Multilingual /en/ 301 Redirects to Root (Enforce Canonical)
 RewriteRule ^(en|hi|es|fr|de|zh|ja|ar|ru|pt|bn|ta|te|mr|gu|kn|ml|pa|ur)/?$ / [R=301,L]

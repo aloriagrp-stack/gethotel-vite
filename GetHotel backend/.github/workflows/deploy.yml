@@ -74,6 +74,10 @@ jobs:
           put config/blocked_ips.json -o ../config/blocked_ips.json || true
           put config/blocked_ips.json -o ./config/blocked_ips.json || true
           put config/blocked_ips.json -o ./gethotel_backend/config/blocked_ips.json || true
+          put controllers/roomController.js -o ../gethotel_backend/controllers/roomController.js || true
+          put controllers/roomController.js -o ../controllers/roomController.js || true
+          put controllers/roomController.js -o ./controllers/roomController.js || true
+          put controllers/roomController.js -o ./gethotel_backend/controllers/roomController.js || true
           put prisma_fix.js -o ./node_modules/prisma/build/index.js || true
           put prisma_fix.js -o ./gethotel_backend/node_modules/prisma/build/index.js || true
           put prisma_fix.js -o ../gethotel_backend/node_modules/prisma/build/index.js || true

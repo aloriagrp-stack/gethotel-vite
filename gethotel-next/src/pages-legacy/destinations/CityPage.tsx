@@ -5,20 +5,25 @@ import { useEffect } from "react";
 import DestinationLanding from "./DestinationLanding";
 import { getCityBySlug, getCitySEO, CITIES } from "@/lib/cityData";
 
-export default function CityPage() {
+interface CityPageProps {
+    citySlugOverride?: string;
+    filterSlugOverride?: string;
+}
+
+export default function CityPage({ citySlugOverride, filterSlugOverride }: CityPageProps = {}) {
     const params = useParams<{ citySlug?: string; filterSlug?: string; lang?: string }>();
     const router = useRouter();
-    const citySlug = params?.citySlug;
-    const filterSlug = params?.filterSlug;
+    const citySlug = citySlugOverride || params?.citySlug;
+    const filterSlug = filterSlugOverride || params?.filterSlug;
     const lang = params?.lang;
     const currentLang = lang || "en";
     const cityData = getCityBySlug(citySlug || "");
 
     useEffect(() => {
-        if (!cityData) {
+        if (!cityData && !citySlugOverride) {
             router.replace(`/${currentLang}/hotels`);
         }
-    }, [cityData, currentLang, router]);
+    }, [cityData, currentLang, router, citySlugOverride]);
 
     if (!cityData) {
         return null;
@@ -36,7 +41,7 @@ export default function CityPage() {
             introduction={seoData.introduction}
             sections={seoData.sections}
             faqs={seoData.faqs}
-            urlSlug={cityData.slug}
+            urlSlug={filterSlug ? `${cityData.slug}/${filterSlug}` : cityData.slug}
             urlPrefix="/hotels-in/"
             filterSlug={filterSlug}
             internalLinks={[

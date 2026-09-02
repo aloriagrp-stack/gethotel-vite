@@ -1,5 +1,14 @@
 const prisma = require('../config/db');
 
+// Strip undefined values from an object — Prisma rejects undefined even for nullable fields
+const stripUndefined = (obj) => {
+    const clean = {};
+    for (const [key, val] of Object.entries(obj)) {
+        if (val !== undefined) clean[key] = val;
+    }
+    return clean;
+};
+
 // Bulletproof JSON Normalizer
 const normalizeJsonField = (data) => {
     if (!data) return "[]";
@@ -306,11 +315,11 @@ exports.addRoom = async (req, res, next) => {
             partyAllowed: partyAllowed === true || partyAllowed === 'true',
             seoTitle: seoTitle || null,
             seoDescription: seoDescription || null,
-            slug: slug || null
+            slug: slug || `${roomName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}-${hotelId}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`
         };
 
         const room = await prisma.room.create({
-            data: roomData
+            data: stripUndefined(roomData)
         });
 
         res.status(201).json({ success: true, data: room });
@@ -499,7 +508,7 @@ exports.deleteRoom = async (req, res, next) => {
 // @access  Private (Hotel Admin, Super Admin)
 exports.bulkUpdateRooms = async (req, res, next) => {
     try {
-        const hotelId = parseInt(req.params.hotelId);
+        const hotelId = parseInt(req.params.hotelId || req.body.hotelId || req.body._hotelId);
         const { rooms, deleteIds } = req.body;
 
         // Validate hotelId before any DB calls
@@ -530,6 +539,12 @@ exports.bulkUpdateRooms = async (req, res, next) => {
         }
 
         // 2. Create/Update rooms
+        const existingHotelRooms = await prisma.room.findMany({
+            where: { hotelId: hotelId },
+            select: { id: true }
+        });
+        const validHotelRoomIds = new Set(existingHotelRooms.map(rm => rm.id));
+
         const savedRooms = [];
         if (Array.isArray(rooms)) {
             for (const r of rooms) {
@@ -585,32 +600,41 @@ exports.bulkUpdateRooms = async (req, res, next) => {
                     partyAllowed: r.partyAllowed === true || r.partyAllowed === 'true',
                     seoTitle: r.seoTitle || null,
                     seoDescription: r.seoDescription || null,
-                    slug: r.slug || null,
+                    slug: r.slug || `${roomName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}-${hotelId}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
                     variants: normalizeJsonField(r.variants)
                 };
 
                 const parsedRoomId = r.id ? parseInt(r.id) : NaN;
-                if (!isNaN(parsedRoomId) && parsedRoomId > 0) {
-                    // Update
-                    const updated = await prisma.room.update({
-                        where: { id: parsedRoomId },
-                        data: roomData
-                    });
-                    savedRooms.push(updated);
-                } else {
-                    // Create
-                    const created = await prisma.room.create({
-                        data: {
-                            ...roomData,
-                            hotelId: hotelId
-                        }
-                    });
-                    savedRooms.push(created);
+                const cleanData = stripUndefined(roomData);
+
+                // Per-room try/catch — if one room fails, others still save
+                try {
+                    if (!isNaN(parsedRoomId) && validHotelRoomIds.has(parsedRoomId)) {
+                        // Update existing room belonging to THIS hotel
+                        const updated = await prisma.room.update({
+                            where: { id: parsedRoomId },
+                            data: cleanData
+                        });
+                        savedRooms.push(updated);
+                    } else {
+                        // Create brand new category for THIS hotel
+                        const { id, ...createData } = cleanData;
+                        const created = await prisma.room.create({
+                            data: {
+                                ...createData,
+                                hotelId: hotelId
+                            }
+                        });
+                        savedRooms.push(created);
+                    }
+                } catch (roomErr) {
+                    console.error(`[bulkUpdateRooms] Failed to save room "${roomName}":`, roomErr.message);
+                    // Continue with next room instead of aborting entire batch
                 }
             }
         }
 
-        res.status(200).json({ success: true, data: savedRooms });
+        res.status(200).json({ success: true, data: savedRooms, count: savedRooms.length });
     } catch (err) {
         res.status(400).json({ success: false, message: err.message });
     }
