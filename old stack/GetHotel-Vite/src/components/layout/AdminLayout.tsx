@@ -57,6 +57,7 @@ export default function AdminLayout() {
 
     const navItems = [
         { id: "overview", label: "Dashboard", icon: LayoutDashboard, href: "/admin/super" },
+        { id: "ai-copilot", label: "✨ AI Room Onboarding", icon: Sparkles, href: "/admin/super/ai-copilot" },
         { id: "hotel-importer", label: "Hotel Importer (Agent)", icon: Download, href: "/admin/super/hotel-importer" },
         { id: "tour-packages", label: "Tour Packages Manager", icon: Palmtree, href: "/admin/super/tour-packages" },
         { id: "requests", label: "Partner Requests", icon: Clock, href: "/admin/super/requests" },
@@ -65,7 +66,6 @@ export default function AdminLayout() {
         { id: "hotels", label: "Hotels", icon: Hotel, href: "/admin/super?tab=hotels" },
         { id: "promotions", label: "Promotions & Coupons", icon: Percent, href: "/admin/super?tab=promotions" },
         { id: "multi-room", label: "Multi Room Setup", icon: LayoutGrid, href: "/admin/super/multi-room" },
-        { id: "ai-copilot", label: "AI Room Onboarding", icon: Sparkles, href: "/admin/super/ai-copilot" },
         { id: "bookings", label: "All Bookings", icon: Calendar, href: "/admin/super/bookings" },
         { id: "reviews", label: "Global Reviews", icon: Star, href: "/admin/super/reviews" },
         { id: "users", label: "Users", icon: Users, href: "/admin/super?tab=users" },

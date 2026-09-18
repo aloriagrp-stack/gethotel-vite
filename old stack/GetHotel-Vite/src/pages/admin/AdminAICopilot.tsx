@@ -48,6 +48,7 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
     const [selectedHotelId, setSelectedHotelId] = useState<number | "">("");
     const [inputValue, setInputValue] = useState("");
     const [urls, setUrls] = useState<string[]>([""]);
+    const [showUrlInput, setShowUrlInput] = useState<boolean>(false);
     const [attachedImages, setAttachedImages] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -133,7 +134,7 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
             {
                 id: "welcome",
                 sender: "ai",
-                text: "Hello! I am your AI Room Copilot. Select a hotel above, and I can help you instantly generate, extract, or scrape room categories, prices, bed configurations, and amenities. You can copy-paste hotel details from any website or provide a URL directly!",
+                text: "Hello! I am your In-House Room Setup Copilot (Zero External API). No website links required — simply type your room categories, bed setups, and pricing directly into the chat (e.g. 'Create 3 rooms: Deluxe ₹2500, Super Deluxe ₹3500 with balcony, Suite ₹5000 with bathtub'). I will instantly configure and structure your room categories!",
                 timestamp: new Date()
             }
         ]);
@@ -209,7 +210,7 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
             : isReviewImport
             ? [
                 "Analyzing raw review data...",
-                "Initializing Gemini review parser...",
+                "Initializing In-House Review Parser...",
                 "Extracting reviewer names, ratings, and comments...",
                 "Structuring individual cleanliness, comfort & staff scores...",
                 "Creating virtual guest accounts in database...",
@@ -217,9 +218,9 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                 "Formatting import report..."
               ]
             : [
-                "Analyzing instructions & chat history context...",
+                "Analyzing instructions & chat prompt context...",
                 "Checking database for existing room configurations...",
-                "Running Groq Llama-3.3 reasoning engine...",
+                "Running In-House Python AI Engine...",
                 "Formatting structured room recommendations...",
                 "Finalizing response..."
               ];
@@ -578,13 +579,10 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
     };
 
     const SUGGESTIONS = [
-        { 
-            label: "Setup using own data", 
-            prompt: "Extract and draft room categories, prices, bed configurations, and amenities using this raw data:\n\n"
-        },
-        { label: "Standard Setup", prompt: "Recommend standard budget rooms setup: 1 Single Room, 1 Double Room, and 1 Suite Room with average standard pricing." },
-        { label: "Holiday Resort Rooms", prompt: "Generate luxurious resort categories including Cottage Room, Villa with private pool, and Royal Suite." },
-        { label: "Business Hotel Setup", prompt: "Recommend compact smart categories for business travelers: Executive Twin Room, Deluxe Single, and Premium Club Room." }
+        { label: "⚡ 3 Standard Rooms", prompt: "Create 3 standard rooms: Standard Room at ₹1500, Deluxe Room at ₹2500, Executive Suite at ₹4500" },
+        { label: "🏨 Budget Hotel Setup", prompt: "Setup budget hotel rooms: 1 Single Room at ₹1200, 1 Double Room at ₹1800, and 1 Family Room at ₹2800" },
+        { label: "💎 Luxury Resort Setup", prompt: "Generate luxury resort setup: Deluxe Garden Villa at ₹4999, Pool Villa with private pool at ₹7499, Presidential Suite at ₹12000" },
+        { label: "💼 Business Hotel Setup", prompt: "Setup business hotel categories: Executive Single at ₹2200, Corporate Deluxe at ₹3000, Club Suite with work desk at ₹4500" }
     ];
 
     return (
@@ -1228,7 +1226,7 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                                 {/* Main Text Input */}
                                 <input 
                                     type="text"
-                                    placeholder="Type instructions for Gemini (e.g. Recommend rooms with specific prices)..."
+                                    placeholder="Type room specifications or instructions (e.g. Create 3 rooms: Deluxe ₹2500, Super Deluxe ₹3500, Suite ₹5000)..."
                                     value={inputValue}
                                     onChange={(e) => setInputValue(e.target.value)}
                                     disabled={loading || !selectedHotelId}
@@ -1252,50 +1250,64 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                             </div>
                         </div>
 
-                        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                            {/* URL Input List */}
-                            <div className="flex flex-col gap-2 w-full md:w-auto">
-                                <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Optional OTA Links (Multi-scraping):</span>
-                                <div className="space-y-2 w-full">
-                                    {urls.map((url, index) => (
-                                        <div key={index} className="flex items-center gap-2">
-                                            <input 
-                                                type="url"
-                                                placeholder="https://www.booking.com/hotel/..."
-                                                value={url}
-                                                onChange={(e) => {
-                                                    const newUrls = [...urls];
-                                                    newUrls[index] = e.target.value;
-                                                    setUrls(newUrls);
-                                                }}
-                                                disabled={loading || !selectedHotelId}
-                                                className="w-full md:w-80 px-3.5 py-2 bg-[#141414] border border-[#262626] rounded-xl text-[10px] font-mono text-white focus:outline-none focus:border-neutral-500 placeholder:text-neutral-600 disabled:bg-[#141414] disabled:cursor-not-allowed"
-                                            />
-                                            {urls.length > 1 && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setUrls(urls.filter((_: string, i: number) => i !== index))}
-                                                    className="p-2 text-red-400 hover:bg-red-950/80 rounded-lg transition-colors cursor-pointer"
-                                                    title="Remove URL"
-                                                >
-                                                    <Trash2 className="w-3.5 h-3.5" />
-                                                </button>
-                                            )}
-                                            {index === urls.length - 1 && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setUrls([...urls, ""])}
-                                                    className="p-2 text-emerald-400 hover:bg-emerald-950/80 rounded-lg transition-colors cursor-pointer"
-                                                    title="Add URL"
-                                                >
-                                                    <Plus className="w-3.5 h-3.5" />
-                                                </button>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
+                        <div className="flex flex-col gap-2">
+                            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowUrlInput(!showUrlInput)}
+                                    className="text-[10px] text-neutral-500 hover:text-neutral-300 font-bold uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer"
+                                >
+                                    <span>{showUrlInput ? "− Hide Website Link Option" : "+ Optional: Have an external OTA link? (Click to expand)"}</span>
+                                </button>
+                                <span className="text-[9px] text-emerald-400/80 font-bold uppercase tracking-wider self-end flex items-center gap-1.5">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                    100% Pure Chat • In-House Python AI Engine
+                                </span>
                             </div>
-                            <span className="text-[9px] text-neutral-500 font-bold uppercase tracking-wider self-end">Powered by Gemini 2.5 Flash</span>
+
+                            {showUrlInput && (
+                                <div className="flex flex-col gap-2 w-full pt-2 border-t border-[#1f1f1f]">
+                                    <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Optional OTA Links (Multi-scraping):</span>
+                                    <div className="space-y-2 w-full">
+                                        {urls.map((url, index) => (
+                                            <div key={index} className="flex items-center gap-2">
+                                                <input 
+                                                    type="url"
+                                                    placeholder="https://www.booking.com/hotel/..."
+                                                    value={url}
+                                                    onChange={(e) => {
+                                                        const newUrls = [...urls];
+                                                        newUrls[index] = e.target.value;
+                                                        setUrls(newUrls);
+                                                    }}
+                                                    disabled={loading || !selectedHotelId}
+                                                    className="w-full md:w-80 px-3.5 py-2 bg-[#141414] border border-[#262626] rounded-xl text-[10px] font-mono text-white focus:outline-none focus:border-neutral-500 placeholder:text-neutral-600 disabled:bg-[#141414] disabled:cursor-not-allowed"
+                                                />
+                                                {urls.length > 1 && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setUrls(urls.filter((_: string, i: number) => i !== index))}
+                                                        className="p-2 text-red-400 hover:bg-red-950/80 rounded-lg transition-colors cursor-pointer"
+                                                        title="Remove URL"
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                    </button>
+                                                )}
+                                                {index === urls.length - 1 && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setUrls([...urls, ""])}
+                                                        className="p-2 text-emerald-400 hover:bg-emerald-950/80 rounded-lg transition-colors cursor-pointer"
+                                                        title="Add URL"
+                                                    >
+                                                        <Plus className="w-3.5 h-3.5" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </>

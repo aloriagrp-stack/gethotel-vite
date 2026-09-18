@@ -206,7 +206,7 @@ export default function AdminBulkOnboarder({ onSuccess }: AdminBulkOnboarderProp
             });
 
             const filesPayload = await Promise.all(fileDataPromises);
-            setProgressSteps(prev => [...prev, "✓ Successfully read file contents.", "⏳ Contacting Gemini AI Parser (Running in parallel)..."]);
+            setProgressSteps(prev => [...prev, "✓ Successfully read file contents.", "⏳ Contacting In-House Python AI Parser (High Speed)..."]);
 
             // Call backend API preview endpoint
             const res = await adminApi.bulkOnboardPreview({ files: filesPayload });

@@ -39,3 +39,5 @@ Thumbs.db
 *.jsonl
 /GetHotel backend/logs/
 *.zip
+__pycache__/
+*.pyc

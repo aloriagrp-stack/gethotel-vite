@@ -25,13 +25,16 @@ export default function ConditionalLayout({
 
     const isNoLayoutPage = cleanPathname.startsWith("/admin") || 
                            cleanPathname.startsWith("/partner-dashboard") || 
-                           cleanPathname === "/.controlhub" || 
+                           cleanPathname.startsWith("/controlhub") || 
+                           cleanPathname.startsWith("/.controlhub") || 
+                           cleanPathname.startsWith("/superadmin") || 
                            cleanPathname === "/list-property/register" || 
                            cleanPathname === "/partner" || 
                            cleanPathname === "/partner-select" ||
-                           pathname.includes("/admin/") ||
-                           pathname.includes("/partner-dashboard/") ||
-                           pathname.includes("/.controlhub") ||
+                           pathname.includes("/admin") ||
+                           pathname.includes("/partner-dashboard") ||
+                           pathname.includes("controlhub") ||
+                           pathname.includes("superadmin") ||
                            pathname.includes("/partner-select");
     const isNoFooterPage = cleanPathname === "/login" || cleanPathname === "/register";
 

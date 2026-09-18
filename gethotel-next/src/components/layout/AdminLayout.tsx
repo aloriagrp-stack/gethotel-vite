@@ -60,6 +60,7 @@ export default function AdminLayout({ children }: { children?: React.ReactNode }
 
     const navItems = [
         { id: "overview", label: "Dashboard", icon: LayoutDashboard, tab: "overview" },
+        { id: "ai-copilot", label: "✨ AI Room Onboarding", icon: Sparkles, tab: "ai-copilot" },
         { id: "hotel-importer", label: "Hotel Importer (Agent)", icon: Download, tab: "hotel-importer" },
         { id: "tour-packages", label: "Tour Packages Manager", icon: Palmtree, tab: "tour-packages" },
         { id: "destinations", label: "Destinations Cards Manager", icon: MapPin, tab: "destinations" },
@@ -69,7 +70,6 @@ export default function AdminLayout({ children }: { children?: React.ReactNode }
         { id: "hotels", label: "Hotels", icon: Hotel, tab: "hotels" },
         { id: "promotions", label: "Promotions & Coupons", icon: Percent, tab: "promotions" },
         { id: "multi-room", label: "Multi Room Setup", icon: LayoutGrid, tab: "multi-room" },
-        { id: "ai-copilot", label: "AI Room Onboarding", icon: Sparkles, tab: "ai-copilot" },
         { id: "bookings", label: "All Bookings", icon: Calendar, tab: "bookings" },
         { id: "reviews", label: "Global Reviews", icon: Star, tab: "reviews" },
         { id: "users", label: "Users", icon: Users, tab: "users" },

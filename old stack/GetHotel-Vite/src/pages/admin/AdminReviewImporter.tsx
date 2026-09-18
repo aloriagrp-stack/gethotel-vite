@@ -63,7 +63,7 @@ export default function AdminReviewImporter({
             "Connecting to Booking.com translate proxy...",
             "Downloading webpage listing contents...",
             "Cleaning HTML and extracting readable text content...",
-            "Running Gemini 2.5 flash review parsing engine...",
+            "Running In-House Review Parsing Engine...",
             "Creating virtual reviewer accounts in database...",
             "Storing reviews and recalculating average hotel rating..."
         ];
