@@ -45,7 +45,7 @@ function syncAndRestartBackend() {
     echo "\n=== SYNCING BACKEND TO HOME DIR ===\n";
     $srcDir = '/home/vgyuvmpi/gethotel_backend/';
     $targetDir = '/home/vgyuvmpi/';
-    $items = ['server.js', 'package.json', 'routes', 'controllers', 'config', 'middleware', 'prisma', 'utils', 'services'];
+    $items = ['server.js', 'package.json', 'routes', 'controllers', 'config', 'middleware', 'prisma', 'utils', 'services', 'data'];
     foreach ($items as $item) {
         $src = $srcDir . $item;
         $dest = $targetDir . $item;

@@ -14,6 +14,7 @@ const {
     detectEmotionalContext,
     evaluateInternalTelemetry
 } = require('./intelligenceEngine');
+const travelBrain = require('./travelBrain');
 const logger = require('./logger');
 
 // ---------------------------------------------------------------------------
@@ -271,16 +272,32 @@ async function processUserMessage({ messages = [], userId = null, conversationId
         userProfile: persistentUserProfile
     });
 
-    let rawReply;
+    // In-House Travel Brain execution (Zero External API dependency)
+    let brainResult = null;
     try {
-        rawReply = await generateChatCompletion({
-            systemInstruction: dynamicPrompt,
-            history: normalizedMessages.slice(0, -1),
-            userQuery: userQueryWithContext
+        brainResult = await travelBrain.processQuery({
+            query: userQuery,
+            messages: normalizedMessages,
+            dbHotels,
+            memory: workflow.memory,
+            userId
         });
-    } catch (err) {
-        logger.error('Orchestrator', 'LLM gateway threw', { error: err.message });
-        rawReply = buildDeterministicFallback(dbHotels, intent);
+    } catch (e) {
+        logger.warn('Orchestrator', 'TravelBrain execution error', { error: e.message });
+    }
+
+    let rawReply = brainResult?.reply || null;
+    if (!rawReply) {
+        try {
+            rawReply = await generateChatCompletion({
+                systemInstruction: dynamicPrompt,
+                history: normalizedMessages.slice(0, -1),
+                userQuery: userQueryWithContext
+            });
+        } catch (err) {
+            logger.error('Orchestrator', 'LLM gateway threw', { error: err.message });
+            rawReply = buildDeterministicFallback(dbHotels, intent);
+        }
     }
 
     let humanSanitizedReply = sanitizeHumanPersonaReply(rawReply);
@@ -458,21 +475,43 @@ async function processUserMessageStream({ messages = [], userId = null, conversa
         userProfile: persistentUserProfile
     });
 
-    // 5. Stream LLM Response
-    let streamedReply = "";
+    // 5. In-House Travel Brain Execution
+    let brainResult = null;
     try {
-        streamedReply = await streamChatCompletion({
-            systemInstruction: dynamicPrompt,
-            history: normalizedMessages.slice(0, -1),
-            userQuery: userQueryWithContext,
-            onToken: (token) => {
-                onToken(token);
-            }
+        brainResult = await travelBrain.processQuery({
+            query: userQuery,
+            messages: normalizedMessages,
+            dbHotels,
+            memory: workflow.memory,
+            userId
         });
-    } catch (err) {
-        logger.error('OrchestratorStream', 'Stream LLM error:', err.message);
-        streamedReply = "Hey! I've loaded the details for you below.";
-        onToken(streamedReply);
+    } catch (e) {
+        logger.warn('OrchestratorStream', 'TravelBrain execution error', { error: e.message });
+    }
+
+    let streamedReply = "";
+    if (brainResult && brainResult.reply) {
+        const words = brainResult.reply.split(' ');
+        for (let i = 0; i < words.length; i++) {
+            const token = (i === 0 ? '' : ' ') + words[i];
+            onToken(token);
+        }
+        streamedReply = brainResult.reply;
+    } else {
+        try {
+            streamedReply = await streamChatCompletion({
+                systemInstruction: dynamicPrompt,
+                history: normalizedMessages.slice(0, -1),
+                userQuery: userQueryWithContext,
+                onToken: (token) => {
+                    onToken(token);
+                }
+            });
+        } catch (err) {
+            logger.error('OrchestratorStream', 'Stream LLM error:', err.message);
+            streamedReply = "Hey! I've loaded the details for you below.";
+            onToken(streamedReply);
+        }
     }
 
     let humanSanitizedReply = sanitizeHumanPersonaReply(streamedReply);

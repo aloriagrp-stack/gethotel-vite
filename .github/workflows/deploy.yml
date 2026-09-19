@@ -43,7 +43,7 @@ jobs:
           echo "Zipping backend directory..."
           rm -f backend.zip
           cd "GetHotel backend"
-          zip -r ../backend.zip server.js package.json routes controllers config middleware prisma utils services -x "*.log" -x "node_modules/*" -x "uploads/*" -x "scratch/*" -x "tmp/*"
+          zip -r ../backend.zip server.js package.json routes controllers config middleware prisma utils services data -x "*.log" -x "node_modules/*" -x "uploads/*" -x "scratch/*" -x "tmp/*"
           cd ..
           ls -la backend.zip
           echo "Uploading backend.zip to public_html..."
