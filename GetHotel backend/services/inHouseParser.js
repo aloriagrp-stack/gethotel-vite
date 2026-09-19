@@ -185,7 +185,137 @@ function parseInHousePrompt(prompt, existingRooms = [], basePrice = 2499) {
         }
     }
 
-    // 4. PARSE ROOM SEGMENTS
+function parseStructuredBlocks(text) {
+    const hasCategoryHeaders = /(?:ROOM\s*CATEGORY|ROOM\s*\d+|CATEGORY\s*\d+|={3,}\s*ROOM|Price\s*Plans\s*\(per\s*night\))/i.test(text);
+    if (!hasCategoryHeaders) return null;
+
+    const blockRegex = /(?:={3,}|-{3,}|\*{3,})*\s*(?:ROOM\s*CATEGORY\s*\d*[:\s]*|ROOM\s*\d+[:\s]*|CATEGORY\s*\d+[:\s]*)(.+?)(?=(?:={3,}|-{3,}|\*{3,})*\s*(?:ROOM\s*CATEGORY|ROOM\s*\d+|CATEGORY\s*\d+|NOTE\s*-+|$))/gis;
+    const matches = [...text.matchAll(blockRegex)];
+    if (!matches || matches.length === 0) return null;
+
+    const rooms = [];
+    for (let i = 0; i < matches.length; i++) {
+        const headerAndBody = matches[i][1].trim();
+        const lines = headerAndBody.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+        if (lines.length === 0) continue;
+
+        let titleLine = lines[0].replace(/^[:\-\=\s]+|[:\-\=\s]+$/g, '').trim();
+        const titleClean = titleLine.split(/(?:-{3,}|={3,}|Size\s*:|Bed\s*:|Price\s*:)/i)[0].trim();
+        if (!titleClean || titleClean.toLowerCase().includes('note')) continue;
+
+        const blockText = headerAndBody;
+
+        // 1. Size
+        let sizeM2 = 25;
+        const sizeMtMatch = blockText.match(/\((\d+)\s*sq\.?\s*m[t\.]?\)/i);
+        const sizeFtMatch = blockText.match(/(\d+)\s*sq\.?\s*ft/i);
+        if (sizeMtMatch) {
+            sizeM2 = parseInt(sizeMtMatch[1], 10);
+        } else if (sizeFtMatch) {
+            sizeM2 = Math.round(parseInt(sizeFtMatch[1], 10) / 10.764);
+        }
+
+        // 2. Bed Configuration
+        let bed = "1 King Bed";
+        const bedMatch = blockText.match(/Bed\s*:\s*([^\n\r]+?)(?=\s*Bathroom|\s*Max|\s*Room|\s*Price|\s*$)/i);
+        if (bedMatch) {
+            bed = bedMatch[1].replace(/[-=]+$/, '').trim();
+        }
+
+        // 3. Max Guests / Occupancy
+        let occupancy = 2;
+        const occMatch = blockText.match(/(?:Max\s*Guests?|Occupancy|Guests?)\s*:\s*(\d+)/i);
+        if (occMatch) {
+            occupancy = parseInt(occMatch[1], 10);
+        }
+
+        // 4. Amenities
+        const amenities = [];
+        const amenBlockMatch = blockText.match(/Room\s*Amenities\s*:\s*([\s\S]+?)(?=\s*Price\s*Plans|\s*Price\s*:|\s*Rate\s*:|\s*={3,}|\s*-{3,}|$)/i);
+        if (amenBlockMatch) {
+            const rawAmen = amenBlockMatch[1].trim();
+            const items = rawAmen.split(/(?:\r?\n|^)\s*-\s*|\s+-\s+/).map(a => a.trim()).filter(a => a.length > 2 && !a.toLowerCase().startsWith('price'));
+            amenities.push(...items);
+        }
+
+        // 5. Price Plans / Variants
+        const variants = [];
+        const planRegex = /(EP|CP|MAP|AP|Room\s*Only|Bed\s*&\s*Breakfast)\s*(?:\(([^)]+)\))?\s*:\s*(?:Rs\.?|₹)?\s*([\d,]+)/gi;
+        let planMatch;
+        let lowestPrice = null;
+
+        while ((planMatch = planRegex.exec(blockText)) !== null) {
+            const planCode = planMatch[1].trim().toUpperCase();
+            const planDesc = planMatch[2] ? planMatch[2].trim() : '';
+            const price = parseInt(planMatch[3].replace(/,/g, ''), 10);
+
+            let mealPlan = planCode;
+            if (planCode === 'EP') mealPlan = "Room Only (EP)";
+            else if (planCode === 'CP') mealPlan = "Bed & Breakfast (CP)";
+            else if (planCode === 'MAP') mealPlan = "Half Board (MAP - Breakfast + Dinner)";
+            else if (planCode === 'AP') mealPlan = "Full Board (AP - All Meals)";
+
+            let policy = "Free cancellation till 24h";
+            if (/non-refundable/i.test(planDesc)) {
+                policy = "Non-Refundable";
+            } else if (/free\s*cancellation/i.test(planDesc)) {
+                policy = "Free cancellation";
+            }
+
+            variants.push({
+                id: variants.length + 1,
+                mealPlan: `${mealPlan}${planDesc ? ` (${planDesc})` : ''}`,
+                price: price,
+                policy: policy
+            });
+
+            if (lowestPrice === null || price < lowestPrice) {
+                lowestPrice = price;
+            }
+        }
+
+        if (lowestPrice === null) {
+            const pMatch = blockText.match(/(?:Rs\.?|₹|INR)\s*([\d,]+)/i);
+            if (pMatch) {
+                lowestPrice = parseInt(pMatch[1].replace(/,/g, ''), 10);
+            } else {
+                lowestPrice = 2499;
+            }
+        }
+
+        rooms.push({
+            name: titleClean.replace(/\b\w/g, l => l.toUpperCase()),
+            pricePerNight: lowestPrice,
+            maxOccupancy: occupancy,
+            bedConfiguration: bed,
+            sizeM2: sizeM2,
+            totalInventory: 5,
+            amenities: amenities.length > 0 ? amenities : ["Free Wi-Fi", "Air Conditioning", "Flat-screen TV", "Private Bathroom"],
+            variants: variants.length > 0 ? variants : [
+                { id: 1, mealPlan: "Room Only (EP)", price: lowestPrice, policy: "Free cancellation till 24h" }
+            ],
+            images: [
+                ROOM_STOCK_IMAGES[rooms.length % ROOM_STOCK_IMAGES.length]
+            ],
+            description: `${titleClean} (${sizeM2} sq.mt) featuring ${bed}, suitable for up to ${occupancy} guests.`
+        });
+    }
+
+    return rooms.length > 0 ? rooms : null;
+}
+
+    // 4. CHECK FOR STRUCTURED LISTINGS / BLOCKS
+    const structuredRooms = parseStructuredBlocks(p);
+    if (structuredRooms && structuredRooms.length > 0) {
+        const roomSummary = structuredRooms.map(r => `**${r.name}** (₹${r.pricePerNight})`).join(', ');
+        return {
+            reply: `Extracted and structured **${structuredRooms.length} room categories** with their respective rate plans (EP, CP, MAP):\n\n${roomSummary}\n\nReview the room cards and click 'Save to Hotel' to apply them!`,
+            data: structuredRooms,
+            clearAllRooms: false
+        };
+    }
+
+    // 5. PARSE FLAT ROOM SEGMENTS
     const cleaned = p.replace(/^(?:create|setup|add|total\s*\d+\s*rooms?[:\s]*)+/i, '').trim();
     const segments = cleaned.split(/\n+|,|;|\band\b/i).map(s => s.trim()).filter(Boolean);
 

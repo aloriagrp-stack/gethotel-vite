@@ -415,7 +415,11 @@ def parse_chat_prompt_intent(
             }
 
     # 6. CREATE / SYNTHESIZE ROOMS FROM CHAT PROMPT
-    extracted_rooms = parse_chat_rooms_list(p, base_price)
+    structured_rooms = parse_structured_blocks(p, base_price)
+    if structured_rooms:
+        extracted_rooms = structured_rooms
+    else:
+        extracted_rooms = parse_chat_rooms_list(p, base_price)
     
     if not extracted_rooms:
         # Fallback to standard presets if user gave a short hint
@@ -459,6 +463,111 @@ def parse_chat_prompt_intent(
         "rooms": extracted_rooms,
         "clearAllRooms": False
     }
+
+
+def parse_structured_blocks(text: str, base_price: float = 2499.0) -> Optional[List[Dict[str, Any]]]:
+    """
+    Parses structured multi-room OTA/document listings containing headers like:
+    'ROOM CATEGORY 1: DELUXE ROOM', 'Size: ...', 'Bed: ...', 'Max Guests: ...', 'Price Plans: EP : Rs 2500, CP : Rs 3000'
+    """
+    if not re.search(r"(?:ROOM\s*CATEGORY|ROOM\s*\d+|CATEGORY\s*\d+|={3,}\s*ROOM|Price\s*Plans\s*\(per\s*night\))", text, re.IGNORECASE):
+        return None
+
+    block_pattern = re.compile(r"(?:={3,}|-{3,}|\*{3,})*\s*(?:ROOM\s*CATEGORY\s*\d*[:\s]*|ROOM\s*\d+[:\s]*|CATEGORY\s*\d+[:\s]*)(.+?)(?=(?:={3,}|-{3,}|\*{3,})*\s*(?:ROOM\s*CATEGORY|ROOM\s*\d+|CATEGORY\s*\d+|NOTE\s*-+|$))", re.DOTALL | re.IGNORECASE)
+    matches = list(block_pattern.finditer(text))
+    if not matches:
+        return None
+
+    rooms = []
+    for m in matches:
+        body = m.group(1).strip()
+        lines = [l.strip() for l in body.splitlines() if l.strip()]
+        if not lines:
+            continue
+
+        title_line = re.sub(r"^[:\-\=\s]+|[:\-\=\s]+$", "", lines[0]).strip()
+        title_clean = re.split(r"(?:-{3,}|={3,}|Size\s*:|Bed\s*:|Price\s*:)", title_line, flags=re.IGNORECASE)[0].strip()
+        if not title_clean or "note" in title_clean.lower():
+            continue
+
+        # 1. Size
+        size_m2 = 25
+        size_mt_match = re.search(r"\((\d+)\s*sq\.?\s*m[t\.]?\)", body, re.IGNORECASE)
+        size_ft_match = re.search(r"(\d+)\s*sq\.?\s*ft", body, re.IGNORECASE)
+        if size_mt_match:
+            size_m2 = int(size_mt_match.group(1))
+        elif size_ft_match:
+            size_m2 = round(int(size_ft_match.group(1)) / 10.764)
+
+        # 2. Bed
+        bed = "1 King Bed"
+        bed_match = re.search(r"Bed\s*:\s*([^\n\r]+?)(?=\s*Bathroom|\s*Max|\s*Room|\s*Price|\s*$)", body, re.IGNORECASE)
+        if bed_match:
+            bed = re.sub(r"[-=]+$", "", bed_match.group(1)).strip()
+
+        # 3. Occupancy
+        occupancy = 2
+        occ_match = re.search(r"(?:Max\s*Guests?|Occupancy|Guests?)\s*:\s*(\d+)", body, re.IGNORECASE)
+        if occ_match:
+            occupancy = int(occ_match.group(1))
+
+        # 4. Amenities
+        amenities = []
+        amen_match = re.search(r"Room\s*Amenities\s*:\s*([\s\S]+?)(?=\s*Price\s*Plans|\s*Price\s*:|\s*Rate\s*:|\s*={3,}|\s*-{3,}|$)", body, re.IGNORECASE)
+        if amen_match:
+            raw_amen = amen_match.group(1).strip()
+            items = [a.strip() for a in re.split(r"(?:\r?\n|^)\s*-\s*|\s+-\s+", raw_amen) if len(a.strip()) > 2 and not a.strip().lower().startswith("price")]
+            amenities.extend(items)
+
+        # 5. Variants / Rates
+        variants = []
+        plan_pattern = re.compile(r"(EP|CP|MAP|AP|Room\s*Only|Bed\s*&\s*Breakfast)\s*(?:\(([^)]+)\))?\s*:\s*(?:Rs\.?|₹)?\s*([\d,]+)", re.IGNORECASE)
+        lowest_price = None
+
+        for pm in plan_pattern.finditer(body):
+            plan_code = pm.group(1).strip().upper()
+            plan_desc = pm.group(2).strip() if pm.group(2) else ""
+            price = int(pm.group(3).replace(",", ""))
+
+            meal_plan = plan_code
+            if plan_code == "EP": meal_plan = "Room Only (EP)"
+            elif plan_code == "CP": meal_plan = "Bed & Breakfast (CP)"
+            elif plan_code == "MAP": meal_plan = "Half Board (MAP - Breakfast + Dinner)"
+            elif plan_code == "AP": meal_plan = "Full Board (AP - All Meals)"
+
+            policy = "Free cancellation till 24h"
+            if re.search(r"non-refundable", plan_desc, re.IGNORECASE):
+                policy = "Non-Refundable"
+            elif re.search(r"free\s*cancellation", plan_desc, re.IGNORECASE):
+                policy = "Free cancellation"
+
+            variants.append({
+                "id": len(variants) + 1,
+                "mealPlan": f"{meal_plan} ({plan_desc})" if plan_desc else meal_plan,
+                "price": price,
+                "policy": policy
+            })
+
+            if lowest_price is None or price < lowest_price:
+                lowest_price = price
+
+        if lowest_price is None:
+            p_match = re.search(r"(?:Rs\.?|₹|INR)\s*([\d,]+)", body, re.IGNORECASE)
+            lowest_price = int(p_match.group(1).replace(",", "")) if p_match else 2499
+
+        rooms.append(normalize_room({
+            "name": title_clean.title(),
+            "pricePerNight": lowest_price,
+            "maxOccupancy": occupancy,
+            "bedConfiguration": bed,
+            "sizeM2": size_m2,
+            "totalInventory": 5,
+            "amenities": amenities or ["Free Wi-Fi", "Air Conditioning", "Flat-screen TV", "Private Bathroom"],
+            "variants": variants or [{"id": 1, "mealPlan": "Room Only (EP)", "price": lowest_price, "policy": "Free cancellation till 24h"}],
+            "description": f"{title_clean} ({size_m2} sq.mt) featuring {bed}, suitable for up to {occupancy} guests."
+        }, base_price, len(rooms)))
+
+    return rooms if rooms else None
 
 
 def parse_chat_rooms_list(prompt: str, base_price: float = 2499.0) -> List[Dict[str, Any]]:

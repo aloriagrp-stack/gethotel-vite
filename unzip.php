@@ -1,4 +1,6 @@
 <?php
+@set_time_limit(300);
+@ini_set('max_execution_time', '300');
 header('Access-Control-Allow-Origin: *');
 header('Content-Type: text/plain');
 
@@ -24,14 +26,65 @@ function extractZip($zipPath, $destDir) {
     return true;
 }
 
-// 1. EXTRACT MAIN FRONTEND
-if ($action === 'all' || $action === 'extract_frontend' || $action === 'extract_all') {
-    echo "=== 1. EXTRACTING FRONTEND.ZIP TO PUBLIC_HTML ===\n";
-    $frontendZip = '/home/vgyuvmpi/public_html/frontend.zip';
-    if (file_exists($frontendZip)) {
-        extractZip($frontendZip, '/home/vgyuvmpi/public_html/');
+function recurseCopy($src, $dst) {
+    $dir = @opendir($src);
+    @mkdir($dst, 0755, true);
+    while (false !== ($file = @readdir($dir))) {
+        if (($file != '.') && ($file != '..')) {
+            if (is_dir($src . '/' . $file)) {
+                recurseCopy($src . '/' . $file, $dst . '/' . $file);
+            } else {
+                @copy($src . '/' . $file, $dst . '/' . $file);
+            }
+        }
+    }
+    @closedir($dir);
+}
+
+function syncAndRestartBackend() {
+    echo "\n=== SYNCING BACKEND TO HOME DIR ===\n";
+    $srcDir = '/home/vgyuvmpi/gethotel_backend/';
+    $targetDir = '/home/vgyuvmpi/';
+    $items = ['server.js', 'package.json', 'routes', 'controllers', 'config', 'middleware', 'prisma', 'utils', 'services'];
+    foreach ($items as $item) {
+        $src = $srcDir . $item;
+        $dest = $targetDir . $item;
+        if (file_exists($src)) {
+            if (is_dir($src)) {
+                recurseCopy($src, $dest);
+                echo "Synced dir: $item\n";
+            } else {
+                @copy($src, $dest);
+                echo "Copied file: $item\n";
+            }
+        }
+    }
+
+    echo "\n=== RESTARTING PASSENGER / NODE ===\n";
+    $restartPaths = [
+        '/home/vgyuvmpi/tmp/restart.txt',
+        '/home/vgyuvmpi/public_html/tmp/restart.txt',
+        '/home/vgyuvmpi/gethotel_backend/tmp/restart.txt'
+    ];
+    foreach ($restartPaths as $rp) {
+        @mkdir(dirname($rp), 0755, true);
+        @file_put_contents($rp, time());
+        echo "Restart triggered via $rp\n";
+    }
+}
+
+// 1. EXTRACT BACKEND (RUN FIRST - fast and critical)
+if ($action === 'all' || $action === 'extract_backend' || $action === 'extract_all') {
+    echo "=== 1. EXTRACTING BACKEND.ZIP ===\n";
+    $backendZip = '/home/vgyuvmpi/public_html/backend.zip';
+    if (file_exists($backendZip)) {
+        $targets = ['/home/vgyuvmpi/', '/home/vgyuvmpi/gethotel_backend/'];
+        foreach ($targets as $t) {
+            extractZip($backendZip, $t);
+        }
+        syncAndRestartBackend();
     } else {
-        echo "Frontend zip not found at $frontendZip\n";
+        echo "Backend zip not found at $backendZip\n";
     }
 }
 
@@ -51,67 +104,15 @@ if ($action === 'all' || $action === 'extract_ai' || $action === 'extract_all') 
     }
 }
 
-// 3. EXTRACT BACKEND
-if ($action === 'all' || $action === 'extract_backend' || $action === 'extract_all') {
-    echo "\n=== 3. EXTRACTING BACKEND.ZIP ===\n";
-    $backendZip = '/home/vgyuvmpi/public_html/backend.zip';
-    if (file_exists($backendZip)) {
-        $targets = ['/home/vgyuvmpi/', '/home/vgyuvmpi/gethotel_backend/'];
-        foreach ($targets as $t) {
-            extractZip($backendZip, $t);
-        }
+// 3. EXTRACT MAIN FRONTEND
+if ($action === 'all' || $action === 'extract_frontend' || $action === 'extract_all') {
+    echo "\n=== 3. EXTRACTING FRONTEND.ZIP TO PUBLIC_HTML ===\n";
+    $frontendZip = '/home/vgyuvmpi/public_html/frontend.zip';
+    if (file_exists($frontendZip)) {
+        extractZip($frontendZip, '/home/vgyuvmpi/public_html/');
     } else {
-        echo "Backend zip not found at $backendZip\n";
+        echo "Frontend zip not found at $frontendZip\n";
     }
 }
 
-function recurseCopy($src, $dst) {
-    $dir = @opendir($src);
-    @mkdir($dst, 0755, true);
-    while (false !== ($file = @readdir($dir))) {
-        if (($file != '.') && ($file != '..')) {
-            if (is_dir($src . '/' . $file)) {
-                recurseCopy($src . '/' . $file, $dst . '/' . $file);
-            } else {
-                @copy($src . '/' . $file, $dst . '/' . $file);
-            }
-        }
-    }
-    @closedir($dir);
-}
-
-// 4. SYNC BACKEND TO HOME DIR
-if ($action === 'all' || $action === 'sync_backend' || $action === 'extract_all') {
-    echo "\n=== 4. SYNCING BACKEND TO HOME DIR ===\n";
-    $srcDir = '/home/vgyuvmpi/gethotel_backend/';
-    $targetDir = '/home/vgyuvmpi/';
-    $items = ['server.js', 'package.json', 'routes', 'controllers', 'config', 'middleware', 'prisma', 'utils', 'services'];
-    foreach ($items as $item) {
-        $src = $srcDir . $item;
-        $dest = $targetDir . $item;
-        if (file_exists($src)) {
-            if (is_dir($src)) {
-                recurseCopy($src, $dest);
-                echo "Synced dir: $item\n";
-            } else {
-                @copy($src, $dest);
-                echo "Copied file: $item\n";
-            }
-        }
-    }
-}
-
-// 5. RESTART PASSENGER / NODE PROCESS
-echo "\n=== 5. RESTARTING PASSENGER / NODE ===\n";
-$restartPaths = [
-    '/home/vgyuvmpi/tmp/restart.txt',
-    '/home/vgyuvmpi/public_html/tmp/restart.txt',
-    '/home/vgyuvmpi/gethotel_backend/tmp/restart.txt'
-];
-foreach ($restartPaths as $rp) {
-    @mkdir(dirname($rp), 0755, true);
-    @file_put_contents($rp, time());
-    echo "Restart triggered via $rp\n";
-}
-echo "ALL OPERATIONS COMPLETED SUCCESSFULLY.\n";
-
+echo "\nALL REQUESTED OPERATIONS COMPLETED SUCCESSFULLY.\n";

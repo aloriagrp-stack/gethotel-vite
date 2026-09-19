@@ -98,8 +98,17 @@ jobs:
           echo "Updating live .env configurations..."
           curl -sS --max-time 30 https://gethotelstays.com/set_env.php || true
 
-          echo "Triggering remote extraction for frontend, AI and backend..."
-          curl -sS --max-time 60 "https://gethotelstays.com/unzip.php?action=all" || true
+          echo "1. Extracting Backend & Restarting Node..."
+          curl -sS --max-time 45 "https://gethotelstays.com/unzip.php?action=extract_backend" || true
+
+          echo "2. Extracting AI Frontend..."
+          curl -sS --max-time 45 "https://gethotelstays.com/unzip.php?action=extract_ai" || true
+
+          echo "3. Extracting Main Frontend..."
+          curl -sS --max-time 120 "https://gethotelstays.com/unzip.php?action=extract_frontend" || true
+
+          echo "4. Triggering Passenger Process Restart..."
+          curl -sS --max-time 30 "https://gethotelstays.com/api/test?restart=true&fix_token=gethotel_maint_2026" || true
 
       - name: Finalize
         run: echo "Deployment and Env updates completed successfully!"
