@@ -249,22 +249,29 @@ function parseStructuredBlocks(text) {
             const planDesc = planMatch[2] ? planMatch[2].trim() : '';
             const price = parseInt(planMatch[3].replace(/,/g, ''), 10);
 
-            let mealPlan = planCode;
-            if (planCode === 'EP') mealPlan = "Room Only (EP)";
-            else if (planCode === 'CP') mealPlan = "Bed & Breakfast (CP)";
-            else if (planCode === 'MAP') mealPlan = "Half Board (MAP - Breakfast + Dinner)";
-            else if (planCode === 'AP') mealPlan = "Full Board (AP - All Meals)";
-
             let policy = "Free cancellation till 24h";
+            let cleanMealDesc = planDesc;
             if (/non-refundable/i.test(planDesc)) {
                 policy = "Non-Refundable";
+                cleanMealDesc = planDesc.replace(/,?\s*non-refundable/i, '').trim();
             } else if (/free\s*cancellation/i.test(planDesc)) {
                 policy = "Free cancellation";
+                cleanMealDesc = planDesc.replace(/,?\s*free\s*cancellation/i, '').trim();
+            }
+
+            let mealPlan = planCode;
+            if (cleanMealDesc) {
+                mealPlan = `${cleanMealDesc} (${planCode})`;
+            } else {
+                if (planCode === 'EP') mealPlan = "Room Only (EP)";
+                else if (planCode === 'CP') mealPlan = "Bed & Breakfast (CP)";
+                else if (planCode === 'MAP') mealPlan = "Breakfast + Lunch/Dinner (MAP)";
+                else if (planCode === 'AP') mealPlan = "All Meals Included (AP)";
             }
 
             variants.push({
                 id: variants.length + 1,
-                mealPlan: `${mealPlan}${planDesc ? ` (${planDesc})` : ''}`,
+                mealPlan: mealPlan,
                 price: price,
                 policy: policy
             });

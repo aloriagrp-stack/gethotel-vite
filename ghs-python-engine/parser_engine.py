@@ -529,21 +529,27 @@ def parse_structured_blocks(text: str, base_price: float = 2499.0) -> Optional[L
             plan_desc = pm.group(2).strip() if pm.group(2) else ""
             price = int(pm.group(3).replace(",", ""))
 
-            meal_plan = plan_code
-            if plan_code == "EP": meal_plan = "Room Only (EP)"
-            elif plan_code == "CP": meal_plan = "Bed & Breakfast (CP)"
-            elif plan_code == "MAP": meal_plan = "Half Board (MAP - Breakfast + Dinner)"
-            elif plan_code == "AP": meal_plan = "Full Board (AP - All Meals)"
-
             policy = "Free cancellation till 24h"
+            clean_meal_desc = plan_desc
             if re.search(r"non-refundable", plan_desc, re.IGNORECASE):
                 policy = "Non-Refundable"
+                clean_meal_desc = re.sub(r",?\s*non-refundable", "", plan_desc, flags=re.IGNORECASE).strip()
             elif re.search(r"free\s*cancellation", plan_desc, re.IGNORECASE):
                 policy = "Free cancellation"
+                clean_meal_desc = re.sub(r",?\s*free\s*cancellation", "", plan_desc, flags=re.IGNORECASE).strip()
+
+            meal_plan = plan_code
+            if clean_meal_desc:
+                meal_plan = f"{clean_meal_desc} ({plan_code})"
+            else:
+                if plan_code == "EP": meal_plan = "Room Only (EP)"
+                elif plan_code == "CP": meal_plan = "Bed & Breakfast (CP)"
+                elif plan_code == "MAP": meal_plan = "Breakfast + Lunch/Dinner (MAP)"
+                elif plan_code == "AP": meal_plan = "All Meals Included (AP)"
 
             variants.append({
                 "id": len(variants) + 1,
-                "mealPlan": f"{meal_plan} ({plan_desc})" if plan_desc else meal_plan,
+                "mealPlan": meal_plan,
                 "price": price,
                 "policy": policy
             })
