@@ -201,86 +201,206 @@ Output strictly in JSON array format.
 
 // Fallback intelligent parser when LLM is unavailable or returns non-JSON
 function fallbackRuleBasedTourParser(text, destinationHint) {
-    const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
-    const titleCandidate = lines[0] || "Custom Handcrafted Tour Package";
-    const cleanedTitle = titleCandidate.replace(/^[#*\-0-9.:\s]+/, "").slice(0, 80) || "Exotic Holiday Experience";
-
-    const dest = destinationHint || (text.toLowerCase().includes("kerala") ? "Kochi • Munnar • Thekkady • Alleppey" :
-                  text.toLowerCase().includes("rajasthan") ? "Jaipur • Jodhpur • Udaipur" :
-                  text.toLowerCase().includes("kashmir") ? "Srinagar • Gulmarg • Pahalgam" :
-                  text.toLowerCase().includes("manali") ? "Shimla • Kullu • Manali" :
-                  text.toLowerCase().includes("goa") ? "North Goa • South Goa" : "Delhi • Agra • Jaipur");
-
-    // Detect price if present in text
-    let price = 15999;
-    const priceMatch = text.match(/(?:rs\.?|inr|₹)\s*([0-9,]+)/i);
-    if (priceMatch) {
-        const p = parseInt(priceMatch[1].replace(/,/g, ""), 10);
-        if (p > 1000 && p < 1000000) price = p;
-    }
-
-    const originalPrice = Math.round(price * 1.28);
-    const discountPercent = `${Math.round(((originalPrice - price) / originalPrice) * 100)}% OFF`;
-
-    // Extract day lines if any
+    const rawLines = text.split("\n").map(l => l.trim()).filter(Boolean);
+    
+    let title = "";
+    let destination = destinationHint || "";
+    let duration = "";
+    let price = 0;
+    let includedStay = "";
+    let transport = "";
+    let badge = "Bestseller";
+    let overview = "";
+    const inclusions = [];
+    const exclusions = [];
     const days = [];
-    let currentDay = null;
-    for (const line of lines) {
+
+    let currentSection = null; // 'overview' | 'inclusions' | 'exclusions' | 'itinerary'
+    let currentDayObj = null;
+
+    for (const line of rawLines) {
+        // 1. Direct Field Header Matchers
+        const titleMatch = line.match(/^(?:title|tour(?:\s+name)?|package(?:\s+name)?)\s*[:\-]\s*(.+)/i);
+        if (titleMatch) {
+            title = titleMatch[1].trim();
+            currentSection = null;
+            continue;
+        }
+
+        const destMatch = line.match(/^(?:destination|route|cities|city)\s*[:\-]\s*(.+)/i);
+        if (destMatch) {
+            destination = destMatch[1].trim().replace(/\s*,\s*/g, " • ").replace(/\s*-\s*/g, " • ");
+            currentSection = null;
+            continue;
+        }
+
+        const durationMatch = line.match(/^(?:duration|days[\s\/]+nights)\s*[:\-]\s*(.+)/i);
+        if (durationMatch) {
+            duration = durationMatch[1].trim();
+            currentSection = null;
+            continue;
+        }
+
+        const priceMatch = line.match(/^(?:price|starting\s+price|cost|rate)\s*[:\-]\s*(.+)/i);
+        if (priceMatch) {
+            const num = priceMatch[1].replace(/[^0-9.]/g, "");
+            if (num) price = parseFloat(num);
+            currentSection = null;
+            continue;
+        }
+
+        const stayMatch = line.match(/^(?:stay|hotels?|resort|included\s+stay|accommodation)\s*[:\-]\s*(.+)/i);
+        if (stayMatch) {
+            includedStay = stayMatch[1].trim();
+            currentSection = null;
+            continue;
+        }
+
+        const transportMatch = line.match(/^(?:transport|cab|vehicle|transfers?)\s*[:\-]\s*(.+)/i);
+        if (transportMatch) {
+            transport = transportMatch[1].trim();
+            currentSection = null;
+            continue;
+        }
+
+        const badgeMatch = line.match(/^(?:badge|tag|category)\s*[:\-]\s*(.+)/i);
+        if (badgeMatch) {
+            badge = badgeMatch[1].trim();
+            currentSection = null;
+            continue;
+        }
+
+        // 2. Section Header Detectors
+        if (/^(?:overview|description|about(?:\s+tour)?)\s*[:\-]?$/i.test(line)) {
+            currentSection = "overview";
+            continue;
+        }
+        if (/^(?:inclusions?|what'?s\s+included|included)\s*[:\-]?$/i.test(line)) {
+            currentSection = "inclusions";
+            continue;
+        }
+        if (/^(?:exclusions?|what'?s\s+(?:not\s+included|excluded)|excluded)\s*[:\-]?$/i.test(line)) {
+            currentSection = "exclusions";
+            continue;
+        }
+        if (/^(?:itinerary|day\s+by\s+day|daily\s+schedule)\s*[:\-]?$/i.test(line)) {
+            currentSection = "itinerary";
+            continue;
+        }
+
+        // 3. Day matcher (e.g. "Day 1:", "Day 1 - Arrival", "Day 1: Arrival in Delhi")
         const dayMatch = line.match(/^day\s*(\d+)[:\-\s]*(.*)/i);
         if (dayMatch) {
-            if (currentDay) days.push(currentDay);
-            currentDay = {
+            if (currentDayObj) days.push(currentDayObj);
+            const rawDayTitle = dayMatch[2].trim();
+            let dayTitle = `Day ${dayMatch[1]} Exploration`;
+            let dayDesc = "";
+
+            if (rawDayTitle.includes(" - ")) {
+                const parts = rawDayTitle.split(" - ");
+                dayTitle = parts[0].trim();
+                dayDesc = parts.slice(1).join(" - ").trim();
+            } else if (rawDayTitle.includes(":")) {
+                const parts = rawDayTitle.split(":");
+                dayTitle = parts[0].trim();
+                dayDesc = parts.slice(1).join(":").trim();
+            } else if (rawDayTitle) {
+                dayTitle = rawDayTitle;
+            }
+
+            currentDayObj = {
                 day: `Day ${dayMatch[1]}`,
-                title: dayMatch[2] || `Exploration Day ${dayMatch[1]}`,
-                desc: ""
+                title: dayTitle,
+                desc: dayDesc
             };
-        } else if (currentDay) {
-            currentDay.desc += (currentDay.desc ? " " : "") + line;
+            currentSection = "itinerary";
+            continue;
+        }
+
+        // 4. Fill in based on current section
+        if (currentSection === "overview") {
+            overview += (overview ? "\n" : "") + line;
+        } else if (currentSection === "inclusions") {
+            const cleanLine = line.replace(/^[*\-•\d.]+\s*/, "").trim();
+            if (cleanLine) inclusions.push(cleanLine);
+        } else if (currentSection === "exclusions") {
+            const cleanLine = line.replace(/^[*\-•\d.]+\s*/, "").trim();
+            if (cleanLine) exclusions.push(cleanLine);
+        } else if (currentSection === "itinerary" && currentDayObj) {
+            currentDayObj.desc += (currentDayObj.desc ? " " : "") + line;
+        } else if (!title && !line.includes(":")) {
+            // First unlabelled line is often the title
+            title = line.replace(/^[#*\-0-9.:\s]+/, "").slice(0, 80);
         }
     }
-    if (currentDay) days.push(currentDay);
 
-    const itinerary = days.length > 0 ? days : [
-        { day: "Day 1", title: "Arrival & Welcome", desc: `Arrive at the destination, transfer to premium hotel, orientation and relaxing evening.` },
-        { day: "Day 2", title: "Cultural Heritage & Sightseeing", desc: `Full day guided sightseeing of iconic landmarks, heritage monuments, and local bazaars.` },
-        { day: "Day 3", title: "Scenic Journey & Exploration", desc: `Scenic travel to next destination, visiting viewpoints and scenic stops on the way.` },
-        { day: "Day 4", title: "Local Experiences & Leisure", desc: `Unique regional activities, cultural performance, local cuisine, and shopping.` },
-        { day: "Day 5", title: "Departure", desc: `Morning breakfast, check-out and transfer to airport/railway station with memorable experiences.` }
+    if (currentDayObj) days.push(currentDayObj);
+
+    // Fallback defaults for missing fields
+    if (!title) title = "Handcrafted Holiday Experience";
+    if (!destination) {
+        destination = (text.toLowerCase().includes("kerala") ? "Kochi • Munnar • Thekkady • Alleppey" :
+                       text.toLowerCase().includes("rajasthan") ? "Jaipur • Jodhpur • Udaipur" :
+                       text.toLowerCase().includes("kashmir") ? "Srinagar • Gulmarg • Pahalgam" :
+                       text.toLowerCase().includes("manali") ? "Shimla • Kullu • Manali" :
+                       text.toLowerCase().includes("goa") ? "North Goa • South Goa" : "Delhi • Agra • Jaipur");
+    }
+
+    if (!price || price <= 0) {
+        const priceDetect = text.match(/(?:rs\.?|inr|₹)\s*([0-9,]+)/i);
+        price = priceDetect ? parseInt(priceDetect[1].replace(/,/g, ""), 10) : 18500;
+    }
+
+    const originalPrice = Math.round(price * 1.25);
+    const discountPercent = `${Math.round(((originalPrice - price) / originalPrice) * 100)}% OFF`;
+
+    const itineraryList = days.length > 0 ? days : [
+        { day: "Day 1", title: "Arrival & Welcome", desc: `Arrive at the destination, meet representative and transfer to hotel. Relaxing evening.` },
+        { day: "Day 2", title: "Sightseeing & Highlights", desc: `Full day guided sightseeing of iconic landmarks, heritage monuments, and local bazaars.` },
+        { day: "Day 3", title: "Scenic Exploration", desc: `Scenic travel to next destination, visiting viewpoints and scenic photo stops.` },
+        { day: "Day 4", title: "Departure", desc: `Morning breakfast, check-out and transfer to airport/station with memorable experiences.` }
     ];
 
-    const durationStr = `${itinerary.length} Days / ${itinerary.length - 1} Nights`;
+    if (!duration) {
+        duration = `${itineraryList.length} Days / ${Math.max(1, itineraryList.length - 1)} Nights`;
+    }
+
+    if (!includedStay) includedStay = "4-Star Deluxe Resorts & Heritage Hotels";
+    if (!transport) transport = "Private AC Sedan Transfers Included";
+    if (!overview) overview = `${title} offers an exceptional holiday across ${destination}. Carefully curated with verified stays, seamless private transfers, and rich cultural sightseeing.`;
+
+    const finalInclusions = inclusions.length > 0 ? inclusions : [
+        `Hotel stay on double sharing basis`,
+        "Daily buffet breakfast at hotels",
+        "Private air-conditioned vehicle for all transfers & sightseeing",
+        "Driver allowances, toll tax, parking, and state permits"
+    ];
+
+    const finalExclusions = exclusions.length > 0 ? exclusions : [
+        "Flight / Train tickets",
+        "Monument entrance tickets and camera fees",
+        "Personal expenses, room service, laundry and tips"
+    ];
 
     return [{
-        title: cleanedTitle,
-        destination: dest,
-        duration: durationStr,
+        title,
+        destination,
+        duration,
         price,
         originalPrice,
         discountPercent,
-        badge: "Bestseller",
-        includedStay: "4-Star Deluxe Resorts & Heritage Hotels",
-        transport: "Private AC Sedan Transfers Included",
-        overview: `${cleanedTitle} offers an unforgettable travel experience exploring ${dest}. Perfectly paced with verified stays, expert guided transfers, and curated regional highlights for a relaxing holiday.`,
+        badge,
+        includedStay,
+        transport,
+        overview,
         highlights: [
             "Comfortable private AC transportation throughout",
-            "Handpicked 4-star stays with daily breakfast",
-            "Guided sightseeing tours of major landmarks",
-            "24/7 on-trip concierge and local assistance"
+            "Handpicked verified stays with daily breakfast",
+            "Guided sightseeing tours of major landmarks"
         ],
-        inclusions: [
-            `${itinerary.length - 1} Nights hotel stay on double sharing basis`,
-            "Daily buffet breakfast at hotels",
-            "Private air-conditioned vehicle for all transfers & sightseeing",
-            "Driver allowances, toll tax, parking, and state permits",
-            "All taxes included"
-        ],
-        exclusions: [
-            "Flight / Train tickets",
-            "Monument entrance tickets and camera fees",
-            "Personal expenses, room service, laundry and tips",
-            "Travel insurance"
-        ],
-        itinerary
+        inclusions: finalInclusions,
+        exclusions: finalExclusions,
+        itinerary: itineraryList
     }];
 }
 
