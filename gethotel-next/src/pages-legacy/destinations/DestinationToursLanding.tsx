@@ -6,7 +6,7 @@ import SEOHead from "@/components/common/SEOHead";
 import { useLocale } from "@/context/LocaleContext";
 import {
     MapPin, Clock, Star, ArrowRight, Heart,
-    Image as ImageIcon, Sparkles
+    Image as ImageIcon, Sparkles, ChevronLeft, ChevronRight, Hotel, Car
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { packageApi } from "@/lib/api";
@@ -62,6 +62,24 @@ export default function DestinationToursLanding() {
         e.preventDefault();
         e.stopPropagation();
         setWishlist(prev => ({ ...prev, [pkgId]: !prev[pkgId] }));
+    };
+
+    const handlePrevImage = (e: React.MouseEvent, pkgId: string | number, total: number) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setActiveImageIndices(prev => ({
+            ...prev,
+            [pkgId]: ((prev[pkgId] || 0) - 1 + total) % total
+        }));
+    };
+
+    const handleNextImage = (e: React.MouseEvent, pkgId: string | number, total: number) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setActiveImageIndices(prev => ({
+            ...prev,
+            [pkgId]: ((prev[pkgId] || 0) + 1) % total
+        }));
     };
 
     useEffect(() => {
@@ -265,98 +283,79 @@ export default function DestinationToursLanding() {
                                     {/* 2. DESKTOP VERSION CARD ONLY (hidden lg:block) - Matches User Sketch */}
                                     <Link
                                         to={`/${langCode}/packages/${packageSlug}`}
-                                        className="hidden lg:block group relative rounded-3xl overflow-hidden p-5 border border-white/20 shadow-xl hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-500 cursor-pointer bg-slate-950"
+                                        className="hidden lg:block group relative rounded-3xl overflow-hidden p-6 border border-white/20 shadow-xl hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-500 cursor-pointer bg-slate-950"
                                     >
                                         {/* THIS AREA REMAINS BLURRY AND HAS COLOR OF IMAGE */}
                                         <div className="absolute inset-0 overflow-hidden pointer-events-none">
                                             <img
                                                 src={displayImg}
                                                 alt=""
-                                                className="w-full h-full object-cover blur-3xl scale-125 opacity-40 group-hover:scale-135 transition-transform duration-700"
+                                                className="w-full h-full object-cover blur-3xl scale-125 opacity-45 group-hover:scale-135 transition-transform duration-700"
                                             />
-                                            <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-2xl" />
-                                            <div className="absolute inset-0 bg-gradient-to-r from-slate-950/70 via-slate-950/30 to-slate-950/70" />
+                                            <div className="absolute inset-0 bg-slate-950/65 backdrop-blur-2xl" />
+                                            <div className="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-slate-950/40 to-slate-950/80" />
                                         </div>
 
                                         {/* INNER CARD LAYOUT */}
-                                        <div className="relative z-10 flex gap-5 items-stretch h-full min-h-[250px]">
-                                            {/* LEFT: Sharp, Clear Tour Image (White Box from Sketch) */}
-                                            <div className="relative w-[44%] rounded-2xl overflow-hidden shadow-2xl shrink-0 group/img bg-slate-900 border border-white/10">
-                                                <img
-                                                    src={displayImg}
-                                                    alt={pkg.title}
-                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                                                />
+                                        <div className="relative z-10 flex flex-col justify-between h-full gap-4">
+                                            {/* TOP ROW: Image on Left + Pricing Wagera on Right */}
+                                            <div className="flex items-stretch gap-5">
+                                                {/* LEFT: Sharp, Clear Tour Image (White Box from User Sketch) */}
+                                                <div className="relative w-[56%] rounded-2xl overflow-hidden shadow-2xl shrink-0 group/img bg-slate-900 border border-white/10 aspect-[16/10]">
+                                                    <img
+                                                        src={displayImg}
+                                                        alt={pkg.title}
+                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                                    />
 
-                                                {/* Badges on Image */}
-                                                <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 z-10">
-                                                    {pkg.badge && (
-                                                        <span className="px-2.5 py-0.5 bg-brand-600/90 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-wider rounded-lg shadow-md border border-white/20">
-                                                            {pkg.badge}
-                                                        </span>
-                                                    )}
-                                                    {pkg.discountPercent && (
-                                                        <span className="px-2 py-0.5 bg-rose-600 text-white text-[10px] font-black rounded-lg shadow-md">
-                                                            {pkg.discountPercent}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </div>
+                                                    {/* Badges on Image */}
+                                                    <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 z-10">
+                                                        {pkg.badge && (
+                                                            <span className="px-2.5 py-0.5 bg-brand-600/90 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-wider rounded-lg shadow-md border border-white/20">
+                                                                {pkg.badge}
+                                                            </span>
+                                                        )}
+                                                        {pkg.discountPercent && (
+                                                            <span className="px-2 py-0.5 bg-rose-600 text-white text-[10px] font-black rounded-lg shadow-md">
+                                                                {pkg.discountPercent}
+                                                            </span>
+                                                        )}
+                                                    </div>
 
-                                            {/* RIGHT: "prices and all this sie" */}
-                                            <div className="flex-1 flex flex-col justify-between py-1 text-white">
-                                                {/* Location, Rating, Wishlist */}
-                                                <div className="space-y-1.5">
-                                                    <div className="flex items-center justify-between gap-2">
-                                                        <div className="flex items-center gap-1 text-[11px] font-extrabold text-blue-300 uppercase tracking-wider">
-                                                            <MapPin className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                                                            <span className="truncate">{pkg.destination}</span>
-                                                        </div>
-
-                                                        <div className="flex items-center gap-1.5">
-                                                            <div className="px-2 py-0.5 rounded-lg bg-black/40 backdrop-blur-md border border-white/10 text-white flex items-center gap-1 text-[11px] font-bold">
-                                                                <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                                                                <span>{pkg.rating || 5}</span>
-                                                            </div>
-
+                                                    {/* Gallery Arrow Buttons on Hover */}
+                                                    {photosList.length > 1 && (
+                                                        <>
                                                             <button
                                                                 type="button"
-                                                                onClick={(e) => toggleWishlist(e, pkg.id)}
-                                                                className="w-7 h-7 rounded-lg bg-black/40 backdrop-blur-md text-white flex items-center justify-center border border-white/10 hover:bg-white hover:text-red-500 transition-all cursor-pointer"
+                                                                onClick={(e) => handlePrevImage(e, pkg.id, photosList.length)}
+                                                                className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-slate-950/70 text-white backdrop-blur-md flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity z-20 hover:bg-brand-600 cursor-pointer border border-white/20"
+                                                                title="Previous image"
                                                             >
-                                                                <Heart className={`w-3.5 h-3.5 ${isWishlisted ? "fill-red-500 text-red-500" : ""}`} />
+                                                                <ChevronLeft className="w-3.5 h-3.5" />
                                                             </button>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Title */}
-                                                    <h3 className="font-black text-base xl:text-lg text-white leading-snug line-clamp-2 group-hover:text-blue-200 transition-colors">
-                                                        {pkg.title}
-                                                    </h3>
-
-                                                    {/* Feature pills */}
-                                                    <div className="flex items-center gap-2 flex-wrap pt-0.5 text-[11px] font-semibold text-slate-200">
-                                                        <span className="px-2.5 py-1 bg-white/10 backdrop-blur-md rounded-lg flex items-center gap-1 border border-white/10">
-                                                            <Clock className="w-3 h-3 text-blue-400" />
-                                                            <span>{pkg.duration}</span>
-                                                        </span>
-                                                        <span className="px-2.5 py-1 bg-white/10 backdrop-blur-md rounded-lg flex items-center gap-1 border border-white/10">
-                                                            <Hotel className="w-3 h-3 text-indigo-400" />
-                                                            <span className="truncate max-w-[110px]">{pkg.includedStay || "Hotel Included"}</span>
-                                                        </span>
-                                                        <span className="px-2.5 py-1 bg-white/10 backdrop-blur-md rounded-lg flex items-center gap-1 border border-white/10">
-                                                            <Car className="w-3 h-3 text-emerald-400" />
-                                                            <span>Private Cab</span>
-                                                        </span>
-                                                    </div>
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => handleNextImage(e, pkg.id, photosList.length)}
+                                                                className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-slate-950/70 text-white backdrop-blur-md flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity z-20 hover:bg-brand-600 cursor-pointer border border-white/20"
+                                                                title="Next image"
+                                                            >
+                                                                <ChevronRight className="w-3.5 h-3.5" />
+                                                            </button>
+                                                            <span className="absolute bottom-2 right-2 px-2 py-0.5 bg-black/60 backdrop-blur-md text-white text-[9px] font-bold rounded-md">
+                                                                {activeImgIdx + 1}/{photosList.length}
+                                                            </span>
+                                                        </>
+                                                    )}
                                                 </div>
 
-                                                {/* Price & CTA Section ("prices and all this sie") */}
-                                                <div className="pt-3 border-t border-white/15 flex items-end justify-between gap-3">
-                                                    <div>
-                                                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-300 block">Package Price</span>
-                                                        <div className="flex items-baseline gap-2">
-                                                            <span className="text-xl xl:text-2xl font-black text-white tracking-tight leading-tight">
+                                                {/* RIGHT: "prices and all this sie" (Pricing Wagera to right of image) */}
+                                                <div className="flex-1 flex flex-col justify-between p-4 rounded-2xl bg-white/[0.07] backdrop-blur-xl border border-white/10 text-white shadow-inner">
+                                                    <div className="space-y-1">
+                                                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-300 block">
+                                                            Package Price
+                                                        </span>
+                                                        <div className="flex items-baseline gap-2 flex-wrap">
+                                                            <span className="text-2xl xl:text-3xl font-black text-white tracking-tight leading-tight">
                                                                 ₹{pkg.price?.toLocaleString("en-IN")}
                                                             </span>
                                                             {pkg.originalPrice && pkg.originalPrice > pkg.price && (
@@ -365,13 +364,80 @@ export default function DestinationToursLanding() {
                                                                 </span>
                                                             )}
                                                         </div>
-                                                        <span className="text-[10px] text-slate-300 font-medium block">per guest (all taxes incl.)</span>
+
+                                                        {pkg.discountPercent && (
+                                                            <div className="pt-0.5">
+                                                                <span className="inline-block px-2 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-md text-[10px] font-extrabold">
+                                                                    Save {pkg.discountPercent}
+                                                                </span>
+                                                            </div>
+                                                        )}
+
+                                                        <span className="text-[10px] text-slate-300 font-medium block pt-1">
+                                                            per guest (all taxes incl.)
+                                                        </span>
                                                     </div>
 
-                                                    <div className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 group-hover:from-blue-500 group-hover:to-indigo-500 text-white rounded-xl font-black text-xs uppercase tracking-wider shadow-lg transition-all group-hover:scale-105 border border-white/20 shrink-0">
-                                                        <span>View Tour</span>
-                                                        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                                                    {/* Trust mini-badge & CTA Button */}
+                                                    <div className="pt-3 space-y-2">
+                                                        <div className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-400">
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                                            <span>Instant Confirmation</span>
+                                                        </div>
+
+                                                        <div className="w-full py-2.5 px-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl font-black text-xs uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 group-hover:scale-[1.02] transition-all border border-white/20">
+                                                            <span>View Tour</span>
+                                                            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                                                        </div>
                                                     </div>
+                                                </div>
+                                            </div>
+
+                                            {/* BOTTOM: "image ke niche tour details honi chaiye card me" */}
+                                            <div className="pt-1 space-y-2 text-white border-t border-white/10">
+                                                {/* Row 1: Destination Badge, Star Rating, Wishlist Heart */}
+                                                <div className="flex items-center justify-between gap-3 pt-1">
+                                                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/10 backdrop-blur-md rounded-lg text-xs font-extrabold text-blue-300 uppercase tracking-wider border border-white/10">
+                                                        <MapPin className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                                                        <span className="truncate max-w-[200px]">{pkg.destination}</span>
+                                                    </div>
+
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="px-2.5 py-1 rounded-lg bg-black/40 backdrop-blur-md border border-white/10 text-white flex items-center gap-1 text-xs font-bold">
+                                                            <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                                                            <span>{pkg.rating || 5}</span>
+                                                        </div>
+
+                                                        <button
+                                                            type="button"
+                                                            onClick={(e) => toggleWishlist(e, pkg.id)}
+                                                            className="w-7 h-7 rounded-lg bg-black/40 backdrop-blur-md text-white flex items-center justify-center border border-white/10 hover:bg-white hover:text-red-500 transition-all cursor-pointer"
+                                                            title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+                                                        >
+                                                            <Heart className={`w-3.5 h-3.5 ${isWishlisted ? "fill-red-500 text-red-500" : ""}`} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                {/* Row 2: Tour Title */}
+                                                <h3 className="font-black text-base xl:text-lg text-white leading-snug line-clamp-2 group-hover:text-blue-200 transition-colors">
+                                                    {pkg.title}
+                                                </h3>
+
+                                                {/* Row 3: Feature Pills (Duration, Stay, Cab) */}
+                                                <div className="flex items-center gap-2 flex-wrap pt-0.5 text-[11px] font-semibold text-slate-200">
+                                                    <span className="px-2.5 py-1 bg-white/10 backdrop-blur-md rounded-lg flex items-center gap-1 border border-white/10">
+                                                        <Clock className="w-3 h-3 text-blue-400" />
+                                                        <span>{pkg.duration}</span>
+                                                    </span>
+                                                    <span className="px-2.5 py-1 bg-white/10 backdrop-blur-md rounded-lg flex items-center gap-1 border border-white/10">
+                                                        <Hotel className="w-3 h-3 text-indigo-400" />
+                                                        <span className="truncate max-w-[140px]">{pkg.includedStay || "Hotel Included"}</span>
+                                                    </span>
+                                                    <span className="px-2.5 py-1 bg-white/10 backdrop-blur-md rounded-lg flex items-center gap-1 border border-white/10">
+                                                        <Car className="w-3 h-3 text-emerald-400" />
+                                                        <span>Private Cab</span>
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
