@@ -96,9 +96,6 @@ export default function AdminTourOnboardingAI() {
     const [toastMessage, setToastMessage] = useState("");
     const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
 
-    // Active gallery url input state per tour id
-    const [newGalleryUrlMap, setNewGalleryUrlMap] = useState<Record<string, string>>({});
-
     const fileInputRef = useRef<HTMLInputElement>(null);
     const coverFileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
     const galleryFileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
@@ -266,23 +263,6 @@ export default function AdminTourOnboardingAI() {
         }));
     };
 
-    // Add gallery photo via URL
-    const handleAddGalleryUrl = (tourId: string) => {
-        const url = (newGalleryUrlMap[tourId] || "").trim();
-        if (!url) return;
-
-        setGeneratedTours(prev => prev.map(t => {
-            if (t.id !== tourId) return t;
-            const existing = Array.isArray(t.gallery) ? t.gallery : (t.image ? [t.image] : []);
-            return {
-                ...t,
-                gallery: [...existing, url]
-            };
-        }));
-
-        setNewGalleryUrlMap(prev => ({ ...prev, [tourId]: "" }));
-        showToast("✅ Photo added to gallery!");
-    };
 
     // ─── AI GENERATION HANDLER ───────────────────────────────────────────────
     const handleGenerateWithAI = async () => {
@@ -1011,13 +991,13 @@ export default function AdminTourOnboardingAI() {
                                                         <div className="flex items-center justify-between">
                                                             <label className="text-[10px] font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
                                                                 <Camera className="w-3.5 h-3.5 text-emerald-400" />
-                                                                <span>Main Cover Photo (Local File Upload / Drag & Drop / URL)</span>
+                                                                <span>Main Cover Photo (Local File Upload & Drag / Drop Only)</span>
                                                             </label>
                                                         </div>
 
                                                         <div className="flex flex-col sm:flex-row items-start gap-4">
                                                             {/* Cover Preview */}
-                                                            <div className="w-36 h-24 rounded-xl overflow-hidden bg-neutral-900 border border-[#262626] shrink-0 relative group">
+                                                            <div className="w-36 h-24 rounded-xl overflow-hidden bg-neutral-900 border border-[#262626] shrink-0 relative group shadow-sm">
                                                                 {tour.image ? (
                                                                     <img
                                                                         src={tour.image}
@@ -1032,11 +1012,20 @@ export default function AdminTourOnboardingAI() {
                                                                 <span className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded text-[8px] font-black bg-black/80 text-emerald-400">
                                                                     Cover
                                                                 </span>
+                                                                {tour.image && (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => updateTourField(tour.id, "image", "")}
+                                                                        className="absolute top-1 right-1 p-1 bg-black/80 hover:bg-rose-600 text-white rounded opacity-80 group-hover:opacity-100 transition-all cursor-pointer"
+                                                                        title="Remove Cover Photo"
+                                                                    >
+                                                                        <X className="w-3 h-3" />
+                                                                    </button>
+                                                                )}
                                                             </div>
 
-                                                            {/* Upload / Drag / URL Controls */}
-                                                            <div className="flex-1 space-y-2 w-full">
-                                                                {/* Drag & Drop Box */}
+                                                            {/* Upload / Drag Box Only (No URL Input) */}
+                                                            <div className="flex-1 w-full">
                                                                 <div
                                                                     onDragOver={(e) => e.preventDefault()}
                                                                     onDrop={(e) => {
@@ -1044,7 +1033,7 @@ export default function AdminTourOnboardingAI() {
                                                                         const file = e.dataTransfer.files?.[0];
                                                                         if (file) handleCoverPhotoUpload(tour.id, file);
                                                                     }}
-                                                                    className="border-2 border-dashed border-[#2d2d2d] hover:border-emerald-600/80 bg-[#161616] p-3 rounded-xl flex items-center justify-between gap-3 cursor-pointer transition-all"
+                                                                    className="border-2 border-dashed border-[#2d2d2d] hover:border-emerald-600/80 bg-[#161616] hover:bg-[#1a1a1a] p-4 rounded-xl flex items-center justify-between gap-3 cursor-pointer transition-all"
                                                                     onClick={() => coverFileInputRefs.current[tour.id]?.click()}
                                                                 >
                                                                     <input
@@ -1057,26 +1046,20 @@ export default function AdminTourOnboardingAI() {
                                                                         }}
                                                                         className="hidden"
                                                                     />
-                                                                    <div className="flex items-center gap-2">
+                                                                    <div className="flex items-center gap-2.5">
                                                                         <Upload className="w-4 h-4 text-emerald-400" />
-                                                                        <span className="text-xs text-neutral-300 font-semibold">
-                                                                            Click to Upload Cover Photo or Drag & Drop File Here
-                                                                        </span>
+                                                                        <div>
+                                                                            <span className="text-xs text-neutral-200 font-bold block">
+                                                                                Click to Select Cover Photo or Drag & Drop File Here
+                                                                            </span>
+                                                                            <span className="text-[10px] text-neutral-500 font-medium">
+                                                                                Choose local image file from your device (JPEG, PNG, WebP)
+                                                                            </span>
+                                                                        </div>
                                                                     </div>
-                                                                    <span className="px-2.5 py-1 bg-white text-black text-[10px] font-black rounded-lg uppercase tracking-wider">
-                                                                        Browse
+                                                                    <span className="px-3 py-1.5 bg-white text-black text-[10px] font-black rounded-lg uppercase tracking-wider shrink-0 shadow-sm">
+                                                                        Browse File
                                                                     </span>
-                                                                </div>
-
-                                                                {/* URL Input */}
-                                                                <div className="flex items-center gap-2">
-                                                                    <input
-                                                                        type="text"
-                                                                        value={tour.image || ""}
-                                                                        placeholder="Or paste image URL (e.g. Unsplash or web link)"
-                                                                        onChange={(e) => updateTourField(tour.id, "image", e.target.value)}
-                                                                        className="w-full bg-[#161616] border border-[#262626] rounded-xl px-3 py-1.5 text-xs font-mono text-emerald-300 focus:outline-none focus:border-emerald-500"
-                                                                    />
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -1087,11 +1070,11 @@ export default function AdminTourOnboardingAI() {
                                                         <div className="flex items-center justify-between">
                                                             <label className="text-[10px] font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
                                                                 <ImageIcon className="w-3.5 h-3.5 text-blue-400" />
-                                                                <span>Tour Gallery Photos ({Array.isArray(tour.gallery) ? tour.gallery.length : 0})</span>
+                                                                <span>Tour Gallery Photos ({Array.isArray(tour.gallery) ? tour.gallery.length : 0}) (Local Upload & Drop Only)</span>
                                                             </label>
                                                         </div>
 
-                                                        {/* Gallery Drag & Drop Multi-file Box */}
+                                                        {/* Gallery Drag & Drop Multi-file Box Only (No URL Input) */}
                                                         <div
                                                             onDragOver={(e) => e.preventDefault()}
                                                             onDrop={(e) => {
@@ -1100,7 +1083,7 @@ export default function AdminTourOnboardingAI() {
                                                                     handleGalleryPhotosUpload(tour.id, e.dataTransfer.files);
                                                                 }
                                                             }}
-                                                            className="border-2 border-dashed border-[#2d2d2d] hover:border-blue-600/80 bg-[#161616] p-3 rounded-xl flex items-center justify-between gap-3 cursor-pointer transition-all"
+                                                            className="border-2 border-dashed border-[#2d2d2d] hover:border-blue-600/80 bg-[#161616] hover:bg-[#1a1a1a] p-4 rounded-xl flex items-center justify-between gap-3 cursor-pointer transition-all"
                                                             onClick={() => galleryFileInputRefs.current[tour.id]?.click()}
                                                         >
                                                             <input
@@ -1115,34 +1098,20 @@ export default function AdminTourOnboardingAI() {
                                                                 }}
                                                                 className="hidden"
                                                             />
-                                                            <div className="flex items-center gap-2">
+                                                            <div className="flex items-center gap-2.5">
                                                                 <Upload className="w-4 h-4 text-blue-400" />
-                                                                <span className="text-xs text-neutral-300 font-semibold">
-                                                                    Drop Multiple Photos Here or Click to Select from Local Files
-                                                                </span>
+                                                                <div>
+                                                                    <span className="text-xs text-neutral-200 font-bold block">
+                                                                        Drop Multiple Photos Here or Click to Select from Local Files
+                                                                    </span>
+                                                                    <span className="text-[10px] text-neutral-500 font-medium">
+                                                                        Select multiple local photos from your computer
+                                                                    </span>
+                                                                </div>
                                                             </div>
-                                                            <span className="px-2.5 py-1 bg-blue-600 text-white text-[10px] font-black rounded-lg uppercase tracking-wider">
-                                                                Upload Photos
+                                                            <span className="px-3 py-1.5 bg-blue-600 text-white text-[10px] font-black rounded-lg uppercase tracking-wider shrink-0 shadow-sm">
+                                                                Browse Photos
                                                             </span>
-                                                        </div>
-
-                                                        {/* Add via URL bar */}
-                                                        <div className="flex items-center gap-2">
-                                                            <input
-                                                                type="text"
-                                                                value={newGalleryUrlMap[tour.id] || ""}
-                                                                placeholder="Add single photo by web URL..."
-                                                                onChange={(e) => setNewGalleryUrlMap(prev => ({ ...prev, [tour.id]: e.target.value }))}
-                                                                onKeyDown={(e) => { if (e.key === "Enter") handleAddGalleryUrl(tour.id); }}
-                                                                className="flex-1 bg-[#161616] border border-[#262626] rounded-xl px-3 py-1.5 text-xs font-mono text-neutral-300 focus:outline-none focus:border-blue-500"
-                                                            />
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => handleAddGalleryUrl(tour.id)}
-                                                                className="px-3 py-1.5 bg-[#202020] hover:bg-[#282828] border border-[#333] text-white text-xs font-bold rounded-xl transition-all cursor-pointer"
-                                                            >
-                                                                + Add URL
-                                                            </button>
                                                         </div>
 
                                                         {/* Gallery Thumbnails Strip */}
