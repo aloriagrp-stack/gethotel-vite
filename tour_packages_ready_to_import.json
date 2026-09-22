@@ -1,0 +1,712 @@
+[
+  {
+    "title": "Classic Golden Triangle Tour",
+    "slug": "classic-golden-triangle-tour-delhi-agra-jaipur",
+    "destination": "Delhi - Agra - Jaipur",
+    "duration": "6 Days / 5 Nights",
+    "price": 18999,
+    "originalPrice": 24999,
+    "discountPercent": "24% OFF",
+    "rating": 4.9,
+    "reviewsCount": 86,
+    "badge": "Bestseller",
+    "includedStay": "4-Star Deluxe Heritage Hotels",
+    "transport": "Private AC Sedan Transfers Included",
+    "image": "https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=1200&q=80",
+    "gallery": [
+      "https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "overview": "The Classic Golden Triangle Tour is India's most iconic travel circuit, connecting the capital city Delhi, the timeless city of love Agra, and the vibrant Pink City Jaipur. Across six unforgettable days, travelers walk through Mughal-era forts, marvel at the eternal beauty of the Taj Mahal, and lose themselves in the bustling bazaars and royal palaces of Rajasthan. This tour is the perfect introduction to India's history, architecture, and culture, ideal for first-time visitors who want to experience the essence of the country in a short, well-paced itinerary.",
+    "inclusions": [
+      "5 nights hotel accommodation on double sharing basis",
+      "Daily buffet breakfast",
+      "Private air-conditioned vehicle for all transfers and sightseeing",
+      "English-speaking local guide at each city",
+      "All monument entrance fees as per itinerary",
+      "Elephant/jeep ride at Amber Fort"
+    ],
+    "exclusions": [
+      "International/domestic airfare",
+      "Lunch and dinner unless specified",
+      "Personal expenses and tips",
+      "Camera fees at monuments",
+      "Travel insurance"
+    ],
+    "itinerary": [
+      {
+        "day": "Day 1",
+        "title": "Arrival in Delhi",
+        "desc": "Arrive in Delhi and check into your hotel. In the evening, take a relaxed orientation walk around Connaught Place or enjoy a welcome dinner featuring authentic North Indian cuisine. Overnight stay in Delhi."
+      },
+      {
+        "day": "Day 2",
+        "title": "Old & New Delhi Sightseeing",
+        "desc": "Full-day city tour covering Old Delhi's Jama Masjid, Red Fort, and a rickshaw ride through Chandni Chowk, followed by New Delhi's India Gate, Humayun's Tomb, Qutub Minar, and a drive past the Presidential Palace. Overnight stay in Delhi."
+      },
+      {
+        "day": "Day 3",
+        "title": "Delhi to Agra",
+        "desc": "Drive to Agra (approx. 3-4 hours). On arrival, visit Agra Fort and enjoy an evening view of the Taj Mahal from Mehtab Bagh gardens across the river. Overnight stay in Agra."
+      },
+      {
+        "day": "Day 4",
+        "title": "Taj Mahal Sunrise & Agra to Jaipur",
+        "desc": "Early morning visit to witness sunrise at the Taj Mahal, one of the Seven Wonders of the World. Later, drive to Jaipur via Fatehpur Sikri, the abandoned Mughal city built by Akbar. Overnight stay in Jaipur."
+      },
+      {
+        "day": "Day 5",
+        "title": "Jaipur Sightseeing",
+        "desc": "Morning excursion to Amber Fort with an elephant or jeep ride up to the entrance. Afternoon city tour covering City Palace, Jantar Mantar observatory, and a photo stop at Hawa Mahal. Evening free for shopping in Jaipur's bazaars. Overnight stay in Jaipur."
+      },
+      {
+        "day": "Day 6",
+        "title": "Jaipur to Delhi Departure",
+        "desc": "Drive back to Delhi (approx. 5-6 hours) or take an optional domestic flight/train. Transfer to the airport for onward departure with cherished memories of the Golden Triangle."
+      }
+    ]
+  },
+  {
+    "title": "Golden Triangle with Udaipur Tour",
+    "slug": "golden-triangle-with-udaipur-tour-package",
+    "destination": "Delhi - Agra - Jaipur - Udaipur",
+    "duration": "8 Days / 7 Nights",
+    "price": 27999,
+    "originalPrice": 36999,
+    "discountPercent": "24% OFF",
+    "rating": 4.95,
+    "reviewsCount": 64,
+    "badge": "Popular",
+    "includedStay": "4-Star Lake View & Heritage Haveli",
+    "transport": "Private AC Sedan Transfers Included",
+    "image": "https://images.unsplash.com/photo-1603262110263-fb0112e7cc33?auto=format&fit=crop&w=1200&q=80",
+    "gallery": [
+      "https://images.unsplash.com/photo-1603262110263-fb0112e7cc33?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "overview": "This extended Golden Triangle itinerary adds the romantic Lake City of Udaipur to the classic Delhi-Agra-Jaipur circuit. Known as the 'Venice of the East', Udaipur enchants travelers with its shimmering lakes, hilltop palaces, and old-world charm, making this tour a favorite among honeymooners, photographers, and culture enthusiasts. Across eight days, guests experience Mughal grandeur, royal Rajasthani heritage, and the serene beauty of Rajasthan's lake district, blending history with romance in equal measure.",
+    "inclusions": [
+      "7 nights hotel accommodation on double sharing basis",
+      "Daily buffet breakfast",
+      "Private air-conditioned vehicle throughout",
+      "English-speaking local guides",
+      "All monument entrance fees as per itinerary",
+      "Lake Pichola boat ride in Udaipur"
+    ],
+    "exclusions": [
+      "Airfare (Jaipur-Udaipur flight if chosen)",
+      "Lunch and dinner unless specified",
+      "Personal expenses and tips",
+      "Camera fees at monuments",
+      "Travel insurance"
+    ],
+    "itinerary": [
+      {
+        "day": "Day 1",
+        "title": "Arrival in Delhi",
+        "desc": "Arrive in Delhi, transfer to hotel, and relax after your journey. Optional evening market walk at Khan Market or Connaught Place. Overnight stay in Delhi."
+      },
+      {
+        "day": "Day 2",
+        "title": "Delhi City Tour",
+        "desc": "Explore Old and New Delhi including Red Fort, Jama Masjid, Humayun's Tomb, Qutub Minar and India Gate. Overnight stay in Delhi."
+      },
+      {
+        "day": "Day 3",
+        "title": "Delhi to Agra",
+        "desc": "Drive to Agra, check into hotel, visit Agra Fort in the afternoon and view the Taj Mahal at sunset from Mehtab Bagh. Overnight stay in Agra."
+      },
+      {
+        "day": "Day 4",
+        "title": "Taj Mahal Sunrise, Agra to Jaipur",
+        "desc": "Sunrise visit to the Taj Mahal followed by a drive to Jaipur via Fatehpur Sikri. Overnight stay in Jaipur."
+      },
+      {
+        "day": "Day 5",
+        "title": "Jaipur Sightseeing",
+        "desc": "Visit Amber Fort, City Palace, Jantar Mantar and Hawa Mahal. Evening at leisure for local shopping. Overnight stay in Jaipur."
+      },
+      {
+        "day": "Day 6",
+        "title": "Jaipur to Udaipur",
+        "desc": "Fly or drive to Udaipur (approx. 6-7 hours by road or short flight). Evening boat ride on Lake Pichola to watch the sunset over the City Palace. Overnight stay in Udaipur."
+      },
+      {
+        "day": "Day 7",
+        "title": "Udaipur Sightseeing",
+        "desc": "Visit the City Palace complex, Jagdish Temple, Saheliyon Ki Bari gardens, and enjoy panoramic views from Sajjangarh (Monsoon Palace). Evening cultural show at Bagore Ki Haveli. Overnight stay in Udaipur."
+      },
+      {
+        "day": "Day 8",
+        "title": "Udaipur Departure",
+        "desc": "Transfer to Udaipur airport for departure, carrying memories of forts, lakes and palaces."
+      }
+    ]
+  },
+  {
+    "title": "Golden Triangle with Ranthambore Tour",
+    "slug": "golden-triangle-with-ranthambore-tiger-safari-tour",
+    "destination": "Delhi - Agra - Ranthambore - Jaipur",
+    "duration": "7 Days / 6 Nights",
+    "price": 26499,
+    "originalPrice": 34999,
+    "discountPercent": "24% OFF",
+    "rating": 4.88,
+    "reviewsCount": 52,
+    "badge": "Adventure",
+    "includedStay": "Jungle Resort & 4-Star Hotels",
+    "transport": "Private AC Vehicle + Safari Gypsies",
+    "image": "https://images.unsplash.com/photo-1575550959106-5a7defe28b56?auto=format&fit=crop&w=1200&q=80",
+    "gallery": [
+      "https://images.unsplash.com/photo-1575550959106-5a7defe28b56?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "overview": "For travelers who want more than monuments, the Golden Triangle with Ranthambore Tour blends India's greatest architectural marvels with an exhilarating wildlife experience. After exploring Delhi's history and Agra's Taj Mahal, the journey heads into the wilderness of Ranthambore National Park, one of India's best places to spot the majestic Royal Bengal Tiger in its natural habitat, before continuing to the royal city of Jaipur. This tour is ideal for families, photographers, and nature lovers looking for an unforgettable mix of culture and adventure.",
+    "inclusions": [
+      "6 nights hotel accommodation on double sharing basis",
+      "Daily breakfast & resort meals in Ranthambore",
+      "Two jungle safaris in Ranthambore National Park with park fees",
+      "Private air-conditioned vehicle throughout",
+      "English-speaking local guides",
+      "All monument entrance fees as per itinerary"
+    ],
+    "exclusions": [
+      "Airfare/train fare unless specified",
+      "Lunch and dinner unless specified",
+      "Camera fees inside the national park",
+      "Personal expenses and tips",
+      "Travel insurance"
+    ],
+    "itinerary": [
+      {
+        "day": "Day 1",
+        "title": "Arrival in Delhi",
+        "desc": "Arrive in Delhi and transfer to your hotel. Rest and acclimatize, with an optional evening market walk. Overnight stay in Delhi."
+      },
+      {
+        "day": "Day 2",
+        "title": "Delhi City Tour",
+        "desc": "Full-day sightseeing covering Red Fort, Jama Masjid, Chandni Chowk, Humayun's Tomb, Qutub Minar and India Gate. Overnight stay in Delhi."
+      },
+      {
+        "day": "Day 3",
+        "title": "Delhi to Agra",
+        "desc": "Drive to Agra, visit Agra Fort, and view the Taj Mahal at sunset. Overnight stay in Agra."
+      },
+      {
+        "day": "Day 4",
+        "title": "Taj Mahal Sunrise, Agra to Ranthambore",
+        "desc": "Sunrise visit to the Taj Mahal followed by a train or drive to Ranthambore (approx. 5-6 hours). Evening at leisure near the national park. Overnight stay in Ranthambore."
+      },
+      {
+        "day": "Day 5",
+        "title": "Ranthambore Safari",
+        "desc": "Two jeep safaris (morning and afternoon) inside Ranthambore National Park in search of tigers, sloth bears, crocodiles and over 300 species of birds. Overnight stay in Ranthambore."
+      },
+      {
+        "day": "Day 6",
+        "title": "Ranthambore to Jaipur",
+        "desc": "Morning drive to Jaipur (approx. 4 hours). Afternoon visit to Amber Fort with an elephant or jeep ride, followed by City Palace and Hawa Mahal. Overnight stay in Jaipur."
+      },
+      {
+        "day": "Day 7",
+        "title": "Jaipur Departure",
+        "desc": "Morning visit to Jantar Mantar and local bazaars for shopping, then transfer to Jaipur airport or drive back to Delhi for departure."
+      }
+    ]
+  },
+  {
+    "title": "Royal Rajasthan Tour",
+    "slug": "royal-rajasthan-tour-jaipur-jodhpur-jaisalmer-udaipur",
+    "destination": "Delhi - Jaipur - Jodhpur - Jaisalmer - Udaipur",
+    "duration": "10 Days / 9 Nights",
+    "price": 42999,
+    "originalPrice": 54999,
+    "discountPercent": "22% OFF",
+    "rating": 4.98,
+    "reviewsCount": 110,
+    "badge": "Top Rated",
+    "includedStay": "Heritage Forts, Havelis & Desert Camp",
+    "transport": "Private AC Sedan & Camel Safari",
+    "image": "https://images.unsplash.com/photo-1506461883276-594a12b11cf3?auto=format&fit=crop&w=1200&q=80",
+    "gallery": [
+      "https://images.unsplash.com/photo-1506461883276-594a12b11cf3?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1603262110263-fb0112e7cc33?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "overview": "The Royal Rajasthan Tour is a grand exploration of India's most colorful and regal state. From the Pink City of Jaipur to the Blue City of Jodhpur, the Golden City of Jaisalmer, and the Lake City of Udaipur, this ten-day journey unveils Rajasthan's imposing forts, opulent palaces, sweeping desert landscapes, and vibrant local culture. Travelers ride camels across the Thar Desert dunes, wander through centuries-old havelis, and witness folk performances under starlit skies, making this the ultimate immersive Rajasthan experience.",
+    "inclusions": [
+      "9 nights hotel accommodation on double sharing basis",
+      "Daily breakfast",
+      "Camel safari and traditional buffet dinner at desert camp in Jaisalmer",
+      "Private air-conditioned vehicle throughout",
+      "English-speaking local guides",
+      "All monument entrance fees as per itinerary"
+    ],
+    "exclusions": [
+      "Domestic flights (Jaisalmer-Udaipur, if chosen)",
+      "Lunch and dinner unless specified",
+      "Personal expenses and tips",
+      "Camera fees at monuments",
+      "Travel insurance"
+    ],
+    "itinerary": [
+      {
+        "day": "Day 1",
+        "title": "Arrival in Delhi, transfer to Jaipur",
+        "desc": "Arrive in Delhi and drive to Jaipur (approx. 5-6 hours) or take a short flight. Check into hotel and relax. Overnight stay in Jaipur."
+      },
+      {
+        "day": "Day 2",
+        "title": "Jaipur Sightseeing",
+        "desc": "Visit Amber Fort with elephant/jeep ride, City Palace, Jantar Mantar and Hawa Mahal. Evening shopping at local bazaars. Overnight stay in Jaipur."
+      },
+      {
+        "day": "Day 3",
+        "title": "Jaipur to Jodhpur",
+        "desc": "Drive to Jodhpur (approx. 5-6 hours), the Blue City. Evening at leisure exploring the old town markets. Overnight stay in Jodhpur."
+      },
+      {
+        "day": "Day 4",
+        "title": "Jodhpur Sightseeing",
+        "desc": "Visit the magnificent Mehrangarh Fort, Jaswant Thada memorial, and stroll through the blue-hued lanes of the old city. Overnight stay in Jodhpur."
+      },
+      {
+        "day": "Day 5",
+        "title": "Jodhpur to Jaisalmer",
+        "desc": "Drive to Jaisalmer (approx. 5-6 hours) through the changing desert landscape. Evening free to explore the Golden City. Overnight stay in Jaisalmer."
+      },
+      {
+        "day": "Day 6",
+        "title": "Jaisalmer Fort & Desert Camp",
+        "desc": "Morning visit to Jaisalmer Fort, Patwon Ki Haveli and Gadisar Lake. Afternoon drive to Sam Sand Dunes for a camel safari, sunset views, and an overnight stay at a desert camp with folk music and dance."
+      },
+      {
+        "day": "Day 7",
+        "title": "Jaisalmer to Udaipur",
+        "desc": "Fly or drive to Udaipur (long drive of approx. 10-11 hours, flight recommended). Check into hotel and relax by the lake. Overnight stay in Udaipur."
+      },
+      {
+        "day": "Day 8",
+        "title": "Udaipur Sightseeing",
+        "desc": "Visit City Palace, Jagdish Temple, Saheliyon Ki Bari, and take an evening boat ride on Lake Pichola. Overnight stay in Udaipur."
+      },
+      {
+        "day": "Day 9",
+        "title": "Udaipur Leisure & Sajjangarh",
+        "desc": "Visit Sajjangarh Palace (Monsoon Palace) for panoramic views, followed by leisure time for shopping or spa. Evening cultural show at Bagore Ki Haveli. Overnight stay in Udaipur."
+      },
+      {
+        "day": "Day 10",
+        "title": "Udaipur Departure",
+        "desc": "Transfer to Udaipur airport for onward departure, concluding this grand tour of royal Rajasthan."
+      }
+    ]
+  },
+  {
+    "title": "Golden Triangle with Pushkar & Ajmer Tour",
+    "slug": "golden-triangle-with-pushkar-ajmer-spiritual-tour",
+    "destination": "Delhi - Agra - Jaipur - Pushkar - Ajmer",
+    "duration": "7 Days / 6 Nights",
+    "price": 24999,
+    "originalPrice": 31999,
+    "discountPercent": "22% OFF",
+    "rating": 4.87,
+    "reviewsCount": 48,
+    "badge": "Spiritual",
+    "includedStay": "4-Star Hotels & Lakeside Resort",
+    "transport": "Private AC Sedan Transfers",
+    "image": "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80",
+    "gallery": [
+      "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "overview": "This tour weaves spirituality into the classic Golden Triangle circuit, taking travelers beyond monuments into the sacred heart of Rajasthan. After discovering Delhi, Agra, and Jaipur, the journey continues to the holy town of Pushkar, home to the world's only Brahma Temple and a serene lake surrounded by ghats, and to Ajmer, revered for the Dargah of Sufi saint Khwaja Moinuddin Chishti. Perfect for travelers seeking a deeper cultural and spiritual connection alongside India's most famous heritage sites.",
+    "inclusions": [
+      "6 nights hotel accommodation on double sharing basis",
+      "Daily buffet breakfast",
+      "Private air-conditioned vehicle throughout",
+      "English-speaking local guides",
+      "All monument entrance fees as per itinerary"
+    ],
+    "exclusions": [
+      "Airfare",
+      "Lunch and dinner unless specified",
+      "Offerings/donations at religious sites",
+      "Personal expenses and tips",
+      "Travel insurance"
+    ],
+    "itinerary": [
+      {
+        "day": "Day 1",
+        "title": "Arrival in Delhi",
+        "desc": "Arrive in Delhi, transfer to hotel, and settle in for the evening. Optional local market visit. Overnight stay in Delhi."
+      },
+      {
+        "day": "Day 2",
+        "title": "Delhi City Tour",
+        "desc": "Explore Red Fort, Jama Masjid, Humayun's Tomb, Qutub Minar and India Gate. Overnight stay in Delhi."
+      },
+      {
+        "day": "Day 3",
+        "title": "Delhi to Agra",
+        "desc": "Drive to Agra, visit Agra Fort, and view the Taj Mahal at sunset from Mehtab Bagh. Overnight stay in Agra."
+      },
+      {
+        "day": "Day 4",
+        "title": "Taj Mahal Sunrise, Agra to Jaipur",
+        "desc": "Sunrise visit to the Taj Mahal, then drive to Jaipur via Fatehpur Sikri. Overnight stay in Jaipur."
+      },
+      {
+        "day": "Day 5",
+        "title": "Jaipur Sightseeing",
+        "desc": "Visit Amber Fort, City Palace, Jantar Mantar and Hawa Mahal. Overnight stay in Jaipur."
+      },
+      {
+        "day": "Day 6",
+        "title": "Jaipur to Pushkar & Ajmer",
+        "desc": "Drive to Ajmer (approx. 2.5-3 hours) and visit the revered Ajmer Sharif Dargah. Continue to Pushkar, visit the Brahma Temple, and join the evening aarti at the lake ghats. Overnight stay in Pushkar."
+      },
+      {
+        "day": "Day 7",
+        "title": "Pushkar to Delhi Departure",
+        "desc": "Morning at leisure to explore Pushkar's markets and lakeside cafes, then drive to Delhi (approx. 6-7 hours) or transfer to Jaipur airport for departure."
+      }
+    ]
+  },
+  {
+    "title": "Desert Triangle Tour",
+    "slug": "desert-triangle-tour-jaipur-jodhpur-jaisalmer",
+    "destination": "Jaipur - Jodhpur - Jaisalmer",
+    "duration": "6 Days / 5 Nights",
+    "price": 21999,
+    "originalPrice": 28999,
+    "discountPercent": "24% OFF",
+    "rating": 4.92,
+    "reviewsCount": 78,
+    "badge": "Trending",
+    "includedStay": "Haveli Hotels & Luxury Desert Camp",
+    "transport": "Private AC Vehicle & Camel Safari",
+    "image": "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1200&q=80",
+    "gallery": [
+      "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1506461883276-594a12b11cf3?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "overview": "For travelers who want to focus purely on Rajasthan's desert magic, the Desert Triangle Tour connects the Pink City of Jaipur, the Blue City of Jodhpur, and the Golden City of Jaisalmer. This compact yet immersive itinerary showcases majestic hilltop forts, labyrinthine old towns, and the golden dunes of the Thar Desert. It's an ideal choice for travelers who have already seen Delhi and Agra, or who simply want to dive straight into the heart of royal Rajasthan.",
+    "inclusions": [
+      "5 nights hotel/camp accommodation on double sharing basis",
+      "Daily breakfast & campfire dinner in desert",
+      "Camel safari and one dinner at desert camp",
+      "Private air-conditioned vehicle throughout",
+      "English-speaking local guides",
+      "All monument entrance fees as per itinerary"
+    ],
+    "exclusions": [
+      "Airfare/train fare",
+      "Lunch and dinner unless specified",
+      "Personal expenses and tips",
+      "Camera fees at monuments",
+      "Travel insurance"
+    ],
+    "itinerary": [
+      {
+        "day": "Day 1",
+        "title": "Arrival in Jaipur",
+        "desc": "Arrive in Jaipur and check into your hotel. Evening at leisure or optional walk through the local bazaars. Overnight stay in Jaipur."
+      },
+      {
+        "day": "Day 2",
+        "title": "Jaipur Sightseeing",
+        "desc": "Visit Amber Fort with an elephant/jeep ride, City Palace, Jantar Mantar and Hawa Mahal. Overnight stay in Jaipur."
+      },
+      {
+        "day": "Day 3",
+        "title": "Jaipur to Jodhpur",
+        "desc": "Drive to Jodhpur (approx. 5-6 hours). Evening free to explore the blue-washed old town. Overnight stay in Jodhpur."
+      },
+      {
+        "day": "Day 4",
+        "title": "Jodhpur to Jaisalmer",
+        "desc": "Morning visit to Mehrangarh Fort and Jaswant Thada, then drive to Jaisalmer (approx. 5-6 hours). Overnight stay in Jaisalmer."
+      },
+      {
+        "day": "Day 5",
+        "title": "Jaisalmer Fort & Desert Camp",
+        "desc": "Explore Jaisalmer Fort, Patwon Ki Haveli and Gadisar Lake in the morning. Afternoon drive to Sam Sand Dunes for a camel safari and sunset, followed by an overnight desert camp with traditional Rajasthani folk music and dance."
+      },
+      {
+        "day": "Day 6",
+        "title": "Jaisalmer Departure",
+        "desc": "Transfer from desert camp to Jaisalmer airport or railway station for onward departure."
+      }
+    ]
+  },
+  {
+    "title": "Golden Triangle with Bikaner Tour",
+    "slug": "golden-triangle-with-bikaner-tour-package",
+    "destination": "Delhi - Agra - Jaipur - Bikaner",
+    "duration": "8 Days / 7 Nights",
+    "price": 28999,
+    "originalPrice": 37999,
+    "discountPercent": "24% OFF",
+    "rating": 4.86,
+    "reviewsCount": 39,
+    "badge": "Heritage",
+    "includedStay": "Heritage Hotels in Delhi, Agra, Jaipur & Bikaner",
+    "transport": "Private AC Sedan Vehicle",
+    "image": "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80",
+    "gallery": [
+      "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "overview": "This tour takes travelers off the well-trodden path by combining the Golden Triangle with the desert city of Bikaner, famous for its imposing Junagarh Fort, intricate havelis, and the unique National Research Centre on Camel. Away from the typical tourist trail, Bikaner offers an authentic glimpse into Rajasthan's desert heritage, delicious local sweets, and a slower, more atmospheric pace, making this itinerary perfect for travelers seeking something distinct and 'atrangi' beyond the standard circuit.",
+    "inclusions": [
+      "7 nights hotel accommodation on double sharing basis",
+      "Daily buffet breakfast",
+      "Private air-conditioned vehicle throughout",
+      "English-speaking local guides",
+      "All monument entrance fees as per itinerary",
+      "Elephant/jeep ride at Amber Fort"
+    ],
+    "exclusions": [
+      "Airfare/train fare",
+      "Lunch and dinner unless specified",
+      "Personal expenses and tips",
+      "Camera fees at monuments",
+      "Travel insurance"
+    ],
+    "itinerary": [
+      {
+        "day": "Day 1",
+        "title": "Arrival in Delhi",
+        "desc": "Arrive in Delhi and check into your hotel. Evening free for rest or a local market visit. Overnight stay in Delhi."
+      },
+      {
+        "day": "Day 2",
+        "title": "Delhi City Tour",
+        "desc": "Full-day sightseeing of Old and New Delhi including Red Fort, Jama Masjid, Humayun's Tomb, Qutub Minar and India Gate. Overnight stay in Delhi."
+      },
+      {
+        "day": "Day 3",
+        "title": "Delhi to Agra",
+        "desc": "Drive to Agra, visit Agra Fort, and view the Taj Mahal at sunset. Overnight stay in Agra."
+      },
+      {
+        "day": "Day 4",
+        "title": "Taj Mahal Sunrise, Agra to Jaipur",
+        "desc": "Sunrise visit to the Taj Mahal, then drive to Jaipur via Fatehpur Sikri. Overnight stay in Jaipur."
+      },
+      {
+        "day": "Day 5",
+        "title": "Jaipur Sightseeing",
+        "desc": "Visit Amber Fort, City Palace, Jantar Mantar and Hawa Mahal. Overnight stay in Jaipur."
+      },
+      {
+        "day": "Day 6",
+        "title": "Jaipur to Bikaner",
+        "desc": "Drive to Bikaner (approx. 6-7 hours) through the changing desert terrain. Evening at leisure. Overnight stay in Bikaner."
+      },
+      {
+        "day": "Day 7",
+        "title": "Bikaner Sightseeing",
+        "desc": "Visit the majestic Junagarh Fort, explore old-city havelis, and stop at the National Research Centre on Camel. Evening free to sample local Bikaneri sweets and snacks. Overnight stay in Bikaner."
+      },
+      {
+        "day": "Day 8",
+        "title": "Bikaner Departure",
+        "desc": "Transfer to Bikaner airport or railway station, or drive back towards Jaipur/Delhi for onward departure."
+      }
+    ]
+  },
+  {
+    "title": "Golden Triangle with Mount Abu Tour",
+    "slug": "golden-triangle-with-mount-abu-hill-station-tour",
+    "destination": "Delhi - Agra - Jaipur - Udaipur - Mount Abu",
+    "duration": "9 Days / 8 Nights",
+    "price": 34999,
+    "originalPrice": 45999,
+    "discountPercent": "24% OFF",
+    "rating": 4.9,
+    "reviewsCount": 45,
+    "badge": "Hill Station",
+    "includedStay": "Hill Resort & 4-Star Heritage Stays",
+    "transport": "Private AC Sedan Transfers",
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80",
+    "gallery": [
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1603262110263-fb0112e7cc33?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "overview": "Rajasthan's only hill station, Mount Abu, brings a cool and refreshing contrast to the desert heat, and this tour combines it beautifully with the Golden Triangle and the lake city of Udaipur. Travelers explore Mughal monuments and royal forts before ascending to the serene hills of Mount Abu, home to the exquisitely carved marble Dilwara Jain Temples and the tranquil Nakki Lake. This itinerary is ideal for those wanting a mix of heritage, romance, and cool mountain air within one Rajasthan journey.",
+    "inclusions": [
+      "8 nights hotel accommodation on double sharing basis",
+      "Daily buffet breakfast",
+      "Private air-conditioned vehicle throughout",
+      "English-speaking local guides",
+      "All monument entrance fees as per itinerary"
+    ],
+    "exclusions": [
+      "Airfare (Jaipur-Udaipur flight if chosen)",
+      "Lunch and dinner unless specified",
+      "Personal expenses and tips",
+      "Camera fees at monuments",
+      "Travel insurance"
+    ],
+    "itinerary": [
+      {
+        "day": "Day 1",
+        "title": "Arrival in Delhi",
+        "desc": "Arrive in Delhi and check into your hotel. Evening free for rest. Overnight stay in Delhi."
+      },
+      {
+        "day": "Day 2",
+        "title": "Delhi City Tour",
+        "desc": "Explore Red Fort, Jama Masjid, Humayun's Tomb, Qutub Minar and India Gate. Overnight stay in Delhi."
+      },
+      {
+        "day": "Day 3",
+        "title": "Delhi to Agra",
+        "desc": "Drive to Agra, visit Agra Fort and view the Taj Mahal at sunset. Overnight stay in Agra."
+      },
+      {
+        "day": "Day 4",
+        "title": "Taj Mahal Sunrise, Agra to Jaipur",
+        "desc": "Sunrise visit to the Taj Mahal, then drive to Jaipur via Fatehpur Sikri. Overnight stay in Jaipur."
+      },
+      {
+        "day": "Day 5",
+        "title": "Jaipur Sightseeing",
+        "desc": "Visit Amber Fort, City Palace, Jantar Mantar and Hawa Mahal. Overnight stay in Jaipur."
+      },
+      {
+        "day": "Day 6",
+        "title": "Jaipur to Udaipur",
+        "desc": "Drive or fly to Udaipur. Evening boat ride on Lake Pichola. Overnight stay in Udaipur."
+      },
+      {
+        "day": "Day 7",
+        "title": "Udaipur to Mount Abu",
+        "desc": "Morning visit to City Palace and Jagdish Temple in Udaipur, then drive to Mount Abu (approx. 3-4 hours). Evening walk around Nakki Lake. Overnight stay in Mount Abu."
+      },
+      {
+        "day": "Day 8",
+        "title": "Mount Abu Sightseeing",
+        "desc": "Visit the intricately carved Dilwara Jain Temples, Achalgarh Fort, and enjoy sunset views from Sunset Point or Guru Shikhar, the highest peak in Rajasthan. Overnight stay in Mount Abu."
+      },
+      {
+        "day": "Day 9",
+        "title": "Mount Abu Departure",
+        "desc": "Drive to Udaipur airport (approx. 3-4 hours) for onward departure, concluding the tour."
+      }
+    ]
+  },
+  {
+    "title": "Complete Rajasthan Heritage Tour",
+    "slug": "complete-rajasthan-heritage-tour-13-days",
+    "destination": "Delhi - Jaipur - Bikaner - Jaisalmer - Jodhpur - Udaipur - Agra",
+    "duration": "13 Days / 12 Nights",
+    "price": 54999,
+    "originalPrice": 69999,
+    "discountPercent": "21% OFF",
+    "rating": 4.97,
+    "reviewsCount": 94,
+    "badge": "Grand Tour",
+    "includedStay": "Royal Palaces, Havelis & Thar Desert Camp",
+    "transport": "Private AC SUV/Sedan Throughout",
+    "image": "https://images.unsplash.com/photo-1477587458883-47145ed94245?auto=format&fit=crop&w=1200&q=80",
+    "gallery": [
+      "https://images.unsplash.com/photo-1477587458883-47145ed94245?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1506461883276-594a12b11cf3?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "overview": "For travelers who want to see all of Rajasthan in one comprehensive journey, the Complete Rajasthan Heritage Tour is the most immersive and rewarding option. Spanning thirteen days, this grand circuit covers every major highlight of the state: the Pink City of Jaipur, the desert city of Bikaner, the Golden City of Jaisalmer, the Blue City of Jodhpur, the Lake City of Udaipur, and finally the timeless Taj Mahal in Agra. This tour is perfect for travel companies looking to offer a flagship, premium package that leaves no royal stone unturned.",
+    "inclusions": [
+      "12 nights hotel/camp accommodation on double sharing basis",
+      "Daily breakfast",
+      "Camel safari and one dinner at desert camp in Jaisalmer",
+      "Private air-conditioned vehicle throughout (except Udaipur-Agra if flying)",
+      "English-speaking local guides",
+      "All monument entrance fees as per itinerary"
+    ],
+    "exclusions": [
+      "Domestic flights (Udaipur-Agra, if chosen)",
+      "Lunch and dinner unless specified",
+      "Personal expenses and tips",
+      "Camera fees at monuments",
+      "Travel insurance"
+    ],
+    "itinerary": [
+      {
+        "day": "Day 1",
+        "title": "Arrival in Delhi",
+        "desc": "Arrive in Delhi, transfer to hotel and rest after your journey. Overnight stay in Delhi."
+      },
+      {
+        "day": "Day 2",
+        "title": "Delhi to Jaipur",
+        "desc": "Drive to Jaipur (approx. 5-6 hours). Evening free to explore local markets. Overnight stay in Jaipur."
+      },
+      {
+        "day": "Day 3",
+        "title": "Jaipur Sightseeing",
+        "desc": "Visit Amber Fort, City Palace, Jantar Mantar and Hawa Mahal. Overnight stay in Jaipur."
+      },
+      {
+        "day": "Day 4",
+        "title": "Jaipur to Bikaner",
+        "desc": "Drive to Bikaner (approx. 6-7 hours). Evening at leisure. Overnight stay in Bikaner."
+      },
+      {
+        "day": "Day 5",
+        "title": "Bikaner Sightseeing",
+        "desc": "Visit Junagarh Fort, explore local havelis, and stop at the National Research Centre on Camel. Overnight stay in Bikaner."
+      },
+      {
+        "day": "Day 6",
+        "title": "Bikaner to Jaisalmer",
+        "desc": "Drive to Jaisalmer (approx. 5-6 hours) through desert landscapes. Overnight stay in Jaisalmer."
+      },
+      {
+        "day": "Day 7",
+        "title": "Jaisalmer Fort & Desert Camp",
+        "desc": "Morning visit to Jaisalmer Fort, Patwon Ki Haveli and Gadisar Lake. Afternoon camel safari and sunset at Sam Sand Dunes, followed by an overnight desert camp with folk music and dance."
+      },
+      {
+        "day": "Day 8",
+        "title": "Jaisalmer to Jodhpur",
+        "desc": "Drive to Jodhpur (approx. 5-6 hours). Evening free to explore the blue-washed old city. Overnight stay in Jodhpur."
+      },
+      {
+        "day": "Day 9",
+        "title": "Jodhpur Sightseeing",
+        "desc": "Visit Mehrangarh Fort and Jaswant Thada. Overnight stay in Jodhpur."
+      },
+      {
+        "day": "Day 10",
+        "title": "Jodhpur to Udaipur",
+        "desc": "Drive to Udaipur (approx. 5-6 hours). Evening boat ride on Lake Pichola. Overnight stay in Udaipur."
+      },
+      {
+        "day": "Day 11",
+        "title": "Udaipur Sightseeing",
+        "desc": "Visit City Palace, Jagdish Temple, Saheliyon Ki Bari, and Sajjangarh (Monsoon Palace). Evening cultural show at Bagore Ki Haveli. Overnight stay in Udaipur."
+      },
+      {
+        "day": "Day 12",
+        "title": "Udaipur to Agra",
+        "desc": "Fly to Agra (recommended due to distance), or drive via Chittorgarh. Evening view of the Taj Mahal at sunset. Overnight stay in Agra."
+      },
+      {
+        "day": "Day 13",
+        "title": "Taj Mahal Sunrise & Departure",
+        "desc": "Sunrise visit to the Taj Mahal and Agra Fort, then transfer to Delhi for onward departure, concluding this complete tour of Rajasthan."
+      }
+    ]
+  }
+]

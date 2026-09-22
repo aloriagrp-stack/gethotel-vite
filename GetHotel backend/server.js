@@ -691,6 +691,7 @@ const mountCriticalRoutes = (prefix) => {
     app.get(`${prefix}/packages/hero-config`, packageController.getHeroConfig);
     app.put(`${prefix}/packages/hero-config`, protect, authorize('admin', 'superadmin', 'super_admin'), packageController.updateHeroConfig);
     app.post(`${prefix}/packages/import-json`, protect, authorize('admin', 'superadmin', 'super_admin'), packageController.importPackagesJson);
+    app.post(`${prefix}/packages/ai-suggest`, protect, authorize('admin', 'superadmin', 'super_admin'), packageController.aiSuggestTours);
     app.post(`${prefix}/packages/upload-image`, protect, authorize('admin', 'superadmin', 'super_admin', 'hotel_admin'), packageController.uploadImage);
 
     // Explicit Hotel Importer Agent Routes

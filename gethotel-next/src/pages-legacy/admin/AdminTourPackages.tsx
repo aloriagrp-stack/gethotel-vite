@@ -320,7 +320,7 @@ export default function AdminTourPackages() {
     };
 
     // ─── TOUR PACKAGES HANDLERS ──────────────────────────────────────────────
-    const handleSavePackage = (e: React.FormEvent) => {
+    const handleSavePackage = async (e: React.FormEvent) => {
         e.preventDefault();
         const generatedSlug = formData.title
             .toLowerCase()
@@ -338,33 +338,33 @@ export default function AdminTourPackages() {
             inclusions: formattedInclusions
         };
 
-        if (editingPackage) {
-            setPackages(prev => prev.map(p => p.id === editingPackage.id ? {
-                ...packageData,
-                id: editingPackage.id,
-                rating: editingPackage.rating || 4.9,
-                reviewsCount: editingPackage.reviewsCount || 100
-            } : p));
-            showNotification("Tour package updated successfully!");
-        } else {
-            const newPkg = {
-                ...packageData,
-                id: `pkg-${Date.now()}`,
-                rating: 4.9,
-                reviewsCount: 12
-            };
-            setPackages(prev => [newPkg, ...prev]);
-            showNotification("New tour package published successfully!");
+        try {
+            if (editingPackage) {
+                await packageApi.updatePackage(editingPackage.id, packageData);
+                showNotification("✅ Tour package updated in database successfully!");
+            } else {
+                await packageApi.createPackage(packageData);
+                showNotification("✅ New tour package published to database successfully!");
+            }
+            setIsAddModalOpen(false);
+            setEditingPackage(null);
+            resetForm();
+            await loadPackages();
+        } catch (err: any) {
+            console.error("Save package error:", err);
+            alert("Failed to save tour package: " + err.message);
         }
-        setIsAddModalOpen(false);
-        setEditingPackage(null);
-        resetForm();
     };
 
-    const handleDeletePackage = (id: string) => {
-        if (confirm("Are you sure you want to delete this tour package?")) {
-            setPackages(prev => prev.filter(p => p.id !== id));
-            showNotification("Tour package deleted.");
+    const handleDeletePackage = async (id: string | number) => {
+        if (confirm("Are you sure you want to delete this tour package from the database?")) {
+            try {
+                await packageApi.deletePackage(id);
+                showNotification("Tour package deleted from database.");
+                await loadPackages();
+            } catch (err: any) {
+                alert("Failed to delete package: " + err.message);
+            }
         }
     };
 

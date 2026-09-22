@@ -4,13 +4,14 @@ import {
     Sparkles, MessageSquare, Send, Hotel, Info, ArrowUpRight, 
     Plus, X, Trash2, CheckCircle2, ChevronDown, RefreshCw, 
     Edit, AlertCircle, Maximize2, Users, Bed, HelpCircle, Paperclip,
-    Star, Globe, Link2
+    Star, Globe, Link2, Palmtree
 } from "lucide-react";
 import { cn, safeParse } from "@/lib/utils";
 import { adminApi, hotelApi } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
 import AdminReviewImporter from "./AdminReviewImporter";
 import AdminBulkOnboarder from "./AdminBulkOnboarder";
+import AdminTourOnboardingAI from "./AdminTourOnboardingAI";
 
 interface AdminAICopilotProps {
     hotels: any[];
@@ -55,8 +56,8 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
     const [existingRooms, setExistingRooms] = useState<any[]>([]);
     const [loadingRoomsPercent, setLoadingRoomsPercent] = useState<number | null>(null);
     
-    // AI Review Importer states
-    const [activeSubTab, setActiveSubTab] = useState<"rooms" | "reviews" | "bulk">("rooms");
+    // AI Sub-Tabs states: rooms, tours, reviews, bulk
+    const [activeSubTab, setActiveSubTab] = useState<"rooms" | "tours" | "reviews" | "bulk">("rooms");
     const [confirmModal, setConfirmModal] = useState<{
         show: boolean;
         messageId: string;
@@ -617,55 +618,64 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                         <p className="text-[10px] text-neutral-400 font-medium uppercase tracking-widest mt-0.5">Extract and draft rooms setup using Generative AI</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-3">
-                    <span className="text-[10px] font-bold uppercase text-neutral-400 tracking-wider">
-                        {loadingHotels ? (
-                            <span className="text-emerald-400 animate-pulse">Loading Hotels...</span>
-                        ) : loadingRoomsPercent !== null ? (
-                            <span className="text-emerald-400 animate-pulse">Loading Rooms ({loadingRoomsPercent}%)...</span>
-                        ) : (
-                            "Target Hotel:"
-                        )}
-                    </span>
-                    <div className="relative w-64">
-                        <select
-                            value={selectedHotelId}
-                            onChange={(e) => setSelectedHotelId(e.target.value === "" ? "" : Number(e.target.value))}
-                            disabled={loadingRoomsPercent !== null || loadingHotels}
-                            className="appearance-none w-full pl-4 pr-10 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-xs font-bold text-white focus:outline-none focus:border-neutral-500 transition-colors cursor-pointer font-mono disabled:opacity-90"
-                        >
-                            {loadingHotels ? (
-                                <option value="" className="bg-black text-white">Loading hotels list...</option>
-                            ) : loadingRoomsPercent !== null ? (
-                                <option value={selectedHotelId} className="bg-black text-white">
-                                    {activeHotel ? activeHotel.name : "Loading..."}
-                                </option>
-                            ) : (
-                                <>
-                                    <option value="" className="bg-black text-white">-- Select Target Hotel --</option>
-                                    {hotels.map((h) => (
-                                        <option key={h.id} value={h.id} className="bg-black text-white">
-                                            {h.name} ({h.city})
-                                        </option>
-                                    ))}
-                                </>
-                            )}
-                        </select>
-                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 pointer-events-none" />
-                        
-                        {(loadingRoomsPercent !== null || loadingHotels) && (
-                            <div className="absolute bottom-[1px] left-[1px] right-[1px] h-[3px] bg-[#1a1a1a] overflow-hidden rounded-b-xl">
-                                <div 
-                                    className={cn(
-                                        "h-full bg-emerald-400 transition-all ease-out",
-                                        loadingHotels ? "w-full animate-pulse duration-1000" : "duration-75"
-                                    )} 
-                                    style={loadingHotels ? undefined : { width: `${loadingRoomsPercent}%` }}
-                                />
-                            </div>
-                        )}
+                {activeSubTab === "tours" ? (
+                    <div className="flex items-center gap-2">
+                        <span className="px-3 py-1.5 rounded-xl bg-emerald-950/80 border border-emerald-700/50 text-emerald-400 text-xs font-bold flex items-center gap-1.5 shadow-sm">
+                            <Palmtree className="w-4 h-4 text-emerald-400" />
+                            <span>Tour Packages Active</span>
+                        </span>
                     </div>
-                </div>
+                ) : (
+                    <div className="flex items-center gap-3">
+                        <span className="text-[10px] font-bold uppercase text-neutral-400 tracking-wider">
+                            {loadingHotels ? (
+                                <span className="text-emerald-400 animate-pulse">Loading Hotels...</span>
+                            ) : loadingRoomsPercent !== null ? (
+                                <span className="text-emerald-400 animate-pulse">Loading Rooms ({loadingRoomsPercent}%)...</span>
+                            ) : (
+                                "Target Hotel:"
+                            )}
+                        </span>
+                        <div className="relative w-64">
+                            <select
+                                value={selectedHotelId}
+                                onChange={(e) => setSelectedHotelId(e.target.value === "" ? "" : Number(e.target.value))}
+                                disabled={loadingRoomsPercent !== null || loadingHotels}
+                                className="appearance-none w-full pl-4 pr-10 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-xs font-bold text-white focus:outline-none focus:border-neutral-500 transition-colors cursor-pointer font-mono disabled:opacity-90"
+                            >
+                                {loadingHotels ? (
+                                    <option value="" className="bg-black text-white">Loading hotels list...</option>
+                                ) : loadingRoomsPercent !== null ? (
+                                    <option value={selectedHotelId} className="bg-black text-white">
+                                        {activeHotel ? activeHotel.name : "Loading..."}
+                                    </option>
+                                ) : (
+                                    <>
+                                        <option value="" className="bg-black text-white">-- Select Target Hotel --</option>
+                                        {hotels.map((h) => (
+                                            <option key={h.id} value={h.id} className="bg-black text-white">
+                                                {h.name} ({h.city})
+                                            </option>
+                                        ))}
+                                    </>
+                                )}
+                            </select>
+                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 pointer-events-none" />
+                            
+                            {(loadingRoomsPercent !== null || loadingHotels) && (
+                                <div className="absolute bottom-[1px] left-[1px] right-[1px] h-[3px] bg-[#1a1a1a] overflow-hidden rounded-b-xl">
+                                    <div 
+                                        className={cn(
+                                            "h-full bg-emerald-400 transition-all ease-out",
+                                            loadingHotels ? "w-full animate-pulse duration-1000" : "duration-75"
+                                        )} 
+                                        style={loadingHotels ? undefined : { width: `${loadingRoomsPercent}%` }}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Sub Tabs Selector */}
@@ -680,6 +690,18 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                     )}
                 >
                     Rooms Setup (Chat)
+                </button>
+                <button
+                    onClick={() => setActiveSubTab("tours")}
+                    className={cn(
+                        "py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-all cursor-pointer flex items-center gap-1.5",
+                        activeSubTab === "tours"
+                            ? "border-emerald-400 text-emerald-400"
+                            : "border-transparent text-neutral-500 hover:text-neutral-300"
+                    )}
+                >
+                    <Palmtree className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Tour Onboarding (AI)</span>
                 </button>
                 <button
                     onClick={() => setActiveSubTab("reviews")}
@@ -1330,6 +1352,8 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                         </div>
                     </div>
                 </>
+            ) : activeSubTab === "tours" ? (
+                <AdminTourOnboardingAI />
             ) : activeSubTab === "reviews" ? (
                 <div className="flex-1 overflow-y-auto p-6 bg-[#050505] space-y-6">
                     <AdminReviewImporter 

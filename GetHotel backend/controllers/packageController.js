@@ -1,4 +1,5 @@
 const prisma = require('../config/db');
+const tourAiService = require('../services/ai/tourAiService');
 
 // Ensure table exists on first load
 const ensureTableExists = async () => {
@@ -572,6 +573,23 @@ exports.updateHeroConfig = async (req, res) => {
     } catch (err) {
         console.error("Error in updateHeroConfig:", err);
         return res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// POST AI Tour Suggestion / Parsing (Admin)
+exports.aiSuggestTours = async (req, res) => {
+    try {
+        const { prompt, rawText, jsonText, destinationHint } = req.body;
+        const tours = await tourAiService.generateOrParseTours({ prompt, rawText, jsonText, destinationHint });
+        return res.json({
+            success: true,
+            data: tours,
+            count: tours.length,
+            message: `Successfully generated ${tours.length} tour package draft(s)`
+        });
+    } catch (err) {
+        console.error("Error in aiSuggestTours:", err);
+        return res.status(500).json({ success: false, message: err.message || "Failed to generate tours" });
     }
 };
 

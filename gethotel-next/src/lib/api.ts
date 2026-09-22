@@ -343,6 +343,9 @@ export const packageApi = {
     importJson: async (payload: { jsonText?: string; packages?: any[]; products?: any[]; tours?: any[]; defaultPrice?: number; defaultBadge?: string }) => {
         return await apiFetch('/packages/import-json', { method: 'POST', body: JSON.stringify(payload) });
     },
+    suggestTours: async (payload: { prompt?: string; rawText?: string; jsonText?: string; destinationHint?: string }) => {
+        return await apiFetch('/packages/ai-suggest', { method: 'POST', body: JSON.stringify(payload) });
+    },
     getHeroConfig: async () => {
         return await apiFetch('/packages/hero-config');
     },
