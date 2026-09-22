@@ -367,7 +367,7 @@ export default function TourPackageDetails() {
             />
 
             {/* Back Navigation & Breadcrumbs Bar */}
-            <div className="bg-white border-b border-slate-100 sticky top-0 z-40 px-4 py-3 shadow-xs">
+            <div className="bg-white border-b border-slate-100 relative z-30 px-4 py-3">
                 <div className="max-w-4xl lg:max-w-7xl xl:max-w-[1380px] mx-auto flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <button
@@ -626,7 +626,7 @@ export default function TourPackageDetails() {
                 </div>
 
                 {/* ─── 2-COLUMN MAIN CONTENT & BOOKING GRID ──────────────────────────── */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 pt-2 items-start">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 pt-2 relative">
                     
                     {/* LEFT COLUMN (lg:col-span-8): Overview, Inclusions, Itinerary, Reviews */}
                     <div className="lg:col-span-8 space-y-8 lg:space-y-10">
@@ -976,9 +976,10 @@ export default function TourPackageDetails() {
 
                     </div>
 
-                    {/* RIGHT COLUMN (lg:col-span-4): Sticky Booking Card */}
-                    <div className="lg:col-span-4 space-y-4" ref={bookingCardRef}>
-                        <div className="bg-white rounded-3xl border border-slate-200 shadow-xl lg:sticky lg:top-24 space-y-5 p-6 lg:p-7 relative overflow-hidden">
+                    {/* RIGHT COLUMN (lg:col-span-4): Sticky Booking Card (Hook that follows user smoothly on scroll) */}
+                    <div className="lg:col-span-4 relative self-stretch" ref={bookingCardRef}>
+                        <div className="lg:sticky lg:top-24 z-30 space-y-4">
+                            <div className="bg-white rounded-3xl border border-slate-200 shadow-xl space-y-5 p-6 lg:p-7 relative overflow-hidden">
                             {/* Top Accent Gradient Line */}
                             <div className="h-1.5 w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 absolute top-0 left-0 right-0" />
 
@@ -1171,6 +1172,7 @@ export default function TourPackageDetails() {
                             </div>
                         </div>
                     </div>
+                </div>
                 </div>
 
                 {/* Minimal Clean Thank You Note */}
