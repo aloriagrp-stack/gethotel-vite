@@ -36,22 +36,47 @@ const GUEST_OPTIONS = [
 export default function TourPackageDetails() {
     const navParams = useParams<{ id?: string }>();
     const location = useLocation();
-    let rawId = typeof navParams?.id === 'string' ? navParams.id : undefined;
-    if (!rawId && typeof window !== 'undefined') {
-        const pathname = location?.pathname || window.location.pathname;
-        const match = pathname.match(/\/(?:tour-packages|packages|package)\/([^\/\?]+)/);
+
+    // ─── DYNAMIC PACKAGE ID / SLUG RESOLUTION ────────────────────────────────
+    // In statically exported Next.js, static routes hydrate with default params (e.g. '1').
+    // We prioritize the actual browser pathname over static param '1'.
+    let extracted = '';
+    if (typeof window !== 'undefined') {
+        const currentPath = (location?.pathname || window.location.pathname || '').replace(/\/+$/, '');
+        const match = currentPath.match(/\/(?:tour-packages|packages|package)\/([^\/\?]+)/i);
         if (match && match[1]) {
-            rawId = match[1];
+            extracted = match[1];
         }
     }
-    const id = rawId || "";
+
+    if (!extracted || extracted === '1') {
+        if (typeof navParams?.id === 'string' && navParams.id && navParams.id !== '1') {
+            extracted = navParams.id;
+        }
+    }
+
+    if ((!extracted || extracted === '1') && typeof window !== 'undefined') {
+        const segments = window.location.pathname.replace(/\/+$/, '').split('/').filter(Boolean);
+        const last = segments[segments.length - 1];
+        if (last && !['packages', 'tour-packages', 'package'].includes(last)) {
+            extracted = last;
+        }
+    }
+
+    const id = extracted ? decodeURIComponent(extracted).trim() : (typeof navParams?.id === 'string' ? navParams.id : '');
     const navigate = useNavigate();
     const { user } = useAuth();
     const { langCode } = useLocale();
     const { addToCart, cartItems } = useCart();
 
     const cleanId = (id || "").toLowerCase().trim();
-    const isDestinationRoute = cleanId.endsWith("-tours") || cleanId.startsWith("destinations/") || ["agra", "delhi", "jaipur", "udaipur", "jodhpur", "jaisalmer", "ranthambore", "mount-abu", "bikaner", "rajasthan"].includes(cleanId);
+    // Known city destination landing hubs (only redirect if explicitly matching a known city hub)
+    const KNOWN_DEST_HUBS = new Set([
+        "delhi-tours", "agra-tours", "jaipur-tours", "udaipur-tours", "jodhpur-tours",
+        "jaisalmer-tours", "ranthambore-tours", "mount-abu-tours", "bikaner-tours",
+        "rajasthan-tours", "goa-tours", "kashmir-tours", "manali-tours", "kerala-tours", "ladakh-tours"
+    ]);
+    const isDestinationRoute = KNOWN_DEST_HUBS.has(cleanId) || cleanId.startsWith("destinations/");
 
     if (isDestinationRoute) {
         return <DestinationToursLanding />;
@@ -84,19 +109,45 @@ export default function TourPackageDetails() {
 
             setLoading(true);
             const cleanId = id.toLowerCase().trim();
+            const slugify = (s: string) => String(s || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+            const targetSlug = slugify(cleanId);
             let foundPkg: any = null;
 
-            // 1. Fetch real package from backend API
+            // 1. Fetch real package from backend API by ID or Slug
             try {
-                const res = await packageApi.getPackage(id);
+                const res = await packageApi.getPackage(cleanId);
                 if (res && res.success && res.data) {
                     foundPkg = res.data;
                 }
             } catch (err) {
-                console.warn("Backend API package detail fetch failed:", err);
+                console.warn("Backend API direct fetch failed, attempting list lookup:", err);
             }
 
-            // 2. Search local storage for admin saved packages
+            // 2. Fallback: Search all active tour packages from API
+            if (!foundPkg) {
+                try {
+                    const listRes = await packageApi.getPackages();
+                    if (listRes && listRes.success && Array.isArray(listRes.data)) {
+                        foundPkg = listRes.data.find((p: any) => {
+                            if (!p) return false;
+                            const pSlug = slugify(p.slug || '');
+                            const pTitleSlug = slugify(p.title || '');
+                            const pId = String(p.id || '').trim();
+                            return (
+                                pId === cleanId ||
+                                pSlug === targetSlug ||
+                                pTitleSlug === targetSlug ||
+                                (p.slug && p.slug.toLowerCase().trim() === cleanId) ||
+                                (p.title && createPackageSlug(p.title) === cleanId)
+                            );
+                        });
+                    }
+                } catch (err) {
+                    console.warn("Backend API packages list fallback failed:", err);
+                }
+            }
+
+            // 3. Fallback: Search local storage for admin saved packages
             if (!foundPkg) {
                 try {
                     const saved = localStorage.getItem("ghs_admin_tour_packages");
@@ -104,8 +155,9 @@ export default function TourPackageDetails() {
                         const localPackages = JSON.parse(saved);
                         foundPkg = localPackages.find(
                             (p: any) => 
-                                p.slug === cleanId || 
-                                String(p.id) === cleanId || 
+                                String(p.id) === cleanId ||
+                                slugify(p.slug || '') === targetSlug ||
+                                slugify(p.title || '') === targetSlug ||
                                 createPackageSlug(p.title) === cleanId
                         );
                     }

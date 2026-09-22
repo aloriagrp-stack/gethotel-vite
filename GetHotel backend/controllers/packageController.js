@@ -130,9 +130,45 @@ exports.getPackageByIdOrSlug = async (req, res) => {
         await ensureTableExists();
         const { id } = req.params;
 
-        const isNumeric = /^\d+$/.test(id);
-        let query = isNumeric ? "SELECT * FROM tour_packages WHERE id = ? LIMIT 1" : "SELECT * FROM tour_packages WHERE slug = ? LIMIT 1";
-        const rows = await prisma.$queryRawUnsafe(query, isNumeric ? parseInt(id, 10) : id);
+        if (!id || typeof id !== 'string') {
+            return res.status(400).json({ success: false, message: "Valid package identifier is required" });
+        }
+
+        const trimmedId = id.trim().toLowerCase();
+        // Strict Security Validation: allow ONLY positive integers or safe lowercase alphanumeric slug strings
+        const isNumeric = /^\d+$/.test(trimmedId);
+        const isSafeSlug = /^[a-z0-9_-]+$/.test(trimmedId);
+
+        if (!isNumeric && !isSafeSlug) {
+            // Reject any attempted injection or malformed payload immediately
+            return res.status(400).json({ success: false, message: "Invalid characters in package identifier" });
+        }
+
+        let rows = [];
+        if (isNumeric) {
+            const numericId = parseInt(trimmedId, 10);
+            rows = await prisma.$queryRawUnsafe(
+                "SELECT * FROM tour_packages WHERE id = ? LIMIT 1",
+                numericId
+            );
+        } else {
+            // Parameterized query matching slug or title safely
+            rows = await prisma.$queryRawUnsafe(
+                "SELECT * FROM tour_packages WHERE slug = ? OR LOWER(title) = ? LIMIT 1",
+                trimmedId,
+                trimmedId.replace(/-/g, ' ')
+            );
+
+            // Fallback: If exact match failed, check if the slug is a normalized prefix/suffix
+            if (!rows || rows.length === 0) {
+                const searchPattern = `%${trimmedId}%`;
+                rows = await prisma.$queryRawUnsafe(
+                    "SELECT * FROM tour_packages WHERE slug LIKE ? OR LOWER(title) LIKE ? LIMIT 1",
+                    searchPattern,
+                    `%${trimmedId.replace(/-/g, ' ')}%`
+                );
+            }
+        }
 
         if (!rows || rows.length === 0) {
             return res.status(404).json({ success: false, message: "Tour package not found" });
@@ -144,7 +180,7 @@ exports.getPackageByIdOrSlug = async (req, res) => {
         });
     } catch (err) {
         console.error("Error in getPackageByIdOrSlug:", err);
-        return res.status(500).json({ success: false, message: err.message });
+        return res.status(500).json({ success: false, message: "Internal server error retrieving tour package" });
     }
 };
 
