@@ -109,7 +109,7 @@ export default function AdminLayout({ children }: { children?: React.ReactNode }
 
             {/* Sidebar for Desktop - Skeuomorphic Pure Black */}
             <aside className={cn(
-                "hidden lg:flex bg-[#070707] text-neutral-100 flex-col fixed inset-y-0 left-0 z-50 border-r border-[#1a1a1a] transition-all duration-200 shadow-[2px_0_15px_rgba(0,0,0,0.9)]",
+                "hidden lg:flex bg-[#070707] text-neutral-100 flex-col fixed inset-y-0 left-0 z-50 border-r border-[#1a1a1a] transition-all duration-200 shadow-[2px_0_15px_rgba(0,0,0,0.9)] overflow-hidden",
                 sidebarCollapsed ? "w-16" : "w-72"
             )}>
                 <div className={cn(
@@ -130,7 +130,11 @@ export default function AdminLayout({ children }: { children?: React.ReactNode }
                     </button>
                 </div>
 
-                <nav ref={sidebarNavRef} className="flex-1 p-3 space-y-1.5 overflow-y-auto no-scrollbar [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <nav
+                    ref={sidebarNavRef}
+                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                    className="flex-1 p-3 space-y-1.5 overflow-y-auto no-scrollbar [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                >
                     {navItems.map((item) => {
                         const Icon = item.icon;
                         const isActive = item.tab === currentTab;
@@ -281,14 +285,17 @@ export default function AdminLayout({ children }: { children?: React.ReactNode }
                 .animate-slide-right {
                     animation: slide-right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
                 }
+                aside, aside *, aside nav {
+                    -ms-overflow-style: none !important;
+                    scrollbar-width: none !important;
+                }
+                aside::-webkit-scrollbar,
+                aside *::-webkit-scrollbar,
                 aside nav::-webkit-scrollbar {
                     display: none !important;
                     width: 0 !important;
                     height: 0 !important;
-                }
-                aside nav {
-                    -ms-overflow-style: none !important;
-                    scrollbar-width: none !important;
+                    background: transparent !important;
                 }
             `}</style>
 

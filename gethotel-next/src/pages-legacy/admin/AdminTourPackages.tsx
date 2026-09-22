@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import {
     Palmtree, Plus, Trash2, Edit, Save, X, Search, MapPin,
     Clock, Check, Image as ImageIcon, Star, CheckCircle2, RefreshCw, AlertCircle,
-    Eye, EyeOff, Tag, Sliders, CircleDot, Layers, Upload, FileJson, UploadCloud, FileCode
+    Eye, EyeOff, Tag, Sliders, CircleDot, Layers, Upload, FileJson, UploadCloud, FileCode, Percent
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { packageApi } from "@/lib/api";
@@ -84,12 +84,14 @@ export default function AdminTourPackages() {
         title: "",
         destination: "",
         duration: "5 Days / 4 Nights",
-        price: 15000,
-        originalPrice: 19999,
+        price: 5000,
+        originalPrice: 10000,
+        discountPercent: "50% OFF",
         image: "",
+        gallery: [] as string[],
         includedStay: "4-Star Hotel Resort",
         transport: "Private AC Cab",
-        badge: "Popular",
+        badge: "Bestseller",
         overview: "",
         inclusions: "",
         itinerary: ""
@@ -368,17 +370,84 @@ export default function AdminTourPackages() {
         }
     };
 
+    const handleOriginalPriceChange = (val: string | number) => {
+        const orig = typeof val === 'number' ? Math.max(0, val) : Math.max(0, parseFloat(String(val)) || 0);
+        const discNum = parseFloat(String(formData.discountPercent || "").replace(/[^0-9.]/g, "")) || 0;
+        let finalPrice = formData.price;
+        if (discNum > 0 && orig > 0) {
+            finalPrice = Math.round(orig * (1 - discNum / 100));
+        } else if (orig > 0 && (!finalPrice || finalPrice > orig)) {
+            finalPrice = orig;
+        }
+        setFormData(prev => ({ ...prev, originalPrice: orig, price: finalPrice }));
+    };
+
+    const handleDiscountChange = (val: string | number) => {
+        const discNum = typeof val === 'number'
+            ? Math.min(99, Math.max(0, val))
+            : Math.min(99, Math.max(0, parseFloat(String(val).replace(/[^0-9.]/g, "")) || 0));
+        const orig = formData.originalPrice || formData.price || 0;
+        let finalPrice = formData.price;
+        if (orig > 0 && discNum > 0) {
+            finalPrice = Math.round(orig * (1 - discNum / 100));
+        } else if (orig > 0 && discNum === 0) {
+            finalPrice = orig;
+        }
+        setFormData(prev => ({
+            ...prev,
+            originalPrice: orig > 0 ? orig : Math.round(finalPrice * 1.25),
+            discountPercent: discNum > 0 ? `${discNum}% OFF` : "",
+            price: finalPrice
+        }));
+    };
+
+    const handlePriceChange = (val: string | number) => {
+        const newPrice = typeof val === 'number' ? Math.max(0, val) : Math.max(0, parseFloat(String(val)) || 0);
+        const orig = formData.originalPrice || 0;
+        let discountPercent = formData.discountPercent;
+        if (orig > newPrice && orig > 0) {
+            const disc = Math.round(((orig - newPrice) / orig) * 100);
+            discountPercent = disc > 0 ? `${disc}% OFF` : "";
+        } else if (orig <= newPrice) {
+            discountPercent = "";
+        }
+        setFormData(prev => ({ ...prev, price: newPrice, discountPercent }));
+    };
+
+    const handleGalleryUpload = async (files: FileList | File[]) => {
+        if (!files || files.length === 0) return;
+        const uploadPromises = Array.from(files).map(async (file) => {
+            return await compressImage(file, 1200, 0.85);
+        });
+        const compressedList = await Promise.all(uploadPromises);
+        const validList = compressedList.filter(url => Boolean(url));
+        setFormData(prev => ({
+            ...prev,
+            gallery: [...(Array.isArray(prev.gallery) ? prev.gallery : []), ...validList]
+        }));
+        showNotification(`✅ Added ${validList.length} photo(s) to tour gallery!`);
+    };
+
+    const handleRemoveGalleryImage = (idxToRemove: number) => {
+        setFormData(prev => ({
+            ...prev,
+            gallery: (prev.gallery || []).filter((_, idx) => idx !== idxToRemove)
+        }));
+    };
+
     const resetForm = () => {
         setFormData({
             title: "",
             destination: "",
             duration: "5 Days / 4 Nights",
-            price: 15000,
-            originalPrice: 19999,
+            price: 5000,
+            originalPrice: 10000,
+            discountPercent: "50% OFF",
             image: "",
+            gallery: [],
             includedStay: "4-Star Hotel Resort",
             transport: "Private AC Cab",
-            badge: "Popular",
+            badge: "Bestseller",
             overview: "",
             inclusions: "",
             itinerary: ""
@@ -387,13 +456,18 @@ export default function AdminTourPackages() {
 
     const openEditModal = (pkg: any) => {
         setEditingPackage(pkg);
+        const orig = pkg.originalPrice || (pkg.price ? Math.round(pkg.price * 1.25) : 10000);
+        const pr = pkg.price || 5000;
+        const disc = pkg.discountPercent || (orig > pr ? `${Math.round(((orig - pr) / orig) * 100)}% OFF` : "");
         setFormData({
             title: pkg.title || "",
             destination: pkg.destination || "",
             duration: pkg.duration || "5 Days / 4 Nights",
-            price: pkg.price || 15000,
-            originalPrice: pkg.originalPrice || 19999,
+            price: pr,
+            originalPrice: orig,
+            discountPercent: disc,
             image: pkg.image || "",
+            gallery: Array.isArray(pkg.gallery) ? pkg.gallery : (pkg.image ? [pkg.image] : []),
             includedStay: pkg.includedStay || "4-Star Hotel Resort",
             transport: pkg.transport || "Private AC Cab",
             badge: pkg.badge || "Popular",
@@ -1033,52 +1107,124 @@ export default function AdminTourPackages() {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">Offer Rate Per Guest (₹)</label>
-                                        <input
-                                            type="number"
-                                            required
-                                            value={formData.price}
-                                            onChange={e => setFormData({ ...formData, price: Number(e.target.value) })}
-                                            className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-white focus:outline-none focus:border-neutral-500 font-mono"
-                                        />
+                                {/* ─── 2-WAY REACTIVE PRICING & DISCOUNT CALCULATOR ─── */}
+                                <div className="p-4 bg-[#141414] border border-[#262626] rounded-2xl space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                                            <Percent className="w-3.5 h-3.5" />
+                                            <span>Smart 2-Way Pricing & Discount Calculator</span>
+                                        </span>
+                                        {formData.originalPrice > 0 && formData.price > 0 && (
+                                            <span className="text-xs font-bold text-neutral-300">
+                                                Formula: <span className="line-through text-neutral-500">₹{formData.originalPrice.toLocaleString()}</span> ➔ <span className="text-emerald-400 font-extrabold">₹{formData.price.toLocaleString()}</span> {formData.discountPercent ? `(${formData.discountPercent})` : ""}
+                                            </span>
+                                        )}
                                     </div>
-                                    <div>
-                                        <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">Original Price (₹)</label>
-                                        <input
-                                            type="number"
-                                            required
-                                            value={formData.originalPrice}
-                                            onChange={e => setFormData({ ...formData, originalPrice: Number(e.target.value) })}
-                                            className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-white focus:outline-none focus:border-neutral-500 font-mono"
-                                        />
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                        {/* 1. Original Rack Price */}
+                                        <div>
+                                            <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1">Original Price (₹)</label>
+                                            <input
+                                                type="number"
+                                                required
+                                                placeholder="e.g. 10000"
+                                                value={formData.originalPrice || ""}
+                                                onChange={e => handleOriginalPriceChange(e.target.value)}
+                                                className="w-full px-3.5 py-2.5 bg-[#181818] border border-[#2c2c2c] rounded-xl text-white focus:outline-none focus:border-neutral-500 font-mono text-xs font-bold"
+                                            />
+                                            <span className="text-[9px] text-neutral-500 mt-0.5 block">Crossed-out rack price</span>
+                                        </div>
+
+                                        {/* 2. Discount % Input */}
+                                        <div>
+                                            <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1">Discount (%)</label>
+                                            <div className="relative">
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    max="99"
+                                                    placeholder="e.g. 50"
+                                                    value={parseFloat(String(formData.discountPercent || "").replace(/[^0-9.]/g, "")) || ""}
+                                                    onChange={e => handleDiscountChange(e.target.value)}
+                                                    className="w-full pl-3.5 pr-8 py-2.5 bg-[#181818] border border-[#2c2c2c] rounded-xl text-amber-400 focus:outline-none focus:border-amber-500 font-mono text-xs font-bold"
+                                                />
+                                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-amber-400">%</span>
+                                            </div>
+                                            <span className="text-[9px] text-neutral-500 mt-0.5 block">Auto-calculates offer rate</span>
+                                        </div>
+
+                                        {/* 3. Offer Rate (Selling Price) */}
+                                        <div>
+                                            <label className="block text-[10px] font-bold text-emerald-400 uppercase mb-1">Offer Rate (₹ Selling)</label>
+                                            <input
+                                                type="number"
+                                                required
+                                                placeholder="e.g. 5000"
+                                                value={formData.price || ""}
+                                                onChange={e => handlePriceChange(e.target.value)}
+                                                className="w-full px-3.5 py-2.5 bg-[#181818] border border-emerald-800/60 rounded-xl text-emerald-400 focus:outline-none focus:border-emerald-500 font-mono text-xs font-black"
+                                            />
+                                            <span className="text-[9px] text-emerald-500 mt-0.5 block">Final price shown to guest</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Quick 1-Click Discount Chips */}
+                                    <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                                        <span className="text-[10px] text-neutral-400 font-semibold mr-1">Quick Discount:</span>
+                                        {[10, 20, 30, 40, 50, 60, 70].map((pct) => (
+                                            <button
+                                                key={pct}
+                                                type="button"
+                                                onClick={() => handleDiscountChange(pct)}
+                                                className={`px-2 py-0.5 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer ${
+                                                    parseFloat(String(formData.discountPercent || "").replace(/[^0-9.]/g, "")) === pct
+                                                        ? "bg-amber-400 text-black shadow-sm font-black"
+                                                        : "bg-[#1f1f1f] text-neutral-300 hover:bg-[#282828] hover:text-white border border-[#333]"
+                                                }`}
+                                            >
+                                                {pct}%
+                                            </button>
+                                        ))}
                                     </div>
                                 </div>
 
-                                <div>
-                                    <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">Package Cover Image</label>
-                                    <label className="flex flex-col items-center justify-center p-5 border border-dashed border-[#333] hover:border-emerald-500/50 bg-[#141414] hover:bg-[#181818] rounded-xl cursor-pointer transition-all">
-                                        <Upload className="w-6 h-6 text-emerald-400 mb-1" />
-                                        <span className="text-xs font-bold text-neutral-200">Choose Cover Image File</span>
-                                        <span className="text-[10px] text-neutral-500 font-medium mt-0.5">Select photo from your device/computer</span>
+                                {/* ─── COVER PHOTO (LOCAL DROP & UPLOAD) ─── */}
+                                <div className="space-y-2">
+                                    <label className="block text-[10px] font-bold text-neutral-400 uppercase">Package Cover Photo (Local File Upload / Drag & Drop)</label>
+                                    <div
+                                        onDragOver={e => e.preventDefault()}
+                                        onDrop={async e => {
+                                            e.preventDefault();
+                                            const file = e.dataTransfer.files?.[0];
+                                            if (file) {
+                                                const compressed = await compressImage(file, 1200, 0.85);
+                                                setFormData(prev => ({ ...prev, image: compressed }));
+                                                showNotification("Cover photo updated!");
+                                            }
+                                        }}
+                                        className="flex flex-col items-center justify-center p-4 border border-dashed border-[#333] hover:border-emerald-500/50 bg-[#141414] hover:bg-[#181818] rounded-xl cursor-pointer transition-all relative"
+                                    >
+                                        <Upload className="w-5 h-5 text-emerald-400 mb-1" />
+                                        <span className="text-xs font-bold text-neutral-200">Click to Select Local Cover Photo or Drag & Drop File Here</span>
+                                        <span className="text-[10px] text-neutral-500 font-medium mt-0.5">JPEG, PNG, WebP supported</span>
                                         <input
                                             type="file"
                                             accept="image/*"
-                                            className="hidden"
+                                            className="absolute inset-0 opacity-0 cursor-pointer"
                                             onChange={async (e) => {
                                                 const file = e.target.files?.[0];
                                                 if (file) {
                                                     const compressed = await compressImage(file, 1200, 0.85);
-                                                    setFormData({ ...formData, image: compressed });
+                                                    setFormData(prev => ({ ...prev, image: compressed }));
                                                     showNotification("Cover image loaded!");
                                                 }
                                             }}
                                         />
-                                    </label>
+                                    </div>
 
                                     {formData.image && (
-                                        <div className="mt-3 relative h-32 rounded-xl overflow-hidden border border-[#282828] group">
+                                        <div className="relative h-32 rounded-xl overflow-hidden border border-[#282828] group">
                                             <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
                                             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                                 <button
@@ -1086,9 +1232,56 @@ export default function AdminTourPackages() {
                                                     onClick={() => setFormData({ ...formData, image: "" })}
                                                     className="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white font-bold text-xs rounded-lg transition-colors cursor-pointer shadow-md"
                                                 >
-                                                    Remove / Change Image
+                                                    Remove Cover Image
                                                 </button>
                                             </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* ─── TOUR GALLERY PHOTOS (LOCAL DROP & UPLOAD MULTIPLE) ─── */}
+                                <div className="space-y-2">
+                                    <label className="block text-[10px] font-bold text-neutral-400 uppercase">
+                                        Tour Gallery Photos ({(formData.gallery || []).length} Selected)
+                                    </label>
+                                    <div
+                                        onDragOver={e => e.preventDefault()}
+                                        onDrop={e => {
+                                            e.preventDefault();
+                                            if (e.dataTransfer.files) handleGalleryUpload(e.dataTransfer.files);
+                                        }}
+                                        className="flex flex-col items-center justify-center p-4 border border-dashed border-[#333] hover:border-blue-500/50 bg-[#141414] hover:bg-[#181818] rounded-xl cursor-pointer transition-all relative"
+                                    >
+                                        <ImageIcon className="w-5 h-5 text-blue-400 mb-1" />
+                                        <span className="text-xs font-bold text-neutral-200">Drag & Drop Multiple Gallery Photos or Click to Browse</span>
+                                        <span className="text-[10px] text-neutral-500 font-medium mt-0.5">Select multiple local image files</span>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            multiple
+                                            className="absolute inset-0 opacity-0 cursor-pointer"
+                                            onChange={e => {
+                                                if (e.target.files) handleGalleryUpload(e.target.files);
+                                            }}
+                                        />
+                                    </div>
+
+                                    {/* Gallery Thumbnails Strip */}
+                                    {Array.isArray(formData.gallery) && formData.gallery.length > 0 && (
+                                        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+                                            {formData.gallery.map((photoUrl, idx) => (
+                                                <div key={idx} className="w-16 h-14 rounded-lg overflow-hidden bg-neutral-900 border border-[#2c2c2c] shrink-0 relative group">
+                                                    <img src={photoUrl} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover" />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRemoveGalleryImage(idx)}
+                                                        className="absolute top-1 right-1 p-0.5 bg-black/80 hover:bg-rose-600 text-white rounded opacity-80 group-hover:opacity-100 transition-all cursor-pointer"
+                                                        title="Delete Photo"
+                                                    >
+                                                        <X className="w-3 h-3" />
+                                                    </button>
+                                                </div>
+                                            ))}
                                         </div>
                                     )}
                                 </div>
