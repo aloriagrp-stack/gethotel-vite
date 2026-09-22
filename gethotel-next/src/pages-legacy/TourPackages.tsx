@@ -445,7 +445,7 @@ export default function TourPackages() {
                             </button>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 lg:gap-8">
                             {filteredPackages.map((pkg) => {
                                 const packageSlug = pkg.slug || createPackageSlug(pkg.title);
                                 
@@ -459,126 +459,263 @@ export default function TourPackages() {
                                 const isWishlisted = Boolean(wishlist[pkg.id]);
 
                                 return (
-                                    <Link
-                                        key={pkg.id}
-                                        to={`/${langCode}/packages/${packageSlug}`}
-                                        className="group relative rounded-3xl overflow-hidden aspect-[4/5] sm:aspect-[3/4] border border-slate-200/60 shadow-md hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-500 flex flex-col justify-between bg-slate-950 cursor-pointer"
-                                    >
-                                        {/* Background Image across entire card */}
-                                        <AnimatePresence mode="wait">
-                                            <motion.img
-                                                key={activeImgIdx}
-                                                src={displayImg}
-                                                alt={pkg.title}
-                                                initial={{ opacity: 0.8, scale: 1.05 }}
-                                                animate={{ opacity: 1, scale: 1 }}
-                                                exit={{ opacity: 0.8 }}
-                                                transition={{ duration: 0.4 }}
-                                                className="absolute inset-0 w-full h-full object-cover group-hover:scale-108 transition-transform duration-700"
-                                            />
-                                        </AnimatePresence>
+                                    <React.Fragment key={pkg.id}>
+                                        {/* 1. MOBILE VERSION CARD ONLY (lg:hidden) - Preserved 100% Intact */}
+                                        <Link
+                                            to={`/${langCode}/packages/${packageSlug}`}
+                                            className="lg:hidden group relative rounded-3xl overflow-hidden aspect-[4/5] sm:aspect-[3/4] border border-slate-200/60 shadow-md hover:shadow-2xl transition-all duration-500 flex flex-col justify-between bg-slate-950 cursor-pointer"
+                                        >
+                                            <AnimatePresence mode="wait">
+                                                <motion.img
+                                                    key={activeImgIdx}
+                                                    src={displayImg}
+                                                    alt={pkg.title}
+                                                    initial={{ opacity: 0.8, scale: 1.05 }}
+                                                    animate={{ opacity: 1, scale: 1 }}
+                                                    exit={{ opacity: 0.8 }}
+                                                    transition={{ duration: 0.4 }}
+                                                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-108 transition-transform duration-700"
+                                                />
+                                            </AnimatePresence>
 
-                                        {/* Cinematic Dark Gradient Mask for Maximum Contrast */}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/40 to-black/60 pointer-events-none" />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/40 to-black/60 pointer-events-none" />
 
-                                        {/* Top Header Row inside Card (Badges & Wishlist) */}
-                                        <div className="relative z-20 p-4 sm:p-5 flex items-start justify-between gap-2">
-                                            <div className="flex flex-wrap items-center gap-1.5">
-                                                {pkg.badge && (
-                                                    <span className="px-3 py-1 bg-brand-600/90 backdrop-blur-md text-white text-[11px] font-black uppercase tracking-wider rounded-xl shadow-lg border border-white/20">
-                                                        {pkg.badge}
-                                                    </span>
-                                                )}
-                                                {photosList.length > 1 && (
-                                                    <span className="px-2 py-1 bg-black/60 backdrop-blur-md text-white/90 text-[10px] font-bold rounded-lg border border-white/10 flex items-center gap-1">
-                                                        <ImageIcon className="w-3 h-3" />
-                                                        <span>{activeImgIdx + 1}/{photosList.length}</span>
-                                                    </span>
-                                                )}
-                                            </div>
-
-                                            <div className="flex items-center gap-2">
-                                                <div className="px-2.5 py-1 rounded-xl bg-slate-950/75 backdrop-blur-md border border-white/20 text-white flex items-center gap-1 text-xs font-black shadow-lg">
-                                                    <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                                                    <span>{pkg.rating || 5}</span>
-                                                    <span className="text-[10px] text-white/70">({pkg.reviewsCount || 42})</span>
-                                                </div>
-
-                                                <button
-                                                    onClick={(e) => toggleWishlist(e, pkg.id)}
-                                                    className="w-9 h-9 rounded-2xl bg-slate-950/75 backdrop-blur-md text-white flex items-center justify-center border border-white/20 shadow-lg hover:bg-white hover:text-red-500 transition-all cursor-pointer"
-                                                >
-                                                    <Heart className={`w-4 h-4 transition-colors ${isWishlisted ? "fill-red-500 text-red-500" : ""}`} />
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        {/* Gallery Navigation Arrows */}
-                                        {photosList.length > 1 && (
-                                            <>
-                                                <button
-                                                    onClick={(e) => handlePrevImage(e, pkg.id, photosList.length)}
-                                                    className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-950/70 text-white backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 hover:bg-brand-600 cursor-pointer border border-white/20"
-                                                >
-                                                    <ChevronLeft className="w-4 h-4" />
-                                                </button>
-                                                <button
-                                                    onClick={(e) => handleNextImage(e, pkg.id, photosList.length)}
-                                                    className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-950/70 text-white backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 hover:bg-brand-600 cursor-pointer border border-white/20"
-                                                >
-                                                    <ChevronRight className="w-4 h-4" />
-                                                </button>
-                                            </>
-                                        )}
-
-                                        {/* Floating Glassmorphism Pill Tab at Card Bottom */}
-                                        <div className="relative z-20 m-3 sm:m-4 p-4 sm:p-5 rounded-[28px] bg-white/30 backdrop-blur-2xl border border-white/70 shadow-[inset_0_1px_2px_rgba(255,255,255,0.9),0_12px_40px_rgba(0,0,0,0.18)] space-y-3 group-hover:bg-white/45 group-hover:border-white transition-all duration-300">
-                                            {/* Destination & Title */}
-                                            <div className="space-y-1">
-                                                <div className="flex items-start justify-between gap-2 text-[11px] font-extrabold uppercase tracking-wider text-brand-700">
-                                                    <div className="flex items-start gap-1.5 flex-1 min-w-0">
-                                                        <MapPin className="w-3.5 h-3.5 text-brand-600 shrink-0 mt-0.5" />
-                                                        <span className="line-clamp-2 leading-tight">{pkg.destination}</span>
-                                                    </div>
-                                                    {pkg.discountPercent && (
-                                                        <span className="px-2 py-0.5 bg-emerald-600 text-white border border-white/50 rounded-lg text-[9px] font-black shadow-xs shrink-0 whitespace-nowrap">
-                                                            {pkg.discountPercent}
+                                            {/* Top Header Row inside Mobile Card */}
+                                            <div className="relative z-20 p-4 sm:p-5 flex items-start justify-between gap-2">
+                                                <div className="flex flex-wrap items-center gap-1.5">
+                                                    {pkg.badge && (
+                                                        <span className="px-3 py-1 bg-brand-600/90 backdrop-blur-md text-white text-[11px] font-black uppercase tracking-wider rounded-xl shadow-lg border border-white/20">
+                                                            {pkg.badge}
+                                                        </span>
+                                                    )}
+                                                    {photosList.length > 1 && (
+                                                        <span className="px-2 py-1 bg-black/60 backdrop-blur-md text-white/90 text-[10px] font-bold rounded-lg border border-white/10 flex items-center gap-1">
+                                                            <ImageIcon className="w-3 h-3" />
+                                                            <span>{activeImgIdx + 1}/{photosList.length}</span>
                                                         </span>
                                                     )}
                                                 </div>
 
-                                                <h3 className="font-black text-base sm:text-lg text-slate-950 leading-tight line-clamp-2 tracking-tight group-hover:text-brand-600 transition-colors pt-0.5">
-                                                    {pkg.title}
-                                                </h3>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="px-2.5 py-1 rounded-xl bg-slate-950/75 backdrop-blur-md border border-white/20 text-white flex items-center gap-1 text-xs font-black shadow-lg">
+                                                        <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                                                        <span>{pkg.rating || 5}</span>
+                                                        <span className="text-[10px] text-white/70">({pkg.reviewsCount || 42})</span>
+                                                    </div>
+
+                                                    <button
+                                                        onClick={(e) => toggleWishlist(e, pkg.id)}
+                                                        className="w-9 h-9 rounded-2xl bg-slate-950/75 backdrop-blur-md text-white flex items-center justify-center border border-white/20 shadow-lg hover:bg-white hover:text-red-500 transition-all cursor-pointer"
+                                                    >
+                                                        <Heart className={`w-4 h-4 transition-colors ${isWishlisted ? "fill-red-500 text-red-500" : ""}`} />
+                                                    </button>
+                                                </div>
                                             </div>
 
-                                            {/* Duration & Price Footer Row */}
-                                            <div className="pt-2.5 border-t border-slate-900/10 flex items-center justify-between gap-3">
-                                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/25 backdrop-blur-xl rounded-xl text-xs font-extrabold text-slate-900 border border-white/50 shadow-xs">
-                                                    <Clock className="w-3.5 h-3.5 text-brand-600 shrink-0" />
-                                                    <span>{pkg.duration}</span>
-                                                </div>
+                                            {/* Gallery Navigation Arrows */}
+                                            {photosList.length > 1 && (
+                                                <>
+                                                    <button
+                                                        onClick={(e) => handlePrevImage(e, pkg.id, photosList.length)}
+                                                        className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-950/70 text-white backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 hover:bg-brand-600 cursor-pointer border border-white/20"
+                                                    >
+                                                        <ChevronLeft className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={(e) => handleNextImage(e, pkg.id, photosList.length)}
+                                                        className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-950/70 text-white backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 hover:bg-brand-600 cursor-pointer border border-white/20"
+                                                    >
+                                                        <ChevronRight className="w-4 h-4" />
+                                                    </button>
+                                                </>
+                                            )}
 
-                                                <div className="flex items-center gap-2">
-                                                    <div className="text-right flex flex-col items-end">
-                                                        <span className="text-lg sm:text-xl font-black text-slate-950 tracking-tight leading-tight">
-                                                            ₹{pkg.price?.toLocaleString("en-IN")}
-                                                        </span>
-                                                        {pkg.originalPrice && pkg.originalPrice > pkg.price && (
-                                                            <span className="text-[11px] text-slate-600 line-through font-semibold leading-tight mt-0.5">
-                                                                ₹{pkg.originalPrice?.toLocaleString("en-IN")}
+                                            {/* Floating Pill at Bottom */}
+                                            <div className="relative z-20 m-3 sm:m-4 p-4 sm:p-5 rounded-[28px] bg-white/30 backdrop-blur-2xl border border-white/70 shadow-[inset_0_1px_2px_rgba(255,255,255,0.9),0_12px_40px_rgba(0,0,0,0.18)] space-y-3 group-hover:bg-white/45 group-hover:border-white transition-all duration-300">
+                                                <div className="space-y-1">
+                                                    <div className="flex items-start justify-between gap-2 text-[11px] font-extrabold uppercase tracking-wider text-brand-700">
+                                                        <div className="flex items-start gap-1.5 flex-1 min-w-0">
+                                                            <MapPin className="w-3.5 h-3.5 text-brand-600 shrink-0 mt-0.5" />
+                                                            <span className="line-clamp-2 leading-tight">{pkg.destination}</span>
+                                                        </div>
+                                                        {pkg.discountPercent && (
+                                                            <span className="px-2 py-0.5 bg-emerald-600 text-white border border-white/50 rounded-lg text-[9px] font-black shadow-xs shrink-0 whitespace-nowrap">
+                                                                {pkg.discountPercent}
                                                             </span>
                                                         )}
                                                     </div>
 
-                                                    {/* Liquid Glass Brand Blue Arrow Button */}
-                                                    <div className="w-9 h-9 rounded-full bg-brand-600 border border-white/60 text-white flex items-center justify-center shrink-0 shadow-md group-hover:scale-110 group-hover:bg-brand-700 transition-all">
-                                                        <ArrowRight className="w-4 h-4" />
+                                                    <h3 className="font-black text-base sm:text-lg text-slate-950 leading-tight line-clamp-2 tracking-tight group-hover:text-brand-600 transition-colors pt-0.5">
+                                                        {pkg.title}
+                                                    </h3>
+                                                </div>
+
+                                                <div className="pt-2.5 border-t border-slate-900/10 flex items-center justify-between gap-3">
+                                                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/25 backdrop-blur-xl rounded-xl text-xs font-extrabold text-slate-900 border border-white/50 shadow-xs">
+                                                        <Clock className="w-3.5 h-3.5 text-brand-600 shrink-0" />
+                                                        <span>{pkg.duration}</span>
+                                                    </div>
+
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="text-right flex flex-col items-end">
+                                                            <span className="text-lg sm:text-xl font-black text-slate-950 tracking-tight leading-tight">
+                                                                ₹{pkg.price?.toLocaleString("en-IN")}
+                                                            </span>
+                                                            {pkg.originalPrice && pkg.originalPrice > pkg.price && (
+                                                                <span className="text-[11px] text-slate-600 line-through font-semibold leading-tight mt-0.5">
+                                                                    ₹{pkg.originalPrice?.toLocaleString("en-IN")}
+                                                                </span>
+                                                            )}
+                                                        </div>
+
+                                                        <div className="w-9 h-9 rounded-full bg-brand-600 border border-white/60 text-white flex items-center justify-center shrink-0 shadow-md group-hover:scale-110 group-hover:bg-brand-700 transition-all">
+                                                            <ArrowRight className="w-4 h-4" />
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </Link>
+                                        </Link>
+
+                                        {/* 2. DESKTOP VERSION CARD ONLY (hidden lg:block) - Matches User Sketch */}
+                                        <Link
+                                            to={`/${langCode}/packages/${packageSlug}`}
+                                            className="hidden lg:block group relative rounded-3xl overflow-hidden p-5 border border-white/20 shadow-xl hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-500 cursor-pointer bg-slate-950"
+                                        >
+                                            {/* THIS AREA REMAINS BLURRY AND HAS COLOR OF IMAGE */}
+                                            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                                                <img
+                                                    src={displayImg}
+                                                    alt=""
+                                                    className="w-full h-full object-cover blur-3xl scale-125 opacity-40 group-hover:scale-135 transition-transform duration-700"
+                                                />
+                                                <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-2xl" />
+                                                <div className="absolute inset-0 bg-gradient-to-r from-slate-950/70 via-slate-950/30 to-slate-950/70" />
+                                            </div>
+
+                                            {/* INNER CARD LAYOUT */}
+                                            <div className="relative z-10 flex gap-5 items-stretch h-full min-h-[250px]">
+                                                {/* LEFT: Sharp, Clear Tour Image (White Box from Sketch) */}
+                                                <div className="relative w-[44%] rounded-2xl overflow-hidden shadow-2xl shrink-0 group/img bg-slate-900 border border-white/10">
+                                                    <img
+                                                        src={displayImg}
+                                                        alt={pkg.title}
+                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                                    />
+
+                                                    {/* Badges on Image */}
+                                                    <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 z-10">
+                                                        {pkg.badge && (
+                                                            <span className="px-2.5 py-0.5 bg-brand-600/90 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-wider rounded-lg shadow-md border border-white/20">
+                                                                {pkg.badge}
+                                                            </span>
+                                                        )}
+                                                        {pkg.discountPercent && (
+                                                            <span className="px-2 py-0.5 bg-rose-600 text-white text-[10px] font-black rounded-lg shadow-md">
+                                                                {pkg.discountPercent}
+                                                            </span>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Gallery Arrow Buttons on Hover */}
+                                                    {photosList.length > 1 && (
+                                                        <>
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => handlePrevImage(e, pkg.id, photosList.length)}
+                                                                className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-slate-950/70 text-white backdrop-blur-md flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity z-20 hover:bg-brand-600 cursor-pointer border border-white/20"
+                                                                title="Previous"
+                                                            >
+                                                                <ChevronLeft className="w-3.5 h-3.5" />
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => handleNextImage(e, pkg.id, photosList.length)}
+                                                                className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-slate-950/70 text-white backdrop-blur-md flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity z-20 hover:bg-brand-600 cursor-pointer border border-white/20"
+                                                                title="Next"
+                                                            >
+                                                                <ChevronRight className="w-3.5 h-3.5" />
+                                                            </button>
+                                                            <span className="absolute bottom-2 right-2 px-2 py-0.5 bg-black/60 backdrop-blur-md text-white text-[9px] font-bold rounded-md">
+                                                                {activeImgIdx + 1}/{photosList.length}
+                                                            </span>
+                                                        </>
+                                                    )}
+                                                </div>
+
+                                                {/* RIGHT: "prices and all this sie" */}
+                                                <div className="flex-1 flex flex-col justify-between py-1 text-white">
+                                                    {/* Location, Rating, Wishlist */}
+                                                    <div className="space-y-1.5">
+                                                        <div className="flex items-center justify-between gap-2">
+                                                            <div className="flex items-center gap-1 text-[11px] font-extrabold text-blue-300 uppercase tracking-wider">
+                                                                <MapPin className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                                                                <span className="truncate">{pkg.destination}</span>
+                                                            </div>
+
+                                                            <div className="flex items-center gap-1.5">
+                                                                <div className="px-2 py-0.5 rounded-lg bg-black/40 backdrop-blur-md border border-white/10 text-white flex items-center gap-1 text-[11px] font-bold">
+                                                                    <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                                                                    <span>{pkg.rating || 5}</span>
+                                                                </div>
+
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={(e) => toggleWishlist(e, pkg.id)}
+                                                                    className="w-7 h-7 rounded-lg bg-black/40 backdrop-blur-md text-white flex items-center justify-center border border-white/10 hover:bg-white hover:text-red-500 transition-all cursor-pointer"
+                                                                >
+                                                                    <Heart className={`w-3.5 h-3.5 ${isWishlisted ? "fill-red-500 text-red-500" : ""}`} />
+                                                                </button>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Title */}
+                                                        <h3 className="font-black text-base xl:text-lg text-white leading-snug line-clamp-2 group-hover:text-blue-200 transition-colors">
+                                                            {pkg.title}
+                                                        </h3>
+
+                                                        {/* Feature pills */}
+                                                        <div className="flex items-center gap-2 flex-wrap pt-0.5 text-[11px] font-semibold text-slate-200">
+                                                            <span className="px-2.5 py-1 bg-white/10 backdrop-blur-md rounded-lg flex items-center gap-1 border border-white/10">
+                                                                <Clock className="w-3 h-3 text-blue-400" />
+                                                                <span>{pkg.duration}</span>
+                                                            </span>
+                                                            <span className="px-2.5 py-1 bg-white/10 backdrop-blur-md rounded-lg flex items-center gap-1 border border-white/10">
+                                                                <Hotel className="w-3 h-3 text-indigo-400" />
+                                                                <span className="truncate max-w-[110px]">{pkg.includedStay || "Hotel Included"}</span>
+                                                            </span>
+                                                            <span className="px-2.5 py-1 bg-white/10 backdrop-blur-md rounded-lg flex items-center gap-1 border border-white/10">
+                                                                <Car className="w-3 h-3 text-emerald-400" />
+                                                                <span>Private Cab</span>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Price & CTA Section ("prices and all this sie") */}
+                                                    <div className="pt-3 border-t border-white/15 flex items-end justify-between gap-3">
+                                                        <div>
+                                                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-300 block">Package Price</span>
+                                                            <div className="flex items-baseline gap-2">
+                                                                <span className="text-xl xl:text-2xl font-black text-white tracking-tight leading-tight">
+                                                                    ₹{pkg.price?.toLocaleString("en-IN")}
+                                                                </span>
+                                                                {pkg.originalPrice && pkg.originalPrice > pkg.price && (
+                                                                    <span className="text-xs text-slate-400 line-through font-semibold">
+                                                                        ₹{pkg.originalPrice?.toLocaleString("en-IN")}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <span className="text-[10px] text-slate-300 font-medium block">per guest (all taxes incl.)</span>
+                                                        </div>
+
+                                                        <div className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 group-hover:from-blue-500 group-hover:to-indigo-500 text-white rounded-xl font-black text-xs uppercase tracking-wider shadow-lg transition-all group-hover:scale-105 border border-white/20 shrink-0">
+                                                            <span>View Tour</span>
+                                                            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </Link>
+                                    </React.Fragment>
                                 );
                             })}
                         </div>
