@@ -130,7 +130,7 @@ export default function AdminLayout({ children }: { children?: React.ReactNode }
                     </button>
                 </div>
 
-                <nav ref={sidebarNavRef} className="flex-1 p-3 space-y-1.5 overflow-y-auto custom-scrollbar">
+                <nav ref={sidebarNavRef} className="flex-1 p-3 space-y-1.5 overflow-y-auto no-scrollbar [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                     {navItems.map((item) => {
                         const Icon = item.icon;
                         const isActive = item.tab === currentTab;
@@ -280,6 +280,15 @@ export default function AdminLayout({ children }: { children?: React.ReactNode }
                 }
                 .animate-slide-right {
                     animation: slide-right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+                }
+                aside nav::-webkit-scrollbar {
+                    display: none !important;
+                    width: 0 !important;
+                    height: 0 !important;
+                }
+                aside nav {
+                    -ms-overflow-style: none !important;
+                    scrollbar-width: none !important;
                 }
             `}</style>
 
