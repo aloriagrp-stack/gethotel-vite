@@ -163,18 +163,20 @@ export default function DestinationToursLanding() {
 
                 {/* PACKAGES GRID */}
                 {loading ? (
-                    <div className="grid grid-cols-2 lg:grid-cols-2 gap-2.5 sm:gap-4 lg:gap-8">
+                    <div className="grid grid-cols-2 lg:grid-cols-2 gap-0 lg:gap-8">
                         {[1, 2, 3, 4].map(i => (
                             <React.Fragment key={i}>
-                                {/* Mobile Blinkit Skeleton */}
-                                <div className="lg:hidden bg-white rounded-2xl border border-slate-200/80 p-2 sm:p-2.5 space-y-2 animate-pulse flex flex-col justify-between">
+                                {/* Mobile Skeleton Directly on Background */}
+                                <div className={`lg:hidden p-2.5 sm:p-3 space-y-2 animate-pulse flex flex-col justify-between border-b border-slate-200/80 ${
+                                    i % 2 === 0 ? "border-r border-slate-200/80 pr-2.5 sm:pr-3" : "pl-2.5 sm:pl-3"
+                                }`}>
                                     <div className="space-y-2">
-                                        <div className="aspect-[4/3] bg-slate-200 rounded-xl" />
-                                        <div className="h-3 w-14 bg-slate-200 rounded" />
-                                        <div className="h-3.5 w-full bg-slate-200 rounded" />
-                                        <div className="h-3 w-2/3 bg-slate-100 rounded" />
+                                        <div className="aspect-[4/3] bg-slate-200/70 rounded-xl" />
+                                        <div className="h-3 w-14 bg-slate-200/70 rounded" />
+                                        <div className="h-3.5 w-full bg-slate-200/70 rounded" />
+                                        <div className="h-3 w-2/3 bg-slate-200/50 rounded" />
                                     </div>
-                                    <div className="flex justify-between items-end pt-2 border-t border-slate-100">
+                                    <div className="flex justify-between items-end pt-2">
                                         <div className="h-4 w-12 bg-slate-300 rounded" />
                                         <div className="h-6 w-12 bg-slate-200 rounded-lg" />
                                     </div>
@@ -214,8 +216,8 @@ export default function DestinationToursLanding() {
                         </button>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-2 lg:grid-cols-2 gap-2.5 sm:gap-4 lg:gap-8">
-                        {destinationPackages.map((pkg) => {
+                    <div className="grid grid-cols-2 lg:grid-cols-2 gap-0 lg:gap-8">
+                        {destinationPackages.map((pkg, idx) => {
                             const packageSlug = pkg.slug || createPackageSlug(pkg.title);
                             
                             const photosList = Array.isArray(pkg.gallery) && pkg.gallery.length > 0
@@ -228,10 +230,12 @@ export default function DestinationToursLanding() {
 
                             return (
                                 <React.Fragment key={pkg.id}>
-                                    {/* 1. MOBILE VERSION CARD ONLY (lg:hidden) - Blinkit Inspired 2-Column Product Card */}
+                                    {/* 1. MOBILE VERSION CARD ONLY (lg:hidden) - Directly on Background with Center & Bottom Dividers */}
                                     <Link
                                         to={`/${langCode}/packages/${packageSlug}`}
-                                        className="lg:hidden group bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-md transition-all duration-300 p-2 sm:p-2.5 flex flex-col justify-between cursor-pointer overflow-hidden relative"
+                                        className={`lg:hidden group py-3 flex flex-col justify-between cursor-pointer transition-colors border-b border-slate-200/80 relative ${
+                                            idx % 2 === 0 ? "border-r border-slate-200/80 pr-2.5 sm:pr-3" : "pl-2.5 sm:pl-3"
+                                        }`}
                                     >
                                         <div className="space-y-1.5">
                                             {/* Top Image Box with Blue Discount Pill + Wishlist */}
@@ -282,7 +286,7 @@ export default function DestinationToursLanding() {
                                         </div>
 
                                         {/* Bottom Price & Blinkit Action Button */}
-                                        <div className="flex items-end justify-between gap-1 mt-2.5 pt-2 border-t border-slate-100">
+                                        <div className="flex items-end justify-between gap-1 mt-2.5 pt-2">
                                             <div className="flex flex-col min-w-0">
                                                 <span className="text-xs sm:text-sm font-black text-slate-950 leading-tight">
                                                     ₹{pkg.price?.toLocaleString("en-IN")}
