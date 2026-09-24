@@ -166,6 +166,9 @@ export default function TourPackageDetails() {
     const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
     const [photoModalIndex, setPhotoModalIndex] = useState(0);
     const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
+    const [showAllInclusions, setShowAllInclusions] = useState(false);
+    const [showAllExclusions, setShowAllExclusions] = useState(false);
+    const [showAllItinerary, setShowAllItinerary] = useState(false);
 
     const dropdownRef = useRef<HTMLDivElement>(null);
     const bookingCardRef = useRef<HTMLDivElement>(null);
@@ -405,6 +408,30 @@ export default function TourPackageDetails() {
 
     const isPkgInCart = cartItems.some(item => item.id === pkg.id);
     const selectedOption = GUEST_OPTIONS.find(o => o.value === travelerCount) || GUEST_OPTIONS[1];
+
+    const inclusionsList: string[] = pkg.inclusions || [
+        "Verified Hotel Stay with Complimentary Breakfast",
+        "Dedicated Private AC Cab for Sightseeing",
+        "Airport & Railway Station Pick-up and Drop transfers",
+        "Toll Taxes, Parking, Driver Allowance & Fuel Included",
+        "24x7 Dedicated Travel Concierge & On-Trip Support"
+    ];
+    const displayedInclusions = showAllInclusions ? inclusionsList : inclusionsList.slice(0, 4);
+
+    const exclusionsList: string[] = (pkg.exclusions && pkg.exclusions.length > 0) ? pkg.exclusions : [
+        "Airfare or Train Tickets (Available upon request)",
+        "Monument Entrance Fees & Camera Charges",
+        "Personal Expenses, Laundry, Telephone & Room Service",
+        "Any optional excursions or water sports not specified"
+    ];
+    const displayedExclusions = showAllExclusions ? exclusionsList : exclusionsList.slice(0, 4);
+
+    const itineraryList: any[] = pkg.itinerary || [
+        { day: "Day 1", title: "Arrival & Hotel Check-In", desc: "Pickup from airport/railway station by private chauffeur. Check-in to your verified hotel resort, relax and enjoy evening local market sightseeing & sunset views." },
+        { day: "Day 2", title: "Full Day Guided Sightseeing", desc: "Enjoy lavish breakfast at the hotel followed by a comprehensive guided tour of major monuments, historic landmarks, viewpoint photostops, and authentic regional dining." },
+        { day: "Day 3", title: "Departure & Sweet Memories", desc: "Morning breakfast, check out from the hotel, and seamless transfer back to airport/railway station for your onward return journey." }
+    ];
+    const displayedItinerary = showAllItinerary ? itineraryList : itineraryList.slice(0, 3);
 
     const faqs = [
         {
@@ -835,13 +862,7 @@ export default function TourPackageDetails() {
                                     What's Included In This Package
                                 </h3>
                                 <ul className="space-y-2">
-                                    {(pkg.inclusions || [
-                                        "Verified Hotel Stay with Complimentary Breakfast",
-                                        "Dedicated Private AC Cab for Sightseeing",
-                                        "Airport & Railway Station Pick-up and Drop transfers",
-                                        "Toll Taxes, Parking, Driver Allowance & Fuel Included",
-                                        "24x7 Dedicated Travel Concierge & On-Trip Support"
-                                    ]).map((inc: string, idx: number) => (
+                                    {displayedInclusions.map((inc: string, idx: number) => (
                                         <li key={idx} className="flex items-start gap-2.5 text-xs sm:text-[13px] font-medium text-slate-800 py-1.5 border-b border-slate-200/50 last:border-0">
                                             <div className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5">
                                                 <Check className="w-3 h-3 stroke-[3]" />
@@ -850,6 +871,16 @@ export default function TourPackageDetails() {
                                         </li>
                                     ))}
                                 </ul>
+                                {inclusionsList.length > 4 && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowAllInclusions(!showAllInclusions)}
+                                        className="mt-1 inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:text-emerald-800 transition-colors cursor-pointer py-1"
+                                    >
+                                        <span>{showAllInclusions ? "Show Less" : `+${inclusionsList.length - 4} More Inclusions`}</span>
+                                        <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showAllInclusions ? "rotate-180" : ""}`} />
+                                    </button>
+                                )}
                             </div>
 
                             {/* What's Excluded */}
@@ -859,12 +890,7 @@ export default function TourPackageDetails() {
                                     What's Excluded
                                 </h3>
                                 <ul className="space-y-2">
-                                    {(pkg.exclusions && pkg.exclusions.length > 0 ? pkg.exclusions : [
-                                        "Airfare or Train Tickets (Available upon request)",
-                                        "Monument Entrance Fees & Camera Charges",
-                                        "Personal Expenses, Laundry, Telephone & Room Service",
-                                        "Any optional excursions or water sports not specified"
-                                    ]).map((exc: string, idx: number) => (
+                                    {displayedExclusions.map((exc: string, idx: number) => (
                                         <li key={idx} className="flex items-start gap-2.5 text-xs sm:text-[13px] font-medium text-slate-600 py-1.5 border-b border-slate-200/50 last:border-0">
                                             <div className="w-5 h-5 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center shrink-0 mt-0.5">
                                                 <X className="w-3 h-3 stroke-[3]" />
@@ -873,6 +899,16 @@ export default function TourPackageDetails() {
                                         </li>
                                     ))}
                                 </ul>
+                                {exclusionsList.length > 4 && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowAllExclusions(!showAllExclusions)}
+                                        className="mt-1 inline-flex items-center gap-1.5 text-xs font-bold text-rose-600 hover:text-rose-700 transition-colors cursor-pointer py-1"
+                                    >
+                                        <span>{showAllExclusions ? "Show Less" : `+${exclusionsList.length - 4} More Exclusions`}</span>
+                                        <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showAllExclusions ? "rotate-180" : ""}`} />
+                                    </button>
+                                )}
                             </div>
                         </div>
 
@@ -890,11 +926,7 @@ export default function TourPackageDetails() {
 
                             {/* Timeline layout directly on background */}
                             <div className="relative pl-7 space-y-6 pt-2 before:absolute before:left-3 before:top-3 before:bottom-3 before:w-0.5 before:bg-blue-200">
-                                {(pkg.itinerary || [
-                                    { day: "Day 1", title: "Arrival & Hotel Check-In", desc: "Pickup from airport/railway station by private chauffeur. Check-in to your verified hotel resort, relax and enjoy evening local market sightseeing & sunset views." },
-                                    { day: "Day 2", title: "Full Day Guided Sightseeing", desc: "Enjoy lavish breakfast at the hotel followed by a comprehensive guided tour of major monuments, historic landmarks, viewpoint photostops, and authentic regional dining." },
-                                    { day: "Day 3", title: "Departure & Sweet Memories", desc: "Morning breakfast, check out from the hotel, and seamless transfer back to airport/railway station for your onward return journey." }
-                                ]).map((day: any, idx: number) => (
+                                {displayedItinerary.map((day: any, idx: number) => (
                                     <div key={idx} className="relative group">
                                         {/* Circular Dot Indicator */}
                                         <div className="absolute -left-7 top-1 w-6 h-6 rounded-full bg-blue-600 text-white font-black text-[10px] flex items-center justify-center shadow-xs ring-4 ring-slate-50">
@@ -921,6 +953,19 @@ export default function TourPackageDetails() {
                                     </div>
                                 ))}
                             </div>
+
+                            {itineraryList.length > 3 && (
+                                <div className="pt-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowAllItinerary(!showAllItinerary)}
+                                        className="w-full py-2.5 px-4 bg-blue-50/80 hover:bg-blue-100/80 text-blue-700 font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 border border-blue-200/60"
+                                    >
+                                        <span>{showAllItinerary ? "Show Less Days" : `View Full Itinerary (+${itineraryList.length - 3} More Days)`}</span>
+                                        <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showAllItinerary ? "rotate-180" : ""}`} />
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
                         {/* Accommodations & Private Cab Fleet directly on background */}
