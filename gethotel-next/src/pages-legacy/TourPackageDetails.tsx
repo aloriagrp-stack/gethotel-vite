@@ -920,7 +920,7 @@ export default function TourPackageDetails() {
                         </div>
 
                         {/* ─── RECTANGULAR & MINIMAL BOOKING & PRICE CARD (DIRECTLY BELOW OVERVIEW) ─── */}
-                        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-4 sm:p-5 lg:p-6 space-y-4 relative overflow-hidden">
+                        <div className={`bg-white rounded-2xl border border-slate-200/90 shadow-sm p-4 sm:p-5 lg:p-6 space-y-4 relative ${isDatePickerOpen || isGuestDropdownOpen ? "z-40" : "z-10"}`}>
                             {/* Row 1: Package Price */}
                             <div className="flex items-start justify-between border-b border-slate-100 pb-3 pt-1">
                                 <div>
