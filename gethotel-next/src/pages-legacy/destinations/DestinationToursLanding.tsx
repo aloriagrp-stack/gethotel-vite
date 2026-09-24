@@ -124,7 +124,7 @@ export default function DestinationToursLanding() {
             />
 
             {/* MAIN CONTENT AREA - ZERO TOP CLUTTER */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 space-y-6">
+            <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6 space-y-6">
                 {/* HEADER & FILTER PILLS */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
@@ -163,26 +163,43 @@ export default function DestinationToursLanding() {
 
                 {/* PACKAGES GRID */}
                 {loading ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 lg:gap-8">
+                    <div className="grid grid-cols-2 lg:grid-cols-2 gap-2.5 sm:gap-4 lg:gap-8">
                         {[1, 2, 3, 4].map(i => (
-                            <div key={i} className="relative rounded-3xl overflow-hidden p-5 bg-white/60 border border-slate-200/80 animate-pulse min-h-[290px] flex flex-col justify-between gap-4">
-                                <div className="flex gap-4 items-stretch">
-                                    <div className="w-[52%] aspect-[16/10] bg-slate-200 rounded-2xl" />
-                                    <div className="flex-1 bg-slate-100 rounded-2xl p-3 flex flex-col justify-between space-y-2">
-                                        <div className="h-3 w-1/2 bg-slate-200 rounded" />
-                                        <div className="h-6 w-3/4 bg-slate-300 rounded" />
-                                        <div className="h-7 w-full bg-slate-200 rounded-xl" />
+                            <React.Fragment key={i}>
+                                {/* Mobile Blinkit Skeleton */}
+                                <div className="lg:hidden bg-white rounded-2xl border border-slate-200/80 p-2 sm:p-2.5 space-y-2 animate-pulse flex flex-col justify-between">
+                                    <div className="space-y-2">
+                                        <div className="aspect-[4/3] bg-slate-200 rounded-xl" />
+                                        <div className="h-3 w-14 bg-slate-200 rounded" />
+                                        <div className="h-3.5 w-full bg-slate-200 rounded" />
+                                        <div className="h-3 w-2/3 bg-slate-100 rounded" />
+                                    </div>
+                                    <div className="flex justify-between items-end pt-2 border-t border-slate-100">
+                                        <div className="h-4 w-12 bg-slate-300 rounded" />
+                                        <div className="h-6 w-12 bg-slate-200 rounded-lg" />
                                     </div>
                                 </div>
-                                <div className="space-y-2 pt-1">
-                                    <div className="h-4 w-1/3 bg-slate-200 rounded-lg" />
-                                    <div className="h-5 w-4/5 bg-slate-300 rounded-lg" />
-                                    <div className="flex gap-2">
-                                        <div className="h-4 w-16 bg-slate-200 rounded" />
-                                        <div className="h-4 w-20 bg-slate-200 rounded" />
+
+                                {/* Desktop Horizontal Skeleton */}
+                                <div className="hidden lg:flex relative rounded-3xl overflow-hidden p-5 bg-white/60 border border-slate-200/80 animate-pulse min-h-[290px] flex-col justify-between gap-4">
+                                    <div className="flex gap-4 items-stretch">
+                                        <div className="w-[52%] aspect-[16/10] bg-slate-200 rounded-2xl" />
+                                        <div className="flex-1 bg-slate-100 rounded-2xl p-3 flex flex-col justify-between space-y-2">
+                                            <div className="h-3 w-1/2 bg-slate-200 rounded" />
+                                            <div className="h-6 w-3/4 bg-slate-300 rounded" />
+                                            <div className="h-7 w-full bg-slate-200 rounded-xl" />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2 pt-1">
+                                        <div className="h-4 w-1/3 bg-slate-200 rounded-lg" />
+                                        <div className="h-5 w-4/5 bg-slate-300 rounded-lg" />
+                                        <div className="flex gap-2">
+                                            <div className="h-4 w-16 bg-slate-200 rounded" />
+                                            <div className="h-4 w-20 bg-slate-200 rounded" />
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            </React.Fragment>
                         ))}
                     </div>
                 ) : destinationPackages.length === 0 ? (
@@ -197,7 +214,7 @@ export default function DestinationToursLanding() {
                         </button>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 lg:gap-8">
+                    <div className="grid grid-cols-2 lg:grid-cols-2 gap-2.5 sm:gap-4 lg:gap-8">
                         {destinationPackages.map((pkg) => {
                             const packageSlug = pkg.slug || createPackageSlug(pkg.title);
                             
@@ -211,121 +228,75 @@ export default function DestinationToursLanding() {
 
                             return (
                                 <React.Fragment key={pkg.id}>
-                                    {/* 1. MOBILE VERSION CARD ONLY (lg:hidden) - Matches Alphonso Reference & User Wireframe */}
+                                    {/* 1. MOBILE VERSION CARD ONLY (lg:hidden) - Blinkit Inspired 2-Column Product Card */}
                                     <Link
                                         to={`/${langCode}/packages/${packageSlug}`}
-                                        className="lg:hidden group relative rounded-[32px] overflow-hidden aspect-[3/4.6] border border-slate-200/50 shadow-xl hover:shadow-2xl transition-all duration-500 flex flex-col justify-between bg-slate-950 cursor-pointer"
+                                        className="lg:hidden group bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-md transition-all duration-300 p-2 sm:p-2.5 flex flex-col justify-between cursor-pointer overflow-hidden relative"
                                     >
-                                        {/* Image In Full Card */}
-                                        <AnimatePresence mode="wait">
-                                            <motion.img
-                                                key={activeImgIdx}
-                                                src={displayImg}
-                                                alt={pkg.title}
-                                                initial={{ opacity: 0.85, scale: 1.04 }}
-                                                animate={{ opacity: 1, scale: 1 }}
-                                                exit={{ opacity: 0.85 }}
-                                                transition={{ duration: 0.4 }}
-                                                className="absolute inset-0 w-full h-full object-cover group-hover:scale-108 transition-transform duration-700"
-                                            />
-                                        </AnimatePresence>
+                                        <div className="space-y-1.5">
+                                            {/* Top Image Box with Blue Discount Pill + Wishlist */}
+                                            <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-slate-100 group/img">
+                                                <img
+                                                    src={displayImg}
+                                                    alt={pkg.title}
+                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                />
 
-                                        {/* In this area the area must be blurry and hazy and the blurry area and the real area should be looking like mixed */}
-                                        <div
-                                            className="absolute inset-x-0 bottom-0 h-[68%] backdrop-blur-xl pointer-events-none"
-                                            style={{
-                                                WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.4) 20%, black 55%)",
-                                                maskImage: "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.4) 20%, black 55%)",
-                                            }}
-                                        />
-                                        <div className="absolute inset-x-0 bottom-0 h-[72%] bg-gradient-to-t from-black/85 via-black/45 to-transparent pointer-events-none" />
-
-                                        {/* Top Header: Destination + Discount Pill + Wishlist */}
-                                        <div className="relative z-20 p-4 sm:p-5 flex items-start justify-between gap-2">
-                                            <div className="flex items-center gap-1.5 px-3 py-1 bg-black/40 backdrop-blur-md rounded-full text-white text-xs font-extrabold border border-white/10 shadow-sm">
-                                                <MapPin className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                                                <span className="truncate max-w-[130px]">{pkg.destination}</span>
-                                            </div>
-
-                                            <div className="flex items-center gap-2">
+                                                {/* Blue Discount Pill on Top-Left (Exact Blinkit Style) */}
                                                 {pkg.discountPercent && (
-                                                    <span className="px-3 py-1 bg-black/40 backdrop-blur-md text-white text-xs font-bold rounded-full border border-white/10 shadow-sm">
+                                                    <div className="absolute top-1.5 left-1.5 z-10 px-1.5 py-0.5 bg-blue-600 text-white font-extrabold text-[9px] uppercase tracking-wider rounded-md shadow-xs">
                                                         {pkg.discountPercent}
-                                                    </span>
+                                                    </div>
                                                 )}
 
+                                                {/* Wishlist Heart on Top-Right */}
                                                 <button
                                                     type="button"
                                                     onClick={(e) => toggleWishlist(e, pkg.id)}
-                                                    className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-md text-white flex items-center justify-center border border-white/10 shadow-sm hover:bg-white hover:text-red-500 transition-all cursor-pointer"
+                                                    className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-white/90 backdrop-blur-xs text-slate-600 flex items-center justify-center hover:text-red-500 shadow-xs transition-colors z-10"
                                                     title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
                                                 >
-                                                    <Heart className={`w-3.5 h-3.5 transition-colors ${isWishlisted ? "fill-red-500 text-red-500" : ""}`} />
+                                                    <Heart className={`w-3 h-3 ${isWishlisted ? "fill-red-500 text-red-500" : ""}`} />
                                                 </button>
                                             </div>
-                                        </div>
 
-                                        {/* Bottom Content Area (On Top of Hazy Blurred Area) */}
-                                        <div className="relative z-20 p-5 space-y-3">
-                                            {/* Pagination Dots (like the Alphonso reference image) */}
-                                            {photosList.length > 1 && (
-                                                <div className="flex items-center justify-center gap-1.5 pb-1">
-                                                    {photosList.slice(0, 5).map((_: any, idx: number) => (
-                                                        <span
-                                                            key={idx}
-                                                            className={`h-1.5 rounded-full transition-all ${
-                                                                idx === activeImgIdx ? "w-5 bg-white shadow-xs" : "w-1.5 bg-white/40"
-                                                            }`}
-                                                        />
-                                                    ))}
+                                            {/* Details Below Image */}
+                                            <div className="space-y-1">
+                                                {/* Delivery/Duration Pill (like Blinkit's "⏱ 24 MINS") */}
+                                                <div className="flex items-center gap-1 text-[10px] font-extrabold text-amber-900 bg-amber-50/90 border border-amber-200/60 px-1.5 py-0.5 rounded-md w-fit">
+                                                    <Clock className="w-2.5 h-2.5 text-amber-600 shrink-0" />
+                                                    <span>{pkg.duration}</span>
                                                 </div>
-                                            )}
 
-                                            {/* Row 1: Title (Left) + Price Pill (Right) */}
-                                            <div className="flex items-center justify-between gap-3">
-                                                <h3 className="font-black text-xl sm:text-2xl text-white leading-tight line-clamp-1 tracking-tight">
+                                                {/* Title (2 lines clamp, like Blinkit item title) */}
+                                                <h3 className="font-bold text-xs sm:text-[13px] text-slate-900 line-clamp-2 leading-snug min-h-[30px] group-hover:text-brand-600 transition-colors">
                                                     {pkg.title}
                                                 </h3>
 
-                                                <div className="px-3.5 py-1.5 bg-black/40 backdrop-blur-md rounded-full text-white font-black text-sm sm:text-base shrink-0 border border-white/15 shadow-sm">
+                                                {/* Location / Destination subtitle (like Blinkit's "1 unit") */}
+                                                <div className="flex items-center gap-1 text-[10px] text-slate-500 font-medium truncate">
+                                                    <MapPin className="w-2.5 h-2.5 text-slate-400 shrink-0" />
+                                                    <span className="truncate">{pkg.destination}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Bottom Price & Blinkit Action Button */}
+                                        <div className="flex items-end justify-between gap-1 mt-2.5 pt-2 border-t border-slate-100">
+                                            <div className="flex flex-col min-w-0">
+                                                <span className="text-xs sm:text-sm font-black text-slate-950 leading-tight">
                                                     ₹{pkg.price?.toLocaleString("en-IN")}
-                                                </div>
-                                            </div>
-
-                                            {/* Row 2: "Your paragraph text" (Description) */}
-                                            <p className="text-xs sm:text-[13px] text-white/80 line-clamp-2 leading-relaxed font-medium">
-                                                {pkg.description || pkg.overview || "Experience iconic heritage, guided sightseeing, and scenic highlights with handpicked stays."}
-                                            </p>
-
-                                            {/* Row 3: Pills (like "Best Seller" & "9 left" in reference image) */}
-                                            <div className="flex items-center gap-2 flex-wrap pt-0.5">
-                                                {pkg.badge && (
-                                                    <span className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[11px] font-bold text-white shadow-xs">
-                                                        {pkg.badge}
-                                                    </span>
-                                                )}
-                                                <span className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[11px] font-bold text-white shadow-xs flex items-center gap-1">
-                                                    <Clock className="w-3 h-3 text-white/80" />
-                                                    <span>{pkg.duration}</span>
                                                 </span>
-                                                <span className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[11px] font-bold text-white shadow-xs flex items-center gap-1">
-                                                    <Car className="w-3 h-3 text-white/80" />
-                                                    <span>Private Cab</span>
-                                                </span>
-                                                {pkg.rating && (
-                                                    <span className="px-2.5 py-1 bg-white/20 backdrop-blur-md rounded-full text-[11px] font-bold text-white shadow-xs flex items-center gap-1">
-                                                        <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                                                        <span>{pkg.rating}</span>
+                                                {pkg.originalPrice && pkg.originalPrice > pkg.price && (
+                                                    <span className="text-[10px] text-slate-400 line-through font-medium leading-none mt-0.5">
+                                                        ₹{pkg.originalPrice?.toLocaleString("en-IN")}
                                                     </span>
                                                 )}
                                             </div>
 
-                                            {/* Row 4: "the button" (White Full-width Pill Button like Alphonso's "Add to cart") */}
-                                            <div className="pt-1">
-                                                <div className="w-full py-3.5 px-6 rounded-full bg-white text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider text-center shadow-xl group-hover:bg-slate-100 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-                                                    <span>View Tour Details</span>
-                                                    <ArrowRight className="w-4 h-4 text-slate-950 group-hover:translate-x-0.5 transition-transform" />
-                                                </div>
+                                            {/* Iconic Blinkit-style ADD/VIEW button */}
+                                            <div className="px-3 py-1 rounded-lg border border-emerald-600 text-emerald-700 bg-emerald-50/50 hover:bg-emerald-600 hover:text-white font-black text-[11px] uppercase tracking-wider transition-all text-center shrink-0">
+                                                VIEW
                                             </div>
                                         </div>
                                     </Link>
