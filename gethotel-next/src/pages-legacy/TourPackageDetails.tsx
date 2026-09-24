@@ -942,8 +942,8 @@ export default function TourPackageDetails() {
                             {/* Subtle Top Accent */}
                             <div className="h-1 w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 absolute top-0 left-0 right-0" />
 
-                            {/* Row 1: Package Price & Dynamic Total Breakdown */}
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-slate-100 pt-1">
+                            {/* Row 1: Package Price */}
+                            <div className="flex items-start justify-between border-b border-slate-100 pb-3 pt-1">
                                 <div>
                                     <div className="flex items-center gap-2">
                                         <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Special Package Price</span>
@@ -966,26 +966,6 @@ export default function TourPackageDetails() {
                                     </div>
                                     <span className="text-[11px] text-slate-500 font-medium block mt-0.5">
                                         All taxes, tolls, parking & private AC cab included
-                                    </span>
-                                </div>
-
-                                {/* Dynamic Total Amount */}
-                                <div className="sm:text-right bg-slate-50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl sm:rounded-none border sm:border-0 border-slate-100">
-                                    <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">
-                                        Total Payable ({travelerCount} {travelerCount === 1 ? "Guest" : "Guests"})
-                                    </span>
-                                    <div className="flex items-baseline sm:justify-end gap-2 mt-0.5">
-                                        <span className="text-xl sm:text-2xl font-black text-blue-600 leading-none">
-                                            ₹{totalPrice.toLocaleString()}
-                                        </span>
-                                        {totalSavings > 0 && (
-                                            <span className="text-[11px] font-bold text-emerald-600">
-                                                Save ₹{totalSavings.toLocaleString()}
-                                            </span>
-                                        )}
-                                    </div>
-                                    <span className="text-[10px] text-emerald-700 font-semibold block mt-0.5">
-                                        ✓ No Hidden Fees at Checkout
                                     </span>
                                 </div>
                             </div>
@@ -1237,43 +1217,15 @@ export default function TourPackageDetails() {
                                 </div>
                             </div>
 
-                            {/* Row 3: Action Buttons & Trust Strip */}
-                            <div className="flex flex-col sm:flex-row items-stretch gap-2.5 pt-1">
+                            {/* Row 3: Action Button */}
+                            <div className="pt-1">
                                 <button
                                     onClick={handleDirectBookNow}
-                                    className="flex-1 py-3.5 px-5 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-xs sm:text-sm uppercase tracking-wider rounded-xl transition-all duration-200 cursor-pointer shadow-md hover:shadow-blue-500/25 active:scale-[0.99] flex items-center justify-center gap-2"
+                                    className="w-full py-3.5 px-6 bg-[#0a1845] hover:bg-[#102f78] text-white font-black text-xs sm:text-sm uppercase tracking-wider rounded-xl transition-all duration-200 cursor-pointer shadow-md hover:shadow-lg active:scale-[0.99] flex items-center justify-center gap-2"
                                 >
                                     <CreditCard className="w-4 h-4 text-white" />
                                     <span>Book Tour Package Now</span>
                                 </button>
-
-                                <button
-                                    onClick={handleAddToCart}
-                                    className={`py-3.5 px-5 border text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 ${
-                                        isPkgInCart
-                                            ? "bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-500 shadow-xs"
-                                            : "bg-white hover:bg-slate-50 text-slate-800 border-slate-200 shadow-xs"
-                                    }`}
-                                >
-                                    <ShoppingBag className="w-4 h-4" />
-                                    <span>{isPkgInCart ? "Added To Cart" : "Add To Cart"}</span>
-                                </button>
-                            </div>
-
-                            {/* Minimal Reassurance Strip */}
-                            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 text-[11px] text-slate-500 font-medium">
-                                <span className="flex items-center gap-1.5 text-slate-700 font-semibold">
-                                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                                    100% Safe & Secure Checkout
-                                </span>
-                                <span className="flex items-center gap-1.5">
-                                    <Check className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                                    Instant booking voucher
-                                </span>
-                                <span className="flex items-center gap-1.5">
-                                    <Car className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                                    Dedicated AC Cab & Verified Hotels
-                                </span>
                             </div>
                         </div>
 
@@ -1680,14 +1632,10 @@ export default function TourPackageDetails() {
                                 <span className="text-base sm:text-lg font-black text-brand-600">₹{totalPrice.toLocaleString()}</span>
                             </div>
                             <button
-                                onClick={handleAddToCart}
-                                className={`py-2.5 px-5 font-black text-xs uppercase tracking-wider rounded-xl shadow-md transition-all cursor-pointer flex items-center justify-center ${
-                                    isPkgInCart
-                                        ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                                        : "bg-brand-600 hover:bg-brand-700 text-white"
-                                }`}
+                                onClick={handleDirectBookNow}
+                                className="py-2.5 px-6 font-black text-xs uppercase tracking-wider rounded-xl shadow-md transition-all cursor-pointer flex items-center justify-center bg-[#0a1845] hover:bg-[#102f78] text-white"
                             >
-                                <span>{isPkgInCart ? "✓ ADDED TO CART" : "ADD TO CART"}</span>
+                                <span>Book Tour Now</span>
                             </button>
                         </div>
                     </motion.div>
