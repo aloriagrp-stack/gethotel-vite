@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect, useRef, useId } from "react";
+import React, { useState, useEffect, useRef, useId, useMemo } from "react";
 import { useParams, useNavigate, Link, useLocation } from "@/lib/navigation";
 import SEOHead from "@/components/common/SEOHead";
 import {
@@ -33,6 +33,39 @@ const GUEST_OPTIONS = [
     { value: 4, label: "4 Guests", desc: "Family / Group" },
     { value: 5, label: "5+ Guests", desc: "Large Tour Group" }
 ];
+
+const MONTH_NAMES = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+];
+const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+
+export const formatLocalDate = (d: Date): string => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
+export const parseLocalDate = (dateStr: string): Date => {
+    if (!dateStr) return new Date();
+    const parts = dateStr.split('-').map(Number);
+    if (parts.length === 3 && !isNaN(parts[0]) && !isNaN(parts[1]) && !isNaN(parts[2])) {
+        return new Date(parts[0], parts[1] - 1, parts[2]);
+    }
+    return new Date();
+};
+
+export const formatDisplayDate = (dateStr: string): string => {
+    if (!dateStr) return "Select Date";
+    const d = parseLocalDate(dateStr);
+    return d.toLocaleDateString("en-IN", {
+        weekday: "short",
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+    });
+};
 
 // Authentic 3D Dark Blue Diagonal Corner Ribbon Badge (Matches reference ribbon banner)
 export function CornerRibbonBadge({ text = "Best Seller" }: { text?: string }) {
@@ -149,15 +182,27 @@ export default function TourPackageDetails() {
         return <DestinationToursLanding />;
     }
 
+    const todayDate = useMemo(() => {
+        const d = new Date();
+        d.setHours(0, 0, 0, 0);
+        return d;
+    }, []);
+
     const [packageData, setPackageData] = useState<any | null>(null);
     const [loading, setLoading] = useState(true);
     const [selectedImg, setSelectedImg] = useState<string>("");
     const [travelerCount, setTravelerCount] = useState(2);
     const [isGuestDropdownOpen, setIsGuestDropdownOpen] = useState(false);
+    const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
     const [travelDate, setTravelDate] = useState(() => {
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 7);
-        return tomorrow.toISOString().split("T")[0];
+        const d = new Date();
+        d.setDate(d.getDate() + 3);
+        return formatLocalDate(d);
+    });
+    const [viewMonth, setViewMonth] = useState(() => {
+        const d = new Date();
+        d.setDate(d.getDate() + 3);
+        return { year: d.getFullYear(), month: d.getMonth() };
     });
     const [addedToCartToast, setAddedToCartToast] = useState(false);
     const [copiedToast, setCopiedToast] = useState(false);
@@ -171,6 +216,7 @@ export default function TourPackageDetails() {
     const [showAllItinerary, setShowAllItinerary] = useState(false);
 
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const datePickerRef = useRef<HTMLDivElement>(null);
     const bookingCardRef = useRef<HTMLDivElement>(null);
 
     // Dynamic Package Resolution from API
@@ -273,10 +319,48 @@ export default function TourPackageDetails() {
             if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
                 setIsGuestDropdownOpen(false);
             }
+            if (datePickerRef.current && !datePickerRef.current.contains(e.target as Node)) {
+                setIsDatePickerOpen(false);
+            }
         };
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
+
+    const canGoPrevMonth = viewMonth.year > todayDate.getFullYear() || viewMonth.month > todayDate.getMonth();
+
+    const handlePrevMonth = () => {
+        if (!canGoPrevMonth) return;
+        setViewMonth(prev => {
+            let m = prev.month - 1;
+            let y = prev.year;
+            if (m < 0) {
+                m = 11;
+                y--;
+            }
+            return { year: y, month: m };
+        });
+    };
+
+    const handleNextMonth = () => {
+        setViewMonth(prev => {
+            let m = prev.month + 1;
+            let y = prev.year;
+            if (m > 11) {
+                m = 0;
+                y++;
+            }
+            return { year: y, month: m };
+        });
+    };
+
+    const applyDatePreset = (daysFromToday: number) => {
+        const d = new Date(todayDate);
+        d.setDate(todayDate.getDate() + daysFromToday);
+        setTravelDate(formatLocalDate(d));
+        setViewMonth({ year: d.getFullYear(), month: d.getMonth() });
+        setIsDatePickerOpen(false);
+    };
 
     // Handle Loading State
     if (loading) {
@@ -908,9 +992,18 @@ export default function TourPackageDetails() {
 
                             {/* Row 2: Rectangular Date & Travelers Selectors */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-medium">
-                                {/* Travel Date Selector */}
-                                <div className="relative group cursor-pointer">
-                                    <div className="w-full px-3.5 py-3 bg-slate-50 hover:bg-blue-50/50 border border-slate-200 group-hover:border-blue-300 rounded-xl flex items-center justify-between transition-all">
+                                {/* Custom Luxury In-App Travel Date Picker */}
+                                <div className="relative" ref={datePickerRef}>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setIsDatePickerOpen(!isDatePickerOpen);
+                                            setIsGuestDropdownOpen(false);
+                                        }}
+                                        className={`w-full px-3.5 py-3 bg-slate-50 hover:bg-slate-100 border rounded-xl flex items-center justify-between text-xs font-bold transition-all cursor-pointer ${
+                                            isDatePickerOpen ? "border-blue-500 ring-2 ring-blue-100 bg-white" : "border-slate-200"
+                                        }`}
+                                    >
                                         <div className="flex items-center gap-2.5">
                                             <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-800 flex items-center justify-center font-black shrink-0">
                                                 <Calendar className="w-4 h-4" />
@@ -918,27 +1011,167 @@ export default function TourPackageDetails() {
                                             <div className="text-left min-w-0">
                                                 <span className="text-[10px] text-slate-400 font-bold uppercase block leading-none mb-0.5 tracking-wider">Departure Date</span>
                                                 <span className="block font-bold text-slate-900 text-xs sm:text-sm truncate">
-                                                    {travelDate ? new Date(travelDate).toLocaleDateString("en-US", { weekday: "short", day: "2-digit", month: "short", year: "numeric" }) : "Select Date"}
+                                                    {formatDisplayDate(travelDate)}
                                                 </span>
                                             </div>
                                         </div>
-                                        <Calendar className="w-4 h-4 text-blue-600 shrink-0" />
-                                    </div>
-                                    <input
-                                        type="date"
-                                        value={travelDate}
-                                        onChange={(e) => setTravelDate(e.target.value)}
-                                        onClick={(e: any) => e.target.showPicker?.()}
-                                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
-                                    />
+                                        <ChevronDown className={`w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200 ${isDatePickerOpen ? "rotate-180 text-blue-600" : ""}`} />
+                                    </button>
+
+                                    {/* Custom In-App Calendar Dropdown Modal */}
+                                    <AnimatePresence>
+                                        {isDatePickerOpen && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                                                transition={{ duration: 0.15 }}
+                                                className="absolute top-full left-0 mt-2 z-50 w-full sm:w-[320px] bg-white rounded-2xl border border-slate-200 shadow-2xl p-3.5 space-y-3"
+                                            >
+                                                {/* Quick Date Presets */}
+                                                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 text-[11px] font-bold">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => applyDatePreset(1)}
+                                                        className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-600 transition-colors whitespace-nowrap cursor-pointer shrink-0"
+                                                    >
+                                                        Tomorrow
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => applyDatePreset(3)}
+                                                        className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-600 transition-colors whitespace-nowrap cursor-pointer shrink-0"
+                                                    >
+                                                        +3 Days
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const currentDay = todayDate.getDay();
+                                                            const diff = currentDay === 6 ? 7 : (6 - currentDay);
+                                                            applyDatePreset(diff);
+                                                        }}
+                                                        className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-600 transition-colors whitespace-nowrap cursor-pointer shrink-0"
+                                                    >
+                                                        This Weekend
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => applyDatePreset(7)}
+                                                        className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-600 transition-colors whitespace-nowrap cursor-pointer shrink-0"
+                                                    >
+                                                        +1 Week
+                                                    </button>
+                                                </div>
+
+                                                {/* Month Header with Navigation */}
+                                                <div className="flex items-center justify-between px-1 border-t border-slate-100 pt-2.5">
+                                                    <span className="text-xs font-black text-slate-900 tracking-tight">
+                                                        {MONTH_NAMES[viewMonth.month]} {viewMonth.year}
+                                                    </span>
+                                                    <div className="flex items-center gap-1">
+                                                        <button
+                                                            type="button"
+                                                            disabled={!canGoPrevMonth}
+                                                            onClick={handlePrevMonth}
+                                                            className={`p-1.5 rounded-lg transition-colors ${
+                                                                canGoPrevMonth ? "hover:bg-slate-100 text-slate-700 cursor-pointer" : "text-slate-200 cursor-not-allowed"
+                                                            }`}
+                                                            title="Previous Month"
+                                                        >
+                                                            <ChevronLeft className="w-4 h-4" />
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={handleNextMonth}
+                                                            className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-700 transition-colors cursor-pointer"
+                                                            title="Next Month"
+                                                        >
+                                                            <ChevronRight className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                {/* Weekday Names */}
+                                                <div className="grid grid-cols-7 text-center">
+                                                    {WEEKDAYS.map((w, idx) => (
+                                                        <span key={idx} className="text-[10px] font-bold text-slate-400 uppercase py-0.5">
+                                                            {w}
+                                                        </span>
+                                                    ))}
+                                                </div>
+
+                                                {/* Calendar Days Grid */}
+                                                <div className="grid grid-cols-7 gap-1">
+                                                    {Array.from({ length: new Date(viewMonth.year, viewMonth.month, 1).getDay() }).map((_, i) => (
+                                                        <div key={`blank-${i}`} className="w-8 h-8 sm:w-9 sm:h-9" />
+                                                    ))}
+                                                    {Array.from({ length: new Date(viewMonth.year, viewMonth.month + 1, 0).getDate() }, (_, i) => i + 1).map((dNum) => {
+                                                        const cellDate = new Date(viewMonth.year, viewMonth.month, dNum);
+                                                        cellDate.setHours(0, 0, 0, 0);
+                                                        const isPast = cellDate < todayDate;
+                                                        const isToday = cellDate.getTime() === todayDate.getTime();
+                                                        const [sY, sM, sD] = travelDate.split('-').map(Number);
+                                                        const isSelected = sY === viewMonth.year && (sM - 1) === viewMonth.month && sD === dNum;
+
+                                                        return (
+                                                            <button
+                                                                key={dNum}
+                                                                type="button"
+                                                                disabled={isPast}
+                                                                onClick={() => {
+                                                                    const y = viewMonth.year;
+                                                                    const m = String(viewMonth.month + 1).padStart(2, '0');
+                                                                    const d = String(dNum).padStart(2, '0');
+                                                                    setTravelDate(`${y}-${m}-${d}`);
+                                                                    setIsDatePickerOpen(false);
+                                                                }}
+                                                                className={`w-8 h-8 sm:w-9 sm:h-9 mx-auto rounded-xl flex items-center justify-center text-xs transition-all font-semibold ${
+                                                                    isPast
+                                                                        ? "text-slate-300 cursor-not-allowed pointer-events-none"
+                                                                        : isSelected
+                                                                        ? "bg-blue-600 text-white font-black shadow-md shadow-blue-500/30 scale-105"
+                                                                        : isToday
+                                                                        ? "border border-blue-500 text-blue-600 font-bold hover:bg-blue-50 cursor-pointer"
+                                                                        : "hover:bg-slate-100 text-slate-800 cursor-pointer"
+                                                                }`}
+                                                            >
+                                                                {dNum}
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+
+                                                {/* Calendar Footer */}
+                                                <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[11px]">
+                                                    <div className="text-slate-500 font-medium">
+                                                        <span className="text-slate-400 block text-[9px] uppercase font-bold">Selected</span>
+                                                        <span className="font-bold text-slate-900">{formatDisplayDate(travelDate)}</span>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setIsDatePickerOpen(false)}
+                                                        className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl cursor-pointer transition-colors shadow-xs"
+                                                    >
+                                                        Done
+                                                    </button>
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
                                 </div>
 
                                 {/* Travelers Popover Dropdown */}
                                 <div className="relative" ref={dropdownRef}>
                                     <button
                                         type="button"
-                                        onClick={() => setIsGuestDropdownOpen(!isGuestDropdownOpen)}
-                                        className="w-full px-3.5 py-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl flex items-center justify-between text-xs font-bold text-slate-900 transition-all cursor-pointer"
+                                        onClick={() => {
+                                            setIsGuestDropdownOpen(!isGuestDropdownOpen);
+                                            setIsDatePickerOpen(false);
+                                        }}
+                                        className={`w-full px-3.5 py-3 bg-slate-50 hover:bg-slate-100 border rounded-xl flex items-center justify-between text-xs font-bold transition-all cursor-pointer ${
+                                            isGuestDropdownOpen ? "border-blue-500 ring-2 ring-blue-100 bg-white" : "border-slate-200"
+                                        }`}
                                     >
                                         <div className="flex items-center gap-2.5">
                                             <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-800 flex items-center justify-center font-black shrink-0">
@@ -960,7 +1193,7 @@ export default function TourPackageDetails() {
                                                 animate={{ opacity: 1, y: 0, scale: 1 }}
                                                 exit={{ opacity: 0, y: -6, scale: 0.98 }}
                                                 transition={{ duration: 0.15 }}
-                                                className="absolute top-full left-0 right-0 mt-2 z-50 bg-white rounded-xl border border-slate-200 shadow-xl overflow-hidden p-1 space-y-1"
+                                                className="absolute top-full left-0 right-0 mt-2 z-50 bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden p-1 space-y-1"
                                             >
                                                 {GUEST_OPTIONS.map((opt) => {
                                                     const isSelected = travelerCount === opt.value;
@@ -973,7 +1206,7 @@ export default function TourPackageDetails() {
                                                                 setTravelerCount(opt.value);
                                                                 setIsGuestDropdownOpen(false);
                                                             }}
-                                                            className={`w-full p-2.5 rounded-lg flex items-center justify-between transition-all cursor-pointer text-left ${
+                                                            className={`w-full p-2.5 rounded-xl flex items-center justify-between transition-all cursor-pointer text-left ${
                                                                 isSelected
                                                                     ? "bg-blue-600 text-white font-bold"
                                                                     : "hover:bg-slate-100 text-slate-700 font-medium"
