@@ -206,7 +206,6 @@ export default function TourPackageDetails() {
     });
     const [addedToCartToast, setAddedToCartToast] = useState(false);
     const [copiedToast, setCopiedToast] = useState(false);
-    const [showFloatingBar, setShowFloatingBar] = useState(true);
     const [showAllReviewsDrawer, setShowAllReviewsDrawer] = useState(false);
     const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
     const [photoModalIndex, setPhotoModalIndex] = useState(0);
@@ -217,7 +216,6 @@ export default function TourPackageDetails() {
 
     const dropdownRef = useRef<HTMLDivElement>(null);
     const datePickerRef = useRef<HTMLDivElement>(null);
-    const bookingCardRef = useRef<HTMLDivElement>(null);
 
     // Dynamic Package Resolution from API
     useEffect(() => {
@@ -298,20 +296,7 @@ export default function TourPackageDetails() {
         loadPackage();
     }, [id]);
 
-    // Scroll listener: Hide floating bottom bar when booking card is in view!
-    useEffect(() => {
-        const handleScroll = () => {
-            if (bookingCardRef.current) {
-                const rect = bookingCardRef.current.getBoundingClientRect();
-                const isCardInViewport = rect.top < window.innerHeight && rect.bottom > 0;
-                setShowFloatingBar(!isCardInViewport);
-            }
-        };
 
-        window.addEventListener("scroll", handleScroll, { passive: true });
-        handleScroll();
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
 
     // Close dropdown on outside click
     useEffect(() => {
@@ -935,13 +920,7 @@ export default function TourPackageDetails() {
                         </div>
 
                         {/* ─── RECTANGULAR & MINIMAL BOOKING & PRICE CARD (DIRECTLY BELOW OVERVIEW) ─── */}
-                        <div
-                            ref={bookingCardRef}
-                            className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-4 sm:p-5 lg:p-6 space-y-4 relative overflow-hidden"
-                        >
-                            {/* Subtle Top Accent */}
-                            <div className="h-1 w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 absolute top-0 left-0 right-0" />
-
+                        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-4 sm:p-5 lg:p-6 space-y-4 relative overflow-hidden">
                             {/* Row 1: Package Price */}
                             <div className="flex items-start justify-between border-b border-slate-100 pb-3 pt-1">
                                 <div>
@@ -1221,7 +1200,7 @@ export default function TourPackageDetails() {
                             <div className="pt-1">
                                 <button
                                     onClick={handleDirectBookNow}
-                                    className="w-full py-3.5 px-6 bg-[#0a1845] hover:bg-[#102f78] text-white font-black text-xs sm:text-sm uppercase tracking-wider rounded-xl transition-all duration-200 cursor-pointer shadow-md hover:shadow-lg active:scale-[0.99] flex items-center justify-center gap-2"
+                                    className="w-full py-3.5 px-6 bg-brand-600 hover:bg-brand-700 text-white font-black text-xs sm:text-sm uppercase tracking-wider rounded-xl transition-all duration-200 cursor-pointer shadow-md shadow-brand-600/20 hover:shadow-brand-600/30 active:scale-[0.99] flex items-center justify-center gap-2"
                                 >
                                     <CreditCard className="w-4 h-4 text-white" />
                                     <span>Book Tour Package Now</span>
@@ -1616,31 +1595,6 @@ export default function TourPackageDetails() {
                 )}
             </AnimatePresence>
 
-            {/* STICKY BOTTOM FLOATING PRICE BAR (MOBILE ONLY - Hidden on Desktop to keep desktop clean) */}
-            <AnimatePresence>
-                {showFloatingBar && (
-                    <motion.div
-                        initial={{ y: 80, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        exit={{ y: 80, opacity: 0 }}
-                        transition={{ duration: 0.25 }}
-                        className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-t border-slate-200/90 py-3 px-4 shadow-[0_-8px_30px_rgba(0,0,0,0.15)] lg:hidden"
-                    >
-                        <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
-                            <div>
-                                <span className="text-[10px] font-bold uppercase text-slate-400 block">Total Rate ({travelerCount} Guests)</span>
-                                <span className="text-base sm:text-lg font-black text-brand-600">₹{totalPrice.toLocaleString()}</span>
-                            </div>
-                            <button
-                                onClick={handleDirectBookNow}
-                                className="py-2.5 px-6 font-black text-xs uppercase tracking-wider rounded-xl shadow-md transition-all cursor-pointer flex items-center justify-center bg-[#0a1845] hover:bg-[#102f78] text-white"
-                            >
-                                <span>Book Tour Now</span>
-                            </button>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
         </div>
     );
 }
