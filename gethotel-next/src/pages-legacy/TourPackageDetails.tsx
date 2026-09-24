@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useId } from "react";
 import { useParams, useNavigate, Link, useLocation } from "@/lib/navigation";
 import SEOHead from "@/components/common/SEOHead";
 import {
@@ -33,6 +33,72 @@ const GUEST_OPTIONS = [
     { value: 4, label: "4 Guests", desc: "Family / Group" },
     { value: 5, label: "5+ Guests", desc: "Large Tour Group" }
 ];
+
+// Authentic 3D Dark Blue Diagonal Corner Ribbon Badge (Matches reference ribbon banner)
+export function CornerRibbonBadge({ text = "Best Seller" }: { text?: string }) {
+    const rawId = useId();
+    const id = rawId.replace(/[^a-zA-Z0-9_-]/g, "");
+    const gradientId = `darkBlueCornerRibbon-${id}`;
+    const shadowId = `cornerRibbonShadow-${id}`;
+
+    // Normalize: "bestseller" / "BESTSELLER" -> "Best Seller"
+    const lower = (text || "").toLowerCase().trim();
+    const formattedText = lower === "bestseller" ? "Best Seller" : text || "Best Seller";
+
+    // Adjust font size dynamically based on length
+    const fontSize = formattedText.length > 15 ? 6 : formattedText.length > 11 ? 7.2 : 8.5;
+
+    return (
+        <svg
+            viewBox="0 0 100 100"
+            className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 select-none pointer-events-none"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <defs>
+                <linearGradient id={gradientId} x1="0%" y1="100%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#0a1845" />
+                    <stop offset="25%" stopColor="#102f78" />
+                    <stop offset="50%" stopColor="#184399" />
+                    <stop offset="75%" stopColor="#102f78" />
+                    <stop offset="100%" stopColor="#0a1845" />
+                </linearGradient>
+                <filter id={shadowId} x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx="-1" dy="2" stdDeviation="1.5" floodColor="#000000" floodOpacity="0.45" />
+                </filter>
+            </defs>
+
+            {/* Top Dark Fold Flap */}
+            <polygon points="85,0 98,0 100,6 80,12" fill="#050e29" />
+
+            {/* Bottom Dark Fold Flap */}
+            <polygon points="0,85 0,98 6,100 12,80" fill="#050e29" />
+
+            {/* Main Diagonal Ribbon Body */}
+            <polygon
+                points="0,54 54,0 85,0 80,12 12,80 0,85"
+                fill={`url(#${gradientId})`}
+                filter={`url(#${shadowId})`}
+            />
+
+            {/* Clean White Bold Ribbon Text at 45 degree angle */}
+            <text
+                x="36"
+                y="37"
+                textAnchor="middle"
+                dominantBaseline="central"
+                transform="rotate(-45 36 37)"
+                fill="#ffffff"
+                fontSize={fontSize}
+                fontWeight="900"
+                fontFamily="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+                letterSpacing="0.3"
+            >
+                {formattedText}
+            </text>
+        </svg>
+    );
+}
 
 export default function TourPackageDetails() {
     const navParams = useParams<{ id?: string }>();
@@ -487,11 +553,9 @@ export default function TourPackageDetails() {
                             alt={pkg.title}
                             className="w-full h-full object-cover"
                         />
-                        {/* Cutting-edge ribbon badge at top-left corner */}
-                        <div className="absolute top-0 left-0 z-10">
-                            <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 text-white text-[10px] font-black uppercase tracking-wider pl-3 pr-4 py-1.5 shadow-lg" style={{ clipPath: 'polygon(0 0, 100% 0, 90% 100%, 0 100%)' }}>
-                                {pkg.badge || "Bestseller"}
-                            </div>
+                        {/* Authentic 3D Dark Blue Corner Ribbon Badge */}
+                        <div className="absolute top-0 left-0 z-20 pointer-events-none">
+                            <CornerRibbonBadge text={pkg.badge || "Best Seller"} />
                         </div>
                         <div className="absolute bottom-4 right-4 bg-slate-950/70 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 z-10">
                             <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
@@ -562,10 +626,8 @@ export default function TourPackageDetails() {
                                     className="w-full h-full object-cover group-hover/main:scale-105 transition-transform duration-700 ease-out"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover/main:opacity-100 transition-opacity" />
-                                <div className="absolute top-4 left-4 z-10">
-                                    <span className="px-3.5 py-1.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-lg">
-                                        {pkg.badge || "Featured Bestseller"}
-                                    </span>
+                                <div className="absolute top-0 left-0 z-20 pointer-events-none">
+                                    <CornerRibbonBadge text={pkg.badge || "Best Seller"} />
                                 </div>
                             </div>
 
@@ -608,6 +670,11 @@ export default function TourPackageDetails() {
                                         alt=""
                                         className="w-full h-full object-cover group-hover/dual:scale-105 transition-transform duration-700 ease-out"
                                     />
+                                    {idx === 0 && (
+                                        <div className="absolute top-0 left-0 z-20 pointer-events-none">
+                                            <CornerRibbonBadge text={pkg.badge || "Best Seller"} />
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>
@@ -621,6 +688,9 @@ export default function TourPackageDetails() {
                                 alt={pkg.title}
                                 className="w-full h-full object-cover group-hover/single:scale-105 transition-transform duration-700 ease-out"
                             />
+                            <div className="absolute top-0 left-0 z-20 pointer-events-none">
+                                <CornerRibbonBadge text={pkg.badge || "Best Seller"} />
+                            </div>
                         </div>
                     )}
                 </div>
