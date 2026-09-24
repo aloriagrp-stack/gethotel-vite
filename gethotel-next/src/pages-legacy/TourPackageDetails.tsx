@@ -712,29 +712,29 @@ export default function TourPackageDetails() {
                             </h1>
                         </div>
 
-                        {/* Mobile Quick Specs Pills (Kept untouched for mobile) */}
-                        <div className="grid grid-cols-2 gap-3 text-xs font-semibold lg:hidden">
-                            <div className="p-3.5 bg-blue-50/50 rounded-2xl flex items-center gap-3 border border-blue-100/60">
+                        {/* Mobile Quick Specs (Directly on background with clean dividers) */}
+                        <div className="grid grid-cols-2 gap-3 text-xs font-semibold lg:hidden py-2 border-y border-slate-200/80">
+                            <div className="flex items-center gap-3 pr-2 border-r border-slate-200/80">
                                 <Clock className="w-4 h-4 text-blue-600 shrink-0" />
                                 <div>
-                                    <span className="text-[10px] text-slate-400 font-bold uppercase block">Duration</span>
+                                    <span className="text-[10px] text-slate-400 font-bold uppercase block tracking-wider">Duration</span>
                                     <span className="text-slate-900 font-bold">{pkg.duration}</span>
                                 </div>
                             </div>
 
-                            <div className="p-3.5 bg-blue-50/50 rounded-2xl flex items-center gap-3 border border-blue-100/60">
+                            <div className="flex items-center gap-3 pl-2">
                                 <Hotel className="w-4 h-4 text-blue-600 shrink-0" />
                                 <div className="min-w-0">
-                                    <span className="text-[10px] text-slate-400 font-bold uppercase block">Stay Included</span>
+                                    <span className="text-[10px] text-slate-400 font-bold uppercase block tracking-wider">Stay Included</span>
                                     <span className="text-slate-900 font-bold truncate block">{pkg.includedStay || "4-Star Hotel"}</span>
                                 </div>
                             </div>
                         </div>
 
-                        {/* DESKTOP EXCLUSIVE: Key Highlights Bento Grid (4 Cards) */}
-                        <div className="hidden lg:grid grid-cols-4 gap-4">
-                            <div className="p-4 bg-white rounded-2xl border border-slate-200/80 shadow-xs flex items-center gap-3.5">
-                                <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                        {/* DESKTOP EXCLUSIVE: Key Highlights directly on background */}
+                        <div className="hidden lg:grid grid-cols-4 gap-4 py-4 border-y border-slate-200/80">
+                            <div className="flex items-center gap-3.5 pr-4 border-r border-slate-200/80">
+                                <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
                                     <Clock className="w-5 h-5" />
                                 </div>
                                 <div>
@@ -744,8 +744,8 @@ export default function TourPackageDetails() {
                                 </div>
                             </div>
 
-                            <div className="p-4 bg-white rounded-2xl border border-slate-200/80 shadow-xs flex items-center gap-3.5">
-                                <div className="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                            <div className="flex items-center gap-3.5 pr-4 border-r border-slate-200/80">
+                                <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center shrink-0">
                                     <Hotel className="w-5 h-5" />
                                 </div>
                                 <div className="min-w-0">
@@ -755,8 +755,8 @@ export default function TourPackageDetails() {
                                 </div>
                             </div>
 
-                            <div className="p-4 bg-white rounded-2xl border border-slate-200/80 shadow-xs flex items-center gap-3.5">
-                                <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                            <div className="flex items-center gap-3.5 pr-4 border-r border-slate-200/80">
+                                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
                                     <Car className="w-5 h-5" />
                                 </div>
                                 <div>
@@ -766,8 +766,8 @@ export default function TourPackageDetails() {
                                 </div>
                             </div>
 
-                            <div className="p-4 bg-white rounded-2xl border border-slate-200/80 shadow-xs flex items-center gap-3.5">
-                                <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                            <div className="flex items-center gap-3.5">
+                                <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
                                     <Utensils className="w-5 h-5" />
                                 </div>
                                 <div>
@@ -778,8 +778,8 @@ export default function TourPackageDetails() {
                             </div>
                         </div>
 
-                        {/* DESKTOP EXCLUSIVE: Key Tour Assurance Strip */}
-                        <div className="hidden lg:flex items-center justify-between p-3.5 bg-gradient-to-r from-blue-50/70 via-indigo-50/50 to-blue-50/70 rounded-2xl border border-blue-100 text-xs font-bold text-slate-800">
+                        {/* DESKTOP EXCLUSIVE: Key Tour Assurance Strip directly on background */}
+                        <div className="hidden lg:flex items-center justify-between py-3 border-b border-slate-200/80 text-xs font-bold text-slate-800">
                             <div className="flex items-center gap-2">
                                 <Sparkles className="w-4 h-4 text-blue-600" />
                                 <span>Instant Confirmation Voucher</span>
@@ -801,10 +801,10 @@ export default function TourPackageDetails() {
                             </div>
                         </div>
 
-                        {/* Package Overview */}
-                        <div className="space-y-3 bg-white p-6 lg:p-7 rounded-3xl border border-slate-200/80 shadow-xs">
+                        {/* Package Story & Overview (Directly on background) */}
+                        <div className="space-y-3 pb-6 border-b border-slate-200/80">
                             <div className="flex items-center justify-between">
-                                <h3 className="text-sm font-black text-slate-950 uppercase tracking-wider flex items-center gap-2">
+                                <h3 className="text-base sm:text-lg font-black text-slate-950 tracking-tight flex items-center gap-2">
                                     <Compass className="w-4.5 h-4.5 text-blue-600" />
                                     Package Story & Overview
                                 </h3>
@@ -812,29 +812,29 @@ export default function TourPackageDetails() {
                                     {pkg.destination} Getaway
                                 </span>
                             </div>
-                            <p className="text-sm text-slate-700 leading-relaxed font-normal">
+                            <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
                                 {pkg.overview || "Enjoy a premium holiday experience with luxury stay, sightseeing, and private cab transfers included. From breathtaking panoramic viewpoints to rich cultural heritage and local delicacies, this handcrafted itinerary offers seamless comfort throughout your journey."}
                             </p>
 
                             {/* Aesthetic Tag Pills */}
-                            <div className="flex items-center gap-2 flex-wrap pt-2">
-                                <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1 rounded-full">#HeritageTour</span>
-                                <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1 rounded-full">#PrivateCabSightseeing</span>
-                                <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1 rounded-full">#FamilyFriendly</span>
-                                <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1 rounded-full">#CoupleSpecial</span>
-                                <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1 rounded-full">#AllInclusive</span>
+                            <div className="flex items-center gap-2 flex-wrap pt-1">
+                                <span className="text-xs font-semibold text-slate-600 bg-slate-200/80 px-3 py-1 rounded-full">#HeritageTour</span>
+                                <span className="text-xs font-semibold text-slate-600 bg-slate-200/80 px-3 py-1 rounded-full">#PrivateCabSightseeing</span>
+                                <span className="text-xs font-semibold text-slate-600 bg-slate-200/80 px-3 py-1 rounded-full">#FamilyFriendly</span>
+                                <span className="text-xs font-semibold text-slate-600 bg-slate-200/80 px-3 py-1 rounded-full">#CoupleSpecial</span>
+                                <span className="text-xs font-semibold text-slate-600 bg-slate-200/80 px-3 py-1 rounded-full">#AllInclusive</span>
                             </div>
                         </div>
 
-                        {/* What's Included & What's Excluded Dual Bento Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* What's Included & What's Excluded Dual Grid (Directly on background) */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6 border-b border-slate-200/80">
                             {/* What's Included */}
-                            <div className="space-y-4 bg-emerald-50/30 p-6 rounded-3xl border border-emerald-100 shadow-xs">
+                            <div className="space-y-3">
                                 <h3 className="text-sm font-black text-slate-950 uppercase tracking-wider flex items-center gap-2">
                                     <CheckCircle2 className="w-4.5 h-4.5 text-emerald-600" />
                                     What's Included In This Package
                                 </h3>
-                                <ul className="space-y-2.5">
+                                <ul className="space-y-2">
                                     {(pkg.inclusions || [
                                         "Verified Hotel Stay with Complimentary Breakfast",
                                         "Dedicated Private AC Cab for Sightseeing",
@@ -842,40 +842,44 @@ export default function TourPackageDetails() {
                                         "Toll Taxes, Parking, Driver Allowance & Fuel Included",
                                         "24x7 Dedicated Travel Concierge & On-Trip Support"
                                     ]).map((inc: string, idx: number) => (
-                                        <li key={idx} className="flex items-start gap-2.5 text-xs font-semibold text-slate-800 bg-white/80 p-3 rounded-2xl border border-emerald-100/60 shadow-xs">
-                                            <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                                            <span>{inc}</span>
+                                        <li key={idx} className="flex items-start gap-2.5 text-xs sm:text-[13px] font-medium text-slate-800 py-1.5 border-b border-slate-200/50 last:border-0">
+                                            <div className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5">
+                                                <Check className="w-3 h-3 stroke-[3]" />
+                                            </div>
+                                            <span className="leading-snug">{inc}</span>
                                         </li>
                                     ))}
                                 </ul>
                             </div>
 
                             {/* What's Excluded */}
-                            <div className="space-y-4 bg-rose-50/20 p-6 rounded-3xl border border-rose-100 shadow-xs">
+                            <div className="space-y-3">
                                 <h3 className="text-sm font-black text-slate-950 uppercase tracking-wider flex items-center gap-2">
                                     <X className="w-4.5 h-4.5 text-rose-500" />
                                     What's Excluded
                                 </h3>
-                                <ul className="space-y-2.5">
+                                <ul className="space-y-2">
                                     {(pkg.exclusions && pkg.exclusions.length > 0 ? pkg.exclusions : [
                                         "Airfare or Train Tickets (Available upon request)",
                                         "Monument Entrance Fees & Camera Charges",
                                         "Personal Expenses, Laundry, Telephone & Room Service",
                                         "Any optional excursions or water sports not specified"
                                     ]).map((exc: string, idx: number) => (
-                                        <li key={idx} className="flex items-start gap-2.5 text-xs font-semibold text-slate-600 bg-white/80 p-3 rounded-2xl border border-rose-100/50 shadow-xs">
-                                            <X className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
-                                            <span>{exc}</span>
+                                        <li key={idx} className="flex items-start gap-2.5 text-xs sm:text-[13px] font-medium text-slate-600 py-1.5 border-b border-slate-200/50 last:border-0">
+                                            <div className="w-5 h-5 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center shrink-0 mt-0.5">
+                                                <X className="w-3 h-3 stroke-[3]" />
+                                            </div>
+                                            <span className="leading-snug">{exc}</span>
                                         </li>
                                     ))}
                                 </ul>
                             </div>
                         </div>
 
-                        {/* Day-Wise Itinerary (Luxury Interactive Timeline) */}
-                        <div className="space-y-4 bg-white p-6 lg:p-7 rounded-3xl border border-slate-200/80 shadow-xs">
-                            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                                <h3 className="text-sm font-black text-slate-950 uppercase tracking-wider flex items-center gap-2">
+                        {/* Day-Wise Detailed Itinerary (Directly on background) */}
+                        <div className="space-y-4 pb-6 border-b border-slate-200/80">
+                            <div className="flex items-center justify-between pb-2">
+                                <h3 className="text-base sm:text-lg font-black text-slate-950 tracking-tight flex items-center gap-2">
                                     <Calendar className="w-4.5 h-4.5 text-blue-600" />
                                     Day-Wise Detailed Itinerary
                                 </h3>
@@ -884,8 +888,8 @@ export default function TourPackageDetails() {
                                 </span>
                             </div>
 
-                            {/* Timeline layout */}
-                            <div className="relative pl-6 space-y-6 pt-2 before:absolute before:left-3 before:top-4 before:bottom-4 before:w-0.5 before:bg-blue-100">
+                            {/* Timeline layout directly on background */}
+                            <div className="relative pl-7 space-y-6 pt-2 before:absolute before:left-3 before:top-3 before:bottom-3 before:w-0.5 before:bg-blue-200">
                                 {(pkg.itinerary || [
                                     { day: "Day 1", title: "Arrival & Hotel Check-In", desc: "Pickup from airport/railway station by private chauffeur. Check-in to your verified hotel resort, relax and enjoy evening local market sightseeing & sunset views." },
                                     { day: "Day 2", title: "Full Day Guided Sightseeing", desc: "Enjoy lavish breakfast at the hotel followed by a comprehensive guided tour of major monuments, historic landmarks, viewpoint photostops, and authentic regional dining." },
@@ -893,14 +897,14 @@ export default function TourPackageDetails() {
                                 ]).map((day: any, idx: number) => (
                                     <div key={idx} className="relative group">
                                         {/* Circular Dot Indicator */}
-                                        <div className="absolute -left-6 top-1.5 w-6 h-6 rounded-full bg-blue-600 text-white font-black text-[10px] flex items-center justify-center shadow-md ring-4 ring-white">
+                                        <div className="absolute -left-7 top-1 w-6 h-6 rounded-full bg-blue-600 text-white font-black text-[10px] flex items-center justify-center shadow-xs ring-4 ring-slate-50">
                                             {idx + 1}
                                         </div>
 
-                                        <div className="p-4 sm:p-5 bg-slate-50/90 group-hover:bg-blue-50/30 rounded-2xl border border-slate-200/80 group-hover:border-blue-200 transition-all space-y-2">
+                                        <div className="space-y-1.5 pb-4 border-b border-slate-200/60 last:border-0">
                                             <div className="flex items-center justify-between flex-wrap gap-2">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="px-2.5 py-0.5 bg-blue-600 text-white text-[10px] font-black uppercase rounded-md tracking-wider">
+                                                    <span className="px-2 py-0.5 bg-blue-600 text-white text-[10px] font-black uppercase rounded-md tracking-wider">
                                                         {day.day}
                                                     </span>
                                                     <h4 className="text-sm font-bold text-slate-900">{day.title}</h4>
@@ -910,7 +914,7 @@ export default function TourPackageDetails() {
                                                     <span>Private Cab Included</span>
                                                 </div>
                                             </div>
-                                            <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
+                                            <p className="text-xs sm:text-sm text-slate-600 font-normal leading-relaxed">
                                                 {day.desc}
                                             </p>
                                         </div>
@@ -919,34 +923,38 @@ export default function TourPackageDetails() {
                             </div>
                         </div>
 
-                        {/* Accommodations & Private Cab Fleet Specifications */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="p-5 bg-white rounded-2xl border border-slate-200/80 shadow-xs space-y-2.5">
-                                <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
-                                    <Hotel className="w-5 h-5" />
+                        {/* Accommodations & Private Cab Fleet directly on background */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6 border-b border-slate-200/80">
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2.5">
+                                    <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+                                        <Hotel className="w-4 h-4" />
+                                    </div>
+                                    <h4 className="text-sm font-bold text-slate-900">Verified Luxury Accommodations</h4>
                                 </div>
-                                <h4 className="text-sm font-bold text-slate-900">Verified Luxury Accommodations</h4>
-                                <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                                <p className="text-xs sm:text-[13px] text-slate-600 leading-relaxed font-normal pl-10.5">
                                     Handpicked properties rated 4.0+ stars. Equipped with modern air-conditioning, clean en-suite bathrooms, complimentary high-speed Wi-Fi, and daily hot breakfast.
                                 </p>
                             </div>
 
-                            <div className="p-5 bg-white rounded-2xl border border-slate-200/80 shadow-xs space-y-2.5">
-                                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
-                                    <Car className="w-5 h-5" />
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2.5">
+                                    <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                                        <Car className="w-4 h-4" />
+                                    </div>
+                                    <h4 className="text-sm font-bold text-slate-900">Dedicated AC Sedan / SUV</h4>
                                 </div>
-                                <h4 className="text-sm font-bold text-slate-900">Dedicated AC Sedan / SUV</h4>
-                                <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                                <p className="text-xs sm:text-[13px] text-slate-600 leading-relaxed font-normal pl-10.5">
                                     Sanitized private vehicle with commercial taxi permit and seasoned local driver. All fuel, parking charges, interstate road taxes, and driver night allowances are fully pre-paid.
                                 </p>
                             </div>
                         </div>
 
-                        {/* GUEST REVIEWS & RATINGS SECTION */}
-                        <div className="space-y-4 bg-white p-6 lg:p-7 rounded-3xl border border-slate-200/80 shadow-xs">
-                            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                        {/* GUEST REVIEWS & RATINGS SECTION (Directly on background) */}
+                        <div className="space-y-4 pb-6 border-b border-slate-200/80">
+                            <div className="flex items-center justify-between pb-2">
                                 <div>
-                                    <h3 className="text-sm font-black text-slate-950 uppercase tracking-wider">
+                                    <h3 className="text-base sm:text-lg font-black text-slate-950 tracking-tight">
                                         Verified Traveler Reviews
                                     </h3>
                                     <p className="text-xs text-slate-500 font-medium">
@@ -961,7 +969,7 @@ export default function TourPackageDetails() {
 
                             {/* Show Reviews or Empty State */}
                             {reviewsList.length === 0 ? (
-                                <div className="p-6 bg-slate-50/80 rounded-2xl border border-slate-100 text-center space-y-2">
+                                <div className="py-6 text-center space-y-2">
                                     <div className="w-10 h-10 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center mx-auto shadow-xs">
                                         <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
                                     </div>
@@ -972,12 +980,12 @@ export default function TourPackageDetails() {
                                 </div>
                             ) : (
                                 <>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         {reviewsList.slice(0, 4).map((rev: any, idx: number) => (
-                                            <div key={idx} className="p-4 bg-slate-50/70 rounded-2xl space-y-2 border border-slate-100">
+                                            <div key={idx} className="space-y-2 pb-3 border-b border-slate-200/60 last:border-0 md:last:border-b">
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-2">
-                                                        <span className="w-7 h-7 rounded-full bg-brand-50 text-brand-700 font-bold text-xs flex items-center justify-center">
+                                                        <span className="w-7 h-7 rounded-full bg-blue-100 text-blue-700 font-bold text-xs flex items-center justify-center">
                                                             {rev.name?.charAt(0) || "U"}
                                                         </span>
                                                         <div>
@@ -987,7 +995,7 @@ export default function TourPackageDetails() {
                                                     </div>
                                                     <span className="text-xs font-black text-slate-800">⭐ {rev.rating}</span>
                                                 </div>
-                                                <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                                                <p className="text-xs text-slate-600 font-normal leading-relaxed">
                                                     "{rev.comment}"
                                                 </p>
                                             </div>
@@ -999,7 +1007,7 @@ export default function TourPackageDetails() {
                                             <button
                                                 type="button"
                                                 onClick={() => setShowAllReviewsDrawer(true)}
-                                                className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                                                className="w-full py-2.5 bg-slate-200/60 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
                                             >
                                                 <span>View All {reviewsCount} Reviews</span>
                                                 <ChevronDown className="w-4 h-4 text-slate-500" />
@@ -1010,22 +1018,22 @@ export default function TourPackageDetails() {
                             )}
                         </div>
 
-                        {/* Frequently Asked Questions Accordion */}
-                        <div className="space-y-3 bg-white p-6 lg:p-7 rounded-3xl border border-slate-200/80 shadow-xs">
-                            <h3 className="text-sm font-black text-slate-950 uppercase tracking-wider flex items-center gap-2 border-b border-slate-100 pb-3">
+                        {/* Frequently Asked Questions (Directly on background) */}
+                        <div className="space-y-3 pb-6">
+                            <h3 className="text-base sm:text-lg font-black text-slate-950 tracking-tight flex items-center gap-2 pb-2">
                                 <HelpCircle className="w-4.5 h-4.5 text-blue-600" />
                                 Frequently Asked Questions
                             </h3>
-                            <div className="space-y-2.5 pt-1">
+                            <div className="divide-y divide-slate-200/80 border-y border-slate-200/80">
                                 {faqs.map((faq, idx) => (
                                     <div
                                         key={idx}
-                                        className="border border-slate-200/80 rounded-2xl overflow-hidden transition-colors"
+                                        className="transition-colors"
                                     >
                                         <button
                                             type="button"
                                             onClick={() => setOpenFaqIndex(openFaqIndex === idx ? null : idx)}
-                                            className="w-full p-4 text-left flex items-center justify-between gap-4 font-bold text-xs sm:text-sm text-slate-900 hover:bg-slate-50/50 cursor-pointer"
+                                            className="w-full py-3.5 text-left flex items-center justify-between gap-4 font-bold text-xs sm:text-sm text-slate-900 hover:text-blue-600 cursor-pointer"
                                         >
                                             <span>{faq.q}</span>
                                             {openFaqIndex === idx ? (
@@ -1035,7 +1043,7 @@ export default function TourPackageDetails() {
                                             )}
                                         </button>
                                         {openFaqIndex === idx && (
-                                            <div className="px-4 pb-4 pt-1 text-xs text-slate-600 leading-relaxed border-t border-slate-100 bg-slate-50/30">
+                                            <div className="pb-3.5 text-xs sm:text-[13px] text-slate-600 leading-relaxed font-normal">
                                                 {faq.a}
                                             </div>
                                         )}
