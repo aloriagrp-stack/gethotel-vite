@@ -505,7 +505,7 @@ export default function TourPackageDetails() {
             </div>
 
             {/* MAIN CONTAINER */}
-            <div className="max-w-4xl lg:max-w-7xl xl:max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 pt-4 lg:pt-6 space-y-6 lg:space-y-8">
+            <div className="max-w-5xl xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 lg:pt-6 space-y-6 lg:space-y-8">
                 
                 {/* ─── DESKTOP EXCLUSIVE TITLE & OVERVIEW HEADER ──────────────────────── */}
                 <div className="hidden lg:block space-y-3 pb-1">
@@ -722,11 +722,8 @@ export default function TourPackageDetails() {
                     )}
                 </div>
 
-                {/* ─── 2-COLUMN MAIN CONTENT & BOOKING GRID ──────────────────────────── */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 pt-2 relative">
-                    
-                    {/* LEFT COLUMN (lg:col-span-8): Overview, Inclusions, Itinerary, Reviews */}
-                    <div className="lg:col-span-8 space-y-8 lg:space-y-10">
+                {/* ─── MAIN CONTENT CONTAINER (SEAMLESS FLOW) ──────────────────────────── */}
+                <div className="space-y-8 lg:space-y-10 pt-2">
                         
                         {/* Mobile Title Block (Kept untouched for mobile only) */}
                         <div className="lg:hidden">
@@ -850,6 +847,200 @@ export default function TourPackageDetails() {
                                 <span className="text-xs font-semibold text-slate-600 bg-slate-200/80 px-3 py-1 rounded-full">#FamilyFriendly</span>
                                 <span className="text-xs font-semibold text-slate-600 bg-slate-200/80 px-3 py-1 rounded-full">#CoupleSpecial</span>
                                 <span className="text-xs font-semibold text-slate-600 bg-slate-200/80 px-3 py-1 rounded-full">#AllInclusive</span>
+                            </div>
+                        </div>
+
+                        {/* ─── RECTANGULAR & MINIMAL BOOKING & PRICE CARD (DIRECTLY BELOW OVERVIEW) ─── */}
+                        <div
+                            ref={bookingCardRef}
+                            className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-4 sm:p-5 lg:p-6 space-y-4 relative overflow-hidden"
+                        >
+                            {/* Subtle Top Accent */}
+                            <div className="h-1 w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 absolute top-0 left-0 right-0" />
+
+                            {/* Row 1: Package Price & Dynamic Total Breakdown */}
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-slate-100 pt-1">
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Special Package Price</span>
+                                        {pkg.discountPercent && (
+                                            <span className="px-2 py-0.5 bg-rose-50 text-rose-700 font-black text-[10px] uppercase rounded-md border border-rose-100">
+                                                {pkg.discountPercent} OFF
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className="flex items-baseline gap-2 mt-0.5">
+                                        <span className="text-2xl sm:text-3xl font-black text-slate-950 leading-none">
+                                            ₹{pkg.price?.toLocaleString()}
+                                        </span>
+                                        {pkg.originalPrice && pkg.originalPrice > pkg.price && (
+                                            <span className="text-xs sm:text-sm text-slate-400 line-through font-semibold">
+                                                ₹{pkg.originalPrice?.toLocaleString()}
+                                            </span>
+                                        )}
+                                        <span className="text-xs text-slate-500 font-medium">/ guest</span>
+                                    </div>
+                                    <span className="text-[11px] text-slate-500 font-medium block mt-0.5">
+                                        All taxes, tolls, parking & private AC cab included
+                                    </span>
+                                </div>
+
+                                {/* Dynamic Total Amount */}
+                                <div className="sm:text-right bg-slate-50 sm:bg-transparent p-2.5 sm:p-0 rounded-xl sm:rounded-none border sm:border-0 border-slate-100">
+                                    <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">
+                                        Total Payable ({travelerCount} {travelerCount === 1 ? "Guest" : "Guests"})
+                                    </span>
+                                    <div className="flex items-baseline sm:justify-end gap-2 mt-0.5">
+                                        <span className="text-xl sm:text-2xl font-black text-blue-600 leading-none">
+                                            ₹{totalPrice.toLocaleString()}
+                                        </span>
+                                        {totalSavings > 0 && (
+                                            <span className="text-[11px] font-bold text-emerald-600">
+                                                Save ₹{totalSavings.toLocaleString()}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <span className="text-[10px] text-emerald-700 font-semibold block mt-0.5">
+                                        ✓ No Hidden Fees at Checkout
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Row 2: Rectangular Date & Travelers Selectors */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-medium">
+                                {/* Travel Date Selector */}
+                                <div className="relative group cursor-pointer">
+                                    <div className="w-full px-3.5 py-3 bg-slate-50 hover:bg-blue-50/50 border border-slate-200 group-hover:border-blue-300 rounded-xl flex items-center justify-between transition-all">
+                                        <div className="flex items-center gap-2.5">
+                                            <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-800 flex items-center justify-center font-black shrink-0">
+                                                <Calendar className="w-4 h-4" />
+                                            </div>
+                                            <div className="text-left min-w-0">
+                                                <span className="text-[10px] text-slate-400 font-bold uppercase block leading-none mb-0.5 tracking-wider">Departure Date</span>
+                                                <span className="block font-bold text-slate-900 text-xs sm:text-sm truncate">
+                                                    {travelDate ? new Date(travelDate).toLocaleDateString("en-US", { weekday: "short", day: "2-digit", month: "short", year: "numeric" }) : "Select Date"}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <Calendar className="w-4 h-4 text-blue-600 shrink-0" />
+                                    </div>
+                                    <input
+                                        type="date"
+                                        value={travelDate}
+                                        onChange={(e) => setTravelDate(e.target.value)}
+                                        onClick={(e: any) => e.target.showPicker?.()}
+                                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+                                    />
+                                </div>
+
+                                {/* Travelers Popover Dropdown */}
+                                <div className="relative" ref={dropdownRef}>
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsGuestDropdownOpen(!isGuestDropdownOpen)}
+                                        className="w-full px-3.5 py-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl flex items-center justify-between text-xs font-bold text-slate-900 transition-all cursor-pointer"
+                                    >
+                                        <div className="flex items-center gap-2.5">
+                                            <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-800 flex items-center justify-center font-black shrink-0">
+                                                <Users className="w-4 h-4" />
+                                            </div>
+                                            <div className="text-left min-w-0">
+                                                <span className="text-[10px] text-slate-400 font-bold uppercase block leading-none mb-0.5 tracking-wider">Travelers</span>
+                                                <span className="block font-bold text-slate-900 text-xs sm:text-sm truncate">{selectedOption.label} • {selectedOption.desc}</span>
+                                            </div>
+                                        </div>
+                                        <ChevronDown className={`w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200 ${isGuestDropdownOpen ? "rotate-180 text-blue-600" : ""}`} />
+                                    </button>
+
+                                    {/* Popover */}
+                                    <AnimatePresence>
+                                        {isGuestDropdownOpen && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                                                transition={{ duration: 0.15 }}
+                                                className="absolute top-full left-0 right-0 mt-2 z-50 bg-white rounded-xl border border-slate-200 shadow-xl overflow-hidden p-1 space-y-1"
+                                            >
+                                                {GUEST_OPTIONS.map((opt) => {
+                                                    const isSelected = travelerCount === opt.value;
+                                                    const optTotal = (pkg.price || 15000) * opt.value;
+                                                    return (
+                                                        <button
+                                                            key={opt.value}
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setTravelerCount(opt.value);
+                                                                setIsGuestDropdownOpen(false);
+                                                            }}
+                                                            className={`w-full p-2.5 rounded-lg flex items-center justify-between transition-all cursor-pointer text-left ${
+                                                                isSelected
+                                                                    ? "bg-blue-600 text-white font-bold"
+                                                                    : "hover:bg-slate-100 text-slate-700 font-medium"
+                                                            }`}
+                                                        >
+                                                            <div className="flex items-center gap-2">
+                                                                {isSelected ? (
+                                                                    <Check className="w-3.5 h-3.5 text-white shrink-0" />
+                                                                ) : (
+                                                                    <Users className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                                                )}
+                                                                <div>
+                                                                    <span className="block text-xs">{opt.label}</span>
+                                                                    <span className={`text-[10px] ${isSelected ? "text-blue-100" : "text-slate-400"}`}>
+                                                                        {opt.desc}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <span className={`text-xs font-bold ${isSelected ? "text-white" : "text-slate-900"}`}>
+                                                                ₹{optTotal.toLocaleString()}
+                                                            </span>
+                                                        </button>
+                                                    );
+                                                })}
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+                            </div>
+
+                            {/* Row 3: Action Buttons & Trust Strip */}
+                            <div className="flex flex-col sm:flex-row items-stretch gap-2.5 pt-1">
+                                <button
+                                    onClick={handleDirectBookNow}
+                                    className="flex-1 py-3.5 px-5 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-xs sm:text-sm uppercase tracking-wider rounded-xl transition-all duration-200 cursor-pointer shadow-md hover:shadow-blue-500/25 active:scale-[0.99] flex items-center justify-center gap-2"
+                                >
+                                    <CreditCard className="w-4 h-4 text-white" />
+                                    <span>Book Tour Package Now</span>
+                                </button>
+
+                                <button
+                                    onClick={handleAddToCart}
+                                    className={`py-3.5 px-5 border text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 ${
+                                        isPkgInCart
+                                            ? "bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-500 shadow-xs"
+                                            : "bg-white hover:bg-slate-50 text-slate-800 border-slate-200 shadow-xs"
+                                    }`}
+                                >
+                                    <ShoppingBag className="w-4 h-4" />
+                                    <span>{isPkgInCart ? "Added To Cart" : "Add To Cart"}</span>
+                                </button>
+                            </div>
+
+                            {/* Minimal Reassurance Strip */}
+                            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 text-[11px] text-slate-500 font-medium">
+                                <span className="flex items-center gap-1.5 text-slate-700 font-semibold">
+                                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                    100% Safe & Secure Checkout
+                                </span>
+                                <span className="flex items-center gap-1.5">
+                                    <Check className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                                    Instant booking voucher
+                                </span>
+                                <span className="flex items-center gap-1.5">
+                                    <Car className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                    Dedicated AC Cab & Verified Hotels
+                                </span>
                             </div>
                         </div>
 
@@ -1098,205 +1289,6 @@ export default function TourPackageDetails() {
                         </div>
 
                     </div>
-
-                    {/* RIGHT COLUMN (lg:col-span-4): Sticky Booking Card (Hook that follows user smoothly on scroll) */}
-                    <div className="lg:col-span-4 relative self-stretch" ref={bookingCardRef}>
-                        <div className="lg:sticky lg:top-24 z-30 space-y-4">
-                            <div className="bg-white rounded-3xl border border-slate-200 shadow-xl space-y-5 p-6 lg:p-7 relative overflow-hidden">
-                            {/* Top Accent Gradient Line */}
-                            <div className="h-1.5 w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 absolute top-0 left-0 right-0" />
-
-                            {/* Price Header */}
-                            <div className="flex items-start justify-between border-b border-slate-100 pb-4 pt-1">
-                                <div>
-                                    <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Package Price</span>
-                                    <div className="flex items-baseline gap-2 mt-0.5">
-                                        <span className="text-3xl font-black text-slate-950 leading-tight">₹{pkg.price?.toLocaleString()}</span>
-                                        {pkg.originalPrice && pkg.originalPrice > pkg.price && (
-                                            <span className="text-sm text-slate-400 line-through font-semibold">₹{pkg.originalPrice?.toLocaleString()}</span>
-                                        )}
-                                    </div>
-                                    <span className="text-[11px] text-slate-500 font-semibold block mt-1">per guest • All taxes & driver incl.</span>
-                                </div>
-                                <span className="px-2.5 py-1 bg-rose-50 text-rose-700 font-black text-[10px] uppercase rounded-lg border border-rose-100 shadow-xs">
-                                    {pkg.discountPercent || "50% OFF"}
-                                </span>
-                            </div>
-
-                            {/* Booking Controls */}
-                            <div className="space-y-4 text-xs font-medium">
-                                {/* Travel Date Selector */}
-                                <div>
-                                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                                        Select Travel Date
-                                    </label>
-                                    <div className="relative group cursor-pointer">
-                                        <div className="w-full px-3.5 py-3 bg-slate-50 hover:bg-blue-50/50 border border-slate-200 group-hover:border-blue-300 rounded-2xl flex items-center justify-between transition-all shadow-xs">
-                                            <div className="flex items-center gap-2.5">
-                                                <div className="w-7 h-7 rounded-xl bg-blue-100 text-blue-800 flex items-center justify-center font-black">
-                                                    <Calendar className="w-3.5 h-3.5" />
-                                                </div>
-                                                <div className="text-left">
-                                                    <span className="block font-bold text-slate-900 text-xs">
-                                                        {travelDate ? new Date(travelDate).toLocaleDateString("en-US", { weekday: "short", day: "2-digit", month: "short", year: "numeric" }) : "Select Date"}
-                                                    </span>
-                                                    <span className="text-[10px] text-slate-400 font-medium">Departure / Check-in</span>
-                                                </div>
-                                            </div>
-                                            <Calendar className="w-4 h-4 text-blue-600 group-hover:scale-110 transition-transform" />
-                                        </div>
-
-                                        <input
-                                            type="date"
-                                            value={travelDate}
-                                            onChange={(e) => setTravelDate(e.target.value)}
-                                            onClick={(e: any) => e.target.showPicker?.()}
-                                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Custom Animated Dropdown Popover for Travelers */}
-                                <div>
-                                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                                        Number of Travelers
-                                    </label>
-                                    <div className="relative" ref={dropdownRef}>
-                                        <button
-                                            type="button"
-                                            onClick={() => setIsGuestDropdownOpen(!isGuestDropdownOpen)}
-                                            className="w-full px-3.5 py-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl flex items-center justify-between text-xs font-bold text-slate-900 transition-all cursor-pointer shadow-xs"
-                                        >
-                                            <div className="flex items-center gap-2.5">
-                                                <div className="w-7 h-7 rounded-xl bg-blue-100 text-blue-800 flex items-center justify-center font-black">
-                                                    <Users className="w-3.5 h-3.5" />
-                                                </div>
-                                                <div className="text-left">
-                                                    <span className="block font-bold text-slate-900">{selectedOption.label}</span>
-                                                    <span className="text-[10px] text-slate-400 font-medium">{selectedOption.desc}</span>
-                                                </div>
-                                            </div>
-                                            <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${isGuestDropdownOpen ? "rotate-180 text-blue-600" : ""}`} />
-                                        </button>
-
-                                        {/* Floating Popover Options Menu */}
-                                        <AnimatePresence>
-                                            {isGuestDropdownOpen && (
-                                                <motion.div
-                                                    initial={{ opacity: 0, y: -6, scale: 0.98 }}
-                                                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                                                    exit={{ opacity: 0, y: -6, scale: 0.98 }}
-                                                    transition={{ duration: 0.15 }}
-                                                    className="absolute top-full left-0 right-0 mt-2 z-50 bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden p-1 space-y-1"
-                                                >
-                                                    {GUEST_OPTIONS.map((opt) => {
-                                                        const isSelected = travelerCount === opt.value;
-                                                        const optTotal = (pkg.price || 15000) * opt.value;
-                                                        return (
-                                                            <button
-                                                                key={opt.value}
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    setTravelerCount(opt.value);
-                                                                    setIsGuestDropdownOpen(false);
-                                                                }}
-                                                                className={`w-full p-2.5 rounded-xl flex items-center justify-between transition-all cursor-pointer text-left ${
-                                                                    isSelected
-                                                                        ? "bg-blue-600 text-white font-bold"
-                                                                        : "hover:bg-slate-100 text-slate-700 font-medium"
-                                                                }`}
-                                                            >
-                                                                <div className="flex items-center gap-2">
-                                                                    {isSelected ? (
-                                                                        <Check className="w-4 h-4 text-white shrink-0" />
-                                                                    ) : (
-                                                                        <Users className="w-4 h-4 text-slate-400 shrink-0" />
-                                                                    )}
-                                                                    <div>
-                                                                        <span className="block text-xs">{opt.label}</span>
-                                                                        <span className={`text-[10px] ${isSelected ? "text-blue-100" : "text-slate-400"}`}>
-                                                                            {opt.desc}
-                                                                        </span>
-                                                                    </div>
-                                                                </div>
-                                                                <span className={`text-xs font-bold ${isSelected ? "text-white" : "text-slate-900"}`}>
-                                                                    ₹{optTotal.toLocaleString()}
-                                                                </span>
-                                                            </button>
-                                                        );
-                                                    })}
-                                                </motion.div>
-                                            )}
-                                        </AnimatePresence>
-                                    </div>
-                                </div>
-
-                                {/* Dynamic Price Calculation Summary */}
-                                <div className="p-4 bg-slate-50/90 rounded-2xl space-y-2 border border-slate-100">
-                                    <div className="flex justify-between text-slate-600 text-xs">
-                                        <span>₹{pkg.price?.toLocaleString()} × {travelerCount} Guest(s)</span>
-                                        <span className="font-semibold text-slate-800">₹{totalPrice.toLocaleString()}</span>
-                                    </div>
-                                    <div className="flex justify-between text-slate-600 text-xs">
-                                        <span>Taxes, Tolls & Driver Fee</span>
-                                        <span className="font-bold text-emerald-600">INCLUDED</span>
-                                    </div>
-                                    {totalSavings > 0 && (
-                                        <div className="flex justify-between text-xs text-rose-600 font-bold">
-                                            <span>Your Savings</span>
-                                            <span>- ₹{totalSavings.toLocaleString()}</span>
-                                        </div>
-                                    )}
-                                    <div className="flex justify-between font-bold text-xs pt-2 border-t border-slate-200">
-                                        <span className="text-slate-800 text-sm">Total Payable</span>
-                                        <span className="text-lg font-black text-blue-600">₹{totalPrice.toLocaleString()}</span>
-                                    </div>
-                                </div>
-
-                                {/* CTAs */}
-                                <div className="space-y-2.5 pt-2">
-                                    <button
-                                        onClick={handleDirectBookNow}
-                                        className="relative group w-full py-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-sm uppercase tracking-wider rounded-2xl transition-all duration-300 cursor-pointer shadow-lg hover:shadow-blue-500/25 active:scale-[0.99] overflow-hidden text-center flex items-center justify-center gap-2"
-                                    >
-                                        <CreditCard className="w-4 h-4 text-white" />
-                                        <span>BOOK TOUR PACKAGE NOW</span>
-                                        <div className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-[300%] transition-transform duration-1000" />
-                                    </button>
-
-                                    <button
-                                        onClick={handleAddToCart}
-                                        className={`w-full py-3.5 border text-xs font-black uppercase tracking-wider rounded-2xl transition-all duration-300 cursor-pointer shadow-xs text-center flex items-center justify-center gap-1.5 ${
-                                            isPkgInCart
-                                                ? "bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-500 shadow-emerald-600/20"
-                                                : "bg-white hover:bg-slate-50 text-slate-800 border-slate-200"
-                                        }`}
-                                    >
-                                        <ShoppingBag className="w-4 h-4" />
-                                        <span>{isPkgInCart ? "✓ ADDED TO CART" : "ADD TO CART"}</span>
-                                    </button>
-                                </div>
-
-                                {/* Trust & Guarantee Badges */}
-                                <div className="pt-3 border-t border-slate-100 space-y-2 text-[11px] text-slate-500 font-medium">
-                                    <div className="flex items-center gap-2 text-slate-700 font-semibold">
-                                        <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                                        <span>100% Safe & Secure Checkout</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <Check className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                                        <span>Instant booking voucher via email & WhatsApp</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <Check className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                                        <span>Clean, verified hotels & dedicated private AC cab</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                </div>
 
                 {/* Minimal Clean Thank You Note */}
                 <div className="mt-8 pt-8 border-t border-slate-200 text-center space-y-1 text-slate-900 pb-0">
