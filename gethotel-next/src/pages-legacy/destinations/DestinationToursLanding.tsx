@@ -163,9 +163,26 @@ export default function DestinationToursLanding() {
 
                 {/* PACKAGES GRID */}
                 {loading ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {[1, 2, 3].map(i => (
-                            <div key={i} className="rounded-3xl aspect-[4/5] bg-slate-200 animate-pulse" />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 lg:gap-8">
+                        {[1, 2, 3, 4].map(i => (
+                            <div key={i} className="relative rounded-3xl overflow-hidden p-5 bg-white/60 border border-slate-200/80 animate-pulse min-h-[290px] flex flex-col justify-between gap-4">
+                                <div className="flex gap-4 items-stretch">
+                                    <div className="w-[52%] aspect-[16/10] bg-slate-200 rounded-2xl" />
+                                    <div className="flex-1 bg-slate-100 rounded-2xl p-3 flex flex-col justify-between space-y-2">
+                                        <div className="h-3 w-1/2 bg-slate-200 rounded" />
+                                        <div className="h-6 w-3/4 bg-slate-300 rounded" />
+                                        <div className="h-7 w-full bg-slate-200 rounded-xl" />
+                                    </div>
+                                </div>
+                                <div className="space-y-2 pt-1">
+                                    <div className="h-4 w-1/3 bg-slate-200 rounded-lg" />
+                                    <div className="h-5 w-4/5 bg-slate-300 rounded-lg" />
+                                    <div className="flex gap-2">
+                                        <div className="h-4 w-16 bg-slate-200 rounded" />
+                                        <div className="h-4 w-20 bg-slate-200 rounded" />
+                                    </div>
+                                </div>
+                            </div>
                         ))}
                     </div>
                 ) : destinationPackages.length === 0 ? (
@@ -180,7 +197,7 @@ export default function DestinationToursLanding() {
                         </button>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 lg:gap-8">
                         {destinationPackages.map((pkg) => {
                             const packageSlug = pkg.slug || createPackageSlug(pkg.title);
                             
@@ -253,7 +270,7 @@ export default function DestinationToursLanding() {
                                             {/* Pagination Dots (like the Alphonso reference image) */}
                                             {photosList.length > 1 && (
                                                 <div className="flex items-center justify-center gap-1.5 pb-1">
-                                                    {photosList.slice(0, 5).map((_, idx) => (
+                                                    {photosList.slice(0, 5).map((_: any, idx: number) => (
                                                         <span
                                                             key={idx}
                                                             className={`h-1.5 rounded-full transition-all ${

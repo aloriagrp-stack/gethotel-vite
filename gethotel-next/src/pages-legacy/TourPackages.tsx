@@ -387,7 +387,7 @@ export default function TourPackages() {
                     )}
                 </div>
 
-                {/* 2. AESTHETIC TOUR PACKAGE CARDS (3-COLUMN LUXURY GRID) */}
+                {/* 2. AESTHETIC TOUR PACKAGE CARDS (2-COLUMN LUXURY GRID) */}
                 <div className="space-y-4" ref={packagesGridRef}>
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
@@ -411,13 +411,25 @@ export default function TourPackages() {
                     </div>
 
                     {packagesLoading ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-                            {[0, 1, 2, 3, 4, 5].map((i) => (
-                                <div key={i} className="relative rounded-3xl overflow-hidden aspect-[4/5] sm:aspect-[3/4] bg-slate-200 animate-pulse">
-                                    <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5 space-y-3 bg-white/70 backdrop-blur-sm">
-                                        <div className="h-3 w-1/3 bg-slate-300 rounded-full" />
-                                        <div className="h-4 w-4/5 bg-slate-300 rounded-full" />
-                                        <div className="h-10 w-full bg-slate-300 rounded-2xl" />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 lg:gap-8">
+                            {[0, 1, 2, 3].map((i) => (
+                                <div key={i} className="relative rounded-3xl overflow-hidden p-5 bg-white/60 border border-slate-200/80 animate-pulse min-h-[290px] flex flex-col justify-between gap-4">
+                                    <div className="flex gap-4 items-stretch">
+                                        <div className="w-[52%] aspect-[16/10] bg-slate-200 rounded-2xl" />
+                                        <div className="flex-1 bg-slate-100 rounded-2xl p-3 flex flex-col justify-between space-y-2">
+                                            <div className="h-3 w-1/2 bg-slate-200 rounded" />
+                                            <div className="h-6 w-3/4 bg-slate-300 rounded" />
+                                            <div className="h-7 w-full bg-slate-200 rounded-xl" />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2 pt-1">
+                                        <div className="h-4 w-1/3 bg-slate-200 rounded-lg" />
+                                        <div className="h-5 w-4/5 bg-slate-300 rounded-lg" />
+                                        <div className="flex gap-2">
+                                            <div className="h-4 w-16 bg-slate-200 rounded" />
+                                            <div className="h-4 w-20 bg-slate-200 rounded" />
+                                            <div className="h-4 w-16 bg-slate-200 rounded" />
+                                        </div>
                                     </div>
                                 </div>
                             ))}
@@ -445,7 +457,7 @@ export default function TourPackages() {
                             </button>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 lg:gap-8">
                             {filteredPackages.map((pkg) => {
                                 const packageSlug = pkg.slug || createPackageSlug(pkg.title);
                                 
@@ -519,7 +531,7 @@ export default function TourPackages() {
                                                 {/* Pagination Dots (like the Alphonso reference image) */}
                                                 {photosList.length > 1 && (
                                                     <div className="flex items-center justify-center gap-1.5 pb-1">
-                                                        {photosList.slice(0, 5).map((_, idx) => (
+                                                        {photosList.slice(0, 5).map((_: any, idx: number) => (
                                                             <span
                                                                 key={idx}
                                                                 className={`h-1.5 rounded-full transition-all ${
