@@ -1203,7 +1203,7 @@ export default function TourPackageDetails() {
                                     className="w-full py-3.5 px-6 bg-brand-600 hover:bg-brand-700 text-white font-black text-xs sm:text-sm uppercase tracking-wider rounded-xl transition-all duration-200 cursor-pointer shadow-md shadow-brand-600/20 hover:shadow-brand-600/30 active:scale-[0.99] flex items-center justify-center gap-2"
                                 >
                                     <CreditCard className="w-4 h-4 text-white" />
-                                    <span>Book Tour Package Now</span>
+                                    <span>Book Now</span>
                                 </button>
                             </div>
                         </div>
