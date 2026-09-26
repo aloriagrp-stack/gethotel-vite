@@ -84,7 +84,7 @@ export default function BookingDetailsPage({ bookingId }: BookingDetailsPageProp
             });
             
             pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 2, canvas.height / 2);
-            pdf.save(`Booking_Voucher_GH-${booking.id + 10000}.pdf`);
+            pdf.save(`Booking_Voucher_${displayBookingId.replace(/[^a-zA-Z0-9_-]/g, '_')}.pdf`);
         } catch (err) {
             console.error("Failed to generate PDF", err);
             alert("Failed to download PDF voucher. Please try again.");
@@ -99,6 +99,44 @@ export default function BookingDetailsPage({ bookingId }: BookingDetailsPageProp
     const fetchBookingDetails = async () => {
         if (!id) return;
         try {
+            // First check if it's a tour package from localStorage
+            if (String(id).startsWith('PKG-') || String(id).includes('PKG')) {
+                const storedPkgs = JSON.parse(localStorage.getItem("ghs_user_bookings") || "[]");
+                const foundPkg = storedPkgs.find((p: any) => String(p.id) === String(id));
+                if (foundPkg) {
+                    setBooking({
+                        id: foundPkg.id,
+                        isPackage: true,
+                        hotel: {
+                            name: foundPkg.title || "Tour Package",
+                            city: foundPkg.destination || "India",
+                            address: foundPkg.destination || "Tour Package Destination",
+                            thumbnail: "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80",
+                            starRating: 5
+                        },
+                        room: {
+                            name: `Tour Package (${foundPkg.travelers || 2} Travelers)`
+                        },
+                        totalGuests: foundPkg.travelers || 2,
+                        checkIn: foundPkg.checkIn,
+                        checkOut: foundPkg.checkIn,
+                        totalPrice: foundPkg.totalAmount,
+                        amountPaid: foundPkg.amountPaid || foundPkg.totalAmount,
+                        status: foundPkg.status || 'confirmed',
+                        paymentStatus: foundPkg.paymentStatus || 'paid',
+                        razorpayPaymentId: foundPkg.paymentId,
+                        createdAt: foundPkg.createdAt,
+                        guestEmail: foundPkg.guestInfo?.email,
+                        guestFirstName: foundPkg.guestInfo?.firstName,
+                        guestLastName: foundPkg.guestInfo?.lastName,
+                        guestPhone: foundPkg.guestInfo?.phone,
+                        specialRequests: foundPkg.guestInfo?.specialRequests
+                    });
+                    setLoading(false);
+                    return;
+                }
+            }
+
             const res = await bookingApi.getBooking(id);
             const bookingData = res.data || res;
             if (bookingData) {
@@ -107,6 +145,41 @@ export default function BookingDetailsPage({ bookingId }: BookingDetailsPageProp
         } catch (err) {
             console.error("Failed to load booking details via getBooking, trying list fallback:", err);
             try {
+                const storedPkgs = JSON.parse(localStorage.getItem("ghs_user_bookings") || "[]");
+                const foundPkg = storedPkgs.find((p: any) => String(p.id) === String(id));
+                if (foundPkg) {
+                    setBooking({
+                        id: foundPkg.id,
+                        isPackage: true,
+                        hotel: {
+                            name: foundPkg.title || "Tour Package",
+                            city: foundPkg.destination || "India",
+                            address: foundPkg.destination || "Tour Package Destination",
+                            thumbnail: "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80",
+                            starRating: 5
+                        },
+                        room: {
+                            name: `Tour Package (${foundPkg.travelers || 2} Travelers)`
+                        },
+                        totalGuests: foundPkg.travelers || 2,
+                        checkIn: foundPkg.checkIn,
+                        checkOut: foundPkg.checkIn,
+                        totalPrice: foundPkg.totalAmount,
+                        amountPaid: foundPkg.amountPaid || foundPkg.totalAmount,
+                        status: foundPkg.status || 'confirmed',
+                        paymentStatus: foundPkg.paymentStatus || 'paid',
+                        razorpayPaymentId: foundPkg.paymentId,
+                        createdAt: foundPkg.createdAt,
+                        guestEmail: foundPkg.guestInfo?.email,
+                        guestFirstName: foundPkg.guestInfo?.firstName,
+                        guestLastName: foundPkg.guestInfo?.lastName,
+                        guestPhone: foundPkg.guestInfo?.phone,
+                        specialRequests: foundPkg.guestInfo?.specialRequests
+                    });
+                    setLoading(false);
+                    return;
+                }
+
                 const listRes = await bookingApi.getMyBookings();
                 const bookingsList = listRes.data || [];
                 const found = bookingsList.find((b: any) => String(b.id) === String(id));
@@ -126,7 +199,7 @@ export default function BookingDetailsPage({ bookingId }: BookingDetailsPageProp
     }, [id]);
 
     const handleVerifyPaymentStatus = async () => {
-        if (!booking?.id) return;
+        if (!booking?.id || booking?.isPackage) return;
         setVerifying(true);
         setVerificationMessage(null);
         try {
@@ -155,7 +228,7 @@ export default function BookingDetailsPage({ bookingId }: BookingDetailsPageProp
     };
 
     useEffect(() => {
-        if (booking && booking.status === 'held' && !verifying && !verificationMessage) {
+        if (booking && booking.status === 'held' && !verifying && !verificationMessage && !booking.isPackage) {
             handleVerifyPaymentStatus();
         }
     }, [booking, verifying, verificationMessage]);
@@ -167,7 +240,7 @@ export default function BookingDetailsPage({ bookingId }: BookingDetailsPageProp
     const checkInDate = booking ? formatDate(booking.checkIn) : "16 May 2026";
     const checkOutDate = booking ? formatDate(booking.checkOut) : "17 May 2026";
     const totalPrice = booking ? formatPrice(booking.totalPrice) : "₹2,940";
-    const displayBookingId = booking ? `#GH-${booking.id + 10000}` : `#GH-10011`;
+    const displayBookingId = booking ? (booking.isPackage ? String(booking.id) : `#GH-${Number(booking.id) + 10000}`) : `#GH-10011`;
     const roomName = booking?.room?.name || "Double Deluxe Room";
     const status = booking?.status || "confirmed";
     const totalPriceVal = booking?.totalPrice || 2940;

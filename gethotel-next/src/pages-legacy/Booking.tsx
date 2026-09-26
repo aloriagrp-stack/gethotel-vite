@@ -604,7 +604,7 @@ function BookingContent() {
 
                                 setShowConfirmAnimation(true);
                                 setBooked(true);
-                                setRedirectUrl(`/my-bookings`);
+                                setRedirectUrl(`/booking/details/${packageBookingObj.id}?success=true`);
                             } catch (err: any) {
                                 console.error("Payment verification failed:", err);
                                 alert("Payment verification failed. Please contact support or check your bookings.");
@@ -681,6 +681,7 @@ function BookingContent() {
                     localStorage.removeItem("active_checkout_booking_id");
                     localStorage.removeItem("active_checkout_booking_time");
                     setShowConfirmAnimation(true);
+                    setBooked(true);
                     setRedirectUrl(`/booking/details/${booking.id}?success=true`);
                 } else {
                     localStorage.setItem("active_checkout_booking_id", booking.id.toString());
@@ -711,6 +712,7 @@ function BookingContent() {
                                     localStorage.removeItem("active_checkout_booking_time");
 
                                     setShowConfirmAnimation(true);
+                                    setBooked(true);
                                     setRedirectUrl(`/booking/details/${booking.id}?success=true`);
                                 } catch (err: any) {
                                     alert("Payment verification failed. Please check your bookings dashboard or contact support.");
@@ -769,8 +771,8 @@ function BookingContent() {
                 <p className="text-xs text-slate-600 mb-6 leading-relaxed">
                     Your {isPackage ? "tour package" : "stay"} <strong>{isPackage ? packageTitle : hotel?.name}</strong> has been successfully booked.
                 </p>
-                <Link to={isPackage ? "/my-bookings" : "/hotels"} className="inline-block w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-bold uppercase tracking-wider text-xs shadow-md shadow-brand-600/20 transition-all">
-                    View My Bookings
+                <Link to={redirectUrl || (isPackage ? "/my-bookings" : "/my-bookings")} className="inline-block w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-bold uppercase tracking-wider text-xs shadow-md shadow-brand-600/20 transition-all">
+                    {redirectUrl?.includes('/booking/details/') ? "View Booking Voucher" : "View My Bookings"}
                 </Link>
             </div>
         </div>

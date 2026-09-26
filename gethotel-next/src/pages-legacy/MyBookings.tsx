@@ -31,8 +31,44 @@ export default function MyBookingsPage() {
 
     useEffect(() => {
         const fetchBookings = async () => {
+            let localPackages: any[] = [];
+            try {
+                const stored = JSON.parse(localStorage.getItem("ghs_user_bookings") || "[]");
+                if (Array.isArray(stored)) {
+                    localPackages = stored.map((pkg: any) => ({
+                        id: pkg.id,
+                        isPackage: true,
+                        hotel: {
+                            name: pkg.title || "Tour Package",
+                            city: pkg.destination || "India",
+                            address: pkg.destination || "Tour Package Destination",
+                            thumbnail: "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80"
+                        },
+                        room: {
+                            name: `Tour Package (${pkg.travelers || 2} Travelers) • All Inclusions Included`
+                        },
+                        checkIn: pkg.checkIn || new Date().toISOString(),
+                        checkOut: pkg.checkIn || new Date().toISOString(),
+                        totalPrice: pkg.totalAmount,
+                        amountPaid: pkg.amountPaid || pkg.totalAmount,
+                        status: pkg.status || 'confirmed',
+                        paymentStatus: pkg.paymentStatus || 'paid',
+                        razorpayPaymentId: pkg.paymentId,
+                        createdAt: pkg.createdAt,
+                        guestInfo: pkg.guestInfo
+                    }));
+                }
+            } catch (e) {
+                console.error("Failed to parse local package bookings:", e);
+            }
+
             const token = sessionStorage.getItem('token') || localStorage.getItem('token');
             if (!token) {
+                if (localPackages.length > 0) {
+                    setBookings(localPackages);
+                    setLoading(false);
+                    return;
+                }
                 setError("Please login to view your bookings.");
                 setLoading(false);
                 return;
@@ -40,9 +76,14 @@ export default function MyBookingsPage() {
 
             try {
                 const res = await bookingApi.getMyBookings();
-                setBookings(res.data || []);
+                const apiBookings = res.data || [];
+                setBookings([...localPackages, ...apiBookings]);
             } catch (err: any) {
-                setError(err.message || "Failed to load bookings.");
+                if (localPackages.length > 0) {
+                    setBookings(localPackages);
+                } else {
+                    setError(err.message || "Failed to load bookings.");
+                }
             } finally {
                 setLoading(false);
             }
@@ -53,7 +94,7 @@ export default function MyBookingsPage() {
 
     useEffect(() => {
         const verifyPendingBookings = async () => {
-            const heldBookings = bookings.filter((b: any) => b.status === 'held');
+            const heldBookings = bookings.filter((b: any) => b.status === 'held' && typeof b.id === 'number');
             if (heldBookings.length === 0) return;
 
             let updatedAny = false;
@@ -308,7 +349,7 @@ export default function MyBookingsPage() {
                                         <div>
                                             <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 sm:gap-6 mb-6 sm:mb-8">
                                                 <div>
-                                                    <p className="text-[10px] font-black text-brand-600 uppercase tracking-[0.2em] mb-1.5">Booking ID: #GH-{booking.id + 10000}</p>
+                                                    <p className="text-[10px] font-black text-brand-600 uppercase tracking-[0.2em] mb-1.5">Booking ID: {booking.isPackage ? booking.id : `#GH-${Number(booking.id) + 10000}`}</p>
                                                     <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 mb-2 group-hover:text-brand-600 transition-colors leading-tight uppercase">{booking.hotel?.name}</h3>
                                                     <p className="text-slate-400 font-bold text-xs sm:text-sm flex items-center gap-1.5">
                                                         <MapPin className="w-4 h-4 text-brand-500 shrink-0" />
@@ -321,7 +362,7 @@ export default function MyBookingsPage() {
                                                         <p className="text-sm font-black text-emerald-600">{formatPrice(booking.amountPaid || booking.amount_paid || 0)}</p>
                                                     </div>
                                                     <div className="flex justify-between items-center pt-2 border-t border-dashed border-slate-200 text-xs">
-                                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Due at Hotel</p>
+                                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{booking.isPackage ? "Balance" : "Due at Hotel"}</p>
                                                         <p className="text-base font-black text-brand-600">{formatPrice((booking.totalPrice || booking.total_price || 0) - (booking.amountPaid || booking.amount_paid || 0))}</p>
                                                     </div>
                                                 </div>
@@ -379,7 +420,8 @@ export default function MyBookingsPage() {
                                                 <button
                                                     onClick={() => {
                                                         const phone = booking.hotel?.phone || "919000000000";
-                                                        window.open(`https://wa.me/${phone}?text=Hi, I have a booking (#GH-${booking.id + 10000}) at ${booking.hotel?.name}.`, '_blank');
+                                                        const ref = booking.isPackage ? booking.id : `#GH-${Number(booking.id) + 10000}`;
+                                                        window.open(`https://wa.me/${phone}?text=Hi, I have a booking (${ref}) at ${booking.hotel?.name}.`, '_blank');
                                                     }}
                                                     className="px-5 sm:px-8 py-3.5 sm:py-4 bg-white border border-slate-200 text-slate-900 rounded-xl sm:rounded-[20px] font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center justify-center gap-2 shadow-sm"
                                                 >
