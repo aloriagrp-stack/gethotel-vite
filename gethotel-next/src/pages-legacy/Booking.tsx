@@ -539,37 +539,106 @@ function BookingContent() {
             }
 
             if (isPackage) {
-                // Tour Package Booking Flow
-                const packageBookingObj = {
-                    id: "PKG-GHS-" + Math.floor(100000 + Math.random() * 900000),
-                    packageId,
-                    title: packageTitle,
-                    destination: packageDestination,
-                    checkIn: packageCheckIn,
-                    travelers: packageTravelers,
-                    totalAmount: priceDetails.total,
-                    amountPaid,
-                    status: bookingStatus,
-                    paymentStatus: bookingPaymentStatus,
-                    guestInfo: {
-                        firstName: data.firstName,
-                        lastName: data.lastName,
-                        email: data.email,
-                        phone: data.phone,
-                        country: data.country,
-                        specialRequests: data.specialRequests || ""
-                    },
-                    createdAt: new Date().toISOString()
-                };
+                // Tour Package Booking Flow with Razorpay Online Payment
+                try {
+                    await loadRazorpay();
+                    const orderRes = await paymentApi.createOrder({
+                        amount: priceDetails.total,
+                        isPackage: true,
+                        packageId,
+                        title: packageTitle
+                    });
 
-                const existingBookings = JSON.parse(localStorage.getItem("ghs_user_bookings") || "[]");
-                existingBookings.push(packageBookingObj);
-                localStorage.setItem("ghs_user_bookings", JSON.stringify(existingBookings));
+                    if (!orderRes || (!orderRes.orderId && !orderRes.id && !orderRes?.order?.id)) {
+                        throw new Error(orderRes?.message || "Failed to initialize payment order.");
+                    }
 
-                setShowConfirmAnimation(true);
-                setBooked(true);
-                setIsSubmitting(false);
-                setRedirectUrl(`/my-bookings`);
+                    const razorpayOrderId = orderRes.orderId || orderRes.id || orderRes.order?.id;
+                    const razorpayAmount = orderRes.amount || Math.round(priceDetails.total * 100);
+
+                    const options = {
+                        key: (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_RAZORPAY_KEY_ID) || "rzp_live_T16NuPtvvs9cRV",
+                        amount: razorpayAmount,
+                        currency: orderRes.currency || "INR",
+                        name: "GetHotelStays.",
+                        description: `Tour Package: ${packageTitle}`,
+                        image: "/logo.png",
+                        order_id: razorpayOrderId,
+                        handler: async function (response: any) {
+                            try {
+                                setIsSubmitting(true);
+                                await paymentApi.verifyPayment({
+                                    razorpay_order_id: response.razorpay_order_id,
+                                    razorpay_payment_id: response.razorpay_payment_id,
+                                    razorpay_signature: response.razorpay_signature,
+                                    isPackage: true
+                                });
+
+                                const packageBookingObj = {
+                                    id: "PKG-GHS-" + Math.floor(100000 + Math.random() * 900000),
+                                    packageId,
+                                    title: packageTitle,
+                                    destination: packageDestination,
+                                    checkIn: packageCheckIn,
+                                    travelers: packageTravelers,
+                                    totalAmount: priceDetails.total,
+                                    amountPaid: priceDetails.total,
+                                    status: 'confirmed',
+                                    paymentStatus: 'paid',
+                                    paymentId: response.razorpay_payment_id,
+                                    orderId: response.razorpay_order_id,
+                                    guestInfo: {
+                                        firstName: data.firstName,
+                                        lastName: data.lastName,
+                                        email: data.email,
+                                        phone: data.phone,
+                                        country: data.country,
+                                        specialRequests: data.specialRequests || ""
+                                    },
+                                    createdAt: new Date().toISOString()
+                                };
+
+                                const existingBookings = JSON.parse(localStorage.getItem("ghs_user_bookings") || "[]");
+                                existingBookings.push(packageBookingObj);
+                                localStorage.setItem("ghs_user_bookings", JSON.stringify(existingBookings));
+
+                                setShowConfirmAnimation(true);
+                                setBooked(true);
+                                setRedirectUrl(`/my-bookings`);
+                            } catch (err: any) {
+                                console.error("Payment verification failed:", err);
+                                alert("Payment verification failed. Please contact support or check your bookings.");
+                            } finally {
+                                setIsSubmitting(false);
+                            }
+                        },
+                        modal: {
+                            ondismiss: function () {
+                                setIsSubmitting(false);
+                            }
+                        },
+                        prefill: {
+                            name: `${data.firstName} ${data.lastName}`,
+                            email: data.email,
+                            contact: data.phone
+                        },
+                        theme: {
+                            color: "#0284c7"
+                        }
+                    };
+
+                    const rzp = new (window as any).Razorpay(options);
+                    rzp.on('payment.failed', function (resp: any) {
+                        console.error("Razorpay Payment Failed:", resp.error);
+                        alert(`Payment Failed: ${resp.error?.description || "Transaction declined"}`);
+                        setIsSubmitting(false);
+                    });
+                    rzp.open();
+                } catch (paymentError: any) {
+                    console.error("Package payment initiation failed:", paymentError);
+                    alert(paymentError.message || "Failed to initialize payment gateway. Please try again.");
+                    setIsSubmitting(false);
+                }
                 return;
             }
 

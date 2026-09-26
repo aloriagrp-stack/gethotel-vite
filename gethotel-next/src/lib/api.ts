@@ -209,7 +209,10 @@ export const dailyRateApi = {
 };
 
 export const paymentApi = {
-    createOrder: (bookingId: number) => apiFetch('/payments/create-order', { method: 'POST', body: JSON.stringify({ bookingId }) }),
+    createOrder: (data: number | { bookingId?: number; amount?: number; isPackage?: boolean; packageId?: any; title?: string }) => {
+        const payload = typeof data === 'number' ? { bookingId: data } : data;
+        return apiFetch('/payments/create-order', { method: 'POST', body: JSON.stringify(payload) });
+    },
     verifyPayment: (paymentData: any) => apiFetch('/payments/verify', { method: 'POST', body: JSON.stringify(paymentData) }),
     fetchPaymentStatus: (bookingId: number) => apiFetch(`/payments/fetch-status/${bookingId}`, { method: 'POST' }),
 };

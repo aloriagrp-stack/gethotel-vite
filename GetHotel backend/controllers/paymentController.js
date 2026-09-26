@@ -23,13 +23,42 @@ try {
 // @route   POST /api/payments/create-order
 // @access  Private
 exports.createOrder = async (req, res) => {
-    const { bookingId } = req.body;
+    const { bookingId, amount, isPackage, packageId, title } = req.body;
 
     if (!razorpay) {
         return res.status(500).json({ success: false, message: 'Razorpay is not configured. Please add Key ID and Secret to .env' });
     }
 
     try {
+        // Support tour package orders or direct amounts
+        if (isPackage || (amount && !bookingId)) {
+            const amountInPaisa = Math.round(Number(amount) * 100);
+            if (!amountInPaisa || amountInPaisa <= 0) {
+                return res.status(400).json({ success: false, message: 'Invalid payment amount' });
+            }
+            const receipt = `pkg_${Date.now()}_${String(packageId || 'custom').slice(0, 10)}`.slice(0, 40);
+            const options = {
+                amount: amountInPaisa,
+                currency: 'INR',
+                receipt,
+                notes: {
+                    type: 'package',
+                    packageId: String(packageId || ''),
+                    title: String(title || 'Tour Package')
+                }
+            };
+            const order = await razorpay.orders.create(options);
+            return res.status(200).json({
+                success: true,
+                order: order,
+                orderId: order.id,
+                amount: order.amount,
+                currency: order.currency,
+                isPackage: true,
+                keyId: process.env.RAZORPAY_KEY_ID || 'rzp_live_T16NuPtvvs9cRV'
+            });
+        }
+
         const booking = await prisma.booking.findUnique({
             where: { id: parseInt(bookingId) },
             include: { hotel: true }
@@ -181,6 +210,15 @@ exports.verifyPayment = async (req, res) => {
         return res.status(400).json({ success: false, message: 'Invalid payment signature' });
     }
 
+    if (req.body.isPackage) {
+        return res.status(200).json({
+            success: true,
+            message: 'Tour package payment verified successfully.',
+            paymentId: razorpay_payment_id,
+            orderId: razorpay_order_id
+        });
+    }
+
     try {
         // Find the booking by Razorpay Order ID
         const booking = await prisma.booking.findUnique({
@@ -188,7 +226,13 @@ exports.verifyPayment = async (req, res) => {
         });
 
         if (!booking) {
-            return res.status(404).json({ success: false, message: 'Booking not found for this order' });
+            // For package bookings or direct orders without booking record
+            return res.status(200).json({
+                success: true,
+                message: 'Payment verified successfully.',
+                paymentId: razorpay_payment_id,
+                orderId: razorpay_order_id
+            });
         }
 
         const result = await processSuccessfulPayment(booking, razorpay_order_id, razorpay_payment_id, razorpay_signature, req.body);
