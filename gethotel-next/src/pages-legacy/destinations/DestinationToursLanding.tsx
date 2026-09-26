@@ -163,7 +163,7 @@ export default function DestinationToursLanding() {
 
                 {/* PACKAGES GRID */}
                 {loading ? (
-                    <div className="grid grid-cols-2 lg:grid-cols-2 gap-0 lg:gap-8">
+                    <div className="grid grid-cols-2 lg:grid-cols-2 gap-0">
                         {[1, 2, 3, 4].map(i => (
                             <React.Fragment key={i}>
                                 {/* Mobile Skeleton Directly on Background */}
@@ -182,8 +182,10 @@ export default function DestinationToursLanding() {
                                     </div>
                                 </div>
 
-                                {/* Desktop Horizontal Skeleton */}
-                                <div className="hidden lg:flex relative rounded-3xl overflow-hidden p-5 bg-white/60 border border-slate-200/80 animate-pulse min-h-[290px] flex-col justify-between gap-4">
+                                {/* Desktop Horizontal Skeleton Directly on Background */}
+                                <div className={`hidden lg:flex p-6 space-y-4 animate-pulse min-h-[290px] flex-col justify-between border-b border-slate-200/80 ${
+                                    i % 2 === 0 ? "border-r border-slate-200/80 pr-6 xl:pr-8" : "pl-6 xl:pl-8"
+                                }`}>
                                     <div className="flex gap-4 items-stretch">
                                         <div className="w-[52%] aspect-[16/10] bg-slate-200 rounded-2xl" />
                                         <div className="flex-1 bg-slate-100 rounded-2xl p-3 flex flex-col justify-between space-y-2">
@@ -216,7 +218,7 @@ export default function DestinationToursLanding() {
                         </button>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-2 lg:grid-cols-2 gap-0 lg:gap-8">
+                    <div className="grid grid-cols-2 lg:grid-cols-2 gap-0">
                         {destinationPackages.map((pkg, idx) => {
                             const packageSlug = pkg.slug || createPackageSlug(pkg.title);
                             
@@ -305,22 +307,13 @@ export default function DestinationToursLanding() {
                                         </div>
                                     </Link>
 
-                                    {/* 2. DESKTOP VERSION CARD ONLY (hidden lg:block) - Matches User Sketch */}
+                                    {/* 2. DESKTOP VERSION CARD ONLY (hidden lg:block) - Directly on Background with Center & Bottom Dividers */}
                                     <Link
                                         to={`/${langCode}/packages/${packageSlug}`}
-                                        className="hidden lg:block group relative rounded-3xl overflow-hidden p-5 border border-slate-200/80 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-500 cursor-pointer bg-[#F8F9FA]"
+                                        className={`hidden lg:block group relative py-6 transition-colors border-b border-slate-200/80 cursor-pointer ${
+                                            idx % 2 === 0 ? "border-r border-slate-200/80 pr-6 xl:pr-8" : "pl-6 xl:pl-8"
+                                        }`}
                                     >
-                                        {/* THIS AREA REMAINS BLURRY AND HAS COLOR OF IMAGE (OFF-WHITE THEME) */}
-                                        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                                            <img
-                                                src={displayImg}
-                                                alt=""
-                                                className="w-full h-full object-cover blur-3xl scale-125 opacity-30 group-hover:scale-135 transition-transform duration-700"
-                                            />
-                                            <div className="absolute inset-0 bg-[#F8F9FA]/85 backdrop-blur-2xl" />
-                                            <div className="absolute inset-0 bg-gradient-to-br from-white/60 via-[#F8F9FA]/70 to-white/80" />
-                                        </div>
-
                                         {/* INNER CARD LAYOUT */}
                                         <div className="relative z-10 flex flex-col justify-between h-full gap-3.5">
                                             {/* TOP ROW: Image on Left + Pricing Wagera on Right */}
