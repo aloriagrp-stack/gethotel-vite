@@ -700,7 +700,7 @@ function BookingContent() {
                 <p className="text-xs text-slate-600 mb-6 leading-relaxed">
                     Your {isPackage ? "tour package" : "stay"} <strong>{isPackage ? packageTitle : hotel?.name}</strong> has been successfully booked.
                 </p>
-                <Link to={isPackage ? "/my-bookings" : "/hotels"} className="inline-block w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold uppercase tracking-wider text-xs shadow-md transition-all">
+                <Link to={isPackage ? "/my-bookings" : "/hotels"} className="inline-block w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-bold uppercase tracking-wider text-xs shadow-md shadow-brand-600/20 transition-all">
                     View My Bookings
                 </Link>
             </div>
@@ -729,12 +729,13 @@ function BookingContent() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 items-start">
-                    {/* Left Sidebar Summary Box */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 sm:gap-12 items-start">
+                    {/* Left Sidebar Summary - Directly on background without cards */}
                     <div className="lg:col-span-1 lg:sticky lg:top-28 space-y-6">
-                        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                            <div className="p-4 sm:p-5 flex items-center gap-3.5 bg-slate-50/80 border-b border-slate-100">
-                                <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden bg-slate-200 shrink-0 border border-slate-200 shadow-sm">
+                        {/* 1. Selected Package / Property */}
+                        <div className="space-y-5 pb-6 border-b border-slate-200/80">
+                            <div className="flex items-center gap-3.5">
+                                <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden bg-slate-200 shrink-0 shadow-xs">
                                     <Image 
                                         src={isPackage ? "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80" : (selectedRoom ? (getImages(selectedRoom.images)[0] || selectedRoom.thumbnail) : (hotel?.thumbnail || "/placeholder-hotel.jpg"))} 
                                         alt={isPackage ? packageTitle : (hotel?.name || "Hotel")} 
@@ -758,57 +759,56 @@ function BookingContent() {
                                     </p>
                                 </div>
                             </div>
-                            <div className="p-4 sm:p-6 space-y-6">
 
-                                <div className="pt-6 border-t border-slate-100 space-y-4">
-                                    <div className="flex flex-col gap-1">
-                                        <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">
-                                            {isPackage ? "Package Inclusions" : "Selected Rooms"}
-                                        </span>
-                                        {isPackage ? (
-                                            <h3 className="text-base font-black text-slate-900 tracking-tight leading-tight">
-                                                {packageTitle} ({packageTravelers} Guests)
-                                            </h3>
-                                        ) : selectedRoomsData.length > 0 ? (
-                                            <div className="space-y-2">
-                                                {selectedRoomsData.map((item, idx) => (
-                                                    <div key={idx} className="flex justify-between items-start text-xs font-bold text-slate-900 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                                                        <div>
-                                                            <div className="font-black text-slate-900">{item.quantity} x {item.room?.name || "Room"}</div>
-                                                            {item.selectedVariant?.name && (
-                                                                <div className="text-[10px] text-slate-500 font-medium">{item.selectedVariant.name}</div>
-                                                            )}
-                                                        </div>
-                                                        <span className="text-xs font-black text-blue-600 shrink-0 ml-2">
-                                                            ₹{(item.pricePerNight * item.quantity * nights).toLocaleString()}
-                                                        </span>
+                            {/* Inclusions & Room Info */}
+                            <div className="space-y-3 pt-1">
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-[10px] font-black text-brand-600 uppercase tracking-widest">
+                                        {isPackage ? "Package Inclusions" : "Selected Rooms"}
+                                    </span>
+                                    {isPackage ? (
+                                        <h3 className="text-sm sm:text-base font-black text-slate-900 tracking-tight leading-tight">
+                                            {packageTitle} ({packageTravelers} Guests)
+                                        </h3>
+                                    ) : selectedRoomsData.length > 0 ? (
+                                        <div className="space-y-2">
+                                            {selectedRoomsData.map((item, idx) => (
+                                                <div key={idx} className="flex justify-between items-start text-xs font-bold text-slate-900 bg-white/60 p-2.5 rounded-xl border border-slate-200/60 shadow-2xs">
+                                                    <div>
+                                                        <div className="font-black text-slate-900">{item.quantity} x {item.room?.name || "Room"}</div>
+                                                        {item.selectedVariant?.name && (
+                                                            <div className="text-[10px] text-slate-500 font-medium">{item.selectedVariant.name}</div>
+                                                        )}
                                                     </div>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <h3 className="text-base font-black text-slate-900 tracking-tight leading-tight">
-                                                {selectedRoom?.name || "Room Selection"}
-                                            </h3>
-                                        )}
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                                            <Users className="w-4 h-4 text-blue-600" /> {isPackage ? packageTravelers : guestsParam} Guest(s)
+                                                    <span className="text-xs font-black text-brand-600 shrink-0 ml-2">
+                                                        ₹{(item.pricePerNight * item.quantity * nights).toLocaleString()}
+                                                    </span>
+                                                </div>
+                                            ))}
                                         </div>
-                                        <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                                            <Calendar className="w-4 h-4 text-blue-600" /> {isPackage ? formatDate(packageCheckIn) : (isHourly ? `${duration} Hrs` : `${nights} Night(s) • ${priceDetails.totalRoomsCount} Room(s)`)}
-                                        </div>
+                                    ) : (
+                                        <h3 className="text-sm sm:text-base font-black text-slate-900 tracking-tight leading-tight">
+                                            {selectedRoom?.name || "Room Selection"}
+                                        </h3>
+                                    )}
+                                </div>
+                                <div className="grid grid-cols-2 gap-3 pt-1">
+                                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-600 uppercase tracking-wider">
+                                        <Users className="w-3.5 h-3.5 text-brand-600" /> {isPackage ? packageTravelers : guestsParam} Guest(s)
                                     </div>
-                                    <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-xl border border-blue-100 text-blue-700">
-                                        <Check className="w-4 h-4 shrink-0" />
-                                        <span className="text-[10px] font-black uppercase tracking-widest">{mealPlanLabel}</span>
+                                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-600 uppercase tracking-wider">
+                                        <Calendar className="w-3.5 h-3.5 text-brand-600" /> {isPackage ? formatDate(packageCheckIn) : (isHourly ? `${duration} Hrs` : `${nights} Night(s) • ${priceDetails.totalRoomsCount} Room(s)`)}
                                     </div>
+                                </div>
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-50/70 rounded-lg border border-brand-100 text-brand-700 w-fit">
+                                    <Check className="w-3.5 h-3.5 shrink-0 text-brand-600" />
+                                    <span className="text-[10px] font-black uppercase tracking-wider">{mealPlanLabel}</span>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Booking Summary Card */}
-                        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6 space-y-4 sm:space-y-6">
+                        {/* 2. Booking Summary - Directly on background */}
+                        <div className="space-y-4 pt-1">
                             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Booking Summary</h3>
                             <div className="space-y-2.5 text-xs font-semibold">
                                 <div className="flex justify-between text-slate-600">
@@ -825,24 +825,24 @@ function BookingContent() {
                                     <span className="flex items-center gap-1.5">
                                         Taxes & GST 
                                         {priceDetails.gstRate > 0 && (
-                                            <span className="text-[9px] px-1.5 py-0.5 bg-blue-50 text-blue-700 font-black rounded border border-blue-100">
+                                            <span className="text-[9px] px-1.5 py-0.5 bg-brand-50 text-brand-700 font-black rounded border border-brand-100">
                                                 {Math.round(priceDetails.gstRate * 100)}% GST
                                             </span>
                                         )}
                                     </span>
                                     <span>₹{priceDetails.taxes.toLocaleString()}</span>
                                 </div>
-                                <div className="flex justify-between items-baseline pt-3 border-t border-slate-100 text-slate-900 font-black">
+                                <div className="flex justify-between items-baseline pt-3 border-t border-slate-200/80 text-slate-900 font-black">
                                     <span>Total Payable</span>
-                                    <span className="text-xl text-blue-600">₹{priceDetails.total.toLocaleString()}</span>
+                                    <span className="text-xl sm:text-2xl text-brand-600 font-black">₹{priceDetails.total.toLocaleString()}</span>
                                 </div>
 
                                 {/* Dynamic Payment Breakdown */}
                                 {!isPackage && (
-                                    <div className="pt-3 border-t border-slate-100 space-y-2">
+                                    <div className="pt-3 border-t border-slate-200/80 space-y-2">
                                         <div className="flex justify-between items-center text-xs font-bold text-slate-800">
                                             <span>Amount to Pay Now</span>
-                                            <span className="text-blue-600 font-black text-sm">₹{getPayNowAmount().toLocaleString()}</span>
+                                            <span className="text-brand-600 font-black text-sm">₹{getPayNowAmount().toLocaleString()}</span>
                                         </div>
                                         <div className="flex justify-between items-center text-xs font-bold text-slate-800">
                                             <span>Balance at Hotel</span>
@@ -854,51 +854,55 @@ function BookingContent() {
                         </div>
                     </div>
 
-                    {/* Right Content Form */}
-                    <div className="lg:col-span-2 space-y-6 sm:space-y-8">
-                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 sm:space-y-8">
-                            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-8">
-                                <h3 className="text-lg sm:text-xl font-black text-slate-900 mb-6 sm:mb-8 tracking-tight uppercase">Enter guest details</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
+                    {/* Right Content Form - Directly on background */}
+                    <div className="lg:col-span-2 space-y-8">
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+                            {/* 1. Enter Guest Details */}
+                            <div className="space-y-5 pb-8 border-b border-slate-200/80">
+                                <div>
+                                    <h3 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight uppercase">Enter Guest Details</h3>
+                                    <p className="text-xs text-slate-500 font-medium mt-0.5">Please provide primary traveler contact information for voucher and confirmation.</p>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                                     <div className="space-y-1.5">
                                         <label className="text-[10px] sm:text-xs font-black text-slate-900 uppercase">First name *</label>
-                                        <input {...register("firstName")} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-600 outline-none transition-all text-xs sm:text-sm font-bold" />
+                                        <input {...register("firstName")} className="w-full px-4 py-3 bg-white/90 border border-slate-200/90 rounded-xl focus:bg-white focus:border-brand-600 focus:ring-1 focus:ring-brand-600 outline-none transition-all text-xs sm:text-sm font-bold shadow-2xs" />
                                         {errors.firstName && <p className="text-[10px] text-red-500 font-bold">{errors.firstName.message}</p>}
                                     </div>
                                     <div className="space-y-1.5">
                                         <label className="text-[10px] sm:text-xs font-black text-slate-900 uppercase">Last name *</label>
-                                        <input {...register("lastName")} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-600 outline-none transition-all text-xs sm:text-sm font-bold" />
+                                        <input {...register("lastName")} className="w-full px-4 py-3 bg-white/90 border border-slate-200/90 rounded-xl focus:bg-white focus:border-brand-600 focus:ring-1 focus:ring-brand-600 outline-none transition-all text-xs sm:text-sm font-bold shadow-2xs" />
                                         {errors.lastName && <p className="text-[10px] text-red-500 font-bold">{errors.lastName.message}</p>}
                                     </div>
                                     <div className="md:col-span-2 space-y-1.5">
                                         <label className="text-[10px] sm:text-xs font-black text-slate-900 uppercase">Email address *</label>
-                                        <input {...register("email")} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-600 outline-none transition-all text-xs sm:text-sm font-bold" />
+                                        <input {...register("email")} className="w-full px-4 py-3 bg-white/90 border border-slate-200/90 rounded-xl focus:bg-white focus:border-brand-600 focus:ring-1 focus:ring-brand-600 outline-none transition-all text-xs sm:text-sm font-bold shadow-2xs" />
                                         {errors.email && <p className="text-[10px] text-red-500 font-bold">{errors.email.message}</p>}
                                     </div>
                                     <div className="space-y-1.5">
                                         <label className="text-[10px] sm:text-xs font-black text-slate-900 uppercase">Country/Region *</label>
-                                        <select {...register("country")} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-600 outline-none transition-all text-xs sm:text-sm font-bold">
+                                        <select {...register("country")} className="w-full px-4 py-3 bg-white/90 border border-slate-200/90 rounded-xl focus:bg-white focus:border-brand-600 focus:ring-1 focus:ring-brand-600 outline-none transition-all text-xs sm:text-sm font-bold shadow-2xs">
                                             {COUNTRY_LIST.map(c => <option key={c} value={c}>{c}</option>)}
                                         </select>
                                     </div>
                                     <div className="space-y-1.5">
                                         <label className="text-[10px] sm:text-xs font-black text-slate-900 uppercase">Phone number *</label>
-                                        <input {...register("phone")} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-600 outline-none transition-all text-xs sm:text-sm font-bold" />
+                                        <input {...register("phone")} className="w-full px-4 py-3 bg-white/90 border border-slate-200/90 rounded-xl focus:bg-white focus:border-brand-600 focus:ring-1 focus:ring-brand-600 outline-none transition-all text-xs sm:text-sm font-bold shadow-2xs" />
                                         {errors.phone && <p className="text-[10px] text-red-500 font-bold">{errors.phone.message}</p>}
                                     </div>
                                     <div className="md:col-span-2 space-y-1.5">
                                         <label className="text-[10px] sm:text-xs font-black text-slate-900 uppercase">Special Requests (optional)</label>
-                                        <textarea {...register("specialRequests")} rows={3} placeholder="Any special requests for your trip..." className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-600 outline-none transition-all text-xs sm:text-sm font-medium resize-none" />
+                                        <textarea {...register("specialRequests")} rows={3} placeholder="Any special requests for your trip..." className="w-full px-4 py-3 bg-white/90 border border-slate-200/90 rounded-xl focus:bg-white focus:border-brand-600 focus:ring-1 focus:ring-brand-600 outline-none transition-all text-xs sm:text-sm font-medium resize-none shadow-2xs" />
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Payment Method Selection */}
-                            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-8 space-y-4">
+                            {/* 2. Payment Method Selection - Directly on background */}
+                            <div className="space-y-4 pb-2">
                                 <div className="flex items-center justify-between">
                                     <h3 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight uppercase">Payment Option</h3>
                                     {isPackage && (
-                                        <span className="px-3 py-1 bg-blue-50 text-blue-700 font-black text-[10px] uppercase tracking-wider rounded-lg border border-blue-100">
+                                        <span className="px-3 py-1 bg-brand-50 text-brand-700 font-black text-[10px] uppercase tracking-wider rounded-lg border border-brand-200">
                                             100% Full Prepaid Tour
                                         </span>
                                     )}
@@ -906,12 +910,12 @@ function BookingContent() {
 
                                 {isPackage ? (
                                     /* TOUR PACKAGES REQUIRE FULL ONLINE PREPAID ONLY */
-                                    <div className="p-4 rounded-2xl border-2 border-blue-600 bg-blue-50/60 shadow-sm text-left">
+                                    <div className="p-4 rounded-xl border border-brand-200 bg-brand-50/60 text-left">
                                         <div className="flex items-center justify-between mb-1">
                                             <span className="text-xs font-black text-slate-900 uppercase">
                                                 Full Online Prepaid Payment
                                             </span>
-                                            <Check className="w-4 h-4 text-blue-600" />
+                                            <Check className="w-4 h-4 text-brand-600" />
                                         </div>
                                         <p className="text-[11px] text-slate-600 font-medium leading-relaxed">
                                             All tour packages require 100% full online prepaid payment via UPI / Cards / Netbanking for instant confirmation & hotel voucher issuance.
@@ -924,22 +928,22 @@ function BookingContent() {
                                         <button
                                             type="button"
                                             onClick={() => setPaymentMode("pay_deposit")}
-                                            className={`p-4 rounded-2xl border-2 text-left transition-all cursor-pointer flex flex-col justify-between ${
+                                            className={`p-4 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
                                                 paymentMode === "pay_deposit"
-                                                    ? "border-blue-600 bg-blue-50/60 shadow-sm"
-                                                    : "border-slate-200 hover:border-slate-300"
+                                                    ? "border-brand-600 bg-brand-50/70 shadow-xs"
+                                                    : "border-slate-200/90 bg-white/80 hover:border-slate-300"
                                             }`}
                                         >
                                             <div>
                                                 <div className="flex items-center justify-between mb-1">
                                                     <span className="text-xs font-black text-slate-900 uppercase">Pay 12% Deposit</span>
-                                                    {paymentMode === "pay_deposit" && <Check className="w-4 h-4 text-blue-600 shrink-0" />}
+                                                    {paymentMode === "pay_deposit" && <Check className="w-4 h-4 text-brand-600 shrink-0" />}
                                                 </div>
                                                 <p className="text-[11px] text-slate-500 font-medium leading-normal mb-3">
                                                     Pay ₹{priceDetails.platformFee.toLocaleString()} now to reserve. Pay remaining balance at hotel.
                                                 </p>
                                             </div>
-                                            <span className="text-[10px] font-black text-blue-700 uppercase bg-blue-100/70 px-2 py-1 rounded-lg w-fit">
+                                            <span className="text-[10px] font-black text-brand-700 uppercase bg-brand-100/70 px-2 py-1 rounded-lg w-fit">
                                                 Deposit ₹{priceDetails.platformFee.toLocaleString()}
                                             </span>
                                         </button>
@@ -948,16 +952,16 @@ function BookingContent() {
                                         <button
                                             type="button"
                                             onClick={() => setPaymentMode("pay_full_online")}
-                                            className={`p-4 rounded-2xl border-2 text-left transition-all cursor-pointer flex flex-col justify-between ${
+                                            className={`p-4 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
                                                 paymentMode === "pay_full_online"
-                                                    ? "border-blue-600 bg-blue-50/60 shadow-sm"
-                                                    : "border-slate-200 hover:border-slate-300"
+                                                    ? "border-brand-600 bg-brand-50/70 shadow-xs"
+                                                    : "border-slate-200/90 bg-white/80 hover:border-slate-300"
                                             }`}
                                         >
                                             <div>
                                                 <div className="flex items-center justify-between mb-1">
                                                     <span className="text-xs font-black text-slate-900 uppercase">Pay Full Online</span>
-                                                    {paymentMode === "pay_full_online" && <Check className="w-4 h-4 text-blue-600 shrink-0" />}
+                                                    {paymentMode === "pay_full_online" && <Check className="w-4 h-4 text-brand-600 shrink-0" />}
                                                 </div>
                                                 <p className="text-[11px] text-slate-500 font-medium leading-normal mb-3">
                                                     Instant online confirmation via UPI / Cards / Netbanking.
@@ -972,16 +976,16 @@ function BookingContent() {
                                         <button
                                             type="button"
                                             onClick={() => setPaymentMode("pay_at_hotel")}
-                                            className={`p-4 rounded-2xl border-2 text-left transition-all cursor-pointer flex flex-col justify-between ${
+                                            className={`p-4 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
                                                 paymentMode === "pay_at_hotel"
-                                                    ? "border-blue-600 bg-blue-50/60 shadow-sm"
-                                                    : "border-slate-200 hover:border-slate-300"
+                                                    ? "border-brand-600 bg-brand-50/70 shadow-xs"
+                                                    : "border-slate-200/90 bg-white/80 hover:border-slate-300"
                                             }`}
                                         >
                                             <div>
                                                 <div className="flex items-center justify-between mb-1">
                                                     <span className="text-xs font-black text-slate-900 uppercase">Pay at Hotel</span>
-                                                    {paymentMode === "pay_at_hotel" && <Check className="w-4 h-4 text-blue-600 shrink-0" />}
+                                                    {paymentMode === "pay_at_hotel" && <Check className="w-4 h-4 text-brand-600 shrink-0" />}
                                                 </div>
                                                 <p className="text-[11px] text-slate-500 font-medium leading-normal mb-3">
                                                     Reserve now for ₹0 online. Pay total amount at hotel upon departure.
@@ -995,11 +999,11 @@ function BookingContent() {
                                 )}
                             </div>
 
-                            {/* Submit Button */}
+                            {/* 3. Submit Button - Logo Dot Brand Blue Color */}
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="w-full py-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-sm uppercase tracking-wider rounded-2xl shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer flex items-center justify-center gap-2"
+                                className="w-full py-4 bg-brand-600 hover:bg-brand-700 active:scale-[0.99] text-white font-black text-sm uppercase tracking-wider rounded-xl shadow-md shadow-brand-600/20 transition-all cursor-pointer flex items-center justify-center gap-2"
                             >
                                 {isSubmitting ? (
                                     <>
