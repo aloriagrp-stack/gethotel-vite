@@ -322,18 +322,18 @@ export default function MyBookingsPage() {
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: i * 0.1 }}
                                     key={booking.id}
-                                    className="bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-xl hover:shadow-2xl transition-all group"
+                                    className="bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-lg"
                                 >
                                     {isTour ? (
                                         /* Minimal, Compact Tour Package Card */
                                         <div className="flex flex-col md:flex-row">
-                                            {/* Image with subtle badge - compact on mobile */}
+                                            {/* Image - compact on mobile, no hover zoom, no curated tour badge */}
                                             <div className="relative w-full md:w-72 lg:w-80 h-44 sm:h-52 md:h-auto shrink-0 overflow-hidden bg-slate-100">
                                                 <Image
                                                     src={safeParse(booking.room?.images)?.[0] || booking.hotel?.thumbnail || "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80"}
                                                     alt={booking.hotel?.name || "Tour"}
                                                     fill
-                                                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                                    className="object-cover"
                                                 />
                                                 <div className="absolute top-3 left-3 sm:top-4 sm:left-4">
                                                     {(() => {
@@ -362,20 +362,15 @@ export default function MyBookingsPage() {
                                                         );
                                                     })()}
                                                 </div>
-                                                <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4">
-                                                    <span className="px-2.5 py-1 bg-slate-900/85 backdrop-blur-md text-amber-300 text-[9px] font-bold uppercase tracking-wider rounded-lg flex items-center gap-1">
-                                                        <Sparkles className="w-2.5 h-2.5 text-amber-400" /> Curated Tour
-                                                    </span>
-                                                </div>
                                             </div>
 
                                             {/* Details & Minimal Actions */}
                                             <div className="flex-1 p-4 sm:p-5 lg:p-6 flex flex-col justify-between">
                                                 <div>
-                                                    {/* Header: Title, Route & Price (NO BOOKING ID) */}
+                                                    {/* Header: Title, Route & Price (NO BOOKING ID, NO HOVER COLOR) */}
                                                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
                                                         <div className="flex-1 min-w-0">
-                                                            <h3 className="text-lg sm:text-xl lg:text-2xl font-black text-slate-900 leading-tight uppercase group-hover:text-brand-600 transition-colors">
+                                                            <h3 className="text-lg sm:text-xl lg:text-2xl font-black text-slate-900 leading-tight uppercase">
                                                                 {booking.hotel?.name || "Tour Package"}
                                                             </h3>
                                                             <p className="text-slate-500 font-bold text-xs sm:text-sm flex items-center gap-1.5 mt-1">
@@ -392,7 +387,7 @@ export default function MyBookingsPage() {
                                                             </p>
                                                         </div>
 
-                                                        {/* Minimal Tour Price (No 12% deposit / balance breakdown) */}
+                                                        {/* Minimal Tour Price */}
                                                         <div className="bg-slate-50 sm:bg-slate-50/80 p-2.5 sm:p-3 rounded-xl border border-slate-100 flex sm:flex-col justify-between sm:justify-start items-center sm:items-end shrink-0">
                                                             <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Package</span>
                                                             <span className="text-base sm:text-lg font-black text-slate-900">
@@ -404,7 +399,7 @@ export default function MyBookingsPage() {
                                                         </div>
                                                     </div>
 
-                                                    {/* Tour Key Details (Visible & Prominent) */}
+                                                    {/* Tour Key Details */}
                                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 py-3 border-y border-slate-100 my-2 sm:my-3">
                                                         <div className="flex items-center gap-2.5 bg-slate-50/70 p-2 sm:p-2.5 rounded-xl border border-slate-100">
                                                             <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-brand-50 flex items-center justify-center shrink-0">
@@ -440,19 +435,6 @@ export default function MyBookingsPage() {
                                                                 <p className="text-[11px] sm:text-xs font-black text-slate-800 truncate">AC Cab & Transfers</p>
                                                             </div>
                                                         </div>
-                                                    </div>
-
-                                                    {/* Tour Inclusions Badges */}
-                                                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-2">
-                                                        <span className="text-[10px] font-bold text-slate-600 bg-slate-100/80 px-2.5 py-1 rounded-lg flex items-center gap-1">
-                                                            <ShieldCheck className="w-3 h-3 text-brand-600" /> Sightseeing Included
-                                                        </span>
-                                                        <span className="text-[10px] font-bold text-slate-600 bg-slate-100/80 px-2.5 py-1 rounded-lg flex items-center gap-1">
-                                                            <Check className="w-3 h-3 text-emerald-600" /> Fuel, Tolls & Parking
-                                                        </span>
-                                                        <span className="text-[10px] font-bold text-slate-600 bg-slate-100/80 px-2.5 py-1 rounded-lg flex items-center gap-1">
-                                                            <Sparkles className="w-3 h-3 text-amber-500" /> Doorstep Pickup
-                                                        </span>
                                                     </div>
                                                 </div>
 
