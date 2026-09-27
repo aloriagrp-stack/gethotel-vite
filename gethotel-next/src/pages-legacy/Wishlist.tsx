@@ -1,12 +1,11 @@
 'use client';
 
-
 import { useWishlist } from "@/context/WishlistContext";
 import { hotels } from "@/data/hotels";
 import HotelCard from "@/components/hotels/HotelCard";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, ArrowRight, MapPin, Sparkles } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Heart, ArrowRight } from "lucide-react";
+import { Link } from "@/lib/navigation";
 import SEOHead from "@/components/common/SEOHead";
 
 export default function WishlistPage() {
@@ -16,41 +15,46 @@ export default function WishlistPage() {
     const wishlistedHotels = hotels.filter(hotel => wishlist.includes(hotel.id));
 
     return (
-        <div className="min-h-screen bg-slate-50 pt-6 pb-20 px-4 md:px-8">
+        <div className="min-h-screen bg-slate-50/60 py-5 sm:py-8 md:py-12 px-3.5 sm:px-6 md:px-8">
             <SEOHead title="My Wishlist | GetHotelStays" description="Your saved favorite hotels." noIndex />
-            {/* Background elements */}
-            <div className="fixed inset-0 pointer-events-none overflow-hidden opacity-30">
-                <div className="absolute top-[10%] left-[5%] w-[40%] h-[40%] bg-gradient-to-br from-brand-200/30 to-transparent blur-[120px] rounded-full" />
-                <div className="absolute bottom-[10%] right-[5%] w-[30%] h-[30%] bg-gradient-to-br from-blue-200/20 to-transparent blur-[100px] rounded-full" />
-            </div>
 
-            <div className="max-w-7xl mx-auto relative z-10">
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+            <div className="max-w-7xl mx-auto">
+                {/* Header */}
+                <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4 mb-6 sm:mb-8 pb-4 sm:pb-6 border-b border-slate-200/70">
                     <div>
-                        <h1 className="text-4xl md:text-5xl font-display font-black text-slate-900 tracking-tight">
-                            Your <span className="text-brand-600">Wishlist</span>
+                        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display font-black text-slate-900 tracking-tight">
+                            Saved Stays
                         </h1>
-                        <p className="text-slate-500 font-medium mt-2">
-                            {wishlistedHotels.length} luxurious getaways saved for your next experience.
+                        <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
+                            {wishlistedHotels.length} {wishlistedHotels.length === 1 ? 'property' : 'properties'} saved
                         </p>
                     </div>
+                    {wishlistedHotels.length > 0 && (
+                        <Link 
+                            to="/hotels"
+                            className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-600 hover:text-brand-700 transition-colors w-fit"
+                        >
+                            <span>Explore More Hotels</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
+                        </Link>
+                    )}
                 </div>
 
                 <AnimatePresence mode="wait">
                     {wishlistedHotels.length > 0 ? (
                         <motion.div 
                             key="list"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
                         >
                             {wishlistedHotels.map((hotel, index) => (
                                 <motion.div
                                     key={hotel.id}
-                                    initial={{ opacity: 0, y: 20 }}
+                                    initial={{ opacity: 0, y: 15 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: index * 0.1 }}
+                                    transition={{ delay: Math.min(index * 0.05, 0.3) }}
                                 >
                                     <HotelCard hotel={hotel} />
                                 </motion.div>
@@ -59,59 +63,50 @@ export default function WishlistPage() {
                     ) : (
                         <motion.div 
                             key="empty"
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="flex flex-col items-center justify-center py-24 text-center bg-white rounded-[48px] border border-slate-100 shadow-sm px-6"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="flex flex-col items-center justify-center py-16 sm:py-24 text-center bg-white rounded-2xl sm:rounded-3xl border border-slate-100 shadow-sm px-4 sm:px-6"
                         >
-                            <div className="w-24 h-24 rounded-full bg-slate-50 flex items-center justify-center mb-8 relative">
-                                <Heart className="w-10 h-10 text-slate-200" strokeWidth={1.5} />
-                                <motion.div 
-                                    animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.4, 0.2] }}
-                                    transition={{ duration: 3, repeat: Infinity }}
-                                    className="absolute inset-0 bg-brand-500/10 rounded-full blur-xl"
-                                />
+                            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-slate-50 flex items-center justify-center mb-4 text-slate-300 border border-slate-100">
+                                <Heart className="w-7 h-7 sm:w-8 sm:h-8" strokeWidth={1.5} />
                             </div>
-                            <h2 className="text-2xl font-black text-slate-900 mb-3 tracking-tight">
-                                Your Wishlist is Empty
+                            <h2 className="text-lg sm:text-xl font-black text-slate-900 mb-1.5 tracking-tight">
+                                No Saved Stays Yet
                             </h2>
-                            <p className="text-slate-400 font-bold max-w-sm mb-10 leading-relaxed">
-                                You haven't saved any hotels yet. Explore our collection and tap the heart icon to save your favorites.
+                            <p className="text-xs sm:text-sm text-slate-400 font-medium max-w-sm mb-6 leading-relaxed">
+                                Tap the heart icon on any hotel to save your favorite stays here.
                             </p>
                             <Link 
                                 to="/hotels"
-                                className="group flex items-center gap-3 px-8 py-4 bg-brand-600 text-white font-black rounded-2xl shadow-xl shadow-brand-600/20 hover:bg-brand-700 transition-all hover:scale-105 active:scale-95"
+                                className="inline-flex items-center gap-2 px-6 py-3 bg-slate-950 hover:bg-black text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95"
                             >
-                                Discover Elite Hotels
-                                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                <span>Explore Hotels</span>
+                                <ArrowRight className="w-3.5 h-3.5" />
                             </Link>
                         </motion.div>
                     )}
                 </AnimatePresence>
 
-                {/* Recommendations Shortcut */}
+                {/* Minimal Bottom Banner */}
                 {wishlistedHotels.length > 0 && (
-                    <div className="mt-24 p-10 bg-slate-950 rounded-[48px] relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-brand-600/20 to-transparent pointer-events-none" />
-                        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
-                            <div className="text-center md:text-left">
-                                <h3 className="text-3xl font-display font-black text-white mb-2 italic">
-                                    Want to see <span className="text-brand-400">more?</span>
-                                </h3>
-                                <p className="text-slate-400 font-bold">Based on your favorites, we have curated exclusive deals for you.</p>
-                            </div>
-                            <Link 
-                                to="/hotels" 
-                                className="px-8 py-4 bg-white text-slate-900 font-black rounded-2xl hover:scale-105 transition-all shadow-xl"
-                            >
-                                Explore Recommendations
-                            </Link>
+                    <div className="mt-10 sm:mt-14 p-5 sm:p-7 bg-slate-900 text-white rounded-2xl sm:rounded-3xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
+                        <div>
+                            <h3 className="text-base sm:text-lg font-black tracking-tight">
+                                Looking for more options?
+                            </h3>
+                            <p className="text-xs sm:text-sm text-slate-400 font-medium mt-0.5">
+                                Browse our complete collection of top-rated hotels and stays.
+                            </p>
                         </div>
+                        <Link 
+                            to="/hotels" 
+                            className="w-full sm:w-auto px-5 py-2.5 bg-white hover:bg-slate-100 text-slate-900 font-bold text-xs rounded-xl text-center transition-all shrink-0"
+                        >
+                            Browse All Hotels
+                        </Link>
                     </div>
                 )}
             </div>
         </div>
     );
 }
-
-
-
