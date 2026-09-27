@@ -16,6 +16,7 @@ import PriceBox from "@/components/hotels/PriceBox";
 import { cn, ratingLabel, amenityIcon, amenityLabel, formatDate, formatPrice, safeParse, formatDateLocal, getHotelUrl } from "@/lib/utils";
 import { hotelApi, messageApi, couponApi } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
+import { useWishlist } from "@/context/WishlistContext";
 import SmartSearchBar from "@/components/search/SmartSearchBar";
 import Loader from "@/components/common/Loader";
 import { useStayMode } from "@/context/StayModeContext";
@@ -129,6 +130,7 @@ const FAQItem = ({ faq }: { faq: any }) => {
 export default function HotelDetailContent({ id, initialHotel }: { id: string, initialHotel?: any }) {
     const router = useRouter();
     const { user } = useAuth();
+    const { toggle, isWishlisted } = useWishlist();
     const [searchParams, setSearchParams] = useSearchParams();
     const [hotel, setHotel] = useState<any>(initialHotel || null);
 
@@ -729,7 +731,18 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                         </div>
                     </button>
 
-                    <div className="w-10 h-10 flex items-center justify-center" /> {/* Spacer */}
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (hotel) toggle(hotel.id || id, hotel);
+                        }}
+                        aria-label={hotel && isWishlisted(hotel.id || id) ? "Remove from wishlist" : "Save to wishlist"}
+                        className="w-10 h-10 flex items-center justify-center text-slate-700 hover:text-red-500 rounded-full hover:bg-slate-100 active:scale-90 transition-all shrink-0 z-20 cursor-pointer"
+                    >
+                        <Heart className={cn("w-5 h-5 transition-colors", hotel && isWishlisted(hotel.id || id) ? "fill-red-500 text-red-500" : "text-slate-600")} />
+                    </button>
                 </div>
             </div>
 
@@ -777,8 +790,17 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4">
-                        {/* Review box removed */}
+                    <div className="flex items-center gap-3">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                if (hotel) toggle(hotel.id || id, hotel);
+                            }}
+                            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-xs font-bold text-slate-700 shadow-sm transition-all active:scale-95 cursor-pointer"
+                        >
+                            <Heart className={cn("w-4 h-4 transition-colors", hotel && isWishlisted(hotel.id || id) ? "fill-red-500 text-red-500" : "text-slate-400")} />
+                            <span>{hotel && isWishlisted(hotel.id || id) ? "Saved to Wishlist" : "Save to Wishlist"}</span>
+                        </button>
                     </div>
                 </div>
 

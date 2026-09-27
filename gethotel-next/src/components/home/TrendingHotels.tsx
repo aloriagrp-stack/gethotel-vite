@@ -116,7 +116,7 @@ function TrendingHotelCard({ hotel }: { hotel: Hotel }) {
 
             {/* Wishlist Button */}
             <button
-                onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggle(hotel.id.toString()); }}
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggle(hotel.id, hotel); }}
                 className="absolute top-4 right-4 w-9 h-9 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg transition-all hover:bg-white/20 active:scale-90 z-20 border border-white/20"
             >
                 <Heart className={cn("w-4 h-4 transition-all duration-300", wishlisted ? "fill-red-500 text-red-500 scale-110" : "text-white")} />

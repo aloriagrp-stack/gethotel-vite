@@ -1,18 +1,66 @@
 'use client';
 
+import { useState, useEffect, useMemo } from "react";
 import { useWishlist } from "@/context/WishlistContext";
-import { hotels } from "@/data/hotels";
 import HotelCard from "@/components/hotels/HotelCard";
+import { HotelCardSkeleton } from "@/components/hotels/HotelCardSkeleton";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, ArrowRight } from "lucide-react";
 import { Link } from "@/lib/navigation";
 import SEOHead from "@/components/common/SEOHead";
+import { hotelApi } from "@/lib/api";
 
 export default function WishlistPage() {
-    const { wishlist } = useWishlist();
-    
-    // Filter hotels that are in the wishlist
-    const wishlistedHotels = hotels.filter(hotel => wishlist.includes(hotel.id));
+    const { wishlist, cachedHotels } = useWishlist();
+    const [apiHotels, setApiHotels] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        let isMounted = true;
+        const fetchHotels = async () => {
+            try {
+                setLoading(true);
+                const res = await hotelApi.getHotels();
+                if (isMounted && res && res.data) {
+                    setApiHotels(Array.isArray(res.data) ? res.data : []);
+                }
+            } catch (err) {
+                console.error("Failed to load hotels for wishlist", err);
+            } finally {
+                if (isMounted) setLoading(false);
+            }
+        };
+        fetchHotels();
+        return () => { isMounted = false; };
+    }, []);
+
+    // Merge cachedHotels with apiHotels to find all wishlisted hotels
+    const wishlistedHotels = useMemo(() => {
+        const wishlistIds = new Set(wishlist.map(id => String(id)));
+        if (wishlistIds.size === 0) return [];
+
+        const hotelMap = new Map<string, any>();
+        
+        // 1. Add from cachedHotels (instant)
+        if (cachedHotels) {
+            Object.entries(cachedHotels).forEach(([id, h]) => {
+                if (wishlistIds.has(String(id)) && h) {
+                    hotelMap.set(String(id), h);
+                }
+            });
+        }
+
+        // 2. Overlay / populate from apiHotels (fresh full data)
+        apiHotels.forEach(h => {
+            if (h && wishlistIds.has(String(h.id))) {
+                hotelMap.set(String(h.id), h);
+            }
+        });
+
+        return Array.from(hotelMap.values());
+    }, [apiHotels, cachedHotels, wishlist]);
+
+    const isInitialLoading = loading && wishlistedHotels.length === 0 && wishlist.length > 0;
 
     return (
         <div className="min-h-screen bg-slate-50/60 py-5 sm:py-8 md:py-12 px-3.5 sm:px-6 md:px-8">
@@ -41,7 +89,13 @@ export default function WishlistPage() {
                 </div>
 
                 <AnimatePresence mode="wait">
-                    {wishlistedHotels.length > 0 ? (
+                    {isInitialLoading ? (
+                        <div key="loading" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                            {[1, 2, 3].map((n) => (
+                                <HotelCardSkeleton key={n} />
+                            ))}
+                        </div>
+                    ) : wishlistedHotels.length > 0 ? (
                         <motion.div 
                             key="list"
                             initial={{ opacity: 0 }}

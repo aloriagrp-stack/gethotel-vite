@@ -231,7 +231,7 @@ export default function HotelCard({ hotel, className }: HotelCardProps) {
                 </div>
 
                 <button
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (!user) { router("/login"); return; } toggle(hotel.id); }}
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggle(hotel.id, hotel); }}
                     className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center shadow-lg z-10 transition-transform active:scale-90"
                 >
                     <Heart className={cn("w-4 h-4 transition-colors", wishlisted ? "fill-red-500 text-red-500" : "text-slate-400")} strokeWidth={2.5} />
