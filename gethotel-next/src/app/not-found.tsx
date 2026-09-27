@@ -64,15 +64,15 @@ export default function NotFound() {
       setComponent(() => ListProperty);
     } else if (cleanPath === '/login') {
       setComponent(() => Login);
-    } else if (cleanPath === '/contact-us') {
+    } else if (cleanPath === '/contact-us' || cleanPath === '/contact') {
       setComponent(() => ContactUs);
-    } else if (cleanPath === '/privacy-policy') {
+    } else if (cleanPath === '/privacy-policy' || cleanPath === '/privacy') {
       setComponent(() => PrivacyPolicy);
-    } else if (cleanPath === '/terms-of-service') {
+    } else if (cleanPath === '/terms-of-service' || cleanPath === '/terms' || cleanPath === '/terms-&-conditions') {
       setComponent(() => TermsOfService);
     } else if (cleanPath === '/cancellation-policy') {
       setComponent(() => CancellationPolicy);
-    } else if (cleanPath === '/cookie-policy') {
+    } else if (cleanPath === '/cookie-policy' || cleanPath === '/cookies' || cleanPath === '/cookie') {
       setComponent(() => CookiePolicy);
     } else if (cleanPath === '/pricing-policy') {
       setComponent(() => PricingPolicy);

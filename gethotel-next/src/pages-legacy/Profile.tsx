@@ -16,7 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 
 import { useState, useEffect } from "react";
-import { useNavigate as useRouter } from "react-router-dom";
+import { Link, useNavigate as useRouter } from "@/lib/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function ProfilePage() {
@@ -374,18 +374,18 @@ export default function ProfilePage() {
             id: "travel",
             title: t('activity'),
             items: [
-                { label: t('bookings'), id: 'bookings', desc: "Manage your active or past stay bookings", icon: History, iconBg: "bg-sky-500", iconColor: "text-white" },
-                { label: t('wishlist'), id: 'wishlist', desc: "View your saved luxury hotel listings", icon: Heart, iconBg: "bg-pink-500", iconColor: "text-white" }
+                { label: t('bookings'), id: 'bookings', desc: "Manage your active or past stay bookings", icon: History, iconBg: "bg-sky-500", iconColor: "text-white", href: "/my-bookings" },
+                { label: t('wishlist'), id: 'wishlist', desc: "View your saved luxury hotel listings", icon: Heart, iconBg: "bg-pink-500", iconColor: "text-white", href: "/wishlist" }
             ]
         },
         {
             id: "legal",
             title: "Support & Legal",
             items: [
-                { label: t('support'), id: 'support', desc: "Get help regarding bookings or payments", icon: HelpCircle, iconBg: "bg-violet-500", iconColor: "text-white" },
-                { label: t('terms'), id: 'terms', desc: "Read platform rules & guidelines", icon: FileText, iconBg: "bg-slate-500", iconColor: "text-white" },
-                { label: t('privacy'), id: 'privacy', desc: "Understand how we protect your personal data", icon: ShieldCheck, iconBg: "bg-green-600", iconColor: "text-white" },
-                { label: t('cookie'), id: 'cookie', desc: "Review browser tracking configurations", icon: Cookie, iconBg: "bg-orange-500", iconColor: "text-white" }
+                { label: t('support'), id: 'support', desc: "Get help regarding bookings or payments", icon: HelpCircle, iconBg: "bg-violet-500", iconColor: "text-white", href: "/contact-us" },
+                { label: t('terms'), id: 'terms', desc: "Read platform rules & guidelines", icon: FileText, iconBg: "bg-slate-500", iconColor: "text-white", href: "/terms-of-service" },
+                { label: t('privacy'), id: 'privacy', desc: "Understand how we protect your personal data", icon: ShieldCheck, iconBg: "bg-green-600", iconColor: "text-white", href: "/privacy-policy" },
+                { label: t('cookie'), id: 'cookie', desc: "Review browser tracking configurations", icon: Cookie, iconBg: "bg-orange-500", iconColor: "text-white", href: "/cookie-policy" }
             ]
         }
     ];
@@ -630,10 +630,10 @@ export default function ProfilePage() {
                                                         if (item.id === "notify") setActiveTab("notifications");
                                                         if (item.id === "bookings") router("/my-bookings");
                                                         if (item.id === "wishlist") router("/wishlist");
-                                                        if (item.id === "terms") router("/terms-&-conditions");
-                                                        if (item.id === "privacy") router("/privacy");
-                                                        if (item.id === "cookie") router("/cookies");
-                                                        if (item.id === "support") router("/contact");
+                                                        if (item.id === "terms") router("/terms-of-service");
+                                                        if (item.id === "privacy") router("/privacy-policy");
+                                                        if (item.id === "cookie") router("/cookie-policy");
+                                                        if (item.id === "support") router("/contact-us");
                                                     }}
                                                     className="w-full flex items-center justify-between px-6 py-4 hover:bg-slate-50/50 transition-colors text-left group cursor-pointer"
                                                 >
