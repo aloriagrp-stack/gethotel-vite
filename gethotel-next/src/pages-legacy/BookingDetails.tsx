@@ -301,7 +301,9 @@ export default function BookingDetailsPage({ bookingId }: BookingDetailsPageProp
     const paymentStatus = isTour ? 'paid' : (booking?.paymentStatus || (amountPaidVal === 0 ? 'pending' : (amountPaidVal >= totalPriceVal ? 'paid' : 'partial')));
     const displayBookingId = isTour ? (booking?.id ? String(booking.id) : (id || "PKG-GHS-128459")) : (booking ? `#GH-${Number(booking.id) + 10000}` : `#GH-10011`);
     const roomName = booking?.room?.name || (isTour ? "Tour Package (2 Travelers) • Private AC Cab & Heritage Sightseeing" : "Double Deluxe Room");
-    const status = booking?.status || "confirmed";
+    const status = isTour 
+        ? ((booking?.status || "").toLowerCase() === 'cancelled' ? 'cancelled' : 'confirmed') 
+        : (booking?.status || "confirmed");
 
     if (loading) {
         return (
@@ -310,43 +312,46 @@ export default function BookingDetailsPage({ bookingId }: BookingDetailsPageProp
     }
 
     return (
-        <div className="min-h-screen bg-white py-12 px-4 md:px-8">
+        <div className="min-h-screen bg-white py-4 sm:py-8 md:py-12 px-3.5 sm:px-6 md:px-8">
             <div className="max-w-4xl mx-auto animate-fade-in">
-                <div className="flex justify-between items-center mb-8">
+                {/* Top Nav Row */}
+                <div className="flex items-center justify-between gap-2.5 mb-5 sm:mb-8">
                     <button 
                         onClick={() => router("/my-bookings")}
-                        className="flex items-center gap-2 text-slate-500 hover:text-brand-600 font-bold transition-colors group"
+                        className="flex items-center gap-1.5 text-slate-600 hover:text-brand-600 font-bold text-xs sm:text-sm transition-colors group shrink-0"
                     >
-                        <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" /> Back to Journeys
+                        <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 group-hover:-translate-x-1 transition-transform" /> 
+                        <span>Back to Journeys</span>
                     </button>
                     <button
                         onClick={handleDownloadVoucherPDF}
                         disabled={downloadingVoucher}
-                        className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black uppercase tracking-wider rounded-xl transition-all shadow-md flex items-center gap-2 disabled:bg-slate-300"
+                        className="px-3 sm:px-5 py-2 sm:py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-[9px] sm:text-[10px] font-black uppercase tracking-wider rounded-xl transition-all shadow-md flex items-center gap-1.5 sm:gap-2 disabled:bg-slate-300 shrink-0"
                     >
                         {downloadingVoucher ? (
                             <>
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                                Downloading PDF...
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                <span>Downloading...</span>
                             </>
                         ) : (
                             <>
-                                <Download className="w-4 h-4" /> Download PDF Voucher
+                                <Download className="w-3.5 h-3.5" /> 
+                                <span>Download Voucher</span>
                             </>
                         )}
                     </button>
                 </div>
 
                 {/* Header Card (Tour vs Stay) */}
-                <div className="flex flex-col sm:flex-row gap-6 items-start pb-8 border-b border-slate-100 mb-8">
-                    {/* Small Image Box */}
-                    <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl overflow-hidden shrink-0 relative bg-slate-100 shadow-sm border border-slate-100">
+                <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start pb-5 sm:pb-8 border-b border-slate-100 mb-5 sm:mb-8">
+                    {/* Image: landscape banner on mobile, square thumbnail on desktop */}
+                    <div className="w-full sm:w-32 sm:h-32 h-44 rounded-2xl overflow-hidden shrink-0 relative bg-slate-100 shadow-sm border border-slate-100">
                         <img src={hotelThumbnail} alt={hotelName} className="w-full h-full object-cover" loading="lazy" />
                     </div>
 
                     {/* Info Column */}
-                    <div className="flex-1 space-y-2">
-                        <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex-1 space-y-2 w-full">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                             <span className={`px-2.5 py-0.5 text-[9px] font-black uppercase tracking-widest rounded border ${
                                 isTour ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-brand-50 text-brand-600 border-brand-100'
                             }`}>
@@ -355,20 +360,20 @@ export default function BookingDetailsPage({ bookingId }: BookingDetailsPageProp
                             <span className="px-2.5 py-0.5 text-[9px] font-black uppercase tracking-widest rounded border bg-emerald-50 text-emerald-700 border-emerald-100">
                                 {isTour ? 'Fully Paid (All-Inclusive)' : (paymentStatus === 'paid' ? 'Fully Paid' : paymentStatus === 'partial' ? '12% Deposit Paid' : 'Pay At Hotel')}
                             </span>
-                            <span className="text-slate-400 text-[10px] font-bold font-mono">ID: {displayBookingId}</span>
+                            <span className="text-slate-400 text-[9px] sm:text-[10px] font-bold font-mono">ID: {displayBookingId}</span>
                         </div>
                         
-                        <h1 className="text-2xl sm:text-3xl font-display font-black text-slate-900 tracking-tight uppercase leading-tight italic">
+                        <h1 className="text-xl sm:text-2xl md:text-3xl font-display font-black text-slate-900 tracking-tight uppercase leading-tight italic pt-0.5">
                             {hotelName}
                         </h1>
                         
-                        <p className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                        <p className="text-[11px] sm:text-xs font-bold text-slate-800 uppercase tracking-wider">
                             {roomName}
                         </p>
 
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-1">
-                            <p className="text-xs text-slate-500 font-bold flex items-start gap-1 max-w-xl">
-                                <MapPin className="w-4 h-4 text-brand-500 shrink-0 mt-0.5" />
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-1">
+                            <p className="text-xs text-slate-500 font-bold flex items-center gap-1.5 max-w-xl">
+                                <MapPin className="w-3.5 h-3.5 text-brand-500 shrink-0" />
                                 <span>{hotelAddress}</span>
                             </p>
                             <button 
@@ -376,7 +381,7 @@ export default function BookingDetailsPage({ bookingId }: BookingDetailsPageProp
                                     const mapQuery = isTour ? "Taj Mahal, Agra, Uttar Pradesh" : `${hotelName}, ${hotelAddress}`;
                                     window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`, '_blank');
                                 }}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 rounded-lg text-[9px] font-black uppercase tracking-wider transition-colors shrink-0"
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 rounded-lg text-[9px] font-black uppercase tracking-wider transition-colors shrink-0"
                             >
                                 <MapPin className="w-3 h-3 text-slate-500" />
                                 {isTour ? "Show Tour Route" : "Show on Map"}
@@ -386,84 +391,96 @@ export default function BookingDetailsPage({ bookingId }: BookingDetailsPageProp
                 </div>
 
                 {/* Configuration Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8 mb-6 sm:mb-8">
                     {/* Schedule / Logistics block */}
                     {isTour ? (
-                        <div className="space-y-6">
-                            <div className="grid grid-cols-2 gap-6 p-6 bg-slate-50/50 border border-slate-100 rounded-2xl">
-                                <div className="space-y-1">
-                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Tour Date</p>
-                                    <p className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                                        <Calendar className="w-4 h-4 text-brand-600" /> {checkInDate}
+                        <div className="space-y-4 sm:space-y-6">
+                            <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:gap-6 p-3.5 sm:p-5 md:p-6 bg-slate-50/50 border border-slate-100 rounded-2xl">
+                                <div className="space-y-1 min-w-0">
+                                    <p className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest truncate">Tour Date</p>
+                                    <p className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-1.5 truncate">
+                                        <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-600 shrink-0" />
+                                        <span className="truncate">{checkInDate}</span>
                                     </p>
                                 </div>
-                                <div className="space-y-1">
-                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Tour Duration</p>
-                                    <p className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                                        <Clock className="w-4 h-4 text-brand-600" /> Full Day Heritage Tour
+                                <div className="space-y-1 min-w-0">
+                                    <p className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest truncate">Duration</p>
+                                    <p className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-1.5 truncate">
+                                        <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-600 shrink-0" />
+                                        <span className="truncate">Full Day Tour</span>
                                     </p>
                                 </div>
                             </div>
 
                             {/* Tour Inclusions and Travelers */}
-                            <div className="p-6 bg-slate-50/50 border border-slate-100 rounded-2xl space-y-4">
-                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tour & Transport Details</h4>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div className="space-y-1">
-                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Travelers</p>
-                                        <p className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-                                            <Users className="w-4 h-4 text-emerald-600" /> {booking?.totalGuests || 2} Traveler(s)
+                            <div className="p-3.5 sm:p-5 md:p-6 bg-slate-50/50 border border-slate-100 rounded-2xl space-y-3 sm:space-y-4">
+                                <h4 className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Tour & Transport Details</h4>
+                                <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
+                                    <div className="space-y-1 min-w-0">
+                                        <p className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest truncate">Travelers</p>
+                                        <p className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-1.5 truncate">
+                                            <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600 shrink-0" />
+                                            <span className="truncate">{booking?.totalGuests || 2} Traveler(s)</span>
                                         </p>
                                     </div>
-                                    <div className="space-y-1">
-                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Transport</p>
-                                        <p className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-                                            <Car className="w-4 h-4 text-amber-600" /> Private AC Cab & Driver
+                                    <div className="space-y-1 min-w-0">
+                                        <p className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest truncate">Transport</p>
+                                        <p className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-1.5 truncate">
+                                            <Car className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-600 shrink-0" />
+                                            <span className="truncate">Private AC Cab</span>
                                         </p>
                                     </div>
-                                    <div className="space-y-1 sm:col-span-2 border-t border-slate-200/60 pt-3 mt-1">
-                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Key Inclusions</p>
-                                        <p className="text-xs font-bold text-slate-700 leading-relaxed flex items-center gap-1.5">
-                                            <Sparkles className="w-3.5 h-3.5 text-brand-600 shrink-0" />
-                                            Taj Mahal & Agra Fort Sightseeing • Toll Taxes & Fuel Covered • Chauffeur Allowance Included
-                                        </p>
+                                    <div className="col-span-2 border-t border-slate-200/60 pt-2.5 mt-1">
+                                        <p className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Key Inclusions</p>
+                                        <div className="space-y-1.5 text-[11px] sm:text-xs font-bold text-slate-700">
+                                            <div className="flex items-center gap-1.5">
+                                                <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                                <span>Taj Mahal & Agra Fort Guided Sightseeing</span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5">
+                                                <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                                <span>Toll Taxes, Parking, Fuel & Chauffeur Covered</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     ) : (
-                        <div className="space-y-6">
-                            <div className="grid grid-cols-2 gap-6 p-6 bg-slate-50/50 border border-slate-100 rounded-2xl">
-                                <div className="space-y-1">
-                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Entry Date</p>
-                                    <p className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                                        <Calendar className="w-4 h-4 text-brand-600" /> {checkInDate}
+                        <div className="space-y-4 sm:space-y-6">
+                            <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:gap-6 p-3.5 sm:p-5 md:p-6 bg-slate-50/50 border border-slate-100 rounded-2xl">
+                                <div className="space-y-1 min-w-0">
+                                    <p className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest truncate">Entry Date</p>
+                                    <p className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-1.5 truncate">
+                                        <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-600 shrink-0" /> 
+                                        <span className="truncate">{checkInDate}</span>
                                     </p>
                                 </div>
-                                <div className="space-y-1">
-                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Exit Date</p>
-                                    <p className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                                        <Calendar className="w-4 h-4 text-brand-600" /> {checkOutDate}
+                                <div className="space-y-1 min-w-0">
+                                    <p className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest truncate">Exit Date</p>
+                                    <p className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-1.5 truncate">
+                                        <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-600 shrink-0" /> 
+                                        <span className="truncate">{checkOutDate}</span>
                                     </p>
                                 </div>
                             </div>
 
                             {/* Room and Guests Info */}
-                            <div className="p-6 bg-slate-50/50 border border-slate-100 rounded-2xl space-y-4">
-                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Stay Info</h4>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="p-3.5 sm:p-5 md:p-6 bg-slate-50/50 border border-slate-100 rounded-2xl space-y-3 sm:space-y-4">
+                                <h4 className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Stay Info</h4>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                     <div className="space-y-1">
-                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Room Type</p>
-                                        <p className="text-sm font-bold text-slate-900">{roomName}</p>
+                                        <p className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">Room Type</p>
+                                        <p className="text-xs sm:text-sm font-bold text-slate-900">{roomName}</p>
                                     </div>
                                     <div className="space-y-1">
-                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Guests</p>
-                                        <p className="text-sm font-bold text-slate-900">{booking?.totalGuests || 2} Guest(s)</p>
+                                        <p className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">Guests</p>
+                                        <p className="text-xs sm:text-sm font-bold text-slate-900">{booking?.totalGuests || 2} Guest(s)</p>
                                     </div>
-                                    <div className="space-y-1 sm:col-span-2 border-t border-slate-200/60 pt-3 mt-1">
-                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Estimated Arrival Time</p>
-                                        <p className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                                            <Clock className="w-4 h-4 text-brand-600" /> {booking?.arrivalTime || "Not specified"}
+                                    <div className="space-y-1 sm:col-span-2 border-t border-slate-200/60 pt-2.5 mt-1">
+                                        <p className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">Estimated Arrival Time</p>
+                                        <p className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                                            <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-600 shrink-0" /> {booking?.arrivalTime || "Not specified"}
                                         </p>
                                     </div>
                                 </div>
@@ -473,16 +490,16 @@ export default function BookingDetailsPage({ bookingId }: BookingDetailsPageProp
 
                     {/* Payment Details block */}
                     {isTour ? (
-                        <div className="bg-slate-50/50 border border-slate-100 rounded-2xl p-6 space-y-4 flex flex-col justify-between">
-                            <div className="space-y-4">
-                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Payment Summary</h4>
-                                <div className="space-y-3">
+                        <div className="bg-slate-50/50 border border-slate-100 rounded-2xl p-3.5 sm:p-5 md:p-6 space-y-3 sm:space-y-4 flex flex-col justify-between">
+                            <div className="space-y-3 sm:space-y-4">
+                                <h4 className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Payment Summary</h4>
+                                <div className="space-y-2.5 sm:space-y-3">
                                     <div className="flex justify-between items-center text-xs">
                                         <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Total Tour Price</span>
                                         <span className="font-black text-slate-900 text-sm">{formatPrice(totalPriceVal)}</span>
                                     </div>
 
-                                    <div className="flex justify-between items-center text-xs pt-3 border-t border-slate-200">
+                                    <div className="flex justify-between items-center text-xs pt-2.5 sm:pt-3 border-t border-slate-200">
                                         <span className="text-emerald-600 font-black uppercase tracking-wider text-[9px] flex items-center gap-1.5">
                                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                                             Paid Fully Online (100% Advance)
@@ -490,24 +507,24 @@ export default function BookingDetailsPage({ bookingId }: BookingDetailsPageProp
                                         <span className="font-black text-emerald-600 text-sm">{formatPrice(totalPriceVal)}</span>
                                     </div>
 
-                                    <div className="flex justify-between items-center text-xs pt-2">
+                                    <div className="flex justify-between items-center text-xs pt-1.5">
                                         <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Remaining Balance</span>
                                         <span className="font-black text-slate-900 text-sm">₹0 (All Inclusive)</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="mt-4 pt-4 border-t border-slate-200/60 bg-emerald-50/50 p-3 rounded-xl border border-emerald-100">
+                            <div className="mt-3 pt-3 border-t border-slate-200/60 bg-emerald-50/60 p-2.5 sm:p-3 rounded-xl border border-emerald-100">
                                 <p className="text-[10px] text-emerald-800 leading-relaxed font-bold flex items-center gap-1.5">
-                                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                                     100% All-Inclusive Tour. No extra fuel, toll taxes, or driver charges payable during the trip.
                                 </p>
                             </div>
                         </div>
                     ) : (
-                        <div className="bg-slate-50/50 border border-slate-100 rounded-2xl p-6 space-y-4">
-                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Payment Summary</h4>
-                            <div className="space-y-3">
+                        <div className="bg-slate-50/50 border border-slate-100 rounded-2xl p-3.5 sm:p-5 md:p-6 space-y-3 sm:space-y-4">
+                            <h4 className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Payment Summary</h4>
+                            <div className="space-y-2.5 sm:space-y-3">
                                 <div className="flex justify-between items-center text-xs">
                                     <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Total Amount</span>
                                     <span className="font-black text-slate-900">{formatPrice(totalPriceVal)}</span>
@@ -515,14 +532,14 @@ export default function BookingDetailsPage({ bookingId }: BookingDetailsPageProp
 
                                 {paymentStatus === 'paid' && (
                                     <>
-                                        <div className="flex justify-between items-center text-xs pt-3 border-t border-slate-200">
+                                        <div className="flex justify-between items-center text-xs pt-2.5 sm:pt-3 border-t border-slate-200">
                                             <span className="text-emerald-600 font-black uppercase tracking-wider text-[9px] flex items-center gap-1.5">
                                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                                                 Paid Fully Online
                                             </span>
                                             <span className="font-black text-emerald-600">{formatPrice(totalPriceVal)}</span>
                                         </div>
-                                        <div className="flex justify-between items-center text-xs pt-2">
+                                        <div className="flex justify-between items-center text-xs pt-1.5">
                                             <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Remaining (Pay at Hotel)</span>
                                             <span className="font-black text-slate-900">₹0</span>
                                         </div>
@@ -531,14 +548,14 @@ export default function BookingDetailsPage({ bookingId }: BookingDetailsPageProp
 
                                 {paymentStatus === 'partial' && (
                                     <>
-                                        <div className="flex justify-between items-center text-xs pt-3 border-t border-slate-200">
+                                        <div className="flex justify-between items-center text-xs pt-2.5 sm:pt-3 border-t border-slate-200">
                                             <span className="text-emerald-600 font-black uppercase tracking-wider text-[9px] flex items-center gap-1.5">
                                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                                                 Paid Online (12% Deposit)
                                             </span>
                                             <span className="font-black text-emerald-600">{formatPrice(amountPaidVal)}</span>
                                         </div>
-                                        <div className="flex justify-between items-center text-xs pt-2">
+                                        <div className="flex justify-between items-center text-xs pt-1.5">
                                             <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Remaining (Pay at Hotel)</span>
                                             <span className="font-black text-slate-900">{formatPrice(payAtHotelVal)}</span>
                                         </div>
@@ -547,14 +564,14 @@ export default function BookingDetailsPage({ bookingId }: BookingDetailsPageProp
 
                                 {paymentStatus === 'pending' && (
                                     <>
-                                        <div className="flex justify-between items-center text-xs pt-3 border-t border-slate-200">
+                                        <div className="flex justify-between items-center text-xs pt-2.5 sm:pt-3 border-t border-slate-200">
                                             <span className="text-amber-600 font-black uppercase tracking-wider text-[9px] flex items-center gap-1.5">
                                                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
                                                 Pay Full Amount at Hotel
                                             </span>
                                             <span className="font-black text-amber-600">{formatPrice(totalPriceVal)}</span>
                                         </div>
-                                        <div className="flex justify-between items-center text-xs pt-2">
+                                        <div className="flex justify-between items-center text-xs pt-1.5">
                                             <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Paid Online</span>
                                             <span className="font-black text-slate-900">₹0</span>
                                         </div>
@@ -563,14 +580,14 @@ export default function BookingDetailsPage({ bookingId }: BookingDetailsPageProp
                             </div>
 
                             {paymentStatus !== 'paid' && booking?.razorpayOrderId && (
-                                <div className="mt-4 pt-4 border-t border-slate-200/60 space-y-2">
+                                <div className="mt-3 pt-3 border-t border-slate-200/60 space-y-2">
                                     <p className="text-[10px] text-slate-500 leading-relaxed font-bold">
                                         Did you complete your payment but the status hasn't updated? Verify with Razorpay.
                                     </p>
                                     <button 
                                         onClick={handleVerifyPaymentStatus}
                                         disabled={verifying}
-                                        className="w-full py-2.5 px-4 bg-brand-600 hover:bg-brand-700 disabled:bg-slate-350 text-white rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                                        className="w-full py-2 px-4 bg-brand-600 hover:bg-brand-700 disabled:bg-slate-350 text-white rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
                                     >
                                         {verifying ? (
                                             <>
@@ -600,36 +617,36 @@ export default function BookingDetailsPage({ bookingId }: BookingDetailsPageProp
                 </div>
 
                 {/* Guest Contact & Special Requests Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8 mb-6 sm:mb-8">
                     {/* Guest Contact Info */}
-                    <div className="bg-slate-50/50 border border-slate-100 rounded-2xl p-6 space-y-4">
-                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    <div className="bg-slate-50/50 border border-slate-100 rounded-2xl p-3.5 sm:p-5 md:p-6 space-y-3 sm:space-y-4">
+                        <h4 className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">
                             {isTour ? "Primary Traveler Information" : "Guest Contact Info"}
                         </h4>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                             <div className="space-y-1">
-                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Name</p>
-                                <p className="text-sm font-bold text-slate-900 uppercase">
+                                <p className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">Name</p>
+                                <p className="text-xs sm:text-sm font-bold text-slate-900 uppercase">
                                     {booking?.guestFirstName || "Shriyansh"} {booking?.guestLastName || ""}
                                 </p>
                             </div>
                             <div className="space-y-1">
-                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Phone Number</p>
-                                <p className="text-sm font-bold text-slate-900">{booking?.guestPhone || "+91 98765 43210"}</p>
+                                <p className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">Phone Number</p>
+                                <p className="text-xs sm:text-sm font-bold text-slate-900">{booking?.guestPhone || "+91 98765 43210"}</p>
                             </div>
                             <div className="col-span-1 sm:col-span-2 space-y-1">
-                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Email Address</p>
-                                <p className="text-sm font-bold text-slate-900">{booking?.guestEmail || "guest@gethotelstays.com"}</p>
+                                <p className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">Email Address</p>
+                                <p className="text-xs sm:text-sm font-bold text-slate-900">{booking?.guestEmail || "guest@gethotelstays.com"}</p>
                             </div>
                         </div>
                     </div>
 
                     {/* Special Requests / Pickup */}
-                    <div className="bg-slate-50/50 border border-slate-100 rounded-2xl p-6 space-y-4">
-                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    <div className="bg-slate-50/50 border border-slate-100 rounded-2xl p-3.5 sm:p-5 md:p-6 space-y-3 sm:space-y-4">
+                        <h4 className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">
                             {isTour ? "Pickup Location & Notes" : "Special Requests"}
                         </h4>
-                        <div className="p-4 bg-white/60 border border-slate-100 rounded-xl min-h-[90px] flex items-center">
+                        <div className="p-3 sm:p-4 bg-white/60 border border-slate-100 rounded-xl min-h-[70px] sm:min-h-[90px] flex items-center">
                             <p className="text-xs text-slate-600 font-bold leading-relaxed italic">
                                 {booking?.specialRequests ? `"${booking.specialRequests}"` : (isTour ? "Doorstep pickup in Delhi NCR confirmed. Cab and chauffeur details will be shared prior to departure." : "No special requests provided for this stay.")}
                             </p>
@@ -638,19 +655,19 @@ export default function BookingDetailsPage({ bookingId }: BookingDetailsPageProp
                 </div>
 
                 {/* Assistance / Support Action Bar */}
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-5 bg-slate-50 border border-slate-100 rounded-2xl mb-8">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-4 sm:p-5 bg-slate-50 border border-slate-100 rounded-2xl mb-6 sm:mb-8">
                     <div>
                         <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider">
                             {isTour ? "Need Tour Assistance?" : "Need Help with your Stay?"}
                         </h4>
-                        <p className="text-[11px] text-slate-500 font-bold mt-0.5">
+                        <p className="text-[10px] sm:text-[11px] text-slate-500 font-bold mt-0.5">
                             {isTour ? "Our tour coordinator and helpline are available 24/7." : "Our support team is available 24/7."}
                         </p>
                     </div>
                     <div className="flex items-center gap-3 w-full sm:w-auto">
                         <button
                             onClick={() => setShowContactModal(true)}
-                            className="w-full sm:w-auto px-5 py-2.5 bg-slate-950 hover:bg-black text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2"
+                            className="w-full sm:w-auto px-4 sm:px-5 py-2.5 bg-slate-950 hover:bg-black text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2"
                         >
                             <Phone className="w-3.5 h-3.5" />
                             {isTour ? "Contact Tour Support" : "Contact Stay Host"}
