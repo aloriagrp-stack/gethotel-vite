@@ -13,6 +13,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Page() {
-  return <ClientBookingDetailsPage />;
+export default async function Page({ params }: { params?: Promise<{ id: string }> | { id: string } }) {
+  let resolvedId = "";
+  if (params) {
+    const p = await Promise.resolve(params);
+    resolvedId = p?.id || "";
+  }
+  return <ClientBookingDetailsPage bookingId={resolvedId} />;
 }
