@@ -1,4 +1,5 @@
 'use client';
+
 import { cn } from "@/lib/utils";
 
 interface LoaderProps {
@@ -8,46 +9,26 @@ interface LoaderProps {
 }
 
 export default function Loader({ variant = "inline", text, className }: LoaderProps) {
-    // Trigonometric positioning for 10 elegant glowing dots in a circle
-    const totalDots = 10;
-    const radius = 32; // Radius in percentage relative to container
-
-    const displayText = text || (variant === "fullscreen" || variant === "element" ? "Loading..." : undefined);
-
     const loaderContent = (
-        <div className={cn("flex flex-col items-center justify-center gap-6", className)}>
-            <div className="relative w-20 h-20">
-                {[...Array(totalDots)].map((_, i) => {
-                    const angle = (i * 2 * Math.PI) / totalDots;
-                    const top = 50 + radius * Math.sin(angle);
-                    const left = 50 + radius * Math.cos(angle);
-
-                    return (
-                        <div
-                            key={i}
-                            className="absolute w-2.5 h-2.5 bg-brand-600 rounded-full animate-dotted"
-                            style={{
-                                top: `${top}%`,
-                                left: `${left}%`,
-                                animationDelay: `${i * 0.12}s`,
-                            }}
-                        />
-                    );
-                })}
+        <div className={cn("flex flex-col items-center justify-center gap-3 select-none", className)}>
+            <div className="flex items-baseline text-2xl sm:text-3xl font-black tracking-tighter text-slate-950 animate-pulse">
+                <span>GetHotelStays</span>
+                <span className="text-brand-600 not-italic">.</span>
             </div>
-            {displayText && (
-                <div className="text-center">
-                    <p className="text-sm font-semibold text-slate-500 tracking-wide">
-                        {displayText}
-                    </p>
-                </div>
+            <div className="w-14 h-0.5 bg-slate-100 rounded-full overflow-hidden">
+                <div className="w-full h-full bg-brand-600 rounded-full animate-pulse" />
+            </div>
+            {text && (
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                    {text}
+                </p>
             )}
         </div>
     );
 
     if (variant === "fullscreen") {
         return (
-            <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-white/70 backdrop-blur-xl">
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-white/90 backdrop-blur-md">
                 {loaderContent}
             </div>
         );
@@ -55,7 +36,7 @@ export default function Loader({ variant = "inline", text, className }: LoaderPr
 
     if (variant === "element") {
         return (
-            <div className="w-full min-h-[300px] flex items-center justify-center bg-white/40 backdrop-blur-sm rounded-[32px] border border-white/40 shadow-sm p-10">
+            <div className="w-full min-h-[300px] flex items-center justify-center bg-white/50 backdrop-blur-sm rounded-[32px] p-8">
                 {loaderContent}
             </div>
         );

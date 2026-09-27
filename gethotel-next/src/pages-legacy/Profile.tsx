@@ -346,8 +346,16 @@ export default function ProfilePage() {
     }, [user, loading, router]);
 
     if (loading) return (
-        <div className="min-h-screen flex items-center justify-center bg-[#F0F7FF]">
-            <History className="w-10 h-10 text-brand-600 animate-spin" />
+        <div className="min-h-[70vh] flex items-center justify-center bg-white">
+            <div className="flex flex-col items-center justify-center gap-3 select-none">
+                <div className="flex items-baseline text-2xl sm:text-3xl font-black tracking-tighter text-slate-950 animate-pulse">
+                    <span>GetHotelStays</span>
+                    <span className="text-brand-600 not-italic">.</span>
+                </div>
+                <div className="w-14 h-0.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div className="w-full h-full bg-brand-600 rounded-full animate-pulse" />
+                </div>
+            </div>
         </div>
     );
     if (!user) return null;
