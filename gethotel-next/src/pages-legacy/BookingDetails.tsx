@@ -244,9 +244,9 @@ export default function BookingDetailsPage({ bookingId }: BookingDetailsPageProp
     const roomName = booking?.room?.name || "Double Deluxe Room";
     const status = booking?.status || "confirmed";
     const totalPriceVal = booking?.totalPrice || 2940;
-    const amountPaidVal = booking ? (booking.amountPaid ?? 0) : Math.round(totalPriceVal * 0.12);
-    const payAtHotelVal = Math.max(0, totalPriceVal - amountPaidVal);
-    const paymentStatus = booking?.paymentStatus || (booking ? (amountPaidVal === 0 ? 'pending' : (amountPaidVal >= totalPriceVal ? 'paid' : 'partial')) : 'partial');
+    const amountPaidVal = booking ? (booking.amountPaid ?? (booking.isPackage ? totalPriceVal : 0)) : Math.round(totalPriceVal * 0.12);
+    const payAtHotelVal = booking?.isPackage ? 0 : Math.max(0, totalPriceVal - amountPaidVal);
+    const paymentStatus = booking?.paymentStatus || (booking ? (booking.isPackage ? 'paid' : (amountPaidVal === 0 ? 'pending' : (amountPaidVal >= totalPriceVal ? 'paid' : 'partial'))) : 'partial');
 
     if (loading) {
         return (
@@ -302,9 +302,9 @@ export default function BookingDetailsPage({ bookingId }: BookingDetailsPageProp
                                 paymentStatus === 'partial' ? 'bg-blue-50 text-blue-700 border-blue-100' :
                                 'bg-amber-50 text-amber-700 border-amber-100'
                             }`}>
-                                {paymentStatus === 'paid' ? 'Fully Paid' :
+                                {booking?.isPackage ? 'Fully Paid' : (paymentStatus === 'paid' ? 'Fully Paid' :
                                  paymentStatus === 'partial' ? '12% Deposit Paid' :
-                                 'Pay At Hotel'}
+                                 'Pay At Hotel')}
                             </span>
                             <span className="text-slate-400 text-[10px] font-bold font-mono">ID: {displayBookingId}</span>
                         </div>

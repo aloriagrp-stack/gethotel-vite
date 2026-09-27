@@ -17,7 +17,11 @@ import {
     AlertCircle,
     Shield,
     X,
-    Check
+    Check,
+    Users,
+    Car,
+    Sparkles,
+    ShieldCheck
 } from "lucide-react";
 import { bookingApi, paymentApi } from "@/lib/api";
 import { formatPrice, formatDate, cn, safeParse, getHotelUrl } from "@/lib/utils";
@@ -136,7 +140,7 @@ export default function MyBookingsPage() {
         }
     }, [bookings]);
 
-    const [cancelModal, setCancelModal] = useState<{ isOpen: boolean, bookingId: number | null, policy: string }>({
+    const [cancelModal, setCancelModal] = useState<{ isOpen: boolean, bookingId: string | number | null, policy: string }>({
         isOpen: false,
         bookingId: null,
         policy: ""
@@ -147,7 +151,17 @@ export default function MyBookingsPage() {
 
         try {
             setLoading(true);
-            await bookingApi.cancelBooking(cancelModal.bookingId);
+            const bId = String(cancelModal.bookingId);
+            if (bId.startsWith('PKG-') || bId.includes('PKG')) {
+                const stored = JSON.parse(localStorage.getItem("ghs_user_bookings") || "[]");
+                const updated = stored.map((p: any) => String(p.id) === bId ? { ...p, status: 'cancelled' } : p);
+                localStorage.setItem("ghs_user_bookings", JSON.stringify(updated));
+                setBookings(prev => prev.map(b => String(b.id) === bId ? { ...b, status: 'cancelled' } : b));
+                setCancelModal({ isOpen: false, bookingId: null, policy: "" });
+                return;
+            }
+
+            await bookingApi.cancelBooking(Number(cancelModal.bookingId));
             // Refresh
             const res = await bookingApi.getMyBookings();
             setBookings(res.data || []);
@@ -294,184 +308,352 @@ export default function MyBookingsPage() {
                     </div>
                 ) : (
                     <div className="space-y-6">
-                        {filteredBookings.map((booking, i) => (
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: i * 0.1 }}
-                                key={booking.id}
-                                className="bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-xl hover:shadow-2xl transition-all group"
-                            >
-                                <div className="flex flex-col lg:flex-row">
-                                    <div className="relative w-full lg:w-[400px] h-64 lg:h-auto shrink-0 overflow-hidden">
-                                        <Image
-                                            src={safeParse(booking.room?.images)?.[0] || booking.hotel?.thumbnail || "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80"}
-                                            alt="Hotel"
-                                            fill
-                                            className="object-cover group-hover:scale-110 transition-transform duration-700"
-                                        />
-                                        <div className="absolute top-6 left-6">
-                                            {(() => {
-                                                const s = (booking.status || "").toLowerCase();
-                                                const isCompleted = s === 'checked-out' || s === 'checked_out' || s === 'completed';
-                                                const isConfirmedOrPaid = s === 'confirmed' || s === 'paid';
-                                                const isCancelledOrFailed = s === 'cancelled' || s === 'failed';
-                                                
-                                                let badgeClass = "bg-white/90 border-white text-slate-900";
-                                                let dotClass = "bg-current";
-                                                let label = booking.status;
+                        {filteredBookings.map((booking, i) => {
+                            const isTour = Boolean(
+                                booking.isPackage ||
+                                (typeof booking.id === 'string' && (booking.id.startsWith('PKG-') || booking.id.includes('PKG'))) ||
+                                booking.room?.name?.toLowerCase().includes('tour package') ||
+                                booking.packageId
+                            );
 
-                                                if (isCompleted) {
-                                                    badgeClass = "bg-emerald-500/90 border-emerald-400 text-white";
-                                                    dotClass = "bg-white";
-                                                    label = "Completed";
-                                                } else if (isConfirmedOrPaid) {
-                                                    badgeClass = "bg-emerald-500/90 border-emerald-400 text-white";
-                                                    dotClass = s === 'paid' ? 'bg-white animate-pulse' : 'bg-white';
-                                                } else if (isCancelledOrFailed) {
-                                                    badgeClass = "bg-red-500/90 border-red-400 text-white";
-                                                    dotClass = "bg-white";
-                                                }
+                            return (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: i * 0.1 }}
+                                    key={booking.id}
+                                    className="bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-xl hover:shadow-2xl transition-all group"
+                                >
+                                    {isTour ? (
+                                        /* Minimal, Compact Tour Package Card */
+                                        <div className="flex flex-col md:flex-row">
+                                            {/* Image with subtle badge - compact on mobile */}
+                                            <div className="relative w-full md:w-72 lg:w-80 h-44 sm:h-52 md:h-auto shrink-0 overflow-hidden bg-slate-100">
+                                                <Image
+                                                    src={safeParse(booking.room?.images)?.[0] || booking.hotel?.thumbnail || "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80"}
+                                                    alt={booking.hotel?.name || "Tour"}
+                                                    fill
+                                                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                                />
+                                                <div className="absolute top-3 left-3 sm:top-4 sm:left-4">
+                                                    {(() => {
+                                                        const s = (booking.status || "").toLowerCase();
+                                                        const isCancelled = s === 'cancelled' || s === 'failed';
+                                                        const isCompleted = s === 'completed' || s === 'checked-out' || s === 'checked_out';
 
-                                                return (
-                                                    <div className={cn(
-                                                        "px-5 py-2.5 backdrop-blur-md rounded-2xl shadow-xl flex items-center gap-2 border",
-                                                        badgeClass
-                                                    )}>
-                                                        <div className={cn("w-2 h-2 rounded-full", dotClass)} />
-                                                        <span className="text-[10px] font-black uppercase tracking-widest">{label}</span>
-                                                    </div>
-                                                );
-                                            })()}
-                                        </div>
-                                    </div>
-                                    <div className="flex-1 p-5 sm:p-8 lg:p-12 flex flex-col justify-between">
-                                        <div>
-                                            <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 sm:gap-6 mb-6 sm:mb-8">
-                                                <div>
-                                                    <p className="text-[10px] font-black text-brand-600 uppercase tracking-[0.2em] mb-1.5">Booking ID: {booking.isPackage ? booking.id : `#GH-${Number(booking.id) + 10000}`}</p>
-                                                    <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 mb-2 group-hover:text-brand-600 transition-colors leading-tight uppercase">{booking.hotel?.name}</h3>
-                                                    <p className="text-slate-400 font-bold text-xs sm:text-sm flex items-center gap-1.5">
-                                                        <MapPin className="w-4 h-4 text-brand-500 shrink-0" />
-                                                        <span>{booking.hotel?.city}, {booking.hotel?.address}</span>
-                                                    </p>
+                                                        if (isCancelled) {
+                                                            return (
+                                                                <span className="px-3 py-1 bg-red-500/90 text-white text-[10px] font-black uppercase tracking-wider rounded-xl backdrop-blur-md shadow-sm flex items-center gap-1.5">
+                                                                    <span className="w-1.5 h-1.5 rounded-full bg-white" /> Cancelled
+                                                                </span>
+                                                            );
+                                                        }
+                                                        if (isCompleted) {
+                                                            return (
+                                                                <span className="px-3 py-1 bg-slate-900/80 text-white text-[10px] font-black uppercase tracking-wider rounded-xl backdrop-blur-md shadow-sm flex items-center gap-1.5">
+                                                                    <CheckCircle2 className="w-3 h-3 text-emerald-400" /> Completed
+                                                                </span>
+                                                            );
+                                                        }
+                                                        return (
+                                                            <span className="px-3 py-1 bg-emerald-600/90 text-white text-[10px] font-black uppercase tracking-wider rounded-xl backdrop-blur-md shadow-sm flex items-center gap-1.5">
+                                                                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> Tour Confirmed
+                                                            </span>
+                                                        );
+                                                    })()}
                                                 </div>
-                                                <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-100 flex flex-col gap-2 sm:gap-3 w-full md:w-auto md:min-w-[180px]">
-                                                    <div className="flex justify-between items-center text-xs">
-                                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Paid Online</p>
-                                                        <p className="text-sm font-black text-emerald-600">{formatPrice(booking.amountPaid || booking.amount_paid || 0)}</p>
-                                                    </div>
-                                                    <div className="flex justify-between items-center pt-2 border-t border-dashed border-slate-200 text-xs">
-                                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{booking.isPackage ? "Balance" : "Due at Hotel"}</p>
-                                                        <p className="text-base font-black text-brand-600">{formatPrice((booking.totalPrice || booking.total_price || 0) - (booking.amountPaid || booking.amount_paid || 0))}</p>
-                                                    </div>
+                                                <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4">
+                                                    <span className="px-2.5 py-1 bg-slate-900/85 backdrop-blur-md text-amber-300 text-[9px] font-bold uppercase tracking-wider rounded-lg flex items-center gap-1">
+                                                        <Sparkles className="w-2.5 h-2.5 text-amber-400" /> Curated Tour
+                                                    </span>
                                                 </div>
                                             </div>
- 
-                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 py-6 sm:py-8 border-y border-slate-50">
+
+                                            {/* Details & Minimal Actions */}
+                                            <div className="flex-1 p-4 sm:p-5 lg:p-6 flex flex-col justify-between">
                                                 <div>
-                                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Check-in</p>
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 bg-brand-50 rounded-xl flex items-center justify-center">
-                                                            <Calendar className="w-4 h-4 text-brand-600" />
+                                                    {/* Header: Title, Route & Price (NO BOOKING ID) */}
+                                                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
+                                                        <div className="flex-1 min-w-0">
+                                                            <h3 className="text-lg sm:text-xl lg:text-2xl font-black text-slate-900 leading-tight uppercase group-hover:text-brand-600 transition-colors">
+                                                                {booking.hotel?.name || "Tour Package"}
+                                                            </h3>
+                                                            <p className="text-slate-500 font-bold text-xs sm:text-sm flex items-center gap-1.5 mt-1">
+                                                                <MapPin className="w-3.5 h-3.5 text-brand-500 shrink-0" />
+                                                                <span className="truncate">
+                                                                    {(() => {
+                                                                        const c = booking.hotel?.city || "";
+                                                                        const a = booking.hotel?.address || "";
+                                                                        if (c && a && c === a) return c.replace(/•/g, " ➔ ");
+                                                                        if (c && a) return `${c} ➔ ${a}`.replace(/•/g, " ➔ ");
+                                                                        return (c || a || "Tour Route").replace(/•/g, " ➔ ");
+                                                                    })()}
+                                                                </span>
+                                                            </p>
                                                         </div>
-                                                        <span className="text-sm font-black text-slate-800">{formatDate(booking.checkIn)}</span>
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Check-out</p>
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 bg-brand-50 rounded-xl flex items-center justify-center">
-                                                            <Calendar className="w-4 h-4 text-brand-600" />
-                                                        </div>
-                                                        <span className="text-sm font-black text-slate-800">{formatDate(booking.checkOut)}</span>
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Room Details</p>
-                                                    <p className="text-[10px] font-black text-slate-800 uppercase truncate">
-                                                        {booking.room?.name || "Luxury Stay"}
-                                                    </p>
-                                                </div>
-                                                <div>
-                                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Payment Status</p>
-                                                    <div className={cn(
-                                                        "px-3 py-1 rounded-lg inline-block text-[9px] font-black uppercase tracking-widest",
-                                                        booking.paymentStatus === 'paid' ? 'bg-emerald-50 text-emerald-600' :
-                                                        booking.paymentStatus === 'partial' ? 'bg-blue-50 text-blue-600' :
-                                                        'bg-amber-50 text-amber-600'
-                                                    )}>
-                                                        {booking.paymentStatus === 'paid' ? 'Fully Paid' :
-                                                         booking.paymentStatus === 'partial' ? '12% Paid' :
-                                                         'Pay At Hotel'}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
 
-                                        <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
-                                            <div className="grid grid-cols-1 sm:flex sm:flex-wrap gap-3 sm:gap-4 w-full sm:w-auto">
-                                                <Link
-                                                    to={`/booking/details/${booking.id}`}
-                                                    className="px-5 sm:px-8 py-3.5 sm:py-4 bg-slate-950 text-white rounded-xl sm:rounded-[20px] font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-2"
-                                                >
-                                                    <Ticket className="w-4 h-4" /> View Receipt
-                                                </Link>
-                                                <button
-                                                    onClick={() => {
-                                                        const phone = booking.hotel?.phone || "919000000000";
-                                                        const ref = booking.isPackage ? booking.id : `#GH-${Number(booking.id) + 10000}`;
-                                                        window.open(`https://wa.me/${phone}?text=Hi, I have a booking (${ref}) at ${booking.hotel?.name}.`, '_blank');
-                                                    }}
-                                                    className="px-5 sm:px-8 py-3.5 sm:py-4 bg-white border border-slate-200 text-slate-900 rounded-xl sm:rounded-[20px] font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center justify-center gap-2 shadow-sm"
-                                                >
-                                                    Contact Hotel
-                                                </button>
-                                            </div>
- 
-                                            {activeTab === "upcoming" && (
-                                                <button
-                                                    onClick={() => setCancelModal({
-                                                        isOpen: true,
-                                                        bookingId: booking.id,
-                                                        policy: booking.hotel?.cancellationPolicy || booking.room?.roomPolicies?.cancellation || "Non-Refundable"
-                                                    })}
-                                                    className="text-[10px] font-black text-red-400 hover:text-red-600 uppercase tracking-widest transition-colors flex items-center justify-center gap-2 px-4 py-3 hover:bg-red-50 rounded-xl w-full sm:w-auto"
-                                                >
-                                                    Cancel Reservation
-                                                </button>
-                                            )}
- 
-                                            {activeTab === "completed" && (
-                                                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                                                    {booking.isReviewed ? (
-                                                        <button
-                                                            disabled
-                                                            className="px-5 sm:px-8 py-3.5 sm:py-4 bg-slate-100 text-slate-400 rounded-xl sm:rounded-[20px] font-black text-[10px] uppercase tracking-widest text-center cursor-not-allowed w-full sm:w-auto"
-                                                        >
-                                                            Reviewed
-                                                        </button>
-                                                    ) : (
-                                                        <Link
-                                                            to={`${getHotelUrl(booking.hotel?.id, booking.hotel?.name)}/write-review`}
-                                                            className="px-5 sm:px-8 py-3.5 sm:py-4 bg-brand-600 text-white rounded-xl sm:rounded-[20px] font-black text-[10px] uppercase tracking-widest hover:bg-brand-700 transition-all shadow-xl shadow-brand-100 text-center w-full sm:w-auto"
-                                                        >
-                                                            Write Review
-                                                        </Link>
-                                                    )}
+                                                        {/* Minimal Tour Price (No 12% deposit / balance breakdown) */}
+                                                        <div className="bg-slate-50 sm:bg-slate-50/80 p-2.5 sm:p-3 rounded-xl border border-slate-100 flex sm:flex-col justify-between sm:justify-start items-center sm:items-end shrink-0">
+                                                            <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Package</span>
+                                                            <span className="text-base sm:text-lg font-black text-slate-900">
+                                                                {formatPrice(booking.totalPrice || booking.amountPaid || 0)}
+                                                            </span>
+                                                            <span className="text-[9px] font-bold text-emerald-600 hidden sm:inline-block">
+                                                                ✓ All Inclusive
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Tour Key Details (Visible & Prominent) */}
+                                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 py-3 border-y border-slate-100 my-2 sm:my-3">
+                                                        <div className="flex items-center gap-2.5 bg-slate-50/70 p-2 sm:p-2.5 rounded-xl border border-slate-100">
+                                                            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-brand-50 flex items-center justify-center shrink-0">
+                                                                <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-600" />
+                                                            </div>
+                                                            <div className="min-w-0">
+                                                                <p className="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-wider">Tour Date</p>
+                                                                <p className="text-[11px] sm:text-xs font-black text-slate-800 truncate">{formatDate(booking.checkIn)}</p>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="flex items-center gap-2.5 bg-slate-50/70 p-2 sm:p-2.5 rounded-xl border border-slate-100">
+                                                            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
+                                                                <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600" />
+                                                            </div>
+                                                            <div className="min-w-0">
+                                                                <p className="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-wider">Travelers</p>
+                                                                <p className="text-[11px] sm:text-xs font-black text-slate-800 truncate">
+                                                                    {(() => {
+                                                                        const m = booking.room?.name?.match(/(\d+)\s*Travelers?/i);
+                                                                        return `${booking.travelers || (m ? m[1] : 2)} Guests`;
+                                                                    })()}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="col-span-2 sm:col-span-1 flex items-center gap-2.5 bg-slate-50/70 p-2 sm:p-2.5 rounded-xl border border-slate-100">
+                                                            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
+                                                                <Car className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-600" />
+                                                            </div>
+                                                            <div className="min-w-0">
+                                                                <p className="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-wider">Transport</p>
+                                                                <p className="text-[11px] sm:text-xs font-black text-slate-800 truncate">AC Cab & Transfers</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Tour Inclusions Badges */}
+                                                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-2">
+                                                        <span className="text-[10px] font-bold text-slate-600 bg-slate-100/80 px-2.5 py-1 rounded-lg flex items-center gap-1">
+                                                            <ShieldCheck className="w-3 h-3 text-brand-600" /> Sightseeing Included
+                                                        </span>
+                                                        <span className="text-[10px] font-bold text-slate-600 bg-slate-100/80 px-2.5 py-1 rounded-lg flex items-center gap-1">
+                                                            <Check className="w-3 h-3 text-emerald-600" /> Fuel, Tolls & Parking
+                                                        </span>
+                                                        <span className="text-[10px] font-bold text-slate-600 bg-slate-100/80 px-2.5 py-1 rounded-lg flex items-center gap-1">
+                                                            <Sparkles className="w-3 h-3 text-amber-500" /> Doorstep Pickup
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Bottom Action: Minimal View Receipt & Cancel (NO Contact Hotel) */}
+                                                <div className="mt-4 sm:mt-5 pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                                     <Link
-                                                        to={getHotelUrl(booking.hotel?.id, booking.hotel?.name)}
-                                                        className="px-5 sm:px-8 py-3.5 sm:py-4 bg-white border border-slate-200 text-slate-800 rounded-xl sm:rounded-[20px] font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all text-center w-full sm:w-auto"
+                                                        to={`/booking/details/${booking.id}`}
+                                                        className="px-5 py-2.5 sm:py-3 bg-slate-950 text-white rounded-xl font-black text-[10px] sm:text-xs uppercase tracking-widest hover:bg-black transition-all shadow-md shadow-slate-200 flex items-center justify-center gap-2 text-center"
                                                     >
-                                                        Book Again
+                                                        <Ticket className="w-3.5 h-3.5" /> View Receipt
                                                     </Link>
+
+                                                    {activeTab === "upcoming" && (
+                                                        <button
+                                                            onClick={() => setCancelModal({
+                                                                isOpen: true,
+                                                                bookingId: booking.id,
+                                                                policy: "Cancellation allowed up to 24 hours prior to tour departure."
+                                                            })}
+                                                            className="text-[10px] font-black text-red-400 hover:text-red-600 uppercase tracking-widest transition-colors py-2 px-3 hover:bg-red-50 rounded-xl text-center"
+                                                        >
+                                                            Cancel Reservation
+                                                        </button>
+                                                    )}
                                                 </div>
-                                            )}
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        ))}
+                                    ) : (
+                                        /* Standard Hotel Card */
+                                        <div className="flex flex-col lg:flex-row">
+                                            <div className="relative w-full lg:w-[400px] h-64 lg:h-auto shrink-0 overflow-hidden">
+                                                <Image
+                                                    src={safeParse(booking.room?.images)?.[0] || booking.hotel?.thumbnail || "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80"}
+                                                    alt="Hotel"
+                                                    fill
+                                                    className="object-cover group-hover:scale-110 transition-transform duration-700"
+                                                />
+                                                <div className="absolute top-6 left-6">
+                                                    {(() => {
+                                                        const s = (booking.status || "").toLowerCase();
+                                                        const isCompleted = s === 'checked-out' || s === 'checked_out' || s === 'completed';
+                                                        const isConfirmedOrPaid = s === 'confirmed' || s === 'paid';
+                                                        const isCancelledOrFailed = s === 'cancelled' || s === 'failed';
+                                                        
+                                                        let badgeClass = "bg-white/90 border-white text-slate-900";
+                                                        let dotClass = "bg-current";
+                                                        let label = booking.status;
+
+                                                        if (isCompleted) {
+                                                            badgeClass = "bg-emerald-500/90 border-emerald-400 text-white";
+                                                            dotClass = "bg-white";
+                                                            label = "Completed";
+                                                        } else if (isConfirmedOrPaid) {
+                                                            badgeClass = "bg-emerald-500/90 border-emerald-400 text-white";
+                                                            dotClass = s === 'paid' ? 'bg-white animate-pulse' : 'bg-white';
+                                                        } else if (isCancelledOrFailed) {
+                                                            badgeClass = "bg-red-500/90 border-red-400 text-white";
+                                                            dotClass = "bg-white";
+                                                        }
+
+                                                        return (
+                                                            <div className={cn(
+                                                                "px-5 py-2.5 backdrop-blur-md rounded-2xl shadow-xl flex items-center gap-2 border",
+                                                                badgeClass
+                                                            )}>
+                                                                <div className={cn("w-2 h-2 rounded-full", dotClass)} />
+                                                                <span className="text-[10px] font-black uppercase tracking-widest">{label}</span>
+                                                            </div>
+                                                        );
+                                                    })()}
+                                                </div>
+                                            </div>
+                                            <div className="flex-1 p-5 sm:p-8 lg:p-12 flex flex-col justify-between">
+                                                <div>
+                                                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 sm:gap-6 mb-6 sm:mb-8">
+                                                        <div>
+                                                            <p className="text-[10px] font-black text-brand-600 uppercase tracking-[0.2em] mb-1.5">Booking ID: #GH-{Number(booking.id) + 10000}</p>
+                                                            <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 mb-2 group-hover:text-brand-600 transition-colors leading-tight uppercase">{booking.hotel?.name}</h3>
+                                                            <p className="text-slate-400 font-bold text-xs sm:text-sm flex items-center gap-1.5">
+                                                                <MapPin className="w-4 h-4 text-brand-500 shrink-0" />
+                                                                <span>{booking.hotel?.city}, {booking.hotel?.address}</span>
+                                                            </p>
+                                                        </div>
+                                                        <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-100 flex flex-col gap-2 sm:gap-3 w-full md:w-auto md:min-w-[180px]">
+                                                            <div className="flex justify-between items-center text-xs">
+                                                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Paid Online</p>
+                                                                <p className="text-sm font-black text-emerald-600">{formatPrice(booking.amountPaid || booking.amount_paid || 0)}</p>
+                                                            </div>
+                                                            <div className="flex justify-between items-center pt-2 border-t border-dashed border-slate-200 text-xs">
+                                                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Due at Hotel</p>
+                                                                <p className="text-base font-black text-brand-600">{formatPrice((booking.totalPrice || booking.total_price || 0) - (booking.amountPaid || booking.amount_paid || 0))}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 py-6 sm:py-8 border-y border-slate-50">
+                                                        <div>
+                                                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Check-in</p>
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-8 h-8 bg-brand-50 rounded-xl flex items-center justify-center">
+                                                                    <Calendar className="w-4 h-4 text-brand-600" />
+                                                                </div>
+                                                                <span className="text-sm font-black text-slate-800">{formatDate(booking.checkIn)}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Check-out</p>
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-8 h-8 bg-brand-50 rounded-xl flex items-center justify-center">
+                                                                    <Calendar className="w-4 h-4 text-brand-600" />
+                                                                </div>
+                                                                <span className="text-sm font-black text-slate-800">{formatDate(booking.checkOut)}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Room Details</p>
+                                                            <p className="text-[10px] font-black text-slate-800 uppercase truncate">
+                                                                {booking.room?.name || "Luxury Stay"}
+                                                            </p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Payment Status</p>
+                                                            <div className={cn(
+                                                                "px-3 py-1 rounded-lg inline-block text-[9px] font-black uppercase tracking-widest",
+                                                                booking.paymentStatus === 'paid' ? 'bg-emerald-50 text-emerald-600' :
+                                                                booking.paymentStatus === 'partial' ? 'bg-blue-50 text-blue-600' :
+                                                                'bg-amber-50 text-amber-600'
+                                                            )}>
+                                                                {booking.paymentStatus === 'paid' ? 'Fully Paid' :
+                                                                 booking.paymentStatus === 'partial' ? '12% Paid' :
+                                                                 'Pay At Hotel'}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
+                                                    <div className="grid grid-cols-1 sm:flex sm:flex-wrap gap-3 sm:gap-4 w-full sm:w-auto">
+                                                        <Link
+                                                            to={`/booking/details/${booking.id}`}
+                                                            className="px-5 sm:px-8 py-3.5 sm:py-4 bg-slate-950 text-white rounded-xl sm:rounded-[20px] font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-2"
+                                                        >
+                                                            <Ticket className="w-4 h-4" /> View Receipt
+                                                        </Link>
+                                                        <button
+                                                            onClick={() => {
+                                                                const phone = booking.hotel?.phone || "919000000000";
+                                                                const ref = `#GH-${Number(booking.id) + 10000}`;
+                                                                window.open(`https://wa.me/${phone}?text=Hi, I have a booking (${ref}) at ${booking.hotel?.name}.`, '_blank');
+                                                            }}
+                                                            className="px-5 sm:px-8 py-3.5 sm:py-4 bg-white border border-slate-200 text-slate-900 rounded-xl sm:rounded-[20px] font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center justify-center gap-2 shadow-sm"
+                                                        >
+                                                            Contact Hotel
+                                                        </button>
+                                                    </div>
+
+                                                    {activeTab === "upcoming" && (
+                                                        <button
+                                                            onClick={() => setCancelModal({
+                                                                isOpen: true,
+                                                                bookingId: booking.id,
+                                                                policy: booking.hotel?.cancellationPolicy || booking.room?.roomPolicies?.cancellation || "Non-Refundable"
+                                                            })}
+                                                            className="text-[10px] font-black text-red-400 hover:text-red-600 uppercase tracking-widest transition-colors flex items-center justify-center gap-2 px-4 py-3 hover:bg-red-50 rounded-xl w-full sm:w-auto"
+                                                        >
+                                                            Cancel Reservation
+                                                        </button>
+                                                    )}
+
+                                                    {activeTab === "completed" && (
+                                                        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                                                            {booking.isReviewed ? (
+                                                                <button
+                                                                    disabled
+                                                                    className="px-5 sm:px-8 py-3.5 sm:py-4 bg-slate-100 text-slate-400 rounded-xl sm:rounded-[20px] font-black text-[10px] uppercase tracking-widest text-center cursor-not-allowed w-full sm:w-auto"
+                                                                >
+                                                                    Reviewed
+                                                                </button>
+                                                            ) : (
+                                                                <Link
+                                                                    to={`${getHotelUrl(booking.hotel?.id, booking.hotel?.name)}/write-review`}
+                                                                    className="px-5 sm:px-8 py-3.5 sm:py-4 bg-brand-600 text-white rounded-xl sm:rounded-[20px] font-black text-[10px] uppercase tracking-widest hover:bg-brand-700 transition-all shadow-xl shadow-brand-100 text-center w-full sm:w-auto"
+                                                                >
+                                                                    Write Review
+                                                                </Link>
+                                                            )}
+                                                            <Link
+                                                                to={getHotelUrl(booking.hotel?.id, booking.hotel?.name)}
+                                                                className="px-5 sm:px-8 py-3.5 sm:py-4 bg-white border border-slate-200 text-slate-800 rounded-xl sm:rounded-[20px] font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all text-center w-full sm:w-auto"
+                                                            >
+                                                                Book Again
+                                                            </Link>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </motion.div>
+                            );
+                        })}
                     </div>
                 )}
             </div>
