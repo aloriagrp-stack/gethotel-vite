@@ -399,8 +399,8 @@ export default function MyBookingsPage() {
                                                         </div>
                                                     </div>
 
-                                                    {/* Tour Key Details */}
-                                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 py-3 border-y border-slate-100 my-2 sm:my-3">
+                                                    {/* Tour Key Details - 4 Structured Tiles on Desktop, 2x2 on Mobile */}
+                                                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-2.5 py-3 border-t border-slate-100 my-2 sm:my-2.5">
                                                         <div className="flex items-center gap-2.5 bg-slate-50/70 p-2 sm:p-2.5 rounded-xl border border-slate-100">
                                                             <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-brand-50 flex items-center justify-center shrink-0">
                                                                 <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-600" />
@@ -408,6 +408,16 @@ export default function MyBookingsPage() {
                                                             <div className="min-w-0">
                                                                 <p className="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-wider">Tour Date</p>
                                                                 <p className="text-[11px] sm:text-xs font-black text-slate-800 truncate">{formatDate(booking.checkIn)}</p>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="flex items-center gap-2.5 bg-slate-50/70 p-2 sm:p-2.5 rounded-xl border border-slate-100">
+                                                            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                                                                <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600" />
+                                                            </div>
+                                                            <div className="min-w-0">
+                                                                <p className="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-wider">Departure</p>
+                                                                <p className="text-[11px] sm:text-xs font-black text-slate-800 truncate">06:00 AM (Delhi NCR)</p>
                                                             </div>
                                                         </div>
 
@@ -420,19 +430,45 @@ export default function MyBookingsPage() {
                                                                 <p className="text-[11px] sm:text-xs font-black text-slate-800 truncate">
                                                                     {(() => {
                                                                         const m = booking.room?.name?.match(/(\d+)\s*Travelers?/i);
-                                                                        return `${booking.travelers || (m ? m[1] : 2)} Guests`;
+                                                                        return `${booking.travelers || (m ? m[1] : 2)} Guests (Private)`;
                                                                     })()}
                                                                 </p>
                                                             </div>
                                                         </div>
 
-                                                        <div className="col-span-2 sm:col-span-1 flex items-center gap-2.5 bg-slate-50/70 p-2 sm:p-2.5 rounded-xl border border-slate-100">
+                                                        <div className="flex items-center gap-2.5 bg-slate-50/70 p-2 sm:p-2.5 rounded-xl border border-slate-100">
                                                             <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
                                                                 <Car className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-600" />
                                                             </div>
                                                             <div className="min-w-0">
                                                                 <p className="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-wider">Transport</p>
-                                                                <p className="text-[11px] sm:text-xs font-black text-slate-800 truncate">AC Cab & Transfers</p>
+                                                                <p className="text-[11px] sm:text-xs font-black text-slate-800 truncate">Private AC Cab & Driver</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Structured Inclusions Strip (Clean & Non-cluttered) */}
+                                                    <div className="p-3 bg-slate-50/60 rounded-xl border border-slate-100 my-2 sm:my-2.5">
+                                                        <div className="flex items-center justify-between mb-2">
+                                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                                                                Package Inclusions & Route
+                                                            </span>
+                                                            <span className="text-[9px] font-bold text-slate-500">
+                                                                Same Day Return
+                                                            </span>
+                                                        </div>
+                                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                                                            <div className="flex items-center gap-2 text-slate-700 font-bold text-[11px]">
+                                                                <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                                                <span className="truncate">Taj Mahal & Agra Fort Tour</span>
+                                                            </div>
+                                                            <div className="flex items-center gap-2 text-slate-700 font-bold text-[11px]">
+                                                                <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                                                <span className="truncate">Fuel, Tolls & Parking Covered</span>
+                                                            </div>
+                                                            <div className="flex items-center gap-2 text-slate-700 font-bold text-[11px]">
+                                                                <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                                                <span className="truncate">Doorstep Delhi NCR Pickup</span>
                                                             </div>
                                                         </div>
                                                     </div>
