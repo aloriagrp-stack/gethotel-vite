@@ -20,11 +20,11 @@ import {
 } from "lucide-react";
 import { adminApi, homepageApi } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import AppleEmoji from "@/components/common/AppleEmoji";
+
 
 interface DestinationItem {
     name: string;
-    flag?: string;
+
     tagline?: string;
     properties?: string;
     image: string;
@@ -35,7 +35,7 @@ interface DestinationItem {
 const DEFAULT_DESTINATIONS: DestinationItem[] = [
     {
         name: "Indonesia",
-        flag: "🇮🇩",
+
         tagline: "1,345+ Verified Stays",
         image: "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?q=80&w=800&auto=format&fit=crop",
         properties: "1,345+ Verified Stays",
@@ -44,7 +44,7 @@ const DEFAULT_DESTINATIONS: DestinationItem[] = [
     },
     {
         name: "Goa",
-        flag: "🌴",
+
         tagline: "1,240+ Verified Stays",
         image: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?q=80&w=800&auto=format&fit=crop",
         properties: "1,240+ Verified Stays",
@@ -53,7 +53,7 @@ const DEFAULT_DESTINATIONS: DestinationItem[] = [
     },
     {
         name: "Delhi",
-        flag: "🇮🇳",
+
         tagline: "2,100+ Verified Stays",
         image: "https://images.unsplash.com/photo-1587474260584-136574528ed5?q=80&w=800&auto=format&fit=crop",
         properties: "2,100+ Verified Stays",
@@ -62,7 +62,7 @@ const DEFAULT_DESTINATIONS: DestinationItem[] = [
     },
     {
         name: "Jaipur",
-        flag: "🏰",
+
         tagline: "540+ Verified Stays",
         image: "https://images.unsplash.com/photo-1477587458883-47145ed94245?q=80&w=800&auto=format&fit=crop",
         properties: "540+ Verified Stays",
@@ -71,7 +71,7 @@ const DEFAULT_DESTINATIONS: DestinationItem[] = [
     },
     {
         name: "Manali",
-        flag: "🏔️",
+
         tagline: "460+ Verified Stays",
         image: "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?q=80&w=800&auto=format&fit=crop",
         properties: "460+ Verified Stays",
@@ -80,7 +80,7 @@ const DEFAULT_DESTINATIONS: DestinationItem[] = [
     },
     {
         name: "Udaipur",
-        flag: "🛶",
+
         tagline: "380+ Verified Stays",
         image: "https://images.unsplash.com/photo-1603262110263-fb0112e7cc33?q=80&w=800&auto=format&fit=crop",
         properties: "380+ Verified Stays",
@@ -89,7 +89,7 @@ const DEFAULT_DESTINATIONS: DestinationItem[] = [
     },
     {
         name: "Shimla",
-        flag: "🌲",
+
         tagline: "420+ Verified Stays",
         image: "https://images.unsplash.com/photo-1597074866923-dc0589150358?q=80&w=800&auto=format&fit=crop",
         properties: "420+ Verified Stays",
@@ -98,7 +98,7 @@ const DEFAULT_DESTINATIONS: DestinationItem[] = [
     },
     {
         name: "Kerala",
-        flag: "⛵",
+
         tagline: "850+ Verified Stays",
         image: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?q=80&w=800&auto=format&fit=crop",
         properties: "850+ Verified Stays",
@@ -169,7 +169,7 @@ export default function AdminDestinationsManager() {
     const handleAddDestination = () => {
         const newDest: DestinationItem = {
             name: "New Destination",
-            flag: "✈️",
+
             tagline: "100+ Hotels • 10 Packages",
             properties: "100+ Hotels • 10 Packages",
             image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=800&auto=format&fit=crop",
@@ -372,9 +372,9 @@ export default function AdminDestinationsManager() {
 
                                 {/* Card Content */}
                                 <div className="absolute inset-x-0 bottom-0 p-3 text-white flex flex-col justify-end z-10">
-                                    <h4 className="text-sm font-black text-white leading-tight flex items-center gap-1.5 drop-shadow-sm">
+                                    <h4 className="text-sm font-black text-white leading-tight drop-shadow-sm">
                                         <span>{dest.name || "Destination"}</span>
-                                        {dest.flag && <AppleEmoji emoji={dest.flag} className="w-4 h-4 shrink-0" />}
+
                                     </h4>
                                     <p className="text-[10px] text-white/80 font-medium mt-0.5 line-clamp-1">
                                         {dest.properties || dest.tagline || "1,200+ Hotels • 24 Packages"}
@@ -425,19 +425,9 @@ export default function AdminDestinationsManager() {
                                     />
                                 </div>
 
-                                {/* Flag / Emoji */}
-                                <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black text-neutral-400 uppercase tracking-wider block">
-                                        Flag / Icon Emoji
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={dest.flag || ""}
-                                        onChange={(e) => handleUpdate(idx, "flag", e.target.value)}
-                                        placeholder="e.g. 🇮🇩, 🌴, 🇮🇳, 🏰"
-                                        className="w-full bg-[#141414] border border-[#262626] rounded-xl px-3.5 py-2.5 text-xs font-bold text-white outline-none focus:border-neutral-400"
-                                    />
-                                </div>
+
+
+
 
                                 {/* Properties / Stats Text */}
                                 <div className="space-y-1.5">
@@ -539,7 +529,7 @@ export default function AdminDestinationsManager() {
                                 <div className="flex items-center gap-2">
                                     <Hotel className="w-5 h-5 text-emerald-400" />
                                     <h3 className="text-base font-black text-white uppercase tracking-wider">
-                                        Assign Properties to {destinations[assignTargetIndex]?.name} {destinations[assignTargetIndex]?.flag}
+                                        Assign Properties to {destinations[assignTargetIndex]?.name}
                                     </h3>
                                 </div>
                                 <p className="text-xs text-neutral-400 font-medium mt-0.5">

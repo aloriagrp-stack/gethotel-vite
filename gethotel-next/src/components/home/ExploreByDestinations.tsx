@@ -3,33 +3,6 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, ChevronRight } from "lucide-react";
 import Image from "@/components/common/Image";
-import AppleEmoji from "@/components/common/AppleEmoji";
-
-const DESTINATION_FLAGS: Record<string, string> = {
-    "indonesia": "🇮🇩",
-    "bali": "🇮🇩",
-    "goa": "🌴",
-    "delhi": "🇮🇳",
-    "new delhi": "🇮🇳",
-    "jaipur": "🏰",
-    "manali": "🏔️",
-    "shimla": "🌲",
-    "udaipur": "🛶",
-    "kerala": "⛵",
-    "mumbai": "🌊",
-    "dubai": "🇦🇪",
-    "thailand": "🇹🇭",
-    "bangkok": "🇹🇭",
-    "singapore": "🇸🇬",
-    "maldives": "🇲🇻",
-    "paris": "🇫🇷",
-    "london": "🇬🇧",
-    "switzerland": "🇨🇭",
-    "japan": "🇯🇵",
-    "tokyo": "🇯🇵",
-    "vietnam": "🇻🇳",
-    "malaysia": "🇲🇾",
-};
 
 const DESTINATION_STATS: Record<string, string> = {
     "indonesia": "1,345+ Verified Stays",
@@ -51,7 +24,6 @@ const DESTINATION_STATS: Record<string, string> = {
 const TOP_DESTINATIONS = [
     {
         name: "Delhi",
-        flag: "🇮🇳",
         tagline: "2,100+ Verified Stays",
         image: "https://images.unsplash.com/photo-1587474260584-136574528ed5?q=80&w=800&auto=format&fit=crop",
         properties: "2,100+ Verified Stays",
@@ -59,7 +31,6 @@ const TOP_DESTINATIONS = [
     },
     {
         name: "Delhi Airport",
-        flag: "✈️",
         tagline: "380+ Transit Stays",
         image: "https://images.unsplash.com/photo-1542296332-2e4473faf563?q=80&w=800&auto=format&fit=crop",
         properties: "380+ Transit Stays",
@@ -67,7 +38,6 @@ const TOP_DESTINATIONS = [
     },
     {
         name: "Connaught Place",
-        flag: "🏛️",
         tagline: "260+ Central Stays",
         image: "https://images.unsplash.com/photo-1592635196078-9fdc757f27f4?q=80&w=800&auto=format&fit=crop",
         properties: "260+ Central Stays",
@@ -75,7 +45,6 @@ const TOP_DESTINATIONS = [
     },
     {
         name: "Jaipur",
-        flag: "🏰",
         tagline: "540+ Verified Stays",
         image: "https://images.unsplash.com/photo-1477587458883-47145ed94245?q=80&w=800&auto=format&fit=crop",
         properties: "540+ Verified Stays",
@@ -83,7 +52,6 @@ const TOP_DESTINATIONS = [
     },
     {
         name: "Manali",
-        flag: "🏔️",
         tagline: "460+ Verified Stays",
         image: "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?q=80&w=800&auto=format&fit=crop",
         properties: "460+ Verified Stays",
@@ -91,7 +59,6 @@ const TOP_DESTINATIONS = [
     },
     {
         name: "Udaipur",
-        flag: "🛶",
         tagline: "380+ Verified Stays",
         image: "https://images.unsplash.com/photo-1603262110263-fb0112e7cc33?q=80&w=800&auto=format&fit=crop",
         properties: "380+ Verified Stays",
@@ -99,13 +66,17 @@ const TOP_DESTINATIONS = [
     },
     {
         name: "Shimla",
-        flag: "🌲",
         tagline: "420+ Verified Stays",
         image: "https://images.unsplash.com/photo-1597074866923-dc0589150358?q=80&w=800&auto=format&fit=crop",
         properties: "420+ Verified Stays",
         url: "/shimla-hotels",
     },
 ];
+
+const cleanDestinationName = (name?: string) => {
+    if (!name) return "";
+    return name.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}\u{FE0F}]/gu, '').trim();
+};
 
 export default function ExploreByDestinations({ destinations, loading = false }: { destinations?: any[], loading?: boolean }) {
     const displayDestinations = destinations && destinations.length > 0 ? destinations : TOP_DESTINATIONS;
@@ -120,12 +91,6 @@ export default function ExploreByDestinations({ destinations, loading = false }:
             return `/hotels?destination_index=${index}&city=${encodeURIComponent(dest.name || '')}`;
         }
         return `/hotels?city=${encodeURIComponent(dest.name || '')}`;
-    };
-
-    const getDestinationFlag = (dest: any) => {
-        if (dest.flag) return dest.flag;
-        const n = (dest.name || '').toLowerCase().trim();
-        return DESTINATION_FLAGS[n] || "";
     };
 
     const getDestinationStats = (dest: any) => {
@@ -181,8 +146,8 @@ export default function ExploreByDestinations({ destinations, loading = false }:
                         ))
                     ) : (
                         displayDestinations.map((dest: any, idx: number) => {
-                            const flag = getDestinationFlag(dest);
                             const statsText = getDestinationStats(dest);
+                            const name = cleanDestinationName(dest.name);
 
                             return (
                                 <Link
@@ -193,7 +158,7 @@ export default function ExploreByDestinations({ destinations, loading = false }:
                                     {/* Full Bleed Image with smooth scaling */}
                                     <Image
                                         src={dest.image}
-                                        alt={dest.name}
+                                        alt={name}
                                         fill
                                         className="transition-transform duration-700 group-hover:scale-105 object-cover"
                                     />
@@ -212,16 +177,9 @@ export default function ExploreByDestinations({ destinations, loading = false }:
 
                                     {/* Destination Info & CTA Card Container */}
                                     <div className="absolute inset-x-0 bottom-0 p-3.5 sm:p-4.5 text-white flex flex-col justify-end z-10">
-                                        {/* Destination Title + Apple Emoji Flag */}
-                                        <h3 className="text-lg sm:text-xl font-black text-white leading-tight drop-shadow-md flex items-center gap-1.5">
-                                            <span>{dest.name}</span>
-                                            {flag && (
-                                                <AppleEmoji 
-                                                    emoji={flag} 
-                                                    className="w-4.5 h-4.5 sm:w-5 sm:h-5 shrink-0 drop-shadow" 
-                                                    alt={dest.name}
-                                                />
-                                            )}
+                                        {/* Destination Title */}
+                                        <h3 className="text-lg sm:text-xl font-black text-white leading-tight drop-shadow-md">
+                                            <span>{name}</span>
                                         </h3>
                                         
                                         {/* Subtitle Stats Line */}

@@ -5,9 +5,9 @@ import { Loader2, Save, LayoutTemplate, Link as LinkIcon, Image as ImageIcon, Pl
 import { adminApi, homepageApi } from "@/lib/api";
 
 const DEFAULT_DESTINATIONS = [
-    { name: "Indonesia", flag: "🇮🇩", image: "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?q=80&w=800&auto=format&fit=crop", properties: "1,345+ Verified Stays", linkedHotelIds: [] },
-    { name: "Goa", flag: "🌴", image: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?q=80&w=800&auto=format&fit=crop", properties: "1,240+ Verified Stays", linkedHotelIds: [] },
-    { name: "Kerala", flag: "⛵", image: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?q=80&w=800&auto=format&fit=crop", properties: "850+ Verified Stays", linkedHotelIds: [] },
+    { name: "Indonesia", image: "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?q=80&w=800&auto=format&fit=crop", properties: "1,345+ Verified Stays", linkedHotelIds: [] },
+    { name: "Goa", image: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?q=80&w=800&auto=format&fit=crop", properties: "1,240+ Verified Stays", linkedHotelIds: [] },
+    { name: "Kerala", image: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?q=80&w=800&auto=format&fit=crop", properties: "850+ Verified Stays", linkedHotelIds: [] },
 ];
 
 const DEFAULT_COLLECTIONS = [
@@ -577,7 +577,7 @@ export default function AdminHomepageEditor() {
                                 )}
                             </div>
 
-                            <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4 w-full">
+                            <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
                                 <div>
                                     <label className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest block mb-1">Destination</label>
                                     <input 
@@ -588,16 +588,7 @@ export default function AdminHomepageEditor() {
                                         className="w-full bg-[#181818] border border-[#282828] text-white rounded-xl px-3.5 py-2.5 text-xs font-bold outline-none focus:border-neutral-400 transition-colors"
                                     />
                                 </div>
-                                <div>
-                                    <label className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest block mb-1">Flag / Emoji</label>
-                                    <input 
-                                        type="text" 
-                                        value={dest.flag || ""}
-                                        onChange={(e) => handleUpdateDestination(i, 'flag', e.target.value)}
-                                        placeholder="e.g. 🇮🇩"
-                                        className="w-full bg-[#181818] border border-[#282828] text-white rounded-xl px-3.5 py-2.5 text-xs font-bold outline-none focus:border-neutral-400 transition-colors"
-                                    />
-                                </div>
+
                                 <div>
                                     <label className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest block mb-1">Stats Line</label>
                                     <input 
