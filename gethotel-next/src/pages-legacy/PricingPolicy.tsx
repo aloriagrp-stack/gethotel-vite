@@ -75,9 +75,9 @@ export default function PricingPolicy() {
           transition={{ duration: 0.4 }}
           className="text-left mb-12 border-b border-slate-200/80 pb-8"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-50 text-brand-600 text-xs font-bold uppercase tracking-wider mb-4">
-            <Percent className="w-3.5 h-3.5" /> Billing & Tariffs
-          </div>
+
+
+
           <h1 className="text-3xl md:text-5xl font-black tracking-tight text-slate-900 mb-4">
             Pricing & GST Policy
           </h1>

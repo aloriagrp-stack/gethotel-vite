@@ -19,6 +19,23 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate as useRouter } from "@/lib/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
+const extractName = (u: any): string => {
+    if (!u) return "Guest";
+    const rawName = u.name?.trim();
+    if (rawName && rawName.toLowerCase() !== "premium guest" && rawName.toLowerCase() !== "guest") {
+        return rawName;
+    }
+    if (u.email) {
+        const username = u.email.split('@')[0] || '';
+        const parts = username.split(/[._-]+/).filter(Boolean);
+        if (parts.length > 0) {
+            return parts.map((p: string) => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join(' ');
+        }
+        return username.charAt(0).toUpperCase() + username.slice(1);
+    }
+    return "Guest";
+};
+
 export default function ProfilePage() {
     const { user, loading, logout } = useAuth();
     const router = useRouter();
@@ -30,18 +47,37 @@ export default function ProfilePage() {
     
     // Profile Data State
     const [profileData, setProfileData] = useState({
-        name: user?.name || "Premium Guest",
+        name: extractName(user),
         phone: "",
         location: ""
     });
     const [initialProfileData, setInitialProfileData] = useState({
-        name: user?.name || "Premium Guest",
+        name: extractName(user),
         phone: "",
         location: ""
     });
     const [nameLastUpdated, setNameLastUpdated] = useState<number>(0);
     const [statusMessage, setStatusMessage] = useState<{type: 'success' | 'info' | 'error', text: string} | null>(null);
-    const [heroName, setHeroName] = useState(user?.name || "Premium Guest");
+    const [heroName, setHeroName] = useState(extractName(user));
+    
+    useEffect(() => {
+        if (user) {
+            const resolvedName = extractName(user);
+            setHeroName(resolvedName);
+            setProfileData(prev => ({
+                ...prev,
+                name: resolvedName,
+                phone: (user as any).phone || prev.phone || "",
+                location: (user as any).location || prev.location || ""
+            }));
+            setInitialProfileData(prev => ({
+                ...prev,
+                name: resolvedName,
+                phone: (user as any).phone || prev.phone || "",
+                location: (user as any).location || prev.location || ""
+            }));
+        }
+    }, [user]);
 
     // Language & Preference State (using global LocaleContext)
     const { langCode, currency, changeLanguage: globalChangeLanguage, changeCurrency: globalChangeCurrency } = useLocale();

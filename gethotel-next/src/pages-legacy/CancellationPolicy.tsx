@@ -79,9 +79,9 @@ export default function CancellationPolicy() {
           transition={{ duration: 0.4 }}
           className="text-left mb-12 border-b border-slate-200/80 pb-8"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-50 text-brand-600 text-xs font-bold uppercase tracking-wider mb-4">
-            <XCircle className="w-3.5 h-3.5" /> Bookings & Refunds
-          </div>
+
+
+
           <h1 className="text-3xl md:text-5xl font-black tracking-tight text-slate-900 mb-4">
             Refund & Cancellation
           </h1>
