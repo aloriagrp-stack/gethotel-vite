@@ -163,11 +163,29 @@ function parseTravelQuery(query = "") {
     const qLower = q.toLowerCase();
 
     // 1. Detect Intent
-    let intent = "HOTEL_SEARCH";
+    const hasHotelKeyword = /\b(hotel|hotels|room|rooms|stay|resort|resorts|villa|villas|suite|booking|book|lodge|dharamshala|homestay|cottage|hostel)\b/i.test(qLower);
+    const { city, area } = extractLocation(q);
+    const budget = extractBudget(q);
 
-    // Greeting
-    if (/^(hi|hello|hey|greetings|namaste|pranam|hola|kya\s*haal|good\s*(?:morning|afternoon|evening))\b/i.test(qLower) && !/(hotel|room|delhi|stay|book|price|rate)/i.test(qLower)) {
+    // Travel Advice, Weather, Trekking, Tourism & Guide Signals
+    const isTravelAdvice = /\b(monsoon|barish|weather|mosam|mausam|climate|kaisa\s*hai|kese\s*hai|best\s*time|kab\s*jana|trek|trekking|hiking|solo|safe|safety|places\s*to\s*visit|ghumne|ghumo|itinerary|guide|route|routes|things\s*to\s*do|sightseeing)\b/i.test(qLower) && !hasHotelKeyword;
+
+    let intent = "GENERAL_CHAT";
+
+    if (hasHotelKeyword || (budget && (city || area))) {
+        intent = "HOTEL_SEARCH";
+    } else if (city || area) {
+        // If city is mentioned with hotel search intent or without travel advice signals
+        intent = isTravelAdvice ? "RECOMMENDATION" : (/\b(chahiye|dikhao|batao|dekhna|milega|available|options|stay|rukna)\b/i.test(qLower) ? "HOTEL_SEARCH" : "RECOMMENDATION");
+    }
+
+    // Greetings & Casual Banter
+    if (/\b(hi|hello|hey|how\s*are\s*you|how\s*r\s*u|kaise\s*ho|what'?s\s*up|wassup|kya\s*haal|kya\s*chal\s*raha|dude|bro|greetings|namaste|pranam|hola|good\s*(?:morning|afternoon|evening))\b/i.test(qLower) && !hasHotelKeyword) {
         intent = "GREETING";
+    }
+    // General conversational query or follow-up
+    else if (/\b(who\s*are\s*you|what\s*can\s*you\s*do|i\s*asked\s*you|tell\s*me|help\s*me|kya\s*kar\s*sakte|batao|kuch\s*batao)\b/i.test(qLower) && !hasHotelKeyword && !city) {
+        intent = "GENERAL_CHAT";
     }
     // Bargain / Discount
     else if (/\b(discount|kam\s*karo|kam\s*kardo|sasta\s*karo|kam\s*me|bargain|deal|offer|coupon|code|kuch\s*off|last\s*price|kam\s*nahi\s*hoga)\b/i.test(qLower)) {
@@ -186,8 +204,6 @@ function parseTravelQuery(query = "") {
         intent = "AMENITY_QUERY";
     }
 
-    const { city, area } = extractLocation(q);
-    const budget = extractBudget(q);
     const { guests, rooms } = extractGuestsAndRooms(q);
     const { tags, amenities } = extractAmenitiesAndTags(q);
     const { checkIn, checkOut } = extractDates(q);

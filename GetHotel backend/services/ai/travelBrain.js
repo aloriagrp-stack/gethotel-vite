@@ -45,14 +45,9 @@ class TravelBrain {
             }
         }
 
-        // 3. Check for Greeting
-        if (parsed.intent === 'GREETING' && (!dbHotels || dbHotels.length === 0)) {
-            const matchedGreeting = convoIndexer.findBestMatch(query);
-            return {
-                reply: matchedGreeting ? matchedGreeting.reply : "Hello! Welcome to GetHotelStays. Main aapka personal travel assistant hoon. Kahan ghoomne ka plan hai? (e.g. 'Delhi me 2000 ke andar hotel', 'Paharganj couple friendly room') 🏨✨",
-                hotels: [],
-                responseType: 'greeting'
-            };
+        // 3. Check for Greeting or General Chat - Hand off to SI / LLM Engine for rich, human conversation
+        if (parsed.intent === 'GREETING' || parsed.intent === 'GENERAL_CHAT') {
+            return null;
         }
 
         // 4. Hotel & Room Search
@@ -105,8 +100,7 @@ class TravelBrain {
             }
         }
 
-        // Build Natural Prose Reply
-        let reply = "";
+        // Build Natural Prose Reply only if we have high-confidence hotel matches
         if (hotelsToReturn.length > 0) {
             const top = hotelsToReturn[0];
             const locName = parsed.area || parsed.city || top.city || "Delhi";
@@ -114,17 +108,17 @@ class TravelBrain {
             let tagDesc = "";
             if (parsed.tags.includes("coupleFriendly")) tagDesc = " 100% couple-friendly aur";
             
-            reply = `Haanji! **${locName}** me aapke liye${tagDesc} best options mil gaye hain:\n\n**${top.name}** sabse top choice hai — yahan ₹${top.pricePerNight} per night me AC room, free Wi-Fi aur verified premium service mil rahi hai! 🏨⭐\n\nNeeche hotel cards me photos aur room categories check karein aur seedha 'Book Now' par click karein! 👇`;
-        } else {
-            const loc = parsed.city || parsed.area || "is location";
-            reply = `Filhal **${loc}** me exact matching hotels nahi mil rahe. Kya aap nearby area (jaise Paharganj ya Karol Bagh) dekhna chahenge, ya thoda budget flex karna chahenge? 🗺️🔍`;
+            const reply = `Haanji! **${locName}** me aapke liye${tagDesc} best options mil gaye hain:\n\n**${top.name}** sabse top choice hai — yahan ₹${top.pricePerNight} per night me AC room, free Wi-Fi aur verified premium service mil rahi hai! 🏨⭐\n\nNeeche hotel cards me photos aur room categories check karein aur seedha 'Book Now' par click karein! 👇`;
+
+            return {
+                reply,
+                hotels: hotelsToReturn,
+                responseType: 'hotel_recommendation'
+            };
         }
 
-        return {
-            reply,
-            hotels: hotelsToReturn,
-            responseType: 'hotel_recommendation'
-        };
+        // If no hotels were found, hand off to SI Engine / LLM for natural answer
+        return null;
     }
 }
 

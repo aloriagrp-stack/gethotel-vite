@@ -23,6 +23,7 @@ from parser_engine import (
 from scraper import scrape_hotel_url
 from review_extractor import scrape_reviews_from_url, parse_raw_text_reviews
 from image_optimizer import download_and_convert_webp
+from si_engine import si_engine
 
 app = FastAPI(
     title="GetHotel In-House Onboarding Engine",
@@ -67,6 +68,10 @@ class BulkOnboardRequest(BaseModel):
 class ConvertWebPRequest(BaseModel):
     imageUrl: str
     savePath: Optional[str] = None
+
+class SIQueryRequest(BaseModel):
+    query: str
+    history: Optional[List[Dict[str, Any]]] = None
 
 
 # -------------------------------------------------------------
@@ -141,6 +146,41 @@ async def health_check():
         "engine": "GetHotel In-House Python AI Engine",
         "version": "1.0.0",
         "zeroExternalApi": True
+    }
+
+
+@app.post("/api/si/query")
+async def handle_si_query(req: SIQueryRequest):
+    """
+    Search and retrieve answers from the 10,000 travel conversations dataset.
+    Provides sub-5ms BM25 + semantic similarity matching.
+    """
+    try:
+        result = si_engine.query_si(req.query)
+        return {
+            "success": True,
+            **result
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "matched": False,
+            "error": str(e),
+            "reply": None
+        }
+
+
+@app.get("/api/si/stats")
+async def get_si_stats():
+    """
+    Returns indexing statistics for the 10,000 Q&A conversations dataset.
+    """
+    return {
+        "success": True,
+        "isLoaded": si_engine.is_loaded,
+        "totalQA": si_engine.N,
+        "categories": 36,
+        "dataset": os.path.basename(si_engine.dataset_path)
     }
 
 

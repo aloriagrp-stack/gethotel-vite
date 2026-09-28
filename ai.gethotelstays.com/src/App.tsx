@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback, memo, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Plus, Settings, HelpCircle, Menu, Trash2, Calendar, User, Mail, CreditCard, Check, X, ArrowRight, Loader, ChevronLeft, ChevronRight, ArrowUp } from "lucide-react";
+import { Plus, Settings, HelpCircle, Menu, Trash2, Calendar, User, Mail, CreditCard, Check, X, ArrowRight, Loader, ChevronLeft, ChevronRight, ArrowUp, Mic, MicOff, Sparkles } from "lucide-react";
 import { aiApi, authApi, bookingApi, paymentApi, conversationApi } from "./lib/api";
 import { auth, googleProvider } from "./lib/firebase";
 import { signInWithPopup } from "firebase/auth";
@@ -15,6 +15,7 @@ import TourPackageCard from "./components/TourPackageCard";
 import InChatBookingDrawer from "./components/InChatBookingDrawer";
 import HotelDetailsDrawer from "./components/HotelDetailsDrawer";
 import BookingConfirmationCard, { type BookingConfirmationDetails } from "./components/BookingConfirmationCard";
+import SuggestedReplies from "./components/SuggestedReplies";
 import { SEOManager } from "./components/SEOManager";
 
 // Dynamic Apple Emoji CDN Parser
@@ -247,6 +248,10 @@ export default function App() {
   const [composerAttachment, setComposerAttachment] = useState<HotelAttachment | null>(null);
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
   const [previewState, setPreviewState] = useState<{ images: string[]; activeIndex: number } | null>(null);
+  
+  // Speech Recognition (Voice Input) State
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
   
   // User preferences states
   const [theme, setTheme] = useState<'light' | 'dark'>(() => (localStorage.getItem('gethotel_ai_theme') as 'light' | 'dark') || 'light');
@@ -519,6 +524,62 @@ export default function App() {
       }
     }
   }, []);
+
+  const startListening = useCallback(() => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Speech recognition is not supported in this browser. Please try Chrome, Edge, or Safari.");
+      return;
+    }
+
+    if (isListening) {
+      try {
+        recognitionRef.current?.stop();
+      } catch { /* ignore */ }
+      setIsListening(false);
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.lang = 'en-IN';
+
+      recognition.onstart = () => {
+        setIsListening(true);
+      };
+
+      recognition.onresult = (event: any) => {
+        let currentTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          currentTranscript += event.results[i][0].transcript;
+        }
+        if (currentTranscript) {
+          setInput(prev => {
+            const trimmed = prev.trim();
+            return trimmed ? `${trimmed} ${currentTranscript}` : currentTranscript;
+          });
+          setTimeout(adjustHeight, 50);
+        }
+      };
+
+      recognition.onerror = (event: any) => {
+        console.warn("Speech recognition error:", event.error);
+        setIsListening(false);
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch (err) {
+      console.error("Speech recognition start failed:", err);
+      setIsListening(false);
+    }
+  }, [isListening, adjustHeight]);
 
   const toggleSidebar = useCallback(() => {
     setIsSidebarOpen(prev => !prev);
@@ -1430,17 +1491,129 @@ export default function App() {
               <ArrowUp className="w-4 h-4 rotate-180 shrink-0" />
             </button>
           )}
-          {/* Collapsible Spacer (only when chat is empty to push heading down) */}
-          <div className={`transition-all duration-700 ease-in-out ${messages.length === 0 ? "h-[25vh]" : "h-0"}`} />
-          
-          {/* Centered Welcome Heading */}
-          <h1 className={`text-3xl md:text-4xl font-semibold text-center select-none transition-all duration-500 ease-in-out ${
-            messages.length === 0 
-              ? `mb-8 opacity-100 scale-100 ${theme === 'dark' ? 'text-slate-100' : 'text-slate-800'}` 
-              : "mb-0 opacity-0 scale-95 h-0 overflow-hidden"
-          }`}>
-            What are we planning today?
-          </h1>
+          {/* Welcome Screen: Rich Hero & Destination Starter Cards */}
+          {messages.length === 0 && (
+            <div className="max-w-3xl mx-auto pt-6 md:pt-14 pb-36 px-2 flex flex-col items-center animate-fade-in select-none">
+              {/* Luxury Brand Badge */}
+              <div className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold border backdrop-blur-md mb-4 shadow-xs transition-colors ${
+                theme === 'dark'
+                  ? "bg-brand-500/15 border-brand-500/30 text-brand-300"
+                  : "bg-blue-50 border-blue-200 text-brand-600"
+              }`}>
+                <Sparkles className="w-3.5 h-3.5 text-brand-400" />
+                <span>ChatGHS AI Travel Concierge</span>
+              </div>
+
+              {/* Primary Heading */}
+              <h1 className={`text-3xl md:text-5xl font-extrabold text-center tracking-tight leading-tight ${
+                theme === 'dark' ? "text-slate-100" : "text-slate-900"
+              }`}>
+                Where would you like to escape to?
+              </h1>
+              <p className={`text-sm md:text-base text-center mt-2.5 max-w-xl ${
+                theme === 'dark' ? "text-slate-400" : "text-slate-600"
+              }`}>
+                Instant live hotel inventory, verified reviews, handpicked luxury havelis, and bespoke itineraries.
+              </p>
+
+              {/* Quick Travel Mood Pills */}
+              <div className="flex flex-wrap items-center justify-center gap-2 mt-6">
+                {[
+                  { label: "🌴 Beach Stays", prompt: "Find best beachfront luxury resorts in Goa near Baga and Calangute" },
+                  { label: "🏔️ Mountain Escapes", prompt: "Cozy valley-view boutique stays in Manali with free breakfast" },
+                  { label: "🏰 Royal Havelis", prompt: "Heritage palace havelis in Jaipur and Udaipur under ₹5,000" },
+                  { label: "💖 Couple Getaways", prompt: "Romantic couple-friendly luxury resort in Udaipur with lake view" },
+                  { label: "💼 Aerocity Business", prompt: "Top rated business hotels near Delhi Aerocity with airport shuttle" }
+                ].map((pill, pIdx) => (
+                  <button
+                    key={pIdx}
+                    type="button"
+                    onClick={() => handleSend(pill.prompt)}
+                    className={`px-3.5 py-1.5 text-xs font-semibold rounded-full border transition-all duration-200 cursor-pointer shadow-xs active:scale-95 ${
+                      theme === 'dark'
+                        ? "bg-[#18181c]/90 border-[#2e2e34] text-slate-300 hover:bg-[#25252d] hover:border-brand-500/50 hover:text-white"
+                        : "bg-white/90 border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-brand-400 hover:text-brand-600"
+                    }`}
+                  >
+                    {pill.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* 4 Interactive Destination Starter Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 w-full mt-8">
+                {[
+                  {
+                    tag: "BEACH RETREAT",
+                    title: "Goa Beachfront Resorts",
+                    desc: "Sea-facing luxury stays, private pool villas, and sunset beach resorts in North & South Goa.",
+                    prompt: "Recommend top-rated beachfront resorts in Goa with swimming pool and breakfast under ₹4,500/night",
+                    icon: "🏖️",
+                    bgGradient: theme === 'dark' ? "from-cyan-950/40 to-blue-950/20" : "from-cyan-50/80 to-blue-50/50"
+                  },
+                  {
+                    tag: "ROYAL HERITAGE",
+                    title: "Jaipur & Udaipur Havelis",
+                    desc: "Courtyard suites, royal heritage havelis, and Rajputana architecture with bespoke hospitality.",
+                    prompt: "Show me royal heritage havelis and palace hotels in Jaipur under ₹5,000 per night",
+                    icon: "🏰",
+                    bgGradient: theme === 'dark' ? "from-amber-950/40 to-orange-950/20" : "from-amber-50/80 to-orange-50/50"
+                  },
+                  {
+                    tag: "MOUNTAIN VALLEY",
+                    title: "Manali & Shimla Escapes",
+                    desc: "Cozy snow-view cedar cabins, pine forest cottages, and bonfire retreats in Himachal.",
+                    prompt: "Find cozy valley-view stays in Manali with mountain views, heater, and breakfast",
+                    icon: "⛰️",
+                    bgGradient: theme === 'dark' ? "from-emerald-950/40 to-teal-950/20" : "from-emerald-50/80 to-teal-50/50"
+                  },
+                  {
+                    tag: "BUSINESS CLASS",
+                    title: "Delhi & Mumbai Transit",
+                    desc: "Aerocity business hubs with soundproof rooms, airport transfers, and high-speed Wi-Fi.",
+                    prompt: "Show the best business hotels near Delhi Aerocity with airport shuttle and free cancellation",
+                    icon: "💼",
+                    bgGradient: theme === 'dark' ? "from-indigo-950/40 to-purple-950/20" : "from-indigo-50/80 to-purple-50/50"
+                  }
+                ].map((card, cIdx) => (
+                  <div
+                    key={cIdx}
+                    onClick={() => handleSend(card.prompt)}
+                    className={`p-4.5 rounded-3xl border transition-all duration-300 cursor-pointer shadow-sm group hover:-translate-y-1 hover:shadow-lg flex flex-col justify-between ${card.bgGradient} ${
+                      theme === 'dark'
+                        ? "border-white/10 hover:border-brand-500/40 hover:bg-[#1a1a20]"
+                        : "border-slate-200/80 hover:border-brand-400 hover:bg-white"
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-2xl select-none">{card.icon}</span>
+                        <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                          theme === 'dark' ? "bg-white/10 text-slate-300" : "bg-black/5 text-slate-600"
+                        }`}>
+                          {card.tag}
+                        </span>
+                      </div>
+                      <h3 className={`text-base font-bold mt-2.5 group-hover:text-brand-500 transition-colors ${
+                        theme === 'dark' ? "text-slate-100" : "text-slate-900"
+                      }`}>
+                        {card.title}
+                      </h3>
+                      <p className={`text-xs mt-1 leading-relaxed ${
+                        theme === 'dark' ? "text-slate-400" : "text-slate-600"
+                      }`}>
+                        {card.desc}
+                      </p>
+                    </div>
+                    <div className="mt-4 flex items-center justify-between text-xs font-semibold text-brand-500 group-hover:translate-x-1 transition-transform">
+                      <span>Explore stays</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {messages.length > 0 && (
             <div className="max-w-3xl mx-auto space-y-6 md:space-y-8 pt-4 pb-36">
@@ -1487,7 +1660,20 @@ export default function App() {
 
                   {/* AI Assistant Bubble */}
                   {msg.sender === "ai" && (
-                    <div className="w-full py-2">
+                    <div className="w-full py-2 animate-fade-in">
+                      {/* AI Concierge Header Badge */}
+                      <div className="flex items-center gap-2 mb-2.5 select-none">
+                        <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white shadow-xs">
+                          <Sparkles className="w-3.5 h-3.5 text-white" />
+                        </div>
+                        <span className={`text-[13px] font-bold tracking-tight ${theme === 'dark' ? "text-slate-200" : "text-slate-900"}`}>
+                          ChatGHS Concierge
+                        </span>
+                        <span className="text-[9px] font-black px-1.5 py-0.5 rounded-sm bg-brand-500/10 text-brand-500 uppercase tracking-widest">
+                          AI
+                        </span>
+                      </div>
+
                       {(msg.text && msg.text.trim().length > 0) || (isTyping && index === messages.length - 1) ? (
                         <>
                           <div className={`text-[16px] leading-[1.75] font-medium tracking-wide transition-colors ${
@@ -1513,6 +1699,7 @@ export default function App() {
                           hotels={msg.hotels}
                           theme={theme}
                           onOpenDetails={handleOpenHotelDetails}
+                          onInstantBook={(h) => handleOpenBookingDrawer(h)}
                         />
                       )}
 
@@ -1559,6 +1746,18 @@ export default function App() {
                             💳 Pay 12% Deposit Now
                           </button>
                         </div>
+                      )}
+
+                      {/* 6. Contextual Smart Suggested Follow-ups */}
+                      {index === messages.length - 1 && !isTyping && (
+                        <SuggestedReplies
+                          responseType={msg.responseType}
+                          hotels={msg.hotels}
+                          tourPackage={msg.tourPackage}
+                          flights={msg.flights}
+                          onSend={(text) => handleSend(text)}
+                          theme={theme}
+                        />
                       )}
 
                     </div>
@@ -1639,7 +1838,31 @@ export default function App() {
                 </div>
               )}
 
+              {/* Listening Pulse Indicator Pill */}
+              {isListening && (
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/25 text-red-500 text-xs font-bold animate-pulse self-start select-none">
+                  <div className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+                  <span>Listening... Speak your destination or question</span>
+                </div>
+              )}
+
               <div className="flex items-end gap-2 w-full">
+                {/* Voice Input Microphone Button */}
+                <button
+                  type="button"
+                  onClick={startListening}
+                  className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all active:scale-90 cursor-pointer ${
+                    isListening
+                      ? "bg-red-500 text-white animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.5)]"
+                      : theme === 'dark'
+                      ? "bg-white/10 text-slate-300 hover:bg-white/20 hover:text-white"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900"
+                  }`}
+                  title={isListening ? "Listening... Click to stop" : "Voice input (Speak to ChatGHS)"}
+                >
+                  {isListening ? <MicOff className="w-4 h-4 animate-bounce" /> : <Mic className="w-4 h-4" />}
+                </button>
+
                 <textarea
                   ref={textareaRef}
                   value={input}
@@ -1648,7 +1871,7 @@ export default function App() {
                     adjustHeight();
                   }}
                   onKeyDown={handleKeyDown}
-                  placeholder="Ask about hotels..."
+                  placeholder={isListening ? "Listening to your voice..." : "Ask about hotels, destinations, packages..."}
                   rows={1}
                   className={`flex-1 bg-transparent py-2 px-2 text-sm outline-none resize-none font-normal leading-6 max-h-[160px] overflow-y-auto no-scrollbar align-top transition-colors ${
                     theme === 'dark' ? "text-slate-100 placeholder-slate-500" : "text-slate-800 placeholder-slate-400"

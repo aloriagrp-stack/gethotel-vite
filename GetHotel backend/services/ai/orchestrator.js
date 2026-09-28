@@ -15,6 +15,7 @@ const {
     evaluateInternalTelemetry
 } = require('./intelligenceEngine');
 const travelBrain = require('./travelBrain');
+const pythonEngineClient = require('../pythonEngineClient');
 const logger = require('./logger');
 
 // ---------------------------------------------------------------------------
@@ -222,29 +223,9 @@ async function processUserMessage({ messages = [], userId = null, conversationId
     // DETERMINISTIC DECISION TREE (No LLM for Infrastructure / No-Results)
     // =========================================================================
 
-    // BRANCH 1: Database Query Failed
+    // If database tool errored, log warning and let SI Engine / LLM respond gracefully rather than blocking the conversation
     if (toolResult.status === 'error') {
-        logger.warn('Orchestrator', 'Database tool search failed', { error: toolResult.error });
-
-        // Persist state even on error branches
-        const persistResult = await saveConversationTurn({
-            userId, messages: normalizedMessages, workflow, intent, decision,
-            response: { reply: '', memory }
-        });
-
-        return {
-            reply: "I'm having trouble reaching our hotel database right now. Give it a moment and try again! 🔄",
-            hotels: [],
-            cards: [],
-            responseType: 'service_unavailable',
-            workflowState: workflow.workflowState,
-            nextRequiredSlot: workflow.nextRequiredSlot,
-            nextQuestion: 'Would you like to try again in a moment?',
-            conversationId: memory.conversationId,
-            memoryPersistence: persistResult.persisted ? 'persistent' : memory.persistence,
-            action: null,
-            internalSelfScore: null
-        };
+        logger.warn('Orchestrator', 'Database tool search encountered error, falling back to SI Engine and LLM', { error: toolResult.error });
     }
 
     // If 0 hotels matched exact filter, dbHotels is empty, but flow proceeds to LLM
@@ -286,13 +267,40 @@ async function processUserMessage({ messages = [], userId = null, conversationId
         logger.warn('Orchestrator', 'TravelBrain execution error', { error: e.message });
     }
 
+    // In-House Travel Specialist Intelligence (SI) Engine (10,000 Q&A conversations)
+    let siResult = null;
+    try {
+        siResult = await pythonEngineClient.querySI({
+            query: userQuery,
+            history: normalizedMessages
+        });
+    } catch (siErr) {
+        logger.warn('Orchestrator', 'Python SI Engine query failed', { error: siErr.message });
+    }
+
     let rawReply = brainResult?.reply || null;
+
+    // If TravelBrain didn't supply an exact hotel recommendation, check SI Engine
+    if (!rawReply && siResult && siResult.matched && siResult.reply) {
+        rawReply = siResult.reply;
+        logger.info('Orchestrator', 'Served answer via Python SI Engine', { category: siResult.category, score: siResult.score });
+    }
+
+    // Fall back to LLM gateway with SI context injection if rawReply is still null
     if (!rawReply) {
         try {
+            let enrichedUserQuery = userQueryWithContext;
+            if (siResult && siResult.topMatches && siResult.topMatches.length > 0) {
+                const siSnippets = siResult.topMatches.slice(0, 3)
+                    .map(m => `Q: ${m.question}\nA: ${m.answer}`)
+                    .join('\n\n');
+                enrichedUserQuery += `\n\n[Travel Domain Knowledge Base (10k Verified Travel Interactions)]:\n${siSnippets}`;
+            }
+
             rawReply = await generateChatCompletion({
                 systemInstruction: dynamicPrompt,
                 history: normalizedMessages.slice(0, -1),
-                userQuery: userQueryWithContext
+                userQuery: enrichedUserQuery
             });
         } catch (err) {
             logger.error('Orchestrator', 'LLM gateway threw', { error: err.message });
@@ -445,17 +453,9 @@ async function processUserMessageStream({ messages = [], userId = null, conversa
         flights: toolResult.flights || null
     });
 
-    // If tool errored
+    // If tool errored, log warning and let SI Engine / LLM respond gracefully rather than blocking the conversation
     if (toolResult.status === 'error') {
-        const errorReply = "I'm having trouble reaching our inventory database right now. Give it a moment and try again! 🔄";
-        onToken(errorReply);
-        return {
-            reply: errorReply,
-            hotels: [],
-            cards: [],
-            responseType: 'service_unavailable',
-            conversationId: memory.conversationId
-        };
+        logger.warn('OrchestratorStream', 'Database tool search encountered error, falling back to SI Engine and LLM', { error: toolResult.error });
     }
 
     // 4. Build Context & Dynamic Prompt
@@ -489,6 +489,17 @@ async function processUserMessageStream({ messages = [], userId = null, conversa
         logger.warn('OrchestratorStream', 'TravelBrain execution error', { error: e.message });
     }
 
+    // In-House Travel Specialist Intelligence (SI) Engine (10,000 Q&A conversations)
+    let siResult = null;
+    try {
+        siResult = await pythonEngineClient.querySI({
+            query: userQuery,
+            history: normalizedMessages
+        });
+    } catch (siErr) {
+        logger.warn('OrchestratorStream', 'Python SI Engine query failed', { error: siErr.message });
+    }
+
     let streamedReply = "";
     if (brainResult && brainResult.reply) {
         const words = brainResult.reply.split(' ');
@@ -497,12 +508,28 @@ async function processUserMessageStream({ messages = [], userId = null, conversa
             onToken(token);
         }
         streamedReply = brainResult.reply;
+    } else if (siResult && siResult.matched && siResult.reply) {
+        const words = siResult.reply.split(' ');
+        for (let i = 0; i < words.length; i++) {
+            const token = (i === 0 ? '' : ' ') + words[i];
+            onToken(token);
+        }
+        streamedReply = siResult.reply;
+        logger.info('OrchestratorStream', 'Streamed answer via Python SI Engine', { category: siResult.category, score: siResult.score });
     } else {
         try {
+            let enrichedUserQuery = userQueryWithContext;
+            if (siResult && siResult.topMatches && siResult.topMatches.length > 0) {
+                const siSnippets = siResult.topMatches.slice(0, 3)
+                    .map(m => `Q: ${m.question}\nA: ${m.answer}`)
+                    .join('\n\n');
+                enrichedUserQuery += `\n\n[Travel Domain Knowledge Base (10k Verified Travel Interactions)]:\n${siSnippets}`;
+            }
+
             streamedReply = await streamChatCompletion({
                 systemInstruction: dynamicPrompt,
                 history: normalizedMessages.slice(0, -1),
-                userQuery: userQueryWithContext,
+                userQuery: enrichedUserQuery,
                 onToken: (token) => {
                     onToken(token);
                 }

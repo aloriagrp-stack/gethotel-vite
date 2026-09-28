@@ -54,6 +54,13 @@ class PythonEngineClient {
     }
 
     /**
+     * Query the 10,000 travel conversations SI retrieval engine
+     */
+    async querySI(payload) {
+        return this._post('/api/si/query', payload, 5000);
+    }
+
+    /**
      * Convert and optimize image to WebP format
      */
     async convertWebP(payload) {

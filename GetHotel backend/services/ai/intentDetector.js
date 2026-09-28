@@ -43,6 +43,14 @@ function detectIntent(userQuery = '', history = [], memory = {}) {
     const isTourQuery = /\b(tour|package|itinerary|trip\s+plan|days\s+trip|days\s+tour|sightseeing\s+plan|holiday\s+package)\b/i.test(text);
     if (isTourQuery) return INTENTS.INDIA_TOUR_PLANNER;
 
+    // 2.5. Check Travel Advice, Weather, Trekking, Solo Safety, Tourism queries (Handled by 10k Conversations SI Engine)
+    const isTravelAdvice = /\b(monsoon|barish|weather|mosam|mausam|climate|kaisa|kaise|best\s*time|kab\s*jana|trek|trekking|hiking|solo|safe|safety|places\s*to\s*visit|ghumne|ghumo|guide|route|routes|things\s*to\s*do|sightseeing|packing|culture|food|cafe)\b/i.test(text);
+    const hasExplicitHotelIntent = /\b(hotel|hotels|resort|resorts|stay|stays|room|rooms|lodge|dharamshala|homestay|cottage|hostel|booking|book|chahiye|rukna)\b/i.test(text);
+
+    if (isTravelAdvice && !hasExplicitHotelIntent) {
+        return INTENTS.GENERAL_CHAT;
+    }
+
     // Strict room check — requires explicit room/kamra keywords OR date follow-up with active hotel in memory
     const isExplicitRoomQuery = /\b(room|rooms|kamra|kamre|bed|suite)\b/i.test(text);
     const isDateFollowUp = /\b(\d{1,2}(?:st|nd|rd|th)?\s*(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|january|february|march|april|may|june|july|august|september|october|november|december)?|kal|parso|today|tomorrow|weekend|dates?)\b/i.test(text);
