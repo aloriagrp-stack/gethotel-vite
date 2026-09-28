@@ -10,6 +10,7 @@ const bcrypt = require('bcryptjs');
 const pythonEngineClient = require('../services/pythonEngineClient');
 const inHouseParser = require('../services/inHouseParser');
 const { processUserMessage, processUserMessageStream } = require('../services/ai/orchestrator');
+const { generateGreeting } = require('../services/ai/dynamicSynthesizer');
 
 let razorpay;
 if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
@@ -510,9 +511,15 @@ function sanitizeHotels(hotels) {
  * @access  Public
  */
 exports.chat = async (req, res) => {
-    const { messages, conversationId, sessionId } = req.body;
+    let { messages, message, query, conversationId, sessionId } = req.body;
+    if (!messages && (message || query)) {
+        messages = [{ role: 'user', content: String(message || query) }];
+    } else if (typeof messages === 'string') {
+        messages = [{ role: 'user', content: messages }];
+    }
+
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
-        return res.json({ success: true, reply: "Hello! I'm your AI travel assistant. How can I help you plan your trip today?", hotels: [] });
+        return res.json({ success: true, reply: generateGreeting(false), hotels: [], cards: [] });
     }
 
     let userId = null;
@@ -563,7 +570,15 @@ exports.chat = async (req, res) => {
  * @access  Public / Authenticated
  */
 exports.chatStream = async (req, res) => {
-    const { messages, conversationId, sessionId, userMemory } = req.body;
+    let { messages, message, query, conversationId, sessionId, userMemory } = req.body;
+    if (!messages && (message || query)) {
+        messages = [{ role: 'user', content: String(message || query) }];
+    } else if (typeof messages === 'string') {
+        messages = [{ role: 'user', content: messages }];
+    }
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+        messages = [{ role: 'user', content: 'hi' }];
+    }
     let userId = null;
 
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
