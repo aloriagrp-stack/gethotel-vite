@@ -181,7 +181,7 @@ const callOpenRouterFallback = async ({ systemInstruction, history = [], userQue
 };
 
 /** Static fallback reply when all LLM providers are down */
-const ALL_PROVIDERS_DOWN_REPLY = "Hey! 😄 I had a brief connection hiccup. Ask me again and I'll get right on it!";
+const ALL_PROVIDERS_DOWN_REPLY = "Main ChatGHS hoon — aapka personal AI Travel Specialist! Kahan chalne ka plan bana rahe hain? Destination ya budget batayein, main turant verified hotels aur customized packages nikaal dunga! 🎒✈️";
 
 /**
  * Generate chat completion using DeepSeek (OpenRouter) → Gemini → Groq → OpenRouter auto chain.

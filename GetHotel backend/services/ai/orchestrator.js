@@ -16,6 +16,7 @@ const {
 } = require('./intelligenceEngine');
 const travelBrain = require('./travelBrain');
 const pythonEngineClient = require('../pythonEngineClient');
+const convoIndexer = require('./convoDatasetIndexer');
 const logger = require('./logger');
 
 // ---------------------------------------------------------------------------
@@ -133,20 +134,30 @@ function sanitizeHallucinatedHotels(reply = '', dbHotels = [], intent = '') {
 // ---------------------------------------------------------------------------
 
 /**
- * Builds a deterministic fallback reply from DB data when the LLM is down.
+ * Builds a deterministic fallback reply from DB data or in-house convo indexer when the LLM is down.
  * @param {Array} dbHotels - Hotels from database search
  * @param {string} intent - Detected user intent
+ * @param {string} userQuery - Raw user query
  * @returns {string}
  */
-function buildDeterministicFallback(dbHotels = [], intent) {
+function buildDeterministicFallback(dbHotels = [], intent = '', userQuery = '') {
     if (dbHotels.length > 0) {
         const top = dbHotels[0];
-        return `I found ${dbHotels.length} option${dbHotels.length > 1 ? 's' : ''} for you! Check out ${top.name || 'this hotel'} in ${top.city || 'your destination'} — looks like a great fit. 🏨`;
+        return `I found ${dbHotels.length} option${dbHotels.length > 1 ? 's' : ''} for you! Check out **${top.name || 'this hotel'}** in ${top.city || 'your destination'} — looks like a great fit. 🏨`;
     }
+
+    if (userQuery) {
+        const matched = convoIndexer.findBestMatch(userQuery);
+        if (matched && matched.reply) {
+            return matched.reply;
+        }
+    }
+
     if (intent === 'HOTEL_SEARCH' || intent === 'ROOM_SEARCH') {
-        return "Let's adjust your search — try a different city or tweak the dates to find some great stays! 🏖️";
+        return "Haanji! Is location ke liye koi specific hotel ya budget dekhna chahte hain? City batayein (jaise 'Jaipur under 3000' ya 'Paharganj couple friendly') aur main turant best stays dikhata hoon! 🏖️";
     }
-    return "Hey! 😄 I had a brief hiccup connecting. What were you looking for?";
+
+    return "Main ChatGHS hoon — aapka personal AI Travel Specialist! Kahan chalne ka plan bana rahe hain? Destination ya budget batayein, main turant verified hotels aur packages nikaal dunga! 🎒✈️";
 }
 
 // ---------------------------------------------------------------------------
@@ -304,7 +315,7 @@ async function processUserMessage({ messages = [], userId = null, conversationId
             });
         } catch (err) {
             logger.error('Orchestrator', 'LLM gateway threw', { error: err.message });
-            rawReply = buildDeterministicFallback(dbHotels, intent);
+            rawReply = buildDeterministicFallback(dbHotels, intent, userQuery);
         }
     }
 

@@ -45,12 +45,53 @@ class TravelBrain {
             }
         }
 
-        // 3. Check for Greeting or General Chat - Hand off to SI / LLM Engine for rich, human conversation
+        // 3. Check for Language Switching (e.g. "talk in english", "speak hindi", "english please")
+        const isEnglishSwitch = /\b(talk\s+(?:in\s+)?english|speak\s+(?:in\s+)?english|speak\s+english|english\s+please|in\s+english|switch\s+to\s+english|use\s+english|reply\s+in\s+english|can\s+you\s+speak\s+english|can\s+you\s+talk\s+in\s+english)\b/i.test(query);
+        const isHindiSwitch = /\b(hindi\s+me\s+(?:baat\s+karo|bolo|batao|likho)|speak\s+(?:in\s+)?hindi|shuddh\s+hindi|hindi\s+please|switch\s+to\s+hindi)\b/i.test(query);
+
+        if (isEnglishSwitch) {
+            // Check if there was an active hotel or search in recent history or dbHotels
+            const hasRecentHotel = (dbHotels && dbHotels.length > 0) || (memory && (memory.selectedHotelId || memory.destination));
+            const hotelName = (dbHotels && dbHotels[0]?.name) || memory?.selectedHotelName || null;
+            const destName = (dbHotels && dbHotels[0]?.city) || memory?.destination || "your destination";
+
+            let reply = "Certainly! Switching to English. 🇬🇧\n\nI'm your dedicated AI Travel Concierge. Would you like to explore verified hotels, 3hr/6hr transit stays, flights, or plan a custom India tour itinerary?";
+            if (hasRecentHotel) {
+                reply = `Certainly! Switching to English. 🇬🇧\n\nI've pulled up verified stays in **${destName}**${hotelName ? ` including **${hotelName}**` : ''} featuring AC rooms, free Wi-Fi, and top cleanliness ratings.\n\nTake a look at the cards below, and let me know if you'd like to explore specific room categories or lock in your check-in dates!`;
+            }
+
+            return {
+                reply,
+                hotels: dbHotels,
+                responseType: 'language_switch'
+            };
+        }
+
+        if (isHindiSwitch) {
+            return {
+                reply: "Haanji bilkul! Ab hum aapse Hindi me baat karenge. Kahan chalne ka plan ban raha hai aapka? 🏨✨",
+                hotels: dbHotels,
+                responseType: 'language_switch'
+            };
+        }
+
+        // 4. Check Dataset Indexer for general travel knowledge, FAQ, identity, capabilities, or small talk
+        const matchedConvo = convoIndexer.findBestMatch(query);
+        if (matchedConvo && matchedConvo.reply && (matchedConvo.score >= 5 || matchedConvo.patterns)) {
+            logger.info('TravelBrain', 'Served via In-House ConvoIndexer', { score: matchedConvo.score, category: matchedConvo.category });
+            return {
+                reply: matchedConvo.reply,
+                hotels: dbHotels,
+                responseType: matchedConvo.responseType || 'travel_faq'
+            };
+        }
+
+        // 5. Check for Greeting or General Chat - Hand off to SI / LLM Engine if not caught above
         if (parsed.intent === 'GREETING' || parsed.intent === 'GENERAL_CHAT') {
             return null;
         }
 
-        // 4. Hotel & Room Search
+        // 6. Hotel & Room Search
         let hotelsToReturn = dbHotels || [];
 
         // If no hotels were passed in, query Prisma directly
