@@ -7,6 +7,7 @@
 const prisma = require('../../config/db');
 const { parseTravelQuery } = require('./travelQueryParser');
 const convoIndexer = require('./convoDatasetIndexer');
+const dynamicSynthesizer = require('./dynamicSynthesizer');
 const logger = require('./logger');
 
 class TravelBrain {
@@ -14,12 +15,14 @@ class TravelBrain {
         const parsed = parseTravelQuery(query);
         logger.info('TravelBrain', 'Parsed user query', { intent: parsed.intent, city: parsed.city, budget: parsed.budget });
 
+        const qLower = query.toLowerCase().trim();
+
         // 1. Check for Bargain / Discount intent first
         if (parsed.intent === 'BARGAIN_DISCOUNT') {
             const activeHotel = (dbHotels && dbHotels.length > 0) ? dbHotels[0] : (memory.selectedHotel || null);
             const hotelName = activeHotel ? activeHotel.name : "GetHotelStays";
             
-            const reply = `Bhai aapke liye special deal! 🎉\n\n**${hotelName}** par promo code **GHS10** use karein aur instant **10% extra discount** paayein! Neeche card me 'Book Now' par click karke coupon apply karein. Deal lock karein? 🏨✨`;
+            const reply = `Great news! 🎉 You can use exclusive promo code **GHS10** for an instant **10% extra discount** on **${hotelName}**!\n\nSimply tap 'Book Now' on the card below and apply the code at checkout. Shall we lock in this special rate for you? 🏨✨`;
             
             return {
                 reply,
@@ -33,7 +36,88 @@ class TravelBrain {
             };
         }
 
-        // 2. Check for Policy FAQ (Local ID, Couple Friendly, Timings, Cancellation)
+        // 2. Check for Language Switching (e.g. "talk in english", "speak hindi", "english please")
+        const isEnglishSwitch = /\b(talk\s+(?:in\s+)?english|speak\s+(?:in\s+)?english|speak\s+english|english\s+please|in\s+english|switch\s+to\s+english|use\s+english|reply\s+in\s+english|can\s+you\s+speak\s+english|can\s+you\s+talk\s+in\s+english)\b/i.test(query);
+        const isHindiSwitch = /\b(hindi\s+me\s+(?:baat\s+karo|bolo|batao|likho)|speak\s+(?:in\s+)?hindi|shuddh\s+hindi|hindi\s+please|switch\s+to\s+hindi)\b/i.test(query);
+
+        if (isEnglishSwitch || isHindiSwitch) {
+            const recentHotelInfo = (dbHotels && dbHotels.length > 0) ? {
+                city: dbHotels[0].city,
+                name: dbHotels[0].name
+            } : (memory?.selectedHotelId ? {
+                city: memory.destination || "your destination",
+                name: memory.selectedHotelName || null
+            } : null);
+
+            return {
+                reply: dynamicSynthesizer.generateLanguageSwitch(isHindiSwitch ? 'hi' : 'en', recentHotelInfo),
+                hotels: dbHotels,
+                responseType: 'language_switch'
+            };
+        }
+
+        // 3. Check for Identity & Personal Questions ("who are you", "who made you", "what's your name")
+        const isIdentity = /\b(who\s+(?:are\s+you|created\s+you|made\s+you)|what\s+is\s+your\s+name|what'?s\s+your\s+name|tell\s+me\s+about\s+yourself|tu\s+kaun\s+hai|tera\s+naam\s+kya\s+hai|tum\s+kaun\s+ho)\b/i.test(qLower);
+        if (isIdentity) {
+            return {
+                reply: dynamicSynthesizer.generateIdentity(),
+                hotels: dbHotels,
+                responseType: 'identity'
+            };
+        }
+
+        // 4. Check for Capabilities ("what can you do for me", "what are your features", "how can you help")
+        const isCapabilities = /\b(what\s+can\s+you\s+do|what\s+can\s+u\s+do|how\s+can\s+you\s+help|what\s+are\s+your\s+features|kya\s+kar\s+sakte\s+ho|kya\s+kya\s+kar\s+sakta|features|capabilities)\b/i.test(qLower);
+        if (isCapabilities) {
+            return {
+                reply: dynamicSynthesizer.generateCapabilities(),
+                hotels: dbHotels,
+                responseType: 'capabilities'
+            };
+        }
+
+        // 5. Check for Status / How Are You
+        const isStatus = /\b(how\s+are\s+you|how\s+r\s+u|how\s+are\s+things|kya\s+haal\s+hai|kaise\s+ho|what'?s\s+up|wassup|how\s+do\s+you\s+do)\b/i.test(qLower);
+        if (isStatus) {
+            return {
+                reply: dynamicSynthesizer.generateSmallTalk(),
+                hotels: dbHotels,
+                responseType: 'smalltalk'
+            };
+        }
+
+        // 6. Check for Gratitude ("thank you", "thanks", "awesome", "great")
+        const isGratitude = /\b(thanks?|thank\s+you|dhanyawad|shukriya|great|awesome|cool|perfect|thx|superb)\b/i.test(qLower) && qLower.split(' ').length <= 4;
+        if (isGratitude) {
+            return {
+                reply: dynamicSynthesizer.generateGratitude(),
+                hotels: dbHotels,
+                responseType: 'gratitude'
+            };
+        }
+
+        // 7. Check for Farewell ("bye", "goodbye", "see you")
+        const isFarewell = /\b(bye|goodbye|alvida|see\s+you|good\s+night|tata)\b/i.test(qLower) && qLower.split(' ').length <= 3;
+        if (isFarewell) {
+            return {
+                reply: dynamicSynthesizer.generateFarewell(),
+                hotels: dbHotels,
+                responseType: 'farewell'
+            };
+        }
+
+        // 8. Check for Pure Greetings ("hi", "hello", "hey", "good morning")
+        const isGreetingOnly = /^(hi|hello|hey|greetings|hola|namaste|good\s+(?:morning|afternoon|evening))\b/i.test(qLower) && qLower.split(' ').length <= 3;
+        if (isGreetingOnly) {
+            const userTurnsCount = messages.filter(m => m.role === 'user').length;
+            return {
+                reply: dynamicSynthesizer.generateGreeting(userTurnsCount > 1),
+                hotels: dbHotels,
+                responseType: 'greeting'
+            };
+        }
+
+        // 9. Check Policy FAQ (Local ID, Couple Friendly, Timings, Cancellation)
         if (parsed.intent === 'POLICY_FAQ') {
             const matchedFaq = convoIndexer.findBestMatch(query);
             if (matchedFaq && matchedFaq.reply) {
@@ -45,50 +129,19 @@ class TravelBrain {
             }
         }
 
-        // 3. Check for Language Switching (e.g. "talk in english", "speak hindi", "english please")
-        const isEnglishSwitch = /\b(talk\s+(?:in\s+)?english|speak\s+(?:in\s+)?english|speak\s+english|english\s+please|in\s+english|switch\s+to\s+english|use\s+english|reply\s+in\s+english|can\s+you\s+speak\s+english|can\s+you\s+talk\s+in\s+english)\b/i.test(query);
-        const isHindiSwitch = /\b(hindi\s+me\s+(?:baat\s+karo|bolo|batao|likho)|speak\s+(?:in\s+)?hindi|shuddh\s+hindi|hindi\s+please|switch\s+to\s+hindi)\b/i.test(query);
-
-        if (isEnglishSwitch) {
-            // Check if there was an active hotel or search in recent history or dbHotels
-            const hasRecentHotel = (dbHotels && dbHotels.length > 0) || (memory && (memory.selectedHotelId || memory.destination));
-            const hotelName = (dbHotels && dbHotels[0]?.name) || memory?.selectedHotelName || null;
-            const destName = (dbHotels && dbHotels[0]?.city) || memory?.destination || "your destination";
-
-            let reply = "Certainly! Switching to English. 🇬🇧\n\nI'm your dedicated AI Travel Concierge. Would you like to explore verified hotels, 3hr/6hr transit stays, flights, or plan a custom India tour itinerary?";
-            if (hasRecentHotel) {
-                reply = `Certainly! Switching to English. 🇬🇧\n\nI've pulled up verified stays in **${destName}**${hotelName ? ` including **${hotelName}**` : ''} featuring AC rooms, free Wi-Fi, and top cleanliness ratings.\n\nTake a look at the cards below, and let me know if you'd like to explore specific room categories or lock in your check-in dates!`;
-            }
-
-            return {
-                reply,
-                hotels: dbHotels,
-                responseType: 'language_switch'
-            };
-        }
-
-        if (isHindiSwitch) {
-            return {
-                reply: "Haanji bilkul! Ab hum aapse Hindi me baat karenge. Kahan chalne ka plan ban raha hai aapka? 🏨✨",
-                hotels: dbHotels,
-                responseType: 'language_switch'
-            };
-        }
-
-        // 4. Check Dataset Indexer for general travel knowledge, FAQ, identity, capabilities, or small talk
+        // 10. Check Dataset Indexer for general travel knowledge (Weather, Trekking, Solo Safety)
         const matchedConvo = convoIndexer.findBestMatch(query);
         if (matchedConvo && matchedConvo.reply && (matchedConvo.score >= 5 || matchedConvo.patterns)) {
             logger.info('TravelBrain', 'Served via In-House ConvoIndexer', { score: matchedConvo.score, category: matchedConvo.category });
             return {
-                reply: matchedConvo.reply,
+                reply: dynamicSynthesizer.generateTravelAdvice({
+                    question: matchedConvo.query || query,
+                    answer: matchedConvo.reply,
+                    category: matchedConvo.category
+                }),
                 hotels: dbHotels,
                 responseType: matchedConvo.responseType || 'travel_faq'
             };
-        }
-
-        // 5. Check for Greeting or General Chat - Hand off to SI / LLM Engine if not caught above
-        if (parsed.intent === 'GREETING' || parsed.intent === 'GENERAL_CHAT') {
-            return null;
         }
 
         // 6. Hotel & Room Search
@@ -146,10 +199,12 @@ class TravelBrain {
             const top = hotelsToReturn[0];
             const locName = parsed.area || parsed.city || top.city || "Delhi";
             
-            let tagDesc = "";
-            if (parsed.tags.includes("coupleFriendly")) tagDesc = " 100% couple-friendly aur";
-            
-            const reply = `Haanji! **${locName}** me aapke liye${tagDesc} best options mil gaye hain:\n\n**${top.name}** sabse top choice hai — yahan ₹${top.pricePerNight} per night me AC room, free Wi-Fi aur verified premium service mil rahi hai! 🏨⭐\n\nNeeche hotel cards me photos aur room categories check karein aur seedha 'Book Now' par click karein! 👇`;
+            const reply = dynamicSynthesizer.generateHotelProse({
+                location: locName,
+                topHotel: top.name,
+                price: top.pricePerNight,
+                tags: parsed.tags || []
+            });
 
             return {
                 reply,
@@ -158,8 +213,12 @@ class TravelBrain {
             };
         }
 
-        // If no hotels were found, hand off to SI Engine / LLM for natural answer
-        return null;
+        // 7. General fallback if query is purely conversational
+        return {
+            reply: dynamicSynthesizer.generateFallback(query),
+            hotels: [],
+            responseType: 'general'
+        };
     }
 }
 
