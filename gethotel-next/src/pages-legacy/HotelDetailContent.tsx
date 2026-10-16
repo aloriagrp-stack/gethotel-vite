@@ -1955,6 +1955,41 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                     )}
 
 
+                    {/* Hotel FAQs Section for SEO & User Clarity */}
+                    <section className="pt-12 pb-6 border-t border-slate-100 space-y-6">
+                        <div>
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 block mb-1">Frequently Asked Questions</span>
+                            <h2 className="text-2xl md:text-3xl font-black text-slate-950 tracking-tight">Got questions about {hotel.name}?</h2>
+                            <p className="text-xs md:text-sm text-slate-500 font-medium mt-1">Everything you need to know about couple-friendly policies, check-in, deposit, and location.</p>
+                        </div>
+                        <div className="bg-slate-50/50 border border-slate-100 rounded-3xl p-6 md:p-8 space-y-2">
+                            {[
+                                {
+                                    question: `Is ${hotel.name} couple friendly and are local IDs accepted?`,
+                                    answer: `Yes, ${hotel.name} in ${hotel.city || 'Delhi'} is 100% couple friendly and welcomes adult unmarried couples (18+). Valid original government photo IDs including Aadhaar Card, Driving License, Voter ID, and Passport are accepted at check-in with complete privacy.`
+                                },
+                                {
+                                    question: `Can I book ${hotel.name} by paying only a 12% deposit?`,
+                                    answer: `Yes! You can reserve your room on GetHotelStays by paying only a 12% advance deposit online. The remaining 88% is paid directly at the hotel reception upon check-in.`
+                                },
+                                {
+                                    question: `What are the check-in and check-out timings for ${hotel.name}?`,
+                                    answer: `Standard check-in time is 12:00 PM and check-out time is 11:00 AM. 24-hour reception is available for late night arrivals.`
+                                },
+                                {
+                                    question: `Where is ${hotel.name} located?`,
+                                    answer: `${hotel.name} is conveniently located at ${hotel.address || hotel.city || 'Delhi, India'}, offering convenient access to local transit, metro stations, airport, and major tourist hubs.`
+                                },
+                                {
+                                    question: `What amenities are provided in the rooms at ${hotel.name}?`,
+                                    answer: `${hotel.name} offers air-conditioned rooms with high-speed complimentary Wi-Fi, en-suite private bathrooms with 24/7 hot & cold water, flat-screen TV, clean sanitized linen, and room service.`
+                                }
+                            ].map((faq, idx) => (
+                                <FAQItem key={idx} faq={faq} />
+                            ))}
+                        </div>
+                    </section>
+
                     {/* Final Thank You Message */}
                     <section className="pt-4 pb-2 border-t border-slate-100 flex flex-col items-center text-center space-y-5">
                         <div className="max-w-xl space-y-3">

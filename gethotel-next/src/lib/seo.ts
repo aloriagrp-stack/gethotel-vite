@@ -650,26 +650,94 @@ export const buildHotelSEO = (hotel: {
     images?: string[];
 }) => {
     const location = [hotel.city, hotel.state].filter(Boolean).join(", ") || "India";
-    const price = hotel.pricePerNight ? `from ₹${hotel.pricePerNight?.toLocaleString("en-IN")}/night` : "";
+    const priceFormatted = hotel.pricePerNight ? `₹${hotel.pricePerNight?.toLocaleString("en-IN")}` : "";
+    const price = priceFormatted ? `from ${priceFormatted}/night` : "";
     const stars = hotel.starRating ? `${hotel.starRating}-Star` : "";
 
     return {
-        title: `${hotel.name} — ${stars} Hotel in ${location} ${price} | GetHotelStays`,
+        title: `${hotel.name}, ${location} — ${priceFormatted ? `${priceFormatted} | ` : ""}Couple Friendly, Pay 12% | GetHotelStays`,
         description: hotel.description
-            ? `${hotel.description.slice(0, 140)}... Book ${hotel.name} in ${location}. Best price guaranteed. Instant confirmation.`
-            : `Book ${hotel.name} — ${stars} hotel in ${location} ${price}. Verified property, free cancellation available. Pay 12% now, rest at hotel. Instant confirmation on GetHotelStays.`,
+            ? `${hotel.description.slice(0, 140)}... Book ${hotel.name} in ${location}. 100% couple-friendly, local IDs accepted. Pay 12% online deposit, rest at hotel. Free cancellation & best rate guaranteed.`
+            : `Book ${hotel.name} in ${location} ${price}. Verified ${stars} property, couple-friendly (local IDs accepted), free Wi-Fi & AC rooms. Pay 12% deposit online, rest at check-in on GetHotelStays.`,
         keywords: [
+            hotel.name.toLowerCase(),
+            `hotel ${hotel.name.toLowerCase()}`,
+            `${hotel.name.toLowerCase()} booking`,
+            `${hotel.name.toLowerCase()} price`,
+            `${hotel.name.toLowerCase()} contact`,
+            `${hotel.name.toLowerCase()} review`,
+            `${hotel.name.toLowerCase()} rooms`,
             `hotels in ${hotel.city?.toLowerCase() || "india"}`,
-            `${hotel.name?.toLowerCase()} hotel`,
+            `couple friendly hotels in ${hotel.city?.toLowerCase() || "india"}`,
+            `hourly hotels in ${hotel.city?.toLowerCase() || "india"}`,
+            `budget hotels in ${hotel.city?.toLowerCase() || "india"}`,
             `${hotel.city?.toLowerCase() || ""} hotels`,
             `book hotel ${hotel.city?.toLowerCase() || "india"}`,
-            `best hotels ${hotel.city?.toLowerCase() || "india"}`,
             `${stars.toLowerCase()} hotels india`,
             "hotel booking india",
             "gethotelstays",
         ].filter(Boolean),
         ogType: "place",
         ogImage: hotel.images?.[0] || SITE.logo,
+    };
+};
+
+/** Build FAQPage Schema.org JSON-LD for rich snippet accordions on Google Search */
+export const buildHotelFAQSchema = (hotel: {
+    name: string;
+    city?: string;
+    address?: string;
+    pricePerNight?: number;
+}) => {
+    const name = hotel.name || "This hotel";
+    const city = hotel.city || "India";
+    const address = hotel.address || city;
+
+    return {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": `Is ${name} couple-friendly and are local IDs accepted?`,
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": `Yes, ${name} in ${city} is 100% couple-friendly and welcomes adult unmarried couples (18+). Valid original government photo IDs including Aadhaar Card, Driving License, Voter ID, and Passport are accepted at check-in with complete privacy.`
+                }
+            },
+            {
+                "@type": "Question",
+                "name": `Can I book a room at ${name} by paying only a 12% deposit?`,
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": `Yes! On GetHotelStays, you only pay a 12% deposit online to lock in your reservation at ${name}. The remaining 88% is paid directly at the hotel front desk during check-in.`
+                }
+            },
+            {
+                "@type": "Question",
+                "name": `What are the check-in and check-out timings for ${name}?`,
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": `Standard check-in time at ${name} is 12:00 PM and check-out time is 11:00 AM. 24-hour reception is available for late arrivals.`
+                }
+            },
+            {
+                "@type": "Question",
+                "name": `Where is ${name} located?`,
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": `${name} is located at ${address}. It offers convenient connectivity to local transit, metro stations, airport, and major tourist hubs.`
+                }
+            },
+            {
+                "@type": "Question",
+                "name": `Does ${name} offer free cancellation?`,
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": `Yes, free cancellation is available on eligible room bookings at ${name} on GetHotelStays when cancelled prior to the hotel cancellation window.`
+                }
+            }
+        ]
     };
 };
 

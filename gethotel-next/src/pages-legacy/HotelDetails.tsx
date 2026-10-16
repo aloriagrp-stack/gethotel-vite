@@ -6,7 +6,7 @@ import { hotelApi } from "@/lib/api";
 import { getHotelUrl } from "@/lib/utils";
 import SEOHead from "@/components/common/SEOHead";
 import Loader from "@/components/common/Loader";
-import { buildHotelSEO, buildHotelSchema, buildBreadcrumbSchema, SITE } from "@/lib/seo";
+import { buildHotelSEO, buildHotelSchema, buildBreadcrumbSchema, buildHotelFAQSchema, SITE } from "@/lib/seo";
 
 interface HotelDetailPageProps {
     hotelId?: string;
@@ -111,6 +111,7 @@ export default function HotelDetailPage({ hotelId }: HotelDetailPageProps = {}) 
 
     const seoData = buildHotelSEO(hotel);
     const hotelSchema = buildHotelSchema(hotel, hotel.reviews || []);
+    const hotelFaqSchema = buildHotelFAQSchema(hotel);
     const cityUrl = hotel.city && ["goa", "jaipur", "manali", "shimla", "udaipur", "delhi"].includes(hotel.city.toLowerCase().trim())
         ? `/${hotel.city.toLowerCase().trim()}-hotels`
         : `/hotels?city=${encodeURIComponent(hotel.city || "")}`;
@@ -134,7 +135,7 @@ export default function HotelDetailPage({ hotelId }: HotelDetailPageProps = {}) 
                 ogImage={seoData.ogImage}
                 ogUrl={cleanUrl}
                 canonicalUrl={cleanUrl}
-                schemas={[hotelSchema, breadcrumb]}
+                schemas={[hotelSchema, breadcrumb, hotelFaqSchema]}
             />
             <HotelDetailContent initialHotel={hotel} id={String(hotel.id || id)} />
         </>

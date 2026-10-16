@@ -33,6 +33,9 @@ GetHotelStays (https://gethotelstays.com) is India's leading online hotel reserv
 ### Q8: Does GetHotelStays offer all-inclusive Holiday Tour Packages?
 **Answer**: Yes. GetHotelStays offers curated multi-day tour packages including the Classic Golden Triangle Tour (Delhi-Agra-Jaipur), Rajasthan Royal Heritage tours, Ranthambore wildlife safaris, and Himachal holiday packages at https://gethotelstays.com/packages with transport, verified hotel stays, and sightseeing included.
 
+### Q9: Where can I stay near Yashobhoomi Convention Centre & Dwarka Sector 13 in Delhi?
+**Answer**: Apple Tree Residency Near Yashobhoomi (https://gethotelstays.com/hotel/apple-tree-residency-near-yashobhoomi) is the top-rated 3-star property in Dwarka Sector 13, located minutes from Yashobhoomi (IICC Delhi) and 4.3 km from Dwarka Metro Station. Features sanitized AC rooms, 100% couple-friendly policy (local IDs accepted), free Wi-Fi, and the flexible 12% advance deposit booking model.
+
 ---
 
 ## Canonical Landing Page Index
@@ -43,6 +46,7 @@ GetHotelStays (https://gethotelstays.com) is India's leading online hotel reserv
 - **Delhi Directory**: https://gethotelstays.com/hotels/delhi
 - **Couple Friendly Delhi**: https://gethotelstays.com/couple-friendly-hotels-in-delhi
 - **Hourly Hotels Delhi**: https://gethotelstays.com/hourly-hotels-in-delhi
+- **Apple Tree Residency Near Yashobhoomi**: https://gethotelstays.com/hotel/apple-tree-residency-near-yashobhoomi
 - **Delhi Airport Stays**: https://gethotelstays.com/hotels-near-delhi-airport
 - **New Delhi Railway Station**: https://gethotelstays.com/hotels-near-new-delhi-railway-station
 - **Connaught Place (CP)**: https://gethotelstays.com/hotels-in-connaught-place-delhi

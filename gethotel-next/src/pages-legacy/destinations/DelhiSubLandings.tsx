@@ -56,6 +56,7 @@ export function CoupleFriendlyDelhiHotels() {
                 { label: "Hourly Hotels in Delhi", url: "/hourly-hotels-in-delhi" },
                 { label: "Hotels Near Delhi Airport", url: "/hotels-near-delhi-airport" },
                 { label: "Hotels Near New Delhi Railway Station", url: "/hotels-near-new-delhi-railway-station" },
+                { label: "Apple Tree Residency (Dwarka / Yashobhoomi)", url: "/hotel/apple-tree-residency-near-yashobhoomi" },
             ]}
         />
     );
@@ -114,6 +115,7 @@ export function HourlyDelhiHotels() {
                 { label: "Delhi Hotels Hub", url: "/delhi-hotels" },
                 { label: "Couple Friendly Hotels in Delhi", url: "/couple-friendly-hotels-in-delhi" },
                 { label: "Hotels Near Delhi Airport", url: "/hotels-near-delhi-airport" },
+                { label: "Apple Tree Residency (Dwarka / Yashobhoomi)", url: "/hotel/apple-tree-residency-near-yashobhoomi" },
             ]}
         />
     );
