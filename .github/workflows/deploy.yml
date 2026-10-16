@@ -31,7 +31,8 @@ jobs:
       - name: Build AI Chat Frontend
         run: |
           cd ai.gethotelstays.com
-          npm install
+          rm -f package-lock.json
+          npm install --legacy-peer-deps
           npm run build
 
       - name: Deploy Backend Zip to cPanel
