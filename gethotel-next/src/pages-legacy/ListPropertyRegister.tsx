@@ -239,7 +239,7 @@ export default function PartnerRegisterPage() {
                 </div>
                 
                 <div className="mt-12 text-center">
-                    <p className="text-slate-400 text-sm font-medium">By registering, you agree to our <Link to="/terms-&-conditions" className="text-blue-600 hover:underline">Terms & Conditions</Link>.</p>
+                    <p className="text-slate-400 text-sm font-medium">By registering, you agree to our <Link to="/terms-of-service" className="text-blue-600 hover:underline">Terms & Conditions</Link>.</p>
                 </div>
             </div>
         </div>

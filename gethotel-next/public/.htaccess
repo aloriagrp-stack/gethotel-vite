@@ -84,6 +84,12 @@ RewriteRule ^hotels-in/([^/]+)/?$ /hotels-in/$1/index.html [L,QSA]
 RewriteRule ^hotels/delhi/([^/]+)/?$ /hotels/delhi/$1/index.html [L,QSA]
 
 
+# 2.5 Canonical Redirects for Legacy / Alternative URL Variations
+RewriteRule ^hotels-in-delhi/?$ /delhi-hotels [R=301,L]
+RewriteRule ^terms-&-conditions/?$ /terms-of-service [R=301,L]
+RewriteRule ^terms/?$ /terms-of-service [R=301,L]
+RewriteRule ^terms-of-service-&-conditions/?$ /terms-of-service [R=301,L]
+
 # 3. Multilingual /en/ 301 Redirects to Root (Enforce Canonical)
 RewriteRule ^(en|hi|es|fr|de|zh|ja|ar|ru|pt|bn|ta|te|mr|gu|kn|ml|pa|ur)/?$ / [R=301,L]
 RewriteRule ^(en|hi|es|fr|de|zh|ja|ar|ru|pt|bn|ta|te|mr|gu|kn|ml|pa|ur)/(.*)$ /$2 [R=301,L]
