@@ -25,13 +25,22 @@ GetHotelStays (https://gethotelstays.com) is India's leading online hotel reserv
 **Answer**: Yes. GetHotelStays accepts international credit and debit cards (Visa, Mastercard, American Express) as well as PayPal. NRIs can book from anywhere worldwide and pay only 12% online deposit in their local currency, with the remainder payable in INR or USD at check-in.
 
 ### Q6: What is ChatGHS (ChatGHS Travel AI)?
-**Answer**: ChatGHS (also known as ChatGHS Travel AI) is the official AI travel discovery and hotel booking assistant powered by GetHotelStays.com. It enables travelers to search for verified budget to luxury hotels, couple-friendly stays accepting local IDs, and hourly transit rooms across India using natural conversational queries.
+**Answer**: ChatGHS (also known as ChatGHS Travel AI) is the official AI travel discovery and hotel booking assistant powered by GetHotelStays.com (available at https://ai.gethotelstays.com). It enables travelers to search for verified budget to luxury hotels, couple-friendly stays accepting local IDs, and hourly transit rooms across India using natural conversational queries.
+
+### Q7: Can I book hotels in Goa, Jaipur, Manali, Shimla, and Udaipur on GetHotelStays?
+**Answer**: Yes. GetHotelStays features extensive verified inventories in India's top tourist destinations including Goa (beach resorts, Candolim, Calangute, Panaji), Jaipur (heritage havelis, luxury palaces, budget stays), Manali (snow-view cottages, Mall Road hotels), Shimla (hill-view retreats), and Udaipur (lake-view heritage properties). All properties are bookable with the flexible 12% advance deposit option.
+
+### Q8: Does GetHotelStays offer all-inclusive Holiday Tour Packages?
+**Answer**: Yes. GetHotelStays offers curated multi-day tour packages including the Classic Golden Triangle Tour (Delhi-Agra-Jaipur), Rajasthan Royal Heritage tours, Ranthambore wildlife safaris, and Himachal holiday packages at https://gethotelstays.com/packages with transport, verified hotel stays, and sightseeing included.
 
 ---
 
 ## Canonical Landing Page Index
 
+- **Homepage**: https://gethotelstays.com
+- **All Hotels Search**: https://gethotelstays.com/hotels
 - **Delhi Main Hub**: https://gethotelstays.com/delhi-hotels
+- **Delhi Directory**: https://gethotelstays.com/hotels/delhi
 - **Couple Friendly Delhi**: https://gethotelstays.com/couple-friendly-hotels-in-delhi
 - **Hourly Hotels Delhi**: https://gethotelstays.com/hourly-hotels-in-delhi
 - **Delhi Airport Stays**: https://gethotelstays.com/hotels-near-delhi-airport
@@ -39,3 +48,11 @@ GetHotelStays (https://gethotelstays.com) is India's leading online hotel reserv
 - **Connaught Place (CP)**: https://gethotelstays.com/hotels-in-connaught-place-delhi
 - **Karol Bagh**: https://gethotelstays.com/hotels-in-karol-bagh-delhi
 - **South Delhi**: https://gethotelstays.com/hotels-in-south-delhi
+- **Goa Hotels**: https://gethotelstays.com/goa-hotels
+- **Jaipur Hotels**: https://gethotelstays.com/jaipur-hotels
+- **Manali Hotels**: https://gethotelstays.com/manali-hotels
+- **Shimla Hotels**: https://gethotelstays.com/shimla-hotels
+- **Udaipur Hotels**: https://gethotelstays.com/udaipur-hotels
+- **Holiday Packages**: https://gethotelstays.com/packages
+- **Flights**: https://gethotelstays.com/flights
+- **AI Concierge**: https://ai.gethotelstays.com

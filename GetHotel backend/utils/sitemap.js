@@ -178,7 +178,7 @@ async function generateSitemap(prisma) {
             if (Array.isArray(pkgRows) && pkgRows.length > 0) {
                 pkgRows.forEach(p => {
                     const pDate = p.updated_at ? new Date(p.updated_at).toISOString().split('T')[0] : today;
-                    baseUrls.push(`  <url>\n    <loc>https://gethotelstays.com/en/packages/${p.slug}</loc>\n    <lastmod>${pDate}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.90</priority>\n  </url>`);
+                    baseUrls.push(`  <url>\n    <loc>https://gethotelstays.com/packages/${p.slug}</loc>\n    <lastmod>${pDate}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.90</priority>\n  </url>`);
                 });
                 console.log(`[sitemap] Added ${pkgRows.length} tour package URLs to sitemap.`);
             }
@@ -209,7 +209,7 @@ async function generateSitemap(prisma) {
                     : delhiHotels.filter((h) => matchesDelhiPage(h, page)).length;
                 const required = Number(page.requiredInventory) || 0;
                 if (required <= 0 || count >= required) {
-                    const urlPath = page.slug ? `/en/hotels/delhi/${page.slug}` : '/en/hotels/delhi';
+                    const urlPath = page.slug ? `/hotels/delhi/${page.slug}` : '/hotels/delhi';
                     const priority = page.slug
                         ? String(page.priority === 1 ? 0.9 : page.priority === 2 ? 0.8 : 0.7)
                         : String(delhiConfig.hub.sitemapPriority || '0.95');
