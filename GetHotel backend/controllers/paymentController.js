@@ -198,22 +198,48 @@ exports.verifyPayment = async (req, res) => {
         return res.status(500).json({ success: false, message: 'Razorpay secret key is not configured.' });
     }
 
-    // Verify Razorpay signature
+    // Verify Razorpay signature securely against timing attacks (CWE-208 Prevention)
     const body = razorpay_order_id + "|" + razorpay_payment_id;
     const expectedSignature = crypto
         .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
         .update(body.toString())
         .digest('hex');
-    const isAuthentic = expectedSignature === razorpay_signature;
+
+    const expectedBuffer = Buffer.from(expectedSignature, 'utf8');
+    const actualBuffer = Buffer.from(razorpay_signature || '', 'utf8');
+
+    const isAuthentic = expectedBuffer.length === actualBuffer.length &&
+        crypto.timingSafeEqual(expectedBuffer, actualBuffer);
 
     if (!isAuthentic) {
         return res.status(400).json({ success: false, message: 'Invalid payment signature' });
     }
 
     if (req.body.isPackage) {
+        try {
+            await prisma.transaction.create({
+                data: {
+                    amount: req.body.amount ? Number(req.body.amount) : 0,
+                    status: 'success',
+                    gatewayOrderId: razorpay_order_id,
+                    gatewayPaymentId: razorpay_payment_id,
+                    gatewaySignature: razorpay_signature || null,
+                    rawResponse: JSON.stringify({
+                        type: 'package_booking',
+                        packageId: req.body.packageId || null,
+                        title: req.body.packageTitle || null,
+                        guestEmail: req.body.email || null,
+                        guestPhone: req.body.phone || null
+                    })
+                }
+            });
+        } catch (txErr) {
+            console.error('Failed to log tour package transaction:', txErr);
+        }
+
         return res.status(200).json({
             success: true,
-            message: 'Tour package payment verified successfully.',
+            message: 'Tour package payment verified and recorded successfully.',
             paymentId: razorpay_payment_id,
             orderId: razorpay_order_id
         });
@@ -226,10 +252,24 @@ exports.verifyPayment = async (req, res) => {
         });
 
         if (!booking) {
-            // For package bookings or direct orders without booking record
+            try {
+                await prisma.transaction.create({
+                    data: {
+                        amount: req.body.amount ? Number(req.body.amount) : 0,
+                        status: 'success',
+                        gatewayOrderId: razorpay_order_id,
+                        gatewayPaymentId: razorpay_payment_id,
+                        gatewaySignature: razorpay_signature || null,
+                        rawResponse: JSON.stringify(req.body)
+                    }
+                });
+            } catch (txErr) {
+                console.error('Failed to record standalone transaction:', txErr);
+            }
+
             return res.status(200).json({
                 success: true,
-                message: 'Payment verified successfully.',
+                message: 'Payment verified and recorded successfully.',
                 paymentId: razorpay_payment_id,
                 orderId: razorpay_order_id
             });
@@ -255,13 +295,24 @@ exports.razorpayWebhook = async (req, res) => {
         return res.status(200).json({ status: 'ignored', reason: 'secret missing' });
     }
 
-    // Verify signature
+    // Verify signature with timing-safe comparison
     const expectedSignature = crypto
         .createHmac('sha256', webhookSecret)
         .update(JSON.stringify(req.body))
         .digest('hex');
 
-    if (expectedSignature !== signature) {
+    const isWebhookValid = (() => {
+        try {
+            if (!signature || typeof signature !== 'string') return false;
+            const expectedBuf = Buffer.from(expectedSignature, 'utf8');
+            const signatureBuf = Buffer.from(signature, 'utf8');
+            return expectedBuf.length === signatureBuf.length && crypto.timingSafeEqual(expectedBuf, signatureBuf);
+        } catch {
+            return false;
+        }
+    })();
+
+    if (!isWebhookValid) {
         console.warn('[Webhook] Warning: Invalid signature received on webhook endpoint');
         return res.status(400).json({ success: false, message: 'Invalid webhook signature' });
     }
@@ -312,6 +363,15 @@ exports.fetchPaymentStatus = async (req, res) => {
 
         if (!booking) {
             return res.status(404).json({ success: false, message: 'Booking not found' });
+        }
+
+        // Authorization Check: Only booking owner or admin can manually query/verify
+        if (req.user) {
+            const isOwner = booking.userId === req.user.id;
+            const isAdmin = ['admin', 'superadmin', 'super_admin'].includes(req.user.role);
+            if (!isOwner && !isAdmin) {
+                return res.status(403).json({ success: false, message: 'Not authorized to query this booking payment' });
+            }
         }
 
         if (!booking.razorpayOrderId) {

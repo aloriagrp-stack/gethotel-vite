@@ -12,15 +12,45 @@ interface HeroProps {
     highlight?: string;
     transitionInterval?: number;
     stories?: any[];
+    storiesLoading?: boolean;
 }
 
 export default function Hero({
-    stories
+    stories,
+    storiesLoading = false,
 }: HeroProps) {
     const { mode, setMode } = useStayMode();
     const navigate = useNavigate();
     const { lang } = useParams();
     const langCode = lang || 'en';
+    const searchBarRef = React.useRef<HTMLDivElement>(null);
+
+    const handleHourlyClick = () => {
+        setMode('hourly');
+        if (typeof window !== 'undefined' && searchBarRef.current) {
+            const navbarHeight = 60; // sticky navbar height
+            const rect = searchBarRef.current.getBoundingClientRect();
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const targetY = scrollTop + rect.top - navbarHeight - 14;
+            window.scrollTo({
+                top: Math.max(0, targetY),
+                behavior: 'smooth'
+            });
+        }
+    };
+
+    const handleNightlyClick = () => {
+        setMode('nightly');
+        if (typeof window !== 'undefined') {
+            const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+            if (currentScroll > 30 && currentScroll < 450) {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            }
+        }
+    };
 
     return (
         <section className="relative z-20 flex flex-col items-center justify-start pt-6 sm:pt-10 md:justify-center md:pt-14 pb-2 sm:pb-4 md:pb-8 px-3 md:px-8">
@@ -51,7 +81,7 @@ export default function Hero({
                     <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center gap-2 md:gap-3 mb-6 w-full max-w-lg sm:max-w-none mx-auto px-2 sm:px-4">
                         <button 
                             type="button"
-                            onClick={() => setMode('nightly')}
+                            onClick={handleNightlyClick}
                             className={cn(
                                 "w-full sm:w-auto px-3 py-2.5 md:px-5 md:py-2.5 rounded-full text-xs font-black transition-none flex items-center justify-center gap-1.5 md:gap-2 border shadow-sm cursor-pointer",
                                 mode === 'nightly' 
@@ -65,7 +95,7 @@ export default function Hero({
 
                         <button 
                             type="button"
-                            onClick={() => setMode('hourly')}
+                            onClick={handleHourlyClick}
                             className={cn(
                                 "w-full sm:w-auto px-3 py-2.5 md:px-5 md:py-2.5 rounded-full text-xs font-black transition-none flex items-center justify-center gap-1.5 md:gap-2 border shadow-sm cursor-pointer",
                                 mode === 'hourly' 
@@ -96,7 +126,9 @@ export default function Hero({
                         </button>
                     </div>
 
-                    <SmartSearchBar className="w-full" stories={stories} />
+                    <div ref={searchBarRef} className="w-full">
+                        <SmartSearchBar className="w-full" stories={stories} storiesLoading={storiesLoading} />
+                    </div>
                 </div>
             </div>
 

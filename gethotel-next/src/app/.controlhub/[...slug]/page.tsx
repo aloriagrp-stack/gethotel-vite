@@ -1,18 +1,9 @@
-import type { Metadata } from "next";
-import ControlHubGateway from "@/pages-legacy/admin/ControlHubGateway";
+import { redirect } from "next/navigation";
 
 export function generateStaticParams() {
   return [{ slug: ["dashboard"] }];
 }
 
-export const metadata: Metadata = {
-  title: "Super Admin ControlHub | GetHotelStays",
-  robots: {
-    index: false,
-    follow: false,
-  },
-};
-
 export default function Page() {
-  return <ControlHubGateway />;
+  redirect("/controlhub");
 }

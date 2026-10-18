@@ -581,7 +581,7 @@ export default function AdminPackages() {
             {viewMode === "list" && (
                 <div className="space-y-6">
                     {/* Header - Pure Black Skeuomorphic */}
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-[#0c0c0c] p-6 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)]">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-neutral-900/40 p-6 rounded-2xl border border-neutral-800/80  ">
                         <div className="space-y-1">
                             <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs uppercase tracking-wider">
                                 <Palmtree className="w-4 h-4 text-emerald-400" />
@@ -643,7 +643,7 @@ export default function AdminPackages() {
                             placeholder="Search by package title or destination..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-11 pr-4 py-3.5 bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl text-xs sm:text-sm font-semibold text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-all font-mono"
+                            className="w-full pl-11 pr-4 py-3.5 bg-neutral-900/40 border border-neutral-800/80  rounded-2xl text-xs sm:text-sm font-semibold text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-500  transition-all font-mono"
                         />
                     </div>
 
@@ -651,7 +651,7 @@ export default function AdminPackages() {
                     {loading ? (
                         <Loader variant="inline" text="Loading tour packages..." />
                     ) : filteredPackages.length === 0 ? (
-                        <div className="bg-[#0c0c0c] rounded-2xl p-12 text-center border border-[#1c1c1c] border-t-[#2d2d2d] shadow-2xl space-y-4">
+                        <div className="bg-neutral-900/40 rounded-2xl p-12 text-center border border-neutral-800/80  shadow-2xl space-y-4">
                             <Palmtree className="w-10 h-10 text-neutral-600 mx-auto" />
                             <h3 className="text-sm font-bold uppercase text-white tracking-wider">No Tour Packages Found</h3>
                             <p className="text-xs text-neutral-400 max-w-sm mx-auto font-medium">
@@ -676,7 +676,7 @@ export default function AdminPackages() {
                             </div>
                         </div>
                     ) : (
-                        <div className="bg-[#0c0c0c] rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] divide-y divide-[#181818] overflow-hidden">
+                        <div className="bg-neutral-900/40 rounded-2xl border border-neutral-800/80   divide-y divide-[#181818] overflow-hidden">
                             {filteredPackages.map((pkg) => (
                                 <div key={pkg.id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-[#121212] transition-colors">
                                     <div className="flex items-start gap-4">
@@ -759,7 +759,7 @@ export default function AdminPackages() {
             {/* ========================================================= */}
             {isJsonModalOpen && (
                 <div className="fixed inset-0 z-[250] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-                    <div className="bg-[#0c0c0c] rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-5 shadow-2xl border border-[#1c1c1c] border-t-[#2d2d2d] text-white max-h-[90vh] overflow-y-auto">
+                    <div className="bg-neutral-900/40 rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-5 shadow-2xl border border-neutral-800/80  text-white max-h-[90vh] overflow-y-auto">
                         <div className="flex items-center justify-between border-b border-[#1f1f1f] pb-4">
                             <div className="flex items-center gap-2.5">
                                 <div className="w-10 h-10 rounded-xl bg-[#161616] text-emerald-400 flex items-center justify-center border border-[#282828]">
@@ -862,7 +862,7 @@ export default function AdminPackages() {
             {/* ========================================================= */}
             {isHeroModalOpen && (
                 <div className="fixed inset-0 z-[250] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-                    <div className="bg-[#0c0c0c] rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-5 shadow-2xl border border-[#1c1c1c] border-t-[#2d2d2d] text-white max-h-[90vh] overflow-y-auto">
+                    <div className="bg-neutral-900/40 rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-5 shadow-2xl border border-neutral-800/80  text-white max-h-[90vh] overflow-y-auto">
                         <div className="flex items-center justify-between border-b border-[#1f1f1f] pb-4">
                             <div className="flex items-center gap-2.5">
                                 <div className="w-10 h-10 rounded-xl bg-[#161616] text-blue-400 flex items-center justify-center border border-[#282828]">
@@ -988,7 +988,7 @@ export default function AdminPackages() {
             {viewMode === "form" && (
                 <form onSubmit={handleSubmitForm} className="space-y-6">
                     {/* Header */}
-                    <div className="flex items-center justify-between bg-[#0c0c0c] p-6 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)]">
+                    <div className="flex items-center justify-between bg-neutral-900/40 p-6 rounded-2xl border border-neutral-800/80  ">
                         <div className="flex items-center gap-3">
                             <button
                                 type="button"
@@ -1016,7 +1016,7 @@ export default function AdminPackages() {
                     </div>
 
                     {/* Section 1: Basic Tour Information */}
-                    <div className="bg-[#0c0c0c] p-6 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] space-y-4">
+                    <div className="bg-neutral-900/40 p-6 rounded-2xl border border-neutral-800/80   space-y-4">
                         <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-400 flex items-center gap-2 border-b border-[#1f1f1f] pb-3">
                             <Palmtree className="w-4 h-4 text-emerald-400" />
                             <span>1. Basic Tour Details</span>
@@ -1081,7 +1081,7 @@ export default function AdminPackages() {
                     </div>
 
                     {/* Section 2: Pricing & Stay Features */}
-                    <div className="bg-[#0c0c0c] p-6 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] space-y-4">
+                    <div className="bg-neutral-900/40 p-6 rounded-2xl border border-neutral-800/80   space-y-4">
                         <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-400 flex items-center gap-2 border-b border-[#1f1f1f] pb-3">
                             <ShieldCheck className="w-4 h-4 text-emerald-400" />
                             <span>2. Pricing & Stay Features</span>
@@ -1159,7 +1159,7 @@ export default function AdminPackages() {
                     </div>
 
                     {/* Section 3: Package Images */}
-                    <div className="bg-[#0c0c0c] p-6 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] space-y-4">
+                    <div className="bg-neutral-900/40 p-6 rounded-2xl border border-neutral-800/80   space-y-4">
                         <div className="flex items-center justify-between border-b border-[#1f1f1f] pb-3">
                             <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-400 flex items-center gap-2">
                                 <Image className="w-4 h-4 text-emerald-400" />
@@ -1267,7 +1267,7 @@ export default function AdminPackages() {
                     </div>
 
                     {/* Section 4: Package Overview & Inclusions */}
-                    <div className="bg-[#0c0c0c] p-6 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] space-y-4">
+                    <div className="bg-neutral-900/40 p-6 rounded-2xl border border-neutral-800/80   space-y-4">
                         <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-400 flex items-center gap-2 border-b border-[#1f1f1f] pb-3">
                             <FileCode className="w-4 h-4 text-emerald-400" />
                             <span>4. Overview & Key Inclusions</span>
@@ -1324,7 +1324,7 @@ export default function AdminPackages() {
                     </div>
 
                     {/* Section 5: Day-by-Day Itinerary */}
-                    <div className="bg-[#0c0c0c] p-6 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] space-y-4">
+                    <div className="bg-neutral-900/40 p-6 rounded-2xl border border-neutral-800/80   space-y-4">
                         <div className="flex items-center justify-between border-b border-[#1f1f1f] pb-3">
                             <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-400 flex items-center gap-2">
                                 <Calendar className="w-4 h-4 text-emerald-400" />
@@ -1348,14 +1348,14 @@ export default function AdminPackages() {
                                         value={dayItem.day}
                                         onChange={(e) => handleItineraryChange(idx, "day", e.target.value)}
                                         placeholder="Day 1"
-                                        className="w-24 px-3 py-2 bg-[#0c0c0c] border border-[#282828] rounded-lg text-xs font-extrabold text-emerald-400 outline-none font-mono"
+                                        className="w-24 px-3 py-2 bg-neutral-900/40 border border-[#282828] rounded-lg text-xs font-extrabold text-emerald-400 outline-none font-mono"
                                     />
                                     <input
                                         type="text"
                                         value={dayItem.title}
                                         onChange={(e) => handleItineraryChange(idx, "title", e.target.value)}
                                         placeholder="Day Activity Title"
-                                        className="flex-1 px-3.5 py-2 bg-[#0c0c0c] border border-[#282828] rounded-lg text-xs font-semibold text-white outline-none font-mono"
+                                        className="flex-1 px-3.5 py-2 bg-neutral-900/40 border border-[#282828] rounded-lg text-xs font-semibold text-white outline-none font-mono"
                                     />
                                     <button
                                         type="button"
@@ -1370,14 +1370,14 @@ export default function AdminPackages() {
                                     value={dayItem.desc}
                                     onChange={(e) => handleItineraryChange(idx, "desc", e.target.value)}
                                     placeholder="Activity description for this day..."
-                                    className="w-full px-3.5 py-2 bg-[#0c0c0c] border border-[#282828] rounded-lg text-xs font-medium text-neutral-300 outline-none resize-none font-mono"
+                                    className="w-full px-3.5 py-2 bg-neutral-900/40 border border-[#282828] rounded-lg text-xs font-medium text-neutral-300 outline-none resize-none font-mono"
                                 />
                             </div>
                         ))}
                     </div>
 
                     {/* Bottom Action Bar */}
-                    <div className="bg-[#0c0c0c] p-5 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] flex items-center justify-between">
+                    <div className="bg-neutral-900/40 p-5 rounded-2xl border border-neutral-800/80   flex items-center justify-between">
                         <button
                             type="button"
                             onClick={() => setViewMode("list")}
@@ -1406,7 +1406,7 @@ export default function AdminPackages() {
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-[#0c0c0c] rounded-2xl shadow-2xl border border-[#1c1c1c] border-t-[#2d2d2d] w-full max-w-2xl overflow-hidden text-white"
+                            className="bg-neutral-900/40 rounded-2xl shadow-2xl border border-neutral-800/80  w-full max-w-2xl overflow-hidden text-white"
                         >
                             <div className="p-5 bg-[#0e0e0e] border-b border-[#1f1f1f] flex items-center justify-between">
                                 <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
@@ -1495,7 +1495,7 @@ export default function AdminPackages() {
                                                 placeholder="e.g. Goa, Manali, Shimla..."
                                                 value={destFormData.name}
                                                 onChange={(e) => setDestFormData({ ...destFormData, name: e.target.value })}
-                                                className="w-full px-3 py-2 bg-[#0c0c0c] border border-[#282828] rounded-xl text-xs font-mono text-white focus:outline-none focus:border-sky-500"
+                                                className="w-full px-3 py-2 bg-neutral-900/40 border border-[#282828] rounded-xl text-xs font-mono text-white focus:outline-none focus:border-sky-500"
                                             />
                                         </div>
                                         <div>
@@ -1506,7 +1506,7 @@ export default function AdminPackages() {
                                                 placeholder="https://images.unsplash.com/..."
                                                 value={destFormData.image}
                                                 onChange={(e) => setDestFormData({ ...destFormData, image: e.target.value })}
-                                                className="w-full px-3 py-2 bg-[#0c0c0c] border border-[#282828] rounded-xl text-xs font-mono text-white focus:outline-none focus:border-sky-500"
+                                                className="w-full px-3 py-2 bg-neutral-900/40 border border-[#282828] rounded-xl text-xs font-mono text-white focus:outline-none focus:border-sky-500"
                                             />
                                         </div>
                                     </div>
@@ -1544,7 +1544,7 @@ export default function AdminPackages() {
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-[#0c0c0c] rounded-2xl shadow-2xl border border-[#1c1c1c] border-t-[#2d2d2d] w-full max-w-lg overflow-hidden text-white"
+                            className="bg-neutral-900/40 rounded-2xl shadow-2xl border border-neutral-800/80  w-full max-w-lg overflow-hidden text-white"
                         >
                             <div className="p-5 bg-[#0e0e0e] border-b border-[#1f1f1f] flex items-center justify-between">
                                 <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">

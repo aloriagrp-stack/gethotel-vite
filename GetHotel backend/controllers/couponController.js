@@ -30,11 +30,11 @@ exports.createCoupon = async (req, res, next) => {
         const hotelId = parseInt(req.params.hotelId);
         const { code, discountType, discountValue, minBookingAmt, maxDiscount, startDate, endDate, usageLimit, promoType, targetAudience, minStay, applyToRooms } = req.body;
 
-        // Authorization check
-        const hotel = await prisma.hotel.findUnique({ where: { id: hotelId } });
-        if (!hotel) return res.status(404).json({ success: false, message: 'Hotel not found' });
-        if (hotel.userId !== req.user.id && !['super_admin', 'superadmin', 'admin', 'hotel_admin', 'partner'].includes(req.user.role)) {
-            return res.status(403).json({ success: false, message: 'Not authorized' });
+        // Authorization check: Only hotel owner or super admin
+        const isSuperAdmin = ['super_admin', 'superadmin', 'admin'].includes(req.user.role);
+        const isOwner = hotel.userId === req.user.id;
+        if (!isSuperAdmin && !isOwner) {
+            return res.status(403).json({ success: false, message: 'Not authorized to create coupons for this hotel' });
         }
 
         const coupon = await prisma.coupon.create({
@@ -70,11 +70,11 @@ exports.updateCoupon = async (req, res, next) => {
         const couponId = parseInt(req.params.id);
         const { code, discountType, discountValue, minBookingAmt, maxDiscount, startDate, endDate, usageLimit, promoType, targetAudience, minStay, applyToRooms } = req.body;
 
-        // Authorization check
-        const hotel = await prisma.hotel.findUnique({ where: { id: hotelId } });
-        if (!hotel) return res.status(404).json({ success: false, message: 'Hotel not found' });
-        if (hotel.userId !== req.user.id && !['super_admin', 'superadmin', 'admin', 'hotel_admin', 'partner'].includes(req.user.role)) {
-            return res.status(403).json({ success: false, message: 'Not authorized' });
+        // Authorization check: Only hotel owner or super admin
+        const isSuperAdmin = ['super_admin', 'superadmin', 'admin'].includes(req.user.role);
+        const isOwner = hotel.userId === req.user.id;
+        if (!isSuperAdmin && !isOwner) {
+            return res.status(403).json({ success: false, message: 'Not authorized to update coupons for this hotel' });
         }
 
         // SECURITY: Ensure coupon belongs to the hotel
@@ -116,11 +116,11 @@ exports.toggleCouponStatus = async (req, res, next) => {
         const couponId = parseInt(req.params.id);
         const { isActive } = req.body;
 
-        // Authorization check
-        const hotel = await prisma.hotel.findUnique({ where: { id: hotelId } });
-        if (!hotel) return res.status(404).json({ success: false, message: 'Hotel not found' });
-        if (hotel.userId !== req.user.id && !['super_admin', 'superadmin', 'admin', 'hotel_admin', 'partner'].includes(req.user.role)) {
-            return res.status(403).json({ success: false, message: 'Not authorized' });
+        // Authorization check: Only hotel owner or super admin
+        const isSuperAdmin = ['super_admin', 'superadmin', 'admin'].includes(req.user.role);
+        const isOwner = hotel.userId === req.user.id;
+        if (!isSuperAdmin && !isOwner) {
+            return res.status(403).json({ success: false, message: 'Not authorized to update coupons for this hotel' });
         }
 
         // SECURITY: Ensure coupon belongs to the hotel
@@ -148,11 +148,11 @@ exports.deleteCoupon = async (req, res, next) => {
         const hotelId = parseInt(req.params.hotelId);
         const couponId = parseInt(req.params.id);
 
-        // Authorization check
-        const hotel = await prisma.hotel.findUnique({ where: { id: hotelId } });
-        if (!hotel) return res.status(404).json({ success: false, message: 'Hotel not found' });
-        if (hotel.userId !== req.user.id && !['super_admin', 'superadmin', 'admin', 'hotel_admin', 'partner'].includes(req.user.role)) {
-            return res.status(403).json({ success: false, message: 'Not authorized' });
+        // Authorization check: Only hotel owner or super admin
+        const isSuperAdmin = ['super_admin', 'superadmin', 'admin'].includes(req.user.role);
+        const isOwner = hotel.userId === req.user.id;
+        if (!isSuperAdmin && !isOwner) {
+            return res.status(403).json({ success: false, message: 'Not authorized to delete coupons for this hotel' });
         }
 
         // SECURITY: Ensure coupon belongs to the hotel

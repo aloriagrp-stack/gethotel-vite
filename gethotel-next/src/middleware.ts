@@ -62,6 +62,16 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(destination, { status: 301 });
   }
 
+  // 4b. Canonical Single URL for Super Admin ControlHub: /controlhub
+  if (
+    cleanPath === '/admin' || cleanPath.startsWith('/admin/') ||
+    cleanPath === '/superadmin' || cleanPath.startsWith('/superadmin/') ||
+    cleanPath === '/.controlhub' || cleanPath.startsWith('/.controlhub/')
+  ) {
+    const destination = new URL('/controlhub' + (search || ''), origin);
+    return NextResponse.redirect(destination, { status: 301 });
+  }
+
   // 5. Execute 301 Redirect if cleanPath differed from original pathname
   if (cleanPath !== pathname) {
     const destination = new URL(cleanPath + search, origin);

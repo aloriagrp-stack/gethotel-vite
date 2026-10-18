@@ -147,7 +147,7 @@ export default function AdminLoginPage() {
             }
 
             // Successfully Verified PIN -> Redirect to Super Admin Dashboard
-            router("/.controlhub");
+            router("/controlhub");
         } catch (err: any) {
             setError(cleanErrorMessage(err.message));
         } finally {
@@ -159,186 +159,182 @@ export default function AdminLoginPage() {
     const isEmailVerified = email.trim().toLowerCase().endsWith("@gethotelstays.com");
 
     return (
-        <div className="min-h-screen bg-[#050505] text-neutral-100 flex flex-col items-center justify-center p-4 selection:bg-neutral-800 selection:text-white font-sans relative overflow-hidden">
-            {/* Ambient Security Grid Background Effect */}
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#12121215_1px,transparent_1px),linear-gradient(to_bottom,#12121215_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
-
+        <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col items-center justify-center p-4 selection:bg-slate-200 selection:text-slate-900 font-sans relative">
             <div className="w-full max-w-md relative z-10">
                 {/* Security Clearance Header Badge */}
-                <div className="flex flex-col items-center mb-8">
-                    <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#141414] text-neutral-300 text-xs font-semibold uppercase tracking-widest mb-4">
+                <div className="flex flex-col items-center mb-6 text-center">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold uppercase tracking-wider mb-3">
                         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        RESTRICTED • SUPER ADMIN GATEWAY
+                        ControlHub • Super Admin
                     </div>
 
-                    <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white mb-2 text-center">
-                        The Super Admin
+                    <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 mb-1.5">
+                        Platform Authentication
                     </h1>
-                    <p className="text-xs text-neutral-400 font-mono text-center flex items-center gap-1.5">
-                        <Lock className="w-3 h-3 text-neutral-400 inline" />
-                        AES-256-GCM QUANTUM-RESISTANT PROTOCOL
+                    <p className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
+                        <Lock className="w-3.5 h-3.5 text-slate-400 inline" />
+                        Zero Trust • Encrypted Verification
                     </p>
                 </div>
 
                 {/* Active Login Form Container */}
-                <div className="space-y-6">
-                        {/* Error Message Display */}
-                        {error && (
-                            <div className="p-4 bg-neutral-900/90 border border-neutral-800 rounded-xl text-neutral-200 text-xs font-medium flex items-start gap-3 backdrop-blur-sm animate-shake">
-                                <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                                <div>{error}</div>
-                            </div>
-                        )}
+                <div className="bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-7 shadow-xs space-y-5">
+                    {/* Error Message Display */}
+                    {error && (
+                        <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-xs font-medium flex items-start gap-2.5">
+                            <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                            <div>{error}</div>
+                        </div>
+                    )}
 
-                        {/* STEP 1: IDENTITY & PASSWORD */}
-                        {step === "credentials" && (
-                            <form onSubmit={handleFirstStep} className="space-y-5">
-                                {/* Bot Honeypot Input (Invisible to Humans) */}
+                    {/* STEP 1: IDENTITY & PASSWORD */}
+                    {step === "credentials" && (
+                        <form onSubmit={handleFirstStep} className="space-y-4">
+                            {/* Bot Honeypot Input */}
+                            <input
+                                type="text"
+                                name="bot_field_honey"
+                                value={honeypot}
+                                onChange={(e) => setHoneypot(e.target.value)}
+                                className="hidden pointer-events-none"
+                                tabIndex={-1}
+                                autoComplete="off"
+                            />
+
+                            <div>
+                                <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-600 mb-1.5 flex items-center justify-between">
+                                    <span>Master Identity (Email)</span>
+                                    {isEmailVerified ? (
+                                        <span className="text-[10px] text-emerald-600 font-medium flex items-center gap-1">
+                                            <CheckCircle2 className="w-3 h-3" /> VERIFIED
+                                        </span>
+                                    ) : (
+                                        <span className="text-[10px] text-amber-600 font-medium flex items-center gap-1">
+                                            <AlertTriangle className="w-3 h-3" /> REQUIRED @gethotelstays.com
+                                        </span>
+                                    )}
+                                </label>
                                 <input
-                                    type="text"
-                                    name="bot_field_honey"
-                                    value={honeypot}
-                                    onChange={(e) => setHoneypot(e.target.value)}
-                                    className="hidden pointer-events-none"
-                                    tabIndex={-1}
-                                    autoComplete="off"
+                                    type="email"
+                                    required
+                                    autoFocus
+                                    placeholder="admin@gethotelstays.com"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className={`w-full bg-slate-50/70 border ${isEmailVerified ? 'border-slate-300 focus:border-slate-900 focus:bg-white' : 'border-amber-300 focus:border-amber-500'} rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none text-sm transition-all placeholder:text-slate-400 font-mono`}
                                 />
+                            </div>
 
-                                <div>
-                                    <label className="block text-[11px] font-bold uppercase tracking-wider text-neutral-400 mb-2 flex items-center justify-between">
-                                        <span>Master Identity (Email)</span>
-                                        {isEmailVerified ? (
-                                            <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
-                                                <CheckCircle2 className="w-3 h-3" /> VERIFIED
-                                            </span>
-                                        ) : (
-                                            <span className="text-[10px] text-amber-400 font-mono flex items-center gap-1">
-                                                <AlertTriangle className="w-3 h-3" /> UNAUTHORIZED DOMAIN
-                                            </span>
-                                        )}
-                                    </label>
+                            <div>
+                                <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                                    Access Key (Password)
+                                </label>
+                                <div className="relative">
                                     <input
-                                        type="email"
+                                        type={showPassword ? "text" : "password"}
+                                        required
+                                        placeholder="••••••••••••••••"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className="w-full bg-slate-50/70 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-slate-900 focus:bg-white text-sm pr-10 transition-all placeholder:text-slate-400 font-mono tracking-widest"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors"
+                                    >
+                                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={loading || powSolving}
+                                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-50 cursor-pointer shadow-xs mt-2"
+                            >
+                                {loading || powSolving ? (
+                                    <>
+                                        <Loader2 className="w-4 h-4 animate-spin text-white" />
+                                        <span>Computing Security Proof...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Fingerprint className="w-4 h-4 text-white" />
+                                        <span>Authenticate Identity</span>
+                                    </>
+                                )}
+                            </button>
+                        </form>
+                    )}
+
+                    {/* STEP 2: MASTER SECURITY PIN / 2FA VERIFICATION */}
+                    {step === "2fa" && (
+                        <form onSubmit={handleFinalAuthenticate} className="space-y-4">
+                            <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-center space-y-0.5">
+                                <div className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Authorized Identity</div>
+                                <div className="text-xs font-semibold text-slate-900 font-mono">{email}</div>
+                            </div>
+
+                            <div>
+                                <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-600 mb-1.5 flex items-center justify-between">
+                                    <span>Master Security Key / PIN</span>
+                                    <span className="text-[10px] text-slate-400 font-mono">LEVEL 5 ACCESS</span>
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type="password"
                                         required
                                         autoFocus
-                                        placeholder="admin@gethotelstays.com"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        className={`w-full bg-[#111111] border ${isEmailVerified ? 'border-[#222222] focus:border-neutral-500' : 'border-amber-900/60 focus:border-amber-500'} rounded-xl px-4 py-3.5 text-white focus:outline-none text-sm transition-all placeholder:text-neutral-600 font-mono`}
+                                        maxLength={8}
+                                        placeholder="Enter Master Key"
+                                        value={masterPin}
+                                        onChange={(e) => setMasterPin(e.target.value)}
+                                        className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-slate-900 text-center font-mono tracking-[0.4em] text-base focus:outline-none focus:border-slate-900 focus:bg-white placeholder:tracking-normal placeholder:text-slate-400 placeholder:text-xs"
                                     />
+                                    <KeyRound className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                                 </div>
+                            </div>
 
-                                <div>
-                                    <label className="block text-[11px] font-bold uppercase tracking-wider text-neutral-400 mb-2">
-                                        Access Key (Password)
-                                    </label>
-                                    <div className="relative">
-                                        <input
-                                            type={showPassword ? "text" : "password"}
-                                            required
-                                            placeholder="••••••••••••••••"
-                                            value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
-                                            className="w-full bg-[#111111] border border-[#222222] rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-neutral-500 text-sm pr-10 transition-all placeholder:text-neutral-600 font-mono tracking-widest"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowPassword(!showPassword)}
-                                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-200 transition-colors"
-                                        >
-                                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                        </button>
-                                    </div>
-                                </div>
+                            <div className="flex gap-2.5 pt-1">
+                                <button
+                                    type="button"
+                                    onClick={() => setStep("credentials")}
+                                    className="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2.5 rounded-xl transition-all text-xs border border-slate-200 cursor-pointer"
+                                >
+                                    Cancel
+                                </button>
 
                                 <button
                                     type="submit"
-                                    disabled={loading || powSolving}
-                                    className="w-full bg-neutral-100 hover:bg-white text-black font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-50 shadow-lg shadow-black/80 cursor-pointer uppercase tracking-wider"
+                                    disabled={loading}
+                                    className="w-2/3 bg-slate-900 hover:bg-slate-800 text-white font-medium py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 text-xs disabled:opacity-50 cursor-pointer shadow-xs"
                                 >
-                                    {loading || powSolving ? (
+                                    {loading ? (
                                         <>
-                                            <Loader2 className="w-4 h-4 animate-spin text-black" />
-                                            <span>Computing SHA-256 PoW Challenge...</span>
+                                            <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
+                                            <span>Verifying...</span>
                                         </>
                                     ) : (
                                         <>
-                                            <Fingerprint className="w-4 h-4 text-black" />
-                                            <span>Authenticate Identity</span>
+                                            <ShieldCheck className="w-3.5 h-3.5 text-white" />
+                                            <span>Authorize Session</span>
                                         </>
                                     )}
                                 </button>
-                            </form>
-                        )}
+                            </div>
+                        </form>
+                    )}
+                </div>
 
-                        {/* STEP 2: MASTER SECURITY PIN / 2FA VERIFICATION */}
-                        {step === "2fa" && (
-                            <form onSubmit={handleFinalAuthenticate} className="space-y-5 animate-fade-in">
-                                <div className="p-4 bg-[#111111] border border-neutral-800 rounded-xl text-center space-y-1">
-                                    <div className="text-xs text-neutral-400 font-mono">AUTHORIZED IDENTITY</div>
-                                    <div className="text-sm font-bold text-white font-mono">{email}</div>
-                                </div>
-
-                                <div>
-                                    <label className="block text-[11px] font-bold uppercase tracking-wider text-neutral-400 mb-2 flex items-center justify-between">
-                                        <span>Master Security Key / 2FA PIN</span>
-                                        <span className="text-[10px] text-neutral-400 font-mono">LEVEL 5 MANDATORY</span>
-                                    </label>
-                                    <div className="relative">
-                                        <input
-                                            type="password"
-                                            required
-                                            autoFocus
-                                            maxLength={8}
-                                            placeholder="Enter Master Security Key"
-                                            value={masterPin}
-                                            onChange={(e) => setMasterPin(e.target.value)}
-                                            className="w-full bg-[#111111] border border-[#222222] rounded-xl px-4 py-3.5 text-white text-center font-mono tracking-[0.4em] text-lg focus:outline-none focus:border-neutral-500 placeholder:tracking-normal placeholder:text-neutral-700 placeholder:text-sm"
-                                        />
-                                        <KeyRound className="w-4 h-4 text-neutral-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                                    </div>
-                                </div>
-
-                                <div className="flex gap-3">
-                                    <button
-                                        type="button"
-                                        onClick={() => setStep("credentials")}
-                                        className="w-1/3 bg-[#141414] hover:bg-[#1c1c1c] text-neutral-300 font-semibold py-3.5 rounded-xl transition-all text-xs border border-[#262626]"
-                                    >
-                                        Cancel
-                                    </button>
-
-                                    <button
-                                        type="submit"
-                                        disabled={loading}
-                                        className="w-2/3 bg-neutral-100 hover:bg-white text-black font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-50 shadow-lg shadow-black/80 cursor-pointer uppercase tracking-wider"
-                                    >
-                                        {loading ? (
-                                            <>
-                                                <Loader2 className="w-4 h-4 animate-spin text-black" />
-                                                <span>Verifying Key...</span>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <ShieldCheck className="w-4 h-4 text-black" />
-                                                <span>Authorize Session</span>
-                                            </>
-                                        )}
-                                    </button>
-                                </div>
-                            </form>
-                        )}
-                    </div>
-
-
-                {/* Footer Security Badges */}
-                <div className="mt-12 pt-6 border-t border-neutral-900 flex flex-col items-center gap-2 text-[10px] text-neutral-600 font-mono">
-                    <div className="flex items-center gap-4">
-                        <span className="flex items-center gap-1"><Cpu className="w-3 h-3 text-neutral-500" /> HARDWARE BOUND</span>
+                {/* Footer Security Note */}
+                <div className="mt-8 flex flex-col items-center gap-1.5 text-[11px] text-slate-500">
+                    <div className="flex items-center gap-3">
+                        <span className="flex items-center gap-1"><Cpu className="w-3 h-3 text-slate-400" /> Hardware Bound</span>
                         <span>•</span>
-                        <span className="flex items-center gap-1"><ShieldCheck className="w-3 h-3 text-neutral-500" /> ZERO TRUST AUTH</span>
+                        <span className="flex items-center gap-1"><ShieldCheck className="w-3 h-3 text-slate-400" /> Zero Trust</span>
                     </div>
-                    <div>GETHOTELSTAYS SECURITY MONITORING ACTIVE • IP LOGGED</div>
+                    <div>GetHotelStays Security Monitoring Active</div>
                 </div>
             </div>
         </div>

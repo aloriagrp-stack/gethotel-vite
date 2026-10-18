@@ -599,8 +599,10 @@ exports.updateHotel = async (req, res, next) => {
             return res.status(404).json({ success: false, message: 'Hotel not found' });
         }
 
-        // Make sure user is hotel owner or super admin / admin / hotel admin
-        if (hotel.userId !== req.user.id && !['super_admin', 'superadmin', 'admin', 'hotel_admin', 'partner'].includes(req.user.role)) {
+        // Make sure user is hotel owner or super admin / admin
+        const isSuperAdmin = ['super_admin', 'superadmin', 'admin'].includes(req.user.role);
+        const isOwner = hotel.userId === req.user.id;
+        if (!isSuperAdmin && !isOwner) {
             return res.status(403).json({ success: false, message: 'Not authorized to update this hotel' });
         }
 
@@ -671,8 +673,10 @@ exports.deleteHotel = async (req, res, next) => {
             return res.status(404).json({ success: false, message: 'Hotel not found' });
         }
 
-        // Make sure user is hotel owner or super admin
-        if (hotel.userId !== req.user.id && req.user.role !== 'super_admin') {
+        // Make sure user is hotel owner or super admin / admin
+        const isSuperAdmin = ['super_admin', 'superadmin', 'admin'].includes(req.user.role);
+        const isOwner = hotel.userId === req.user.id;
+        if (!isSuperAdmin && !isOwner) {
             return res.status(403).json({ success: false, message: 'Not authorized to delete this hotel' });
         }
 
@@ -869,9 +873,10 @@ exports.replyToReview = async (req, res, next) => {
             where: { id: hotelId }
         });
 
-        if (!hotel) return res.status(404).json({ success: false, message: 'Hotel not found' });
-        if (hotel.userId !== req.user.id && req.user.role !== 'super_admin') {
-            return res.status(403).json({ success: false, message: 'Not authorized' });
+        const isSuperAdmin = ['super_admin', 'superadmin', 'admin'].includes(req.user.role);
+        const isOwner = hotel.userId === req.user.id;
+        if (!isSuperAdmin && !isOwner) {
+            return res.status(403).json({ success: false, message: 'Not authorized to reply to reviews for this hotel' });
         }
 
         const updatedReview = await prisma.review.update({

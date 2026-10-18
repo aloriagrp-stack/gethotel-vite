@@ -236,7 +236,10 @@ exports.addRoom = async (req, res, next) => {
             return res.status(404).json({ success: false, message: 'Hotel not found' });
         }
 
-        if (hotel.userId !== req.user.id && !['super_admin', 'superadmin', 'admin', 'hotel_admin', 'partner'].includes(req.user.role)) {
+        // Authorization check: Only hotel owner or super admin
+        const isSuperAdmin = ['super_admin', 'superadmin', 'admin'].includes(req.user.role);
+        const isOwner = hotel.userId === req.user.id;
+        if (!isSuperAdmin && !isOwner) {
             return res.status(403).json({ success: false, message: 'Not authorized to add a room to this hotel' });
         }
 
@@ -352,8 +355,11 @@ exports.updateRoom = async (req, res, next) => {
             return res.status(404).json({ success: false, message: 'Hotel not found' });
         }
 
-        if (hotel.userId !== req.user.id && !['super_admin', 'superadmin', 'admin', 'hotel_admin', 'partner'].includes(req.user.role)) {
-            return res.status(403).json({ success: false, message: 'Not authorized' });
+        // Authorization check: Only hotel owner or super admin
+        const isSuperAdmin = ['super_admin', 'superadmin', 'admin'].includes(req.user.role);
+        const isOwner = hotel.userId === req.user.id;
+        if (!isSuperAdmin && !isOwner) {
+            return res.status(403).json({ success: false, message: 'Not authorized to update rooms for this hotel' });
         }
 
         // SECURITY: Ensure room belongs to the hotel
@@ -483,8 +489,11 @@ exports.deleteRoom = async (req, res, next) => {
             return res.status(404).json({ success: false, message: 'Hotel not found' });
         }
 
-        if (hotel.userId !== req.user.id && !['super_admin', 'superadmin', 'admin', 'hotel_admin', 'partner'].includes(req.user.role)) {
-            return res.status(403).json({ success: false, message: 'Not authorized' });
+        // Authorization check: Only hotel owner or super admin
+        const isSuperAdmin = ['super_admin', 'superadmin', 'admin'].includes(req.user.role);
+        const isOwner = hotel.userId === req.user.id;
+        if (!isSuperAdmin && !isOwner) {
+            return res.status(403).json({ success: false, message: 'Not authorized to delete rooms from this hotel' });
         }
 
         // SECURITY: Ensure room belongs to the hotel
@@ -524,7 +533,10 @@ exports.bulkUpdateRooms = async (req, res, next) => {
             return res.status(404).json({ success: false, message: 'Hotel not found' });
         }
 
-        if (hotel.userId !== req.user.id && !['super_admin', 'superadmin', 'admin', 'hotel_admin', 'partner'].includes(req.user.role)) {
+        // Authorization check: Only hotel owner or super admin
+        const isSuperAdmin = ['super_admin', 'superadmin', 'admin'].includes(req.user.role);
+        const isOwner = hotel.userId === req.user.id;
+        if (!isSuperAdmin && !isOwner) {
             return res.status(403).json({ success: false, message: 'Not authorized to manage rooms for this hotel' });
         }
 

@@ -248,7 +248,7 @@ export const AdminHotelImporter: React.FC = () => {
     });
 
     return (
-        <div className="min-h-screen bg-[#050505] text-neutral-100 p-6 md:p-10 font-sans select-none">
+        <div className="min-h-screen bg-[#09090b] text-neutral-100 p-6 md:p-10 font-sans select-none">
             
             {/* Top Bar Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
@@ -294,7 +294,7 @@ export const AdminHotelImporter: React.FC = () => {
 
             {/* Pure Black Skeuomorphic Stat Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-                <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] p-5">
+                <div className="bg-neutral-900/40 border border-neutral-800/80  rounded-2xl  p-5">
                     <div className="flex items-center justify-between text-neutral-400 text-xs mb-2">
                         <span className="font-bold">Queued Hotels</span>
                         <Building2 className="w-4 h-4 text-emerald-400" />
@@ -305,7 +305,7 @@ export const AdminHotelImporter: React.FC = () => {
                     <p className="text-[10px] text-neutral-500 mt-1 font-medium">Ready for 1-click import</p>
                 </div>
 
-                <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] p-5">
+                <div className="bg-neutral-900/40 border border-neutral-800/80  rounded-2xl  p-5">
                     <div className="flex items-center justify-between text-neutral-400 text-xs mb-2">
                         <span className="font-bold">With Images</span>
                         <ImageIcon className="w-4 h-4 text-emerald-400" />
@@ -316,7 +316,7 @@ export const AdminHotelImporter: React.FC = () => {
                     <p className="text-[10px] text-neutral-500 mt-1 font-medium">Up to 30 WebP photos</p>
                 </div>
 
-                <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] p-5">
+                <div className="bg-neutral-900/40 border border-neutral-800/80  rounded-2xl  p-5">
                     <div className="flex items-center justify-between text-neutral-400 text-xs mb-2">
                         <span className="font-bold">Room Types</span>
                         <BedDouble className="w-4 h-4 text-purple-400" />
@@ -327,7 +327,7 @@ export const AdminHotelImporter: React.FC = () => {
                     <p className="text-[10px] text-neutral-500 mt-1 font-medium">Categories mapped</p>
                 </div>
 
-                <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] p-5">
+                <div className="bg-neutral-900/40 border border-neutral-800/80  rounded-2xl  p-5">
                     <div className="flex items-center justify-between text-neutral-400 text-xs mb-2">
                         <span className="font-bold">Live in GHS</span>
                         <CheckCircle2 className="w-4 h-4 text-amber-400" />
@@ -340,7 +340,7 @@ export const AdminHotelImporter: React.FC = () => {
             </div>
 
             {/* Filter & Batch Action Bar */}
-            <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] p-4 mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="bg-neutral-900/40 border border-neutral-800/80  rounded-2xl  p-4 mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
                     <div className="relative min-w-[220px]">
                         <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" />
@@ -387,7 +387,7 @@ export const AdminHotelImporter: React.FC = () => {
             </div>
 
             {/* Scraped Hotels Table */}
-            <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] overflow-hidden">
+            <div className="bg-neutral-900/40 border border-neutral-800/80  rounded-2xl  overflow-hidden">
                 {loading ? (
                     <div className="p-16 text-center text-neutral-500 text-xs font-medium space-y-2">
                         <div className="w-6 h-6 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
@@ -524,7 +524,7 @@ export const AdminHotelImporter: React.FC = () => {
             {/* Settings Modal for Pairing Config */}
             {showSettingsModal && (
                 <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-                    <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+                    <div className="bg-neutral-900/40 border border-neutral-800/80  rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
                         <div className="flex items-center justify-between mb-2">
                             <h3 className="text-sm font-bold text-white flex items-center gap-2">
                                 <Settings className="w-4 h-4 text-emerald-400" />
@@ -591,7 +591,7 @@ export const AdminHotelImporter: React.FC = () => {
             {/* Rich Step-by-Step Live Progress Modal */}
             {progressModalOpen && (
                 <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-                    <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-3xl p-6 max-w-lg w-full shadow-2xl">
+                    <div className="bg-neutral-900/40 border border-neutral-800/80  rounded-3xl p-6 max-w-lg w-full shadow-2xl">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-sm font-bold text-white flex items-center gap-2">
                                 <Sparkles className="w-4 h-4 text-emerald-400 animate-spin" />

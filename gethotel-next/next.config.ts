@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
       { protocol: "http", hostname: "**" },
     ],
   },
+  poweredByHeader: false,
   typescript: {
     ignoreBuildErrors: true,
   },

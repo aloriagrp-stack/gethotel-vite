@@ -449,9 +449,9 @@ export default function AdminTourOnboardingAI() {
     };
 
     return (
-        <div className="flex-1 overflow-y-auto no-scrollbar [scrollbar-width:none] [&::-webkit-scrollbar]:hidden bg-[#050505] text-neutral-100 p-6 space-y-8 font-sans">
+        <div className="flex-1 overflow-y-auto no-scrollbar [scrollbar-width:none] [&::-webkit-scrollbar]:hidden bg-[#09090b] text-neutral-100 p-6 space-y-8 font-sans">
             {/* Header Banner */}
-            <div className="p-6 rounded-2xl bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="p-6 rounded-2xl bg-neutral-900/40 border border-neutral-800/80   flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="space-y-1">
                     <div className="flex items-center gap-2">
                         <span className="p-1.5 bg-emerald-950/80 border border-emerald-700/50 rounded-lg text-emerald-400">
@@ -496,8 +496,8 @@ export default function AdminTourOnboardingAI() {
             )}
 
             {/* Mode Toggle Bar */}
-            <div className="flex items-center justify-between gap-4 border-b border-[#1c1c1c] pb-4">
-                <div className="flex items-center gap-2 bg-[#0c0c0c] p-1.5 rounded-xl border border-[#1f1f1f]">
+            <div className="flex items-center justify-between gap-4 border-b border-neutral-800/80 pb-4">
+                <div className="flex items-center gap-2 bg-neutral-900/40 p-1.5 rounded-xl border border-[#1f1f1f]">
                     <button
                         onClick={() => setMode("ai")}
                         className={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
@@ -538,7 +538,7 @@ export default function AdminTourOnboardingAI() {
 
             {/* MODE 1: AI PROMPT GENERATOR */}
             {mode === "ai" && (
-                <div className="space-y-4 bg-[#0c0c0c] p-6 rounded-2xl border border-[#1c1c1c]">
+                <div className="space-y-4 bg-neutral-900/40 p-6 rounded-2xl border border-neutral-800/80">
                     <div className="flex items-center justify-between">
                         <label className="text-xs font-bold uppercase tracking-wider text-neutral-300 flex items-center gap-2">
                             <span>Describe Tour, Itinerary or Travel Circuit:</span>
@@ -610,7 +610,7 @@ export default function AdminTourOnboardingAI() {
 
             {/* MODE 2: DIRECT JSON IMPORTER */}
             {mode === "json" && (
-                <div className="space-y-4 bg-[#0c0c0c] p-6 rounded-2xl border border-[#1c1c1c]">
+                <div className="space-y-4 bg-neutral-900/40 p-6 rounded-2xl border border-neutral-800/80">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <label className="text-xs font-bold uppercase tracking-wider text-neutral-300">
                             Paste Tour Packages JSON Array:
@@ -657,7 +657,7 @@ export default function AdminTourOnboardingAI() {
             {/* GENERATED TOURS REVIEW & LIVE PUBLISH SECTION */}
             {generatedTours.length > 0 && (
                 <div className="space-y-6 pt-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#1c1c1c] pb-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-neutral-800/80 pb-4">
                         <div className="flex items-center gap-3">
                             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" />
                             <h3 className="text-base font-black text-white uppercase tracking-tight">
@@ -701,7 +701,7 @@ export default function AdminTourOnboardingAI() {
                             return (
                                 <div
                                     key={tour.id || index}
-                                    className="bg-[#0c0c0c] border border-[#1c1c1c] rounded-2xl overflow-hidden shadow-lg transition-all hover:border-[#2a2a2a]"
+                                    className="bg-neutral-900/40 border border-neutral-800/80 rounded-2xl overflow-hidden shadow-lg transition-all hover:border-[#2a2a2a]"
                                 >
                                     {/* Card Top Preview Bar */}
                                     <div className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#111111]/60">
@@ -1037,7 +1037,7 @@ export default function AdminTourOnboardingAI() {
                                                                     onClick={() => coverFileInputRefs.current[tour.id]?.click()}
                                                                 >
                                                                     <input
-                                                                        ref={(el) => (coverFileInputRefs.current[tour.id] = el)}
+                                                                        ref={(el) => { coverFileInputRefs.current[tour.id] = el; }}
                                                                         type="file"
                                                                         accept="image/*"
                                                                         onChange={(e) => {
@@ -1066,7 +1066,7 @@ export default function AdminTourOnboardingAI() {
                                                     </div>
 
                                                     {/* 2. Tour Gallery Photos (Multiple) */}
-                                                    <div className="space-y-2 pt-2 border-t border-[#1c1c1c]">
+                                                    <div className="space-y-2 pt-2 border-t border-neutral-800/80">
                                                         <div className="flex items-center justify-between">
                                                             <label className="text-[10px] font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
                                                                 <ImageIcon className="w-3.5 h-3.5 text-blue-400" />
@@ -1087,7 +1087,7 @@ export default function AdminTourOnboardingAI() {
                                                             onClick={() => galleryFileInputRefs.current[tour.id]?.click()}
                                                         >
                                                             <input
-                                                                ref={(el) => (galleryFileInputRefs.current[tour.id] = el)}
+                                                                ref={(el) => { galleryFileInputRefs.current[tour.id] = el; }}
                                                                 type="file"
                                                                 accept="image/*"
                                                                 multiple

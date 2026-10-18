@@ -106,6 +106,18 @@ exports.authLimiter = rateLimit({
     }
 });
 
+// Dedicated Payment Gateway Rate Limiter (Protects against card testing and rapid automated order creation)
+exports.paymentLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 60, // Max 60 order initiations per 15 minutes per IP
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        success: false,
+        message: 'Payment initiation rate limit exceeded. Please try again in a few minutes.'
+    }
+});
+
 // 5. Throttler (Incremental response delay for suspicious traffic bursts)
 const requestTrackers = new Map();
 

@@ -13,8 +13,8 @@ export default function ControlHubGateway() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-[#050505] text-white">
-                <Loader2 className="w-10 h-10 animate-spin text-neutral-400" />
+            <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] text-slate-800">
+                <Loader2 className="w-8 h-8 animate-spin text-slate-500" />
             </div>
         );
     }

@@ -581,7 +581,7 @@ export default function AdminTourPackages() {
     return (
         <div className="space-y-8 pb-12 font-sans text-neutral-100">
             {/* Top Header Bar */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#0c0c0c] p-6 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)]">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-neutral-900/40 p-6 rounded-2xl border border-neutral-800/80  ">
                 <div>
                     <h2 className="text-2xl font-black text-white flex items-center gap-2 tracking-tight">
                         <Palmtree className="w-6 h-6 text-emerald-400" />
@@ -645,7 +645,7 @@ export default function AdminTourPackages() {
             )}
 
             {/* MANAGEMENT SUB-TAB NAVIGATION BAR */}
-            <div className="flex items-center gap-2 bg-[#0c0c0c] p-2 rounded-2xl border border-[#1c1c1c] overflow-x-auto no-scrollbar">
+            <div className="flex items-center gap-2 bg-neutral-900/40 p-2 rounded-2xl border border-neutral-800/80 overflow-x-auto no-scrollbar">
                 <button
                     onClick={() => setSubTab("packages")}
                     className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
@@ -697,7 +697,7 @@ export default function AdminTourPackages() {
 
             {/* TAB 1: TOUR PACKAGES LIST */}
             {subTab === "packages" && (
-                <div className="bg-[#0c0c0c] rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] overflow-hidden">
+                <div className="bg-neutral-900/40 rounded-2xl border border-neutral-800/80   overflow-hidden">
                     <div className="p-5 border-b border-[#1f1f1f] bg-[#0e0e0e] flex items-center justify-between">
                         <h3 className="text-base font-bold text-white">
                             Active Tour Packages ({packages.length})
@@ -757,7 +757,7 @@ export default function AdminTourPackages() {
 
             {/* TAB 2: HERO BANNER MANAGEMENT */}
             {subTab === "banners" && (
-                <div className="bg-[#0c0c0c] p-6 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] space-y-6">
+                <div className="bg-neutral-900/40 p-6 rounded-2xl border border-neutral-800/80   space-y-6">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
                             <h3 className="text-base font-bold text-white flex items-center gap-2">
@@ -818,7 +818,7 @@ export default function AdminTourPackages() {
 
             {/* TAB 3: DESTINATION CIRCLES MANAGEMENT */}
             {subTab === "destinations" && (
-                <div className="bg-[#0c0c0c] p-6 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] space-y-6">
+                <div className="bg-neutral-900/40 p-6 rounded-2xl border border-neutral-800/80   space-y-6">
                     <div className="flex items-center justify-between">
                         <div>
                             <h3 className="text-base font-bold text-white flex items-center gap-2">
@@ -869,7 +869,7 @@ export default function AdminTourPackages() {
 
             {/* TAB 4: FILTER LINE SETTINGS */}
             {subTab === "filters" && (
-                <div className="bg-[#0c0c0c] p-6 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] space-y-6">
+                <div className="bg-neutral-900/40 p-6 rounded-2xl border border-neutral-800/80   space-y-6">
                     <div>
                         <h3 className="text-base font-bold text-white flex items-center gap-2">
                             <Tag className="w-4 h-4 text-emerald-400" />
@@ -959,7 +959,7 @@ export default function AdminTourPackages() {
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-[#0c0c0c] rounded-2xl shadow-2xl border border-[#1c1c1c] border-t-[#2d2d2d] w-full max-w-md overflow-hidden text-white"
+                            className="bg-neutral-900/40 rounded-2xl shadow-2xl border border-neutral-800/80  w-full max-w-md overflow-hidden text-white"
                         >
                             <div className="p-5 bg-[#0e0e0e] border-b border-[#1f1f1f] flex items-center justify-between">
                                 <h3 className="text-sm font-bold text-white uppercase tracking-wider">
@@ -1039,7 +1039,7 @@ export default function AdminTourPackages() {
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-[#0c0c0c] rounded-2xl shadow-2xl border border-[#1c1c1c] border-t-[#2d2d2d] w-full max-w-xl overflow-hidden text-white"
+                            className="bg-neutral-900/40 rounded-2xl shadow-2xl border border-neutral-800/80  w-full max-w-xl overflow-hidden text-white"
                         >
                             <div className="p-5 bg-[#0e0e0e] border-b border-[#1f1f1f] flex items-center justify-between">
                                 <h3 className="text-sm font-bold text-white uppercase tracking-wider">
@@ -1354,7 +1354,7 @@ export default function AdminTourPackages() {
                             className="bg-[#0e0e0e] border border-[#262626] border-t-[#3a3a3a] shadow-2xl rounded-3xl w-full max-w-3xl overflow-hidden my-auto max-h-[92vh] flex flex-col"
                         >
                             {/* Modal Header */}
-                            <div className="p-6 border-b border-[#1c1c1c] flex items-center justify-between bg-[#121212] shrink-0">
+                            <div className="p-6 border-b border-neutral-800/80 flex items-center justify-between bg-[#121212] shrink-0">
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
                                         <FileJson className="w-5 h-5" />
@@ -1542,7 +1542,7 @@ export default function AdminTourPackages() {
                                 ) : null}
 
                                 {/* Optional Defaults Configuration */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-[#1c1c1c]">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-neutral-800/80">
                                     <div>
                                         <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">
                                             Default Price (if missing in JSON)
@@ -1581,7 +1581,7 @@ export default function AdminTourPackages() {
                             </div>
 
                             {/* Modal Footer Actions */}
-                            <div className="p-6 border-t border-[#1c1c1c] bg-[#121212] flex items-center justify-end gap-3 shrink-0">
+                            <div className="p-6 border-t border-neutral-800/80 bg-[#121212] flex items-center justify-end gap-3 shrink-0">
                                 <button
                                     type="button"
                                     disabled={isBulkImporting}

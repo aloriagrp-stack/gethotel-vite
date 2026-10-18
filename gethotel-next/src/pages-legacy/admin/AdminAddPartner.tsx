@@ -54,7 +54,7 @@ function SearchablePartnerSelect({ partners, selectedId, onChange, disabled, pla
                         }}
                     />
                     
-                    <div className="absolute left-0 right-0 mt-1.5 bg-[#0c0c0c] border border-[#262626] shadow-2xl rounded-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
+                    <div className="absolute left-0 right-0 mt-1.5 bg-neutral-900/40 border border-[#262626] shadow-2xl rounded-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
                         <div className="p-2.5 border-b border-[#1f1f1f] bg-[#111111]">
                             <input
                                 type="text"
@@ -772,7 +772,7 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
     return (
         <div className="space-y-8 animate-in fade-in duration-300 max-w-[1400px] text-white pb-16">
             {/* Header */}
-            <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.9)] p-8 relative overflow-hidden">
+            <div className="bg-neutral-900/40 border border-neutral-800/80  rounded-2xl  p-8 relative overflow-hidden">
                 <div className="absolute right-0 bottom-0 translate-y-12 translate-x-12 opacity-5 select-none pointer-events-none">
                     <Users className="w-64 h-64 text-white" />
                 </div>
@@ -785,7 +785,7 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
             </div>
 
             {/* Sub Tabs switcher */}
-            <div className="flex border border-[#1f1f1f] gap-1.5 select-none shrink-0 bg-[#0c0c0c] p-2 rounded-2xl shadow-lg overflow-x-auto">
+            <div className="flex border border-[#1f1f1f] gap-1.5 select-none shrink-0 bg-neutral-900/40 p-2 rounded-2xl shadow-lg overflow-x-auto">
                 <button
                     onClick={() => setSubTab("register")}
                     className={cn(
@@ -845,7 +845,7 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
 
             {/* ─── REGISTER SINGLE PARTNER ────────────────────────────────────────── */}
             {subTab === "register" && (
-                <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.9)] rounded-2xl p-7 max-w-lg">
+                <div className="bg-neutral-900/40 border border-neutral-800/80   rounded-2xl p-7 max-w-lg">
                     <div className="pb-4 border-b border-[#1f1f1f] mb-6">
                         <h3 className="text-sm font-bold text-white uppercase tracking-wider">Register Single Partner Account</h3>
                         <p className="text-[10px] text-neutral-400 font-bold uppercase mt-1">Create login credentials for a new hotel owner</p>
@@ -942,7 +942,7 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
 
             {/* ─── CREATE SINGLE PROPERTY PANEL ───────────────────────────────────── */}
             {subTab === "createProperty" && (
-                <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.9)] rounded-2xl p-7 flex flex-col md:flex-row gap-8">
+                <div className="bg-neutral-900/40 border border-neutral-800/80   rounded-2xl p-7 flex flex-col md:flex-row gap-8">
                     {/* Left Panel */}
                     <div className="w-full md:w-[40%] space-y-4 shrink-0">
                         <div className="pb-4 border-b border-[#1f1f1f]">
@@ -1106,7 +1106,7 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
 
             {/* ─── BULK HOTEL SETUP ────────────────────────────────────────────────── */}
             {subTab === "bulk" && (
-                <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.9)] rounded-2xl p-7 space-y-6">
+                <div className="bg-neutral-900/40 border border-neutral-800/80   rounded-2xl p-7 space-y-6">
                     <div className="pb-4 border-b border-[#1f1f1f] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
                             <h3 className="text-sm font-bold text-white uppercase tracking-wider">Bulk Hotel Batch Setup</h3>
@@ -1270,7 +1270,7 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
 
             {/* ─── MULTI-PARTNER STUDIO ────────────────────────────────────────────── */}
             {subTab === "studio" && (
-                <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.9)] rounded-2xl p-7 space-y-6">
+                <div className="bg-neutral-900/40 border border-neutral-800/80   rounded-2xl p-7 space-y-6">
                     {/* Step Progress Header */}
                     <div className="flex flex-col md:flex-row items-start md:items-center justify-between border-b border-[#1f1f1f] pb-4 gap-4">
                         <div>
@@ -1771,7 +1771,7 @@ export default function AdminAddPartner({ hotels, partners, setPartners }: Admin
 
             {/* ─── SETUP USING CSV PANEL ─────────────────────────────────────────── */}
             {subTab === "csvImport" && (
-                <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.9)] rounded-2xl p-7 space-y-6">
+                <div className="bg-neutral-900/40 border border-neutral-800/80   rounded-2xl p-7 space-y-6">
                     <div className="pb-4 border-b border-[#1f1f1f] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
                             <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">

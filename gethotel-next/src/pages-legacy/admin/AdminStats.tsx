@@ -31,8 +31,8 @@ export default function SuperAdminStatsPage() {
 
     if (loading || authLoading) {
         return (
-            <div className="min-h-[70vh] flex items-center justify-center bg-[#050505] text-white">
-                <Loader2 className="w-10 h-10 animate-spin text-neutral-400" />
+            <div className="min-h-[50vh] flex items-center justify-center bg-transparent text-slate-900">
+                <Loader2 className="w-8 h-8 animate-spin text-slate-500" />
             </div>
         );
     }
@@ -41,7 +41,7 @@ export default function SuperAdminStatsPage() {
     const trendData = v?.trend || [];
     const maxVal = Math.max(...trendData.map((d: any) => d.visitors), 10);
     const width = 800;
-    const height = 250;
+    const height = 220;
     const xStep = width / Math.max(trendData.length - 1, 1);
     
     const points = trendData.map((d: any, i: number) => {
@@ -51,43 +51,55 @@ export default function SuperAdminStatsPage() {
     }).join(' ');
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500 text-neutral-100">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-[#0c0c0c] text-white p-8 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] relative overflow-hidden group">
-                    <Activity className="absolute -right-8 -bottom-8 w-48 h-48 text-white/5 transform rotate-12 group-hover:rotate-0 transition-transform duration-1000" />
-                    <div className="relative z-10">
-                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400 mb-8 pb-4 border-b border-[#1f1f1f] flex items-center gap-2">
-                            <Activity className="w-4 h-4 text-emerald-400" /> Live Traffic Status
-                        </h3>
-                        <div>
-                            <p className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Active Users (last 5 min)</p>
-                            <h3 className="text-5xl font-black italic text-white tracking-tight">{v?.live || 0}</h3>
-                            <p className="text-[9px] text-emerald-400 font-bold mt-2 flex items-center gap-1">
-                                <ArrowUpRight className="w-3 h-3" /> Updated in real-time
-                            </p>
-                        </div>
+        <div className="space-y-6 text-slate-900">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-200/80">
+                <div>
+                    <h2 className="text-xl font-semibold text-slate-900 tracking-tight flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                        Traffic & Analytics
+                    </h2>
+                    <p className="text-xs text-slate-500 mt-0.5">Real-time visitor counts, regional demand, and audience retention metrics.</p>
+                </div>
+            </div>
+
+            {/* Top Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white/40 p-5 rounded-xl border border-slate-200/80">
+                    <div className="flex justify-between items-center mb-3">
+                        <span className="text-xs font-medium text-slate-500">Live Active Traffic (last 5 min)</span>
+                        <Activity className="w-4 h-4 text-emerald-400" />
+                    </div>
+                    <div className="flex items-baseline justify-between">
+                        <h3 className="text-3xl font-semibold text-slate-900 tracking-tight">{v?.live || 0}</h3>
+                        <span className="text-[11px] font-medium px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Live Now
+                        </span>
                     </div>
                 </div>
 
-                <div className="bg-[#0c0c0c] text-white p-8 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] group">
-                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400 mb-8 pb-4 border-b border-[#1f1f1f] flex items-center gap-2">
-                        <Users className="w-4 h-4 text-blue-400" /> Total Reach
-                    </h3>
-                    <div>
-                        <p className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Total Unique Visitors</p>
-                        <h3 className="text-5xl font-black italic text-white tracking-tight">{v?.total?.toLocaleString() || 0}</h3>
-                        <p className="text-[9px] text-neutral-500 font-bold mt-2">All time traffic</p>
+                <div className="bg-white/40 p-5 rounded-xl border border-slate-200/80">
+                    <div className="flex justify-between items-center mb-3">
+                        <span className="text-xs font-medium text-slate-500">Total Unique Visitors</span>
+                        <Users className="w-4 h-4 text-slate-400" />
+                    </div>
+                    <div className="flex items-baseline justify-between">
+                        <h3 className="text-3xl font-semibold text-slate-900 tracking-tight">{v?.total?.toLocaleString() || 0}</h3>
+                        <span className="text-[11px] text-slate-400 font-medium">All time</span>
                     </div>
                 </div>
             </div>
 
-            <div className="bg-[#0c0c0c] text-white p-8 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)]">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400 mb-8 pb-4 border-b border-[#1f1f1f] flex items-center gap-2">
-                    <Activity className="w-4 h-4 text-emerald-400" /> 14-Day Traffic Trend
-                </h3>
+            {/* 14-Day Traffic Trend */}
+            <div className="bg-white/40 p-5 rounded-xl border border-slate-200/80">
+                <div className="flex items-center justify-between pb-4 border-b border-slate-200/60 mb-5">
+                    <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                        <Activity className="w-3.5 h-3.5 text-emerald-400" /> 14-Day Traffic Trend
+                    </h3>
+                </div>
                 
-                <div className="w-full overflow-x-auto pb-4 no-scrollbar">
-                    <div className="min-w-[700px]">
+                <div className="w-full overflow-x-auto pb-2 no-scrollbar">
+                    <div className="min-w-[650px]">
                         <svg width="100%" height={height} viewBox={`0 -20 ${width} ${height + 40}`} preserveAspectRatio="none" className="overflow-visible">
                             {/* Grid lines */}
                             {[0, 1, 2, 3].map(i => {
@@ -95,8 +107,8 @@ export default function SuperAdminStatsPage() {
                                 const val = Math.round(maxVal - (maxVal / 3) * i);
                                 return (
                                     <g key={i}>
-                                        <line x1="0" y1={y} x2={width} y2={y} stroke="#1f1f1f" strokeWidth="1" strokeDasharray="4 4" />
-                                        <text x="-10" y={y + 4} fontSize="10" fill="#525252" textAnchor="end" fontWeight="bold">{val}</text>
+                                        <line x1="0" y1={y} x2={width} y2={y} stroke="#262626" strokeWidth="1" strokeDasharray="3 3" />
+                                        <text x="-10" y={y + 4} fontSize="10" fill="#737373" textAnchor="end">{val}</text>
                                     </g>
                                 );
                             })}
@@ -105,28 +117,28 @@ export default function SuperAdminStatsPage() {
                             <motion.polyline
                                 points={points}
                                 fill="none"
-                                stroke="#3b82f6"
-                                strokeWidth="4"
+                                stroke="#10b981"
+                                strokeWidth="2.5"
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                                 initial={{ pathLength: 0 }}
                                 animate={{ pathLength: 1 }}
-                                transition={{ duration: 1.5, ease: "easeInOut" }}
+                                transition={{ duration: 1.2, ease: "easeInOut" }}
                             />
                             
-                            {/* Points and Tooltips */}
+                            {/* Points */}
                             {trendData.map((d: any, i: number) => {
                                 const x = i * xStep;
                                 const y = height - (d.visitors / maxVal) * height;
                                 return (
                                     <g key={i} className="group cursor-pointer">
-                                        <circle cx={x} cy={y} r="5" fill="#000" stroke="#3b82f6" strokeWidth="2.5" className="transition-all group-hover:r-7 group-hover:stroke-[3px]" />
-                                        <text x={x} y={height + 25} fontSize="10" fill="#737373" textAnchor="middle" fontWeight="bold">{d.label}</text>
+                                        <circle cx={x} cy={y} r="3.5" fill="#09090b" stroke="#10b981" strokeWidth="2" className="transition-all group-hover:r-5" />
+                                        <text x={x} y={height + 22} fontSize="10" fill="#737373" textAnchor="middle">{d.label}</text>
                                         
                                         {/* Tooltip */}
                                         <g className="opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                                            <rect x={x - 30} y={y - 35} width="60" height="24" rx="6" fill="#171717" stroke="#333333" />
-                                            <text x={x} y={y - 19} fontSize="10" fill="#fff" textAnchor="middle" fontWeight="bold">{d.visitors}</text>
+                                            <rect x={x - 25} y={y - 30} width="50" height="20" rx="4" fill="#18181b" stroke="#27272a" />
+                                            <text x={x} y={y - 16} fontSize="10" fill="#fff" textAnchor="middle">{d.visitors}</text>
                                         </g>
                                     </g>
                                 );
@@ -136,57 +148,58 @@ export default function SuperAdminStatsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-[#0c0c0c] text-white p-8 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)]">
-                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400 mb-6 pb-4 border-b border-[#1f1f1f] flex items-center gap-2">
-                        <Globe2 className="w-4 h-4 text-blue-400" /> Traffic by Country
+            {/* Geographical Breakdown */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="bg-white/40 p-5 rounded-xl border border-slate-200/80">
+                    <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4 pb-3 border-b border-slate-200/60 flex items-center gap-2">
+                        <Globe2 className="w-3.5 h-3.5 text-blue-400" /> Traffic by Country
                     </h3>
-                    <div className="space-y-5">
+                    <div className="space-y-4">
                         {(v?.countryBreakdown || []).map((c: any, i: number) => (
                             <div key={i}>
-                                <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-neutral-200 mb-2">
+                                <div className="flex justify-between text-xs text-slate-700 mb-1.5">
                                     <span>{c.country || 'Unknown'}</span>
-                                    <span className="text-neutral-500">{c.count} ({c.percent}%)</span>
+                                    <span className="text-slate-400">{c.count} ({c.percent}%)</span>
                                 </div>
-                                <div className="w-full bg-[#181818] border border-[#262626] rounded-full h-2 overflow-hidden">
+                                <div className="w-full bg-neutral-800 rounded-full h-1.5 overflow-hidden">
                                     <motion.div 
                                         className="bg-blue-500 h-full rounded-full" 
                                         initial={{ width: 0 }}
                                         animate={{ width: `${c.percent}%` }}
-                                        transition={{ duration: 1, delay: i * 0.1 }}
+                                        transition={{ duration: 0.8, delay: i * 0.05 }}
                                     />
                                 </div>
                             </div>
                         ))}
                         {(!v?.countryBreakdown || v.countryBreakdown.length === 0) && (
-                            <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-widest">No location data yet.</p>
+                            <p className="text-xs text-slate-400">No country location data yet.</p>
                         )}
                     </div>
                 </div>
 
-                <div className="bg-[#0c0c0c] text-white p-8 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)]">
-                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400 mb-6 pb-4 border-b border-[#1f1f1f] flex items-center gap-2">
-                        <MapPin className="w-4 h-4 text-emerald-400" /> Top Regions (India)
+                <div className="bg-white/40 p-5 rounded-xl border border-slate-200/80">
+                    <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4 pb-3 border-b border-slate-200/60 flex items-center gap-2">
+                        <MapPin className="w-3.5 h-3.5 text-emerald-400" /> Top Regions (India)
                     </h3>
-                    <div className="space-y-5">
+                    <div className="space-y-4">
                         {(v?.regionBreakdown || []).map((r: any, i: number) => (
                             <div key={i}>
-                                <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-neutral-200 mb-2">
+                                <div className="flex justify-between text-xs text-slate-700 mb-1.5">
                                     <span>{r.region || 'Unknown'}</span>
-                                    <span className="text-neutral-500">{r.count} ({r.percent}%)</span>
+                                    <span className="text-slate-400">{r.count} ({r.percent}%)</span>
                                 </div>
-                                <div className="w-full bg-[#181818] border border-[#262626] rounded-full h-2 overflow-hidden">
+                                <div className="w-full bg-neutral-800 rounded-full h-1.5 overflow-hidden">
                                     <motion.div 
                                         className="bg-emerald-500 h-full rounded-full" 
                                         initial={{ width: 0 }}
                                         animate={{ width: `${r.percent}%` }}
-                                        transition={{ duration: 1, delay: i * 0.1 }}
+                                        transition={{ duration: 0.8, delay: i * 0.05 }}
                                     />
                                 </div>
                             </div>
                         ))}
                         {(!v?.regionBreakdown || v.regionBreakdown.length === 0) && (
-                            <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-widest">No region data yet.</p>
+                            <p className="text-xs text-slate-400">No regional data yet.</p>
                         )}
                     </div>
                 </div>

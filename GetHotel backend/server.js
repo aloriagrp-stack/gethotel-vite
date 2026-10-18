@@ -13,7 +13,7 @@ const { sanitizeInput } = require('./middleware/sanitizeInput');
 const errorHandler = require('./middleware/error');
 const { 
     ipBlocker, botScanner, requestSizeLimiter, 
-    globalLimiter, authLimiter, throttler, csrfHandler 
+    globalLimiter, authLimiter, paymentLimiter, throttler, csrfHandler 
 } = require('./middleware/security');
 const { requestImageProcessor, responseImageResolver } = require('./middleware/imageUpload');
 const { protect } = require('./middleware/auth');
@@ -21,6 +21,7 @@ const { protect } = require('./middleware/auth');
 dotenv.config();
 
 const app = express();
+app.disable('x-powered-by'); // Prevent information disclosure of server engine
 app.set('trust proxy', 1);
 
 // Emergency FTP Sync & Unblock on Server Startup
@@ -57,7 +58,17 @@ try {
     console.error('[STARTUP SYNC] Error:', e.message);
 }
 
-app.all(['/api/unblock-me', '/unblock-me', '/api/unblock-debug', '/unblock-debug'], (req, res) => {
+// Security Gatekeeper: Ensure critical maintenance endpoints cannot be abused by unauthenticated users
+const verifyAdminMaintenanceAuth = (req, res, next) => {
+    const maintenanceKey = req.headers['x-admin-key'] || req.query.key;
+    const expectedSecret = process.env.ADMIN_SECRET_KEY || process.env.JWT_SECRET;
+    if (!maintenanceKey || !expectedSecret || maintenanceKey !== expectedSecret) {
+        return res.status(403).json({ success: false, message: 'Access denied: Valid administrative secret key required.' });
+    }
+    next();
+};
+
+app.all(['/api/unblock-me', '/unblock-me', '/api/unblock-debug', '/unblock-debug'], verifyAdminMaintenanceAuth, (req, res) => {
     try {
         const fs = require('fs');
         const path = require('path');
@@ -69,7 +80,7 @@ app.all(['/api/unblock-me', '/unblock-me', '/api/unblock-debug', '/unblock-debug
     }
 });
 
-app.all(['/api/reload-app', '/reload-app', '/api/refresh-app', '/refresh-app'], (req, res) => {
+app.all(['/api/reload-app', '/reload-app', '/api/refresh-app', '/refresh-app'], verifyAdminMaintenanceAuth, (req, res) => {
     try {
         const fs = require('fs');
         const path = require('path');
@@ -83,7 +94,7 @@ app.all(['/api/reload-app', '/reload-app', '/api/refresh-app', '/refresh-app'], 
     }
 });
 
-app.all(['/api/kill-server-now', '/kill-server-now'], (req, res) => {
+app.all(['/api/kill-server-now', '/kill-server-now'], verifyAdminMaintenanceAuth, (req, res) => {
     const fs = require('fs');
     const path = require('path');
     const tmpDir = path.join(__dirname, 'tmp');
@@ -136,6 +147,9 @@ app.use(helmet({
     contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false,
     crossOriginResourcePolicy: false,
+    xssFilter: true,
+    noSniff: true,
+    frameguard: { action: 'sameorigin' }
 }));
 
 // 4. Hardened CORS Whitelist
@@ -176,6 +190,14 @@ app.use(cors({
 
 app.use(express.json({ limit: '15mb' })); // Restricted payload limit (15MB)
 app.use(express.urlencoded({ limit: '15mb', extended: true }));
+app.use(cookieParser());
+app.use(hpp()); // HTTP Parameter Pollution protection
+app.use(sanitizeInput); // Deep recursive XSS, prototype pollution, and parameter injection protection
+
+// Global and Route-Specific Rate Limiters (DDoS, Credential Stuffing & Card Testing Protection)
+app.use('/api/', globalLimiter);
+app.use(['/api/auth/login', '/api/auth/register', '/api/auth/send-otp', '/api/auth/verify-otp', '/api/auth/forgot-password'], authLimiter);
+app.use(['/api/payments/create-order', '/api/payments/verify'], paymentLimiter);
 
 // WAF-Bypass Top-Level Endpoints for Hotel and Room Updates
 // NOTE: Registered AFTER express.json() so req.body is parsed before handlers run.

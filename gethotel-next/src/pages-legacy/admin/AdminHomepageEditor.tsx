@@ -5,9 +5,9 @@ import { Loader2, Save, LayoutTemplate, Link as LinkIcon, Image as ImageIcon, Pl
 import { adminApi, homepageApi } from "@/lib/api";
 
 const DEFAULT_DESTINATIONS = [
-    { name: "Indonesia", image: "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?q=80&w=800&auto=format&fit=crop", properties: "1,345+ Verified Stays", linkedHotelIds: [] },
-    { name: "Goa", image: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?q=80&w=800&auto=format&fit=crop", properties: "1,240+ Verified Stays", linkedHotelIds: [] },
-    { name: "Kerala", image: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?q=80&w=800&auto=format&fit=crop", properties: "850+ Verified Stays", linkedHotelIds: [] },
+    { name: "Indonesia", image: "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?q=80&w=800&auto=format&fit=crop", properties: "1,345+ Hotels", linkedHotelIds: [] },
+    { name: "Goa", image: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?q=80&w=800&auto=format&fit=crop", properties: "1,240+ Hotels", linkedHotelIds: [] },
+    { name: "Kerala", image: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?q=80&w=800&auto=format&fit=crop", properties: "850+ Hotels", linkedHotelIds: [] },
 ];
 
 const DEFAULT_COLLECTIONS = [
@@ -446,8 +446,8 @@ export default function AdminHomepageEditor() {
     return (
         <div className="space-y-8 animate-in fade-in duration-500 pb-20 text-neutral-100">
             {/* Header / Hero Save Config */}
-            <section className="bg-[#0c0c0c] p-6 md:p-8 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)]">
-                <div className="flex items-center justify-between mb-6 pb-4 border-b border-[#1f1f1f]">
+            <section className="bg-neutral-900/40 border border-neutral-800/80 rounded-xl p-5 md:p-6">
+                <div className="flex items-center justify-between mb-6 pb-4 border-b border-neutral-800/60">
                     <h3 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2 font-sans">
                         <LayoutTemplate className="w-4 h-4 text-emerald-400" /> Hero Section Headlines & Carousel
                     </h3>
@@ -515,7 +515,7 @@ export default function AdminHomepageEditor() {
 
                 <div className="space-y-4">
                     {headlines.map((headline: any, idx: number) => (
-                        <div key={idx} className="bg-[#141414] p-4 rounded-xl border border-[#222222] relative flex flex-col md:flex-row gap-4 items-center">
+                        <div key={idx} className="bg-neutral-900/60 p-4 rounded-lg border border-neutral-800 relative flex flex-col md:flex-row gap-4 items-center">
                             <span className="text-xs font-black text-neutral-500 uppercase tracking-wider md:w-16"># {idx + 1}</span>
                             <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                                 <div>
@@ -525,7 +525,7 @@ export default function AdminHomepageEditor() {
                                         value={headline.title}
                                         onChange={(e) => handleUpdateHeadline(idx, 'title', e.target.value)}
                                         placeholder="e.g. Where would you"
-                                        className="w-full bg-[#181818] border border-[#282828] text-white rounded-xl px-3.5 py-2.5 text-xs font-bold outline-none focus:border-neutral-400 transition-colors"
+                                        className="w-full bg-neutral-900 border border-neutral-800 text-white rounded-lg px-3 py-1.5 text-xs font-medium outline-none focus:border-neutral-400 transition-colors"
                                     />
                                 </div>
                                 <div>
@@ -535,7 +535,7 @@ export default function AdminHomepageEditor() {
                                         value={headline.highlight}
                                         onChange={(e) => handleUpdateHeadline(idx, 'highlight', e.target.value)}
                                         placeholder="e.g. like to stay?"
-                                        className="w-full bg-[#181818] border border-[#282828] text-white rounded-xl px-3.5 py-2.5 text-xs font-bold outline-none focus:border-neutral-400 transition-colors"
+                                        className="w-full bg-neutral-900 border border-neutral-800 text-white rounded-lg px-3 py-1.5 text-xs font-medium outline-none focus:border-neutral-400 transition-colors"
                                     />
                                 </div>
                             </div>
@@ -555,8 +555,8 @@ export default function AdminHomepageEditor() {
             </section>
 
             {/* Trending Destinations Editor */}
-            <section className="bg-[#0c0c0c] p-6 md:p-8 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)]">
-                <div className="flex items-center justify-between mb-6 pb-4 border-b border-[#1f1f1f]">
+            <section className="bg-neutral-900/40 border border-neutral-800/80 rounded-xl p-5 md:p-6">
+                <div className="flex items-center justify-between mb-6 pb-4 border-b border-neutral-800/60">
                     <h3 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
                         <ImageIcon className="w-4 h-4 text-emerald-400" /> Destination Cards Editor
                     </h3>
@@ -567,7 +567,7 @@ export default function AdminHomepageEditor() {
                 
                 <div className="space-y-4">
                     {destinations.map((dest, i) => (
-                        <div key={i} className="flex flex-col md:flex-row gap-4 items-start md:items-center bg-[#141414] p-4 rounded-xl border border-[#222222] relative group hover:border-neutral-700 transition-colors">
+                        <div key={i} className="flex flex-col md:flex-row gap-4 items-start md:items-center bg-neutral-900/60 p-4 rounded-lg border border-neutral-800 relative group hover:border-neutral-700 transition-colors">
                             {/* Destination Thumbnail Preview */}
                             <div className="w-16 h-16 rounded-xl bg-[#1c1c1c] border border-[#2c2c2c] overflow-hidden shrink-0 flex items-center justify-center relative shadow-inner">
                                 {dest.image ? (
@@ -585,7 +585,7 @@ export default function AdminHomepageEditor() {
                                         value={dest.name}
                                         onChange={(e) => handleUpdateDestination(i, 'name', e.target.value)}
                                         placeholder="e.g. Indonesia"
-                                        className="w-full bg-[#181818] border border-[#282828] text-white rounded-xl px-3.5 py-2.5 text-xs font-bold outline-none focus:border-neutral-400 transition-colors"
+                                        className="w-full bg-neutral-900 border border-neutral-800 text-white rounded-lg px-3 py-1.5 text-xs font-medium outline-none focus:border-neutral-400 transition-colors"
                                     />
                                 </div>
 
@@ -596,7 +596,7 @@ export default function AdminHomepageEditor() {
                                         value={dest.properties}
                                         onChange={(e) => handleUpdateDestination(i, 'properties', e.target.value)}
                                         placeholder="e.g. 1,345 Hotels • 24 Packages"
-                                        className="w-full bg-[#181818] border border-[#282828] text-white rounded-xl px-3.5 py-2.5 text-xs font-bold outline-none focus:border-neutral-400 transition-colors"
+                                        className="w-full bg-neutral-900 border border-neutral-800 text-white rounded-lg px-3 py-1.5 text-xs font-medium outline-none focus:border-neutral-400 transition-colors"
                                     />
                                 </div>
                                 <div>
@@ -665,8 +665,8 @@ export default function AdminHomepageEditor() {
             </section>
 
             {/* Featured Collections Editor */}
-            <section className="bg-[#0c0c0c] p-6 md:p-8 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)]">
-                <div className="flex items-center justify-between mb-6 pb-4 border-b border-[#1f1f1f]">
+            <section className="bg-neutral-900/40 border border-neutral-800/80 rounded-xl p-5 md:p-6">
+                <div className="flex items-center justify-between mb-6 pb-4 border-b border-neutral-800/60">
                     <h3 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
                         <Layers className="w-4 h-4 text-blue-400" /> Featured Collections
                     </h3>
@@ -677,7 +677,7 @@ export default function AdminHomepageEditor() {
                 
                 <div className="space-y-4">
                     {collections.map((coll, i) => (
-                        <div key={i} className="flex flex-col md:flex-row gap-4 items-start md:items-center bg-[#141414] p-4 rounded-xl border border-[#222222] relative group hover:border-neutral-700 transition-colors animate-in fade-in-50 duration-300">
+                        <div key={i} className="flex flex-col md:flex-row gap-4 items-start md:items-center bg-neutral-900/60 p-4 rounded-lg border border-neutral-800 relative group hover:border-neutral-700 transition-colors animate-in fade-in-50 duration-300">
                             {/* Collection Thumbnail Preview */}
                             <div className="w-16 h-16 rounded-xl bg-[#1c1c1c] border border-[#2c2c2c] overflow-hidden shrink-0 flex items-center justify-center relative shadow-inner">
                                 {coll.image ? (
@@ -695,7 +695,7 @@ export default function AdminHomepageEditor() {
                                         value={coll.title}
                                         onChange={(e) => handleUpdateCollection(i, 'title', e.target.value)}
                                         placeholder="e.g. Luxury Stays"
-                                        className="w-full bg-[#181818] border border-[#282828] text-white rounded-xl px-3.5 py-2.5 text-xs font-bold outline-none focus:border-neutral-400 transition-colors"
+                                        className="w-full bg-neutral-900 border border-neutral-800 text-white rounded-lg px-3 py-1.5 text-xs font-medium outline-none focus:border-neutral-400 transition-colors"
                                     />
                                 </div>
                                 <div>
@@ -705,7 +705,7 @@ export default function AdminHomepageEditor() {
                                         value={coll.subtitle}
                                         onChange={(e) => handleUpdateCollection(i, 'subtitle', e.target.value)}
                                         placeholder="e.g. Premium stays"
-                                        className="w-full bg-[#181818] border border-[#282828] text-white rounded-xl px-3.5 py-2.5 text-xs font-bold outline-none focus:border-neutral-400 transition-colors"
+                                        className="w-full bg-neutral-900 border border-neutral-800 text-white rounded-lg px-3 py-1.5 text-xs font-medium outline-none focus:border-neutral-400 transition-colors"
                                     />
                                 </div>
                                 <div>
@@ -715,7 +715,7 @@ export default function AdminHomepageEditor() {
                                         value={coll.label}
                                         onChange={(e) => handleUpdateCollection(i, 'label', e.target.value)}
                                         placeholder="e.g. Premium"
-                                        className="w-full bg-[#181818] border border-[#282828] text-white rounded-xl px-3.5 py-2.5 text-xs font-bold outline-none focus:border-neutral-400 transition-colors"
+                                        className="w-full bg-neutral-900 border border-neutral-800 text-white rounded-lg px-3 py-1.5 text-xs font-medium outline-none focus:border-neutral-400 transition-colors"
                                     />
                                 </div>
                                 <div>
@@ -784,8 +784,8 @@ export default function AdminHomepageEditor() {
             </section>
 
             {/* Trending Hotels Toggle List */}
-            <section className="bg-[#0c0c0c] p-6 md:p-8 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)]">
-                <h3 className="text-xs font-black text-white uppercase tracking-widest mb-6 pb-4 border-b border-[#1f1f1f] flex items-center gap-2">
+            <section className="bg-neutral-900/40 border border-neutral-800/80 rounded-xl p-5 md:p-6">
+                <h3 className="text-xs font-black text-white uppercase tracking-widest mb-6 pb-4 border-b border-neutral-800/60 flex items-center gap-2">
                     <LinkIcon className="w-4 h-4 text-amber-400" /> Choose Trending Hotels
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -848,9 +848,9 @@ export default function AdminHomepageEditor() {
             {/* Premium Link Hotels Modal */}
             {linkingTarget && (
                 <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-300">
-                    <div className="bg-[#0c0c0c] w-full max-w-2xl rounded-2xl border border-[#262626] shadow-2xl flex flex-col max-h-[85vh] overflow-hidden animate-in zoom-in-95 duration-300">
+                    <div className="bg-neutral-900 w-full max-w-2xl rounded-xl border border-neutral-800 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden animate-in zoom-in-95 duration-300">
                         {/* Modal Header */}
-                        <div className="p-6 border-b border-[#1f1f1f] flex items-center justify-between bg-[#111111]">
+                        <div className="p-6 border-b border-neutral-800/60 flex items-center justify-between bg-neutral-900">
                             <div>
                                 <h4 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
                                     <Hotel className="w-4 h-4 text-emerald-400" /> Link Explicit Hotels
@@ -868,7 +868,7 @@ export default function AdminHomepageEditor() {
                         </div>
 
                         {/* Modal Toolbar */}
-                        <div className="p-4 border-b border-[#1f1f1f] bg-[#0c0c0c] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                        <div className="p-4 border-b border-neutral-800/60 bg-[#0c0c0c] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                             {/* Search bar */}
                             <div className="relative flex-1">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
@@ -899,7 +899,7 @@ export default function AdminHomepageEditor() {
                         </div>
 
                         {/* Modal Selection Counter Banner */}
-                        <div className="px-6 py-2.5 bg-[#141414] text-[10px] font-bold text-neutral-300 border-b border-[#1f1f1f] flex items-center justify-between shrink-0">
+                        <div className="px-6 py-2.5 bg-[#141414] text-[10px] font-bold text-neutral-300 border-b border-neutral-800/60 flex items-center justify-between shrink-0">
                             <span>Selected: <strong className="text-white">{selectedIdsInModal.length}</strong> hotels in total</span>
                             {hotelSearch && (
                                 <span className="text-neutral-500 font-semibold">
@@ -909,7 +909,7 @@ export default function AdminHomepageEditor() {
                         </div>
 
                         {/* Modal Hotel List */}
-                        <div className="flex-1 overflow-y-auto p-6 bg-[#080808] space-y-2.5">
+                        <div className="flex-1 overflow-y-auto p-6 bg-neutral-950 space-y-2.5">
                             {modalFilteredHotels.length > 0 ? (
                                 modalFilteredHotels.map(hotel => {
                                     const isSelected = selectedIdsInModal.includes(hotel.id);
@@ -983,7 +983,7 @@ export default function AdminHomepageEditor() {
                         </div>
 
                         {/* Modal Footer */}
-                        <div className="p-4 border-t border-[#1f1f1f] bg-[#111111] flex items-center justify-end shrink-0">
+                        <div className="p-4 border-t border-[#1f1f1f] bg-neutral-900 flex items-center justify-end shrink-0">
                             <button 
                                 onClick={() => { setLinkingTarget(null); setHotelSearch(""); }}
                                 className="px-6 py-2.5 bg-white hover:bg-neutral-200 text-black text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-md cursor-pointer"

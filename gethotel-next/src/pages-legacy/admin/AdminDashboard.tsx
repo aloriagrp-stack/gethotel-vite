@@ -88,20 +88,20 @@ export default function SuperAdminDashboard() {
     const [searchParams] = useSearchParams();
     const location = useLocation();
     let initialTab = searchParams.get("tab") || "overview";
-    if (location.pathname.includes('/admin/super/ai-chats')) {
+    if (location.pathname.includes('/controlhub?tab=ai-chats')) {
         initialTab = "ai-chats";
     }
-    if (location.pathname.includes('/admin/super/tour-packages')) {
+    if (location.pathname.includes('/controlhub?tab=tour-packages')) {
         initialTab = "tour-packages";
     }
     const [activeTab, setActiveTab] = useState(initialTab);
 
     useEffect(() => {
         let currentTab = searchParams.get("tab") || "overview";
-        if (location.pathname.includes('/admin/super/ai-chats')) {
+        if (location.pathname.includes('/controlhub?tab=ai-chats')) {
             currentTab = "ai-chats";
         }
-        if (location.pathname.includes('/admin/super/tour-packages')) {
+        if (location.pathname.includes('/controlhub?tab=tour-packages')) {
             currentTab = "tour-packages";
         }
         setActiveTab(currentTab);
@@ -477,8 +477,8 @@ export default function SuperAdminDashboard() {
 
     if (isInitialLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-[#050505] text-white">
-                <Loader2 className="w-10 h-10 animate-spin text-neutral-400" />
+            <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] text-slate-900">
+                <Loader2 className="w-10 h-10 animate-spin text-slate-500" />
             </div>
         );
     }
@@ -486,27 +486,27 @@ export default function SuperAdminDashboard() {
     return (
         <div className={cn(activeTab === "ai-copilot" ? "p-0 h-screen overflow-hidden flex flex-col" : "p-8", "min-w-0")}>
             {activeTab !== "ai-copilot" && activeTab !== "destination-analytics" && activeTab !== "destinations" && (
-                <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 border-b border-[#1f1f1f] pb-6">
+                <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 border-b border-slate-200/80 pb-5">
                     <div>
-                        <h2 className="text-2xl font-black text-white uppercase tracking-tight flex items-center gap-3 font-sans">
-                            <span className="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981]" />
-                            {activeTab === 'overview' ? 'System Overview' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+                        <h2 className="text-xl font-semibold text-slate-900 tracking-tight flex items-center gap-2.5">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                            {activeTab === 'overview' ? 'Overview' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
                         </h2>
-                        <p className="text-neutral-500 text-xs font-semibold mt-1">Monitoring platform statistics and property requests.</p>
+                        <p className="text-slate-500 text-xs mt-0.5">Monitoring platform statistics and property requests.</p>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2.5">
                         <div className="relative">
-                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
                             <input
                                 type="text"
                                 placeholder="Search..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-10 pr-4 py-2.5 bg-[#111111] border border-[#262626] rounded-xl w-64 focus:outline-none focus:border-neutral-500 font-medium text-xs text-white placeholder:text-neutral-600 shadow-[inset_0_1px_3px_rgba(0,0,0,0.8)]"
+                                className="pl-9 pr-3 py-1.5 bg-white border border-slate-300 rounded-lg w-56 focus:outline-none focus:border-slate-900 text-xs text-slate-900 placeholder:text-slate-400 transition-colors shadow-2xs"
                             />
                         </div>
-                        <button className="p-2.5 bg-[#141414] hover:bg-[#1f1f1f] border border-[#262626] rounded-xl relative shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_2px_4px_rgba(0,0,0,0.6)] transition-all cursor-pointer">
-                            <Bell className="w-4 h-4 text-neutral-300" />
+                        <button className="p-2 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg text-slate-500 hover:text-slate-900 transition-colors cursor-pointer shadow-2xs">
+                            <Bell className="w-3.5 h-3.5" />
                         </button>
                     </div>
                 </header>
@@ -514,7 +514,7 @@ export default function SuperAdminDashboard() {
 
             {loading && !isTabLoaded() ? (
                 <div className="min-h-[400px] flex items-center justify-center bg-transparent">
-                    <Loader2 className="w-10 h-10 animate-spin text-white" />
+                    <Loader2 className="w-8 h-8 animate-spin text-slate-500" />
                 </div>
             ) : (
                 <>
@@ -538,25 +538,23 @@ export default function SuperAdminDashboard() {
 
                     {activeTab === "overview" && (
                 <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                         {stats.map((stat) => {
                             const Icon = stat.icon;
                             return (
-                                <div key={stat.label} className="bg-[#0c0c0c] p-6 border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.9)] hover:border-neutral-700 transition-all group">
-                                    <div className="flex justify-between items-start mb-6">
-                                        <div className="w-10 h-10 bg-[#161616] border border-[#282828] rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform shadow-inner">
-                                            <Icon className="w-5 h-5 text-neutral-400 group-hover:text-white" />
-                                        </div>
+                                <div key={stat.label} className="bg-white p-5 border border-slate-200/90 rounded-xl shadow-xs hover:border-slate-300 transition-colors">
+                                    <div className="flex justify-between items-center mb-3">
+                                        <span className="text-slate-500 text-xs font-medium">{stat.label}</span>
+                                        <Icon className="w-4 h-4 text-slate-400" />
+                                    </div>
+                                    <div className="flex items-baseline justify-between">
+                                        <h3 className="text-2xl font-semibold text-slate-900 tracking-tight">{stat.value}</h3>
                                         <span className={cn(
-                                            "text-[10px] font-bold px-2.5 py-1 rounded-lg uppercase tracking-wider border shadow-sm",
-                                            stat.isUp ? "bg-emerald-950/60 border-emerald-800/40 text-emerald-400" : "bg-red-950/60 border-red-800/40 text-red-400"
+                                            "text-[11px] font-semibold px-2 py-0.5 rounded-md border",
+                                            stat.isUp ? "bg-emerald-50 text-emerald-700 border-emerald-200/70" : "bg-rose-50 text-rose-700 border-rose-200/70"
                                         )}>
                                             {stat.trend}
                                         </span>
-                                    </div>
-                                    <div>
-                                        <p className="text-neutral-500 font-bold text-[10px] uppercase tracking-[0.2em] mb-1">{stat.label}</p>
-                                        <h3 className="text-3xl font-black text-white tracking-tight">{stat.value}</h3>
                                     </div>
                                 </div>
                             );
@@ -564,105 +562,102 @@ export default function SuperAdminDashboard() {
                     </div>
 
                     {/* Conversion Intelligence & Destination Insights */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                        <div className="lg:col-span-2 bg-[#0c0c0c] text-white p-8 rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] relative overflow-hidden group">
-                            <TrendingUp className="absolute -right-8 -bottom-8 w-48 h-48 text-white/5 transform rotate-12 group-hover:rotate-0 transition-transform duration-1000" />
-                            <div className="relative z-10">
-                                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400 mb-8 pb-4 border-b border-[#1f1f1f] flex items-center gap-2">
-                                    <BarChart3 className="w-4 h-4 text-emerald-400" /> Conversion Intelligence
-                                </h3>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                                    <div>
-                                        <p className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Search → Booking</p>
-                                        <p className="text-2xl font-black">{statsData?.conversionRate || '0'}%</p>
-                                        <p className="text-[9px] text-emerald-400 font-bold mt-1">Healthy</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Abandoned Checkout</p>
-                                        <p className="text-2xl font-black">{statsData?.abandonedRate || '0'}%</p>
-                                        <p className="text-[9px] text-red-400 font-bold mt-1">Stable</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Repeat Guest %</p>
-                                        <p className="text-2xl font-black">{statsData?.repeatGuestRate || '0'}%</p>
-                                        <p className="text-[9px] text-blue-400 font-bold mt-1">Growing</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Avg. Booking Value</p>
-                                        <p className="text-2xl font-black">₹{(statsData?.avgBookingValue || 0).toLocaleString()}</p>
-                                        <p className="text-[9px] text-neutral-500 font-bold mt-1">Per stay</p>
-                                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
+                        <div className="lg:col-span-2 bg-white border border-slate-200/90 rounded-xl shadow-xs p-5">
+                            <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-5 pb-3 border-b border-slate-100 flex items-center gap-2">
+                                <BarChart3 className="w-3.5 h-3.5 text-emerald-600" /> Conversion Intelligence
+                            </h3>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                                <div>
+                                    <p className="text-[11px] text-slate-500 font-medium mb-1">Search → Booking</p>
+                                    <p className="text-2xl font-semibold text-slate-900">{statsData?.conversionRate || '0'}%</p>
+                                    <p className="text-[11px] text-emerald-600 font-semibold mt-1">Healthy</p>
+                                </div>
+                                <div>
+                                    <p className="text-[11px] text-slate-500 font-medium mb-1">Abandoned Checkout</p>
+                                    <p className="text-2xl font-semibold text-slate-900">{statsData?.abandonedRate || '0'}%</p>
+                                    <p className="text-[11px] text-amber-600 font-semibold mt-1">Stable</p>
+                                </div>
+                                <div>
+                                    <p className="text-[11px] text-slate-500 font-medium mb-1">Repeat Guest %</p>
+                                    <p className="text-2xl font-semibold text-slate-900">{statsData?.repeatGuestRate || '0'}%</p>
+                                    <p className="text-[11px] text-blue-600 font-semibold mt-1">Growing</p>
+                                </div>
+                                <div>
+                                    <p className="text-[11px] text-slate-500 font-medium mb-1">Avg. Booking Value</p>
+                                    <p className="text-2xl font-semibold text-slate-900">₹{(statsData?.avgBookingValue || 0).toLocaleString()}</p>
+                                    <p className="text-[11px] text-slate-400 font-medium mt-1">Per stay</p>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl p-8 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)]">
-                            <div className="flex items-center justify-between mb-6 pb-2 border-b border-[#1f1f1f]">
-                                <h3 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
-                                    <Globe className="w-4 h-4 text-emerald-400" /> Top Destinations
+                        <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs p-5">
+                            <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                                <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wider flex items-center gap-2">
+                                    <Globe className="w-3.5 h-3.5 text-emerald-400" /> Top Destinations
                                 </h3>
                                 <button
-                                    onClick={() => router('/admin/super/destination-analytics')}
-                                    className="p-1.5 px-2.5 rounded-xl bg-[#141414] hover:bg-[#1f1f1f] border border-[#262626] text-neutral-400 hover:text-white transition-all cursor-pointer shadow-sm group/btn flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider"
-                                    title="View Detailed Destination & Geographic Analytics"
+                                    onClick={() => router('/controlhub?tab=destination-analytics')}
+                                    className="text-xs text-slate-500 hover:text-slate-900 transition-colors cursor-pointer flex items-center gap-1 font-medium"
+                                    title="View Detailed Destination Analytics"
                                 >
                                     <span>Analytics</span>
-                                    <ArrowRight className="w-3.5 h-3.5 text-emerald-400 group-hover/btn:translate-x-0.5 transition-transform" />
+                                    <ArrowRight className="w-3 h-3 text-slate-500" />
                                 </button>
                             </div>
-                            <div className="space-y-4">
+                            <div className="space-y-3.5">
                                 {(statsData?.topDestinations || []).length > 0 ? (
                                     statsData.topDestinations.map((dest: any, idx: number) => {
-                                        const colors = ["bg-white", "bg-emerald-500", "bg-amber-500", "bg-neutral-600"];
+                                        const colors = ["bg-neutral-200", "bg-emerald-400", "bg-amber-400", "bg-neutral-500"];
                                         return (
-                                            <div key={dest.city} className="space-y-1.5">
-                                                <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
-                                                    <span className="text-neutral-200">{dest.city}</span>
-                                                    <span className="text-neutral-500">{dest.percentage}%</span>
+                                            <div key={dest.city} className="space-y-1">
+                                                <div className="flex justify-between items-center text-xs">
+                                                    <span className="text-slate-800 font-medium">{dest.city}</span>
+                                                    <span className="text-slate-500 text-[11px]">{dest.percentage}%</span>
                                                 </div>
-                                                <div className="h-1.5 w-full bg-[#161616] border border-[#222222] rounded-full overflow-hidden shadow-inner">
+                                                <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
                                                     <div className={cn("h-full rounded-full", colors[idx % colors.length])} style={{ width: `${dest.percentage}%` }} />
                                                 </div>
                                             </div>
                                         );
                                     })
                                 ) : (
-                                    <div className="py-10 text-center">
-                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">No destination data</p>
+                                    <div className="py-8 text-center">
+                                        <p className="text-xs text-slate-400 font-medium">No destination data</p>
                                     </div>
                                 )}
                             </div>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div className="lg:col-span-2 bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] overflow-hidden">
-                            <div className="px-6 py-4 border-b border-[#1f1f1f] bg-[#0e0e0e] flex items-center justify-between">
-                                <h3 className="text-sm font-bold text-white uppercase tracking-wider">Pending Approvals</h3>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                        <div className="lg:col-span-2 bg-white border border-slate-200/90 rounded-xl shadow-xs overflow-hidden">
+                            <div className="px-5 py-3.5 border-b border-slate-200/80 flex items-center justify-between">
+                                <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Pending Approvals</h3>
                                 <button
-                                    onClick={() => router('/admin/super/requests')}
-                                    className="text-[10px] font-bold text-neutral-300 uppercase tracking-widest border border-[#2e2e2e] bg-[#141414] px-3.5 py-1.5 rounded-lg hover:bg-[#1f1f1f] transition-all cursor-pointer shadow-sm"
+                                    onClick={() => router('/controlhub?tab=requests')}
+                                    className="text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
                                 >
-                                    View All Requests
+                                    View All
                                 </button>
                             </div>
-                            <div className="divide-y divide-[#181818]">
+                            <div className="divide-y divide-slate-100">
                                 {partnerRequests?.filter((r: any) => r.status === "pending").slice(0, 5).map((req: any) => (
-                                    <div key={req.id} className="px-6 py-4 flex items-center justify-between hover:bg-[#121212] transition-none">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 border border-[#282828] bg-[#161616] rounded-xl flex items-center justify-center shrink-0 shadow-inner">
-                                                <Hotel className="w-5 h-5 text-neutral-400" />
+                                    <div key={req.id} className="px-5 py-3.5 flex items-center justify-between hover:bg-slate-50/80 transition-colors">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 border border-slate-200 bg-slate-50 rounded-lg flex items-center justify-center shrink-0">
+                                                <Hotel className="w-4 h-4 text-slate-500" />
                                             </div>
                                             <div className="text-left">
-                                                <h4 className="font-bold text-white text-sm truncate w-48">{req.hotelName}</h4>
-                                                <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-tight">Requested on {formatDateSafe(req.createdAt)}</p>
+                                                <h4 className="font-medium text-slate-900 text-xs truncate max-w-xs">{req.hotelName}</h4>
+                                                <p className="text-[11px] text-slate-400 mt-0.5">Requested {formatDateSafe(req.createdAt)}</p>
                                             </div>
                                         </div>
                                         <div className="flex gap-2">
                                             <button
                                                 onClick={() => handleApproveRequest(req.id)}
                                                 disabled={actionLoading === req.id}
-                                                className="px-4 py-2 bg-neutral-100 text-black font-bold text-[10px] uppercase rounded-xl hover:bg-white disabled:opacity-50 shadow-md cursor-pointer"
+                                                className="px-3 py-1 bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs rounded-md disabled:opacity-50 transition-colors cursor-pointer"
                                             >
                                                 {actionLoading === req.id ? '...' : 'Approve'}
                                             </button>
@@ -670,25 +665,28 @@ export default function SuperAdminDashboard() {
                                     </div>
                                 ))}
                                 {(!partnerRequests || partnerRequests.filter((r: any) => r.status === "pending").length === 0) && (
-                                    <div className="py-16 text-center">
-                                        <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-[0.2em]">No pending approvals</p>
+                                    <div className="py-12 text-center">
+                                        <p className="text-xs text-slate-400 font-medium">No pending approvals</p>
                                     </div>
                                 )}
                             </div>
                         </div>
 
-                        <div className="space-y-6">
-                            <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] p-6">
-                                <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-6 pb-2 border-b border-[#1f1f1f]">System Actions</h3>
-                                <div className="space-y-3">
+                        <div>
+                            <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs p-5">
+                                <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wider mb-4 pb-2 border-b border-slate-100">Quick Actions</h3>
+                                <div className="space-y-2.5">
                                     <button
-                                        onClick={() => router('/admin/super/requests')}
-                                        className="w-full py-3 bg-neutral-100 hover:bg-white text-black font-bold text-[10px] uppercase tracking-widest rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                                        onClick={() => router('/controlhub?tab=requests')}
+                                        className="w-full py-2 px-3 bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer"
                                     >
                                         <Plus className="w-3.5 h-3.5 text-black" /> View Requests
                                     </button>
-                                    <button className="w-full py-3 bg-[#141414] border border-[#282828] text-neutral-300 font-bold text-[10px] uppercase tracking-widest rounded-xl hover:bg-[#1f1f1f] transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer">
-                                        <Globe className="w-3.5 h-3.5 text-neutral-400" /> Platform Logs
+                                    <button 
+                                        onClick={() => router('/controlhub?tab=controlhub')}
+                                        className="w-full py-2 px-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-medium text-xs rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                                    >
+                                        <Globe className="w-3.5 h-3.5 text-slate-500" /> Platform Control Hub
                                     </button>
                                 </div>
                             </div>
@@ -698,108 +696,108 @@ export default function SuperAdminDashboard() {
             )}
 
             {activeTab === "requests" && (
-                <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] overflow-hidden">
-                    <div className="px-6 py-4 border-b border-[#1f1f1f] flex items-center justify-between bg-[#0e0e0e]">
+                <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs overflow-hidden">
+                    <div className="px-5 py-3.5 border-b border-slate-200/80 flex items-center justify-between">
                         <div>
-                            <h3 className="text-sm font-bold text-white uppercase tracking-wider">Property Requests</h3>
-                            <p className="text-[10px] font-bold text-neutral-500 uppercase mt-1">Review and approve new hotel partners</p>
+                            <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Property Requests</h3>
+                            <p className="text-[11px] text-slate-500 mt-0.5">Review and approve new hotel partners</p>
                         </div>
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3">
                             {selectedIds.length > 0 && (
-                                <div className="flex items-center gap-2 pr-4 border-r border-[#222222]">
-                                    <span className="text-[10px] font-black text-white uppercase tracking-widest">{selectedIds.length} Selected</span>
+                                <div className="flex items-center gap-2 pr-3 border-r border-slate-200">
+                                    <span className="text-xs font-medium text-slate-900">{selectedIds.length} Selected</span>
                                     <button
                                         onClick={() => setBulkModal({ show: true, type: 'approve' })}
-                                        className="px-4 py-1.5 bg-emerald-600 text-white text-[9px] font-black uppercase tracking-widest hover:bg-emerald-500 rounded-lg shadow-lg"
+                                        className="px-2.5 py-1 bg-white text-black text-xs font-medium rounded-md hover:bg-neutral-200 transition-colors"
                                     >
                                         Bulk Approve
                                     </button>
                                     <button
                                         onClick={() => setBulkModal({ show: true, type: 'decline' })}
-                                        className="px-4 py-1.5 bg-red-600 text-white text-[9px] font-black uppercase tracking-widest hover:bg-red-500 rounded-lg shadow-lg"
+                                        className="px-2.5 py-1 bg-red-500/10 text-red-400 text-xs font-medium rounded-md hover:bg-red-500/20 transition-colors"
                                     >
                                         Bulk Decline
                                     </button>
                                 </div>
                             )}
-                            <span className="px-3 py-1 bg-amber-950/80 border border-amber-800/40 text-amber-400 text-[9px] font-bold uppercase rounded-full">
+                            <span className="px-2 py-0.5 bg-amber-500/10 text-amber-400 text-xs font-medium rounded-md">
                                 {partnerRequests.filter(r => r.status === 'pending').length} Pending
                             </span>
                         </div>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
-                            <thead className="bg-[#0e0e0e] border-b border-[#1f1f1f]">
+                            <thead className="bg-slate-50/80 border-b border-slate-200/80">
                                 <tr>
-                                    <th className="px-6 py-4 w-10">
+                                    <th className="px-4 py-3 w-10">
                                         <input
                                             type="checkbox"
-                                            className="w-4 h-4 rounded border-[#333333] bg-[#141414] text-white focus:ring-neutral-500 cursor-pointer"
+                                            className="w-4 h-4 rounded border-slate-300 border-slate-300 text-slate-900 focus:ring-0 cursor-pointer"
                                             checked={selectedIds.length === partnerRequests.filter(r => r.status === 'pending').length && selectedIds.length > 0}
                                             onChange={handleSelectAll}
                                         />
                                     </th>
-                                    <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Hotel Info</th>
-                                    <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Owner Details</th>
-                                    <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Location</th>
-                                    <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Status</th>
-                                    <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest text-right">Actions</th>
+                                    <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Hotel Info</th>
+                                    <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Owner Details</th>
+                                    <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Location</th>
+                                    <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Status</th>
+                                    <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-[#181818]">
+                            <tbody className="divide-y divide-slate-100">
                                 {smartFilter(partnerRequests, searchQuery, ['hotelName', 'userName', 'userEmail', 'city', 'hotelUsername', 'address'])
                                     .map((req) => (
                                         <tr key={req.id} className={cn(
-                                            "hover:bg-[#121212] transition-none",
-                                            selectedIds.includes(req.id) ? "bg-[#181818]" : ""
+                                            "hover:bg-slate-50/80 transition-colors",
+                                            selectedIds.includes(req.id) ? "bg-slate-100/60" : ""
                                         )}>
-                                            <td className="px-6 py-4">
+                                            <td className="px-4 py-3">
                                                 {req.status === 'pending' && (
                                                     <input
                                                         type="checkbox"
-                                                        className="w-4 h-4 rounded border-[#333333] bg-[#141414] text-white focus:ring-neutral-500 cursor-pointer"
+                                                        className="w-4 h-4 rounded border-slate-300 border-slate-300 text-slate-900 focus:ring-0 cursor-pointer"
                                                         checked={selectedIds.includes(req.id)}
                                                         onChange={() => toggleSelect(req.id)}
                                                     />
                                                 )}
                                             </td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-4 py-3">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 bg-[#161616] flex items-center justify-center border border-[#282828] rounded-xl shrink-0">
-                                                        <Hotel className="w-5 h-5 text-neutral-400" />
+                                                    <div className="w-8 h-8 bg-slate-50 flex items-center justify-center border border-slate-200 rounded-lg shrink-0">
+                                                        <Hotel className="w-4 h-4 text-slate-500" />
                                                     </div>
                                                     <div>
-                                                        <p className="text-xs font-bold text-white">{req.hotelName}</p>
-                                                        <p className="text-[9px] text-neutral-500 font-bold uppercase tracking-tight">@{req.hotelUsername}</p>
+                                                        <p className="text-xs font-medium text-slate-900">{req.hotelName}</p>
+                                                        <p className="text-[11px] text-slate-400">@{req.hotelUsername}</p>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-4 py-3">
                                                 <div>
-                                                    <p className="text-xs font-bold text-neutral-300">{req.userName}</p>
-                                                    <p className="text-[10px] text-neutral-500 font-medium">{req.userEmail}</p>
-                                                    <p className="text-[10px] text-neutral-500 font-medium">{req.userPhone}</p>
+                                                    <p className="text-xs font-medium text-slate-800">{req.userName}</p>
+                                                    <p className="text-[11px] text-slate-400">{req.userEmail}</p>
+                                                    <p className="text-[11px] text-slate-400">{req.userPhone}</p>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 text-[10px] font-bold text-neutral-400 uppercase tracking-tight">
+                                            <td className="px-4 py-3 text-xs text-slate-500">
                                                 {req.city}, {req.address}
                                             </td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-4 py-3">
                                                 <span className={cn(
-                                                    "px-2.5 py-1 text-[9px] font-bold uppercase rounded-lg border",
-                                                    req.status === 'pending' ? "bg-amber-950/80 border-amber-800/40 text-amber-400" : "bg-emerald-950/80 border-emerald-800/40 text-emerald-400"
+                                                    "px-2 py-0.5 text-[11px] font-medium rounded-md",
+                                                    req.status === 'pending' ? "bg-amber-500/10 text-amber-400" : "bg-emerald-500/10 text-emerald-400"
                                                 )}>
                                                     {req.status}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 text-right">
+                                            <td className="px-4 py-3 text-right">
                                                 <div className="flex justify-end gap-2">
                                                     <button
                                                         onClick={() => setRequestDetailModal({ show: true, request: req })}
-                                                        className="p-2 bg-[#181818] text-neutral-300 hover:bg-[#222222] transition-all rounded-lg border border-[#2a2a2a]"
+                                                        className="p-1.5 bg-slate-50 text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors rounded-md border border-slate-200"
                                                         title="View Details"
                                                     >
-                                                        <Eye className="w-4 h-4" />
+                                                        <Eye className="w-3.5 h-3.5" />
                                                     </button>
 
                                                     {req.status === 'pending' && (
@@ -807,7 +805,7 @@ export default function SuperAdminDashboard() {
                                                             <button
                                                                 onClick={() => handleApproveRequest(req.id)}
                                                                 disabled={actionLoading === req.id}
-                                                                className="px-4 py-2 bg-emerald-600 text-white text-[9px] font-bold uppercase tracking-widest hover:bg-emerald-500 rounded-lg shadow-lg disabled:opacity-50 flex items-center gap-2"
+                                                                className="px-3 py-1 bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium rounded-md transition-colors disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
                                                             >
                                                                 {actionLoading === req.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
                                                                 Approve
@@ -816,7 +814,7 @@ export default function SuperAdminDashboard() {
                                                             <button
                                                                 onClick={() => handleDeclineRequest(req.id)}
                                                                 disabled={actionLoading === req.id}
-                                                                className="px-4 py-2 bg-red-600 text-white text-[9px] font-bold uppercase tracking-widest hover:bg-red-500 rounded-lg shadow-lg disabled:opacity-50 flex items-center gap-2"
+                                                                className="px-3 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-medium rounded-md transition-colors disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
                                                             >
                                                                 {actionLoading === req.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <XCircle className="w-3 h-3" />}
                                                                 Decline
@@ -829,8 +827,8 @@ export default function SuperAdminDashboard() {
                                     ))}
                                 {partnerRequests.length === 0 && (
                                     <tr>
-                                        <td colSpan={6} className="py-20 text-center">
-                                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">No requests found</p>
+                                        <td colSpan={6} className="py-16 text-center">
+                                            <p className="text-xs text-slate-400 font-medium">No requests found</p>
                                         </td>
                                     </tr>
                                 )}
@@ -844,14 +842,14 @@ export default function SuperAdminDashboard() {
             {activeTab === "users" && (
                 <div>
                     {/* Sub-tab switcher */}
-                    <div className="flex gap-1.5 mb-6 bg-[#0c0c0c] border border-[#1f1f1f] p-1.5 rounded-xl w-fit shadow-inner">
+                    <div className="flex gap-1 mb-6 bg-slate-100 border border-slate-200/80 p-1 rounded-lg w-fit">
                         <button
                             onClick={() => setUsersSubTab("partners")}
                             className={cn(
-                                "px-5 py-2 text-[10px] font-bold uppercase tracking-widest transition-all rounded-lg cursor-pointer",
+                                "px-3.5 py-1.5 text-xs font-medium rounded-md transition-colors cursor-pointer",
                                 usersSubTab === "partners"
-                                    ? "bg-neutral-100 text-black shadow-md"
-                                    : "text-neutral-400 hover:text-white"
+                                    ? "bg-white text-slate-900 shadow-xs font-semibold"
+                                    : "text-slate-600 hover:text-slate-900 font-medium"
                             )}
                         >
                             Partners ({partners.length})
@@ -859,10 +857,10 @@ export default function SuperAdminDashboard() {
                         <button
                             onClick={() => setUsersSubTab("customers")}
                             className={cn(
-                                "px-5 py-2 text-[10px] font-bold uppercase tracking-widest transition-all rounded-lg cursor-pointer",
+                                "px-3.5 py-1.5 text-xs font-medium rounded-md transition-colors cursor-pointer",
                                 usersSubTab === "customers"
-                                    ? "bg-neutral-100 text-black shadow-md"
-                                    : "text-neutral-400 hover:text-white"
+                                    ? "bg-white text-slate-900 shadow-xs font-semibold"
+                                    : "text-slate-600 hover:text-slate-900 font-medium"
                             )}
                         >
                             Customers ({customers.length})
@@ -871,75 +869,75 @@ export default function SuperAdminDashboard() {
 
                     {/* Partners Sub-Tab */}
                     {usersSubTab === "partners" && (
-                        <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] overflow-hidden">
-                            <div className="px-6 py-4 border-b border-[#1f1f1f] bg-[#0e0e0e] flex items-center justify-between">
-                                <h3 className="text-sm font-bold text-white uppercase tracking-wider">Partner Management</h3>
-                                <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">{partners.length} Total Partners</p>
+                        <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs overflow-hidden">
+                            <div className="px-5 py-3.5 border-b border-slate-200/80 flex items-center justify-between">
+                                <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Partner Management</h3>
+                                <p className="text-xs text-slate-500">{partners.length} Total Partners</p>
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left">
-                                    <thead className="bg-[#0e0e0e] border-b border-[#1f1f1f]">
+                                    <thead className="bg-slate-50/80 border-b border-slate-200/80">
                                         <tr>
-                                            <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Partner Details</th>
-                                            <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Assigned Hotel</th>
-                                            <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Joined On</th>
-                                            <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest text-right">Actions</th>
+                                            <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Partner Details</th>
+                                            <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Assigned Hotel</th>
+                                            <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Joined On</th>
+                                            <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider text-right">Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-[#181818]">
+                                    <tbody className="divide-y divide-slate-100">
                                         {smartFilter(partners, searchQuery, ['name', 'email', 'id', 'hotel.0.name'])
                                             .map((partner) => (
-                                            <tr key={partner.id} className="hover:bg-[#121212] transition-none">
-                                                <td className="px-6 py-4">
+                                            <tr key={partner.id} className="hover:bg-slate-50/80 transition-colors">
+                                                <td className="px-4 py-3">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-9 h-9 rounded-full bg-[#161616] overflow-hidden flex items-center justify-center border border-[#282828] shrink-0">
+                                                        <div className="w-8 h-8 rounded-full bg-slate-50 overflow-hidden flex items-center justify-center border border-slate-200 shrink-0">
                                                             {partner.profileImage ? (
                                                                 <img src={partner.profileImage} alt={partner.name} className="w-full h-full object-cover" />
                                                             ) : (
-                                                                <Users className="w-4 h-4 text-neutral-400" />
+                                                                <Users className="w-3.5 h-3.5 text-slate-500" />
                                                             )}
                                                         </div>
                                                         <div>
-                                                            <p className="text-xs font-bold text-white">{partner.name}</p>
-                                                            <p className="text-[10px] text-neutral-500 font-medium">{partner.email}</p>
+                                                            <p className="text-xs font-medium text-slate-900">{partner.name}</p>
+                                                            <p className="text-[11px] text-slate-400">{partner.email}</p>
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4">
+                                                <td className="px-4 py-3">
                                                     {partner.hotel && partner.hotel.length > 0 ? (
                                                         <div className="flex flex-col gap-0.5">
                                                             <div className="flex items-center gap-1.5">
                                                                 <Hotel className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                                                                <span className="text-[10px] font-bold text-neutral-200 line-clamp-1">{partner.hotel[0].name}</span>
+                                                                <span className="text-xs text-slate-800 line-clamp-1">{partner.hotel[0].name}</span>
                                                             </div>
                                                             {partner.hotel.length > 1 && (
-                                                                <span className="text-[9px] font-bold text-neutral-500 pl-5 uppercase tracking-wide">
+                                                                <span className="text-[10px] text-slate-400 pl-5">
                                                                     + {partner.hotel.length - 1} other properties
                                                                 </span>
                                                             )}
                                                         </div>
                                                     ) : (
-                                                        <span className="text-[9px] font-bold text-neutral-600 italic">No Hotel Assigned</span>
+                                                        <span className="text-xs text-slate-400 italic">No Hotel Assigned</span>
                                                     )}
                                                 </td>
-                                                <td className="px-6 py-4 text-[10px] font-medium text-neutral-500">
+                                                <td className="px-4 py-3 text-xs text-slate-500">
                                                     {formatDateSafe(partner.createdAt)}
                                                 </td>
-                                                <td className="px-6 py-4 text-right">
+                                                <td className="px-4 py-3 text-right">
                                                     <div className="flex items-center justify-end gap-2">
                                                         <button
                                                             onClick={() => {
                                                                 setEditEmailModal({ show: true, partner });
                                                                 setNewPartnerEmail(partner.email || "");
                                                             }}
-                                                            className="px-3 py-2 bg-[#181818] text-white text-[9px] font-bold uppercase tracking-widest hover:bg-[#222222] hover:text-emerald-400 border border-[#2a2a2a] flex items-center gap-1.5 rounded-lg transition-colors cursor-pointer"
+                                                            className="px-2.5 py-1 bg-slate-50 text-slate-700 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 text-xs font-medium flex items-center gap-1.5 rounded-md transition-colors cursor-pointer"
                                                             title="Edit Partner Email (No OTP Required)"
                                                         >
                                                             <Mail className="w-3 h-3 text-emerald-400" /> Edit Email
                                                         </button>
                                                         <button
                                                             onClick={() => setResetModal({ show: true, partner })}
-                                                            className="px-3 py-2 bg-[#181818] text-white text-[9px] font-bold uppercase tracking-widest hover:bg-[#222222] border border-[#2a2a2a] flex items-center gap-1.5 rounded-lg transition-colors cursor-pointer"
+                                                            className="px-2.5 py-1 bg-slate-50 text-slate-700 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 text-xs font-medium flex items-center gap-1.5 rounded-md transition-colors cursor-pointer"
                                                         >
                                                             <Key className="w-3 h-3" /> Reset Password
                                                         </button>
@@ -955,62 +953,62 @@ export default function SuperAdminDashboard() {
 
                     {/* Customers Sub-Tab */}
                     {usersSubTab === "customers" && (
-                        <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] overflow-hidden">
-                            <div className="px-6 py-4 border-b border-[#1f1f1f] bg-[#0e0e0e] flex items-center justify-between">
+                        <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs overflow-hidden">
+                            <div className="px-5 py-3.5 border-b border-slate-200/80 flex items-center justify-between">
                                 <div>
-                                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">Customer Management</h3>
-                                    <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mt-0.5">{customers.length} Registered Customers</p>
+                                    <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Customer Management</h3>
+                                    <p className="text-xs text-slate-500 mt-0.5">{customers.length} Registered Customers</p>
                                 </div>
                                 <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-500" />
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
                                     <input
                                         type="text"
                                         placeholder="Search customers..."
                                         value={customerSearchQuery}
                                         onChange={e => setCustomerSearchQuery(e.target.value)}
-                                        className="pl-9 pr-4 py-2 bg-[#141414] border border-[#282828] rounded-xl w-56 focus:outline-none focus:border-neutral-500 font-medium text-xs text-white placeholder:text-neutral-600"
+                                        className="pl-9 pr-3 py-1.5 bg-white border border-slate-300 rounded-lg w-52 focus:outline-none focus:border-slate-900 text-xs text-slate-900 placeholder:text-slate-400"
                                     />
                                 </div>
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left">
-                                    <thead className="bg-[#0e0e0e] border-b border-[#1f1f1f]">
+                                    <thead className="bg-slate-50/80 border-b border-slate-200/80">
                                         <tr>
-                                            <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Customer</th>
-                                            <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Login Provider</th>
-                                            <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Joined On</th>
-                                            <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest text-right">Actions</th>
+                                            <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Customer</th>
+                                            <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Login Provider</th>
+                                            <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Joined On</th>
+                                            <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider text-right">Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-[#181818]">
+                                    <tbody className="divide-y divide-slate-100">
                                         {smartFilter(customers, customerSearchQuery || searchQuery, ['name', 'email', 'phone'])
                                             .map((customer) => {
                                                 const provider = detectLoginProvider(customer);
                                                 return (
-                                                    <tr key={customer.id} className="hover:bg-[#121212] transition-none cursor-pointer" onClick={() => { setCustomerModal({ show: true, customer }); setShowPasswordHash(false); }}>
-                                                        <td className="px-6 py-4">
+                                                    <tr key={customer.id} className="hover:bg-slate-50/80 transition-colors cursor-pointer" onClick={() => { setCustomerModal({ show: true, customer }); setShowPasswordHash(false); }}>
+                                                        <td className="px-4 py-3">
                                                             <div className="flex items-center gap-3">
-                                                                <div className="w-9 h-9 rounded-full bg-[#161616] overflow-hidden flex items-center justify-center border border-[#282828] shrink-0">
+                                                                <div className="w-8 h-8 rounded-full bg-slate-50 overflow-hidden flex items-center justify-center border border-slate-200 shrink-0">
                                                                     {customer.profileImage ? (
                                                                         <img src={customer.profileImage} alt={customer.name} className="w-full h-full object-cover" />
                                                                     ) : (
-                                                                        <span className="text-[11px] font-bold text-white">
+                                                                        <span className="text-xs font-semibold text-white">
                                                                             {customer.name?.charAt(0)?.toUpperCase() || "?"}
                                                                         </span>
                                                                     )}
                                                                 </div>
                                                                 <div>
-                                                                    <p className="text-xs font-bold text-white">{customer.name}</p>
-                                                                    <p className="text-[10px] text-neutral-500 font-medium">{customer.email}</p>
+                                                                    <p className="text-xs font-medium text-slate-900">{customer.name}</p>
+                                                                    <p className="text-[11px] text-slate-400">{customer.email}</p>
                                                                 </div>
                                                             </div>
                                                         </td>
-                                                        <td className="px-6 py-4">
+                                                        <td className="px-4 py-3">
                                                             <span className={cn(
-                                                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-widest border",
+                                                                "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium",
                                                                 provider === "Google"
-                                                                    ? "bg-blue-950/60 border-blue-800/40 text-blue-400"
-                                                                    : "bg-[#141414] border-[#262626] text-neutral-300"
+                                                                    ? "bg-blue-500/10 text-blue-400"
+                                                                    : "bg-slate-100 text-slate-700"
                                                             )}>
                                                                 {provider === "Google" ? (
                                                                     <svg className="w-3 h-3" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
@@ -1020,13 +1018,13 @@ export default function SuperAdminDashboard() {
                                                                 {provider}
                                                             </span>
                                                         </td>
-                                                        <td className="px-6 py-4 text-[10px] font-medium text-neutral-500">
+                                                        <td className="px-4 py-3 text-xs text-slate-500">
                                                             {formatDateSafe(customer.createdAt)}
                                                         </td>
-                                                        <td className="px-6 py-4 text-right">
+                                                        <td className="px-4 py-3 text-right">
                                                             <button
                                                                 onClick={e => { e.stopPropagation(); setCustomerModal({ show: true, customer }); setShowPasswordHash(false); }}
-                                                                className="px-3.5 py-2 bg-[#181818] text-white text-[9px] font-bold uppercase tracking-widest hover:bg-[#222222] border border-[#2a2a2a] flex items-center gap-1.5 ml-auto rounded-lg"
+                                                                className="px-2.5 py-1 bg-slate-50 text-slate-700 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 text-xs font-medium flex items-center gap-1.5 ml-auto rounded-md transition-colors cursor-pointer"
                                                             >
                                                                 <Eye className="w-3 h-3" /> View Profile
                                                             </button>
@@ -1045,14 +1043,14 @@ export default function SuperAdminDashboard() {
             {activeTab === "bookings" && (
                 <div>
                     {/* Sub-tab switcher */}
-                    <div className="flex gap-1.5 mb-6 bg-[#0c0c0c] border border-[#1f1f1f] p-1.5 rounded-xl w-fit shadow-inner">
+                    <div className="flex gap-1 mb-6 bg-slate-100 border border-slate-200/80 p-1 rounded-lg w-fit">
                         <button
                             onClick={() => setBookingsSubTab("fullDay")}
                             className={cn(
-                                "px-5 py-2 text-[10px] font-bold uppercase tracking-widest transition-all rounded-lg cursor-pointer",
+                                "px-3.5 py-1.5 text-xs font-medium rounded-md transition-colors cursor-pointer",
                                 bookingsSubTab === "fullDay"
-                                    ? "bg-neutral-100 text-black shadow-md"
-                                    : "text-neutral-400 hover:text-white"
+                                    ? "bg-white text-slate-900 shadow-xs font-semibold"
+                                    : "text-slate-600 hover:text-slate-900 font-medium"
                             )}
                         >
                             Full Day Bookings ({bookings.filter(b => {
@@ -1064,10 +1062,10 @@ export default function SuperAdminDashboard() {
                         <button
                             onClick={() => setBookingsSubTab("hourly")}
                             className={cn(
-                                "px-5 py-2 text-[10px] font-bold uppercase tracking-widest transition-all rounded-lg cursor-pointer",
+                                "px-3.5 py-1.5 text-xs font-medium rounded-md transition-colors cursor-pointer",
                                 bookingsSubTab === "hourly"
-                                    ? "bg-neutral-100 text-black shadow-md"
-                                    : "text-neutral-400 hover:text-white"
+                                    ? "bg-white text-slate-900 shadow-xs font-semibold"
+                                    : "text-slate-600 hover:text-slate-900 font-medium"
                             )}
                         >
                             Hourly Bookings ({bookings.filter(b => {
@@ -1078,28 +1076,39 @@ export default function SuperAdminDashboard() {
                         </button>
                     </div>
 
-                    <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] overflow-hidden">
-                        <div className="px-6 py-4 border-b border-[#1f1f1f] bg-[#0e0e0e] flex items-center justify-between">
-                            <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                    <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs overflow-hidden">
+                        <div className="px-5 py-3.5 border-b border-slate-200/80 flex items-center justify-between">
+                            <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
                                 {bookingsSubTab === "hourly" ? "Hourly Reservations" : "Full Day Reservations"}
                             </h3>
-                            <p className="text-[10px] font-bold text-neutral-500 uppercase">
-                                Records Found
+                            <p className="text-xs text-slate-500">
+                                {bookingsSubTab === "hourly"
+                                    ? bookings.filter(b => {
+                                        if (!b.checkIn || !b.checkOut) return false;
+                                        const durationHours = (new Date(b.checkOut).getTime() - new Date(b.checkIn).getTime()) / (1000 * 60 * 60);
+                                        return b.room?.isHourlyEnabled && durationHours < 24;
+                                    }).length
+                                    : bookings.filter(b => {
+                                        if (!b.checkIn || !b.checkOut) return true;
+                                        const durationHours = (new Date(b.checkOut).getTime() - new Date(b.checkIn).getTime()) / (1000 * 60 * 60);
+                                        return !(b.room?.isHourlyEnabled && durationHours < 24);
+                                    }).length
+                                } Records
                             </p>
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
-                                <thead className="bg-[#0e0e0e] border-b border-[#1f1f1f]">
+                                <thead className="bg-slate-50/80 border-b border-slate-200/80">
                                     <tr>
-                                        <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Booking ID</th>
-                                        <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Guest</th>
-                                        <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Property</th>
-                                        <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Stay Details</th>
-                                        <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Status</th>
-                                        <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest text-right">Revenue</th>
+                                        <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Booking ID</th>
+                                        <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Guest</th>
+                                        <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Property</th>
+                                        <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Stay Details</th>
+                                        <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Status</th>
+                                        <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider text-right">Revenue</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-[#181818]">
+                                <tbody className="divide-y divide-slate-100">
                                     {(() => {
                                         const hourlyBookings = bookings.filter(b => {
                                             if (!b.checkIn || !b.checkOut) return false;
@@ -1124,8 +1133,8 @@ export default function SuperAdminDashboard() {
                                         if (filteredBookings.length === 0) {
                                             return (
                                                 <tr>
-                                                    <td colSpan={6} className="py-20 text-center">
-                                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">No bookings found</p>
+                                                    <td colSpan={6} className="py-16 text-center">
+                                                        <p className="text-xs text-slate-400 font-medium">No bookings found</p>
                                                     </td>
                                                 </tr>
                                             );
@@ -1135,53 +1144,53 @@ export default function SuperAdminDashboard() {
                                             const isHourly = booking.room?.isHourlyEnabled && ((new Date(booking.checkOut).getTime() - new Date(booking.checkIn).getTime()) / (1000 * 60 * 60)) < 24;
                                             const stayDetails = isHourly ? (
                                                 <div>
-                                                    <span className="px-2 py-0.5 text-[8px] font-bold uppercase rounded-lg bg-purple-950/80 border border-purple-800/40 text-purple-400">Hourly Stay</span>
-                                                    <p className="text-[10px] text-neutral-400 font-semibold mt-1">{formatDateTimeSafe(booking.checkIn)}</p>
-                                                    <p className="text-[9px] text-neutral-500 font-bold uppercase">
+                                                    <span className="px-2 py-0.5 text-[10px] font-medium rounded-md bg-purple-500/10 text-purple-400">Hourly Stay</span>
+                                                    <p className="text-xs text-slate-700 font-medium mt-1">{formatDateTimeSafe(booking.checkIn)}</p>
+                                                    <p className="text-[11px] text-slate-400">
                                                         Duration: {Math.round((new Date(booking.checkOut).getTime() - new Date(booking.checkIn).getTime()) / (1000 * 60 * 60))} Hours
                                                     </p>
-                                                    <p className="text-[9px] text-emerald-400 font-bold uppercase mt-1">Arrival: {booking.arrivalTime || "Not specified"}</p>
+                                                    <p className="text-[11px] text-emerald-400 mt-0.5">Arrival: {booking.arrivalTime || "Not specified"}</p>
                                                 </div>
                                             ) : (
                                                 <div>
-                                                    <span className="px-2 py-0.5 text-[8px] font-bold uppercase rounded-lg bg-blue-950/80 border border-blue-800/40 text-blue-400">Full Day Stay</span>
-                                                    <p className="text-[10px] text-neutral-400 font-semibold mt-1">
+                                                    <span className="px-2 py-0.5 text-[10px] font-medium rounded-md bg-blue-500/10 text-blue-400">Full Day Stay</span>
+                                                    <p className="text-xs text-slate-700 font-medium mt-1">
                                                         {formatDateSafe(booking.checkIn)} to {formatDateSafe(booking.checkOut)}
                                                     </p>
-                                                    <p className="text-[9px] text-neutral-500 font-bold uppercase">
+                                                    <p className="text-[11px] text-slate-400">
                                                         Duration: {Math.max(1, Math.round((new Date(booking.checkOut).getTime() - new Date(booking.checkIn).getTime()) / (1000 * 60 * 60 * 24)))} Night(s)
                                                     </p>
-                                                    <p className="text-[9px] text-emerald-400 font-bold uppercase mt-1">Arrival: {booking.arrivalTime || "Not specified"}</p>
+                                                    <p className="text-[11px] text-emerald-400 mt-0.5">Arrival: {booking.arrivalTime || "Not specified"}</p>
                                                 </div>
                                             );
 
                                             return (
-                                                <tr key={booking.id} className="hover:bg-[#121212] transition-none">
-                                                    <td className="px-6 py-4 text-xs font-bold text-white">#BK-{booking.id}</td>
-                                                    <td className="px-6 py-4">
+                                                <tr key={booking.id} className="hover:bg-slate-50/80 transition-colors">
+                                                    <td className="px-4 py-3 text-xs font-medium text-slate-900">#BK-{booking.id}</td>
+                                                    <td className="px-4 py-3">
                                                         <div>
-                                                            <p className="text-xs font-bold text-neutral-200">{booking.guestFirstName} {booking.guestLastName}</p>
-                                                            <p className="text-[9px] text-neutral-500 font-bold uppercase">{booking.guestEmail}</p>
+                                                            <p className="text-xs font-medium text-slate-800">{booking.guestFirstName} {booking.guestLastName}</p>
+                                                            <p className="text-[11px] text-slate-400">{booking.guestEmail}</p>
                                                         </div>
                                                     </td>
-                                                    <td className="px-6 py-4">
-                                                        <p className="text-xs font-bold text-white">{booking.hotel?.name || 'N/A'}</p>
-                                                        <p className="text-[9px] text-neutral-500 font-bold uppercase">{booking.room?.name || 'N/A'}</p>
+                                                    <td className="px-4 py-3">
+                                                        <p className="text-xs font-medium text-slate-900">{booking.hotel?.name || 'N/A'}</p>
+                                                        <p className="text-[11px] text-slate-400">{booking.room?.name || 'N/A'}</p>
                                                     </td>
-                                                    <td className="px-6 py-4">
+                                                    <td className="px-4 py-3">
                                                         {stayDetails}
                                                     </td>
-                                                    <td className="px-6 py-4">
+                                                    <td className="px-4 py-3">
                                                         <span className={cn(
-                                                            "px-2.5 py-1 text-[9px] font-bold uppercase rounded-lg border",
-                                                            booking.status === 'confirmed' ? "bg-emerald-950/80 border-emerald-800/40 text-emerald-400" :
-                                                            booking.status === 'pending' ? "bg-amber-950/80 border-amber-800/40 text-amber-400" :
-                                                            booking.status === 'cancelled' ? "bg-red-950/80 border-red-800/40 text-red-400" : "bg-[#141414] text-neutral-500 border-[#262626]"
+                                                            "px-2 py-0.5 text-[11px] font-medium rounded-md",
+                                                            booking.status === 'confirmed' ? "bg-emerald-500/10 text-emerald-400" :
+                                                            booking.status === 'pending' ? "bg-amber-500/10 text-amber-400" :
+                                                            booking.status === 'cancelled' ? "bg-red-500/10 text-red-400" : "bg-slate-100 text-slate-500"
                                                         )}>
                                                             {booking.status}
                                                         </span>
                                                     </td>
-                                                    <td className="px-6 py-4 text-right text-xs font-bold text-white">
+                                                    <td className="px-4 py-3 text-right text-xs font-medium text-slate-900">
                                                         ₹{booking.totalPrice?.toLocaleString()}
                                                     </td>
                                                 </tr>
@@ -1199,51 +1208,52 @@ export default function SuperAdminDashboard() {
                 selectedHotelId ? (
                     <AdminHotelDetails hotelId={selectedHotelId} onBack={() => setSelectedHotelId(null)} />
                 ) : (
-                    <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] overflow-hidden">
-                        <div className="px-6 py-4 border-b border-[#1f1f1f] bg-[#0e0e0e] flex items-center justify-between">
-                            <h3 className="text-sm font-bold text-white uppercase tracking-wider">Property Management</h3>
+                    <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs overflow-hidden">
+                        <div className="px-5 py-3.5 border-b border-slate-200/80 flex items-center justify-between">
+                            <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Property Management</h3>
+                            <p className="text-xs text-slate-500">{hotels.length} Properties</p>
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
-                                <thead className="bg-[#0e0e0e] border-b border-[#1f1f1f]">
+                                <thead className="bg-slate-50/80 border-b border-slate-200/80">
                                     <tr>
-                                        <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Hotel Name</th>
-                                        <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Location</th>
-                                        <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Price</th>
-                                        <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest text-right">Actions</th>
+                                        <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Hotel Name</th>
+                                        <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Location</th>
+                                        <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Price</th>
+                                        <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider text-right">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-[#181818]">
+                                <tbody className="divide-y divide-slate-100">
                                     {smartFilter(hotels, searchQuery, ['name', 'city', 'hotelUsername', 'address', 'id'])
                                         .map((hotel) => (
                                             <tr
                                                 key={hotel.id}
                                                 onClick={() => setSelectedHotelId(hotel.id)}
-                                                className="hover:bg-[#121212] transition-none cursor-pointer group"
+                                                className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
                                             >
-                                                <td className="px-6 py-4">
+                                                <td className="px-4 py-3">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-9 h-9 bg-[#161616] border border-[#282828] rounded-xl flex items-center justify-center overflow-hidden shrink-0">
+                                                        <div className="w-8 h-8 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-center overflow-hidden shrink-0">
                                                             {hotel.thumbnail ? (
-                                                                <Image src={hotel.thumbnail} alt={hotel.name} width={36} height={36} className="object-cover w-full h-full group-hover:scale-110 transition-transform" />
+                                                                <Image src={hotel.thumbnail} alt={hotel.name} width={32} height={32} className="object-cover w-full h-full" />
                                                             ) : (
-                                                                <Hotel className="w-4 h-4 text-neutral-400" />
+                                                                <Hotel className="w-4 h-4 text-slate-500" />
                                                             )}
                                                         </div>
-                                                        <span className="text-xs font-bold text-white group-hover:text-emerald-400 transition-colors">{hotel.name}</span>
+                                                        <span className="text-xs font-medium text-slate-900 group-hover:text-slate-700 transition-colors">{hotel.name}</span>
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4 text-xs font-medium text-neutral-400">{hotel.city}</td>
-                                                <td className="px-6 py-4 text-xs font-bold text-emerald-400">₹{hotel.pricePerNight}</td>
-                                                <td className="px-6 py-4 text-xs font-bold text-neutral-400 text-right">
+                                                <td className="px-4 py-3 text-xs text-slate-500">{hotel.city}</td>
+                                                <td className="px-4 py-3 text-xs font-medium text-emerald-400">₹{hotel.pricePerNight}</td>
+                                                <td className="px-4 py-3 text-xs text-right">
                                                     <button 
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             setSelectedHotelId(hotel.id);
                                                         }}
-                                                        className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 group-hover:text-white transition-colors cursor-pointer"
+                                                        className="text-xs text-slate-500 group-hover:text-slate-900 transition-colors cursor-pointer font-medium"
                                                     >
-                                                        View Details
+                                                        View Details →
                                                     </button>
                                                 </td>
                                             </tr>
@@ -1259,14 +1269,14 @@ export default function SuperAdminDashboard() {
             {activeTab === "reviews" && (
                 <div>
                     {/* Sub-tab switcher */}
-                    <div className="flex gap-1.5 mb-6 bg-[#0c0c0c] border border-[#1f1f1f] p-1.5 rounded-xl w-fit shadow-inner">
+                    <div className="flex gap-1 mb-6 bg-slate-100 border border-slate-200/80 p-1 rounded-lg w-fit">
                         <button
                             onClick={() => setReviewsSubTab("list")}
                             className={cn(
-                                "px-5 py-2 text-[10px] font-bold uppercase tracking-widest transition-all rounded-lg cursor-pointer",
+                                "px-3.5 py-1.5 text-xs font-medium rounded-md transition-colors cursor-pointer",
                                 reviewsSubTab === "list"
-                                    ? "bg-neutral-100 text-black shadow-md"
-                                    : "text-neutral-400 hover:text-white"
+                                    ? "bg-white text-slate-900 shadow-xs font-semibold"
+                                    : "text-slate-600 hover:text-slate-900 font-medium"
                             )}
                         >
                             All Reviews ({globalReviews.length})
@@ -1274,10 +1284,10 @@ export default function SuperAdminDashboard() {
                         <button
                             onClick={() => setReviewsSubTab("import")}
                             className={cn(
-                                "px-5 py-2 text-[10px] font-bold uppercase tracking-widest transition-all rounded-lg cursor-pointer",
+                                "px-3.5 py-1.5 text-xs font-medium rounded-md transition-colors cursor-pointer",
                                 reviewsSubTab === "import"
-                                    ? "bg-neutral-100 text-black shadow-md"
-                                    : "text-neutral-400 hover:text-white"
+                                    ? "bg-white text-slate-900 shadow-xs font-semibold"
+                                    : "text-slate-600 hover:text-slate-900 font-medium"
                             )}
                         >
                             Import Reviews (AI)
@@ -1285,102 +1295,102 @@ export default function SuperAdminDashboard() {
                     </div>
 
                     {reviewsSubTab === "list" ? (
-                        <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] overflow-hidden">
-                            <div className="px-6 py-4 border-b border-[#1f1f1f] bg-[#0e0e0e] flex items-center justify-between">
+                        <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs overflow-hidden">
+                            <div className="px-5 py-3.5 border-b border-slate-200/80 flex items-center justify-between">
                                 <div>
-                                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">Global Reviews</h3>
-                                    <p className="text-[10px] font-bold text-neutral-500 uppercase mt-0.5">{globalReviews.length} Total Reviews</p>
+                                    <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Global Reviews</h3>
+                                    <p className="text-xs text-slate-500 mt-0.5">{globalReviews.length} Total Reviews</p>
                                 </div>
                                 <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-500" />
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
                                     <input
                                         type="text"
                                         placeholder="Search reviews..."
                                         value={reviewSearchQuery}
                                         onChange={e => setReviewSearchQuery(e.target.value)}
-                                        className="pl-9 pr-4 py-2 bg-[#141414] border border-[#282828] rounded-xl w-56 focus:outline-none focus:border-neutral-500 font-medium text-xs text-white placeholder:text-neutral-600"
+                                        className="pl-9 pr-3 py-1.5 bg-white border border-slate-300 rounded-lg w-52 focus:outline-none focus:border-slate-900 text-xs text-slate-900 placeholder:text-slate-400"
                                     />
                                 </div>
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left">
-                                    <thead className="bg-[#0e0e0e] border-b border-[#1f1f1f]">
+                                    <thead className="bg-slate-50/80 border-b border-slate-200/80">
                                         <tr>
-                                            <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Reviewer</th>
-                                            <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Hotel</th>
-                                            <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Rating</th>
-                                            <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Stay Type</th>
-                                            <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Comment</th>
-                                            <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Date</th>
-                                            <th className="px-6 py-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest text-right">Actions</th>
+                                            <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Reviewer</th>
+                                            <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Hotel</th>
+                                            <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Rating</th>
+                                            <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Stay Type</th>
+                                            <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Comment</th>
+                                            <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Date</th>
+                                            <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider text-right">Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-[#181818]">
+                                    <tbody className="divide-y divide-slate-100">
                                         {smartFilter(globalReviews, reviewSearchQuery || searchQuery, ['user.name', 'user.email', 'hotel.name', 'hotel.city', 'comment'])
                                             .map((review) => (
                                             <tr
                                                 key={review.id}
-                                                className="hover:bg-[#121212] transition-none cursor-pointer"
+                                                className="hover:bg-slate-50/80 transition-colors cursor-pointer"
                                                 onClick={() => setReviewModal({ show: true, review })}
                                             >
-                                                <td className="px-6 py-4">
+                                                <td className="px-4 py-3">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 rounded-full bg-[#161616] overflow-hidden flex items-center justify-center border border-[#282828] shrink-0">
+                                                        <div className="w-8 h-8 rounded-full bg-slate-50 overflow-hidden flex items-center justify-center border border-slate-200 shrink-0">
                                                             {review.user?.profileImage ? (
                                                                 <img src={review.user.profileImage} alt={review.user.name} className="w-full h-full object-cover" />
                                                             ) : (
-                                                                <span className="text-[10px] font-bold text-white">
+                                                                <span className="text-xs font-semibold text-white">
                                                                     {review.user?.name?.charAt(0)?.toUpperCase() || "?"}
                                                                 </span>
                                                             )}
                                                         </div>
                                                         <div>
-                                                            <p className="text-xs font-bold text-white">{review.user?.name || "Unknown"}</p>
-                                                            <p className="text-[10px] text-neutral-500 font-medium">{review.user?.email}</p>
+                                                            <p className="text-xs font-medium text-slate-900">{review.user?.name || "Unknown"}</p>
+                                                            <p className="text-[11px] text-slate-400">{review.user?.email}</p>
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4">
-                                                    <p className="text-xs font-bold text-white">{review.hotel?.name || "N/A"}</p>
-                                                    <p className="text-[10px] text-neutral-500">{review.hotel?.city}</p>
+                                                <td className="px-4 py-3">
+                                                    <p className="text-xs font-medium text-slate-900">{review.hotel?.name || "N/A"}</p>
+                                                    <p className="text-[11px] text-slate-400">{review.hotel?.city}</p>
                                                 </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex flex-col gap-1">
+                                                <td className="px-4 py-3">
+                                                    <div className="flex flex-col gap-0.5">
                                                         <StarRating rating={review.rating} />
-                                                        <span className="text-[10px] font-bold text-amber-400">{review.rating}/5</span>
+                                                        <span className="text-[11px] font-medium text-amber-400">{review.rating}/5</span>
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4">
+                                                <td className="px-4 py-3">
                                                     <span className={cn(
-                                                        "px-2.5 py-1 text-[9px] font-bold uppercase rounded-lg border",
-                                                        review.stayType === 'hourly' ? "bg-purple-950/80 border-purple-800/40 text-purple-400" : "bg-blue-950/80 border-blue-800/40 text-blue-400"
+                                                        "px-2 py-0.5 text-[10px] font-medium rounded-md",
+                                                        review.stayType === 'hourly' ? "bg-purple-500/10 text-purple-400" : "bg-blue-500/10 text-blue-400"
                                                     )}>
                                                         {review.stayType}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4 max-w-[200px]">
-                                                    <p className="text-xs text-neutral-400 truncate">{review.comment || "—"}</p>
+                                                <td className="px-4 py-3 max-w-[200px]">
+                                                    <p className="text-xs text-slate-500 truncate">{review.comment || "—"}</p>
                                                 </td>
-                                                <td className="px-6 py-4 text-[10px] text-neutral-500 font-medium whitespace-nowrap">
+                                                <td className="px-4 py-3 text-xs text-slate-400 whitespace-nowrap">
                                                     {formatDateSafe(review.createdAt)}
                                                 </td>
-                                                <td className="px-6 py-4 text-right">
+                                                <td className="px-4 py-3 text-right">
                                                     <button
                                                         onClick={e => { e.stopPropagation(); handleDeleteReview(review.id); }}
                                                         disabled={actionLoading === review.id}
-                                                        className="p-2 bg-red-950/60 border border-red-800/40 text-red-400 hover:bg-red-900 transition-all rounded-lg disabled:opacity-50"
+                                                        className="p-1.5 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors rounded-md border border-red-500/20 disabled:opacity-50"
                                                         title="Delete Review"
                                                     >
-                                                        {actionLoading === review.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                                                        {actionLoading === review.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
                                                     </button>
                                                 </td>
                                             </tr>
                                         ))}
                                         {globalReviews.length === 0 && (
                                             <tr>
-                                                <td colSpan={7} className="py-20 text-center">
-                                                    <MessageSquare className="w-12 h-12 text-slate-200 mx-auto mb-3" />
-                                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">No reviews found</p>
+                                                <td colSpan={7} className="py-16 text-center">
+                                                    <MessageSquare className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                                                    <p className="text-xs text-slate-400 font-medium">No reviews found</p>
                                                 </td>
                                             </tr>
                                         )}
@@ -1408,46 +1418,46 @@ export default function SuperAdminDashboard() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-black/80 backdrop-blur-md z-[200]"
+                            className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs z-[200]"
                             onClick={() => setResetModal({ show: false, partner: null })}
                         />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-[#0c0c0c] p-8 rounded-2xl z-[210] shadow-2xl border border-[#222222] text-white"
+                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-white p-8 rounded-2xl z-[210] shadow-2xl border border-slate-200 text-slate-900"
                         >
-                            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-[#1f1f1f]">
-                                <div className="w-10 h-10 bg-emerald-950/80 border border-emerald-800/40 rounded-xl flex items-center justify-center">
+                            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-200">
+                                <div className="w-10 h-10 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-center">
                                     <Key className="w-5 h-5 text-emerald-400" />
                                 </div>
                                 <div>
-                                    <h3 className="text-sm font-black text-white uppercase tracking-tight">Force Password Reset</h3>
-                                    <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">{resetModal.partner.email}</p>
+                                    <h3 className="text-sm font-bold text-slate-900 uppercase tracking-tight">Force Password Reset</h3>
+                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{resetModal.partner.email}</p>
                                 </div>
                             </div>
 
                             <div className="space-y-6">
-                                <div className="p-4 bg-amber-950/60 border border-amber-800/40 rounded-xl flex gap-3">
+                                <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl flex gap-3">
                                     <ShieldAlert className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
-                                    <p className="text-[10px] font-bold text-amber-300 uppercase leading-relaxed">
+                                    <p className="text-[10px] font-bold text-amber-800 uppercase leading-relaxed">
                                         This will immediately invalidate the partner's current password. They will need to use the new password to login.
                                     </p>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest ml-1">New Secure Password</label>
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">New Secure Password</label>
                                     <div className="relative">
                                         <input
                                             type={showPass ? "text" : "password"}
                                             value={newPassword}
                                             onChange={(e) => setNewPassword(e.target.value)}
                                             placeholder="Enter new password..."
-                                            className="w-full px-4 py-3 bg-[#141414] border border-[#262626] focus:border-neutral-400 outline-none rounded-xl text-sm font-bold text-white transition-all"
+                                            className="w-full px-4 py-3 bg-slate-50 border border-slate-300 focus:border-slate-900 outline-none rounded-xl text-sm font-medium text-slate-900 transition-all"
                                         />
                                         <button
                                             onClick={() => setShowPass(!showPass)}
-                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white cursor-pointer"
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-900 cursor-pointer"
                                         >
                                             {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                         </button>
@@ -1458,14 +1468,14 @@ export default function SuperAdminDashboard() {
                                     <button
                                         onClick={handleResetPassword}
                                         disabled={isReseting}
-                                        className="flex-1 py-3.5 bg-white hover:bg-neutral-200 text-black text-xs font-black uppercase tracking-wider rounded-xl shadow-md disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                                        className="flex-1 py-3.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
                                     >
                                         {isReseting ? <Loader2 className="w-4 h-4 animate-spin text-black" /> : <CheckCircle2 className="w-4 h-4" />}
                                         Confirm Reset
                                     </button>
                                     <button
                                         onClick={() => setResetModal({ show: false, partner: null })}
-                                        className="flex-1 py-3.5 bg-[#141414] border border-[#262626] text-neutral-300 text-xs font-bold uppercase tracking-wider hover:text-white rounded-xl cursor-pointer"
+                                        className="flex-1 py-3.5 bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold uppercase tracking-wider hover:text-slate-900 rounded-xl cursor-pointer"
                                     >
                                         Cancel
                                     </button>
@@ -1485,54 +1495,54 @@ export default function SuperAdminDashboard() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-black/80 backdrop-blur-md z-[200]"
+                            className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs z-[200]"
                             onClick={() => setEditEmailModal({ show: false, partner: null })}
                         />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-[#0c0c0c] p-8 rounded-2xl z-[210] shadow-2xl border border-[#222222] text-white"
+                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-white p-8 rounded-2xl z-[210] shadow-2xl border border-slate-200 text-slate-900"
                         >
-                            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-[#1f1f1f]">
-                                <div className="w-10 h-10 bg-emerald-950/80 border border-emerald-800/40 rounded-xl flex items-center justify-center">
+                            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-200">
+                                <div className="w-10 h-10 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-center">
                                     <Mail className="w-5 h-5 text-emerald-400" />
                                 </div>
                                 <div>
-                                    <h3 className="text-sm font-black text-white uppercase tracking-tight">Update Partner Email</h3>
-                                    <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">{editEmailModal.partner.name || "Partner"}</p>
+                                    <h3 className="text-sm font-bold text-slate-900 uppercase tracking-tight">Update Partner Email</h3>
+                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{editEmailModal.partner.name || "Partner"}</p>
                                 </div>
                             </div>
 
                             <div className="space-y-6">
-                                <div className="p-4 bg-emerald-950/60 border border-emerald-800/40 flex gap-3 rounded-xl">
+                                <div className="p-4 bg-emerald-50 border border-emerald-200 flex gap-3 rounded-xl">
                                     <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
                                     <div className="space-y-1">
-                                        <p className="text-[10px] font-black text-emerald-300 uppercase tracking-wider">Super Admin Direct Override</p>
-                                        <p className="text-[10px] font-medium text-emerald-400/90 leading-relaxed">
+                                        <p className="text-[10px] font-black text-emerald-800 uppercase tracking-wider">Super Admin Direct Override</p>
+                                        <p className="text-[10px] font-medium text-emerald-700 leading-relaxed">
                                             No OTP or verification needed. Partner will use this new email to login instantly.
                                         </p>
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest ml-1">Current Email</label>
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Current Email</label>
                                     <input
                                         type="text"
                                         value={editEmailModal.partner.email || "No email"}
                                         disabled
-                                        className="w-full px-4 py-3 bg-[#141414] border border-[#262626] rounded-xl text-xs font-bold text-neutral-500 cursor-not-allowed"
+                                        className="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-400 cursor-not-allowed"
                                     />
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-neutral-300 uppercase tracking-widest ml-1">New Partner Email</label>
+                                    <label className="text-[10px] font-black text-slate-700 uppercase tracking-widest ml-1">New Partner Email</label>
                                     <input
                                         type="email"
                                         value={newPartnerEmail}
                                         onChange={(e) => setNewPartnerEmail(e.target.value)}
                                         placeholder="e.g. partner@hotel.com"
-                                        className="w-full px-4 py-3 bg-[#141414] border border-[#262626] focus:border-neutral-400 outline-none rounded-xl text-sm font-bold text-white transition-all"
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-300 focus:border-slate-900 outline-none rounded-xl text-sm font-medium text-slate-900 transition-all"
                                         autoFocus
                                     />
                                 </div>
@@ -1541,14 +1551,14 @@ export default function SuperAdminDashboard() {
                                     <button
                                         onClick={handleUpdatePartnerEmail}
                                         disabled={isUpdatingEmail}
-                                        className="flex-1 py-3.5 bg-white hover:bg-neutral-200 text-black text-xs font-black uppercase tracking-wider rounded-xl shadow-md disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                                        className="flex-1 py-3.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
                                     >
                                         {isUpdatingEmail ? <Loader2 className="w-4 h-4 animate-spin text-black" /> : <CheckCircle2 className="w-4 h-4" />}
                                         Update Email
                                     </button>
                                     <button
                                         onClick={() => setEditEmailModal({ show: false, partner: null })}
-                                        className="flex-1 py-3.5 bg-[#141414] border border-[#262626] text-neutral-300 text-xs font-bold uppercase tracking-wider hover:text-white rounded-xl cursor-pointer"
+                                        className="flex-1 py-3.5 bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold uppercase tracking-wider hover:text-slate-900 rounded-xl cursor-pointer"
                                     >
                                         Cancel
                                     </button>
@@ -1568,28 +1578,28 @@ export default function SuperAdminDashboard() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-black/80 backdrop-blur-md z-[200]"
+                            className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs z-[200]"
                             onClick={() => setRequestDetailModal({ show: false, request: null })}
                         />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] max-w-2xl bg-[#0c0c0c] rounded-2xl z-[210] shadow-2xl border border-[#222222] text-white overflow-hidden"
+                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] max-w-2xl bg-white rounded-2xl z-[210] shadow-2xl border border-slate-200 text-slate-900 overflow-hidden"
                         >
-                            <div className="p-6 border-b border-[#1f1f1f] bg-[#111111] flex items-center justify-between">
+                            <div className="p-6 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-emerald-950 border border-emerald-800/40 text-emerald-400 rounded-xl flex items-center justify-center">
+                                    <div className="w-12 h-12 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl flex items-center justify-center">
                                         <Hotel className="w-6 h-6" />
                                     </div>
                                     <div>
-                                        <h3 className="text-lg font-black text-white uppercase tracking-tight">{requestDetailModal.request.hotelName}</h3>
-                                        <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.2em]">Partner Application Review</p>
+                                        <h3 className="text-lg font-bold text-slate-900 uppercase tracking-tight">{requestDetailModal.request.hotelName}</h3>
+                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Partner Application Review</p>
                                     </div>
                                 </div>
                                 <button
                                     onClick={() => setRequestDetailModal({ show: false, request: null })}
-                                    className="p-2 text-neutral-400 hover:text-white transition-colors cursor-pointer"
+                                    className="p-2 text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
                                 >
                                     <XCircle className="w-6 h-6" />
                                 </button>
@@ -1599,16 +1609,16 @@ export default function SuperAdminDashboard() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div className="space-y-6">
                                         <div>
-                                            <h4 className="text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-3">Property Information</h4>
+                                            <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Property Information</h4>
                                             <div className="space-y-4">
                                                 <div>
-                                                    <p className="text-[10px] font-bold text-neutral-500 uppercase">Username</p>
-                                                    <p className="text-sm font-bold text-white">@{requestDetailModal.request.hotelUsername}</p>
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase">Username</p>
+                                                    <p className="text-sm font-medium text-slate-900">@{requestDetailModal.request.hotelUsername}</p>
                                                 </div>
                                                 <div>
-                                                    <p className="text-[10px] font-bold text-neutral-500 uppercase">Location</p>
-                                                    <p className="text-sm font-bold text-white">{requestDetailModal.request.city}</p>
-                                                    <p className="text-xs text-neutral-400">{requestDetailModal.request.address}</p>
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase">Location</p>
+                                                    <p className="text-sm font-medium text-slate-900">{requestDetailModal.request.city}</p>
+                                                    <p className="text-xs text-slate-500">{requestDetailModal.request.address}</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -1616,42 +1626,42 @@ export default function SuperAdminDashboard() {
 
                                     <div className="space-y-6">
                                         <div>
-                                            <h4 className="text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-3">Partner Contact</h4>
+                                            <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Partner Contact</h4>
                                             <div className="space-y-4">
                                                 <div>
-                                                    <p className="text-[10px] font-bold text-neutral-500 uppercase">Full Name</p>
-                                                    <p className="text-sm font-bold text-white">{requestDetailModal.request.userName}</p>
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase">Full Name</p>
+                                                    <p className="text-sm font-medium text-slate-900">{requestDetailModal.request.userName}</p>
                                                 </div>
                                                 <div>
-                                                    <p className="text-[10px] font-bold text-neutral-500 uppercase">Email Address</p>
-                                                    <p className="text-sm font-bold text-white">{requestDetailModal.request.userEmail}</p>
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase">Email Address</p>
+                                                    <p className="text-sm font-medium text-slate-900">{requestDetailModal.request.userEmail}</p>
                                                 </div>
                                                 <div>
-                                                    <p className="text-[10px] font-bold text-neutral-500 uppercase">Phone Number</p>
-                                                    <p className="text-sm font-bold text-white">{requestDetailModal.request.userPhone}</p>
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase">Phone Number</p>
+                                                    <p className="text-sm font-medium text-slate-900">{requestDetailModal.request.userPhone}</p>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="mt-8 pt-8 border-t border-[#1f1f1f]">
-                                    <p className="text-[10px] font-bold text-neutral-500 uppercase mb-2">Application Status</p>
+                                <div className="mt-8 pt-8 border-t border-slate-200">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">Application Status</p>
                                     <div className="flex items-center gap-2">
                                         <div className={cn(
                                             "px-4 py-1 rounded-md text-[10px] font-black uppercase tracking-widest border",
-                                            requestDetailModal.request.status === 'pending' ? "bg-amber-950/80 text-amber-300 border-amber-800/40" :
-                                                requestDetailModal.request.status === 'approved' ? "bg-emerald-950/80 text-emerald-300 border-emerald-800/40" : "bg-red-950/80 text-red-300 border-red-800/40"
+                                            requestDetailModal.request.status === 'pending' ? "bg-amber-50 text-amber-800 border-amber-200" :
+                                                requestDetailModal.request.status === 'approved' ? "bg-emerald-950/80 text-emerald-800 border-emerald-800/40" : "bg-red-950/80 text-red-300 border-red-800/40"
                                         )}>
                                             {requestDetailModal.request.status}
                                         </div>
-                                        <p className="text-[10px] text-neutral-500 italic">Submitted on {formatDateTimeSafe(requestDetailModal.request.createdAt)}</p>
+                                        <p className="text-[10px] text-slate-400 italic">Submitted on {formatDateTimeSafe(requestDetailModal.request.createdAt)}</p>
                                     </div>
                                 </div>
                             </div>
 
                             {requestDetailModal.request.status === 'pending' && (
-                                <div className="p-6 bg-[#111111] border-t border-[#1f1f1f] flex gap-3">
+                                <div className="p-6 bg-slate-50 border-t border-slate-200 flex gap-3">
                                     <button
                                         onClick={() => {
                                             handleApproveRequest(requestDetailModal.request.id);
@@ -1685,19 +1695,19 @@ export default function SuperAdminDashboard() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-black/80 backdrop-blur-md z-[200]"
+                            className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs z-[200]"
                             onClick={() => setCustomerModal({ show: false, customer: null })}
                         />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] max-w-2xl bg-[#0c0c0c] rounded-2xl z-[210] shadow-2xl border border-[#222222] text-white overflow-hidden"
+                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] max-w-2xl bg-white rounded-2xl z-[210] shadow-2xl border border-slate-200 text-slate-900 overflow-hidden"
                         >
                             {/* Header */}
-                            <div className="bg-[#111111] p-6 border-b border-[#1f1f1f] flex items-center justify-between">
+                            <div className="bg-slate-50 p-6 border-b border-slate-200 flex items-center justify-between">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-14 h-14 rounded-full overflow-hidden border border-[#333] bg-[#181818] flex items-center justify-center shrink-0">
+                                    <div className="w-14 h-14 rounded-full overflow-hidden border border-slate-200 bg-slate-100 flex items-center justify-center shrink-0">
                                         {customerModal.customer.profileImage ? (
                                             <img src={customerModal.customer.profileImage} alt={customerModal.customer.name} className="w-full h-full object-cover" />
                                         ) : (
@@ -1707,14 +1717,14 @@ export default function SuperAdminDashboard() {
                                         )}
                                     </div>
                                     <div>
-                                        <h3 className="text-lg font-black text-white">{customerModal.customer.name}</h3>
-                                        <p className="text-[10px] text-neutral-400 font-medium">{customerModal.customer.email}</p>
+                                        <h3 className="text-lg font-bold text-slate-900">{customerModal.customer.name}</h3>
+                                        <p className="text-[10px] text-slate-500 font-medium">{customerModal.customer.email}</p>
                                         <div className="flex items-center gap-2 mt-1">
                                             <span className={cn(
                                                 "inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-black uppercase",
                                                 detectLoginProvider(customerModal.customer) === "Google"
-                                                    ? "bg-blue-950/80 text-blue-300 border border-blue-800/40"
-                                                    : "bg-[#181818] text-neutral-400 border border-[#282828]"
+                                                    ? "bg-blue-50 text-blue-700 border border-blue-200"
+                                                    : "bg-slate-100 text-slate-500 border border-slate-200"
                                             )}>
                                                 {detectLoginProvider(customerModal.customer) === "Google" ? (
                                                     <svg className="w-2.5 h-2.5" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
@@ -1723,7 +1733,7 @@ export default function SuperAdminDashboard() {
                                                 )}
                                                 {detectLoginProvider(customerModal.customer)}
                                             </span>
-                                            <span className="px-2 py-0.5 bg-[#181818] border border-[#282828] text-neutral-400 rounded text-[9px] font-black uppercase font-mono">
+                                            <span className="px-2 py-0.5 bg-slate-100 border border-slate-200 text-slate-500 rounded text-[9px] font-black uppercase font-mono">
                                                 #{customerModal.customer.id}
                                             </span>
                                         </div>
@@ -1731,7 +1741,7 @@ export default function SuperAdminDashboard() {
                                 </div>
                                 <button
                                     onClick={() => setCustomerModal({ show: false, customer: null })}
-                                    className="p-2 text-neutral-400 hover:text-white transition-colors cursor-pointer"
+                                    className="p-2 text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
                                 >
                                     <XCircle className="w-6 h-6" />
                                 </button>
@@ -1742,53 +1752,53 @@ export default function SuperAdminDashboard() {
                                 <div className="grid grid-cols-2 gap-6">
                                     {/* Contact Info */}
                                     <div className="space-y-4">
-                                        <h4 className="text-[10px] font-black text-neutral-400 uppercase tracking-widest border-b border-[#1f1f1f] pb-2">Contact Information</h4>
+                                        <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-200 pb-2">Contact Information</h4>
                                         <div className="space-y-3">
                                             <div className="flex items-center gap-2">
-                                                <Mail className="w-3.5 h-3.5 text-neutral-500 shrink-0" />
-                                                <span className="text-xs text-neutral-200 font-medium">{customerModal.customer.email || "—"}</span>
+                                                <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                                <span className="text-xs text-slate-800 font-medium">{customerModal.customer.email || "—"}</span>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <Phone className="w-3.5 h-3.5 text-neutral-500 shrink-0" />
-                                                <span className="text-xs text-neutral-200 font-medium">{customerModal.customer.phone || "Not provided"}</span>
+                                                <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                                <span className="text-xs text-slate-800 font-medium">{customerModal.customer.phone || "Not provided"}</span>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <Calendar className="w-3.5 h-3.5 text-neutral-500 shrink-0" />
-                                                <span className="text-xs text-neutral-200 font-medium">Joined {formatDateSafe(customerModal.customer.createdAt)}</span>
+                                                <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                                <span className="text-xs text-slate-800 font-medium">Joined {formatDateSafe(customerModal.customer.createdAt)}</span>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <LogIn className="w-3.5 h-3.5 text-neutral-500 shrink-0" />
-                                                <span className="text-xs text-neutral-200 font-medium">Provider: {detectLoginProvider(customerModal.customer)}</span>
+                                                <LogIn className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                                <span className="text-xs text-slate-800 font-medium">Provider: {detectLoginProvider(customerModal.customer)}</span>
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* Security Info */}
                                     <div className="space-y-4">
-                                        <h4 className="text-[10px] font-black text-neutral-400 uppercase tracking-widest border-b border-[#1f1f1f] pb-2">Security Information</h4>
+                                        <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-200 pb-2">Security Information</h4>
                                         <div className="space-y-3">
                                             <div>
-                                                <p className="text-[10px] font-bold text-neutral-500 uppercase mb-1">Password Last Changed</p>
-                                                <p className="text-xs text-neutral-200 font-medium">{formatDateTimeSafe(customerModal.customer.passwordLastChangedAt)}</p>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Password Last Changed</p>
+                                                <p className="text-xs text-slate-800 font-medium">{formatDateTimeSafe(customerModal.customer.passwordLastChangedAt)}</p>
                                             </div>
                                             <div>
-                                                <p className="text-[10px] font-bold text-neutral-500 uppercase mb-1">Password Hash</p>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Password Hash</p>
                                                 <div className="flex items-center gap-2">
-                                                    <code className="text-[9px] text-neutral-400 bg-[#141414] border border-[#262626] px-2 py-1 rounded font-mono truncate max-w-[140px]">
+                                                    <code className="text-[9px] text-slate-500 bg-slate-100 border border-slate-200 px-2 py-1 rounded font-mono truncate max-w-[140px]">
                                                         {showPasswordHash
                                                             ? (customerModal.customer.password || "N/A")
                                                             : "••••••••••••••••••••"}
                                                     </code>
                                                     <button
                                                         onClick={() => setShowPasswordHash(!showPasswordHash)}
-                                                        className="text-neutral-400 hover:text-white shrink-0 cursor-pointer"
+                                                        className="text-slate-500 hover:text-slate-900 shrink-0 cursor-pointer"
                                                     >
                                                         {showPasswordHash ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
                                                     </button>
                                                     {showPasswordHash && customerModal.customer.password && (
                                                         <button
                                                             onClick={() => { navigator.clipboard.writeText(customerModal.customer.password); alert("Hash copied!"); }}
-                                                            className="text-neutral-400 hover:text-white shrink-0 cursor-pointer"
+                                                            className="text-slate-500 hover:text-slate-900 shrink-0 cursor-pointer"
                                                         >
                                                             <Copy className="w-3 h-3" />
                                                         </button>
@@ -1801,10 +1811,10 @@ export default function SuperAdminDashboard() {
                             </div>
 
                             {/* Footer Actions */}
-                            <div className="p-4 bg-[#111111] border-t border-[#1f1f1f] flex gap-3">
+                            <div className="p-4 bg-slate-50 border-t border-slate-200 flex gap-3">
                                 <button
                                     onClick={() => handleImpersonateCustomer(customerModal.customer)}
-                                    className="flex-1 py-3 bg-[#1c1c1c] hover:bg-[#282828] text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 rounded-xl transition-all border border-[#333] cursor-pointer"
+                                    className="flex-1 py-3 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 rounded-xl transition-all border border-slate-200 cursor-pointer"
                                 >
                                     <UserCheck className="w-3.5 h-3.5 text-emerald-400" /> Impersonate User
                                 </button>
@@ -1814,13 +1824,13 @@ export default function SuperAdminDashboard() {
                                         setUsersSubTab("customers");
                                         setCustomerSearchQuery(customerModal.customer.email);
                                     }}
-                                    className="flex-1 py-3 bg-white hover:bg-neutral-200 text-black text-xs font-extrabold uppercase tracking-wider flex items-center justify-center gap-2 rounded-xl transition-all cursor-pointer shadow-md"
+                                    className="flex-1 py-3 bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold uppercase tracking-wider flex items-center justify-center gap-2 rounded-xl transition-all cursor-pointer shadow-md"
                                 >
                                     <ExternalLink className="w-3.5 h-3.5 text-black" /> View Full Details
                                 </button>
                                 <button
                                     onClick={() => setCustomerModal({ show: false, customer: null })}
-                                    className="py-3 px-5 bg-[#141414] border border-[#282828] text-neutral-300 text-xs font-bold uppercase tracking-wider hover:text-white rounded-xl cursor-pointer"
+                                    className="py-3 px-5 bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold uppercase tracking-wider hover:text-slate-900 rounded-xl cursor-pointer"
                                 >
                                     Close
                                 </button>
@@ -1838,33 +1848,33 @@ export default function SuperAdminDashboard() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-black/80 backdrop-blur-md z-[200]"
+                            className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs z-[200]"
                             onClick={() => setReviewModal({ show: false, review: null })}
                         />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] max-w-xl bg-[#0c0c0c] rounded-2xl z-[210] shadow-2xl border border-[#222222] text-white overflow-hidden"
+                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] max-w-xl bg-white rounded-2xl z-[210] shadow-2xl border border-slate-200 text-slate-900 overflow-hidden"
                         >
                             {/* Header */}
-                            <div className="p-5 border-b border-[#1f1f1f] flex items-center justify-between bg-[#111111]">
+                            <div className="p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full overflow-hidden border border-[#333] bg-[#181818] flex items-center justify-center shrink-0">
+                                    <div className="w-10 h-10 rounded-full overflow-hidden border border-slate-200 bg-slate-100 flex items-center justify-center shrink-0">
                                         {reviewModal.review.user?.profileImage ? (
                                             <img src={reviewModal.review.user.profileImage} alt={reviewModal.review.user.name} className="w-full h-full object-cover" />
                                         ) : (
-                                            <span className="text-sm font-black text-neutral-400">
+                                            <span className="text-sm font-black text-slate-500">
                                                 {reviewModal.review.user?.name?.charAt(0)?.toUpperCase() || "?"}
                                             </span>
                                         )}
                                     </div>
                                     <div>
-                                        <h3 className="text-sm font-black text-white">{reviewModal.review.user?.name || "Unknown User"}</h3>
-                                        <p className="text-[10px] text-neutral-400 font-medium">{reviewModal.review.user?.email}</p>
+                                        <h3 className="text-sm font-bold text-slate-900">{reviewModal.review.user?.name || "Unknown User"}</h3>
+                                        <p className="text-[10px] text-slate-500 font-medium">{reviewModal.review.user?.email}</p>
                                     </div>
                                 </div>
-                                <button onClick={() => setReviewModal({ show: false, review: null })} className="p-2 text-neutral-400 hover:text-white cursor-pointer">
+                                <button onClick={() => setReviewModal({ show: false, review: null })} className="p-2 text-slate-500 hover:text-slate-900 cursor-pointer">
                                     <XCircle className="w-5 h-5" />
                                 </button>
                             </div>
@@ -1874,12 +1884,12 @@ export default function SuperAdminDashboard() {
                                 {/* Hotel + Rating */}
                                 <div className="flex items-start justify-between">
                                     <div>
-                                        <p className="text-[10px] font-bold text-neutral-500 uppercase mb-1">Property</p>
-                                        <p className="text-sm font-bold text-white">{reviewModal.review.hotel?.name}</p>
-                                        <p className="text-[10px] text-neutral-400">{reviewModal.review.hotel?.city}</p>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Property</p>
+                                        <p className="text-sm font-bold text-slate-900">{reviewModal.review.hotel?.name}</p>
+                                        <p className="text-[10px] text-slate-500">{reviewModal.review.hotel?.city}</p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-[10px] font-bold text-neutral-500 uppercase mb-1">Rating</p>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Rating</p>
                                         <StarRating rating={reviewModal.review.rating} />
                                         <p className="text-xs font-black text-amber-400 mt-0.5">{reviewModal.review.rating} / 5</p>
                                     </div>
@@ -1889,41 +1899,41 @@ export default function SuperAdminDashboard() {
                                 <div className="flex items-center gap-4">
                                     <span className={cn(
                                         "px-3 py-1 text-[9px] font-black uppercase rounded-md border",
-                                        reviewModal.review.stayType === 'hourly' ? "bg-purple-950/80 text-purple-300 border-purple-800/40" : "bg-sky-950/80 text-sky-300 border-sky-800/40"
+                                        reviewModal.review.stayType === 'hourly' ? "bg-purple-50 text-purple-700 border-purple-200" : "bg-sky-50 text-sky-700 border-sky-200"
                                     )}>
                                         {reviewModal.review.stayType} stay
                                     </span>
-                                    <span className="text-[10px] text-neutral-400 font-medium">
+                                    <span className="text-[10px] text-slate-500 font-medium">
                                         Posted on {formatDateTimeSafe(reviewModal.review.createdAt)}
                                     </span>
                                 </div>
 
                                 {/* Comment */}
                                 {reviewModal.review.comment && (
-                                    <div className="bg-[#141414] border border-[#242424] p-4 rounded-xl">
-                                        <p className="text-[10px] font-bold text-neutral-400 uppercase mb-2">Guest Review</p>
-                                        <p className="text-sm text-neutral-200 leading-relaxed italic">"{reviewModal.review.comment}"</p>
+                                    <div className="bg-slate-100 border border-slate-200 p-4 rounded-xl">
+                                        <p className="text-[10px] font-bold text-slate-500 uppercase mb-2">Guest Review</p>
+                                        <p className="text-sm text-slate-800 leading-relaxed italic">"{reviewModal.review.comment}"</p>
                                     </div>
                                 )}
 
                                 {/* Partner Reply */}
                                 {reviewModal.review.partnerReply && (
-                                    <div className="bg-blue-950/40 border border-blue-800/40 p-4 rounded-xl">
+                                    <div className="bg-blue-50 border border-blue-200 p-4 rounded-xl">
                                         <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1">Partner Response:</p>
-                                        <p className="text-sm text-blue-200 leading-relaxed">"{reviewModal.review.partnerReply}"</p>
+                                        <p className="text-sm text-blue-900 leading-relaxed">"{reviewModal.review.partnerReply}"</p>
                                     </div>
                                 )}
                             </div>
 
                             {/* Footer */}
-                            <div className="p-4 bg-[#111111] border-t border-[#1f1f1f] flex gap-3">
+                            <div className="p-4 bg-slate-50 border-t border-slate-200 flex gap-3">
                                 <button
                                     onClick={() => {
                                         setCustomerModal({ show: true, customer: reviewModal.review.user });
                                         setReviewModal({ show: false, review: null });
                                         setShowPasswordHash(false);
                                     }}
-                                    className="flex-1 py-3 bg-[#1c1c1c] hover:bg-[#282828] text-white text-xs font-bold uppercase tracking-wider rounded-xl border border-[#333] flex items-center justify-center gap-2 cursor-pointer"
+                                    className="flex-1 py-3 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 text-xs font-bold uppercase tracking-wider rounded-xl border border-slate-200 flex items-center justify-center gap-2 cursor-pointer"
                                 >
                                     <UserCheck className="w-3.5 h-3.5 text-emerald-400" /> View Customer
                                 </button>
@@ -1937,7 +1947,7 @@ export default function SuperAdminDashboard() {
                                 </button>
                                 <button
                                     onClick={() => setReviewModal({ show: false, review: null })}
-                                    className="py-3 px-5 bg-[#141414] border border-[#282828] text-neutral-300 text-xs font-bold uppercase tracking-wider hover:text-white rounded-xl cursor-pointer"
+                                    className="py-3 px-5 bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold uppercase tracking-wider hover:text-slate-900 rounded-xl cursor-pointer"
                                 >
                                     Close
                                 </button>
@@ -1955,20 +1965,20 @@ export default function SuperAdminDashboard() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-black/80 backdrop-blur-md z-[300]"
+                            className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs z-[300]"
                             onClick={() => setDeclineConfirmModal({ show: false, requestId: null })}
                         />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-[#0c0c0c] p-8 rounded-2xl z-[310] shadow-2xl border border-[#222222] text-center text-white"
+                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-white p-8 rounded-2xl z-[310] shadow-2xl border border-slate-200 text-center text-slate-900"
                         >
-                            <div className="w-16 h-16 bg-red-950/80 border border-red-800/50 text-red-400 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <div className="w-16 h-16 bg-rose-50 border border-rose-200 text-rose-700 rounded-full flex items-center justify-center mx-auto mb-6">
                                 <ShieldAlert className="w-8 h-8" />
                             </div>
-                            <h3 className="text-lg font-black text-white uppercase tracking-tight mb-3">Confirm Rejection</h3>
-                            <p className="text-neutral-400 font-medium text-xs leading-relaxed mb-6">
+                            <h3 className="text-lg font-bold text-slate-900 uppercase tracking-tight mb-3">Confirm Rejection</h3>
+                            <p className="text-slate-500 font-medium text-xs leading-relaxed mb-6">
                                 Are you sure you want to decline this property application? This action will permanently disable the partner's account.
                             </p>
                             <div className="flex flex-col gap-2.5">
@@ -1982,7 +1992,7 @@ export default function SuperAdminDashboard() {
                                 </button>
                                 <button
                                     onClick={() => setDeclineConfirmModal({ show: false, requestId: null })}
-                                    className="w-full py-3 bg-[#141414] border border-[#282828] text-neutral-300 text-xs font-bold uppercase tracking-wider hover:text-white rounded-xl cursor-pointer"
+                                    className="w-full py-3 bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold uppercase tracking-wider hover:text-slate-900 rounded-xl cursor-pointer"
                                 >
                                     Cancel
                                 </button>
@@ -2000,14 +2010,14 @@ export default function SuperAdminDashboard() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-black/80 backdrop-blur-md z-[400]"
+                            className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs z-[400]"
                             onClick={() => setBulkModal({ show: false, type: null })}
                         />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-[#0c0c0c] p-8 rounded-2xl z-[410] shadow-2xl border border-[#222222] text-center text-white"
+                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-white p-8 rounded-2xl z-[410] shadow-2xl border border-slate-200 text-center text-slate-900"
                         >
                             <div className={cn(
                                 "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 border",
@@ -2015,11 +2025,11 @@ export default function SuperAdminDashboard() {
                             )}>
                                 {bulkModal.type === 'approve' ? <CheckCircle2 className="w-8 h-8" /> : <XCircle className="w-8 h-8" />}
                             </div>
-                            <h3 className="text-lg font-black text-white uppercase tracking-tight mb-3">
+                            <h3 className="text-lg font-bold text-slate-900 uppercase tracking-tight mb-3">
                                 Confirm Bulk {bulkModal.type === 'approve' ? 'Approval' : 'Rejection'}
                             </h3>
-                            <p className="text-neutral-400 font-medium text-xs leading-relaxed mb-6">
-                                Are you sure you want to {bulkModal.type} <strong className="text-white">{selectedIds.length} property applications</strong> at once? This action cannot be undone.
+                            <p className="text-slate-500 font-medium text-xs leading-relaxed mb-6">
+                                Are you sure you want to {bulkModal.type} <strong className="text-slate-900">{selectedIds.length} property applications</strong> at once? This action cannot be undone.
                             </p>
                             <div className="flex flex-col gap-2.5">
                                 <button

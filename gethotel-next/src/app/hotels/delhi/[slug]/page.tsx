@@ -35,8 +35,8 @@ export async function generateMetadata({
       canonical,
     },
     openGraph: {
-      title: ctx.title,
-      description: ctx.metaDescription,
+      title: ctx?.title || title,
+      description: ctx?.metaDescription || description,
       url: canonical,
     },
   };

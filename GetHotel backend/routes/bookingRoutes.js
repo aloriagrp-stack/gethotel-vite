@@ -15,7 +15,7 @@ const { protect, authorize } = require('../middleware/auth');
 router.use(protect);
 
 router.route('/')
-    .get(authorize('super_admin'), getBookings)
+    .get(authorize('super_admin', 'superadmin', 'admin'), getBookings)
     .post(createBooking);
 
 router.route('/my-bookings')

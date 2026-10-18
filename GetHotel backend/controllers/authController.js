@@ -38,13 +38,13 @@ exports.register = async (req, res, next) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        // Create user
+        // Create user with strictly enforced 'user' role (privileged accounts provisioned via admin panel)
         const user = await prisma.user.create({
             data: {
                 name,
                 email,
                 password: hashedPassword,
-                role: role || 'user',
+                role: 'user',
                 updatedAt: new Date()
             },
         });
@@ -85,12 +85,12 @@ exports.sendOTP = async (req, res, next) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        // Save in global memory cache (expires in 10 minutes)
+        // Save in global memory cache with strictly enforced 'user' role (expires in 10 minutes)
         global.otpCache.set(email, {
             name,
             email,
             passwordHash: hashedPassword,
-            role: role || 'user',
+            role: 'user',
             otp,
             expiresAt: Date.now() + 10 * 60 * 1000 // 10 mins
         });
@@ -131,13 +131,13 @@ exports.verifyOTP = async (req, res, next) => {
             return res.status(400).json({ success: false, message: 'Invalid OTP.' });
         }
 
-        // Create user in database
+        // Create user in database with strictly enforced 'user' role
         const user = await prisma.user.create({
             data: {
                 name: cachedData.name,
                 email: cachedData.email,
                 password: cachedData.passwordHash,
-                role: cachedData.role,
+                role: 'user',
                 updatedAt: new Date()
             },
         });
@@ -347,6 +347,10 @@ exports.getMe = async (req, res, next) => {
                 hotel: true
             }
         });
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
 
         // Also fetch the latest partner request status
         const partnerRequest = await prisma.partnerrequest.findFirst({
@@ -825,6 +829,13 @@ exports.resetPassword = async (req, res, next) => {
 };
 
 exports.unblockDebug = async (req, res) => {
+    // SECURITY: Require admin maintenance key
+    const adminKey = req.headers['x-admin-maintenance-key'] || req.query.admin_key;
+    const configuredKey = process.env.ADMIN_MAINTENANCE_KEY;
+    if (!configuredKey || adminKey !== configuredKey) {
+        return res.status(403).json({ success: false, message: 'Forbidden: Admin maintenance key required' });
+    }
+
     let generateOutput = '';
     let generateError = '';
     try {

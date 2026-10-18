@@ -70,10 +70,15 @@ export default function HomePage() {
         highlight={homeConfig?.heroHighlight}
         transitionInterval={homeConfig?.heroTransitionInterval}
         stories={homeConfig?.stories}
+        storiesLoading={configLoading}
       />
 
       {/* Top Destinations / Cities Grid */}
-      <ExploreByDestinations destinations={homeConfig?.destinations} loading={configLoading} />
+      <ExploreByDestinations 
+        destinations={homeConfig?.destinations} 
+        hourlyDestinations={homeConfig?.hourly_destinations}
+        loading={configLoading} 
+      />
 
       {/* Trust & Features Section */}
       <Suspense fallback={<WhyPlaceholder />}>

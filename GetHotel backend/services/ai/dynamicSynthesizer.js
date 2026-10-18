@@ -34,7 +34,7 @@ const GREETING_OPENERS = [
 
 const GREETING_CLOSERS = [
     "Where are you thinking of traveling next?",
-    "Tell me a city or budget, and I'll find top verified stays for you.",
+    "Tell me a city or budget, and I'll find top hotels for you.",
     "Got a destination in mind for your next trip?",
     "Are we looking for hotel stays, airport transit rooms, or a custom tour package?",
     "Which destination is on your radar today?",
@@ -67,7 +67,7 @@ const IDENTITY_BODIES = [
 const IDENTITY_CLOSERS = [
     "Where are we heading next? Tell me your destination!",
     "Got a city or holiday plan in mind? Let's get started.",
-    "Tell me where you want to go, and I'll pull up verified stays in seconds!",
+    "Tell me where you want to go, and I'll pull up top hotels in seconds!",
     "How can I help you plan your trip today?"
 ];
 
@@ -267,7 +267,7 @@ class DynamicSynthesizer {
     generateFallback(query = '') {
         const fallbacks = [
             "I'm right here with you! Tell me the destination you have in mind (e.g., 'Hotels in Jaipur', 'Goa beach resort under ₹4,000', or 'Delhi Aerocity transit stay') and I'll find the best verified options right away! 🏨✈️",
-            "I'm listening! Where are you planning to head next? Share a city, your budget, or trip dates, and I'll pull up top verified stays instantly! 🎒🌟",
+            "I'm listening! Where are you planning to head next? Share a city, your budget, or trip dates, and I'll pull up top stays instantly! 🎒🌟",
             "Ready whenever you are! Just tell me your destination and preference (like 'couple-friendly in Delhi' or 'family resort in Manali') and I'll curate the best options for you. 🏖️✨"
         ];
         return pickVariant(fallbacks, this.recentHistory);

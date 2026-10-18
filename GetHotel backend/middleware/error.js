@@ -56,12 +56,12 @@ const errorHandler = (err, req, res, next) => {
         console.error('[CRITICAL] Failed to write error log file:', logErr);
     }
 
-    // 4. Return sanitized client response
+    // 4. Return sanitized client response (Strictly hide internal stack traces & file paths in production)
+    const isProduction = process.env.NODE_ENV === 'production';
     res.status(statusCode).json({
         success: false,
-        message: err.message || message,
-        stack: err.stack,
-        name: err.name
+        message: isProduction && statusCode === 500 ? 'An unexpected server error occurred.' : (message || err.message),
+        ...(isProduction ? {} : { stack: err.stack, name: err.name })
     });
 };
 

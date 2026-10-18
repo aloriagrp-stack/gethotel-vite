@@ -138,25 +138,25 @@ export default function AdminDelhiSeo() {
             )}
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-[#0c0c0c] rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.9)] p-5 space-y-1">
+                <div className="bg-neutral-900/40 rounded-2xl border border-neutral-800/80   p-5 space-y-1">
                     <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Live Delhi Hotels</p>
                     <p className="text-3xl font-black text-white">{hotels.length}</p>
                 </div>
-                <div className="bg-[#0c0c0c] rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.9)] p-5 space-y-1">
+                <div className="bg-neutral-900/40 rounded-2xl border border-neutral-800/80   p-5 space-y-1">
                     <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Indexable Pages</p>
                     <p className="text-3xl font-black text-emerald-400">{indexableCount}</p>
                 </div>
-                <div className="bg-[#0c0c0c] rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.9)] p-5 space-y-1">
+                <div className="bg-neutral-900/40 rounded-2xl border border-neutral-800/80   p-5 space-y-1">
                     <p className="text-[10px] font-black uppercase tracking-widest text-amber-400">Noindex (Awaiting Inventory)</p>
                     <p className="text-3xl font-black text-amber-400">{noindexCount}</p>
                 </div>
-                <div className="bg-[#0c0c0c] rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.9)] p-5 space-y-1">
+                <div className="bg-neutral-900/40 rounded-2xl border border-neutral-800/80   p-5 space-y-1">
                     <p className="text-[10px] font-black uppercase tracking-widest text-sky-400">Pages with Live From-Price</p>
                     <p className="text-3xl font-black text-sky-400">{priceReadyCount}</p>
                 </div>
             </div>
 
-            <div className="bg-[#0c0c0c] rounded-2xl border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.9)] overflow-hidden">
+            <div className="bg-neutral-900/40 rounded-2xl border border-neutral-800/80   overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm">
                         <thead>

@@ -62,7 +62,7 @@ export default function SuperAdminBookingsPage() {
             </div>
 
             {/* Filters */}
-            <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] p-6 rounded-2xl shadow-lg flex flex-col md:flex-row items-center gap-6">
+            <div className="bg-neutral-900/40 border border-neutral-800/80  p-6 rounded-2xl shadow-lg flex flex-col md:flex-row items-center gap-6">
                 <div className="relative flex-1 w-full">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
                     <input 
@@ -92,7 +92,7 @@ export default function SuperAdminBookingsPage() {
             </div>
 
             {/* Master Table */}
-            <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-lg overflow-hidden">
+            <div className="bg-neutral-900/40 border border-neutral-800/80  rounded-2xl shadow-lg overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead className="bg-[#121212] text-neutral-400 border-b border-[#222222]">
@@ -109,7 +109,7 @@ export default function SuperAdminBookingsPage() {
                         <tbody className="divide-y divide-[#181818]">
                             {loading ? (
                                 <tr>
-                                    <td colSpan={7} className="py-20 text-center bg-[#0c0c0c]">
+                                    <td colSpan={7} className="py-20 text-center bg-neutral-900/40">
                                         <Loader2 className="w-8 h-8 animate-spin text-neutral-400 mx-auto" />
                                     </td>
                                 </tr>

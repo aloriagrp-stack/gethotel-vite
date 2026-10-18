@@ -46,7 +46,87 @@ const DESTINATION_STORIES = [
 const getDaysInMonth = (month: number, year: number) => new Date(year, month + 1, 0).getDate();
 const getFirstDayOfMonth = (month: number, year: number) => new Date(year, month, 1).getDay();
 
-export default function SmartSearchBar({ className, hideStories, initialState, onSearch, navigationPath, layoutMode = "home", stories }: any) {
+function StoryHighlightAvatarItem({
+    story,
+    idx,
+    stories,
+    destinationStories,
+    setActiveStory,
+    setQuery,
+    handleSearch
+}: any) {
+    const [imgLoaded, setImgLoaded] = useState(false);
+
+    return (
+        <motion.button 
+            initial={{ opacity: 0, y: 20 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            transition={{ delay: 0.2 + idx * 0.08 }} 
+            key={story.label} 
+            type="button" 
+            onClick={() => { 
+                const foundStory = stories && stories.length > 0 
+                    ? stories.find((s: any) => s.label.toLowerCase() === story.label.toLowerCase())
+                    : destinationStories.find((s: any) => s.id === story.label.toLowerCase());
+                if (foundStory) {
+                    const mappedStory = stories && stories.length > 0
+                        ? { 
+                            id: foundStory.label.toLowerCase(), 
+                            city: foundStory.label, 
+                            slides: foundStory.slides || [],
+                            query: foundStory.query,
+                            buttonText: foundStory.buttonText
+                          }
+                        : foundStory;
+                    setActiveStory(mappedStory);
+                } else { 
+                    setQuery(story.query); 
+                    handleSearch(undefined, story.query); 
+                } 
+            }} 
+            className="group flex flex-col items-center gap-3.5 sm:gap-4 outline-none relative cursor-pointer shrink-0"
+        >
+            <div className="relative p-[4px] rounded-full bg-gradient-to-tr from-brand-600 via-brand-200 to-brand-500 transition-all duration-700 group-hover:scale-110 active:scale-95 shadow-premium">
+                {/* Story Badge */}
+                {story.badge && (
+                    <span className={`absolute -top-1 left-[2px] z-20 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest shadow-md border border-white whitespace-nowrap leading-none premium-shine-badge select-none ${
+                        story.badge.toLowerCase() === 'hot' 
+                            ? 'bg-gradient-to-r from-red-600 via-rose-300 to-red-600 text-white' 
+                            : story.badge.toLowerCase() === 'new' 
+                                ? 'bg-gradient-to-r from-emerald-600 via-emerald-300 to-emerald-600 text-white' 
+                                : story.badge.toLowerCase() === 'trend'
+                                    ? 'bg-gradient-to-r from-blue-600 via-blue-300 to-blue-600 text-white'
+                                    : 'bg-gradient-to-r from-slate-900 via-slate-400 to-slate-900 text-white'
+                    }`}>
+                        {story.badge}
+                    </span>
+                )}
+                <div className="p-[3px] rounded-full bg-white">
+                    <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden shadow-inner bg-slate-100">
+                        {!imgLoaded && (
+                            <div className="absolute inset-0 bg-slate-200 animate-pulse">
+                                <div className="skeleton-wave" />
+                            </div>
+                        )}
+                        <img 
+                            src={story.image} 
+                            alt={story.label} 
+                            onLoad={() => setImgLoaded(true)}
+                            className={cn(
+                                "w-full h-full object-cover transition-all duration-700 group-hover:scale-125",
+                                imgLoaded ? "opacity-100" : "opacity-0"
+                            )} 
+                            loading="lazy" 
+                        />
+                    </div>
+                </div>
+            </div>
+            <span className="text-[13px] sm:text-[14px] font-black text-slate-950 tracking-tight italic">{story.label}</span>
+        </motion.button>
+    );
+}
+
+export default function SmartSearchBar({ className, hideStories, initialState, onSearch, navigationPath, layoutMode = "home", stories, storiesLoading = false }: any) {
     const { mode } = useStayMode();
     const isMobile = useIsMobile();
     const router = useRouter();
@@ -255,7 +335,7 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
                                         <CalendarIcon className="w-3.5 h-3.5" />
                                     </div>
                                     <div className="flex-1 min-w-0 text-left">
-                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{mode === 'hourly' ? "Arrival" : "Dates"}</p>
+                                        <p suppressHydrationWarning className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{mode === 'hourly' ? "Arrival" : "Dates"}</p>
                                         <p className="text-[11px] font-black text-slate-900 truncate">
                                             {state.dates.checkIn ? (
                                                 mode === 'hourly'
@@ -312,7 +392,7 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
                                     <CalendarIcon className="w-4.5 h-4.5" />
                                 </div>
                                 <div className="flex-1 text-left">
-                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{mode === 'hourly' ? "Arrival Date & Time" : "Dates"}</p>
+                                    <p suppressHydrationWarning className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{mode === 'hourly' ? "Arrival Date & Time" : "Dates"}</p>
                                     <p className="text-sm font-black text-slate-900 truncate">
                                         {state.dates.checkIn ? (
                                             mode === 'hourly'
@@ -852,60 +932,36 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
             )}
 
             {!hideStories && (
-                <div className="mt-12 pt-4 flex items-center justify-start md:justify-center gap-10 overflow-x-auto pb-6 no-scrollbar px-6 md:px-0 w-full max-w-[1400px] mx-auto relative z-10">
-                    {(stories && stories.length > 0 ? stories : DESTINATION_STORIES).map((story: any, idx: number) => (
-                        <motion.button 
-                            initial={{ opacity: 0, y: 20 }} 
-                            animate={{ opacity: 1, y: 0 }} 
-                            transition={{ delay: 0.5 + idx * 0.1 }} 
-                            key={story.label} 
-                            type="button" 
-                            onClick={() => { 
-                                const foundStory = stories && stories.length > 0 
-                                    ? stories.find((s: any) => s.label.toLowerCase() === story.label.toLowerCase())
-                                    : destinationStories.find(s => s.id === story.label.toLowerCase());
-                                if (foundStory) {
-                                    const mappedStory = stories && stories.length > 0
-                                        ? { 
-                                            id: foundStory.label.toLowerCase(), 
-                                            city: foundStory.label, 
-                                            slides: foundStory.slides || [],
-                                            query: foundStory.query,
-                                            buttonText: foundStory.buttonText
-                                          }
-                                        : foundStory;
-                                    setActiveStory(mappedStory);
-                                } else { 
-                                    setQuery(story.query); 
-                                    handleSearch(undefined, story.query); 
-                                } 
-                            }} 
-                            className="group flex flex-col items-center gap-4 outline-none relative"
-                        >
-                            <div className="relative p-[4px] rounded-full bg-gradient-to-tr from-brand-600 via-brand-200 to-brand-500 transition-all duration-700 group-hover:scale-110 active:scale-95 shadow-premium">
-                                {/* Story Badge */}
-                                {story.badge && (
-                                    <span className={`absolute -top-1 left-[2px] z-20 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest shadow-md border border-white whitespace-nowrap leading-none premium-shine-badge select-none ${
-                                        story.badge.toLowerCase() === 'hot' 
-                                            ? 'bg-gradient-to-r from-red-600 via-rose-300 to-red-600 text-white' 
-                                            : story.badge.toLowerCase() === 'new' 
-                                                ? 'bg-gradient-to-r from-emerald-600 via-emerald-300 to-emerald-600 text-white' 
-                                                : story.badge.toLowerCase() === 'trend'
-                                                    ? 'bg-gradient-to-r from-blue-600 via-blue-300 to-blue-600 text-white'
-                                                    : 'bg-gradient-to-r from-slate-900 via-slate-400 to-slate-900 text-white'
-                                    }`}>
-                                        {story.badge}
-                                    </span>
-                                )}
-                                <div className="p-[3px] rounded-full bg-white">
-                                    <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden shadow-inner">
-                                        <img src={story.image} alt={story.label} className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-125" loading="lazy" />
+                <div className="mt-12 pt-4 flex items-center justify-start md:justify-center gap-8 sm:gap-10 overflow-x-auto pb-6 no-scrollbar px-6 md:px-0 w-full max-w-[1400px] mx-auto relative z-10">
+                    {storiesLoading ? (
+                        Array.from({ length: 5 }).map((_, idx) => (
+                            <div key={`story-skeleton-${idx}`} className="flex flex-col items-center gap-3.5 sm:gap-4 shrink-0 animate-pulse">
+                                {/* Story Avatar Ring Skeleton */}
+                                <div className="relative p-[4px] rounded-full bg-gradient-to-tr from-slate-200 via-slate-100 to-slate-200 shadow-sm">
+                                    <div className="p-[3px] rounded-full bg-white">
+                                        <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden bg-slate-100">
+                                            <div className="skeleton-wave" />
+                                        </div>
                                     </div>
                                 </div>
+                                {/* Story Label Skeleton */}
+                                <div className="h-3.5 w-16 bg-slate-200 rounded-full" />
                             </div>
-                            <span className="text-[14px] font-black text-slate-950 tracking-tight italic">{story.label}</span>
-                        </motion.button>
-                    ))}
+                        ))
+                    ) : (
+                        (stories && stories.length > 0 ? stories : DESTINATION_STORIES).map((story: any, idx: number) => (
+                            <StoryHighlightAvatarItem
+                                key={story.label || idx}
+                                story={story}
+                                idx={idx}
+                                stories={stories}
+                                destinationStories={destinationStories}
+                                setActiveStory={setActiveStory}
+                                setQuery={setQuery}
+                                handleSearch={handleSearch}
+                            />
+                        ))
+                    )}
                 </div>
             )}
 

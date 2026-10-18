@@ -355,7 +355,7 @@ export default function AdminBulkOnboarder({ onSuccess }: AdminBulkOnboarderProp
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 
                 {/* Left Column: Flow Controller */}
-                <div className="lg:col-span-5 bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] p-6 space-y-6">
+                <div className="lg:col-span-5 bg-neutral-900/40 border border-neutral-800/80  rounded-2xl  p-6 space-y-6">
                     <div className="space-y-1">
                         <h4 className="text-xs font-bold uppercase text-white tracking-wider flex items-center gap-2">
                             <Sparkles className="w-4 h-4 text-emerald-400 animate-pulse" />
@@ -412,7 +412,7 @@ export default function AdminBulkOnboarder({ onSuccess }: AdminBulkOnboarderProp
                                     </div>
                                     <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                                         {selectedFiles.map(({ file, id }) => (
-                                            <div key={id} className="flex items-center justify-between p-2.5 bg-[#0c0c0c] border border-[#262626] rounded-xl">
+                                            <div key={id} className="flex items-center justify-between p-2.5 bg-neutral-900/40 border border-[#262626] rounded-xl">
                                                 <div className="flex items-center gap-2 min-w-0">
                                                     <FileJson className="w-4 h-4 text-emerald-400 shrink-0" />
                                                     <div className="min-w-0">
@@ -542,7 +542,7 @@ export default function AdminBulkOnboarder({ onSuccess }: AdminBulkOnboarderProp
                 </div>
 
                 {/* Right Column: Cards Panel & Results Review */}
-                <div className="lg:col-span-7 bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] p-6 min-h-[400px] flex flex-col">
+                <div className="lg:col-span-7 bg-neutral-900/40 border border-neutral-800/80  rounded-2xl  p-6 min-h-[400px] flex flex-col">
                     
                     {/* Header */}
                     <div className="pb-4 border-b border-[#1f1f1f] mb-6 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
@@ -668,7 +668,7 @@ export default function AdminBulkOnboarder({ onSuccess }: AdminBulkOnboarderProp
 
                                         {/* Expanded details */}
                                         {isExpanded && (
-                                            <div className="px-4 pb-4 border-t border-[#1f1f1f] pt-3 space-y-4 text-[10px] bg-[#0c0c0c]">
+                                            <div className="px-4 pb-4 border-t border-[#1f1f1f] pt-3 space-y-4 text-[10px] bg-neutral-900/40">
                                                 
                                                 {/* Error banner inside card */}
                                                 {!item.success && (
@@ -827,7 +827,7 @@ export default function AdminBulkOnboarder({ onSuccess }: AdminBulkOnboarderProp
             </div>
 
             {/* History Logs Panel */}
-            <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] p-6 space-y-6">
+            <div className="bg-neutral-900/40 border border-neutral-800/80  rounded-2xl  p-6 space-y-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-[#1f1f1f] gap-4">
                     <div>
                         <h4 className="text-xs font-bold uppercase text-white tracking-wider flex items-center gap-2">

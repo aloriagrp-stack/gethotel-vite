@@ -161,8 +161,9 @@ exports.createBooking = async (req, res) => {
 
         // Apply coupon code discount if provided
         let discountAmount = 0;
+        let activeCoupon = null;
         if (couponCode) {
-            const activeCoupon = await prisma.coupon.findFirst({
+            activeCoupon = await prisma.coupon.findFirst({
                 where: {
                     hotelId: parseInt(hotelId),
                     code: { equals: couponCode.trim() },
@@ -172,6 +173,11 @@ exports.createBooking = async (req, res) => {
 
             if (!activeCoupon) {
                 return res.status(400).json({ success: false, message: "Invalid or expired coupon code." });
+            }
+
+            // Usage limit validation
+            if (activeCoupon.usageLimit && activeCoupon.usedCount >= activeCoupon.usageLimit) {
+                return res.status(400).json({ success: false, message: "This coupon code has reached its maximum usage limit." });
             }
 
             // Date validation (compare with server local/UTC date)
@@ -256,6 +262,13 @@ exports.createBooking = async (req, res) => {
             } else {
                 discountAmount = Math.round(activeCoupon.discountValue);
             }
+
+            // Enforce maxDiscount cap if defined
+            if (activeCoupon.maxDiscount && activeCoupon.maxDiscount > 0) {
+                discountAmount = Math.min(discountAmount, Math.round(activeCoupon.maxDiscount));
+            }
+            // Discount cannot exceed subtotal
+            discountAmount = Math.min(discountAmount, calculatedSubtotal);
         }
 
         const discountedSubtotal = Math.max(0, calculatedSubtotal - discountAmount);
@@ -314,21 +327,26 @@ exports.createBooking = async (req, res) => {
                     // If explicitly blocked or available count is overridden
                     const dayLimit = rateOverride !== undefined ? rateOverride.available : dbRoom.totalInventory;
 
-                    // Query bookings overlapping this specific night
+                    // Query bookings overlapping this specific night (handles both daily stays and same-day hourly bookings)
                     const activeOnNight = await tx.booking.count({
                         where: {
                             roomId: dbRoom.id,
                             status: { in: ['paid', 'confirmed', 'checked-in', 'held'] },
                             checkIn: { lt: nextDay },
-                            checkOut: { gt: currentDay },
                             OR: [
-                                { status: 'confirmed' },
-                                { status: 'checked-in' },
-                                { status: 'paid' },
+                                { checkOut: { gt: currentDay } },
+                                { checkIn: { gte: currentDay, lt: nextDay } } // Handles hourly same-day checkout bookings
+                            ],
+                            AND: [
                                 {
-                                    AND: [
-                                        { status: 'held' },
-                                        { holdExpiresAt: { gt: new Date() } }
+                                    OR: [
+                                        { status: { in: ['confirmed', 'checked-in', 'paid'] } },
+                                        {
+                                            AND: [
+                                                { status: 'held' },
+                                                { holdExpiresAt: { gt: new Date() } }
+                                            ]
+                                        }
                                     ]
                                 }
                             ]
@@ -341,6 +359,23 @@ exports.createBooking = async (req, res) => {
                 }
             }
 
+            // Atomically increment coupon usage count
+            if (activeCoupon) {
+                await tx.coupon.update({
+                    where: { id: activeCoupon.id },
+                    data: { usedCount: { increment: 1 } }
+                });
+            }
+
+            // Security Hardening (Zero-Day Payment Bypass Prevention):
+            // Clients cannot declare a booking as 'paid' or 'partial' via req.body.
+            // Only 'pay_at_hotel' can be created as 'confirmed' with paymentStatus 'pending' and amountPaid 0.
+            // All online payments start as 'held' and must be verified by Razorpay signature in verifyPayment.
+            const isPayAtHotel = req.body.paymentMode === 'pay_at_hotel' || req.body.paymentStatus === 'pay_at_hotel' || req.body.status === 'pay_at_hotel';
+            const safeStatus = isPayAtHotel ? 'confirmed' : 'held';
+            const safePaymentStatus = 'pending';
+            const safeAmountPaid = 0;
+
             // Create the booking record
             return await tx.booking.create({
                 data: {
@@ -351,14 +386,9 @@ exports.createBooking = async (req, res) => {
                     checkOut: checkOutDay,
                     totalPrice: calculatedTotal,
                     totalGuests: parseInt(totalGuests),
-                    status: req.body.status || 'held',
-                    paymentStatus: req.body.paymentStatus || 'pending',
-                    amountPaid: (() => {
-                        const ps = req.body.paymentStatus;
-                        if (ps === 'paid') return req.body.amountPaid || calculatedTotal; // Full online
-                        if (ps === 'partial') return req.body.amountPaid || platformFee;  // 12% now
-                        return 0; // pending = pay at hotel
-                    })(),
+                    status: safeStatus,
+                    paymentStatus: safePaymentStatus,
+                    amountPaid: safeAmountPaid,
                     holdExpiresAt: new Date(Date.now() + 10 * 60 * 1000),
                     guestFirstName: guestInfo.firstName,
                     guestLastName: guestInfo.lastName,
@@ -370,18 +400,17 @@ exports.createBooking = async (req, res) => {
                     gstNumber: guestInfo.gstNumber || "",
                     companyName: guestInfo.companyName || "",
                     roomDetails: JSON.stringify(activeRooms),
-                    internalNotes: (() => {
-                        const ps = req.body.paymentStatus;
-                        if (ps === 'paid') return `FULL_ONLINE_PAYMENT: Paid ₹${req.body.amountPaid || calculatedTotal} online | Coupon: ${couponCode || 'None'} | Discount: ₹${discountAmount}`;
-                        if (ps === 'partial') return `PARTIAL_PAYMENT: Paid ₹${req.body.amountPaid || platformFee} online (12%) | Balance ₹${remainingAtHotel} at hotel | Coupon: ${couponCode || 'None'} | Discount: ₹${discountAmount}`;
-                        return `PAY_AT_HOTEL: Full ₹${calculatedTotal} due at check-in | Coupon: ${couponCode || 'None'} | Discount: ₹${discountAmount}`;
-                    })()
+                    internalNotes: isPayAtHotel
+                        ? `PAY_AT_HOTEL: Full ₹${calculatedTotal} due at check-in | Coupon: ${couponCode || 'None'} | Discount: ₹${discountAmount}`
+                        : `ONLINE_CHECKOUT_INITIATED: Target ₹${platformFee} (12% deposit) or full ₹${calculatedTotal} | Coupon: ${couponCode || 'None'} | Discount: ₹${discountAmount}`
                 }
             });
         });
 
-        // Trigger emails if the booking is directly created as 'confirmed' or 'paid'
-        if (booking && (booking.status === 'confirmed' || booking.status === 'paid')) {
+        // Trigger emails ONLY for legitimate pay-at-hotel bookings confirmed on creation.
+        // Online payment bookings trigger emails upon cryptographic Razorpay verification in verifyPayment.
+        const isPayAtHotelBooking = req.body.paymentMode === 'pay_at_hotel' || req.body.paymentStatus === 'pay_at_hotel' || req.body.status === 'pay_at_hotel';
+        if (booking && booking.status === 'confirmed' && isPayAtHotelBooking) {
             try {
                 const fullBooking = await prisma.booking.findUnique({
                     where: { id: booking.id },
@@ -584,8 +613,8 @@ exports.cancelBooking = async (req, res, next) => {
         }
 
         const isOwner = booking.userId === req.user.id;
-        const isHotelOwner = req.user.role === 'hotel_admin' && booking.hotel.userId === req.user.id;
-        const isSuperAdmin = req.user.role === 'super_admin';
+        const isHotelOwner = ['hotel_admin', 'partner'].includes(req.user.role) && booking.hotel.userId === req.user.id;
+        const isSuperAdmin = ['super_admin', 'superadmin', 'admin'].includes(req.user.role);
 
         if (!isOwner && !isHotelOwner && !isSuperAdmin) {
             return res.status(403).json({ success: false, message: 'Not authorized to cancel this booking' });
@@ -593,6 +622,11 @@ exports.cancelBooking = async (req, res, next) => {
 
         if (['cancelled', 'refunded'].includes(booking.status)) {
             return res.status(400).json({ success: false, message: 'Booking is already cancelled.' });
+        }
+
+        // Active stays and completed bookings cannot be cancelled by users
+        if (['checked-in', 'checked-out', 'completed'].includes(booking.status) && !isSuperAdmin) {
+            return res.status(400).json({ success: false, message: 'Cannot cancel a booking that is already checked-in, checked-out, or completed.' });
         }
 
         // Policy Check: Free cancellation if check-in is > 24 hours away
@@ -604,13 +638,17 @@ exports.cancelBooking = async (req, res, next) => {
         let cancelStatus = 'cancelled';
 
         if (hoursUntilCheckIn >= 24) {
-            // Free cancellation - mark for full refund of amountPaid
+            // Free cancellation (> 24 hours before check-in) - full refund
             refundAmount = booking.amountPaid;
             cancelStatus = 'refunded';
-        } else if (booking.amountPaid > 0) {
-            // Late cancellation - 50% penalty
+        } else if (hoursUntilCheckIn > 0 && booking.amountPaid > 0) {
+            // Late cancellation (within 24 hours before check-in) - 50% penalty
             refundAmount = booking.amountPaid * 0.5;
-            cancelStatus = 'cancelled'; // Still cancelled, but with penalty
+            cancelStatus = 'cancelled';
+        } else {
+            // Stay date has arrived or passed - 0 automated refund
+            refundAmount = 0;
+            cancelStatus = 'cancelled';
         }
 
         const updatedBooking = await prisma.booking.update({

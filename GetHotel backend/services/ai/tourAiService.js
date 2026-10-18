@@ -367,7 +367,7 @@ function fallbackRuleBasedTourParser(text, destinationHint) {
 
     if (!includedStay) includedStay = "4-Star Deluxe Resorts & Heritage Hotels";
     if (!transport) transport = "Private AC Sedan Transfers Included";
-    if (!overview) overview = `${title} offers an exceptional holiday across ${destination}. Carefully curated with verified stays, seamless private transfers, and rich cultural sightseeing.`;
+    if (!overview) overview = `${title} offers an exceptional holiday across ${destination}. Carefully curated with comfortable stays, seamless private transfers, and rich cultural sightseeing.`;
 
     const finalInclusions = inclusions.length > 0 ? inclusions : [
         `Hotel stay on double sharing basis`,
@@ -395,7 +395,7 @@ function fallbackRuleBasedTourParser(text, destinationHint) {
         overview,
         highlights: [
             "Comfortable private AC transportation throughout",
-            "Handpicked verified stays with daily breakfast",
+            "Handpicked premium hotels with daily breakfast",
             "Guided sightseeing tours of major landmarks"
         ],
         inclusions: finalInclusions,

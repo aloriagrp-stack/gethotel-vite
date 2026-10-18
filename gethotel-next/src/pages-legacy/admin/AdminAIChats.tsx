@@ -84,7 +84,7 @@ export default function AdminAIChats() {
 
             {/* Top Metric Cards - Pure Black Skeuomorphic */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] p-5 rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] relative overflow-hidden group hover:border-[#2a2a2a] transition-all">
+                <div className="bg-neutral-900/40 border border-neutral-800/80  p-5 rounded-2xl  relative overflow-hidden group hover:border-[#2a2a2a] transition-all">
                     <div className="flex items-center justify-between">
                         <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Total Chat Sessions</span>
                         <div className="w-9 h-9 rounded-xl bg-[#161616] text-blue-400 flex items-center justify-center border border-[#262626]">
@@ -97,7 +97,7 @@ export default function AdminAIChats() {
                     </div>
                 </div>
 
-                <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] p-5 rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] relative overflow-hidden group hover:border-[#2a2a2a] transition-all">
+                <div className="bg-neutral-900/40 border border-neutral-800/80  p-5 rounded-2xl  relative overflow-hidden group hover:border-[#2a2a2a] transition-all">
                     <div className="flex items-center justify-between">
                         <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Messages Exchanged</span>
                         <div className="w-9 h-9 rounded-xl bg-[#161616] text-indigo-400 flex items-center justify-center border border-[#262626]">
@@ -110,7 +110,7 @@ export default function AdminAIChats() {
                     </div>
                 </div>
 
-                <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] p-5 rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] relative overflow-hidden group hover:border-[#2a2a2a] transition-all">
+                <div className="bg-neutral-900/40 border border-neutral-800/80  p-5 rounded-2xl  relative overflow-hidden group hover:border-[#2a2a2a] transition-all">
                     <div className="flex items-center justify-between">
                         <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Avg Chat Duration</span>
                         <div className="w-9 h-9 rounded-xl bg-[#161616] text-amber-400 flex items-center justify-center border border-[#262626]">
@@ -123,7 +123,7 @@ export default function AdminAIChats() {
                     </div>
                 </div>
 
-                <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] p-5 rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] relative overflow-hidden group hover:border-[#2a2a2a] transition-all">
+                <div className="bg-neutral-900/40 border border-neutral-800/80  p-5 rounded-2xl  relative overflow-hidden group hover:border-[#2a2a2a] transition-all">
                     <div className="flex items-center justify-between">
                         <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">AI Conversion Rate</span>
                         <div className="w-9 h-9 rounded-xl bg-[#161616] text-emerald-400 flex items-center justify-center border border-[#262626]">
@@ -140,7 +140,7 @@ export default function AdminAIChats() {
             </div>
 
             {/* Sessions Table */}
-            <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] overflow-hidden">
+            <div className="bg-neutral-900/40 border border-neutral-800/80  rounded-2xl  overflow-hidden">
                 <div className="px-6 py-4 border-b border-[#1f1f1f] bg-[#0e0e0e] flex items-center justify-between">
                     <div>
                         <h3 className="text-sm font-bold text-white uppercase tracking-wider">
@@ -287,7 +287,7 @@ export default function AdminAIChats() {
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-[#0c0c0c] rounded-3xl shadow-2xl border border-[#1c1c1c] border-t-[#2d2d2d] text-white w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden"
+                            className="bg-neutral-900/40 rounded-3xl shadow-2xl border border-neutral-800/80  text-white w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden"
                         >
                             {/* Modal Header */}
                             <div className="px-6 py-4 border-b border-[#1f1f1f] bg-[#0e0e0e] flex items-center justify-between">
@@ -312,7 +312,7 @@ export default function AdminAIChats() {
                             </div>
 
                             {/* Modal Messages Body */}
-                            <div className="p-6 overflow-y-auto space-y-4 flex-1 bg-[#050505]">
+                            <div className="p-6 overflow-y-auto space-y-4 flex-1 bg-[#09090b]">
                                 {selectedSession.messages && selectedSession.messages.length > 0 ? (
                                     selectedSession.messages.map((m: any) => (
                                         <div

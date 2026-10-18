@@ -336,17 +336,17 @@ export default function AdminDestinationAnalytics() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-[#050505] flex items-center justify-center text-white font-sans">
+            <div className="min-h-screen bg-transparent flex items-center justify-center text-white font-sans">
                 <Loader2 className="w-8 h-8 animate-spin text-neutral-400" />
             </div>
         );
     }
 
     return (
-        <div className="bg-[#050505] text-white font-sans select-none space-y-8 min-h-screen">
+        <div className="bg-transparent text-white font-sans select-none space-y-8 min-h-screen">
             
             {/* View Mode & Map Toggle Toolbar */}
-            <div className="flex items-center justify-between pb-2 border-b border-[#1c1c1c]">
+            <div className="flex items-center justify-between pb-2 border-b border-neutral-800/60">
                 <div className="flex items-center gap-2 bg-[#0c0c0c] border border-[#1c1c1c] p-1 rounded-xl">
                     <button
                         onClick={() => setViewTab("analytics")}
@@ -372,7 +372,7 @@ export default function AdminDestinationAnalytics() {
 
                 <button
                     onClick={handleExportCSV}
-                    className="px-3.5 py-1.5 bg-[#141414] hover:bg-[#1f1f1f] border border-[#262626] text-white font-bold text-xs rounded-xl flex items-center gap-2 transition-all cursor-pointer shadow-sm active:scale-95"
+                    className="px-3.5 py-1.5 bg-neutral-900 hover:bg-[#1f1f1f] border border-[#262626] text-white font-bold text-xs rounded-xl flex items-center gap-2 transition-all cursor-pointer shadow-sm active:scale-95"
                 >
                     <Download className="w-3.5 h-3.5 text-neutral-300" />
                     <span>Export Report</span>
@@ -381,8 +381,8 @@ export default function AdminDestinationAnalytics() {
 
             {/* INTERACTIVE MAP RADAR VIEW */}
             {viewTab === "map" && (
-                <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.9)] space-y-6">
-                    <div className="flex items-center justify-between pb-4 border-b border-[#1f1f1f]">
+                <div className="bg-neutral-900/40 border border-neutral-800/80 rounded-xl p-5 space-y-6">
+                    <div className="flex items-center justify-between pb-4 border-b border-neutral-800/60">
                         <div>
                             <h3 className="text-xs font-black uppercase text-white tracking-widest flex items-center gap-2">
                                 <Compass className="w-4 h-4 text-emerald-400" />
@@ -398,7 +398,7 @@ export default function AdminDestinationAnalytics() {
                     </div>
 
                     {/* Interactive Vector Map Grid */}
-                    <div className="relative h-[420px] w-full bg-[#070709] border border-[#1a1a1a] rounded-2xl overflow-hidden flex items-center justify-center p-4">
+                    <div className="relative h-[420px] w-full bg-neutral-950 border border-[#1a1a1a] rounded-2xl overflow-hidden flex items-center justify-center p-4">
                         
                         {/* India Stylized Vector Path Background */}
                         <svg className="w-full h-full opacity-30 pointer-events-none" viewBox="0 0 100 100" fill="none">
@@ -483,8 +483,8 @@ export default function AdminDestinationAnalytics() {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                     
                     {/* LEFT COLUMN: TOP DESTINATIONS BREAKDOWN (4 COLS) */}
-                    <div className="lg:col-span-4 bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.9)] space-y-6">
-                        <div className="flex items-center justify-between pb-4 border-b border-[#1f1f1f]">
+                    <div className="lg:col-span-4 bg-neutral-900/40 border border-neutral-800/80 rounded-xl p-5 space-y-6">
+                        <div className="flex items-center justify-between pb-4 border-b border-neutral-800/60">
                             <h3 className="text-xs font-black uppercase text-white tracking-widest flex items-center gap-2">
                                 <Globe className="w-4 h-4 text-emerald-400" />
                                 <span>Top Destinations Breakdown</span>
@@ -521,10 +521,10 @@ export default function AdminDestinationAnalytics() {
                     </div>
 
                     {/* RIGHT COLUMN: MONTHLY TRENDS AREA CHART WITH DYNAMIC TIMEFRAME DROPDOWN (8 COLS) */}
-                    <div className="lg:col-span-8 bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.9)] space-y-6">
+                    <div className="lg:col-span-8 bg-neutral-900/40 border border-neutral-800/80 rounded-xl p-5 space-y-6">
                         
                         {/* Chart Header + Timeframe Dropdown */}
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#1f1f1f]">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-800/60">
                             <div>
                                 <h3 className="text-xs font-black uppercase text-white tracking-widest flex items-center gap-2">
                                     <BarChart3 className="w-4 h-4 text-emerald-400" />
@@ -559,7 +559,7 @@ export default function AdminDestinationAnalytics() {
                                     <select
                                         value={timeframe}
                                         onChange={(e) => setTimeframe(e.target.value as TimeframeOption)}
-                                        className="bg-[#141414] hover:bg-[#1a1a1a] border border-[#2a2a2a] text-white font-bold text-xs rounded-xl px-3 py-1.5 pr-8 appearance-none focus:outline-none focus:border-neutral-500 transition-all cursor-pointer shadow-sm uppercase tracking-wider"
+                                        className="bg-neutral-900 hover:bg-[#1a1a1a] border border-[#2a2a2a] text-white font-bold text-xs rounded-xl px-3 py-1.5 pr-8 appearance-none focus:outline-none focus:border-neutral-500 transition-all cursor-pointer shadow-sm uppercase tracking-wider"
                                     >
                                         <option value="today">Today</option>
                                         <option value="last_week">Last Week</option>
@@ -653,7 +653,7 @@ export default function AdminDestinationAnalytics() {
                             {/* Minimal Hover Tooltip */}
                             {hoveredMonth && (
                                 <div 
-                                    className="absolute bg-[#141414] border border-[#2e2e2e] rounded-xl px-3 py-1.5 shadow-xl text-center pointer-events-none transform -translate-x-1/2 -translate-y-12"
+                                    className="absolute bg-neutral-900 border border-[#2e2e2e] rounded-xl px-3 py-1.5 shadow-xl text-center pointer-events-none transform -translate-x-1/2 -translate-y-12"
                                     style={{ left: `${(hoveredMonth.index / (chartTimeline.length - 1)) * 96 + 2}%`, top: "30%" }}
                                 >
                                     <p className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest">{hoveredMonth.month}</p>
@@ -670,7 +670,7 @@ export default function AdminDestinationAnalytics() {
             <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.9)] overflow-hidden space-y-4">
                 
                 {/* Search Controls */}
-                <div className="p-6 border-b border-[#1f1f1f] flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="p-6 border-b border-neutral-800/60 flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div>
                         <h3 className="text-sm font-bold text-white uppercase tracking-wider">
                             Detailed Destination Ranking & Revenue Table
@@ -687,7 +687,7 @@ export default function AdminDestinationAnalytics() {
                             placeholder="Search city or region..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 bg-[#141414] border border-[#262626] rounded-xl text-xs font-bold text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-500"
+                            className="w-full pl-10 pr-4 py-2 bg-neutral-900 border border-[#262626] rounded-xl text-xs font-bold text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-500"
                         />
                     </div>
                 </div>
@@ -696,7 +696,7 @@ export default function AdminDestinationAnalytics() {
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse text-xs">
                         <thead>
-                            <tr className="bg-[#0e0e0e] border-b border-[#1f1f1f] text-neutral-400 font-bold uppercase tracking-wider text-[10px]">
+                            <tr className="bg-[#0e0e0e] border-b border-neutral-800/60 text-neutral-400 font-bold uppercase tracking-wider text-[10px]">
                                 <th className="py-3.5 px-6 w-16 text-center">Rank</th>
                                 <th className="py-3.5 px-6">Destination City</th>
                                 <th className="py-3.5 px-6">State / Region</th>

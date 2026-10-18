@@ -606,9 +606,9 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
     ];
 
     return (
-        <div className="w-full flex flex-col h-screen bg-[#050505] text-neutral-100 font-sans overflow-hidden">
+        <div className="w-full flex flex-col h-screen bg-[#09090b] text-neutral-100 font-sans overflow-hidden">
             {/* Header / Select Hotel Selector */}
-            <div className="px-6 py-4 bg-[#0c0c0c] border-b border-[#1f1f1f] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="px-6 py-4 bg-neutral-900/40 border-b border-[#1f1f1f]  flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-[#161616] border border-[#262626] rounded-xl flex items-center justify-center">
                         <Sparkles className="w-5 h-5 text-emerald-400 animate-pulse" />
@@ -730,7 +730,7 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
             {activeSubTab === "rooms" ? (
                 <>
                     {/* Chat Area */}
-                    <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-[#050505]">
+                    <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-[#09090b]">
                         {messages.map((msg) => {
                             const isAI = msg.sender === "ai";
                             return (
@@ -776,7 +776,7 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                                         className={cn(
                                             "px-5 py-3.5 rounded-2xl text-xs font-medium leading-relaxed whitespace-pre-wrap shadow-sm",
                                             isAI 
-                                                ? "bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] text-white rounded-tl-none shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]" 
+                                                ? "bg-neutral-900/40 border border-neutral-800/80  text-white rounded-tl-none " 
                                                 : "bg-neutral-100 text-black font-semibold rounded-tr-none"
                                         )}
                                     >
@@ -818,7 +818,7 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
 
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 {msg.suggestedRooms.map((room, rIdx) => (
-                                                    <div key={rIdx} className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] p-5 space-y-4 rounded-2xl relative group">
+                                                    <div key={rIdx} className="bg-neutral-900/40 border border-neutral-800/80   p-5 space-y-4 rounded-2xl relative group">
                                                         {/* Card Header */}
                                                         <div className="flex items-center justify-between pb-2 border-b border-[#1f1f1f]">
                                                             <span className="text-[10px] font-bold uppercase text-emerald-400 tracking-wider">Category #{rIdx + 1}</span>
@@ -1073,7 +1073,7 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                                                 });
 
                                                 return (
-                                                    <div className="p-4 bg-[#0c0c0c] border border-[#1c1c1c] rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md">
+                                                    <div className="p-4 bg-neutral-900/40 border border-neutral-800/80 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md">
                                                         <div className="flex items-center gap-2 text-neutral-400">
                                                             <Info className="w-4 h-4 text-emerald-400 shrink-0" />
                                                             <span className="text-[10px] font-bold uppercase tracking-wider">Configure all fields, then save directly into active hotel database records</span>
@@ -1224,7 +1224,7 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                     )}
 
                     {/* Footer Input Area */}
-                    <div className="p-4 bg-[#0c0c0c] border-t border-[#1f1f1f] space-y-3">
+                    <div className="p-4 bg-neutral-900/40 border-t border-[#1f1f1f] space-y-3">
                         <div className="flex flex-col gap-2 border border-[#262626] rounded-xl p-3 bg-[#141414] focus-within:border-neutral-500 transition-colors">
                             {/* Attachment Preview Area */}
                             {attachedImages.length > 0 && (
@@ -1355,7 +1355,7 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
             ) : activeSubTab === "tours" ? (
                 <AdminTourOnboardingAI />
             ) : activeSubTab === "reviews" ? (
-                <div className="flex-1 overflow-y-auto p-6 bg-[#050505] space-y-6">
+                <div className="flex-1 overflow-y-auto p-6 bg-[#09090b] space-y-6">
                     <AdminReviewImporter 
                         hotels={hotels} 
                         hotelId={selectedHotelId} 
@@ -1363,7 +1363,7 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                     />
                 </div>
             ) : (
-                <div className="flex-1 overflow-y-auto p-6 bg-[#050505] space-y-6">
+                <div className="flex-1 overflow-y-auto p-6 bg-[#09090b] space-y-6">
                     <AdminBulkOnboarder 
                         onSuccess={() => {
                             setTimeout(() => {
@@ -1382,7 +1382,7 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                             className="fixed inset-0 bg-black/80 backdrop-blur-md z-[200]" 
                             onClick={() => setConfirmModal(null)}
                         />
-                        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] shadow-2xl p-8 w-[95%] max-w-lg z-[210] rounded-3xl overflow-hidden text-left text-white">
+                        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-neutral-900/40 border border-neutral-800/80  shadow-2xl p-8 w-[95%] max-w-lg z-[210] rounded-3xl overflow-hidden text-left text-white">
                             <div className="flex items-start gap-4">
                                 <div className="w-12 h-12 bg-[#161616] border border-[#282828] rounded-2xl flex items-center justify-center shrink-0">
                                     <AlertCircle className="w-6 h-6 text-amber-400 animate-pulse" />

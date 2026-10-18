@@ -122,12 +122,12 @@ export default function PartnerRequestsPage() {
                 </div>
 
                 {pageLoading ? (
-                    <div className="flex flex-col items-center justify-center py-20 bg-[#0c0c0c] rounded-2xl border border-[#1c1c1c] shadow-sm">
+                    <div className="flex flex-col items-center justify-center py-20 bg-neutral-900/40 rounded-2xl border border-neutral-800/80 shadow-sm">
                         <Loader2 className="w-10 h-10 text-neutral-400 animate-spin mb-4" />
                         <p className="text-neutral-400 font-bold text-xs uppercase tracking-wider">Loading requests...</p>
                     </div>
                 ) : filteredReqs.length === 0 ? (
-                    <div className="text-center py-20 bg-[#0c0c0c] rounded-[32px] border border-[#1c1c1c] shadow-sm space-y-3">
+                    <div className="text-center py-20 bg-neutral-900/40 rounded-[32px] border border-neutral-800/80 shadow-sm space-y-3">
                         <Clock className="w-12 h-12 text-neutral-600 mx-auto" />
                         <h3 className="text-base font-black text-white">No pending requests</h3>
                         <p className="text-xs text-neutral-400 font-medium">When partners apply, their requests will appear here.</p>
@@ -140,7 +140,7 @@ export default function PartnerRequestsPage() {
                                 layout
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="bg-[#0c0c0c] rounded-[28px] p-6 md:p-8 border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] hover:border-[#333333] transition-all group"
+                                className="bg-neutral-900/40 rounded-[28px] p-6 md:p-8 border border-neutral-800/80   hover:border-[#333333] transition-all group"
                             >
                                 <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-8">
                                     <div className="flex-1 space-y-6">

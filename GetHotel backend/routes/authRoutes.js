@@ -41,7 +41,7 @@ router.post('/google', [
 
 router.get('/me', protect, getMe);
 router.post('/logout', protect, logout);
-router.get('/unblock-debug', require('../controllers/authController').unblockDebug);
+router.get('/unblock-debug', protect, authorize('super_admin'), require('../controllers/authController').unblockDebug);
 
 // Forgot and Reset Password routes
 router.post('/forgot-password', [

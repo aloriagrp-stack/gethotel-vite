@@ -2,12 +2,10 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { 
-    CreditCard, TrendingUp, TrendingDown, 
-    DollarSign, ArrowUpRight, ArrowDownRight,
-    Loader2, History, AlertCircle, Download, Calendar, ArrowLeft,
-    Building2, Receipt, PieChart, CheckCircle2, ShieldCheck
+    CreditCard, TrendingUp, 
+    DollarSign, Loader2, Download, 
+    Building2, Receipt, PieChart
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { adminApi } from "@/lib/api";
 
 export default function FinancialHubPage() {
@@ -86,145 +84,141 @@ export default function FinancialHubPage() {
 
     if (loading || authLoading) {
         return (
-            <div className="flex items-center justify-center min-h-[60vh] bg-[#050505] text-white">
-                <Loader2 className="w-10 h-10 animate-spin text-neutral-400" />
+            <div className="flex items-center justify-center min-h-[60vh] bg-transparent text-slate-900">
+                <Loader2 className="w-8 h-8 animate-spin text-slate-500" />
             </div>
         );
     }
 
     const cards = [
-        { label: "Total Gross GMV Revenue", value: `₹${stats.totalGrossRevenue.toLocaleString()}`, icon: DollarSign, sub: `From ${stats.totalBookingsCount} total bookings`, trend: "+18.4%" },
-        { label: "Platform Net Profit (12%)", value: `₹${stats.platformNetProfit.toLocaleString()}`, icon: TrendingUp, sub: "Direct platform earnings", trend: "+22.1%" },
-        { label: "Hotel Partner Payouts (88%)", value: `₹${stats.hotelPayoutsTotal.toLocaleString()}`, icon: CreditCard, sub: "Disbursed to hotel properties", trend: "+16.8%" },
-        { label: "Average Stay Value (AOV)", value: `₹${stats.avgOrderValue.toLocaleString()}`, icon: Receipt, sub: "Per completed reservation", trend: "+4.2%" },
+        { label: "Gross GMV Volume", value: `₹${stats.totalGrossRevenue.toLocaleString()}`, icon: DollarSign, sub: `${stats.totalBookingsCount} total bookings`, trend: "+18.4%" },
+        { label: "Platform Net Margin (12%)", value: `₹${stats.platformNetProfit.toLocaleString()}`, icon: TrendingUp, sub: "Direct platform earnings", trend: "+22.1%" },
+        { label: "Partner Payouts (88%)", value: `₹${stats.hotelPayoutsTotal.toLocaleString()}`, icon: CreditCard, sub: "Payable to hotel inventory", trend: "+16.8%" },
+        { label: "Avg. Booking Value (AOV)", value: `₹${stats.avgOrderValue.toLocaleString()}`, icon: Receipt, sub: "Per completed stay", trend: "+4.2%" },
     ];
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-300">
+        <div className="space-y-6">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#1f1f1f]">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-200/80">
                 <div>
-                    <h2 className="text-xl font-black text-white uppercase tracking-wider flex items-center gap-2 font-sans">
-                        <CreditCard className="w-5 h-5 text-emerald-400" />
-                        <span>Platform Financial Hub & Profit Ledger</span>
+                    <h2 className="text-xl font-semibold text-slate-900 tracking-tight flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                        Financial Overview
                     </h2>
-                    <p className="text-neutral-500 text-xs font-semibold mt-1">
-                        Real-time revenue settlement, platform 12% commission ledger, and property payout statements.
+                    <p className="text-xs text-slate-500 mt-0.5">
+                        Real-time revenue settlements, platform 12% commission, and property payout statements.
                     </p>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2.5">
                     <select
                         value={filterPeriod}
                         onChange={(e) => setFilterPeriod(e.target.value as any)}
-                        className="bg-[#141414] border border-[#282828] text-white font-bold text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-neutral-500 cursor-pointer uppercase tracking-wider"
+                        className="bg-white border border-slate-200 text-slate-700 font-medium text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:border-slate-300 cursor-pointer"
                     >
-                        <option value="all">All Time Financials</option>
+                        <option value="all">All Time</option>
                         <option value="this_month">This Month</option>
                         <option value="this_year">This Fiscal Year</option>
                     </select>
 
                     <button 
                         onClick={() => alert("Downloading Financial Ledger Statement (PDF)...")}
-                        className="px-4 py-2 bg-white hover:bg-neutral-200 text-black font-extrabold text-xs rounded-xl transition-all cursor-pointer flex items-center gap-2 uppercase tracking-wider shadow-md"
+                        className="px-3.5 py-1.5 bg-white hover:bg-neutral-800 border border-slate-200 text-slate-900 font-medium text-xs rounded-lg transition-colors cursor-pointer flex items-center gap-2"
                     >
-                        <Download className="w-4 h-4 text-black" />
-                        <span>Export Statement</span>
+                        <Download className="w-3.5 h-3.5 text-slate-500" />
+                        <span>Export</span>
                     </button>
                 </div>
             </div>
 
             {/* Top 4 KPI Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {cards.map((card) => {
                     const Icon = card.icon;
                     return (
-                        <div key={card.label} className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.9)] space-y-4">
-                            <div className="flex justify-between items-start">
-                                <div className="w-10 h-10 bg-[#161616] border border-[#282828] rounded-xl flex items-center justify-center shadow-inner">
-                                    <Icon className="w-5 h-5 text-emerald-400" />
-                                </div>
-                                <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950/50 border border-emerald-800/40 px-2 py-0.5 rounded-lg">
+                        <div key={card.label} className="bg-white border border-slate-200/90 rounded-xl shadow-xs p-5 hover:border-slate-300 transition-colors">
+                            <div className="flex justify-between items-center mb-3">
+                                <span className="text-slate-500 text-xs font-medium">{card.label}</span>
+                                <Icon className="w-4 h-4 text-slate-400" />
+                            </div>
+                            <div className="flex items-baseline justify-between mb-1">
+                                <h3 className="text-2xl font-semibold text-slate-900 tracking-tight">{card.value}</h3>
+                                <span className="text-[11px] font-medium px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400">
                                     {card.trend}
                                 </span>
                             </div>
-                            <div>
-                                <p className="text-neutral-500 font-bold text-[10px] uppercase tracking-widest mb-1">{card.label}</p>
-                                <h3 className="text-2xl font-black text-white tracking-tight">{card.value}</h3>
-                                <p className="text-[9px] text-neutral-500 font-semibold mt-1">{card.sub}</p>
-                            </div>
+                            <p className="text-[11px] text-slate-400">{card.sub}</p>
                         </div>
                     );
                 })}
             </div>
 
             {/* 2 Column Layout: Breakdown & Settlement Ledger */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
                 
-                {/* Left: Booking Flow Breakdown (5 COLS) */}
-                <div className="lg:col-span-5 bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.9)] space-y-6">
-                    <div className="flex items-center justify-between pb-4 border-b border-[#1f1f1f]">
-                        <h3 className="text-xs font-black uppercase text-white tracking-widest flex items-center gap-2">
-                            <PieChart className="w-4 h-4 text-emerald-400" />
-                            <span>Revenue Split Summary</span>
+                {/* Left: Booking Flow Breakdown */}
+                <div className="lg:col-span-5 bg-white border border-slate-200/90 rounded-xl shadow-xs p-5 space-y-4">
+                    <div className="flex items-center justify-between pb-3 border-b border-slate-200/60">
+                        <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                            <PieChart className="w-3.5 h-3.5 text-emerald-400" /> Revenue Split
                         </h3>
-                        <span className="text-[10px] font-bold text-emerald-400 uppercase font-mono">12% / 88% Model</span>
+                        <span className="text-[11px] text-emerald-400 font-medium">12% / 88% Model</span>
                     </div>
 
-                    <div className="space-y-4 font-mono text-xs">
-                        <div className="flex justify-between items-center py-2 border-b border-[#161616]">
-                            <span className="text-neutral-400 text-[10px] uppercase">Total Bookings Count:</span>
-                            <span className="text-white font-bold">{stats.totalBookingsCount} Reservations</span>
+                    <div className="space-y-3 text-xs">
+                        <div className="flex justify-between items-center py-1.5 border-b border-slate-200/40">
+                            <span className="text-slate-500">Total Bookings Count:</span>
+                            <span className="text-slate-900 font-medium">{stats.totalBookingsCount} Reservations</span>
                         </div>
-                        <div className="flex justify-between items-center py-2 border-b border-[#161616]">
-                            <span className="text-neutral-400 text-[10px] uppercase">Paid & Confirmed:</span>
-                            <span className="text-emerald-400 font-bold">{stats.paidBookingsCount} Stays</span>
+                        <div className="flex justify-between items-center py-1.5 border-b border-slate-200/40">
+                            <span className="text-slate-500">Paid & Confirmed:</span>
+                            <span className="text-emerald-400 font-medium">{stats.paidBookingsCount} Stays</span>
                         </div>
-                        <div className="flex justify-between items-center py-2 border-b border-[#161616]">
-                            <span className="text-neutral-400 text-[10px] uppercase">Gross Collected Online (12%):</span>
-                            <span className="text-white font-bold">₹{stats.amountCollectedOnline.toLocaleString()}</span>
+                        <div className="flex justify-between items-center py-1.5 border-b border-slate-200/40">
+                            <span className="text-slate-500">Online Collected (12%):</span>
+                            <span className="text-slate-900 font-medium">₹{stats.amountCollectedOnline.toLocaleString()}</span>
                         </div>
-                        <div className="flex justify-between items-center py-2 border-b border-[#161616]">
-                            <span className="text-neutral-400 text-[10px] uppercase">Direct Hotel Collection (88%):</span>
-                            <span className="text-amber-400 font-bold">₹{stats.amountDueAtHotel.toLocaleString()}</span>
+                        <div className="flex justify-between items-center py-1.5 border-b border-slate-200/40">
+                            <span className="text-slate-500">Hotel Collection (88%):</span>
+                            <span className="text-slate-700 font-medium">₹{stats.amountDueAtHotel.toLocaleString()}</span>
                         </div>
-                        <div className="flex justify-between items-center pt-3 text-sm">
-                            <span className="text-neutral-300 font-bold uppercase text-xs">Net Platform Earnings:</span>
-                            <span className="text-emerald-400 font-black text-base">₹{stats.platformNetProfit.toLocaleString()}</span>
+                        <div className="flex justify-between items-center pt-2">
+                            <span className="text-slate-700 font-medium">Net Platform Earnings:</span>
+                            <span className="text-emerald-400 font-semibold text-base">₹{stats.platformNetProfit.toLocaleString()}</span>
                         </div>
                     </div>
                 </div>
 
-                {/* Right: Hotel Partner Settlement Table (7 COLS) */}
-                <div className="lg:col-span-7 bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.9)] space-y-6">
-                    <div className="flex items-center justify-between pb-4 border-b border-[#1f1f1f]">
-                        <h3 className="text-xs font-black uppercase text-white tracking-widest flex items-center gap-2">
-                            <Building2 className="w-4 h-4 text-emerald-400" />
-                            <span>Hotel Partner Financial Breakdown</span>
+                {/* Right: Hotel Partner Settlement Table */}
+                <div className="lg:col-span-7 bg-white border border-slate-200/90 rounded-xl shadow-xs p-5 space-y-4">
+                    <div className="flex items-center justify-between pb-3 border-b border-slate-200/60">
+                        <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                            <Building2 className="w-3.5 h-3.5 text-emerald-400" /> Property Settlement Ledger
                         </h3>
-                        <span className="text-[10px] font-bold text-neutral-500 uppercase">{hotelFinancialBreakdown.length} Properties</span>
+                        <span className="text-[11px] text-slate-400">{hotelFinancialBreakdown.length} Properties</span>
                     </div>
 
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="border-b border-[#1f1f1f] text-[9px] font-black uppercase text-neutral-500 tracking-wider">
+                                <tr className="border-b border-slate-200/80 text-[11px] font-medium text-slate-500">
                                     <th className="py-2.5 px-3">Hotel Property</th>
                                     <th className="py-2.5 px-3 text-right">Bookings</th>
-                                    <th className="py-2.5 px-3 text-right">Gross Revenue</th>
-                                    <th className="py-2.5 px-3 text-right">Platform Fee</th>
+                                    <th className="py-2.5 px-3 text-right">Gross GMV</th>
+                                    <th className="py-2.5 px-3 text-right">Platform Fee (12%)</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-[#161616] text-xs font-mono">
-                                {hotelFinancialBreakdown.slice(0, 7).map((item) => (
-                                    <tr key={item.hotelName} className="hover:bg-[#121212] transition-colors">
-                                        <td className="py-3 px-3">
-                                            <span className="font-bold text-white uppercase block text-xs truncate max-w-[180px]">{item.hotelName}</span>
-                                            <span className="text-[9px] text-neutral-500">{item.city}</span>
+                            <tbody className="divide-y divide-neutral-800/40 text-xs">
+                                {hotelFinancialBreakdown.slice(0, 8).map((item) => (
+                                    <tr key={item.hotelName} className="hover:bg-slate-50/80 transition-colors">
+                                        <td className="py-2.5 px-3">
+                                            <span className="font-medium text-slate-900 block truncate max-w-[200px]">{item.hotelName}</span>
+                                            <span className="text-[11px] text-slate-400">{item.city}</span>
                                         </td>
-                                        <td className="py-3 px-3 text-right text-neutral-300 font-bold">{item.bookingCount}</td>
-                                        <td className="py-3 px-3 text-right font-bold text-white">₹{item.totalRevenue.toLocaleString()}</td>
-                                        <td className="py-3 px-3 text-right font-bold text-emerald-400">₹{item.platformFee.toLocaleString()}</td>
+                                        <td className="py-2.5 px-3 text-right text-slate-700">{item.bookingCount}</td>
+                                        <td className="py-2.5 px-3 text-right font-medium text-slate-900">₹{item.totalRevenue.toLocaleString()}</td>
+                                        <td className="py-2.5 px-3 text-right font-medium text-emerald-400">₹{item.platformFee.toLocaleString()}</td>
                                     </tr>
                                 ))}
                             </tbody>

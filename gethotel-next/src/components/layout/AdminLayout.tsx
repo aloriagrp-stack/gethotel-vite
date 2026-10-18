@@ -1,16 +1,15 @@
 'use client';
-import { useState, useEffect, useRef, Suspense } from "react";
-import { useNavigate as useRouter, useLocation, Outlet } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate as useRouter, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import {
     LayoutDashboard, Hotel, Users,
     BarChart3, Settings, LogOut,
-    Bell, Search, Plus, Clock,
-    CreditCard, Loader2, Calendar, AlertCircle, LayoutTemplate, SlidersHorizontal, Star, RefreshCw, LayoutGrid, Globe, Sparkles, Bot, Palmtree, Download, MapPin,
-    ChevronLeft, ChevronRight, Menu, X, Percent
+    Search, Clock,
+    Calendar, LayoutTemplate, SlidersHorizontal, Star, Globe, Sparkles, Bot, Palmtree, Download, MapPin,
+    ChevronLeft, ChevronRight, Menu, X, Percent, Bell
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
 
 export default function AdminLayout({ children }: { children?: React.ReactNode }) {
     const { user, loading: authLoading, logout } = useAuth();
@@ -19,13 +18,14 @@ export default function AdminLayout({ children }: { children?: React.ReactNode }
     const pathname = location.pathname;
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [mobileOpen, setMobileOpen] = useState(false);
 
-    // Lock body background to pure dark for admin portal
+    // Lock body background to clean light grey canvas for admin portal
     useEffect(() => {
         const origHtml = document.documentElement.style.backgroundColor;
         const origBody = document.body.style.backgroundColor;
-        document.documentElement.style.backgroundColor = '#050505';
-        document.body.style.backgroundColor = '#050505';
+        document.documentElement.style.backgroundColor = '#f8fafc';
+        document.body.style.backgroundColor = '#f8fafc';
         return () => {
             document.documentElement.style.backgroundColor = origHtml;
             document.body.style.backgroundColor = origBody;
@@ -40,9 +40,9 @@ export default function AdminLayout({ children }: { children?: React.ReactNode }
         if (sidebarNavRef.current) {
             scrollPosRef.current = sidebarNavRef.current.scrollTop;
         }
-        const currentPath = typeof window !== 'undefined' ? window.location.pathname : pathname;
-        const targetUrl = tabId === 'overview' ? currentPath : `${currentPath}?tab=${tabId}`;
+        const targetUrl = tabId === 'overview' ? '/controlhub' : `/controlhub?tab=${tabId}`;
         router(targetUrl);
+        setMobileOpen(false);
     };
 
     useEffect(() => {
@@ -58,293 +58,280 @@ export default function AdminLayout({ children }: { children?: React.ReactNode }
         }
     }, [user, authLoading, router]);
 
-    const navItems = [
-        { id: "overview", label: "Dashboard", icon: LayoutDashboard, tab: "overview" },
-        { id: "ai-copilot", label: "✨ AI Room Onboarding", icon: Sparkles, tab: "ai-copilot" },
-        { id: "hotel-importer", label: "Hotel Importer (Agent)", icon: Download, tab: "hotel-importer" },
-        { id: "tour-packages", label: "Tour Packages Manager", icon: Palmtree, tab: "tour-packages" },
-        { id: "destinations", label: "Destinations Cards Manager", icon: MapPin, tab: "destinations" },
-        { id: "requests", label: "Partner Requests", icon: Clock, tab: "requests" },
-        { id: "controlhub", label: "Manager", icon: SlidersHorizontal, tab: "controlhub" },
-        { id: "ai-chats", label: "AI Chat Analytics", icon: Bot, tab: "ai-chats" },
-        { id: "hotels", label: "Hotels", icon: Hotel, tab: "hotels" },
-        { id: "promotions", label: "Promotions & Coupons", icon: Percent, tab: "promotions" },
-        { id: "multi-room", label: "Multi Room Setup", icon: LayoutGrid, tab: "multi-room" },
-        { id: "bookings", label: "All Bookings", icon: Calendar, tab: "bookings" },
-        { id: "reviews", label: "Global Reviews", icon: Star, tab: "reviews" },
-        { id: "users", label: "Users", icon: Users, tab: "users" },
-        { id: "addPartner", label: "Add Partner", icon: Plus, tab: "addPartner" },
-        { id: "destination-analytics", label: "Top Destinations Analytics", icon: Globe, tab: "destination-analytics" },
-        { id: "delhi-seo", label: "Delhi SEO Dashboard", icon: Search, tab: "delhi-seo" },
-        { id: "analytics", label: "Stats", icon: BarChart3, tab: "stats" },
-        { id: "finance", label: "Financial Hub", icon: CreditCard, tab: "finance" },
-        { id: "homepage", label: "Homepage Editor", icon: LayoutTemplate, tab: "homepage" },
-        { id: "disputes", label: "Disputes", icon: AlertCircle, tab: "disputes" },
-        { id: "notifications", label: "Notifications", icon: Bell, tab: "notifications" },
-        { id: "settings", label: "Settings", icon: Settings, tab: "settings" },
+    const navSections = [
+        {
+            title: "Overview",
+            items: [
+                { id: "overview", label: "Dashboard", icon: LayoutDashboard, tab: "overview" },
+                { id: "controlhub", label: "Properties Hub", icon: SlidersHorizontal, tab: "controlhub" },
+            ]
+        },
+        {
+            title: "Operations",
+            items: [
+                { id: "hotels", label: "Properties", icon: Hotel, tab: "hotels" },
+                { id: "bookings", label: "Bookings", icon: Calendar, tab: "bookings" },
+                { id: "requests", label: "Partner Requests", icon: Clock, tab: "requests" },
+                { id: "users", label: "Users & Customers", icon: Users, tab: "users" },
+                { id: "reviews", label: "Global Reviews", icon: Star, tab: "reviews" },
+            ]
+        },
+        {
+            title: "Content & Growth",
+            items: [
+                { id: "destinations", label: "Destination Cards", icon: MapPin, tab: "destinations" },
+                { id: "tour-packages", label: "Tour Packages", icon: Palmtree, tab: "tour-packages" },
+                { id: "promotions", label: "Promotions & Coupons", icon: Percent, tab: "promotions" },
+                { id: "homepage", label: "Homepage Editor", icon: LayoutTemplate, tab: "homepage" },
+            ]
+        },
+        {
+            title: "Intelligence & AI",
+            items: [
+                { id: "ai-copilot", label: "AI Room Onboarding", icon: Sparkles, tab: "ai-copilot" },
+                { id: "ai-chats", label: "AI Chat Analytics", icon: Bot, tab: "ai-chats" },
+                { id: "hotel-importer", label: "Hotel Importer", icon: Download, tab: "hotel-importer" },
+                { id: "analytics", label: "Stats & Analytics", icon: BarChart3, tab: "stats" },
+                { id: "destination-analytics", label: "Destinations Intel", icon: Globe, tab: "destination-analytics" },
+                { id: "delhi-seo", label: "Delhi SEO", icon: Search, tab: "delhi-seo" },
+            ]
+        },
+        {
+            title: "Finance & System",
+            items: [
+                { id: "finance", label: "Financial Overview", icon: BarChart3, tab: "finance" },
+                { id: "notifications", label: "Activity & Alerts", icon: Bell, tab: "notifications" },
+                { id: "settings", label: "Platform Settings", icon: Settings, tab: "settings" },
+            ]
+        }
     ];
 
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const currentTab = new URLSearchParams(location.search).get('tab') || 'overview';
 
-    const searchParams = new URLSearchParams(location.search);
-    const currentTab = searchParams.get("tab") || "overview";
-    const activeItem = navItems.find(item => item.tab === currentTab) || navItems[0];
-
-    const handleLogout = () => {
-        logout();
-        setShowLogoutConfirm(false);
-        router("/controlhub");
+    const handleLogout = async () => {
+        try {
+            await logout();
+            router('/controlhub');
+        } catch (e) {
+            console.error(e);
+            router('/controlhub');
+        }
     };
 
-    if (authLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-[#050505] text-white">
-                <Loader2 className="w-10 h-10 animate-spin text-neutral-400" />
-            </div>
-        );
-    }
-
     return (
-        <div className="flex min-h-screen bg-[#050505] font-sans text-neutral-100 admin-portal-wrapper">
-
-            {/* Sidebar for Desktop - Skeuomorphic Pure Black */}
+        <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex antialiased">
+            {/* Desktop Sidebar */}
             <aside className={cn(
-                "hidden lg:flex bg-[#070707] text-neutral-100 flex-col fixed inset-y-0 left-0 z-50 border-r border-[#1a1a1a] transition-all duration-200 shadow-[2px_0_15px_rgba(0,0,0,0.9)] overflow-hidden",
-                sidebarCollapsed ? "w-16" : "w-72"
+                "hidden md:flex flex-col bg-white border-r border-slate-200/90 shrink-0 transition-all duration-200 sticky top-0 h-screen z-30",
+                sidebarCollapsed ? "w-16" : "w-64"
             )}>
-                <div className={cn(
-                    "p-6 border-b border-[#1a1a1a] flex items-center bg-gradient-to-b from-[#0e0e0e] to-[#070707]",
-                    sidebarCollapsed ? "justify-center px-2 py-6" : "justify-between"
-                )}>
-                    {!sidebarCollapsed && (
-                        <h1 className="text-xl font-black tracking-wide select-none flex items-center gap-1.5 text-white font-sans">
-                            Aloria's <span className="text-neutral-500 font-light text-xs uppercase tracking-widest">Admin</span>
-                        </h1>
+                {/* Brand Header */}
+                <div className="h-16 px-4 border-b border-slate-200/80 flex items-center justify-between">
+                    {!sidebarCollapsed ? (
+                        <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-sm shrink-0">
+                                CH
+                            </div>
+                            <div className="min-w-0">
+                                <h1 className="text-sm font-semibold tracking-tight text-slate-900 truncate flex items-center gap-1.5">
+                                    ControlHub
+                                </h1>
+                                <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Super Admin</p>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-sm mx-auto">
+                            CH
+                        </div>
                     )}
-                    <button 
+
+                    <button
+                        type="button"
                         onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                        className="p-1.5 bg-[#141414] hover:bg-[#1f1f1f] rounded-lg text-neutral-400 hover:text-white transition-all flex items-center justify-center border border-[#262626] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_2px_4px_rgba(0,0,0,0.6)] cursor-pointer"
-                        title={sidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+                        className={cn(
+                            "w-7 h-7 rounded-md text-slate-400 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer",
+                            sidebarCollapsed && "mx-auto mt-2"
+                        )}
+                        title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
                     >
                         {sidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
                     </button>
                 </div>
 
-                <nav
-                    ref={sidebarNavRef}
-                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                    className="flex-1 p-3 space-y-1.5 overflow-y-auto no-scrollbar [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-                >
-                    {navItems.map((item) => {
-                        const Icon = item.icon;
-                        const isActive = item.tab === currentTab;
-
-                        return (
-                            <button
-                                key={item.id}
-                                onClick={() => handleNavClick(item.tab)}
-                                className={cn(
-                                    "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold tracking-wide transition-all cursor-pointer relative",
-                                    isActive
-                                        ? "bg-[#1f1f1f] text-white border border-[#333333] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] font-extrabold"
-                                        : "text-neutral-400 hover:bg-[#121212] hover:text-white hover:border hover:border-[#1f1f1f]",
-                                    sidebarCollapsed ? "justify-center px-2" : "justify-start"
-                                )}
-                                title={sidebarCollapsed ? item.label : undefined}
-                            >
-                                <Icon className={cn("w-4 h-4 shrink-0 transition-colors", isActive ? "text-white" : "text-neutral-500")} />
-                                {!sidebarCollapsed && (
-                                    <span className="truncate flex items-center justify-between w-full">
-                                        <span>{item.label}</span>
-                                    </span>
-                                )}
-                            </button>
-                        );
-                    })}
+                {/* Navigation Items */}
+                <nav ref={sidebarNavRef} className="flex-1 overflow-y-auto px-2.5 py-4 space-y-5">
+                    {navSections.map((section) => (
+                        <div key={section.title} className="space-y-1">
+                            {!sidebarCollapsed && (
+                                <p className="px-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+                                    {section.title}
+                                </p>
+                            )}
+                            {section.items.map((item) => {
+                                const Icon = item.icon;
+                                const isActive = currentTab === item.tab;
+                                return (
+                                    <button
+                                        key={item.id}
+                                        type="button"
+                                        onClick={() => handleNavClick(item.tab)}
+                                        className={cn(
+                                            "w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer text-left",
+                                            sidebarCollapsed && "justify-center px-0",
+                                            isActive
+                                                ? "bg-slate-900 text-white shadow-xs font-semibold"
+                                                : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                                        )}
+                                        title={sidebarCollapsed ? item.label : undefined}
+                                    >
+                                        <Icon className={cn("w-4 h-4 shrink-0", isActive ? "text-white" : "text-slate-500")} />
+                                        {!sidebarCollapsed && <span className="truncate">{item.label}</span>}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    ))}
                 </nav>
 
-                <div className="p-4 border-t border-[#1a1a1a] bg-[#070707]">
-                    <button
-                        onClick={() => setShowLogoutConfirm(true)}
-                        className={cn(
-                            "w-full flex items-center gap-3 px-4 py-2.5 text-neutral-400 hover:text-red-400 bg-[#121212] hover:bg-[#1a1a1a] rounded-xl text-xs font-semibold uppercase tracking-wider transition-all border border-[#222222] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] cursor-pointer",
-                            sidebarCollapsed ? "justify-center px-2" : "justify-start"
-                        )}
-                        title={sidebarCollapsed ? "Logout" : undefined}
-                    >
-                        <LogOut className="w-4 h-4 shrink-0" />
-                        {!sidebarCollapsed && <span>Logout</span>}
-                    </button>
+                {/* User / Footer */}
+                <div className="p-3 border-t border-slate-200/80 bg-slate-50/50">
+                    {!sidebarCollapsed ? (
+                        <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2.5 min-w-0">
+                                <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-700 font-semibold text-xs flex items-center justify-center shrink-0">
+                                    {(user?.name || "SA").slice(0, 2).toUpperCase()}
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-xs font-medium text-slate-900 truncate">{user?.name || "Super Admin"}</p>
+                                    <p className="text-[10px] text-slate-500 truncate">{user?.email || "admin@gethotelstays.com"}</p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setShowLogoutConfirm(true)}
+                                className="p-1.5 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer shrink-0"
+                                title="Logout"
+                            >
+                                <LogOut className="w-4 h-4" />
+                            </button>
+                        </div>
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={() => setShowLogoutConfirm(true)}
+                            className="w-full flex items-center justify-center p-2 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                            title="Logout"
+                        >
+                            <LogOut className="w-4 h-4" />
+                        </button>
+                    )}
                 </div>
             </aside>
 
-            {/* Main Content Area - Pure Black Background */}
-            <div className={cn(
-                "flex-1 flex flex-col min-h-screen bg-[#050505] text-neutral-100 transition-all duration-200 min-w-0",
-                sidebarCollapsed ? "lg:ml-16" : "lg:ml-72"
-            )}>
-                {/* Top Mobile Header */}
-                <header className="lg:hidden h-20 bg-[#0a0a0a] text-white px-6 flex items-center justify-between sticky top-0 z-40 border-b border-[#1f1f1f]">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-[#161616] border border-[#2a2a2a] rounded-xl flex items-center justify-center text-white shadow-inner">
-                            {activeItem ? <activeItem.icon className="w-5 h-5" /> : <LayoutDashboard className="w-5 h-5" />}
-                        </div>
-                        <div>
-                            <h1 className="text-sm font-bold uppercase tracking-wider text-white">
-                                {activeItem ? activeItem.label : "Admin Portal"}
-                            </h1>
-                            <p className="text-[9px] font-semibold text-neutral-500 uppercase tracking-widest">Super Admin</p>
-                        </div>
+            {/* Mobile Header */}
+            <div className="md:hidden fixed top-0 left-0 right-0 h-14 bg-white border-b border-slate-200 px-4 flex items-center justify-between z-40">
+                <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-xs">
+                        CH
                     </div>
-                    <button 
-                        onClick={() => setIsMobileMenuOpen(true)}
-                        className="p-2.5 bg-[#141414] text-white rounded-xl border border-[#262626] hover:bg-[#1f1f1f] transition-colors"
-                    >
-                        <Menu className="w-5 h-5" />
-                    </button>
-                </header>
-
-                {/* Mobile Menu Overlay */}
-                {isMobileMenuOpen && (
-                    <div 
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[60] lg:hidden"
-                    >
-                        <div 
-                            onClick={(e) => e.stopPropagation()}
-                            className="w-72 h-full bg-slate-900 text-white flex flex-col animate-slide-right border-r border-slate-850"
-                        >
-                            <div className="p-6 border-b border-slate-800 flex items-center justify-between">
-                                <h1 className="text-xl font-bold tracking-tight uppercase select-none">
-                                    Admin<span className="text-slate-400">Portal</span>
-                                </h1>
-                                <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-slate-400 hover:text-white">
-                                    <X className="w-5 h-5" />
-                                </button>
-                            </div>
-                            <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-                                {navItems.map((item) => {
-                                    const Icon = item.icon;
-                                    const isActive = item.tab === currentTab;
-
-                                    return (
-                                        <button
-                                            key={item.id}
-                                            onClick={() => {
-                                                handleNavClick(item.tab);
-                                                setIsMobileMenuOpen(false);
-                                            }}
-                                            className={cn(
-                                                "w-full flex items-center justify-between px-4 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all",
-                                                isActive
-                                                    ? "bg-[#181818] text-white border border-[#333333] border-l-4 border-l-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.18)]"
-                                                    : "text-neutral-400 hover:bg-[#121212] hover:text-white"
-                                            )}
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <Icon className={cn("w-4 h-4 shrink-0", isActive ? "text-emerald-400" : "text-neutral-500")} />
-                                                <span>{item.label}</span>
-                                            </div>
-                                            {isActive && <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" />}
-                                        </button>
-                                    );
-                                })}
-                            </nav>
-                            <div className="p-4 border-t border-slate-800">
-                                <button
-                                    onClick={() => {
-                                        setShowLogoutConfirm(true);
-                                        setIsMobileMenuOpen(false);
-                                    }}
-                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-slate-500 hover:text-red-400 text-xs font-bold uppercase tracking-wider transition-colors"
-                                >
-                                    <LogOut className="w-4 h-4 shrink-0" />
-                                    <span>Logout</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                <main className="flex-1 min-w-0 overflow-x-hidden bg-[#050505]">
-                    <Suspense fallback={
-                        <div className="min-h-screen w-full flex items-center justify-center bg-[#050505] text-white">
-                            <Loader2 className="w-10 h-10 animate-spin text-neutral-400" />
-                        </div>
-                    }>
-                        {children || <Outlet />}
-                    </Suspense>
-                </main>
+                    <span className="font-semibold text-sm text-slate-900">ControlHub</span>
+                </div>
+                <button
+                    type="button"
+                    onClick={() => setMobileOpen(!mobileOpen)}
+                    className="p-1.5 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 cursor-pointer"
+                >
+                    {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                </button>
             </div>
 
-            <style>{`
-                @keyframes slide-right {
-                    from { transform: translateX(-100%); }
-                    to { transform: translateX(0); }
-                }
-                .animate-slide-right {
-                    animation: slide-right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-                }
-                aside, aside *, aside nav {
-                    -ms-overflow-style: none !important;
-                    scrollbar-width: none !important;
-                }
-                aside::-webkit-scrollbar,
-                aside *::-webkit-scrollbar,
-                aside nav::-webkit-scrollbar {
-                    display: none !important;
-                    width: 0 !important;
-                    height: 0 !important;
-                    background: transparent !important;
-                }
-            `}</style>
+            {/* Mobile Drawer */}
+            {mobileOpen && (
+                <div className="md:hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex">
+                    <div className="w-72 bg-white h-full flex flex-col p-4 shadow-xl">
+                        <div className="flex items-center justify-between pb-4 border-b border-slate-200 mb-4">
+                            <span className="font-semibold text-sm text-slate-900">ControlHub Menu</span>
+                            <button onClick={() => setMobileOpen(false)} className="p-1 text-slate-500 hover:text-slate-900">
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+                        <nav className="flex-1 overflow-y-auto space-y-4">
+                            {navSections.map(section => (
+                                <div key={section.title} className="space-y-1">
+                                    <p className="px-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                                        {section.title}
+                                    </p>
+                                    {section.items.map(item => {
+                                        const Icon = item.icon;
+                                        const isActive = currentTab === item.tab;
+                                        return (
+                                            <button
+                                                key={item.id}
+                                                type="button"
+                                                onClick={() => handleNavClick(item.tab)}
+                                                className={cn(
+                                                    "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-left",
+                                                    isActive ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"
+                                                )}
+                                            >
+                                                <Icon className="w-4 h-4" />
+                                                <span>{item.label}</span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            ))}
+                        </nav>
+                        <div className="pt-4 border-t border-slate-200">
+                            <button
+                                onClick={handleLogout}
+                                className="w-full flex items-center justify-center gap-2 py-2 text-xs font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            >
+                                <LogOut className="w-4 h-4" /> Logout
+                            </button>
+                        </div>
+                    </div>
+                    <div className="flex-1" onClick={() => setMobileOpen(false)} />
+                </div>
+            )}
+
+            {/* Main Content Area */}
+            <main className="flex-1 min-w-0 bg-[#f8fafc] md:pt-0 pt-14 flex flex-col">
+                <div className="flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto">
+                    {children}
+                </div>
+            </main>
 
             {/* Logout Confirmation Modal */}
-            <AnimatePresence>
-                {showLogoutConfirm && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[200]"
-                            onClick={() => setShowLogoutConfirm(false)}
-                        />
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-white rounded-[4px] z-[210] overflow-hidden shadow-2xl border border-slate-800"
-                        >
-                            <div className="p-10 text-center">
-                                <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                                    <LogOut className="w-8 h-8 text-red-500" />
-                                </div>
-                                <h3 className="text-xl font-bold text-slate-900 mb-2 tracking-tight uppercase">
-                                    Confirm <span className="text-red-500">Sign Out</span>
-                                </h3>
-                                <p className="text-slate-500 text-sm font-medium mb-8">
-                                    Are you sure you want to exit the Administrative Portal?
-                                </p>
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={handleLogout}
-                                        className="flex-1 py-3 bg-red-600 text-white text-xs font-black uppercase tracking-widest hover:bg-red-700 transition-all"
-                                    >
-                                        Yes, Exit
-                                    </button>
-                                    <button
-                                        onClick={() => setShowLogoutConfirm(false)}
-                                        className="flex-1 py-3 bg-slate-100 text-slate-900 text-xs font-black uppercase tracking-widest hover:bg-slate-200 transition-all"
-                                    >
-                                        Cancel
-                                    </button>
-                                </div>
-                            </div>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
+            {showLogoutConfirm && (
+                <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+                    <div className="bg-white rounded-xl border border-slate-200 p-6 max-w-sm w-full shadow-lg text-center space-y-4">
+                        <div className="w-10 h-10 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto">
+                            <LogOut className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <h3 className="text-sm font-semibold text-slate-900">Sign out of ControlHub?</h3>
+                            <p className="text-xs text-slate-500 mt-1">You will need to re-authenticate with your security PIN to log back in.</p>
+                        </div>
+                        <div className="flex gap-2.5 pt-2">
+                            <button
+                                type="button"
+                                onClick={() => setShowLogoutConfirm(false)}
+                                className="flex-1 py-2 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleLogout}
+                                className="flex-1 py-2 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors cursor-pointer"
+                            >
+                                Sign Out
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

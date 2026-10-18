@@ -115,7 +115,7 @@ export default function AdminReviewImporter({
     return (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-7xl mx-auto items-start p-2 text-white font-sans">
             {/* Left Side: Form & Logs */}
-            <div className="lg:col-span-5 bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] p-6 space-y-6">
+            <div className="lg:col-span-5 bg-neutral-900/40 border border-neutral-800/80  rounded-2xl  p-6 space-y-6">
                 <div className="space-y-1">
                     <h4 className="text-xs font-bold uppercase text-white tracking-wider flex items-center gap-2">
                         <Globe className="w-4 h-4 text-emerald-400" />
@@ -229,7 +229,7 @@ export default function AdminReviewImporter({
             </div>
 
             {/* Right Side: Imported Preview Grid */}
-            <div className="lg:col-span-7 bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] p-6 min-h-[400px]">
+            <div className="lg:col-span-7 bg-neutral-900/40 border border-neutral-800/80  rounded-2xl  p-6 min-h-[400px]">
                 <div className="pb-4 border-b border-[#1f1f1f] mb-6 flex justify-between items-center">
                     <div>
                         <h4 className="text-xs font-bold uppercase text-white tracking-wider">
@@ -280,23 +280,23 @@ export default function AdminReviewImporter({
 
                                 {/* Subscores Grid */}
                                 <div className="grid grid-cols-5 gap-2 pt-2 border-t border-[#1f1f1f] text-center">
-                                    <div className="bg-[#0c0c0c] border border-[#222222] p-1.5 rounded-lg">
+                                    <div className="bg-neutral-900/40 border border-[#222222] p-1.5 rounded-lg">
                                         <div className="text-[10px] font-bold text-white">{rev.cleanliness || 5}/5</div>
                                         <div className="text-[7px] font-bold text-neutral-400 uppercase tracking-tighter mt-0.5">Clean</div>
                                     </div>
-                                    <div className="bg-[#0c0c0c] border border-[#222222] p-1.5 rounded-lg">
+                                    <div className="bg-neutral-900/40 border border-[#222222] p-1.5 rounded-lg">
                                         <div className="text-[10px] font-bold text-white">{rev.comfort || 5}/5</div>
                                         <div className="text-[7px] font-bold text-neutral-400 uppercase tracking-tighter mt-0.5">Comfort</div>
                                     </div>
-                                    <div className="bg-[#0c0c0c] border border-[#222222] p-1.5 rounded-lg">
+                                    <div className="bg-neutral-900/40 border border-[#222222] p-1.5 rounded-lg">
                                         <div className="text-[10px] font-bold text-white">{rev.location || 5}/5</div>
                                         <div className="text-[7px] font-bold text-neutral-400 uppercase tracking-tighter mt-0.5">Loc</div>
                                     </div>
-                                    <div className="bg-[#0c0c0c] border border-[#222222] p-1.5 rounded-lg">
+                                    <div className="bg-neutral-900/40 border border-[#222222] p-1.5 rounded-lg">
                                         <div className="text-[10px] font-bold text-white">{rev.staff || 5}/5</div>
                                         <div className="text-[7px] font-bold text-neutral-400 uppercase tracking-tighter mt-0.5">Staff</div>
                                     </div>
-                                    <div className="bg-[#0c0c0c] border border-[#222222] p-1.5 rounded-lg">
+                                    <div className="bg-neutral-900/40 border border-[#222222] p-1.5 rounded-lg">
                                         <div className="text-[10px] font-bold text-white">{rev.valueForMoney || 5}/5</div>
                                         <div className="text-[7px] font-bold text-neutral-400 uppercase tracking-tighter mt-0.5">Value</div>
                                     </div>

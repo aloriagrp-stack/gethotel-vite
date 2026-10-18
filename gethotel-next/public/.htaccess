@@ -1,4 +1,45 @@
 # ═══════════════════════════════════════════════
+# SECURITY HEADERS & HARDENING
+# ═══════════════════════════════════════════════
+# Disable directory browsing
+Options -Indexes
+
+# Block sensitive files from public access (.env, .git, .lock, .sql, etc.)
+<FilesMatch "^\.(.*)|(\.env|\.git|\.lock|\.sql|\.bak|\.log)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Security HTTP response headers
+<IfModule mod_headers.c>
+    # Prevent clickjacking
+    Header always set X-Frame-Options "SAMEORIGIN"
+    
+    # Prevent MIME type sniffing
+    Header always set X-Content-Type-Options "nosniff"
+    
+    # Enable browser XSS filtering
+    Header always set X-XSS-Protection "1; mode=block"
+    
+    # Control referrer information passed to other sites
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    
+    # Enforce HTTPS via HSTS (1 year)
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+    
+    # Restrict permissions/features
+    Header always set Permissions-Policy "camera=(), microphone=(), payment=(self 'https://checkout.razorpay.com')"
+    
+    # Remove server banner if possible
+    Header unset X-Powered-By
+</IfModule>
+
+# ═══════════════════════════════════════════════
 # GZIP/DEFLATE COMPRESSION (Improves load speed)
 # ═══════════════════════════════════════════════
 <IfModule mod_deflate.c>

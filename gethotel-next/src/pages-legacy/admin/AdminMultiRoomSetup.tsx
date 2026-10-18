@@ -475,7 +475,7 @@ export default function AdminMultiRoomSetup({ hotels }: { hotels: HotelSummary[]
     return (
         <div className="space-y-4 font-sans text-neutral-100">
             {/* Top Selector Panel - Pure Black Skeuomorphic */}
-            <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-2xl">
+            <div className="bg-neutral-900/40 border border-neutral-800/80   p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-2xl">
                 <div className="text-left">
                     <h3 className="text-sm font-bold text-white uppercase tracking-wider">Multi-Room Bulk Setup</h3>
                     <p className="text-[10px] font-medium text-neutral-400 uppercase tracking-widest mt-0.5">
@@ -532,7 +532,7 @@ export default function AdminMultiRoomSetup({ hotels }: { hotels: HotelSummary[]
             )}
 
             {/* Main Editor Component with High-Density Category Tabs */}
-            <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_25px_rgba(0,0,0,0.95)] rounded-2xl overflow-hidden flex flex-col">
+            <div className="bg-neutral-900/40 border border-neutral-800/80   rounded-2xl overflow-hidden flex flex-col">
                 
                 {/* Horizontal Scrollable Category Tabs Bar */}
                 <div className="border-b border-[#1f1f1f] bg-[#0e0e0e] px-4 pt-3">
@@ -1354,7 +1354,7 @@ export default function AdminMultiRoomSetup({ hotels }: { hotels: HotelSummary[]
             </div>
 
             {/* Note info */}
-            <div className="p-4 bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.9)] text-[10px] text-neutral-400 font-semibold uppercase tracking-wider flex items-center gap-2.5 rounded-2xl">
+            <div className="p-4 bg-neutral-900/40 border border-neutral-800/80   text-[10px] text-neutral-400 font-semibold uppercase tracking-wider flex items-center gap-2.5 rounded-2xl">
                 <Info className="w-4 h-4 text-emerald-400 shrink-0" />
                 Note: In media validation, each room category must have at least 1 image (maximum 20). Local uploads are saved safely as compressed WebP assets.
             </div>
