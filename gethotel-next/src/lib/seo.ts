@@ -543,16 +543,25 @@ export const PAGE_SEO = {
     },
 
     listProperty: {
-        title: "List Your Hotel on GetHotelStays — Reach Millions of Travelers",
+        title: "List Your Hotel, Homestay & Guest House | Flat 12% Commission — GetHotelStays",
         description:
-            "Partner with GetHotelStays and list your property. Access millions of Indian and NRI travelers. Easy dashboard, channel manager integration, instant payments.",
+            "List your hotel, homestay, guest house, or luxury villa on GetHotelStays. 100% free listing, flat 12% commission, direct bank payout within 2-3 days, and direct guest WhatsApp contact.",
         keywords: [
             "list hotel india",
-            "hotel partner india",
-            "hotel management system india",
-            "add hotel listing india",
-            "hotel booking platform india",
+            "list homestay india",
+            "list guest house india",
+            "list villa india",
+            "low commission ota india",
+            "hotel partner program india",
+            "hotel listing website india",
+            "alternative to makemytrip commission",
+            "12 percent hotel commission india",
+            "add property listing india",
+            "hotel onboarding india",
             "gethotelstays partner",
+            "sell day use rooms hotel india",
+            "hourly room listing partner india",
+            "heritage haveli listing india"
         ],
         ogType: "website",
     },

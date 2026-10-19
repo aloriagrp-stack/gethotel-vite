@@ -165,22 +165,20 @@
     letter-spacing: -0.02em;
   }
 
+  /* Hide default browser scrollbar while preserving smooth scroll behavior */
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar,
   ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 0px !important;
+    height: 0px !important;
+    display: none !important;
+    background: transparent !important;
   }
 
-  ::-webkit-scrollbar-track {
-    background: #f1f5f9;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 100px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
+  html,
+  body {
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
   }
 
   input[type="date"]::-webkit-calendar-picker-indicator {
