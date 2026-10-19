@@ -174,7 +174,10 @@ async function processSuccessfulPayment(booking, razorpay_order_id, razorpay_pay
                 checkIn: fullBooking.checkIn,
                 checkOut: fullBooking.checkOut,
                 totalPrice: fullBooking.totalPrice,
-                amountPaid: fullBooking.amountPaid
+                amountPaid: fullBooking.amountPaid,
+                totalGuests: fullBooking.totalGuests,
+                roomDetails: fullBooking.roomDetails,
+                internalNotes: fullBooking.internalNotes
             });
         }
     } catch (emailErr) {

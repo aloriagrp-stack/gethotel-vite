@@ -433,7 +433,10 @@ exports.createBooking = async (req, res) => {
                         checkIn: fullBooking.checkIn,
                         checkOut: fullBooking.checkOut,
                         totalPrice: fullBooking.totalPrice,
-                        amountPaid: fullBooking.amountPaid
+                        amountPaid: fullBooking.amountPaid,
+                        totalGuests: fullBooking.totalGuests,
+                        roomDetails: fullBooking.roomDetails,
+                        internalNotes: fullBooking.internalNotes
                     });
                 }
             } catch (emailErr) {
@@ -582,7 +585,10 @@ exports.updateBooking = async (req, res, next) => {
                     checkIn: updatedBooking.checkIn,
                     checkOut: updatedBooking.checkOut,
                     totalPrice: updatedBooking.totalPrice,
-                    amountPaid: updatedBooking.amountPaid
+                    amountPaid: updatedBooking.amountPaid,
+                    totalGuests: updatedBooking.totalGuests,
+                    roomDetails: updatedBooking.roomDetails,
+                    internalNotes: updatedBooking.internalNotes
                 });
             } catch (emailErr) {
                 console.error("Async booking update email trigger failed:", emailErr);

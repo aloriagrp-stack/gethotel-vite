@@ -36,6 +36,7 @@ import AdminDisputes from "./AdminDisputes";
 import AdminHotelImporter from "./AdminHotelImporter";
 import AdminDelhiSeo from "./AdminDelhiSeo";
 import AdminHotelDetails from "./AdminHotelDetails";
+import { parseBookingBreakdown } from "@/lib/bookingBreakdown";
 
 function formatDateSafe(rawDate: string | Date | null | undefined, opts?: Intl.DateTimeFormatOptions): string {
     if (!rawDate) return "—";
@@ -126,7 +127,9 @@ export default function SuperAdminDashboard() {
     const [usersSubTab, setUsersSubTab] = useState<"partners" | "customers">("partners");
 
     // Bookings sub-tab
-    const [bookingsSubTab, setBookingsSubTab] = useState<"fullDay" | "hourly">("fullDay");
+    const [bookingsSubTab, setBookingsSubTab] = useState<"all" | "fullDay" | "hourly">("all");
+    const [bookingStatusFilter, setBookingStatusFilter] = useState<string>("all");
+    const [bookingSearchTerm, setBookingSearchTerm] = useState<string>("");
 
     // Reset Password States
     const [resetModal, setResetModal] = useState<{ show: boolean, partner: any }>({ show: false, partner: null });
@@ -141,6 +144,9 @@ export default function SuperAdminDashboard() {
     const [newPassword, setNewPassword] = useState("");
     const [isReseting, setIsReseting] = useState(false);
     const [showPass, setShowPass] = useState(false);
+
+    // Booking Breakdown Modal
+    const [breakdownModal, setBreakdownModal] = useState<{ show: boolean, booking: any }>({ show: false, booking: null });
 
     // Customer Detail Modal
     const [customerModal, setCustomerModal] = useState<{ show: boolean, customer: any }>({ show: false, customer: null });
@@ -1042,58 +1048,127 @@ export default function SuperAdminDashboard() {
 
             {activeTab === "bookings" && (
                 <div>
-                    {/* Sub-tab switcher */}
-                    <div className="flex gap-1 mb-6 bg-slate-100 border border-slate-200/80 p-1 rounded-lg w-fit">
-                        <button
-                            onClick={() => setBookingsSubTab("fullDay")}
-                            className={cn(
-                                "px-3.5 py-1.5 text-xs font-medium rounded-md transition-colors cursor-pointer",
-                                bookingsSubTab === "fullDay"
-                                    ? "bg-white text-slate-900 shadow-xs font-semibold"
-                                    : "text-slate-600 hover:text-slate-900 font-medium"
-                            )}
-                        >
-                            Full Day Bookings ({bookings.filter(b => {
-                                if (!b.checkIn || !b.checkOut) return true;
-                                const durationHours = (new Date(b.checkOut).getTime() - new Date(b.checkIn).getTime()) / (1000 * 60 * 60);
-                                return !(b.room?.isHourlyEnabled && durationHours < 24);
-                            }).length})
-                        </button>
-                        <button
-                            onClick={() => setBookingsSubTab("hourly")}
-                            className={cn(
-                                "px-3.5 py-1.5 text-xs font-medium rounded-md transition-colors cursor-pointer",
-                                bookingsSubTab === "hourly"
-                                    ? "bg-white text-slate-900 shadow-xs font-semibold"
-                                    : "text-slate-600 hover:text-slate-900 font-medium"
-                            )}
-                        >
-                            Hourly Bookings ({bookings.filter(b => {
-                                if (!b.checkIn || !b.checkOut) return false;
-                                const durationHours = (new Date(b.checkOut).getTime() - new Date(b.checkIn).getTime()) / (1000 * 60 * 60);
-                                return b.room?.isHourlyEnabled && durationHours < 24;
-                            }).length})
-                        </button>
-                    </div>
+                    {/* Controls Toolbar: Sub-tabs, Status Filters & Search */}
+                    {(() => {
+                        const hourlyBookings = bookings.filter(b => {
+                            if (!b.checkIn || !b.checkOut) return false;
+                            const durationHours = (new Date(b.checkOut).getTime() - new Date(b.checkIn).getTime()) / (1000 * 60 * 60);
+                            return b.room?.isHourlyEnabled && durationHours < 24;
+                        });
+
+                        const fullDayBookings = bookings.filter(b => {
+                            if (!b.checkIn || !b.checkOut) return true;
+                            const durationHours = (new Date(b.checkOut).getTime() - new Date(b.checkIn).getTime()) / (1000 * 60 * 60);
+                            return !(b.room?.isHourlyEnabled && durationHours < 24);
+                        });
+
+                        return (
+                            <div className="space-y-4 mb-6">
+                                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                                    {/* Stay Type Tabs: All, Full Day, Hourly */}
+                                    <div className="flex gap-1 bg-slate-100 border border-slate-200/80 p-1 rounded-lg w-fit">
+                                        <button
+                                            onClick={() => setBookingsSubTab("all")}
+                                            className={cn(
+                                                "px-3.5 py-1.5 text-xs font-semibold rounded-md transition-colors cursor-pointer",
+                                                bookingsSubTab === "all"
+                                                    ? "bg-white text-slate-900 shadow-xs"
+                                                    : "text-slate-600 hover:text-slate-900 font-medium"
+                                            )}
+                                        >
+                                            All Bookings ({bookings.length})
+                                        </button>
+                                        <button
+                                            onClick={() => setBookingsSubTab("fullDay")}
+                                            className={cn(
+                                                "px-3.5 py-1.5 text-xs font-semibold rounded-md transition-colors cursor-pointer",
+                                                bookingsSubTab === "fullDay"
+                                                    ? "bg-white text-slate-900 shadow-xs"
+                                                    : "text-slate-600 hover:text-slate-900 font-medium"
+                                            )}
+                                        >
+                                            Full Day ({fullDayBookings.length})
+                                        </button>
+                                        <button
+                                            onClick={() => setBookingsSubTab("hourly")}
+                                            className={cn(
+                                                "px-3.5 py-1.5 text-xs font-semibold rounded-md transition-colors cursor-pointer",
+                                                bookingsSubTab === "hourly"
+                                                    ? "bg-white text-slate-900 shadow-xs"
+                                                    : "text-slate-600 hover:text-slate-900 font-medium"
+                                            )}
+                                        >
+                                            Hourly ({hourlyBookings.length})
+                                        </button>
+                                    </div>
+
+                                    {/* Local Search Input */}
+                                    <div className="relative w-full sm:w-80">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                                        <input
+                                            type="text"
+                                            placeholder="Search by ID, Guest, Email, Hotel..."
+                                            value={bookingSearchTerm}
+                                            onChange={(e) => setBookingSearchTerm(e.target.value)}
+                                            className="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 shadow-2xs"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Status Filter Pills */}
+                                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+                                    <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mr-1">Status:</span>
+                                    {[
+                                        { id: "all", label: "All Status" },
+                                        { id: "confirmed", label: "Confirmed" },
+                                        { id: "paid", label: "Paid Online" },
+                                        { id: "pending", label: "Pending" },
+                                        { id: "held", label: "Held / Draft" },
+                                        { id: "cancelled", label: "Cancelled" }
+                                    ].map(pill => (
+                                        <button
+                                            key={pill.id}
+                                            onClick={() => setBookingStatusFilter(pill.id)}
+                                            className={cn(
+                                                "px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer whitespace-nowrap",
+                                                bookingStatusFilter === pill.id
+                                                    ? "bg-slate-900 text-white shadow-xs"
+                                                    : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+                                            )}
+                                        >
+                                            {pill.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        );
+                    })()}
 
                     <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs overflow-hidden">
                         <div className="px-5 py-3.5 border-b border-slate-200/80 flex items-center justify-between">
                             <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                                {bookingsSubTab === "hourly" ? "Hourly Reservations" : "Full Day Reservations"}
+                                {bookingsSubTab === "all" ? "Master Platform Reservations" : (bookingsSubTab === "hourly" ? "Hourly Reservations" : "Full Day Reservations")}
                             </h3>
-                            <p className="text-xs text-slate-500">
-                                {bookingsSubTab === "hourly"
-                                    ? bookings.filter(b => {
+                            <p className="text-xs text-slate-500 font-medium">
+                                Showing {(() => {
+                                    const hourlyBookings = bookings.filter(b => {
                                         if (!b.checkIn || !b.checkOut) return false;
                                         const durationHours = (new Date(b.checkOut).getTime() - new Date(b.checkIn).getTime()) / (1000 * 60 * 60);
                                         return b.room?.isHourlyEnabled && durationHours < 24;
-                                    }).length
-                                    : bookings.filter(b => {
+                                    });
+                                    const fullDayBookings = bookings.filter(b => {
                                         if (!b.checkIn || !b.checkOut) return true;
                                         const durationHours = (new Date(b.checkOut).getTime() - new Date(b.checkIn).getTime()) / (1000 * 60 * 60);
                                         return !(b.room?.isHourlyEnabled && durationHours < 24);
-                                    }).length
-                                } Records
+                                    });
+                                    const currentTab = bookingsSubTab === "all" ? bookings : (bookingsSubTab === "hourly" ? hourlyBookings : fullDayBookings);
+                                    const statusFiltered = currentTab.filter(b => {
+                                        if (bookingStatusFilter === "all") return true;
+                                        return b.status === bookingStatusFilter || b.paymentStatus === bookingStatusFilter;
+                                    });
+                                    const effectiveSearch = (bookingSearchTerm || searchQuery || "").trim();
+                                    return smartFilter(statusFiltered, effectiveSearch, ['id', 'guestFirstName', 'guestLastName', 'guestEmail', 'guestPhone', 'hotel.name', 'room.name', 'status', 'paymentStatus']).length;
+                                })()} of {bookings.length} Total Bookings
                             </p>
                         </div>
                         <div className="overflow-x-auto">
@@ -1102,10 +1177,10 @@ export default function SuperAdminDashboard() {
                                     <tr>
                                         <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Booking ID</th>
                                         <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Guest</th>
-                                        <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Property</th>
-                                        <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Stay Details</th>
+                                        <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Property & Room</th>
+                                        <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Stay & Units</th>
                                         <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Status</th>
-                                        <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider text-right">Revenue</th>
+                                        <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider text-right">Revenue & Breakdown</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
@@ -1122,76 +1197,117 @@ export default function SuperAdminDashboard() {
                                             return !(b.room?.isHourlyEnabled && durationHours < 24);
                                         });
 
-                                        const currentTabBookings = bookingsSubTab === "hourly" ? hourlyBookings : fullDayBookings;
+                                        const currentTabBookings = bookingsSubTab === "all" 
+                                            ? bookings 
+                                            : (bookingsSubTab === "hourly" ? hourlyBookings : fullDayBookings);
 
+                                        const statusFilteredBookings = currentTabBookings.filter(b => {
+                                            if (bookingStatusFilter === "all") return true;
+                                            return b.status === bookingStatusFilter || b.paymentStatus === bookingStatusFilter;
+                                        });
+
+                                        const effectiveSearch = (bookingSearchTerm || searchQuery || "").trim();
                                         const filteredBookings = smartFilter(
-                                            currentTabBookings,
-                                            searchQuery,
-                                            ['id', 'guestFirstName', 'guestLastName', 'guestEmail', 'hotel.name', 'status']
+                                            statusFilteredBookings,
+                                            effectiveSearch,
+                                            ['id', 'guestFirstName', 'guestLastName', 'guestEmail', 'guestPhone', 'hotel.name', 'room.name', 'status', 'paymentStatus']
                                         );
 
                                         if (filteredBookings.length === 0) {
                                             return (
                                                 <tr>
                                                     <td colSpan={6} className="py-16 text-center">
-                                                        <p className="text-xs text-slate-400 font-medium">No bookings found</p>
+                                                        <p className="text-xs text-slate-400 font-medium">No bookings found matching current filters</p>
                                                     </td>
                                                 </tr>
                                             );
                                         }
 
                                         return filteredBookings.map((booking) => {
-                                            const isHourly = booking.room?.isHourlyEnabled && ((new Date(booking.checkOut).getTime() - new Date(booking.checkIn).getTime()) / (1000 * 60 * 60)) < 24;
+                                            const meta = parseBookingBreakdown(booking);
+                                            const isHourly = meta.isHourly;
                                             const stayDetails = isHourly ? (
                                                 <div>
-                                                    <span className="px-2 py-0.5 text-[10px] font-medium rounded-md bg-purple-500/10 text-purple-400">Hourly Stay</span>
+                                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                                        <span className="px-2 py-0.5 text-[10px] font-semibold rounded-md bg-purple-500/10 text-purple-600">Hourly Stay</span>
+                                                        <span className="px-2 py-0.5 text-[10px] font-semibold rounded-md bg-slate-100 text-slate-700">
+                                                            {meta.roomCount} {meta.roomCount > 1 ? 'Rooms' : 'Room'} • {meta.durationHours} hrs
+                                                        </span>
+                                                    </div>
                                                     <p className="text-xs text-slate-700 font-medium mt-1">{formatDateTimeSafe(booking.checkIn)}</p>
-                                                    <p className="text-[11px] text-slate-400">
-                                                        Duration: {Math.round((new Date(booking.checkOut).getTime() - new Date(booking.checkIn).getTime()) / (1000 * 60 * 60))} Hours
-                                                    </p>
-                                                    <p className="text-[11px] text-emerald-400 mt-0.5">Arrival: {booking.arrivalTime || "Not specified"}</p>
+                                                    <p className="text-[11px] text-emerald-600 mt-0.5">Arrival: {booking.arrivalTime || "Not specified"}</p>
                                                 </div>
                                             ) : (
                                                 <div>
-                                                    <span className="px-2 py-0.5 text-[10px] font-medium rounded-md bg-blue-500/10 text-blue-400">Full Day Stay</span>
+                                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                                        <span className="px-2 py-0.5 text-[10px] font-semibold rounded-md bg-blue-500/10 text-blue-600">Full Day Stay</span>
+                                                        <span className="px-2 py-0.5 text-[10px] font-semibold rounded-md bg-slate-100 text-slate-700">
+                                                            {meta.roomCount} {meta.roomCount > 1 ? 'Rooms' : 'Room'} • {meta.nights} {meta.nights > 1 ? 'Nights' : 'Night'}
+                                                        </span>
+                                                        <span className={cn(
+                                                            "px-2 py-0.5 text-[10px] font-semibold rounded-md",
+                                                            meta.mealPlan.toLowerCase().includes("breakfast") ? "bg-emerald-50 text-emerald-600 border border-emerald-200/60" : "bg-slate-100 text-slate-600"
+                                                        )}>
+                                                            {meta.mealPlan}
+                                                        </span>
+                                                    </div>
                                                     <p className="text-xs text-slate-700 font-medium mt-1">
                                                         {formatDateSafe(booking.checkIn)} to {formatDateSafe(booking.checkOut)}
                                                     </p>
-                                                    <p className="text-[11px] text-slate-400">
-                                                        Duration: {Math.max(1, Math.round((new Date(booking.checkOut).getTime() - new Date(booking.checkIn).getTime()) / (1000 * 60 * 60 * 24)))} Night(s)
-                                                    </p>
-                                                    <p className="text-[11px] text-emerald-400 mt-0.5">Arrival: {booking.arrivalTime || "Not specified"}</p>
+                                                    {booking.specialRequests && (
+                                                        <p className="text-[10px] font-medium text-amber-700 bg-amber-50 border border-amber-200/80 rounded px-1.5 py-0.5 mt-1 inline-block truncate max-w-[220px]" title={booking.specialRequests}>
+                                                            Note: {booking.specialRequests}
+                                                        </p>
+                                                    )}
                                                 </div>
                                             );
 
                                             return (
                                                 <tr key={booking.id} className="hover:bg-slate-50/80 transition-colors">
-                                                    <td className="px-4 py-3 text-xs font-medium text-slate-900">#BK-{booking.id}</td>
+                                                    <td className="px-4 py-3 text-xs font-semibold text-slate-900">#BK-{booking.id}</td>
                                                     <td className="px-4 py-3">
                                                         <div>
-                                                            <p className="text-xs font-medium text-slate-800">{booking.guestFirstName} {booking.guestLastName}</p>
+                                                            <p className="text-xs font-semibold text-slate-800">{booking.guestFirstName} {booking.guestLastName}</p>
                                                             <p className="text-[11px] text-slate-400">{booking.guestEmail}</p>
+                                                            {booking.guestPhone && <p className="text-[10px] text-slate-400">{booking.guestPhone}</p>}
                                                         </div>
                                                     </td>
                                                     <td className="px-4 py-3">
-                                                        <p className="text-xs font-medium text-slate-900">{booking.hotel?.name || 'N/A'}</p>
-                                                        <p className="text-[11px] text-slate-400">{booking.room?.name || 'N/A'}</p>
+                                                        <p className="text-xs font-semibold text-slate-900">{booking.hotel?.name || 'N/A'}</p>
+                                                        <p className="text-[11px] text-slate-500">{booking.room?.name || 'N/A'}</p>
                                                     </td>
                                                     <td className="px-4 py-3">
                                                         {stayDetails}
                                                     </td>
                                                     <td className="px-4 py-3">
                                                         <span className={cn(
-                                                            "px-2 py-0.5 text-[11px] font-medium rounded-md",
-                                                            booking.status === 'confirmed' ? "bg-emerald-500/10 text-emerald-400" :
-                                                            booking.status === 'pending' ? "bg-amber-500/10 text-amber-400" :
-                                                            booking.status === 'cancelled' ? "bg-red-500/10 text-red-400" : "bg-slate-100 text-slate-500"
+                                                            "px-2 py-0.5 text-[11px] font-semibold rounded-md",
+                                                            booking.status === 'confirmed' ? "bg-emerald-500/10 text-emerald-600" :
+                                                            booking.status === 'pending' ? "bg-amber-500/10 text-amber-600" :
+                                                            booking.status === 'cancelled' ? "bg-red-500/10 text-red-600" : "bg-slate-100 text-slate-500"
                                                         )}>
                                                             {booking.status}
                                                         </span>
+                                                        <div className="mt-1">
+                                                            <span className={cn(
+                                                                "text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded",
+                                                                meta.paymentMode === 'PAY_AT_HOTEL' ? "bg-amber-50 text-amber-700 border border-amber-200" :
+                                                                meta.paymentMode === 'FULL_ONLINE' ? "bg-emerald-50 text-emerald-700 border border-emerald-200" :
+                                                                "bg-blue-50 text-blue-700 border border-blue-200"
+                                                            )}>
+                                                                {meta.paymentMode === 'PAY_AT_HOTEL' ? 'Pay at Hotel' : meta.paymentMode === 'FULL_ONLINE' ? 'Paid Online' : 'Partial'}
+                                                            </span>
+                                                        </div>
                                                     </td>
-                                                    <td className="px-4 py-3 text-right text-xs font-medium text-slate-900">
-                                                        ₹{booking.totalPrice?.toLocaleString()}
+                                                    <td className="px-4 py-3 text-right">
+                                                        <p className="text-xs font-bold text-slate-900">₹{booking.totalPrice?.toLocaleString()}</p>
+                                                        <button
+                                                            onClick={() => setBreakdownModal({ show: true, booking })}
+                                                            className="inline-flex items-center gap-1 mt-1.5 px-2.5 py-1 text-[11px] font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors cursor-pointer"
+                                                        >
+                                                            <Eye className="w-3 h-3" />
+                                                            Breakdown
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             );
@@ -1685,6 +1801,160 @@ export default function SuperAdminDashboard() {
                         </motion.div>
                     </>
                 )}
+            </AnimatePresence>
+
+            {/* ─── Minimalist Booking Breakdown Modal ───────────────────────────────── */}
+            <AnimatePresence>
+                {breakdownModal.show && breakdownModal.booking && (() => {
+                    const bk = breakdownModal.booking;
+                    const meta = parseBookingBreakdown(bk);
+                    return (
+                        <>
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs z-[200]"
+                                onClick={() => setBreakdownModal({ show: false, booking: null })}
+                            />
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                                className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] max-w-2xl bg-white rounded-2xl z-[210] shadow-2xl border border-slate-200 text-slate-900 overflow-hidden"
+                            >
+                                {/* Header */}
+                                <div className="p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50/80">
+                                    <div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs font-bold rounded-md">#BK-{bk.id}</span>
+                                            <h3 className="text-base font-bold text-slate-900">{bk.hotel?.name || 'Hotel Reservation'}</h3>
+                                        </div>
+                                        <p className="text-xs text-slate-500 mt-0.5">{bk.room?.name || 'Standard Room'}</p>
+                                    </div>
+                                    <button
+                                        onClick={() => setBreakdownModal({ show: false, booking: null })}
+                                        className="p-1.5 text-slate-400 hover:text-slate-800 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+                                    >
+                                        <XCircle className="w-5 h-5" />
+                                    </button>
+                                </div>
+
+                                {/* Content */}
+                                <div className="p-6 max-h-[75vh] overflow-y-auto space-y-5">
+                                    {/* Summary Badges Grid */}
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                            <p className="text-[10px] font-semibold uppercase text-slate-400 tracking-wider">Guest</p>
+                                            <p className="text-xs font-bold text-slate-900 mt-0.5 truncate">{bk.guestFirstName} {bk.guestLastName}</p>
+                                            <p className="text-[10px] text-slate-500 truncate">{bk.guestPhone || bk.guestEmail}</p>
+                                        </div>
+                                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                            <p className="text-[10px] font-semibold uppercase text-slate-400 tracking-wider">Rooms & Stay</p>
+                                            <p className="text-xs font-bold text-slate-900 mt-0.5">
+                                                {meta.roomCount} Room(s) • {meta.isHourly ? `${meta.durationHours} Hours` : `${meta.nights} Night(s)`}
+                                            </p>
+                                            <p className="text-[10px] text-slate-500">{bk.totalGuests || 2} Guest(s)</p>
+                                        </div>
+                                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                            <p className="text-[10px] font-semibold uppercase text-slate-400 tracking-wider">Meal Plan</p>
+                                            <p className="text-xs font-bold text-emerald-700 mt-0.5">{meta.mealPlan}</p>
+                                            <p className="text-[10px] text-slate-500">{meta.isHourly ? 'Hourly Rate' : 'Daily Rate'}</p>
+                                        </div>
+                                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                            <p className="text-[10px] font-semibold uppercase text-slate-400 tracking-wider">Payment Mode</p>
+                                            <p className="text-xs font-bold text-amber-700 mt-0.5">
+                                                {meta.paymentMode === 'PAY_AT_HOTEL' ? 'Pay Full at Hotel' : meta.paymentMode === 'FULL_ONLINE' ? '100% Paid Online' : 'Partial Online'}
+                                            </p>
+                                            <p className="text-[10px] text-slate-500">{bk.status}</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Special Requests Callout */}
+                                    {bk.specialRequests && (
+                                        <div className="p-3.5 bg-amber-50/70 border border-amber-200/80 rounded-xl flex items-start gap-3">
+                                            <MessageSquare className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                                            <div>
+                                                <p className="text-[11px] font-bold text-amber-900 uppercase tracking-wide">Guest Special Request</p>
+                                                <p className="text-xs text-amber-900/90 mt-0.5 font-medium italic">"{bk.specialRequests}"</p>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Minimalist Price Breakdown Table */}
+                                    <div className="space-y-2">
+                                        <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wide">Price Calculation Breakdown</h4>
+                                        <div className="border border-slate-200 rounded-xl overflow-hidden shadow-xs">
+                                            <table className="w-full text-left text-xs">
+                                                <thead className="bg-slate-50/90 border-b border-slate-200 text-slate-500 uppercase text-[10px] font-semibold">
+                                                    <tr>
+                                                        <th className="px-4 py-2.5">Calculation Step</th>
+                                                        <th className="px-4 py-2.5">Formula / Detail</th>
+                                                        <th className="px-4 py-2.5 text-right">Amount</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-slate-100 text-slate-700">
+                                                    <tr>
+                                                        <td className="px-4 py-2.5 font-semibold text-slate-900">Room Base Rate</td>
+                                                        <td className="px-4 py-2.5 text-slate-600">
+                                                            ₹{meta.rateUnit.toLocaleString()} / {meta.isHourly ? 'hr' : 'night'} × {meta.roomCount} Room(s) × {meta.isHourly ? meta.durationHours : meta.nights} {meta.isHourly ? 'Hour(s)' : 'Night(s)'}
+                                                        </td>
+                                                        <td className="px-4 py-2.5 text-right font-semibold text-slate-900">₹{meta.grossBase.toLocaleString()}</td>
+                                                    </tr>
+                                                    {meta.discountAmount > 0 && (
+                                                        <tr className="bg-emerald-50/30">
+                                                            <td className="px-4 py-2.5 font-semibold text-emerald-700">Coupon Discount</td>
+                                                            <td className="px-4 py-2.5 text-emerald-700">
+                                                                {meta.couponCode ? `Coupon applied: ${meta.couponCode}` : 'Promotional Discount'}
+                                                            </td>
+                                                            <td className="px-4 py-2.5 text-right font-bold text-emerald-700">- ₹{meta.discountAmount.toLocaleString()}</td>
+                                                        </tr>
+                                                    )}
+                                                    <tr>
+                                                        <td className="px-4 py-2.5 font-medium text-slate-800">Net Taxable Base</td>
+                                                        <td className="px-4 py-2.5 text-slate-500">Taxable amount after discount</td>
+                                                        <td className="px-4 py-2.5 text-right font-semibold text-slate-800">₹{meta.netTaxable.toLocaleString()}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td className="px-4 py-2.5 font-medium text-slate-800">GST / Taxes (5%)</td>
+                                                        <td className="px-4 py-2.5 text-slate-500">CGST (2.5%) + SGST (2.5%) Standard</td>
+                                                        <td className="px-4 py-2.5 text-right font-semibold text-slate-800">+ ₹{meta.gstTax.toLocaleString()}</td>
+                                                    </tr>
+                                                    <tr className="bg-slate-50 font-bold border-t border-slate-200">
+                                                        <td className="px-4 py-3 text-slate-900">Total Booking Price</td>
+                                                        <td className="px-4 py-3 text-slate-500 font-normal">Final booking amount</td>
+                                                        <td className="px-4 py-3 text-right text-base text-slate-950 font-black">₹{meta.totalPrice.toLocaleString()}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    {/* Settlement / Frontdesk Collection Card */}
+                                    <div className="p-4 bg-slate-50 rounded-xl border border-slate-200/90 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div>
+                                            <p className="text-[10px] font-semibold uppercase text-slate-400 tracking-wider">Online Paid via Gateway</p>
+                                            <p className="text-lg font-bold text-emerald-600 mt-0.5">₹{meta.amountPaid.toLocaleString()}</p>
+                                            <p className="text-[10px] text-slate-500">{meta.amountPaid >= meta.totalPrice ? 'Full payment completed' : 'Initial deposit / online charge'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-semibold uppercase text-slate-400 tracking-wider">Due at Hotel Check-In</p>
+                                            <p className="text-lg font-bold text-amber-600 mt-0.5">₹{meta.amountDueAtHotel.toLocaleString()}</p>
+                                            <p className="text-[10px] text-slate-500">{meta.amountDueAtHotel > 0 ? 'Frontdesk collection required' : 'No balance pending'}</p>
+                                        </div>
+                                    </div>
+
+                                    {meta.internalNotes && (
+                                        <div className="p-3 bg-slate-100/70 rounded-lg text-[11px] text-slate-600 font-mono">
+                                            <span className="font-semibold text-slate-700">Audit Notes: </span>
+                                            {meta.internalNotes}
+                                        </div>
+                                    )}
+                                </div>
+                            </motion.div>
+                        </>
+                    );
+                })()}
             </AnimatePresence>
 
             {/* ─── Customer Profile Modal ───────────────────────────────────────────── */}
