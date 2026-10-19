@@ -32,15 +32,16 @@ export default function ConditionalLayout({
                            cleanPathname.startsWith("/controlhub") || 
                            cleanPathname.startsWith("/.controlhub") || 
                            cleanPathname.startsWith("/superadmin") || 
-                           cleanPathname === "/list-property/register" || 
-                           cleanPathname === "/partner" || 
-                           cleanPathname === "/partner-select" ||
+                           cleanPathname.startsWith("/list-property/register") || 
+                           cleanPathname.startsWith("/partner") || 
+                           cleanPathname.startsWith("/partner-select") ||
                            pathname.includes("/admin") ||
                            pathname.includes("/partner-dashboard") ||
                            pathname.includes("controlhub") ||
                            pathname.includes("superadmin") ||
+                           pathname.includes("/list-property/register") ||
                            pathname.includes("/partner-select");
-    const isNoFooterPage = cleanPathname === "/login" || cleanPathname === "/register";
+    const isNoFooterPage = cleanPathname === "/login" || cleanPathname === "/register" || cleanPathname.startsWith("/list-property/register") || pathname.includes("/list-property/register");
 
     useEffect(() => {
         const runAutoRecovery = async () => {

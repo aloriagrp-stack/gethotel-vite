@@ -155,7 +155,7 @@ export default function PartnerLoginPage() {
                     </form>
 
                     <div className="mt-12 text-center">
-                        <Link to="/list-property" className="text-[11px] font-[900] text-slate-500 uppercase tracking-widest hover:text-blue-600 transition-all flex items-center justify-center gap-2">
+                        <Link to="/list-property/register" className="text-[11px] font-[900] text-slate-500 uppercase tracking-widest hover:text-blue-600 transition-all flex items-center justify-center gap-2">
                             New Partner Registration <ArrowRight className="w-4 h-4" />
                         </Link>
                     </div>

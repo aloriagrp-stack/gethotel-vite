@@ -344,7 +344,7 @@ export default function ListPropertyLandingPage() {
                             </p>
                             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
                                 <Link
-                                    href="/partner"
+                                    href="/list-property/register"
                                     className="inline-flex items-center justify-center px-7 py-3.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-all shadow-lg shadow-blue-600/30 hover:shadow-blue-600/40"
                                 >
                                     List your property
@@ -902,6 +902,36 @@ export default function ListPropertyLandingPage() {
                                     </div>
                                 </div>
                             ))}
+                        </div>
+                    </div>
+                </section>
+
+                {/* ─── SECTION 13: BOTTOM CALL TO ACTION ────────────────────────── */}
+                <section className="py-20 sm:py-24 bg-gradient-to-br from-slate-900 via-slate-950 to-blue-950 text-white relative overflow-hidden">
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-600/15 via-transparent to-transparent pointer-events-none" />
+                    <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                        <span className="inline-block text-xs font-black uppercase tracking-widest text-sky-400 mb-3 bg-white/10 px-3 py-1 rounded-full border border-white/10">
+                            Start Hosting Today
+                        </span>
+                        <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-white mb-4">
+                            Ready to maximize your hotel revenue with AI dynamic pricing?
+                        </h2>
+                        <p className="text-sm sm:text-base text-neutral-300 max-w-2xl mx-auto mb-8 font-normal leading-relaxed">
+                            Join independent hotels and homestays across India. Transparent flat 12% commission, 2-3 days direct payout settlement, and direct WhatsApp guest contact.
+                        </p>
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                            <Link
+                                href="/list-property/register"
+                                className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-xl transition-all shadow-xl shadow-blue-600/30"
+                            >
+                                Register & List Your Property Now →
+                            </Link>
+                            <Link
+                                href="/partner"
+                                className="w-full sm:w-auto inline-flex items-center justify-center px-7 py-4 bg-white/10 hover:bg-white/15 text-white text-sm font-semibold rounded-xl transition-all border border-white/15 backdrop-blur-sm"
+                            >
+                                Partner Central Login
+                            </Link>
                         </div>
                     </div>
                 </section>
