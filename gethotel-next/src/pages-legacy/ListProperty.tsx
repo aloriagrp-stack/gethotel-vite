@@ -906,36 +906,6 @@ export default function ListPropertyLandingPage() {
                     </div>
                 </section>
 
-                {/* ─── SECTION 13: FINAL CTA BANNER ────────────────────────────── */}
-                <section className="py-20 sm:py-24 border-b border-neutral-200/60 bg-blue-600 text-white text-center relative overflow-hidden">
-                    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                        <span className="inline-block text-xs font-semibold uppercase tracking-widest text-blue-200 mb-3 bg-blue-700/60 px-3 py-1 rounded-full border border-blue-400/30">
-                            Join India's Fastest Growing Hotel Network
-                        </span>
-                        <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-white mb-4">
-                            Ready to list your property and maximize your revenue?
-                        </h2>
-                        <p className="text-blue-100 text-base sm:text-lg max-w-2xl mx-auto mb-8 font-normal">
-                            Join independent hotels, homestays, and villas earning more profit with 12% flat commission, direct guest communication, and payouts settled in 2 to 3 days.
-                        </p>
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5">
-                            <Link
-                                href="/partner"
-                                className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 bg-white hover:bg-neutral-100 text-blue-700 text-sm font-bold rounded-lg transition-all shadow-md"
-                            >
-                                Register your property now
-                            </Link>
-                            <a
-                                href="https://wa.me/918882736556?text=Hi%2C%20I%20want%20to%20list%20my%20property%20on%20GetHotelStays"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 bg-blue-700/70 hover:bg-blue-700 text-white border border-blue-400/40 text-sm font-semibold rounded-lg transition-all"
-                            >
-                                Chat with partner desk
-                            </a>
-                        </div>
-                    </div>
-                </section>
                 {/* ─── SECTION 15: FOOTER (Handled automatically by ConditionalLayout) ─── */}
             </main>
         </div>
