@@ -17,6 +17,9 @@ export interface BookingBreakdown {
     amountPaid: number;
     amountDueAtHotel: number;
     paymentMode: 'PAY_AT_HOTEL' | 'FULL_ONLINE' | 'PARTIAL';
+    commissionRate: number;
+    commissionAmount: number;
+    partnerNetPayout: number;
 }
 
 export function parseBookingBreakdown(booking: any): BookingBreakdown {
@@ -37,7 +40,10 @@ export function parseBookingBreakdown(booking: any): BookingBreakdown {
             rateUnit: 0,
             amountPaid: 0,
             amountDueAtHotel: 0,
-            paymentMode: 'PAY_AT_HOTEL'
+            paymentMode: 'PAY_AT_HOTEL',
+            commissionRate: 12,
+            commissionAmount: 0,
+            partnerNetPayout: 0
         };
     }
 
@@ -99,6 +105,11 @@ export function parseBookingBreakdown(booking: any): BookingBreakdown {
         ? 'PAY_AT_HOTEL' 
         : (amountPaid >= totalPrice ? 'FULL_ONLINE' : 'PARTIAL');
 
+    // 6. Commission & Revenue Split (Default: 12% Platform Commission)
+    const commissionRate = Number(booking.hotel?.commissionRate) || 12;
+    const commissionAmount = Math.round(totalPrice * (commissionRate / 100));
+    const partnerNetPayout = Math.max(0, totalPrice - commissionAmount);
+
     return {
         roomCount,
         variantIdx,
@@ -117,6 +128,9 @@ export function parseBookingBreakdown(booking: any): BookingBreakdown {
         rateUnit,
         amountPaid,
         amountDueAtHotel,
-        paymentMode
+        paymentMode,
+        commissionRate,
+        commissionAmount,
+        partnerNetPayout
     };
 }

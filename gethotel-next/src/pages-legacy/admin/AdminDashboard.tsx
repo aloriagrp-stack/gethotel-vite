@@ -1301,6 +1301,12 @@ export default function SuperAdminDashboard() {
                                                     </td>
                                                     <td className="px-4 py-3 text-right">
                                                         <p className="text-xs font-bold text-slate-900">₹{booking.totalPrice?.toLocaleString()}</p>
+                                                        <div className="text-[10px] text-slate-500 pt-0.5">
+                                                            Comm ({meta.commissionRate}%): <span className="font-semibold text-blue-700">₹{meta.commissionAmount.toLocaleString()}</span>
+                                                        </div>
+                                                        <div className="text-[10px] text-emerald-700 font-semibold">
+                                                            Payout: ₹{meta.partnerNetPayout.toLocaleString()}
+                                                        </div>
                                                         <button
                                                             onClick={() => setBreakdownModal({ show: true, booking })}
                                                             className="inline-flex items-center gap-1 mt-1.5 px-2.5 py-1 text-[11px] font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors cursor-pointer"
@@ -1925,13 +1931,23 @@ export default function SuperAdminDashboard() {
                                                         <td className="px-4 py-3 text-slate-500 font-normal">Final booking amount</td>
                                                         <td className="px-4 py-3 text-right text-base text-slate-950 font-black">₹{meta.totalPrice.toLocaleString()}</td>
                                                     </tr>
+                                                    <tr className="bg-blue-50/40 border-t border-slate-200">
+                                                        <td className="px-4 py-2.5 font-semibold text-blue-800">Platform Commission ({meta.commissionRate}%)</td>
+                                                        <td className="px-4 py-2.5 text-blue-700">GetHotelStays standard platform commission</td>
+                                                        <td className="px-4 py-2.5 text-right font-bold text-blue-800">+ ₹{meta.commissionAmount.toLocaleString()}</td>
+                                                    </tr>
+                                                    <tr className="bg-emerald-50/60 font-bold border-t border-emerald-200">
+                                                        <td className="px-4 py-3 text-emerald-950">Property Payout ({100 - meta.commissionRate}%)</td>
+                                                        <td className="px-4 py-3 text-emerald-800 font-medium">Net payable to hotel partner</td>
+                                                        <td className="px-4 py-3 text-right text-base text-emerald-900 font-black">₹{meta.partnerNetPayout.toLocaleString()}</td>
+                                                    </tr>
                                                 </tbody>
                                             </table>
                                         </div>
                                     </div>
 
                                     {/* Settlement / Frontdesk Collection Card */}
-                                    <div className="p-4 bg-slate-50 rounded-xl border border-slate-200/90 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="p-4 bg-slate-50 rounded-xl border border-slate-200/90 grid grid-cols-1 sm:grid-cols-3 gap-4">
                                         <div>
                                             <p className="text-[10px] font-semibold uppercase text-slate-400 tracking-wider">Online Paid via Gateway</p>
                                             <p className="text-lg font-bold text-emerald-600 mt-0.5">₹{meta.amountPaid.toLocaleString()}</p>
@@ -1941,6 +1957,11 @@ export default function SuperAdminDashboard() {
                                             <p className="text-[10px] font-semibold uppercase text-slate-400 tracking-wider">Due at Hotel Check-In</p>
                                             <p className="text-lg font-bold text-amber-600 mt-0.5">₹{meta.amountDueAtHotel.toLocaleString()}</p>
                                             <p className="text-[10px] text-slate-500">{meta.amountDueAtHotel > 0 ? 'Frontdesk collection required' : 'No balance pending'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-semibold uppercase text-slate-400 tracking-wider">Platform Commission (12%)</p>
+                                            <p className="text-lg font-bold text-blue-600 mt-0.5">₹{meta.commissionAmount.toLocaleString()}</p>
+                                            <p className="text-[10px] text-emerald-600 font-semibold">Partner Share: ₹{meta.partnerNetPayout.toLocaleString()}</p>
                                         </div>
                                     </div>
 

@@ -241,24 +241,30 @@ export default function PartnerBookingsPage() {
                                                     {/* Payment Split */}
                                                     <td className="px-5 py-4">
                                                         <div className="space-y-1">
-                                                            <p className="text-xs font-bold text-slate-900">₹{meta.totalPrice.toLocaleString()}</p>
-                                                            <div>
+                                                            <div className="flex items-center gap-2">
+                                                                <p className="text-xs font-bold text-slate-900">₹{meta.totalPrice.toLocaleString()}</p>
                                                                 <span className={cn(
-                                                                    "px-2 py-0.5 rounded text-[10px] font-semibold",
+                                                                    "px-1.5 py-0.5 rounded text-[9px] font-semibold",
                                                                     meta.paymentMode === 'PAY_AT_HOTEL' ? "bg-amber-50 text-amber-700 border border-amber-200" :
                                                                     meta.paymentMode === 'FULL_ONLINE' ? "bg-emerald-50 text-emerald-700 border border-emerald-200" :
                                                                     "bg-blue-50 text-blue-700 border border-blue-200"
                                                                 )}>
-                                                                    {meta.paymentMode === 'PAY_AT_HOTEL' ? 'Pay Full at Hotel' : meta.paymentMode === 'FULL_ONLINE' ? '100% Paid Online' : 'Partial Paid'}
+                                                                    {meta.paymentMode === 'PAY_AT_HOTEL' ? 'Pay at Hotel' : meta.paymentMode === 'FULL_ONLINE' ? 'Paid Online' : 'Partial'}
                                                                 </span>
                                                             </div>
-                                                            {meta.amountDueAtHotel > 0 ? (
+                                                            {meta.amountDueAtHotel > 0 && (
                                                                 <p className="text-[10px] font-medium text-amber-700">
                                                                     Collect: <span className="font-bold">₹{meta.amountDueAtHotel.toLocaleString()}</span>
                                                                 </p>
-                                                            ) : (
-                                                                <p className="text-[10px] font-medium text-emerald-600">Settled (₹0 due)</p>
                                                             )}
+                                                            <div className="pt-0.5 border-t border-slate-100 flex flex-col text-[10px]">
+                                                                <span className="text-slate-500">
+                                                                    Commission ({meta.commissionRate}%): <span className="font-semibold text-blue-700">₹{meta.commissionAmount.toLocaleString()}</span>
+                                                                </span>
+                                                                <span className="text-emerald-700 font-semibold">
+                                                                    Net Share: ₹{meta.partnerNetPayout.toLocaleString()}
+                                                                </span>
+                                                            </div>
                                                         </div>
                                                     </td>
 
@@ -495,6 +501,16 @@ export default function PartnerBookingsPage() {
                                                 <td className="px-4 py-3.5 text-slate-500 font-normal">Final gross reservation value</td>
                                                 <td className="px-4 py-3.5 text-right text-base text-slate-950 font-black">₹{meta.totalPrice.toLocaleString()}</td>
                                             </tr>
+                                            <tr className="bg-blue-50/40 border-t border-slate-200">
+                                                <td className="px-4 py-3 font-semibold text-blue-800">Platform Commission ({meta.commissionRate}%)</td>
+                                                <td className="px-4 py-3 text-blue-700">GetHotelStays standard platform commission</td>
+                                                <td className="px-4 py-3 text-right font-bold text-blue-800">- ₹{meta.commissionAmount.toLocaleString()}</td>
+                                            </tr>
+                                            <tr className="bg-emerald-50/60 font-bold border-t border-emerald-200">
+                                                <td className="px-4 py-3.5 text-emerald-950 font-black">Net Partner Payout ({100 - meta.commissionRate}%)</td>
+                                                <td className="px-4 py-3.5 text-emerald-800 font-medium">Your net earnings from this reservation</td>
+                                                <td className="px-4 py-3.5 text-right text-base text-emerald-900 font-black">₹{meta.partnerNetPayout.toLocaleString()}</td>
+                                            </tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -505,12 +521,12 @@ export default function PartnerBookingsPage() {
                                 <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
                                     Frontdesk Collection & Settlement Status
                                 </h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div className="p-4 bg-emerald-50/70 border border-emerald-200/80 rounded-xl">
-                                        <p className="text-[10px] font-semibold text-emerald-800 uppercase tracking-wider">Online Pre-Paid Amount</p>
-                                        <p className="text-2xl font-black text-emerald-700 mt-1">₹{meta.amountPaid.toLocaleString()}</p>
-                                        <p className="text-[11px] text-emerald-800/80 mt-0.5">
-                                            {meta.amountPaid >= meta.totalPrice ? 'Full payment received online' : 'Partially paid via online payment gateway'}
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <div className="p-4 bg-slate-50 border border-slate-200/90 rounded-xl">
+                                        <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Online Pre-Paid</p>
+                                        <p className="text-xl font-black text-emerald-700 mt-1">₹{meta.amountPaid.toLocaleString()}</p>
+                                        <p className="text-[11px] text-slate-500 mt-0.5">
+                                            {meta.amountPaid >= meta.totalPrice ? 'Full payment received online' : (meta.amountPaid > 0 ? 'Partial deposit paid online' : 'No online deposit')}
                                         </p>
                                     </div>
                                     <div className={cn(
@@ -521,10 +537,10 @@ export default function PartnerBookingsPage() {
                                             "text-[10px] font-semibold uppercase tracking-wider",
                                             meta.amountDueAtHotel > 0 ? "text-amber-800" : "text-slate-500"
                                         )}>
-                                            To Collect from Guest at Check-In
+                                            To Collect at Check-In
                                         </p>
                                         <p className={cn(
-                                            "text-2xl font-black mt-1",
+                                            "text-xl font-black mt-1",
                                             meta.amountDueAtHotel > 0 ? "text-amber-700" : "text-slate-700"
                                         )}>
                                             ₹{meta.amountDueAtHotel.toLocaleString()}
@@ -533,7 +549,14 @@ export default function PartnerBookingsPage() {
                                             "text-[11px] mt-0.5",
                                             meta.amountDueAtHotel > 0 ? "text-amber-800/80 font-medium" : "text-slate-500"
                                         )}>
-                                            {meta.amountDueAtHotel > 0 ? 'Collect cash / UPI / Card at property frontdesk' : 'No balance due at frontdesk'}
+                                            {meta.amountDueAtHotel > 0 ? 'Collect cash / UPI / Card from guest' : 'No balance due at frontdesk'}
+                                        </p>
+                                    </div>
+                                    <div className="p-4 bg-emerald-50/70 border border-emerald-200/90 rounded-xl">
+                                        <p className="text-[10px] font-semibold text-emerald-800 uppercase tracking-wider">Property Net Revenue (88%)</p>
+                                        <p className="text-xl font-black text-emerald-800 mt-1">₹{meta.partnerNetPayout.toLocaleString()}</p>
+                                        <p className="text-[11px] text-emerald-700 mt-0.5">
+                                            After 12% commission (₹{meta.commissionAmount.toLocaleString()})
                                         </p>
                                     </div>
                                 </div>
