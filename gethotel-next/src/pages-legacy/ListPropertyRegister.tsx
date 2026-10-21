@@ -762,29 +762,6 @@ export default function ListPropertyRegister() {
                                     />
                                 </div>
                             </div>
-
-                            {/* Property Amenities */}
-                            <div className="space-y-2 pt-2 border-t border-slate-200">
-                                <label className="text-xs font-semibold text-slate-700 block">
-                                    Hotel Amenities
-                                </label>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                                    {AVAILABLE_AMENITIES.map((am) => {
-                                        const checked = hotelAmenities.includes(am);
-                                        return (
-                                            <label key={am} className="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-slate-950 transition-colors">
-                                                <input 
-                                                    type="checkbox"
-                                                    checked={checked}
-                                                    onChange={() => toggleHotelAmenity(am)}
-                                                    className="w-3.5 h-3.5 rounded border-slate-300 text-blue-600 accent-blue-600 focus:ring-0"
-                                                />
-                                                <span>{am}</span>
-                                            </label>
-                                        );
-                                    })}
-                                </div>
-                            </div>
                         </div>
                     )}
 
@@ -831,6 +808,29 @@ export default function ListPropertyRegister() {
                                         ))}
                                     </div>
                                 )}
+                            </div>
+
+                            {/* Hotel Amenities (Moved from Step 2) */}
+                            <div className="space-y-2 pt-3 border-t border-slate-200">
+                                <label className="text-xs font-semibold text-slate-700 block">
+                                    Property & Common Amenities
+                                </label>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                                    {AVAILABLE_AMENITIES.map((am) => {
+                                        const checked = hotelAmenities.includes(am);
+                                        return (
+                                            <label key={am} className="flex items-center gap-2 cursor-pointer text-slate-700 hover:text-slate-950 transition-colors">
+                                                <input 
+                                                    type="checkbox"
+                                                    checked={checked}
+                                                    onChange={() => toggleHotelAmenity(am)}
+                                                    className="w-3.5 h-3.5 rounded border-slate-300 text-blue-600 accent-blue-600 focus:ring-0"
+                                                />
+                                                <span>{am}</span>
+                                            </label>
+                                        );
+                                    })}
+                                </div>
                             </div>
 
                             {/* Rooms Configurator */}

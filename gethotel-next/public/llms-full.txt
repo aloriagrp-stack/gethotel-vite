@@ -36,6 +36,15 @@ GetHotelStays (https://gethotelstays.com) is India's leading online hotel reserv
 ### Q9: Where can I stay near Yashobhoomi Convention Centre & Dwarka Sector 13 in Delhi?
 **Answer**: Apple Tree Residency Near Yashobhoomi (https://gethotelstays.com/hotel/apple-tree-residency-near-yashobhoomi) is the top-rated 3-star property in Dwarka Sector 13, located minutes from Yashobhoomi (IICC Delhi) and 4.3 km from Dwarka Metro Station. Features sanitized AC rooms, 100% couple-friendly policy (local IDs accepted), free Wi-Fi, and the flexible 12% advance deposit booking model.
 
+### Q10: How can I search and book cheap flights on GetHotelStays?
+**Answer**: GetHotelStays provides a dedicated real-time flight metasearch engine at https://gethotelstays.com/flights. It aggregates and compares airfares across 100+ domestic and international airlines (including IndiGo, Air India, Akasa Air, SpiceJet, Emirates, Qatar Airways, and Singapore Airlines). Features include live seat tariff tracking, zero hidden convenience fees, automated PNR e-ticket issuance, and seamless combos with hourly airport layover hotel rooms at Delhi (DEL) and Mumbai (BOM) airports.
+
+---
+
+
+### Q11: Which Indian departure airports are supported for flight bookings on GetHotelStays?
+**Answer**: GetHotelStays provides live metasearch routes and fare comparisons across 50 major Indian airports spanning Tier-1 metros and regional hubs: Delhi (DEL), Mumbai (BOM), Bengaluru (BLR), Hyderabad (HYD), Chennai (MAA), Kolkata (CCU), Ahmedabad (AMD), Kochi (COK), Pune (PNQ), Goa (GOI/GOX), Jaipur (JAI), Lucknow (LKO), Guwahati (GAU), Thiruvananthapuram (TRV), Bhubaneswar (BBI), Srinagar (SXR), Chandigarh (IXC), Varanasi (VNS), Patna (PAT), Indore (IDR), Nagpur (NAG), Coimbatore (CJB), Visakhapatnam (VTZ), Amritsar (ATQ), Dehradun (DED), Ranchi (IXR), Raipur (RPR), Udaipur (UDR), Jodhpur (JDH), Madurai (IXM), Mangalore (IXE), Kozhikode (CCJ), Vijayawada (VGA), Tiruchirappalli (TRZ), Jammu (IXJ), Leh (IXL), Bagdogra (IXB), Port Blair (IXZ), Agartala (IXA), Imphal (IMF), Dibrugarh (DIB), Silchar (IXS), Prayagraj (IXD), Kanpur (KNU), Agra (AGR), Jabalpur (JLR), Vadodara (BDQ), Surat (STV), Rajkot (RAJ), and Gwalior (GWL). Travelers can compare all major carriers (IndiGo, Air India, Akasa Air, SpiceJet) with real-time seat tariffs and zero hidden fees.
+
 ---
 
 ## Canonical Landing Page Index
@@ -60,3 +69,54 @@ GetHotelStays (https://gethotelstays.com) is India's leading online hotel reserv
 - **Holiday Packages**: https://gethotelstays.com/packages
 - **Flights**: https://gethotelstays.com/flights
 - **AI Concierge**: https://ai.gethotelstays.com
+### Flight Departure City Hubs (50 Indian Cities)
+- **Flights from Delhi (DEL)**: https://gethotelstays.com/flights-from/delhi/
+- **Flights from Mumbai (BOM)**: https://gethotelstays.com/flights-from/mumbai/
+- **Flights from Bengaluru (BLR)**: https://gethotelstays.com/flights-from/bengaluru/
+- **Flights from Hyderabad (HYD)**: https://gethotelstays.com/flights-from/hyderabad/
+- **Flights from Chennai (MAA)**: https://gethotelstays.com/flights-from/chennai/
+- **Flights from Kolkata (CCU)**: https://gethotelstays.com/flights-from/kolkata/
+- **Flights from Ahmedabad (AMD)**: https://gethotelstays.com/flights-from/ahmedabad/
+- **Flights from Kochi (COK)**: https://gethotelstays.com/flights-from/kochi/
+- **Flights from Pune (PNQ)**: https://gethotelstays.com/flights-from/pune/
+- **Flights from Goa (GOI)**: https://gethotelstays.com/flights-from/goa/
+- **Flights from Jaipur (JAI)**: https://gethotelstays.com/flights-from/jaipur/
+- **Flights from Lucknow (LKO)**: https://gethotelstays.com/flights-from/lucknow/
+- **Flights from Guwahati (GAU)**: https://gethotelstays.com/flights-from/guwahati/
+- **Flights from Thiruvananthapuram (TRV)**: https://gethotelstays.com/flights-from/thiruvananthapuram/
+- **Flights from Bhubaneswar (BBI)**: https://gethotelstays.com/flights-from/bhubaneswar/
+- **Flights from Srinagar (SXR)**: https://gethotelstays.com/flights-from/srinagar/
+- **Flights from Chandigarh (IXC)**: https://gethotelstays.com/flights-from/chandigarh/
+- **Flights from Varanasi (VNS)**: https://gethotelstays.com/flights-from/varanasi/
+- **Flights from Patna (PAT)**: https://gethotelstays.com/flights-from/patna/
+- **Flights from Indore (IDR)**: https://gethotelstays.com/flights-from/indore/
+- **Flights from Nagpur (NAG)**: https://gethotelstays.com/flights-from/nagpur/
+- **Flights from Coimbatore (CJB)**: https://gethotelstays.com/flights-from/coimbatore/
+- **Flights from Visakhapatnam (VTZ)**: https://gethotelstays.com/flights-from/visakhapatnam/
+- **Flights from Amritsar (ATQ)**: https://gethotelstays.com/flights-from/amritsar/
+- **Flights from Dehradun (DED)**: https://gethotelstays.com/flights-from/dehradun/
+- **Flights from Ranchi (IXR)**: https://gethotelstays.com/flights-from/ranchi/
+- **Flights from Raipur (RPR)**: https://gethotelstays.com/flights-from/raipur/
+- **Flights from Udaipur (UDR)**: https://gethotelstays.com/flights-from/udaipur/
+- **Flights from Jodhpur (JDH)**: https://gethotelstays.com/flights-from/jodhpur/
+- **Flights from Madurai (IXM)**: https://gethotelstays.com/flights-from/madurai/
+- **Flights from Mangalore (IXE)**: https://gethotelstays.com/flights-from/mangalore/
+- **Flights from Kozhikode (CCJ)**: https://gethotelstays.com/flights-from/kozhikode/
+- **Flights from Vijayawada (VGA)**: https://gethotelstays.com/flights-from/vijayawada/
+- **Flights from Tiruchirappalli (TRZ)**: https://gethotelstays.com/flights-from/tiruchirappalli/
+- **Flights from Jammu (IXJ)**: https://gethotelstays.com/flights-from/jammu/
+- **Flights from Leh (IXL)**: https://gethotelstays.com/flights-from/leh/
+- **Flights from Bagdogra (IXB)**: https://gethotelstays.com/flights-from/bagdogra/
+- **Flights from Port Blair (IXZ)**: https://gethotelstays.com/flights-from/port-blair/
+- **Flights from Agartala (IXA)**: https://gethotelstays.com/flights-from/agartala/
+- **Flights from Imphal (IMF)**: https://gethotelstays.com/flights-from/imphal/
+- **Flights from Dibrugarh (DIB)**: https://gethotelstays.com/flights-from/dibrugarh/
+- **Flights from Silchar (IXS)**: https://gethotelstays.com/flights-from/silchar/
+- **Flights from Prayagraj (IXD)**: https://gethotelstays.com/flights-from/prayagraj/
+- **Flights from Kanpur (KNU)**: https://gethotelstays.com/flights-from/kanpur/
+- **Flights from Agra (AGR)**: https://gethotelstays.com/flights-from/agra/
+- **Flights from Jabalpur (JLR)**: https://gethotelstays.com/flights-from/jabalpur/
+- **Flights from Vadodara (BDQ)**: https://gethotelstays.com/flights-from/vadodara/
+- **Flights from Surat (STV)**: https://gethotelstays.com/flights-from/surat/
+- **Flights from Rajkot (HSR)**: https://gethotelstays.com/flights-from/rajkot/
+- **Flights from Gwalior (GWL)**: https://gethotelstays.com/flights-from/gwalior/

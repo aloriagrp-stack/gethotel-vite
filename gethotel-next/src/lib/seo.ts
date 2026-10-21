@@ -639,6 +639,40 @@ export const PAGE_SEO = {
         ],
         ogType: "website",
     },
+
+    flights: {
+        title: "Book Cheap Flights Online: Domestic & International Airfare Deals | GetHotelStays",
+        description:
+            "Compare & book cheap flight tickets with GetHotelStays. Search 100+ airlines across domestic & international routes. Real-time airfare comparison, zero convenience fee offers, instant PNR & e-ticket confirmation. Best price guaranteed!",
+        keywords: [
+            "book cheap flights online",
+            "cheap flight tickets india",
+            "domestic flights booking",
+            "international flight booking",
+            "air ticket booking online",
+            "compare flight prices india",
+            "lowest airfare finder",
+            "delhi to mumbai flights",
+            "bangalore to delhi flights",
+            "mumbai to goa flights",
+            "delhi to goa flights",
+            "delhi to dubai flights",
+            "mumbai to bangkok flights",
+            "indigo flight booking",
+            "air india tickets",
+            "akasa air cheap tickets",
+            "spicejet flight deals",
+            "best flight booking site india",
+            "flight metasearch engine",
+            "gethotelstays flights",
+            "zero convenience fee flights",
+            "instant pnr flight ticket",
+            "cheapest flight comparison",
+            "student flight discounts",
+            "last minute flight deals",
+        ],
+        ogType: "website",
+    },
 };
 
 /** Build full page title */
@@ -1203,4 +1237,109 @@ export const buildNearbyAttractionSchema = (
         url: SITE.url,
     },
 });
+
+/** High-volume Flights FAQs for Google SGE, Perplexity, ChatGPT & AEO rich snippets */
+export const FLIGHTS_FAQS = [
+    {
+        question: "How do I find the cheapest domestic and international flights on GetHotelStays?",
+        answer: "GetHotelStays features an advanced metasearch comparison engine powered by global flight inventories. Simply enter your departure city, destination, travel dates, and number of passengers. The engine scans 100+ airlines (including IndiGo, Air India, Akasa Air, SpiceJet, Emirates, Qatar Airways) in real time to show you the lowest airfares sorted by price, flight duration, and number of layovers. For the best rates, book 3 to 4 weeks ahead for domestic flights and 6 to 8 weeks for international flights.",
+    },
+    {
+        question: "Which airlines can I search, compare, and book on GetHotelStays?",
+        answer: "You can compare and book all major Indian domestic carriers (IndiGo, Air India, Akasa Air, SpiceJet, Alliance Air) as well as premium global international airlines (Emirates, Qatar Airways, Singapore Airlines, Etihad Airways, British Airways, Lufthansa, Thai Airways, Air France, and more) across economy, premium economy, and business class.",
+    },
+    {
+        question: "Are flight prices on GetHotelStays all-inclusive of taxes and airport charges?",
+        answer: "Yes. All flight fares displayed include base fare, fuel surcharge (YQ/YR), User Development Fee (UDF), Passenger Service Fee (PSF), and applicable Goods & Services Tax (GST). What you see on the final checkout screen is the total airfare with zero surprise markups.",
+    },
+    {
+        question: "How soon do I receive my flight ticket and PNR confirmation?",
+        answer: "Once your payment is authorized, your Airline Passenger Name Record (PNR) and official e-ticket are issued immediately. You will receive an instant confirmation email and WhatsApp message with your downloadable PDF e-ticket containing your flight details, terminal information, and baggage allowance.",
+    },
+    {
+        question: "What is the standard baggage allowance for domestic flights in India?",
+        answer: "Standard domestic economy tickets across IndiGo, Akasa Air, and SpiceJet typically include 15 kg of check-in baggage per passenger and 7 kg of hand/cabin baggage. Air India domestic economy tickets usually allow up to 20 kg check-in baggage. You can add extra prepaid baggage during booking or via the airline's web check-in portal at discounted rates.",
+    },
+    {
+        question: "Can I cancel or reschedule my flight ticket, and how do refunds work?",
+        answer: "Yes, you can cancel or reschedule flight bookings subject to airline tariff rules. Most airlines allow cancellations up to 2 hours before scheduled departure. Once cancellation is submitted, refunds are calculated based on airline penalty rules and credited back to your original payment method (credit/debit card, UPI, or net banking) within 5 to 7 business days.",
+    },
+    {
+        question: "Does GetHotelStays offer layover hotels near airports?",
+        answer: "Yes! GetHotelStays specializes in verified micro-stays and hourly hotel bookings (3, 6, or 12 hours) near major transit hubs including Delhi Airport (Aerocity & Mahipalpur), Mumbai Airport (Andheri East & Vile Parle), and Bengaluru Airport (Devanahalli). You can book private AC rooms, hot showers, and high-speed WiFi at up to 70% off full-day rates while waiting for your next flight.",
+    },
+    {
+        question: "Can NRI and international travelers book flights using overseas credit cards?",
+        answer: "Yes. International travelers and NRIs from the USA, UK, UAE, Canada, Australia, and Singapore can easily book flights on GetHotelStays using international credit/debit cards (Visa, MasterCard, American Express) and PayPal with instant multi-currency authorization and 3D-secure fraud protection.",
+    },
+];
+
+/** Popular Domestic & International Flight Routes for SEO indexation & quick user search */
+export const POPULAR_DOMESTIC_ROUTES = [
+    { from: "Delhi", fromCode: "DEL", to: "Mumbai", toCode: "BOM", price: "₹3,499", duration: "2h 10m", type: "Direct", carriers: ["IndiGo", "Air India", "Akasa Air"] },
+    { from: "Bengaluru", fromCode: "BLR", to: "Delhi", toCode: "DEL", price: "₹4,299", duration: "2h 45m", type: "Direct", carriers: ["IndiGo", "Air India"] },
+    { from: "Mumbai", fromCode: "BOM", to: "Goa", toCode: "GOI", price: "₹2,199", duration: "1h 15m", type: "Direct", carriers: ["IndiGo", "Akasa Air"] },
+    { from: "Delhi", fromCode: "DEL", to: "Goa", toCode: "GOI", price: "₹3,899", duration: "2h 35m", type: "Direct", carriers: ["IndiGo", "SpiceJet"] },
+    { from: "Kolkata", fromCode: "CCU", to: "Delhi", toCode: "DEL", price: "₹3,999", duration: "2h 20m", type: "Direct", carriers: ["Air India", "IndiGo"] },
+    { from: "Hyderabad", fromCode: "HYD", to: "Bengaluru", toCode: "BLR", price: "₹1,899", duration: "1h 05m", type: "Direct", carriers: ["IndiGo", "Air India"] },
+    { from: "Delhi", fromCode: "DEL", to: "Srinagar", toCode: "SXR", price: "₹3,299", duration: "1h 30m", type: "Direct", carriers: ["IndiGo", "SpiceJet"] },
+    { from: "Chennai", fromCode: "MAA", to: "Port Blair", toCode: "IXZ", price: "₹4,999", duration: "2h 15m", type: "Direct", carriers: ["Air India", "IndiGo"] },
+];
+
+export const POPULAR_INTL_ROUTES = [
+    { from: "Delhi", fromCode: "DEL", to: "Dubai", toCode: "DXB", price: "₹11,499", duration: "3h 45m", type: "Direct", carriers: ["Emirates", "IndiGo", "Air India"] },
+    { from: "Mumbai", fromCode: "BOM", to: "Bangkok", toCode: "BKK", price: "₹12,299", duration: "4h 20m", type: "Direct", carriers: ["Thai Airways", "IndiGo"] },
+    { from: "Bengaluru", fromCode: "BLR", to: "Singapore", toCode: "SIN", price: "₹10,999", duration: "4h 30m", type: "Direct", carriers: ["Singapore Airlines", "IndiGo"] },
+    { from: "Delhi", fromCode: "DEL", to: "London", toCode: "LHR", price: "₹29,999", duration: "9h 10m", type: "Direct", carriers: ["Air India", "British Airways"] },
+    { from: "Mumbai", fromCode: "BOM", to: "Maldives", toCode: "MLE", price: "₹13,499", duration: "2h 45m", type: "Direct", carriers: ["IndiGo", "Air India"] },
+    { from: "Delhi", fromCode: "DEL", to: "Toronto", toCode: "YYZ", price: "₹48,999", duration: "15h 30m", type: "1-Stop", carriers: ["Air India", "Air Canada"] },
+];
+
+/** Flight WebApplication Schema */
+export const buildFlightServiceSchema = () => ({
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: "GetHotelStays Flight Search & Metasearch Engine",
+    url: `${SITE.url}/flights`,
+    applicationCategory: "TravelApplication",
+    operatingSystem: "All",
+    description: "Real-time metasearch engine comparing 100+ domestic and international airlines. Find cheap flight tickets, zero convenience fee deals, and instant e-ticket PNR confirmation.",
+    provider: {
+        "@type": "TravelAgency",
+        name: SITE.name,
+        url: SITE.url,
+        logo: SITE.logo,
+        telephone: SITE.phone,
+        email: SITE.email,
+        address: SITE.address,
+    },
+    offers: {
+        "@type": "AggregateOffer",
+        priceCurrency: "INR",
+        lowPrice: "1899",
+        highPrice: "95000",
+        offerCount: "1000+",
+    },
+    featureList: [
+        "Real-time flight price comparison across 100+ carriers",
+        "Instant PNR issuance and downloadable e-ticket",
+        "No hidden fees or unexpected checkout markups",
+        "Domestic and international route search",
+        "24/7 dedicated flight booking support",
+    ],
+});
+
+/** Flight Routes ItemList Schema */
+export const buildFlightRoutesSchema = (routes: { from: string; fromCode: string; to: string; toCode: string; price: string }[]) => ({
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Popular Flight Routes on GetHotelStays",
+    itemListElement: routes.map((r, idx) => ({
+        "@type": "ListItem",
+        position: idx + 1,
+        name: `Flights from ${r.from} (${r.fromCode}) to ${r.to} (${r.toCode})`,
+        description: `Compare flights from ${r.from} to ${r.to} with fares starting at ${r.price}.`,
+    })),
+});
+
 

@@ -9,6 +9,7 @@
 - **Couple-Friendly & 100% Privacy**: Pre-screened hotels welcoming local government IDs and unmarried couples with zero awkward questions.
 - **NRI & Overseas Traveler Support**: Seamless payments with international cards (Visa, MasterCard, Amex) and PayPal.
 - **ChatGHS AI Travel Concierge**: Intelligent AI trip planner and real-time booking assistant at https://ai.gethotelstays.com.
+- **Flight Metasearch Engine**: Real-time comparison across 100+ domestic and international airlines (IndiGo, Air India, Akasa Air, Emirates, Qatar Airways) with zero convenience fee offers, transparent airfare breakdowns, and instant e-ticket issuance at https://gethotelstays.com/flights.
 - **Transparent GST & Free Cancellation**: 0% GST up to ₹1,000, 5% up to ₹7,500, with hassle-free cancellation policies.
 
 ## Main Endpoints & Live Directories
@@ -30,6 +31,7 @@
 - Shimla Hotels: https://gethotelstays.com/shimla-hotels
 - Udaipur Hotels: https://gethotelstays.com/udaipur-hotels
 - Holiday Tour Packages: https://gethotelstays.com/packages
-- Flights: https://gethotelstays.com/flights
+- Flights Metasearch: https://gethotelstays.com/flights
+- Flights from 50+ Cities: https://gethotelstays.com/flights-from/[delhi|mumbai|bengaluru|hyderabad|chennai|kolkata|...]
 - AI Concierge: https://ai.gethotelstays.com
 - Sitemap: https://gethotelstays.com/sitemap.xml
