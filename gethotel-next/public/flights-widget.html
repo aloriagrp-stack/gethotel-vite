@@ -588,8 +588,52 @@
 
     var userInteracting = false;
     var userInteractingTimeout = null;
+    var searchActive = false;
+
+    function hasSearchResults() {
+      if (searchActive) return true;
+
+      // 1. Direct tickets container check
+      var ticketsContainer = document.getElementById('tpwl-tickets');
+      if (ticketsContainer && ticketsContainer.children.length > 0 && ticketsContainer.offsetHeight > 60) {
+        return true;
+      }
+
+      // 2. Any flight result cards, tickets, filters, or nearby dates matrix
+      var resultEls = document.querySelectorAll(
+        '[class*="ticket"], [class*="Ticket"], [class*="result"], [class*="Result"], ' +
+        '[class*="filters"], [class*="Filters"], [class*="nearby"], [class*="Nearby"], ' +
+        '[class*="matrix"], [class*="Matrix"], [class*="flightList"], [class*="FlightList"], ' +
+        '[class*="proposal"], [class*="Proposal"], [class*="SearchProgress"], [class*="searchProgress"]'
+      );
+      for (var i = 0; i < resultEls.length; i++) {
+        var el = resultEls[i];
+        if (el.offsetWidth > 100 && el.offsetHeight > 40) {
+          return true;
+        }
+      }
+
+      // 3. Document scroll height expanded significantly
+      if (document.body.scrollHeight > 650) {
+        return true;
+      }
+
+      // 4. URL query parameters indicating search has executed
+      if (window.location.search && (
+        window.location.search.includes('origin') ||
+        window.location.search.includes('destination') ||
+        window.location.search.includes('depart')
+      )) {
+        return true;
+      }
+
+      return false;
+    }
 
     function isPopupOrDropdownOpen(maxBottom) {
+      // Once flight search is active or tickets are present, this is NOT a dropdown popup
+      if (searchActive || hasSearchResults()) return false;
+
       if (userInteracting) return true;
       if (maxBottom && maxBottom > 220) return true;
 
@@ -616,15 +660,6 @@
         if (el.offsetWidth > 0 && el.offsetHeight > 0) {
           return true;
         }
-      }
-      return false;
-    }
-
-    function hasSearchResults() {
-      var ticketsContainer = document.getElementById('tpwl-tickets');
-      if (!ticketsContainer) return false;
-      if (ticketsContainer.children.length > 0 && ticketsContainer.offsetHeight > 100) {
-        return true;
       }
       return false;
     }
@@ -729,10 +764,23 @@
     }, true);
 
     document.addEventListener('click', function(e) {
-      var isSubmit = e.target && (e.target.closest('button[type="submit"]') || e.target.closest('[class*="submit"]') || e.target.closest('[class*="Submit"]'));
+      var isSubmit = e.target && (
+        e.target.closest('button[type="submit"]') ||
+        e.target.closest('[class*="submit"]') ||
+        e.target.closest('[class*="Submit"]') ||
+        (e.target.textContent && e.target.textContent.toLowerCase().includes('search flight'))
+      );
       if (isSubmit) {
+        searchActive = true;
         userInteracting = false;
+        try {
+          window.parent.postMessage({ type: 'flight-search-started' }, '*');
+        } catch(err) {}
         sendHeight(true);
+        setTimeout(function() { sendHeight(true); }, 50);
+        setTimeout(function() { sendHeight(true); }, 200);
+        setTimeout(function() { sendHeight(true); }, 500);
+        setTimeout(function() { sendHeight(true); }, 1200);
         return;
       }
 

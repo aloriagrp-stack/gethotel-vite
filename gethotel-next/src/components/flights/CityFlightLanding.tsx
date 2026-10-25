@@ -43,13 +43,19 @@ export default function CityFlightLanding({ cityData }: CityFlightLandingProps) 
     const handleMessage = (event: MessageEvent) => {
       if (!event.data) return;
 
+      if (event.data.type === "flight-search-started") {
+        setHasResults(true);
+        setIsDropdownOpen(false);
+        setIframeHeight((prev) => Math.max(prev, 900));
+      }
+
       if (event.data.type === "resize-iframe") {
         setIframeHeight(event.data.height);
         if (event.data.isDropdownOpen !== undefined) {
           setIsDropdownOpen(event.data.isDropdownOpen);
         }
         if (event.data.hasResults !== undefined) {
-          setHasResults(event.data.hasResults);
+          setHasResults((prev) => prev || event.data.hasResults);
         }
         setLoaded(true);
       }
