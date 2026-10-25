@@ -118,6 +118,27 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(travelAgencySchema) }}
         />
+        {/* Travelpayouts Drive Verification & Dynamic Script */}
+        <script
+          {...{
+            nowprocket: "",
+            "seraph-accel-crit": "1",
+          }}
+          data-noptimize="1"
+          data-cfasync="false"
+          data-wpfc-render="false"
+          data-no-defer="1"
+          data-cmp-ab="2"
+          dangerouslySetInnerHTML={{
+            __html: `(function () {
+  var script = document.createElement("script");
+  script.async = 1;
+  script.setAttribute("data-cmp-ab","2");
+  script.src = 'https://tpembars.com/NTQ1ODM4.js?t=545838';
+  document.head.appendChild(script);
+})();`,
+          }}
+        />
       </head>
       <body className="antialiased selection:bg-brand-500 selection:text-white bg-surface text-slate-900 min-h-screen">
         <Providers>
