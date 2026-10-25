@@ -15,15 +15,37 @@
     #search-card {
       background: #ffffff;
       border-radius: 16px;
-      border: 1px solid #f1f5f9;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -2px rgba(0, 0, 0, 0.02);
       padding: 24px;
-      margin-bottom: 24px;
+      margin-bottom: 0px;
     }
     @media (min-width: 768px) {
       #search-card {
         padding: 32px;
       }
+    }
+    /* Hide all internal separator/divider lines inside search bar inputs */
+    [class*="divider"],
+    [class*="Divider"],
+    [class*="separator"],
+    [class*="Separator"] {
+      display: none !important;
+      opacity: 0 !important;
+      border: none !important;
+      width: 0 !important;
+    }
+    /* Remove vertical pseudo-element borders that act as dividers */
+    [class*="field"]::after,
+    [class*="field"]::before,
+    [class*="Field"]::after,
+    [class*="Field"]::before,
+    [class*="control"]::after,
+    [class*="control"]::before,
+    [class*="Control"]::after,
+    [class*="Control"]::before {
+      display: none !important;
+      border: none !important;
     }
     /* Hide the "Show hotels" checkbox to prevent Booking.com hotel search results */
     label[class*="SearchEdit-module__hotelsLabel"] {
@@ -564,17 +586,29 @@
       });
     }
 
-    function isPopupOrDropdownOpen() {
-      // 1. Any input or select currently focused
+    var userInteracting = false;
+    var userInteractingTimeout = null;
+
+    function isPopupOrDropdownOpen(maxBottom) {
+      if (userInteracting) return true;
+      if (maxBottom && maxBottom > 220) return true;
+
+      // 1. Any input or select or active element inside search card
       var active = document.activeElement;
-      if (active && (active.tagName === 'INPUT' || active.tagName === 'SELECT')) {
-        return true;
+      if (active && (active.tagName === 'INPUT' || active.tagName === 'SELECT' || (active.closest && active.closest('#search-card')))) {
+        var isSubmit = active.matches && (active.matches('button[type="submit"]') || active.matches('[class*="submit"]') || active.matches('[class*="Submit"]'));
+        if (!isSubmit && active !== document.body) {
+          return true;
+        }
       }
-      // 2. Any calendar/suggest/dropdown elements present and visible
+
+      // 2. Any calendar/suggest/dropdown/return/departure elements present and visible
       var popups = document.querySelectorAll(
         '[class*="Calendar"], [class*="calendar"], [class*="dayCell"], [class*="monthCell"], ' +
         '[class*="Suggest"], [class*="suggest"], [class*="dropdown"], [class*="Dropdown"], ' +
         '[class*="popover"], [class*="Popover"], [class*="modal"], [class*="Modal"], ' +
+        '[class*="Departure"], [class*="departure"], [class*="Return"], [class*="return"], ' +
+        '[class*="DatePicker"], [class*="datepicker"], [class*="popup"], [class*="Popup"], ' +
         '[role="dialog"], [role="listbox"]'
       );
       for (var i = 0; i < popups.length; i++) {
@@ -611,17 +645,23 @@
         }
       }
 
-      var dropdownOpen = isPopupOrDropdownOpen();
       var resultsLoaded = hasSearchResults();
+      var dropdownOpen = isPopupOrDropdownOpen(maxBottom);
 
-      // If dropdown or calendar is open, ensure ample room for calendar grid (min 580px)
+      // If dropdown or calendar is open, ensure ample room for full 2-month calendar grid (min 620px)
       if (dropdownOpen && !resultsLoaded) {
-        maxBottom = Math.max(maxBottom, 580);
+        maxBottom = Math.max(maxBottom, 620);
+      } else if (!resultsLoaded) {
+        // When idle (dropdown closed and no search results yet):
+        // Allow enough height (+16px) so bottom rounded card edge and shadow are never clipped by iframe edge
+        var card = document.getElementById('search-card');
+        var cardBottom = card ? (card.getBoundingClientRect().bottom + (window.pageYOffset || 0)) : 160;
+        maxBottom = Math.max(maxBottom, Math.ceil(cardBottom) + 16);
       }
 
       // Base minimum card height
-      if (maxBottom < 160) {
-        maxBottom = 160;
+      if (maxBottom < 170) {
+        maxBottom = 170;
       }
 
       return {
@@ -680,19 +720,45 @@
     // Immediate expand on click or focus inside search form
     document.addEventListener('focusin', function(e) {
       if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'BUTTON')) {
+        var isSubmit = e.target.matches && (e.target.matches('button[type="submit"]') || e.target.matches('[class*="submit"]'));
+        if (!isSubmit && e.target.closest('#search-card')) {
+          userInteracting = true;
+        }
         sendHeight(true);
       }
     }, true);
 
     document.addEventListener('click', function(e) {
-      if (e.target && e.target.closest('#search-card')) {
+      var isSubmit = e.target && (e.target.closest('button[type="submit"]') || e.target.closest('[class*="submit"]') || e.target.closest('[class*="Submit"]'));
+      if (isSubmit) {
+        userInteracting = false;
         sendHeight(true);
-        setTimeout(function() { sendHeight(true); }, 50);
-        setTimeout(function() { sendHeight(true); }, 150);
-      } else {
-        setTimeout(function() { sendHeight(true); }, 150);
+        return;
       }
+
+      // Any click inside the widget (inputs, dates, arrows, autocomplete) keeps interacting state active
+      userInteracting = true;
+      if (userInteractingTimeout) clearTimeout(userInteractingTimeout);
+      userInteractingTimeout = setTimeout(function() {
+        if (!isPopupOrDropdownOpen()) {
+          userInteracting = false;
+          sendHeight(true);
+        }
+      }, 45000);
+
+      sendHeight(true);
+      setTimeout(function() { sendHeight(true); }, 50);
+      setTimeout(function() { sendHeight(true); }, 150);
+      setTimeout(function() { sendHeight(true); }, 350);
     }, true);
+
+    // Parent can notify iframe to close dropdown when clicking outside
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'close-dropdown') {
+        userInteracting = false;
+        sendHeight(true);
+      }
+    });
 
     window.addEventListener('load', handleDOMChange);
     window.addEventListener('resize', handleDOMChange);

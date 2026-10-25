@@ -64,9 +64,20 @@ export default function Flights() {
       }
     };
 
+    const handleParentClick = (e: MouseEvent) => {
+      if (searchWidgetRef.current && !searchWidgetRef.current.contains(e.target as Node)) {
+        setIsDropdownOpen(false);
+        try {
+          iframeRef.current?.contentWindow?.postMessage({ type: 'close-dropdown' }, '*');
+        } catch (err) {}
+      }
+    };
+
     window.addEventListener("message", handleMessage);
+    window.addEventListener("click", handleParentClick);
     return () => {
       window.removeEventListener("message", handleMessage);
+      window.removeEventListener("click", handleParentClick);
     };
   }, []);
 
@@ -134,8 +145,8 @@ export default function Flights() {
         canonicalUrl={typeof window !== 'undefined' ? window.location.href : ""}
       />
 
-      {/* Clean Minimal Breadcrumb */}
-      <nav aria-label="Breadcrumb" className="bg-white border-b border-slate-100 py-2.5 px-4 md:px-8 text-xs text-slate-500">
+      {/* Clean Minimal Breadcrumb without harsh bottom border */}
+      <nav aria-label="Breadcrumb" className="bg-white py-2.5 px-4 md:px-8 text-xs text-slate-500">
         <div className="max-w-7xl mx-auto flex items-center gap-1.5">
           <Link href="/" className="hover:text-brand-600 transition-colors font-medium">
             Home
@@ -147,15 +158,16 @@ export default function Flights() {
         </div>
       </nav>
 
-      {/* Compact Clean Hero Section — Same Unified White & Soft Light Glow */}
-      <section className="relative overflow-hidden bg-white text-slate-900 pt-6 pb-6 md:pt-8 md:pb-8 px-4 md:px-8">
-        {/* Soft Ambient Background Elements Matching Homepage */}
+      {/* Unified Hero + Search Widget + Popular Routes on the same continuous surface */}
+      <section className="relative overflow-visible bg-slate-50/50 text-slate-900 pt-6 pb-12 md:pt-8 md:pb-16 px-4 md:px-8">
+        {/* Soft Ambient Background Elements */}
         <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
           <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[120%] bg-brand-100/35 rounded-full blur-[100px]" />
           <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[100%] bg-blue-100/25 rounded-full blur-[90px]" />
         </div>
 
-        <div className="max-w-4xl mx-auto text-center relative z-10">
+        {/* Hero Title & Subtitle */}
+        <div className="max-w-4xl mx-auto text-center relative z-10 mb-6 md:mb-8">
           <motion.h1
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -169,50 +181,49 @@ export default function Flights() {
             Search 100+ airlines across 50,000+ domestic and international routes with live seat tariffs, transparent fares, and instant PNR e-ticket confirmation.
           </p>
         </div>
-      </section>
 
-      {/* Main Search Widget Section */}
-      <section ref={searchWidgetRef} id="flight-search-widget" className="max-w-7xl mx-auto w-full px-4 md:px-8 pb-4 md:pb-6 relative z-30 bg-transparent">
-        <div
-          className="relative transition-all duration-300"
-          style={{ minHeight: hasResults ? `${iframeHeight}px` : "160px" }}
-        >
-          {!loaded && (
-            <div className="absolute inset-0 bg-white rounded-2xl shadow-lg border border-slate-100 p-6 flex flex-col justify-center items-center z-10">
-              <span className="text-slate-700 font-semibold text-sm mb-3">Loading flight search...</span>
-              <div className="w-full max-w-2xl flex flex-col gap-3">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-2.5">
-                  <div className="h-11 bg-slate-50 rounded-lg animate-pulse" />
-                  <div className="h-11 bg-slate-50 rounded-lg animate-pulse" />
-                  <div className="h-11 bg-slate-50 rounded-lg animate-pulse" />
-                  <div className="h-11 bg-slate-50 rounded-lg animate-pulse" />
+        {/* Main Search Widget Section — HIGH STACKING CONTEXT (z-50) */}
+        <div ref={searchWidgetRef} id="flight-search-widget" className="max-w-7xl mx-auto w-full relative z-50 mb-8 md:mb-10">
+          <div
+            className="w-full relative transition-all duration-300"
+            style={{ minHeight: hasResults ? `${iframeHeight}px` : "175px" }}
+          >
+            {!loaded && (
+              <div className="absolute inset-0 bg-white rounded-2xl border border-slate-200/60 p-6 flex flex-col justify-center items-center z-10">
+                <span className="text-slate-700 font-semibold text-sm mb-3">Loading flight search...</span>
+                <div className="w-full max-w-2xl flex flex-col gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-2.5">
+                    <div className="h-11 bg-slate-50 rounded-lg animate-pulse" />
+                    <div className="h-11 bg-slate-50 rounded-lg animate-pulse" />
+                    <div className="h-11 bg-slate-50 rounded-lg animate-pulse" />
+                    <div className="h-11 bg-slate-50 rounded-lg animate-pulse" />
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          <iframe
-            ref={iframeRef}
-            src={widgetUrl}
-            style={{
-              height: `${iframeHeight}px`,
-              minHeight: isDropdownOpen ? "580px" : "160px",
-              position: isDropdownOpen && !hasResults ? "absolute" : "relative",
-              top: 0,
-              left: 0,
-              zIndex: 40,
-            }}
-            scrolling="no"
-            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
-            className="w-full border-none transition-all duration-300 bg-transparent"
-            title="Flight Search Engine"
-          />
+            <iframe
+              ref={iframeRef}
+              src={widgetUrl}
+              style={{
+                height: `${iframeHeight}px`,
+                minHeight: "175px",
+                position: isDropdownOpen && !hasResults ? "absolute" : "relative",
+                top: 0,
+                left: 0,
+                width: "100%",
+                zIndex: 50,
+              }}
+              scrolling="no"
+              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+              className="w-full border-none transition-all duration-300 bg-transparent"
+              title="Flight Search Engine"
+            />
+          </div>
         </div>
-      </section>
 
-      {/* Popular Flight Routes Section — In background layer */}
-      <section className="py-10 md:py-14 bg-white border-t border-slate-100 px-4 md:px-8 relative z-10">
-        <div className="max-w-7xl mx-auto">
+        {/* Popular Flight Routes Section — Same background surface, LOWER STACKING CONTEXT (z-10) */}
+        <div className="max-w-7xl mx-auto relative z-10">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-7 gap-4">
             <div>
               <h2 className="text-xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
@@ -224,13 +235,13 @@ export default function Flights() {
             </div>
 
             {/* Clean Tab Switcher */}
-            <div className="inline-flex p-1 bg-slate-50 rounded-xl border border-slate-200 shrink-0 self-start md:self-auto">
+            <div className="inline-flex p-1 bg-white/80 backdrop-blur-sm rounded-xl border border-slate-200/80 shrink-0 self-start md:self-auto shadow-sm">
               <button
                 type="button"
                 onClick={() => setActiveRouteTab("domestic")}
                 className={`px-4 py-1.5 text-xs font-semibold rounded-lg transition-all ${
                   activeRouteTab === "domestic"
-                    ? "bg-white text-brand-700 shadow-sm"
+                    ? "bg-brand-600 text-white shadow-sm"
                     : "text-slate-600 hover:text-slate-900"
                 }`}
               >
@@ -241,7 +252,7 @@ export default function Flights() {
                 onClick={() => setActiveRouteTab("international")}
                 className={`px-4 py-1.5 text-xs font-semibold rounded-lg transition-all ${
                   activeRouteTab === "international"
-                    ? "bg-white text-brand-700 shadow-sm"
+                    ? "bg-brand-600 text-white shadow-sm"
                     : "text-slate-600 hover:text-slate-900"
                 }`}
               >
@@ -255,7 +266,7 @@ export default function Flights() {
             {(activeRouteTab === "domestic" ? POPULAR_DOMESTIC_ROUTES : POPULAR_INTL_ROUTES).map((route, idx) => (
               <div
                 key={idx}
-                className="p-5 bg-white rounded-xl border border-slate-200 hover:border-brand-400 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+                className="p-5 bg-white/95 backdrop-blur-sm rounded-xl border border-slate-200/80 hover:border-brand-400 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-center justify-between text-xs text-slate-500 mb-2">
