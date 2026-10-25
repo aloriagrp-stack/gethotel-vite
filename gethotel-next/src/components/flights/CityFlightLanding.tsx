@@ -10,6 +10,8 @@ interface CityFlightLandingProps {
 
 export default function CityFlightLanding({ cityData }: CityFlightLandingProps) {
   const [iframeHeight, setIframeHeight] = useState(180);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [hasResults, setHasResults] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -43,6 +45,12 @@ export default function CityFlightLanding({ cityData }: CityFlightLandingProps) 
 
       if (event.data.type === "resize-iframe") {
         setIframeHeight(event.data.height);
+        if (event.data.isDropdownOpen !== undefined) {
+          setIsDropdownOpen(event.data.isDropdownOpen);
+        }
+        if (event.data.hasResults !== undefined) {
+          setHasResults(event.data.hasResults);
+        }
         setLoaded(true);
       }
 
@@ -151,10 +159,13 @@ export default function CityFlightLanding({ cityData }: CityFlightLandingProps) 
       </section>
 
       {/* Main Search Widget Section — Pre-filled with Origin */}
-      <section ref={searchWidgetRef} id="flight-search-widget" className="max-w-7xl mx-auto w-full px-4 md:px-8 pb-10 relative z-20 bg-white">
-        <div className="min-h-[160px] transition-all relative">
+      <section ref={searchWidgetRef} id="flight-search-widget" className="max-w-7xl mx-auto w-full px-4 md:px-8 pb-8 relative z-30 bg-transparent">
+        <div
+          className="relative transition-all duration-300"
+          style={{ minHeight: hasResults ? `${iframeHeight}px` : "160px" }}
+        >
           {!loaded && (
-            <div className="absolute inset-0 bg-white rounded-2xl shadow-lg border border-slate-100 p-6 flex flex-col justify-center items-center z-30">
+            <div className="absolute inset-0 bg-white rounded-2xl shadow-lg border border-slate-100 p-6 flex flex-col justify-center items-center z-10">
               <span className="text-slate-700 font-semibold text-sm mb-3">
                 Loading live flights from {cityData.name}...
               </span>
@@ -172,17 +183,24 @@ export default function CityFlightLanding({ cityData }: CityFlightLandingProps) 
           <iframe
             ref={iframeRef}
             src={widgetUrl}
-            style={{ height: `${iframeHeight}px`, minHeight: "160px" }}
+            style={{
+              height: `${iframeHeight}px`,
+              minHeight: isDropdownOpen ? "580px" : "160px",
+              position: isDropdownOpen && !hasResults ? "absolute" : "relative",
+              top: 0,
+              left: 0,
+              zIndex: 40,
+            }}
             scrolling="no"
             sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
-            className="w-full border-none transition-all duration-300 relative z-10 bg-transparent"
+            className="w-full border-none transition-all duration-300 bg-transparent"
             title={`Flight Search Engine — Flights from ${cityData.name}`}
           />
         </div>
       </section>
 
-      {/* Popular Flight Routes from City — Clean Route Cards */}
-      <section className="py-10 md:py-14 bg-white border-t border-slate-100 px-4 md:px-8">
+      {/* Popular Flight Routes from City — Clean Route Cards in background layer */}
+      <section className="py-10 md:py-14 bg-white border-t border-slate-100 px-4 md:px-8 relative z-10">
         <div className="max-w-7xl mx-auto">
           <div className="mb-7">
             <h2 className="text-xl md:text-3xl font-extrabold text-slate-900 tracking-tight">

@@ -564,28 +564,95 @@
       });
     }
 
+    function isPopupOrDropdownOpen() {
+      // 1. Any input or select currently focused
+      var active = document.activeElement;
+      if (active && (active.tagName === 'INPUT' || active.tagName === 'SELECT')) {
+        return true;
+      }
+      // 2. Any calendar/suggest/dropdown elements present and visible
+      var popups = document.querySelectorAll(
+        '[class*="Calendar"], [class*="calendar"], [class*="dayCell"], [class*="monthCell"], ' +
+        '[class*="Suggest"], [class*="suggest"], [class*="dropdown"], [class*="Dropdown"], ' +
+        '[class*="popover"], [class*="Popover"], [class*="modal"], [class*="Modal"], ' +
+        '[role="dialog"], [role="listbox"]'
+      );
+      for (var i = 0; i < popups.length; i++) {
+        var el = popups[i];
+        if (el.offsetWidth > 0 && el.offsetHeight > 0) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function hasSearchResults() {
+      var ticketsContainer = document.getElementById('tpwl-tickets');
+      if (!ticketsContainer) return false;
+      if (ticketsContainer.children.length > 0 && ticketsContainer.offsetHeight > 100) {
+        return true;
+      }
+      return false;
+    }
+
     function getActualContentHeight() {
-      var wrapper = document.getElementById("widget-wrapper");
-      if (!wrapper) return 0;
-      var children = wrapper.getElementsByTagName("*");
+      var allElements = document.body.getElementsByTagName("*");
       var maxBottom = 0;
-      for (var i = 0; i < children.length; i++) {
-        var child = children[i];
+      for (var i = 0; i < allElements.length; i++) {
+        var child = allElements[i];
         if (child.id === 'widget-wrapper') continue;
         if (child.offsetWidth > 0 && child.offsetHeight > 0) {
           var rect = child.getBoundingClientRect();
-          if (rect.bottom > maxBottom) {
-            maxBottom = rect.bottom;
+          var scrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+          var bottom = rect.bottom + scrollY;
+          if (bottom > maxBottom) {
+            maxBottom = bottom;
           }
         }
       }
-      return maxBottom;
+
+      var dropdownOpen = isPopupOrDropdownOpen();
+      var resultsLoaded = hasSearchResults();
+
+      // If dropdown or calendar is open, ensure ample room for calendar grid (min 580px)
+      if (dropdownOpen && !resultsLoaded) {
+        maxBottom = Math.max(maxBottom, 580);
+      }
+
+      // Base minimum card height
+      if (maxBottom < 160) {
+        maxBottom = 160;
+      }
+
+      return {
+        height: Math.ceil(maxBottom),
+        isDropdownOpen: dropdownOpen,
+        hasResults: resultsLoaded
+      };
     }
 
-    function sendHeight() {
-      var height = getActualContentHeight();
-      if (height > 0) {
-        window.parent.postMessage({ type: 'resize-iframe', height: height + 16 }, '*');
+    var lastSentHeight = 0;
+    var lastSentDropdownState = null;
+    var lastSentResultsState = null;
+
+    function sendHeight(force) {
+      var data = getActualContentHeight();
+      var height = data.height;
+      if (
+        force ||
+        Math.abs(height - lastSentHeight) > 4 ||
+        data.isDropdownOpen !== lastSentDropdownState ||
+        data.hasResults !== lastSentResultsState
+      ) {
+        lastSentHeight = height;
+        lastSentDropdownState = data.isDropdownOpen;
+        lastSentResultsState = data.hasResults;
+        window.parent.postMessage({
+          type: 'resize-iframe',
+          height: height + 16,
+          isDropdownOpen: data.isDropdownOpen,
+          hasResults: data.hasResults
+        }, '*');
       }
     }
 
@@ -609,6 +676,23 @@
       fixBuyButtonTargets();
       sendHeight();
     }
+
+    // Immediate expand on click or focus inside search form
+    document.addEventListener('focusin', function(e) {
+      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'BUTTON')) {
+        sendHeight(true);
+      }
+    }, true);
+
+    document.addEventListener('click', function(e) {
+      if (e.target && e.target.closest('#search-card')) {
+        sendHeight(true);
+        setTimeout(function() { sendHeight(true); }, 50);
+        setTimeout(function() { sendHeight(true); }, 150);
+      } else {
+        setTimeout(function() { sendHeight(true); }, 150);
+      }
+    }, true);
 
     window.addEventListener('load', handleDOMChange);
     window.addEventListener('resize', handleDOMChange);
