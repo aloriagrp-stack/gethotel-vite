@@ -74,6 +74,61 @@
       height: 0 !important;
       pointer-events: none !important;
     }
+
+    /* Instant Search Loader & Skeleton Animation Styles */
+    @keyframes searchProgressMove {
+      0% { left: -30%; width: 30%; }
+      50% { left: 25%; width: 50%; }
+      100% { left: 100%; width: 30%; }
+    }
+    .loader-progress-bar {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, #2563eb, #3b82f6, #60a5fa);
+      border-radius: 9999px;
+      animation: searchProgressMove 1.3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+    @keyframes planeBob {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-3px) rotate(6deg); }
+    }
+    .loader-plane-spinner {
+      font-size: 22px;
+      line-height: 1;
+      display: inline-block;
+      animation: planeBob 0.9s ease-in-out infinite;
+    }
+    .pulsing-green-dot {
+      width: 7px;
+      height: 7px;
+      background: #10b981;
+      border-radius: 50%;
+      display: inline-block;
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+      animation: greenPulse 1.5s infinite;
+    }
+    @keyframes greenPulse {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+    .skeleton-ticket-card {
+      background: #ffffff;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      padding: 22px 24px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04);
+    }
+    @keyframes shimmerAnim {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .skeleton-shimmer {
+      background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+      background-size: 200% 100%;
+      animation: shimmerAnim 1.4s ease-in-out infinite;
+    }
   </style>
 </head>
 <body>
@@ -83,6 +138,104 @@
     <div id="search-card">
       <!-- Metasearch widget container -->
       <div id="tpwl-search"></div>
+    </div>
+    
+    <!-- Instant Search Loader & Skeleton Cards (Visible immediately on 'Search flights' click) -->
+    <div id="instant-search-loader" style="display: none; padding-top: 18px; padding-bottom: 24px;">
+      <!-- Live Progress & Status Header -->
+      <div style="background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; padding: 18px 24px; margin-bottom: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04);">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div class="loader-plane-spinner">✈</div>
+            <div>
+              <div style="font-size: 15px; font-weight: 700; color: #0f172a;" id="loader-status-text">Searching 100+ airlines for lowest airfares...</div>
+              <div style="font-size: 12px; color: #64748b; margin-top: 3px;" id="loader-sub-text">Scanning IndiGo, Air India, SpiceJet, Akasa Air...</div>
+            </div>
+          </div>
+          <div style="display: inline-flex; align-items: center; gap: 6px; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 4px 10px; font-size: 11px; font-weight: 600; color: #059669; border-radius: 9999px;">
+            <span class="pulsing-green-dot"></span> Live Airfare Scan
+          </div>
+        </div>
+        <!-- Progress Bar Track -->
+        <div style="width: 100%; height: 5px; background: #f1f5f9; border-radius: 9999px; overflow: hidden; position: relative;">
+          <div class="loader-progress-bar"></div>
+        </div>
+      </div>
+
+      <!-- Shimmering Skeleton Ticket Placeholders -->
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <div class="skeleton-ticket-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div class="skeleton-shimmer" style="width: 32px; height: 32px; border-radius: 50%;"></div>
+              <div>
+                <div class="skeleton-shimmer" style="width: 90px; height: 13px; border-radius: 4px; margin-bottom: 4px;"></div>
+                <div class="skeleton-shimmer" style="width: 60px; height: 10px; border-radius: 4px;"></div>
+              </div>
+            </div>
+            <div class="skeleton-shimmer" style="width: 76px; height: 22px; border-radius: 12px;"></div>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 20px; flex: 1; min-width: 240px;">
+              <div>
+                <div class="skeleton-shimmer" style="width: 65px; height: 20px; border-radius: 4px; margin-bottom: 4px;"></div>
+                <div class="skeleton-shimmer" style="width: 45px; height: 11px; border-radius: 4px;"></div>
+              </div>
+              <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                <div class="skeleton-shimmer" style="width: 55px; height: 10px; border-radius: 4px;"></div>
+                <div class="skeleton-shimmer" style="width: 100%; max-width: 150px; height: 2px; border-radius: 2px;"></div>
+              </div>
+              <div>
+                <div class="skeleton-shimmer" style="width: 65px; height: 20px; border-radius: 4px; margin-bottom: 4px;"></div>
+                <div class="skeleton-shimmer" style="width: 45px; height: 11px; border-radius: 4px;"></div>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 14px;">
+              <div style="text-align: right;">
+                <div class="skeleton-shimmer" style="width: 80px; height: 22px; border-radius: 4px; margin-bottom: 4px;"></div>
+                <div class="skeleton-shimmer" style="width: 45px; height: 10px; border-radius: 4px;"></div>
+              </div>
+              <div class="skeleton-shimmer" style="width: 105px; height: 38px; border-radius: 8px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="skeleton-ticket-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div class="skeleton-shimmer" style="width: 32px; height: 32px; border-radius: 50%;"></div>
+              <div>
+                <div class="skeleton-shimmer" style="width: 95px; height: 13px; border-radius: 4px; margin-bottom: 4px;"></div>
+                <div class="skeleton-shimmer" style="width: 65px; height: 10px; border-radius: 4px;"></div>
+              </div>
+            </div>
+            <div class="skeleton-shimmer" style="width: 76px; height: 22px; border-radius: 12px;"></div>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 20px; flex: 1; min-width: 240px;">
+              <div>
+                <div class="skeleton-shimmer" style="width: 65px; height: 20px; border-radius: 4px; margin-bottom: 4px;"></div>
+                <div class="skeleton-shimmer" style="width: 45px; height: 11px; border-radius: 4px;"></div>
+              </div>
+              <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                <div class="skeleton-shimmer" style="width: 55px; height: 10px; border-radius: 4px;"></div>
+                <div class="skeleton-shimmer" style="width: 100%; max-width: 150px; height: 2px; border-radius: 2px;"></div>
+              </div>
+              <div>
+                <div class="skeleton-shimmer" style="width: 65px; height: 20px; border-radius: 4px; margin-bottom: 4px;"></div>
+                <div class="skeleton-shimmer" style="width: 45px; height: 11px; border-radius: 4px;"></div>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 14px;">
+              <div style="text-align: right;">
+                <div class="skeleton-shimmer" style="width: 80px; height: 22px; border-radius: 4px; margin-bottom: 4px;"></div>
+                <div class="skeleton-shimmer" style="width: 45px; height: 10px; border-radius: 4px;"></div>
+              </div>
+              <div class="skeleton-shimmer" style="width: 105px; height: 38px; border-radius: 8px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     
     <!-- Search results container -->
@@ -683,9 +836,15 @@
       var resultsLoaded = hasSearchResults();
       var dropdownOpen = isPopupOrDropdownOpen(maxBottom);
 
+      var loader = document.getElementById('instant-search-loader');
+      var isLoaderVisible = loader && loader.style.display !== 'none';
+
       // If dropdown or calendar is open, ensure ample room for full 2-month calendar grid (min 620px)
       if (dropdownOpen && !resultsLoaded) {
         maxBottom = Math.max(maxBottom, 620);
+      } else if (isLoaderVisible) {
+        // While instant loader is active, maintain comfortable height for skeleton cards
+        maxBottom = Math.max(maxBottom, 680);
       } else if (!resultsLoaded) {
         // When idle (dropdown closed and no search results yet):
         // Allow enough height (+16px) so bottom rounded card edge and shadow are never clipped by iframe edge
@@ -702,7 +861,7 @@
       return {
         height: Math.ceil(maxBottom),
         isDropdownOpen: dropdownOpen,
-        hasResults: resultsLoaded
+        hasResults: resultsLoaded || isLoaderVisible
       };
     }
 
@@ -743,12 +902,60 @@
       });
     }
 
+    var loaderTextInterval = null;
+    function startLoaderTextCycle() {
+      if (loaderTextInterval) clearInterval(loaderTextInterval);
+      var statusEl = document.getElementById('loader-status-text');
+      var subEl = document.getElementById('loader-sub-text');
+      if (!statusEl || !subEl) return;
+
+      var steps = [
+        {
+          status: "Searching 100+ airlines for lowest airfares...",
+          sub: "Scanning IndiGo, Air India, Akasa Air, SpiceJet..."
+        },
+        {
+          status: "Comparing direct flight tariffs & seat availability...",
+          sub: "Checking cabin baggage allowances & zero hidden fee routes..."
+        },
+        {
+          status: "Organizing verified flight deals by price & duration...",
+          sub: "Finalizing live airline seat confirmation rates..."
+        }
+      ];
+      var stepIdx = 0;
+      loaderTextInterval = setInterval(function() {
+        stepIdx = (stepIdx + 1) % steps.length;
+        statusEl.textContent = steps[stepIdx].status;
+        subEl.textContent = steps[stepIdx].sub;
+      }, 1100);
+    }
+
+    function checkRealTicketsLoaded() {
+      var realTickets = document.querySelectorAll('#tpwl-tickets [class*="ticket"], #tpwl-tickets [class*="Ticket"], #tpwl-tickets [class*="result"], #tpwl-tickets [class*="Result"]');
+      if (realTickets.length > 0) {
+        var loader = document.getElementById('instant-search-loader');
+        if (loader && loader.style.display !== 'none') {
+          loader.style.display = 'none';
+          if (loaderTextInterval) clearInterval(loaderTextInterval);
+          sendHeight(true);
+        }
+        var btn = document.querySelector('button[type="submit"], [class*="submit"], [class*="Submit"]');
+        if (btn && btn.dataset && btn.dataset.origText) {
+          var btnSpan = btn.querySelector('span') || btn;
+          btnSpan.textContent = btn.dataset.origText;
+          btn.style.opacity = '1';
+        }
+      }
+    }
+
     function handleDOMChange() {
       disableHotelsCheckbox();
       hideHotelsCheckbox();
       fixFormTarget();
       fixLinkTargets();
       fixBuyButtonTargets();
+      checkRealTicketsLoaded();
       sendHeight();
     }
 
@@ -773,9 +980,30 @@
       if (isSubmit) {
         searchActive = true;
         userInteracting = false;
+
+        // 1. Instantly display animated loader & skeleton cards
+        var loader = document.getElementById('instant-search-loader');
+        if (loader) {
+          loader.style.display = 'block';
+          startLoaderTextCycle();
+        }
+
+        // 2. Instant button feedback
+        var btn = isSubmit;
+        if (btn) {
+          btn.style.opacity = '0.9';
+          var btnSpan = btn.querySelector('span') || btn;
+          if (btnSpan && !btn.dataset.origText) {
+            btn.dataset.origText = btnSpan.textContent;
+            btnSpan.textContent = 'Searching...';
+          }
+        }
+
+        // 3. Notify parent to immediately push downstream section down
         try {
           window.parent.postMessage({ type: 'flight-search-started' }, '*');
         } catch(err) {}
+
         sendHeight(true);
         setTimeout(function() { sendHeight(true); }, 50);
         setTimeout(function() { sendHeight(true); }, 200);
