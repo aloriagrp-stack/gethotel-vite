@@ -48,23 +48,23 @@ export default function LandingHotelsGrid({ initialHotels, locationNote }: Landi
   }, [initialHotels, selectedFilter, sortBy]);
 
   return (
-    <section className="space-y-6">
-      {/* Controls Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200">
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+    <section className="space-y-4">
+      {/* Controls Bar - Compact Single Row */}
+      <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-slate-200">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-none flex-1 pr-2">
           <button
             onClick={() => setSelectedFilter("all")}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
+            className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
               selectedFilter === "all"
                 ? "bg-brand-600 text-white shadow-xs"
                 : "bg-slate-100 text-slate-700 hover:bg-slate-200"
             }`}
           >
-            All Available ({initialHotels.length})
+            All ({initialHotels.length})
           </button>
           <button
             onClick={() => setSelectedFilter("under1200")}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
+            className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
               selectedFilter === "under1200"
                 ? "bg-brand-600 text-white shadow-xs"
                 : "bg-slate-100 text-slate-700 hover:bg-slate-200"
@@ -74,7 +74,7 @@ export default function LandingHotelsGrid({ initialHotels, locationNote }: Landi
           </button>
           <button
             onClick={() => setSelectedFilter("frontdesk")}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
+            className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
               selectedFilter === "frontdesk"
                 ? "bg-brand-600 text-white shadow-xs"
                 : "bg-slate-100 text-slate-700 hover:bg-slate-200"
@@ -84,39 +84,36 @@ export default function LandingHotelsGrid({ initialHotels, locationNote }: Landi
           </button>
           <button
             onClick={() => setSelectedFilter("lift")}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
+            className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
               selectedFilter === "lift"
                 ? "bg-brand-600 text-white shadow-xs"
                 : "bg-slate-100 text-slate-700 hover:bg-slate-200"
             }`}
           >
-            With Lift / Elevator
+            Lift
           </button>
           <button
             onClick={() => setSelectedFilter("wifi")}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
+            className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
               selectedFilter === "wifi"
                 ? "bg-brand-600 text-white shadow-xs"
                 : "bg-slate-100 text-slate-700 hover:bg-slate-200"
             }`}
           >
-            Free High-Speed WiFi
+            Free WiFi
           </button>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <span className="text-xs font-medium text-slate-500 flex items-center gap-1">
-            <ArrowUpDown className="w-3.5 h-3.5" /> Sort:
-          </span>
+        <div className="flex items-center shrink-0">
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="text-xs font-semibold bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="text-[11px] font-semibold bg-white border border-slate-200 rounded-lg px-2 py-1 text-slate-800 focus:outline-none"
           >
             <option value="recommended">Recommended</option>
             <option value="price_asc">Price: Low to High</option>
             <option value="price_desc">Price: High to Low</option>
-            <option value="rating">Top Guest Rating</option>
+            <option value="rating">Top Rating</option>
           </select>
         </div>
       </div>

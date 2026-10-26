@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Hotel } from "@/types";
 import LandingHotelsGrid from "./LandingHotelsGrid";
-import { ChevronRight, HelpCircle, CheckCircle, ArrowDown } from "lucide-react";
+import { ChevronRight, HelpCircle, ShieldCheck } from "lucide-react";
 
 export interface LandingSection {
   h2: string;
@@ -44,8 +44,6 @@ export default function LandingPageTemplate({
   badgeIcon,
   h1,
   heroCopy,
-  primaryCtaText = "Check availability",
-  secondaryCtaText = "Compare hotels",
   sections,
   faqs,
   internalLinks,
@@ -154,6 +152,9 @@ export default function LandingPageTemplate({
     })),
   };
 
+  // Clean visible H1 (without trailing pipe suffixes for clean UI)
+  const cleanH1 = h1.includes("|") ? h1.split("|")[0].trim() : h1;
+
   return (
     <>
       {/* Schema Injections */}
@@ -175,89 +176,73 @@ export default function LandingPageTemplate({
       />
 
       <main className="min-h-screen bg-slate-50/50 pb-16">
-        {/* Breadcrumb Navigation */}
+        {/* Compact, Clean Top Header — Room Cards Start Immediately! */}
         <div className="bg-white border-b border-slate-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-            <nav className="flex items-center gap-1.5 text-xs font-semibold text-slate-500" aria-label="Breadcrumb">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+            <nav className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 mb-1.5" aria-label="Breadcrumb">
               <Link href="/" className="hover:text-brand-600 transition-colors">Home</Link>
-              <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-              <Link href="/hotels/delhi" className="hover:text-brand-600 transition-colors">Hotels in Delhi</Link>
-              <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-              <span className="text-slate-900 font-bold truncate">{breadcrumbLabel}</span>
+              <ChevronRight className="w-3 h-3 text-slate-300" />
+              <Link href="/hotels/delhi" className="hover:text-brand-600 transition-colors">Delhi</Link>
+              <ChevronRight className="w-3 h-3 text-slate-300" />
+              <span className="text-slate-700 truncate">{breadcrumbLabel}</span>
             </nav>
+
+            <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1">
+              <div>
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-950 tracking-tight">
+                  {cleanH1}
+                </h1>
+                <p className="text-xs text-slate-500 font-medium mt-0.5 flex flex-wrap items-center gap-1.5">
+                  <span className="font-bold text-slate-800">{hotels.length} verified stays available</span>
+                  <span>•</span>
+                  <span className="text-emerald-700 font-bold">Pay 12% deposit</span>
+                  {badgeText && (
+                    <>
+                      <span>•</span>
+                      <span className="text-slate-600 truncate">{badgeText}</span>
+                    </>
+                  )}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Hero Section */}
-        <section className="bg-gradient-to-b from-white to-slate-50/70 border-b border-slate-200/80 pt-6 pb-8 md:pt-10 md:pb-12">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-50 border border-brand-200 text-brand-700 text-xs font-bold uppercase tracking-wider">
-              {badgeIcon}
-              <span>{badgeText}</span>
-            </div>
-
-            <h1 className="text-2xl sm:text-3xl md:text-5xl font-black text-slate-950 tracking-tight leading-tight">
-              {h1}
-            </h1>
-
-            <p className="text-sm md:text-base text-slate-600 max-w-4xl leading-relaxed font-normal">
-              {heroCopy}
-            </p>
-
-            {/* CTAs */}
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              <a
-                href="#hotels-grid"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-sm cursor-pointer"
-              >
-                <span>{primaryCtaText}</span>
-                <ArrowDown className="w-4 h-4" />
-              </a>
-              <a
-                href="#hotels-grid"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer"
-              >
-                <span>{secondaryCtaText}</span>
-              </a>
-            </div>
-          </div>
-        </section>
-
-        {/* Content & Hotels Container */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
-          {/* Live Listings Grid */}
-          <div id="hotels-grid" className="scroll-mt-8">
+        {/* Room Cards Immediately Displayed Above the Fold */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-12 space-y-12">
+          {/* Hotel Cards Grid with instant filter pills */}
+          <div id="hotels-grid">
             <LandingHotelsGrid initialHotels={hotels} locationNote={locationNote} />
           </div>
 
-          {/* Editorial Guidance & Content Sections */}
-          {sections.length > 0 && (
-            <section className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 md:p-10 space-y-8 shadow-xs">
-              <div className="border-b border-slate-100 pb-4">
-                <h2 className="text-xl sm:text-2xl font-black text-slate-950 tracking-tight">
-                  Location Guidance & Essential Stay Information
-                </h2>
-                <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                  Important details regarding booking policies, room facilities, check-in windows, and transit routes.
-                </p>
-              </div>
+          {/* Deep Content, Overview & Location Guidance Placed Nicely Below Cards */}
+          <section className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 space-y-8 shadow-xs">
+            <div className="border-b border-slate-100 pb-4">
+              <h2 className="text-lg sm:text-xl font-black text-slate-950 tracking-tight">
+                About Stays in {breadcrumbLabel}
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 mt-1.5 leading-relaxed">
+                {heroCopy}
+              </p>
+            </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-slate-700 text-sm leading-relaxed">
+            {sections.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-slate-700 text-xs sm:text-sm leading-relaxed">
                 {sections.map((section, idx) => (
-                  <div key={idx} className="space-y-3">
-                    <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                      <span className="w-6 h-6 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-black shrink-0">
+                  <div key={idx} className="space-y-2">
+                    <h3 className="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-[11px] font-black shrink-0">
                         {idx + 1}
                       </span>
                       <span>{section.h2}</span>
                     </h3>
                     {section.paragraphs.map((p, pIdx) => (
-                      <p key={pIdx} className="text-slate-600 text-xs sm:text-sm leading-relaxed">
+                      <p key={pIdx} className="text-slate-600 leading-relaxed">
                         {p}
                       </p>
                     ))}
                     {section.listItems && section.listItems.length > 0 && (
-                      <ul className="list-disc pl-5 space-y-1 text-slate-600 text-xs sm:text-sm">
+                      <ul className="list-disc pl-5 space-y-1 text-slate-600">
                         {section.listItems.map((item, lIdx) => (
                           <li key={lIdx}>{item}</li>
                         ))}
@@ -266,15 +251,15 @@ export default function LandingPageTemplate({
                   </div>
                 ))}
               </div>
-            </section>
-          )}
+            )}
+          </section>
 
           {/* FAQs Accordion */}
           {faqs.length > 0 && (
-            <section className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 md:p-10 space-y-6 shadow-xs">
+            <section className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 space-y-6 shadow-xs">
               <div className="border-b border-slate-100 pb-4">
-                <h2 className="text-xl sm:text-2xl font-black text-slate-950 tracking-tight flex items-center gap-2">
-                  <HelpCircle className="w-6 h-6 text-brand-600 shrink-0" />
+                <h2 className="text-lg sm:text-xl font-black text-slate-950 tracking-tight flex items-center gap-2">
+                  <HelpCircle className="w-5 h-5 text-brand-600 shrink-0" />
                   <span>Frequently Asked Questions</span>
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-500 mt-1">
@@ -284,14 +269,14 @@ export default function LandingPageTemplate({
 
               <div className="divide-y divide-slate-100">
                 {faqs.map((faq, index) => (
-                  <details key={index} className="group py-4 cursor-pointer" open={index === 0}>
-                    <summary className="flex items-center justify-between font-bold text-slate-900 text-sm sm:text-base list-none">
+                  <details key={index} className="group py-3.5 cursor-pointer" open={index === 0}>
+                    <summary className="flex items-center justify-between font-bold text-slate-900 text-sm list-none">
                       <span>{faq.question}</span>
                       <span className="ml-4 text-brand-600 transition-transform group-open:rotate-180">
                         ▾
                       </span>
                     </summary>
-                    <p className="mt-3 text-slate-600 text-xs sm:text-sm leading-relaxed pr-6">
+                    <p className="mt-2.5 text-slate-600 text-xs sm:text-sm leading-relaxed pr-6">
                       {faq.answer}
                     </p>
                   </details>
@@ -302,8 +287,8 @@ export default function LandingPageTemplate({
 
           {/* Internal Links Matrix */}
           {internalLinks.length > 0 && (
-            <section className="bg-slate-100/80 rounded-2xl p-6 sm:p-8 space-y-4 border border-slate-200">
-              <h3 className="text-base font-bold text-slate-900">
+            <section className="bg-slate-100/80 rounded-2xl p-5 sm:p-6 space-y-3.5 border border-slate-200">
+              <h3 className="text-sm font-bold text-slate-900">
                 Explore More Delhi Stays & Destination Guides
               </h3>
               <div className="flex flex-wrap gap-2">
@@ -311,7 +296,7 @@ export default function LandingPageTemplate({
                   <Link
                     key={idx}
                     href={link.href}
-                    className="px-3.5 py-2 bg-white rounded-xl text-xs font-bold text-slate-700 hover:text-brand-600 hover:border-brand-300 border border-slate-200 transition-all shadow-2xs"
+                    className="px-3 py-1.5 bg-white rounded-xl text-xs font-bold text-slate-700 hover:text-brand-600 hover:border-brand-300 border border-slate-200 transition-all shadow-2xs"
                   >
                     {link.label}
                   </Link>
