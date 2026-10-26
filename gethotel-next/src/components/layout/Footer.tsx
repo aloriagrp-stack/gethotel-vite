@@ -38,12 +38,24 @@ const socials = [
 
 export default function Footer() {
     const footerLinks = {
-        "Destinations": [
-            { label: "Delhi Hotels", href: `/delhi-hotels` },
-            { label: "Couple Friendly Delhi", href: `/couple-friendly-hotels-in-delhi` },
-            { label: "Hourly Stays Delhi", href: `/hourly-hotels-in-delhi` },
+        "Delhi Stays": [
+            { label: "Hourly Hotels Delhi", href: `/hourly-hotels-in-delhi` },
             { label: "Hotels Near Delhi Airport", href: `/hotels-near-delhi-airport` },
             { label: "Hotels Near NDLS Station", href: `/hotels-near-new-delhi-railway-station` },
+            { label: "Couple Friendly Delhi", href: `/couple-friendly-hotels-in-delhi` },
+            { label: "Hotels in Karol Bagh", href: `/hotels-in-karol-bagh-delhi` },
+            { label: "Hotels in Connaught Place", href: `/hotels-in-connaught-place-delhi` },
+            { label: "Hotels in South Delhi", href: `/hotels-in-south-delhi` },
+            { label: "Hotels in Paharganj", href: `/hotels-in-paharganj-delhi` },
+            { label: "Hotels Near Ganga Ram Hospital", href: `/hotels-near-ganga-ram-hospital` },
+            { label: "Hotels in Mahipalpur", href: `/hotels-in-mahipalpur-delhi` },
+            { label: "Hotels Near AIIMS Delhi", href: `/hotels-near-aiims-delhi` },
+            { label: "Early Check-in Delhi", href: `/early-check-in-hotels-in-delhi` },
+            { label: "Hotels Near Yashobhoomi", href: `/hotels-near-yashobhoomi-dwarka` },
+            { label: "Hotels in Pitampura", href: `/hotels-in-pitampura-delhi` },
+        ],
+        "Top Destinations": [
+            { label: "Delhi Hotels", href: `/delhi-hotels` },
             { label: "Jaipur Hotels", href: `/jaipur-hotels` },
             { label: "Udaipur Hotels", href: `/udaipur-hotels` },
             { label: "Manali Hotels", href: `/manali-hotels` },

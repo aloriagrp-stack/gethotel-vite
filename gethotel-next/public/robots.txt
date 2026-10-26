@@ -28,6 +28,13 @@ Allow: /hotels-near-new-delhi-railway-station
 Allow: /hotels-in-connaught-place-delhi
 Allow: /hotels-in-karol-bagh-delhi
 Allow: /hotels-in-south-delhi
+Allow: /hotels-in-paharganj-delhi
+Allow: /hotels-near-ganga-ram-hospital
+Allow: /hotels-in-mahipalpur-delhi
+Allow: /hotels-near-aiims-delhi
+Allow: /early-check-in-hotels-in-delhi
+Allow: /hotels-near-yashobhoomi-dwarka
+Allow: /hotels-in-pitampura-delhi
 Allow: /hotels-in/
 Allow: /hotels
 Allow: /hotel/
