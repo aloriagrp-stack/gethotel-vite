@@ -788,7 +788,6 @@
       if (searchActive || hasSearchResults()) return false;
 
       if (userInteracting) return true;
-      if (maxBottom && maxBottom > 220) return true;
 
       // 1. Any input or select or active element inside search card
       var active = document.activeElement;
@@ -839,9 +838,10 @@
       var loader = document.getElementById('instant-search-loader');
       var isLoaderVisible = loader && loader.style.display !== 'none';
 
-      // If dropdown or calendar is open, ensure ample room for full 2-month calendar grid (min 620px)
+      // If dropdown or calendar is open, cap at 620px to prevent infinite growth
+      // feedback loop (calendar lazy-loads months as iframe grows)
       if (dropdownOpen && !resultsLoaded) {
-        maxBottom = Math.max(maxBottom, 620);
+        maxBottom = 620;
       } else if (isLoaderVisible) {
         // While instant loader is active, maintain comfortable height for skeleton cards
         maxBottom = Math.max(maxBottom, 680);

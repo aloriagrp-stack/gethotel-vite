@@ -78,9 +78,10 @@ export default function Hero({
                 {/* Interactive Search Bar Component */}
                 <div className="w-full">
                     {/* Stay Mode, Flights & Tour Packages Tabs — NO hover color change */}
-                    <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center gap-2 md:gap-3 mb-6 w-full max-w-lg sm:max-w-none mx-auto px-2 sm:px-4">
+                    <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center gap-2 md:gap-3 mb-6 w-full max-w-lg sm:max-w-none mx-auto px-2 sm:px-4" suppressHydrationWarning>
                         <button 
                             type="button"
+                            suppressHydrationWarning
                             onClick={handleNightlyClick}
                             className={cn(
                                 "w-full sm:w-auto px-3 py-2.5 md:px-5 md:py-2.5 rounded-full text-xs font-black transition-none flex items-center justify-center gap-1.5 md:gap-2 border shadow-sm cursor-pointer",
@@ -95,6 +96,7 @@ export default function Hero({
 
                         <button 
                             type="button"
+                            suppressHydrationWarning
                             onClick={handleHourlyClick}
                             className={cn(
                                 "w-full sm:w-auto px-3 py-2.5 md:px-5 md:py-2.5 rounded-full text-xs font-black transition-none flex items-center justify-center gap-1.5 md:gap-2 border shadow-sm cursor-pointer",

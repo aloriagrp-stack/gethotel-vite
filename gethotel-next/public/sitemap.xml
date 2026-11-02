@@ -1,2811 +1,2433 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
+<url>
     <loc>https://gethotelstays.com</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/packages</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/delhi/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/mumbai/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/bengaluru/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/hyderabad/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/chennai/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/kolkata/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/ahmedabad/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/kochi/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/pune/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/goa/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/jaipur/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/lucknow/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/guwahati/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/thiruvananthapuram/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/bhubaneswar/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/srinagar/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/chandigarh/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/varanasi/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/patna/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/indore/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/nagpur/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/coimbatore/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/visakhapatnam/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/amritsar/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/dehradun/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/ranchi/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/raipur/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/udaipur/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/jodhpur/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/madurai/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/mangalore/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/kozhikode/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/vijayawada/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/tiruchirappalli/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/jammu/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/leh/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/bagdogra/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/port-blair/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/agartala/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/imphal/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/dibrugarh/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/silchar/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/prayagraj/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/kanpur/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/agra/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/jabalpur/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/vadodara/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/surat/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/rajkot/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/flights-from/gwalior/</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/partner</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.70</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/list-property</loc>
     <lastmod>2026-10-19</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/delhi-hotels</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/goa-hotels</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/jaipur-hotels</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/manali-hotels</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/shimla-hotels</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/udaipur-hotels</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/couple-friendly-hotels-in-delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hourly-hotels-in-delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-near-delhi-airport</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-near-new-delhi-railway-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in-connaught-place-delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in-karol-bagh-delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in-south-delhi</loc>
     <lastmod>2026-10-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in-paharganj-delhi</loc>
     <lastmod>2026-10-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-near-ganga-ram-hospital</loc>
     <lastmod>2026-10-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in-mahipalpur-delhi</loc>
     <lastmod>2026-10-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-near-aiims-delhi</loc>
     <lastmod>2026-10-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/early-check-in-hotels-in-delhi</loc>
     <lastmod>2026-10-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-near-yashobhoomi-dwarka</loc>
     <lastmod>2026-10-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in-pitampura-delhi</loc>
     <lastmod>2026-10-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/contact-us</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.50</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/privacy-policy</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.40</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/terms-of-service</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.40</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/cancellation-policy</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.40</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/pricing-policy</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.40</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/cookie-policy</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.30</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/new-delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/new-delhi/couple-friendly</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/new-delhi/hourly</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/new-delhi/budget</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/new-delhi/luxury</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/agra</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/agra/couple-friendly</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/agra/hourly</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/agra/budget</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/agra/luxury</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/jaipur</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/jaipur/couple-friendly</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/jaipur/hourly</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/jaipur/budget</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/jaipur/luxury</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/manali</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/manali/couple-friendly</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/manali/hourly</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/manali/budget</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/manali/luxury</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/shimla</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/shimla/couple-friendly</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/shimla/hourly</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/shimla/budget</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/shimla/luxury</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/goa</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/goa/couple-friendly</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/goa/hourly</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/goa/budget</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/goa/luxury</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/udaipur</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/udaipur/couple-friendly</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/udaipur/hourly</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/udaipur/budget</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/udaipur/luxury</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/varanasi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/varanasi/couple-friendly</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/varanasi/hourly</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/varanasi/budget</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/varanasi/luxury</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/haridwar</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/haridwar/couple-friendly</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/haridwar/hourly</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/haridwar/budget</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/haridwar/luxury</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/jodhpur</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/jodhpur/couple-friendly</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/jodhpur/hourly</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/jodhpur/budget</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels-in/jodhpur/luxury</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/mahipalpur</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-delhi-airport</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/business</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/with-parking</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/with-airport-transfer</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/new-friends-colony</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/lodhi-road</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/mahipalpur-extension</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/ber-sarai</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/delhi-gate</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-rajiv-chowk-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-new-delhi-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-kashmiri-gate-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-aerocity-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-hauz-khas-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-saket-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-karol-bagh-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-aiims-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-ina-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-central-secretariat-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-mandi-house-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-supreme-court-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-akshardham-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-yamuna-bank-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-laxmi-nagar-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-nirman-vihar-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-preet-vihar-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-anand-vihar-isbt-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-janakpuri-west-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-dwarka-sector-21-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-lajpat-nagar-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-netaji-subhash-place-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-vishwavidyalaya-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-gtb-nagar-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-khan-market-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-dhaula-kuan-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-delhi-cantt-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-rajouri-garden-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-paschim-vihar-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-rohini-west-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-pitampura-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-botanical-garden-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-chhatarpur-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-mg-road-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-dilli-haat-ina-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-green-park-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-patel-chowk-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-udyog-bhawan-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-lok-kalyan-marg-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-jor-bagh-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-model-town-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-adarsh-nagar-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-jahangirpuri-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-samaypur-badli-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-chandni-chowk-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-chawri-bazar-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-barakhamba-road-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-pragati-maidan-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-indraprastha-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-mayur-vihar-phase-1-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-noida-sector-15-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-shastri-park-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-seelampur-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-welcome-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-shahdara-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-mansarovar-park-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-jhilmil-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-dilshad-garden-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-rithala-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-rohini-east-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-kohat-enclave-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-kanishka-puri-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-inderlok-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-kirti-nagar-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-moti-nagar-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-ramesh-nagar-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-tagore-garden-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-subhash-nagar-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-tilak-nagar-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-janakpuri-east-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-uttam-nagar-east-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-uttam-nagar-west-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-nawada-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-dwarka-mor-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-dwarka-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-sector-14-dwarka-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-sector-13-dwarka-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-sector-12-dwarka-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-sector-11-dwarka-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-sector-10-dwarka-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-sector-9-dwarka-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-sector-8-dwarka-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-dashrath-puri-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-dabri-mor-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-palam-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-sadar-bazar-cantonment-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-terminal-1-igi-airport-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-shankar-vihar-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-vasant-vihar-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-munirka-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-rk-puram-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-iit-delhi-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-panchsheel-park-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-chirag-delhi-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-greater-kailash-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-nehru-enclave-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-kalkaji-mandir-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-okhla-nsic-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-sukhdev-vihar-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-jamia-millia-islamia-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-okhla-vihar-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-jasola-vihar-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-kalindi-kunj-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-sarita-vihar-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-mohan-estate-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-tughlakabad-station-metro</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-badarpur-border-metro-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-aiims-delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-sir-ganga-ram-hospital-rajinder-nagar</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-rajiv-gandhi-cancer-institute-rohini</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-northern-railway-central-hospital</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-national-heart-institute-east-of-kailash</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-base-hospital-delhi-cantt</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-delhi-university-north-campus</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-iit-delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-dtu-delhi-technological-university</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-nift-new-delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-aiims-campus-delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-tcs-ion-digital-zone-1-okhla</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-tcs-ion-digital-zone-2-okhla</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-tcs-ion-digital-zone-mundka</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-tcs-ion-digital-zone-dwarka</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-nta-exam-center-delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-upsc-coaching-hub-mukherjee-nagar</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-allen-kota-institute-lajpat-nagar</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-barakhamba-road-business-hub</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-aerocity-worldmark-business-park</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-dlf-cyber-city-border-dhaula-kuan</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-kirti-nagar-industrial-area</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-lawrence-road-industrial-area</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-jhandewalan-extension-business-hub</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-laxmi-nagar-district-centre</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-scope-complex-cgo-complex-lodhi-road</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-new-delhi-railway-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-delhi-airport-t3</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-delhi-airport-t1</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-delhi-airport-t2</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-aerocity-transit-hub</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-delhi-airport-cargo-terminal</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-ndls-paharganj-entrance</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-old-delhi-railway-station-dli</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-delhi-sarai-rohilla-railway-station-dee</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-delhi-cantt-railway-station-dec</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-major-dhyan-chand-national-stadium</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/near-indira-gandhi-indoor-arena</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/couple-friendly-hotels-in-delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/hourly-hotels-in-delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/couple-friendly-hotels-in-paharganj</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/couple-friendly-hotels-in-aerocity</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/couple-friendly-hotels-in-mahipalpur</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/couple-friendly-hotels-in-lajpat-nagar</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/couple-friendly-hotels-in-laxmi-nagar</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/couple-friendly-hotels-in-malviya-nagar</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/couple-friendly-hotels-near-new-delhi-railway-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/couple-friendly-hotels-near-delhi-airport</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/unmarried-couple-allowed-hotels-in-south-delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/unmarried-couple-allowed-hotels-in-north-delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/unmarried-couple-allowed-hotels-in-east-delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/unmarried-couple-allowed-hotels-in-west-delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/local-id-accepted-hotels-in-paharganj</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/local-id-accepted-hotels-in-aerocity</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/local-id-accepted-hotels-in-south-delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/hourly-hotels-in-paharganj</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/hourly-hotels-near-new-delhi-railway-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/hourly-hotels-in-aerocity</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/hourly-hotels-near-delhi-airport-t3</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/hourly-hotels-near-delhi-airport-t1</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/hourly-hotels-in-south-delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/hourly-hotels-in-laxmi-nagar</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/hourly-hotels-near-anand-vihar-isbt</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/hourly-hotels-near-kashmiri-gate-isbt</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/day-use-rooms-near-delhi-airport</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/day-use-rooms-near-ndls-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/day-use-rooms-in-south-delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/cheap-hotels-under-999-in-paharganj</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/cheap-hotels-under-999-near-ndls</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/cheap-hotels-under-999-in-mahipalpur</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/cheap-hotels-under-999-in-laxmi-nagar</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/cheap-hotels-under-1499-in-paharganj</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/cheap-hotels-under-1499-near-airport</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/cheap-hotels-under-1499-in-south-delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/cheap-hotels-under-1999-in-aerocity</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/backpacker-hostels-in-paharganj</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/backpacker-hostels-in-south-delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/backpacker-hostels-in-old-delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/3-star-hotels-in-aerocity</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/3-star-hotels-in-south-delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/4-star-hotels-in-aerocity</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/4-star-hotels-in-south-delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/5-star-luxury-hotels-in-aerocity</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/boutique-hotels-in-south-delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/hotels-with-swimming-pool-in-delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/hotels-with-swimming-pool-in-aerocity</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/hotels-with-swimming-pool-in-south-delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/hotels-with-free-breakfast-in-delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/hotels-with-free-breakfast-near-airport</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/hotels-with-airport-shuttle-in-mahipalpur</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/hotels-with-airport-shuttle-in-aerocity</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/hotels-with-24-hour-check-in-near-airport</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/hotels-with-24-hour-check-in-near-ndls-station</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/hotels-with-free-parking-in-delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/hotels-with-free-parking-in-south-delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/hotels-with-balcony-view-in-south-delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/hotels-with-kitchenette-in-south-delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/pet-friendly-hotels-in-delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/pet-friendly-hotels-in-south-delhi</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/delhi-micro-zone-1</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/hotels/delhi/delhi-micro-zone-2</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/packages/classic-golden-triangle-tour-delhi-agra-jaipur</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.90</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/packages/golden-triangle-with-udaipur-tour-package</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.90</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/packages/golden-triangle-with-ranthambore-tiger-safari-tour</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.90</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/packages/royal-rajasthan-tour-jaipur-jodhpur-jaisalmer-udaipur</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.90</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/packages/golden-triangle-with-pushkar-ajmer-spiritual-tour</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.90</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/packages/desert-triangle-tour-jaipur-jodhpur-jaisalmer</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.90</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/packages/golden-triangle-with-bikaner-tour-package</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.90</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/packages/golden-triangle-with-mount-abu-hill-station-tour</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.90</priority>
   </url>
-  <url>
+<url>
     <loc>https://gethotelstays.com/packages/complete-rajasthan-heritage-tour-13-days</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.90</priority>
   </url>
+<url>
+    <loc>https://gethotelstays.com/packages/classic-golden-triangle-tour-delhi-agra-jaipur</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+<url>
+    <loc>https://gethotelstays.com/packages/golden-triangle-with-udaipur-tour-package</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+<url>
+    <loc>https://gethotelstays.com/packages/golden-triangle-with-ranthambore-tiger-safari-tour</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+<url>
+    <loc>https://gethotelstays.com/packages/royal-rajasthan-tour-jaipur-jodhpur-jaisalmer-udaipur</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+<url>
+    <loc>https://gethotelstays.com/packages/golden-triangle-with-pushkar-ajmer-spiritual-tour</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+<url>
+    <loc>https://gethotelstays.com/packages/desert-triangle-tour-jaipur-jodhpur-jaisalmer</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+<url>
+    <loc>https://gethotelstays.com/packages/golden-triangle-with-bikaner-tour-package</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+<url>
+    <loc>https://gethotelstays.com/packages/golden-triangle-with-mount-abu-hill-station-tour</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+<url>
+    <loc>https://gethotelstays.com/packages/complete-rajasthan-heritage-tour-13-days</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+<url>
+    <loc>https://gethotelstays.com/packages/delhi-to-agra-taj-mahal-day-trip-816-5164</loc>
+    <lastmod>2026-09-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
   <url>
     <loc>https://gethotelstays.com/hotel/the-taj-vista-resort</loc>
-    <lastmod>2026-10-16</lastmod>
+    <lastmod>2026-07-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
   <url>
     <loc>https://gethotelstays.com/hotel/the-grand-imperial-en-gb</loc>
-    <lastmod>2026-10-16</lastmod>
+    <lastmod>2026-07-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
   <url>
     <loc>https://gethotelstays.com/hotel/ginger-goa-candolim</loc>
-    <lastmod>2026-10-16</lastmod>
+    <lastmod>2026-07-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
   <url>
     <loc>https://gethotelstays.com/hotel/panaji-grand-heritage</loc>
-    <lastmod>2026-10-16</lastmod>
+    <lastmod>2026-07-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
   <url>
     <loc>https://gethotelstays.com/hotel/bulk-hotel-alpha-4534</loc>
-    <lastmod>2026-10-16</lastmod>
+    <lastmod>2026-07-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
   <url>
     <loc>https://gethotelstays.com/hotel/bulk-hotel-beta-4534</loc>
-    <lastmod>2026-10-16</lastmod>
+    <lastmod>2026-07-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
   <url>
     <loc>https://gethotelstays.com/hotel/base64-hotel-7733</loc>
-    <lastmod>2026-10-16</lastmod>
+    <lastmod>2026-07-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
   <url>
     <loc>https://gethotelstays.com/hotel/hotel-cottage-yes-please</loc>
-    <lastmod>2026-10-16</lastmod>
+    <lastmod>2026-07-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
   <url>
     <loc>https://gethotelstays.com/hotel/base64-hotel-316</loc>
-    <lastmod>2026-10-16</lastmod>
+    <lastmod>2026-07-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
   <url>
     <loc>https://gethotelstays.com/hotel/webp-hotel-5017</loc>
-    <lastmod>2026-10-16</lastmod>
+    <lastmod>2026-07-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
   <url>
     <loc>https://gethotelstays.com/hotel/fake123</loc>
-    <lastmod>2026-10-16</lastmod>
+    <lastmod>2026-07-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
   <url>
     <loc>https://gethotelstays.com/hotel/3333</loc>
-    <lastmod>2026-10-16</lastmod>
+    <lastmod>2026-07-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
   <url>
     <loc>https://gethotelstays.com/hotel/barefoot-boutique-hotel-udaipur</loc>
-    <lastmod>2026-10-16</lastmod>
+    <lastmod>2026-07-26</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://gethotelstays.com/hotel/hotel-cottage-yes-please</loc>
+    <lastmod>2026-07-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
   <url>
     <loc>https://gethotelstays.com/hotel/hotel-arch-at-delhi-airport-by-arch-group</loc>
-    <lastmod>2026-10-16</lastmod>
+    <lastmod>2026-07-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
   <url>
     <loc>https://gethotelstays.com/hotel/hotel-city-lite</loc>
-    <lastmod>2026-10-16</lastmod>
+    <lastmod>2026-07-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
   <url>
     <loc>https://gethotelstays.com/hotel/hotel-delhi-airport</loc>
-    <lastmod>2026-10-16</lastmod>
+    <lastmod>2026-07-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
   <url>
     <loc>https://gethotelstays.com/hotel/hotel-fly-rooms</loc>
-    <lastmod>2026-10-16</lastmod>
+    <lastmod>2026-07-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
   <url>
     <loc>https://gethotelstays.com/hotel/hotel-haris-court-lajpat-nagar</loc>
-    <lastmod>2026-10-16</lastmod>
+    <lastmod>2026-07-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
   <url>
     <loc>https://gethotelstays.com/hotel/hotel-iconic-suites</loc>
-    <lastmod>2026-10-16</lastmod>
+    <lastmod>2026-07-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
   <url>
     <loc>https://gethotelstays.com/hotel/hotel-ivy-plaza</loc>
-    <lastmod>2026-10-16</lastmod>
+    <lastmod>2026-07-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
   <url>
     <loc>https://gethotelstays.com/hotel/olivia-hotels-delhi-airport</loc>
-    <lastmod>2026-10-16</lastmod>
+    <lastmod>2026-07-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
   <url>
     <loc>https://gethotelstays.com/hotel/opo-hotels-alpino-the-alpino-hotel</loc>
-    <lastmod>2026-10-16</lastmod>
+    <lastmod>2026-07-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
   <url>
     <loc>https://gethotelstays.com/hotel/hotel-airlift-delhi-airport</loc>
-    <lastmod>2026-10-16</lastmod>
+    <lastmod>2026-07-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
   <url>
     <loc>https://gethotelstays.com/hotel/taj-malabar-resort</loc>
-    <lastmod>2026-10-16</lastmod>
+    <lastmod>2026-08-01</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
   <url>
-    <loc>https://gethotelstays.com/hotel/natraj-yes-please</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
+    <loc>https://gethotelstays.com/packages/classic-golden-triangle-tour-delhi-agra-jaipur</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
   </url>
   <url>
-    <loc>https://gethotelstays.com/hotel/hotel-good-luck-palace</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
+    <loc>https://gethotelstays.com/packages/golden-triangle-with-udaipur-tour-package</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
   </url>
   <url>
-    <loc>https://gethotelstays.com/hotel/hotel-cottage-yes-please-new-delhi</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
+    <loc>https://gethotelstays.com/packages/golden-triangle-with-ranthambore-tiger-safari-tour</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
   </url>
   <url>
-    <loc>https://gethotelstays.com/hotel/hotel-amar-international</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
+    <loc>https://gethotelstays.com/packages/royal-rajasthan-tour-jaipur-jodhpur-jaisalmer-udaipur</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
   </url>
   <url>
-    <loc>https://gethotelstays.com/hotel/hotel-ambrosia</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
+    <loc>https://gethotelstays.com/packages/golden-triangle-with-pushkar-ajmer-spiritual-tour</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
   </url>
   <url>
-    <loc>https://gethotelstays.com/hotel/hotel-vedas-heritage-karol-bagh</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
+    <loc>https://gethotelstays.com/packages/desert-triangle-tour-jaipur-jodhpur-jaisalmer</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
   </url>
   <url>
-    <loc>https://gethotelstays.com/hotel/hotel-gold-souk-karol-bagh</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
+    <loc>https://gethotelstays.com/packages/golden-triangle-with-bikaner-tour-package</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
   </url>
   <url>
-    <loc>https://gethotelstays.com/hotel/hotel-red-castle-near-ganga-ram-blk-hospital-karol-bagh</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
+    <loc>https://gethotelstays.com/packages/golden-triangle-with-mount-abu-hill-station-tour</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
   </url>
   <url>
-    <loc>https://gethotelstays.com/hotel/hotel-cosmo-near-blk-hospital-karol-bagh</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
+    <loc>https://gethotelstays.com/packages/complete-rajasthan-heritage-tour-13-days</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
   </url>
   <url>
-    <loc>https://gethotelstays.com/hotel/hotel-panickers-residency-near-ganga-ram-blk-hospital-karol-bagh</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-tripple-tree-near-ganga-ram-blk-hospital-karol-bagh</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-city-star-new-delhi</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-gold-regency</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-ajanta</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-hari-piorko</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-grand-godwin</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/le-roi-delhi-hotel-paharganj</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-singh-empire-dx</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/honeymoon-inn</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-vintage-manali</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/homestay</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-harsh-vilas</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/vinod-sisodia-s-property</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-sidhartha</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-taj-plaza</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-marwari</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-ravi-palace</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-jigyasa-palace</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-smr-palace</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/amar-kothi-udaipur</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/chandra-inn-jodhpur</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-jaisingh-palace</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-kalyan-jaipur</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/umaid-bhawan-hotel-jaipur</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-mewar-castle-udaipur</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-karni-bhawan-jodhpur</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-swaroop-vilas-udaipur</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-white-klove</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-maple-grand</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-the-taj-vilas</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-ganesha</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-pradeep</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/toshali-royal-view-resort-shimla</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/sukhsagar-regency</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/the-tigress-resort-spa-ranthambore</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/santana-beach-resort</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/rosewood-retreat-bhimtal</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/rosewood-apartment-hotel-pantnagar</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/rosewood-apartment-hotel-sidcul-haridwar</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/rosewood-apartment-hotel-gurgaon</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/jaiwana-haveli-hotel</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-broadways-inn</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/karam-durga-guest-house</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/park-inn-by-radisson-new-delhi-lajpat-nagar</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-beacon</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/qotel-signature-coleman-janakpuri</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/apple-tree-residency-near-yashobhoomi</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-tushar-continental</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/koy-a-luxury-boutique-hotel-near-ashok-vihar-model-town</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-worth-near-connaught-place-ndls-station</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-ambience</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-arch-the-lohias</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/opo-premier-gk2</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-vintage-villas</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/crestmont-nirvana</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/the-luxe-jpm</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/the-meriton</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotels-viva-palace</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/the-mansion-hotel-banquet</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/the-golden-palms-hotel-spa-delhi</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-klick-international</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-florence</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-shyama-international</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/qutub-residency-hotel</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/ymca-tourist-hotel-connaught-place</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-city-park-pitampura</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-the-daanish-residency</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-surya-international</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-pearl-delhi-airport</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/best-western-darbar-hotel-delhi</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-ramhan-palace-mahipalpu</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-sun-international</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/bhrs-residency</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://gethotelstays.com/hotel/hotel-devrana-delhi-airport</loc>
-    <lastmod>2026-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
+    <loc>https://gethotelstays.com/packages/delhi-to-agra-taj-mahal-day-trip-816-5164</loc>
+    <lastmod>2026-09-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
   </url>
 </urlset>

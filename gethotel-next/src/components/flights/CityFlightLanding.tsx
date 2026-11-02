@@ -50,12 +50,23 @@ export default function CityFlightLanding({ cityData }: CityFlightLandingProps) 
       }
 
       if (event.data.type === "resize-iframe") {
-        setIframeHeight(event.data.height);
-        if (event.data.isDropdownOpen !== undefined) {
-          setIsDropdownOpen(event.data.isDropdownOpen);
+        const incomingHeight = event.data.height;
+        const dropdownOpen = event.data.isDropdownOpen;
+        const resultsReady = event.data.hasResults;
+
+        // Cap height at 620px when dropdown/calendar is open to prevent infinite scroll loop.
+        // Calendar lazy-loads months as the iframe grows → feedback loop.
+        if (dropdownOpen && !resultsReady) {
+          setIframeHeight(Math.min(incomingHeight, 620));
+        } else {
+          setIframeHeight(incomingHeight);
         }
-        if (event.data.hasResults !== undefined) {
-          setHasResults((prev) => prev || event.data.hasResults);
+
+        if (dropdownOpen !== undefined) {
+          setIsDropdownOpen(dropdownOpen);
+        }
+        if (resultsReady !== undefined) {
+          setHasResults((prev) => prev || resultsReady);
         }
         setLoaded(true);
       }
@@ -175,11 +186,14 @@ export default function CityFlightLanding({ cityData }: CityFlightLandingProps) 
           </p>
         </div>
 
-        {/* Main Search Widget Section — HIGH STACKING CONTEXT (z-50) */}
-        <div ref={searchWidgetRef} id="flight-search-widget" className="max-w-7xl mx-auto w-full relative z-50 mb-8 md:mb-10">
+        {/* Main Search Widget Section */}
+        <div ref={searchWidgetRef} id="flight-search-widget" className="max-w-7xl mx-auto w-full relative z-20 mb-8 md:mb-10">
           <div
             className="w-full relative transition-all duration-300"
-            style={{ minHeight: hasResults ? `${iframeHeight}px` : "175px" }}
+            style={{
+              minHeight: isDropdownOpen && !hasResults ? '620px' : `${iframeHeight}px`,
+              overflow: isDropdownOpen && !hasResults ? 'hidden' : 'visible',
+            }}
           >
             {!loaded && (
               <div className="absolute inset-0 bg-white rounded-2xl border border-slate-200/60 p-6 flex flex-col justify-center items-center z-10">
@@ -202,16 +216,18 @@ export default function CityFlightLanding({ cityData }: CityFlightLandingProps) 
               src={widgetUrl}
               style={{
                 height: `${iframeHeight}px`,
-                minHeight: "175px",
-                position: isDropdownOpen && !hasResults ? "absolute" : "relative",
+                minHeight: isDropdownOpen && !hasResults ? undefined : `${iframeHeight}px`,
+                maxHeight: isDropdownOpen && !hasResults ? '620px' : undefined,
+                position: "relative",
                 top: 0,
                 left: 0,
                 width: "100%",
-                zIndex: 50,
+                zIndex: 10,
+                overflow: 'hidden',
               }}
               scrolling="no"
               sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
-              className="w-full border-none transition-all duration-300 bg-transparent"
+              className="w-full border-none transition-all duration-300 bg-transparent block"
               title={`Flight Search Engine — Flights from ${cityData.name}`}
             />
           </div>

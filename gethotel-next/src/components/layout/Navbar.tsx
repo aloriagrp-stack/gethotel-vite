@@ -46,6 +46,14 @@ export default function Navbar() {
 
     const { count: wishlistCount } = useWishlist();
     const { user, logout } = useAuth();
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    const currentUser = mounted ? user : null;
+    const currentWishlistCount = mounted ? wishlistCount : 0;
+
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     const [showLoginToast, setShowLoginToast] = useState(false);
 
@@ -189,16 +197,16 @@ export default function Navbar() {
                         className="relative w-10 h-10 flex items-center justify-center rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"
                     >
                         <Heart className="w-5 h-5" />
-                        {wishlistCount > 0 && (
+                        {currentWishlistCount > 0 && (
                             <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-red-600 text-white text-[9px] font-black rounded-full flex items-center justify-center ring-2 ring-white">
-                                {wishlistCount > 9 ? "9+" : wishlistCount}
+                                {currentWishlistCount > 9 ? "9+" : currentWishlistCount}
                             </span>
                         )}
                     </Link>
 
                     <div className="w-px h-6 mx-1 bg-slate-200" />
 
-                    {!user && (
+                    {!currentUser && (
                         <Link
                             to={`/${langCode}/list-property`}
                             className="hidden lg:flex items-center gap-2 px-6 py-2.5 bg-sky-100 text-sky-700 border border-sky-200 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-sky-200 transition-all hover:scale-105"
@@ -211,7 +219,7 @@ export default function Navbar() {
                     <div className="relative" ref={dropdownRef}>
                         <button
                             onClick={() => {
-                                if (user) {
+                                if (currentUser) {
                                     setDropdownOpen(!dropdownOpen);
                                 } else {
                                     navigate(`/${langCode}/login`);
@@ -220,20 +228,20 @@ export default function Navbar() {
                             className="flex items-center gap-2 pl-2 pr-4 py-1.5 bg-slate-950 text-white rounded-full hover:bg-slate-900 transition-all"
                         >
                             <div className="w-7 h-7 bg-white/20 rounded-full flex items-center justify-center overflow-hidden">
-                                {user?.photoURL ? (
-                                    <img src={user.photoURL} alt={user.name || "User"} className="w-full h-full object-cover" loading="lazy" />
+                                {currentUser?.photoURL ? (
+                                    <img src={currentUser.photoURL} alt={currentUser.name || "User"} className="w-full h-full object-cover" loading="lazy" />
                                 ) : (
                                     <User className="w-4 h-4 text-white" />
                                 )}
                             </div>
                             <span className="text-xs font-black tracking-tight">
-                                {user ? (user.name?.split(' ')[0] || 'Profile') : 'Login'}
+                                {currentUser ? (currentUser.name?.split(' ')[0] || 'Profile') : 'Login'}
                             </span>
-                            {user && <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", dropdownOpen && "rotate-180")} />}
+                            {currentUser && <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", dropdownOpen && "rotate-180")} />}
                         </button>
 
                         <AnimatePresence>
-                            {dropdownOpen && user && (
+                            {dropdownOpen && currentUser && (
                                 <motion.div
                                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                     animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -262,7 +270,7 @@ export default function Navbar() {
                 <div className="md:hidden flex items-center gap-3">
                     <button
                         onClick={() => {
-                            if (user) {
+                            if (currentUser) {
                                 setProfileMobileOpen(true);
                             } else {
                                 navigate(`/${langCode}/login`);
@@ -270,11 +278,11 @@ export default function Navbar() {
                         }}
                         className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-900 border border-slate-200"
                     >
-                        {user?.photoURL ? (
-                            <img src={user.photoURL} alt="Profile" className="w-full h-full rounded-full object-cover" loading="lazy" />
+                        {currentUser?.photoURL ? (
+                            <img src={currentUser.photoURL} alt="Profile" className="w-full h-full rounded-full object-cover" loading="lazy" />
                         ) : (
                             <span className="text-lg font-black text-slate-400 uppercase italic">
-                                {user ? (user.name || "U").charAt(0) : <User className="w-5 h-5" />}
+                                {currentUser ? (currentUser.name || "U").charAt(0) : <User className="w-5 h-5" />}
                             </span>
                         )}
                     </button>
@@ -308,9 +316,9 @@ export default function Navbar() {
                             <div>
                                 {/* Drawer Top Header */}
                                 <div className="flex items-center justify-between pb-5 border-b border-slate-100 mb-6">
-                                    {user ? (
+                                    {currentUser ? (
                                         <div className="flex flex-col">
-                                            <span className="text-base font-bold text-slate-900">Hello, {user.name?.split(' ')[0]}</span>
+                                            <span className="text-base font-bold text-slate-900">Hello, {currentUser.name?.split(' ')[0]}</span>
                                             <span className="text-[10px] text-brand-600 font-semibold uppercase tracking-wider">Member</span>
                                         </div>
                                     ) : (
@@ -358,7 +366,7 @@ export default function Navbar() {
                                         {t('bookings')}
                                     </Link>
 
-                                    {user && (
+                                    {currentUser && (
                                         <>
                                             <Link 
                                                 to={`/${langCode}/profile`} 
@@ -381,7 +389,7 @@ export default function Navbar() {
 
                             {/* Drawer Bottom Actions */}
                             <div className="pt-6 border-t border-slate-100 space-y-2">
-                                {user ? (
+                                {currentUser ? (
                                     <>
                                         <Link 
                                             to={`/${langCode}/list-property`} 
@@ -430,7 +438,7 @@ export default function Navbar() {
 
             {/* Mobile Profile Menu */}
             <AnimatePresence>
-                {profileMobileOpen && user && (
+                {profileMobileOpen && currentUser && (
                     <>
                         <motion.div
                             initial={{ opacity: 0 }}
@@ -449,8 +457,8 @@ export default function Navbar() {
                             <div>
                                 <div className="flex items-center justify-between pb-5 border-b border-slate-100 mb-6">
                                     <div className="flex flex-col">
-                                        <span className="text-base font-bold text-slate-900">{user.name || "Account"}</span>
-                                        <span className="text-xs text-slate-400">{user.email}</span>
+                                        <span className="text-base font-bold text-slate-900">{currentUser.name || "Account"}</span>
+                                        <span className="text-xs text-slate-400">{currentUser.email}</span>
                                     </div>
                                     <button 
                                         onClick={() => setProfileMobileOpen(false)} 

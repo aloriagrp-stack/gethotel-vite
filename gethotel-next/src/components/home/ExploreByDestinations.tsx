@@ -120,34 +120,35 @@ export default function ExploreByDestinations({
         <section className="pt-1 sm:pt-3 md:pt-6 pb-12 bg-transparent overflow-hidden">
             {/* Section Header: Aligned with the standard site container */}
             <div className="w-full max-w-7xl mx-auto px-4 md:px-8">
-                <div className="flex items-end justify-between mb-4 sm:mb-6 md:mb-8 gap-4">
-                    <div>
-                        <div className="flex items-center gap-2">
-                            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-slate-950 tracking-tight">
-                                {isHourly ? "Hourly Stay Destinations" : "Destinations"}
-                            </h2>
-                            {isHourly && (
-                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
-                                    <Clock className="w-3 h-3" />
-                                    <span>3, 6 & 12 Hrs</span>
-                                </span>
-                            )}
-                        </div>
+                <div className="flex items-start sm:items-end justify-between mb-4 sm:mb-6 md:mb-8 gap-3">
+                    <div className="flex-1 min-w-0">
+                        <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-slate-950 tracking-tight leading-tight">
+                            {isHourly ? "Hourly Stay Destinations" : "Destinations"}
+                        </h2>
                     </div>
 
-                    <Link
-                        to={isHourly ? "/hotels?stayType=hourly" : "/hotels"}
-                        className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-brand-600 transition-colors shrink-0"
-                    >
-                        <span>View all</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
+                    <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 sm:gap-3 shrink-0">
+                        {isHourly && (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black text-blue-600 bg-slate-100 border border-white/80 shadow-[inset_1px_1px_2px_rgba(255,255,255,0.9),2px_2px_5px_rgba(0,0,0,0.07),-2px_-2px_5px_rgba(255,255,255,0.95)] whitespace-nowrap">
+                                <Clock className="w-3.5 h-3.5 text-blue-600 shrink-0 stroke-[2.5]" />
+                                <span>3, 6 & 12 Hrs</span>
+                            </span>
+                        )}
+
+                        <Link
+                            to={isHourly ? "/hotels?stayType=hourly" : "/hotels"}
+                            className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-brand-600 transition-colors shrink-0"
+                        >
+                            <span>View all</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
+                        </Link>
+                    </div>
                 </div>
             </div>
 
             {/* Destinations Cards: Full-width carousel hooked to container margin at rest, open on scroll */}
             <div 
-                className="w-full flex overflow-x-auto gap-3.5 sm:gap-5 pb-4 pt-1 px-4 sm:px-6 md:px-0 no-scrollbar snap-x snap-mandatory scroll-smooth"
+                className="w-full flex overflow-x-auto gap-4 sm:gap-5 pb-4 pt-1 px-4 sm:px-6 md:px-0 no-scrollbar snap-x snap-mandatory scroll-smooth"
                 style={{ WebkitOverflowScrolling: 'touch' }}
             >
                 {/* Desktop Hook Spacer: Holds first card aligned with header at rest, scrolls away freely */}
@@ -160,7 +161,7 @@ export default function ExploreByDestinations({
                     Array.from({ length: 4 }).map((_, idx) => (
                         <div 
                             key={`dest-skeleton-${idx}`} 
-                            className="relative w-[220px] sm:w-[250px] md:w-[270px] shrink-0 aspect-[3/4.1] snap-start rounded-[28px] overflow-hidden bg-slate-200 border border-slate-200/80 shadow-[0_6px_24px_rgba(0,0,0,0.06)]" 
+                            className="relative w-[260px] sm:w-[270px] md:w-[280px] shrink-0 aspect-[3/3.9] snap-start rounded-[28px] overflow-hidden bg-slate-200 border border-slate-200/80 shadow-[0_6px_24px_rgba(0,0,0,0.06)]" 
                         >
                             {/* Shimmer Wave Animation */}
                             <div className="skeleton-wave z-20" />
@@ -191,7 +192,7 @@ export default function ExploreByDestinations({
                             <Link
                                 key={dest.name || idx}
                                 to={getDestinationUrl(dest, idx)}
-                                className="relative w-[220px] sm:w-[250px] md:w-[270px] shrink-0 aspect-[3/4.1] snap-start rounded-[28px] overflow-hidden isolate shadow-[0_6px_24px_rgba(0,0,0,0.08)] block bg-neutral-900 border border-black/10 [transform:translateZ(0)]"
+                                className="relative w-[260px] sm:w-[270px] md:w-[280px] shrink-0 aspect-[3/3.9] snap-start rounded-[28px] overflow-hidden isolate shadow-[0_6px_24px_rgba(0,0,0,0.08)] block bg-neutral-900 border border-black/10 [transform:translateZ(0)]"
                             >
                                 {/* Full Bleed Image */}
                                 <Image

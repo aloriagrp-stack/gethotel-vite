@@ -17,8 +17,10 @@ import {
     Eye,
     ChevronRight,
     ArrowUpDown,
+    UploadCloud,
+    FolderOpen,
 } from "lucide-react";
-import { adminApi, homepageApi } from "@/lib/api";
+import { adminApi, homepageApi, packageApi } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 
@@ -160,6 +162,30 @@ const DEFAULT_HOURLY_DESTINATIONS: DestinationItem[] = [
 
 export default function AdminDestinationsManager() {
     const [activeCategory, setActiveCategory] = useState<"nightly" | "hourly">("nightly");
+    const [uploadingIdx, setUploadingIdx] = useState<number | null>(null);
+
+    const handleFileUpload = async (idx: number, file: File) => {
+        if (!file) return;
+        setUploadingIdx(idx);
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+            const base64 = reader.result as string;
+            // Instantly update preview in UI
+            handleUpdate(idx, "image", base64);
+
+            try {
+                const res = await packageApi.uploadImage(base64);
+                if (res && res.success && res.url) {
+                    handleUpdate(idx, "image", res.url);
+                }
+            } catch (err) {
+                console.warn("Server upload failed, using local base64 preview:", err);
+            } finally {
+                setUploadingIdx(null);
+            }
+        };
+        reader.readAsDataURL(file);
+    };
     const [destinations, setDestinations] = useState<DestinationItem[]>(DEFAULT_DESTINATIONS);
     const [hourlyDestinations, setHourlyDestinations] = useState<DestinationItem[]>(DEFAULT_HOURLY_DESTINATIONS);
     const [availableHotels, setAvailableHotels] = useState<any[]>([]);
@@ -367,8 +393,8 @@ export default function AdminDestinationsManager() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-200/80">
                 <div>
                     <div className="flex items-center gap-2">
-                        <MapPin className="w-4 h-4 text-emerald-400" />
-                        <h1 className="text-xl font-semibold text-slate-900 tracking-tight">Destinations Cards</h1>
+                        <MapPin className="w-4 h-4 text-emerald-600" />
+                        <h1 className="text-xl font-bold text-slate-900 tracking-tight">Destinations Cards</h1>
                     </div>
                     <p className="text-xs text-slate-500 mt-0.5">
                         Manage destination cards and assign properties for overnight & hourly stays.
@@ -378,9 +404,9 @@ export default function AdminDestinationsManager() {
                 <div className="flex items-center gap-2.5">
                     <button
                         onClick={handleAddDestination}
-                        className="px-3.5 py-1.5 bg-neutral-900 hover:bg-neutral-800 text-neutral-200 hover:text-white border border-slate-200 rounded-lg text-xs font-medium flex items-center gap-2 transition-colors cursor-pointer"
+                        className="px-3.5 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-2xs"
                     >
-                        <Plus className="w-3.5 h-3.5 text-neutral-400" />
+                        <Plus className="w-3.5 h-3.5 text-slate-500" />
                         <span>Add Card</span>
                     </button>
 
@@ -388,15 +414,15 @@ export default function AdminDestinationsManager() {
                         onClick={handleSave}
                         disabled={saving}
                         className={cn(
-                            "px-4 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 transition-colors cursor-pointer",
+                            "px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-sm",
                             saved
                                 ? "bg-emerald-600 text-white"
-                                : "bg-slate-900 hover:bg-slate-800 text-white font-medium shadow-2xs"
+                                : "bg-slate-900 hover:bg-slate-800 text-white"
                         )}
                     >
                         {saving ? (
                             <>
-                                <Loader2 className="w-3.5 h-3.5 animate-spin text-black" />
+                                <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
                                 <span>Saving...</span>
                             </>
                         ) : saved ? (
@@ -406,7 +432,7 @@ export default function AdminDestinationsManager() {
                             </>
                         ) : (
                             <>
-                                <Save className="w-3.5 h-3.5 text-black" />
+                                <Save className="w-3.5 h-3.5 text-white" />
                                 <span>Save Changes</span>
                             </>
                         )}
@@ -415,21 +441,21 @@ export default function AdminDestinationsManager() {
             </div>
 
             {/* Category Sub-Tabs: Overnight vs Hourly Stays */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-1.5 bg-neutral-900 border border-slate-200 rounded-lg">
-                <div className="flex items-center gap-1">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-1.5 bg-slate-100 border border-slate-200/80 rounded-xl">
+                <div className="flex items-center gap-1.5">
                     <button
                         onClick={() => setActiveCategory("nightly")}
                         className={cn(
-                            "px-3.5 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-2 cursor-pointer",
+                            "px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer",
                             activeCategory === "nightly"
-                                ? "bg-white text-slate-900 shadow-xs font-semibold"
-                                : "text-slate-600 hover:text-slate-900 font-medium"
+                                ? "bg-white text-slate-900 shadow-sm border border-slate-200/70"
+                                : "text-slate-600 hover:text-slate-900"
                         )}
                     >
                         <span>🌙 Overnight Stays</span>
                         <span className={cn(
-                            "text-[10px] px-1.5 py-0.2 rounded font-medium",
-                            activeCategory === "nightly" ? "bg-slate-100 text-slate-900" : "bg-slate-200/70 text-slate-600"
+                            "text-[10px] px-2 py-0.5 rounded-full font-bold",
+                            activeCategory === "nightly" ? "bg-slate-100 text-slate-800" : "bg-slate-200/80 text-slate-600"
                         )}>
                             {destinations.length}
                         </span>
@@ -438,27 +464,27 @@ export default function AdminDestinationsManager() {
                     <button
                         onClick={() => setActiveCategory("hourly")}
                         className={cn(
-                            "px-3.5 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-2 cursor-pointer",
+                            "px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer",
                             activeCategory === "hourly"
-                                ? "bg-blue-600 text-white"
-                                : "text-slate-600 hover:text-slate-900 font-medium"
+                                ? "bg-blue-600 text-white shadow-sm shadow-blue-500/20"
+                                : "text-slate-600 hover:text-slate-900"
                         )}
                     >
                         <span>⏱️ Hourly Stay Destinations</span>
                         <span className={cn(
-                            "text-[10px] px-1.5 py-0.2 rounded font-medium",
-                            activeCategory === "hourly" ? "bg-blue-800 text-white" : "bg-slate-200/70 text-slate-600"
+                            "text-[10px] px-2 py-0.5 rounded-full font-bold",
+                            activeCategory === "hourly" ? "bg-blue-800 text-white" : "bg-slate-200/80 text-slate-600"
                         )}>
                             {hourlyDestinations.length}
                         </span>
                     </button>
                 </div>
 
-                <div className="text-xs text-slate-500 px-2">
+                <div className="text-xs text-slate-500 px-3 font-medium">
                     {activeCategory === "hourly" ? (
-                        <span className="text-blue-400 font-medium">Hourly Stay Destination Cards (Active on Hourly Mode)</span>
+                        <span className="text-blue-700 font-semibold">Hourly Stay Destination Cards (Active on Hourly Mode)</span>
                     ) : (
-                        <span className="text-neutral-400">Overnight Destination Cards (Active on Nightly Mode)</span>
+                        <span className="text-slate-600">Overnight Destination Cards (Active on Nightly Mode)</span>
                     )}
                 </div>
             </div>
@@ -471,14 +497,14 @@ export default function AdminDestinationsManager() {
                     return (
                         <div
                             key={idx}
-                            className="bg-neutral-900/40 border border-slate-200/80 rounded-xl p-5 transition-colors flex flex-col xl:flex-row items-start xl:items-center gap-6"
+                            className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs hover:shadow-sm transition-all flex flex-col xl:flex-row items-start xl:items-center gap-6"
                         >
                             {/* Live Card Preview (Exact replica of new destination card) */}
-                            <div className="relative w-44 h-60 shrink-0 rounded-2xl overflow-hidden bg-neutral-900 border border-white/10 shadow-lg group select-none">
+                            <div className="relative w-44 h-60 shrink-0 rounded-2xl overflow-hidden bg-slate-900 border border-slate-200 shadow-md group select-none">
                                 {dest.image ? (
                                     <img src={dest.image} alt={dest.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-neutral-600">
+                                    <div className="w-full h-full flex items-center justify-center text-slate-400 bg-slate-100">
                                         <ImageIcon className="w-8 h-8" />
                                     </div>
                                 )}
@@ -497,22 +523,22 @@ export default function AdminDestinationsManager() {
 
                                 {/* Card Content */}
                                 <div className="absolute inset-x-0 bottom-0 p-3 text-white flex flex-col justify-end z-10">
-                                    <h4 className="text-sm font-semibold text-white leading-tight drop-shadow-sm">
+                                    <h4 className="text-sm font-bold text-white leading-tight drop-shadow-sm">
                                         <span>{dest.name || "Destination"}</span>
                                     </h4>
-                                    <p className="text-[10px] text-white/80 font-medium mt-0.5 line-clamp-1">
+                                    <p className="text-[10px] text-white/90 font-medium mt-0.5 line-clamp-1">
                                         {dest.properties || dest.tagline || "Hotels"}
                                     </p>
-                                    <div className="mt-2.5 w-full py-1 px-2 bg-white/[0.12] backdrop-blur-2xl border border-white/30 rounded-lg flex items-center justify-between text-white text-[10px] font-medium">
+                                    <div className="mt-2.5 w-full py-1 px-2 bg-white/20 backdrop-blur-2xl border border-white/40 rounded-lg flex items-center justify-between text-white text-[10px] font-semibold">
                                         <span>Explore</span>
                                         <ChevronRight className="w-3 h-3 text-white" />
                                     </div>
                                 </div>
 
                                 {/* Overlay for Image Upload */}
-                                <label className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white text-xs font-medium cursor-pointer transition-opacity z-20">
+                                <label className="absolute inset-0 bg-slate-950/75 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white text-xs font-semibold cursor-pointer transition-opacity z-20">
                                     <ImageIcon className="w-5 h-5 mb-1 text-emerald-400" />
-                                    <span>Upload Image</span>
+                                    <span>Change Photo</span>
                                     <input
                                         type="file"
                                         accept="image/*"
@@ -532,10 +558,10 @@ export default function AdminDestinationsManager() {
                             </div>
 
                             {/* Destination Fields Grid */}
-                            <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 w-full">
+                            <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
                                 {/* Destination Name */}
-                                <div className="space-y-1">
-                                    <label className="text-[11px] font-semibold text-slate-600 uppercase tracking-wider block">
+                                <div className="space-y-1.5">
+                                    <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block">
                                         Destination Name
                                     </label>
                                     <input
@@ -543,41 +569,82 @@ export default function AdminDestinationsManager() {
                                         value={dest.name}
                                         onChange={(e) => handleUpdate(idx, "name", e.target.value)}
                                         placeholder="e.g. Indonesia, Goa, Delhi"
-                                        className="w-full bg-neutral-950 border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-white outline-none focus:border-neutral-700"
+                                        className="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-xs font-semibold text-slate-900 placeholder:text-slate-400 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-2xs transition-all"
                                     />
                                 </div>
 
                                 {/* Properties / Stats Text */}
-                                <div className="space-y-1">
-                                    <label className="text-[11px] font-semibold text-slate-600 uppercase tracking-wider block">
+                                <div className="space-y-1.5">
+                                    <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block">
                                         Stats Line (Hotels)
                                     </label>
                                     <input
                                         type="text"
                                         value={dest.properties || ""}
                                         onChange={(e) => handleUpdate(idx, "properties", e.target.value)}
-                                        placeholder="e.g. 1,345 Hotels"
-                                        className="w-full bg-neutral-950 border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-white outline-none focus:border-neutral-700"
+                                        placeholder="e.g. 1,240+ Hotels"
+                                        className="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-xs font-semibold text-slate-900 placeholder:text-slate-400 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-2xs transition-all"
                                     />
                                 </div>
 
-                                {/* Image URL */}
-                                <div className="space-y-1">
-                                    <label className="text-[11px] font-semibold text-slate-600 uppercase tracking-wider block">
-                                        Image URL
-                                    </label>
+                                {/* Destination Image / Upload from Folder */}
+                                <div className="space-y-1.5">
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block">
+                                            Destination Image
+                                        </label>
+                                        <span className="text-[10px] text-slate-500 font-semibold">Local File or URL</span>
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                        <label className="flex-1 cursor-pointer">
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                className="hidden"
+                                                onChange={(e) => {
+                                                    const f = e.target.files?.[0];
+                                                    if (f) handleFileUpload(idx, f);
+                                                }}
+                                            />
+                                            <div className="flex items-center justify-center gap-2 px-3 py-2 bg-blue-50 hover:bg-blue-100/80 border border-blue-200 rounded-xl text-xs font-bold text-blue-700 transition-all shadow-2xs">
+                                                {uploadingIdx === idx ? (
+                                                    <>
+                                                        <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600" />
+                                                        <span>Uploading from Device...</span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <FolderOpen className="w-4 h-4 text-blue-600" />
+                                                        <span>{dest.image ? "📁 Change Image from Folder" : "📁 Choose Image from Folder"}</span>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </label>
+                                        {dest.image && (
+                                            <button
+                                                type="button"
+                                                onClick={() => handleUpdate(idx, "image", "")}
+                                                className="p-2 text-slate-400 hover:text-rose-600 bg-slate-100 hover:bg-rose-50 border border-slate-200 rounded-xl transition-colors cursor-pointer"
+                                                title="Remove Image"
+                                            >
+                                                <X className="w-3.5 h-3.5" />
+                                            </button>
+                                        )}
+                                    </div>
+
                                     <input
                                         type="text"
-                                        value={dest.image || ""}
+                                        value={dest.image?.startsWith('data:') ? '✓ Local image uploaded from device' : (dest.image || "")}
                                         onChange={(e) => handleUpdate(idx, "image", e.target.value)}
-                                        placeholder="https://images.unsplash.com/..."
-                                        className="w-full bg-neutral-950 border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-white outline-none focus:border-neutral-700 font-mono text-[11px]"
+                                        placeholder="Or paste web image URL here..."
+                                        className="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-[11px] font-medium text-slate-600 placeholder:text-slate-400 outline-none focus:border-blue-600 transition-all font-mono truncate"
                                     />
                                 </div>
 
                                 {/* Target URL / Slug */}
-                                <div className="space-y-1">
-                                    <label className="text-[11px] font-semibold text-slate-600 uppercase tracking-wider block">
+                                <div className="space-y-1.5">
+                                    <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block">
                                         Target Route / City
                                     </label>
                                     <input
@@ -585,13 +652,13 @@ export default function AdminDestinationsManager() {
                                         value={dest.url || ""}
                                         onChange={(e) => handleUpdate(idx, "url", e.target.value)}
                                         placeholder="e.g. /hotels?city=Indonesia"
-                                        className="w-full bg-neutral-950 border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-white outline-none focus:border-neutral-700 font-mono text-[11px]"
+                                        className="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-xs font-semibold text-slate-900 placeholder:text-slate-400 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-2xs transition-all font-mono text-[11px]"
                                     />
                                 </div>
 
                                 {/* Tagline (optional) */}
-                                <div className="space-y-1">
-                                    <label className="text-[11px] font-semibold text-slate-600 uppercase tracking-wider block">
+                                <div className="space-y-1.5">
+                                    <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block">
                                         Tagline / Description
                                     </label>
                                     <input
@@ -599,7 +666,7 @@ export default function AdminDestinationsManager() {
                                         value={dest.tagline || ""}
                                         onChange={(e) => handleUpdate(idx, "tagline", e.target.value)}
                                         placeholder="e.g. Tropical Terraces & Sun"
-                                        className="w-full bg-neutral-950 border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-white outline-none focus:border-neutral-700"
+                                        className="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-xs font-semibold text-slate-900 placeholder:text-slate-400 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-2xs transition-all"
                                     />
                                 </div>
                             </div>
@@ -612,13 +679,13 @@ export default function AdminDestinationsManager() {
                                         setSelectedCityFilter(dest.name || "All");
                                     }}
                                     className={cn(
-                                        "px-3.5 py-2 rounded-lg text-xs font-medium flex items-center gap-2 border transition-colors cursor-pointer",
+                                        "px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 border transition-all cursor-pointer shadow-2xs",
                                         linkedCount > 0
-                                            ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100/70"
-                                            : "bg-neutral-900 text-neutral-300 border-slate-200 hover:bg-neutral-800"
+                                            ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+                                            : "bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200"
                                     )}
                                 >
-                                    <Hotel className="w-3.5 h-3.5 text-emerald-400" />
+                                    <Hotel className="w-4 h-4 text-emerald-600" />
                                     <span>
                                         {linkedCount > 0 ? `Assigned (${linkedCount})` : "Assign Properties"}
                                     </span>
@@ -626,10 +693,10 @@ export default function AdminDestinationsManager() {
 
                                 <button
                                     onClick={() => handleRemove(idx)}
-                                    className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 flex items-center justify-center transition-colors cursor-pointer"
+                                    className="p-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
                                     title="Delete Destination Card"
                                 >
-                                    <Trash2 className="w-3.5 h-3.5" />
+                                    <Trash2 className="w-4 h-4" />
                                 </button>
                             </div>
                         </div>
@@ -639,63 +706,63 @@ export default function AdminDestinationsManager() {
 
             {/* ASSIGN PROPERTIES MODAL */}
             {assignTargetIndex !== null && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-xs">
-                    <div className="w-full max-w-3xl max-h-[85vh] bg-neutral-900 border border-slate-200 rounded-2xl p-5 shadow-2xl flex flex-col text-white">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+                    <div className="w-full max-w-3xl max-h-[85vh] bg-white border border-slate-200 rounded-2xl p-6 shadow-2xl flex flex-col text-slate-900">
                         {/* Modal Header */}
-                        <div className="flex items-center justify-between pb-4 border-b border-slate-200/80">
+                        <div className="flex items-center justify-between pb-4 border-b border-slate-200">
                             <div>
                                 <div className="flex items-center gap-2">
-                                    <Hotel className="w-4 h-4 text-emerald-400" />
-                                    <h3 className="text-sm font-semibold text-slate-900 tracking-tight">
+                                    <Hotel className="w-4 h-4 text-emerald-600" />
+                                    <h3 className="text-base font-bold text-slate-900 tracking-tight">
                                         Assign Properties to {currentDestinations[assignTargetIndex]?.name}
                                     </h3>
                                 </div>
                                 <p className="text-xs text-slate-500 mt-0.5">
-                                    Select properties returned when users click this destination card.
+                                    Select properties returned when users click this destination card on homepage.
                                 </p>
                             </div>
                             <button
                                 onClick={() => setAssignTargetIndex(null)}
-                                className="p-1.5 rounded-lg bg-neutral-950 hover:bg-neutral-800 text-neutral-400 hover:text-white transition-colors cursor-pointer border border-slate-200"
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer border border-slate-200"
                             >
                                 <X className="w-4 h-4" />
                             </button>
                         </div>
 
                         {/* Search & City Filter Toolbar */}
-                        <div className="py-3.5 flex flex-col sm:flex-row gap-2.5 border-b border-slate-200/80">
+                        <div className="py-4 flex flex-col sm:flex-row gap-2.5 border-b border-slate-200">
                             <div className="relative flex-1">
-                                <Search className="w-3.5 h-3.5 text-neutral-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                                 <input
                                     type="text"
                                     value={hotelSearch}
                                     onChange={(e) => setHotelSearch(e.target.value)}
                                     placeholder="Search property name, address, city..."
-                                    className="w-full pl-9 pr-3 py-1.5 bg-neutral-950 border border-slate-200 rounded-lg text-xs text-white outline-none focus:border-neutral-700 placeholder:text-neutral-500"
+                                    className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 placeholder:text-slate-400"
                                 />
                             </div>
 
                             <select
                                 value={selectedCityFilter}
                                 onChange={(e) => setSelectedCityFilter(e.target.value)}
-                                className="px-3 py-1.5 bg-neutral-950 border border-slate-200 rounded-lg text-xs text-white outline-none focus:border-neutral-700"
+                                className="px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-blue-600"
                             >
-                                <option value="All" className="bg-white text-slate-900">All Cities ({availableHotels.length})</option>
+                                <option value="All">All Cities ({availableHotels.length})</option>
                                 {uniqueCities.map((city) => (
-                                    <option key={city} value={city} className="bg-white text-slate-900">{city}</option>
+                                    <option key={city} value={city}>{city}</option>
                                 ))}
                             </select>
 
                             <div className="flex items-center gap-2">
                                 <button
                                     onClick={selectAllFiltered}
-                                    className="px-2.5 py-1.5 bg-neutral-950 hover:bg-neutral-800 text-xs font-medium text-emerald-400 rounded-lg transition-colors border border-slate-200 cursor-pointer"
+                                    className="px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-xs font-bold text-emerald-700 rounded-xl transition-colors border border-emerald-200 cursor-pointer shadow-2xs"
                                 >
                                     Select All
                                 </button>
                                 <button
                                     onClick={deselectAllFiltered}
-                                    className="px-2.5 py-1.5 bg-neutral-950 hover:bg-neutral-800 text-xs font-medium text-neutral-400 hover:text-white rounded-lg transition-colors border border-slate-200 cursor-pointer"
+                                    className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 rounded-xl transition-colors border border-slate-300 cursor-pointer shadow-2xs"
                                 >
                                     Deselect
                                 </button>
@@ -717,10 +784,10 @@ export default function AdminDestinationsManager() {
                                             key={hotel.id}
                                             onClick={() => toggleHotelLink(hotel.id)}
                                             className={cn(
-                                                "p-3 rounded-lg border transition-colors flex items-center justify-between cursor-pointer select-none",
+                                                "p-3 rounded-xl border transition-all flex items-center justify-between cursor-pointer select-none",
                                                 isLinked
-                                                    ? "bg-emerald-50/80 border-emerald-200 shadow-2xs"
-                                                    : "bg-neutral-950/60 border-slate-200/80 hover:bg-neutral-800/30"
+                                                    ? "bg-emerald-50/90 border-emerald-300 shadow-2xs"
+                                                    : "bg-slate-50/70 border-slate-200 hover:bg-slate-100/90"
                                             )}
                                         >
                                             <div className="flex items-center gap-3">
@@ -728,34 +795,34 @@ export default function AdminDestinationsManager() {
                                                     className={cn(
                                                         "w-4 h-4 rounded border flex items-center justify-center transition-colors",
                                                         isLinked
-                                                            ? "bg-emerald-500 border-emerald-500 text-black"
-                                                            : "border-neutral-700 bg-neutral-900"
+                                                            ? "bg-emerald-600 border-emerald-600 text-white"
+                                                            : "border-slate-300 bg-white"
                                                     )}
                                                 >
                                                     {isLinked && <Check className="w-3 h-3 stroke-[3]" />}
                                                 </div>
 
-                                                <div className="w-10 h-9 rounded-md overflow-hidden bg-neutral-900 shrink-0">
+                                                <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
                                                     {hotel.images?.[0] ? (
                                                         <img src={hotel.images[0]} alt={hotel.name} className="w-full h-full object-cover" />
                                                     ) : (
-                                                        <div className="w-full h-full flex items-center justify-center text-neutral-600">
-                                                            <Hotel className="w-3.5 h-3.5" />
+                                                        <div className="w-full h-full flex items-center justify-center text-slate-400">
+                                                            <Hotel className="w-4 h-4" />
                                                         </div>
                                                     )}
                                                 </div>
 
                                                 <div>
-                                                    <h4 className="text-xs font-medium text-slate-900">{hotel.name}</h4>
-                                                    <p className="text-[11px] text-slate-500">{hotel.city} • {hotel.address}</p>
+                                                    <h4 className="text-xs font-bold text-slate-900">{hotel.name}</h4>
+                                                    <p className="text-[11px] text-slate-500 font-medium">{hotel.city} • {hotel.address}</p>
                                                 </div>
                                             </div>
 
                                             <div className="text-right">
-                                                <span className="text-xs font-medium text-emerald-400">
+                                                <span className="text-xs font-bold text-slate-900 font-mono">
                                                     ₹{hotel.pricePerNight || 1200}
                                                 </span>
-                                                <span className="text-[10px] text-neutral-500 block">/night</span>
+                                                <span className="text-[10px] text-slate-500 block font-medium">/night</span>
                                             </div>
                                         </div>
                                     );
@@ -764,14 +831,14 @@ export default function AdminDestinationsManager() {
                         </div>
 
                         {/* Modal Footer */}
-                        <div className="pt-3.5 border-t border-slate-200/80 flex items-center justify-between">
-                            <span className="text-xs text-neutral-400">
-                                <strong className="text-emerald-400 font-medium">{currentLinkedIds.length}</strong> properties assigned
+                        <div className="pt-4 border-t border-slate-200 flex items-center justify-between">
+                            <span className="text-xs text-slate-600 font-medium">
+                                <strong className="text-emerald-700 font-bold">{currentLinkedIds.length}</strong> properties assigned
                             </span>
 
                             <button
                                 onClick={() => setAssignTargetIndex(null)}
-                                className="px-5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs rounded-lg transition-colors cursor-pointer shadow-xs"
+                                className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition-colors cursor-pointer shadow-sm"
                             >
                                 Done
                             </button>

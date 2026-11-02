@@ -25,7 +25,7 @@ export default function AICopilot() {
   return (
     <button
       onClick={handleOpenAIMode}
-      className="fixed bottom-6 right-6 z-50 flex items-center justify-center h-12 rounded-full px-6 bg-brand-600 hover:bg-[#002f87] text-white text-[12px] font-bold uppercase tracking-wider shadow-lg hover:shadow-xl active:scale-95 transition-all cursor-pointer"
+      className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 flex items-center justify-center h-10 px-4 sm:h-12 sm:px-6 rounded-full bg-brand-600 hover:bg-[#002f87] text-white text-[11px] sm:text-[12px] font-bold uppercase tracking-wider shadow-lg hover:shadow-xl active:scale-95 transition-all cursor-pointer"
       title="Open GetHotelStays AI Assistant"
       aria-label="Open GetHotelStays AI Assistant"
     >

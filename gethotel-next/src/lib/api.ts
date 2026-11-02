@@ -1,10 +1,11 @@
 // API configuration for GetHotelStays (Next.js Compatible)
 const isProd = typeof process !== 'undefined' && process.env.NODE_ENV === 'production';
-const envApiUrl = typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_API_URL : undefined;
 
-const API_URL = isProd 
-    ? 'https://gethotelstays.com/api' 
-    : (envApiUrl || `http://${typeof window !== 'undefined' ? window.location.hostname : 'localhost'}:5000/api`);
+// In dev mode, use local /api proxy (Next.js rewrites → live backend) to avoid CORS.
+// In production (static export), hit the live backend directly.
+const API_URL = isProd
+    ? 'https://gethotelstays.com/api'
+    : '/api';
 
 // Legacy fabricated default hero images that the OLD backend used to return when
 // no tour hero config was saved. These must NOT be treated as real admin banners —

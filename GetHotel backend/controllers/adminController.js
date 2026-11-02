@@ -351,7 +351,7 @@ exports.getAdminHotelDetail = async (req, res) => {
         const hotel = await prisma.hotel.findUnique({
             where: { id: hotelId },
             include: {
-                user: { select: { id: true, name: true, email: true, role: true } },
+                user: { select: { id: true, name: true, email: true, role: true, createdAt: true, phone: true } },
                 room: true,
                 booking: {
                     include: {

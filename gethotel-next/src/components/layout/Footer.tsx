@@ -30,7 +30,7 @@ const FacebookIcon = ({ className }: { className?: string }) => (
 );
 
 const socials = [
-    { icon: InstagramIcon, href: "https://instagram.com/get.hotel.stays", label: "Instagram", color: "hover:bg-pink-50 hover:border-pink-300 hover:text-pink-600" },
+    { icon: InstagramIcon, href: "https://instagram.com/bookghs", label: "Instagram", color: "hover:bg-pink-50 hover:border-pink-300 hover:text-pink-600" },
     { icon: FacebookIcon, href: "https://facebook.com/gethotelstays", label: "Facebook", color: "hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600" },
     { icon: TwitterIcon, href: "https://x.com/gethotelstays", label: "X (Twitter)", color: "hover:bg-slate-100 hover:border-slate-400 hover:text-slate-950" },
     { icon: LinkedInIcon, href: "https://linkedin.com/company/gethotelstays", label: "LinkedIn", color: "hover:bg-blue-50 hover:border-blue-300 hover:text-brand-600" },
@@ -76,17 +76,17 @@ export default function Footer() {
     };
 
     return (
-        <footer className="bg-transparent text-slate-700 pt-0 pb-12 overflow-hidden relative">
+        <footer className="bg-transparent text-slate-700 pt-0 pb-8 overflow-hidden relative">
             {/* Shiny Blue Divider Line */}
-            <div className="relative w-full h-[2px] mb-10 md:mb-12 overflow-hidden">
+            <div className="relative w-full h-[2px] mb-6 md:mb-8 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-brand-500 to-transparent" />
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-400 to-transparent blur-[2px] opacity-90 animate-pulse" />
             </div>
 
             <div className="w-full max-w-none mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 mb-12">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 mb-6 md:mb-8">
                     {/* Brand Column */}
-                    <div className="lg:col-span-4 space-y-4">
+                    <div className="lg:col-span-4 space-y-3">
                         <Link to="/" className="inline-flex items-center gap-2 group">
                             <span className="text-xl md:text-2xl font-black tracking-tighter text-slate-950 group-hover:text-brand-600 transition-colors">
                                 GetHotelStays<span className="text-brand-600 not-italic">.</span>
@@ -96,7 +96,7 @@ export default function Footer() {
                             India's leading verified hotel booking platform. Pay only 12% online and rest at hotel. Trusted by travelers from India & worldwide.
                         </p>
                         
-                        <div className="flex items-center gap-2.5 pt-1">
+                        <div className="flex items-center gap-2 pt-0.5">
                             {socials.map((s, idx) => {
                                 const Icon = s.icon;
                                 return (
@@ -107,26 +107,44 @@ export default function Footer() {
                                         rel="noopener noreferrer"
                                         aria-label={s.label}
                                         title={s.label}
-                                        className={`w-8 h-8 rounded-lg bg-white/80 border border-slate-200 flex items-center justify-center text-slate-600 transition-all shadow-sm ${s.color}`}
+                                        className={`w-7 h-7 rounded-lg bg-white/80 border border-slate-200 flex items-center justify-center text-slate-600 transition-all shadow-sm ${s.color}`}
                                     >
-                                        <Icon className="w-4 h-4" />
+                                        <Icon className="w-3.5 h-3.5" />
                                     </a>
                                 );
                             })}
                         </div>
                     </div>
 
-                    {/* Links Columns (Aamne-Samne Grid layout) */}
-                    <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-3 gap-6 sm:gap-8">
-                        {Object.entries(footerLinks).map(([category, links]) => (
-                            <div key={category} className="space-y-3">
-                                <h3 className="text-xs font-bold text-slate-950 uppercase tracking-wider">{category}</h3>
-                                <ul className="space-y-2">
-                                    {links.map((link, idx) => (
+                    {/* Links Columns (Balanced Compact Grid) */}
+                    <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-12 gap-6">
+                        {/* Delhi Stays (2-Column Subgrid to keep footer compact) */}
+                        <div className="sm:col-span-6 space-y-2.5">
+                            <h3 className="text-xs font-bold text-slate-950 uppercase tracking-wider">Delhi Stays</h3>
+                            <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
+                                {footerLinks["Delhi Stays"].map((link, idx) => (
+                                    <Link
+                                        key={idx}
+                                        to={link.href}
+                                        title={link.label}
+                                        className="text-[11.5px] text-slate-600 hover:text-brand-600 transition-colors font-medium truncate block leading-snug"
+                                    >
+                                        {link.label}
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Top Destinations & Partners */}
+                        <div className="sm:col-span-3 space-y-4">
+                            <div className="space-y-2">
+                                <h3 className="text-xs font-bold text-slate-950 uppercase tracking-wider">Top Destinations</h3>
+                                <ul className="space-y-1.5">
+                                    {footerLinks["Top Destinations"].map((link, idx) => (
                                         <li key={idx}>
                                             <Link
                                                 to={link.href}
-                                                className="text-xs text-slate-600 hover:text-brand-600 transition-colors font-medium block"
+                                                className="text-[11.5px] text-slate-600 hover:text-brand-600 transition-colors font-medium block leading-snug"
                                             >
                                                 {link.label}
                                             </Link>
@@ -134,11 +152,44 @@ export default function Footer() {
                                     ))}
                                 </ul>
                             </div>
-                        ))}
+
+                            <div className="space-y-2 pt-1">
+                                <h3 className="text-xs font-bold text-slate-950 uppercase tracking-wider">Partners</h3>
+                                <ul className="space-y-1.5">
+                                    {footerLinks["Partners"].map((link, idx) => (
+                                        <li key={idx}>
+                                            <Link
+                                                to={link.href}
+                                                className="text-[11.5px] text-slate-600 hover:text-brand-600 transition-colors font-medium block leading-snug"
+                                            >
+                                                {link.label}
+                                            </Link>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+
+                        {/* Support & Legal */}
+                        <div className="sm:col-span-3 space-y-2.5">
+                            <h3 className="text-xs font-bold text-slate-950 uppercase tracking-wider">Support & Legal</h3>
+                            <ul className="space-y-1.5">
+                                {footerLinks["Support & Legal"].map((link, idx) => (
+                                    <li key={idx}>
+                                        <Link
+                                            to={link.href}
+                                            className="text-[11.5px] text-slate-600 hover:text-brand-600 transition-colors font-medium block leading-snug"
+                                        >
+                                            {link.label}
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
                     </div>
                 </div>
 
-                <div className="border-t border-slate-200/60 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+                <div className="border-t border-slate-200/60 pt-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-500">
                     <p>© {new Date().getFullYear()} GetHotelStays.com. All rights reserved.</p>
                     <p className="font-medium text-slate-600">
                         Managed by <span className="font-bold text-slate-800">Aloria Group</span> and Developed by <a href="https://alorialabs.in" target="_blank" rel="noopener noreferrer" className="font-bold text-brand-600 hover:underline">alorialabs.in</a>

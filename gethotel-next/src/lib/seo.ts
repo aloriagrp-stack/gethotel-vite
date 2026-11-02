@@ -817,7 +817,7 @@ export const organizationSchema = {
     },
     sameAs: [
         "https://www.facebook.com/gethotelstays",
-        "https://www.instagram.com/gethotelstays",
+        "https://www.instagram.com/bookghs",
         "https://twitter.com/gethotelstays",
         "https://www.linkedin.com/company/gethotelstays",
         "https://www.youtube.com/@gethotelstays",
@@ -1002,76 +1002,52 @@ export const buildFAQSchema = (faqs: { question: string; answer: string }[]) => 
 /** Home page FAQ — high search volume queries */
 export const HOME_FAQS = [
     {
-        question: "How do I book a hotel on GetHotelStays?",
-        answer: "Search for hotels by city or destination, choose your dates and guests, select your preferred room, and pay just 12% online to confirm. You pay the rest directly at the hotel.",
+        question: "Can unmarried couples book hotels with local IDs on GetHotelStays?",
+        answer: "Yes, 100%. Under Indian law, consenting adult citizens (18+) with valid original government photo IDs (Aadhaar, Voter ID, Passport, DL) are legally entitled to check into our verified couple-friendly partner hotels without moral policing, awkward questioning, or local ID restrictions.",
     },
     {
-        question: "Can NRIs (Non-Resident Indians) book hotels in India on GetHotelStays?",
-        answer: "Yes! GetHotelStays is the preferred hotel booking platform for NRIs. We accept international cards, PayPal, and all major payment methods. Book hotels in India from USA, UK, UAE, Canada, Australia, or anywhere in the world.",
+        question: "Why do I only pay 12% online? Is there any hidden surcharge at check-in?",
+        answer: "Zero hidden surcharges. Our signature 'Pay 12% Now' model lets you reserve your confirmed room instantly with just a 12% advance deposit online. The remaining 88% balance is settled directly at the hotel front desk upon check-in via cash, UPI, or card.",
     },
     {
-        question: "Is my booking guaranteed on GetHotelStays?",
-        answer: "100% guaranteed. All properties on GetHotelStays are verified. Once you pay the 12% advance, your room is instantly confirmed with a booking ID. You receive email confirmation immediately.",
+        question: "Can I book hourly rooms for 3 hours, 6 hours, or 12 hours near Delhi Airport or Railway Stations?",
+        answer: "Yes! Our flexible micro-stay options allow you to book 3-hour, 6-hour, or 12-hour slots near Indira Gandhi International Airport (T3/T2/T1), New Delhi Railway Station (NDLS), and other key hubs. Perfect for transit layovers, fresh-ups, and business meetings without paying for a full 24-hour day.",
     },
     {
-        question: "What is the cancellation policy?",
-        answer: "Most hotels on GetHotelStays offer free cancellation up to 24-48 hours before check-in. The cancellation policy varies by property and is clearly shown before you book.",
+        question: "Can international tourists and NRIs book hotels in India using overseas cards?",
+        answer: "Yes. Our secure global checkout accepts all major international Visa, Mastercard, American Express cards, and PayPal in USD, GBP, EUR, AED, CAD, and AUD with instant booking confirmation and 24/7 guest support.",
     },
     {
-        question: "Why should I use GetHotelStays instead of other booking platforms?",
-        answer: "GetHotelStays offers the best hotel rates in India with a unique Pay 12% Now model — you only pay a small deposit online and the rest at the hotel. We also offer no booking fees, instant confirmation, and 24/7 customer support.",
+        question: "Is my booking 100% guaranteed on GetHotelStays?",
+        answer: "100% guaranteed. All properties on GetHotelStays undergo strict quality and physical verification. Once you pay the 12% advance deposit, your room is instantly confirmed with a unique Booking ID and immediate SMS and email receipt.",
+    },
+    {
+        question: "What is the cancellation and refund policy on GetHotelStays?",
+        answer: "Most hotels on GetHotelStays offer free cancellation up to 24 to 48 hours before your scheduled check-in. If you cancel within the free cancellation window, your 12% deposit is refunded promptly. The exact cancellation policy is transparently displayed on each property page before you book.",
+    },
+    {
+        question: "What government ID documents are required during hotel check-in in India?",
+        answer: "Indian citizens can check in with any valid government-issued photo ID carrying their address (Aadhaar Card, Passport, Voter ID, or Driving License). PAN cards are not accepted as address proof. NRIs and foreign travelers must present their original passport and a valid Indian visa or OCI card.",
+    },
+    {
+        question: "Can I book a hotel on GetHotelStays for someone else?",
+        answer: "Yes! You can book for family members, friends, or corporate colleagues from anywhere in the world. Simply enter the guest's name and contact number during checkout. The guest can check in with their own government ID and settle the remaining 88% balance upon arrival.",
+    },
+    {
+        question: "Can I request early check-in or late check-out?",
+        answer: "Standard check-in is typically 12:00 PM and check-out is 11:00 AM. However, many partner properties offer early check-in (from 6:00 AM onwards) and late check-out based on room availability. You can also book an hourly slot if arriving during early morning hours.",
+    },
+    {
+        question: "Why should I choose GetHotelStays instead of other booking platforms?",
+        answer: "GetHotelStays works directly with verified hotel owners to offer zero booking fees, lowest direct rates, and our traveler-friendly 'Pay 12% Now' model so you don't lock your entire travel budget upfront. We also guarantee genuine couple-friendly policies and 24/7 human support.",
     },
     {
         question: "Which cities in India can I book hotels in?",
-        answer: "GetHotelStays has hotels in 500+ cities and destinations across India including Mumbai, Delhi, Bangalore, Goa, Jaipur, Hyderabad, Chennai, Kolkata, Agra, Varanasi, Kerala, Shimla, Manali, Udaipur, Rishikesh, and many more.",
+        answer: "GetHotelStays features thousands of verified properties in 500+ Indian cities and tourist destinations, including Delhi, Mumbai, Bangalore, Goa, Jaipur, Udaipur, Manali, Shimla, Varanasi, Hyderabad, Kolkata, Chennai, Agra, and Rishikesh.",
     },
     {
-        question: "Can I book hourly hotels or day-use rooms on GetHotelStays?",
-        answer: "Yes! GetHotelStays offers hourly hotel bookings for transit stays, business meetings, or quick rest breaks. Available in select properties across major Indian cities.",
-    },
-    {
-        question: "Does GetHotelStays have a mobile app?",
-        answer: "GetHotelStays works perfectly on mobile browsers. Our mobile-optimized website gives you the full app experience without any download required.",
-    },
-    {
-        question: "How can NRIs book affordable hotels in Delhi from USA, UK, or UAE?",
-        answer: "NRIs can easily book affordable hotels in Delhi on GetHotelStays. Simply visit the Delhi hotels page, choose your dates, and pay just 12% online using international credit cards, debit cards, or PayPal. The rest is paid at the hotel. We have 2,000+ verified budget to luxury properties across Delhi including Aerocity, Connaught Place, Paharganj, and Karol Bagh.",
-    },
-    {
-        question: "What are the best affordable hotels in Delhi for budget travelers?",
-        answer: "Delhi offers excellent budget hotels in areas like Paharganj, Karol Bagh, and Chandni Chowk. On GetHotelStays, you can find verified budget hotels starting from ₹999/night. These properties offer clean rooms, free WiFi, breakfast options, and are close to Delhi's top attractions like Red Fort, India Gate, and Qutub Minar.",
-    },
-    {
-        question: "Are there hotels near Delhi Airport for international travelers?",
-        answer: "Yes! Aerocity and Mahipalpur near Delhi Airport have dozens of verified hotels on GetHotelStays. Ideal for international travelers with early flights or late arrivals. Many offer free airport pickup, hourly stays for transit, and soundproof rooms. Book from anywhere in the world with our international payment options.",
-    },
-    {
-        question: "Can I book Delhi hotels with free cancellation?",
-        answer: "Most hotels in Delhi on GetHotelStays offer free cancellation up to 24-48 hours before check-in. You can filter by 'free cancellation' while searching. This is especially useful for NRIs planning flexible India trips.",
-    },
-    {
-        question: "What documents are needed for hotel check-in in Delhi?",
-        answer: "Indian nationals can check in with Aadhaar, Driving License, or any government ID. For NRIs, a valid Indian passport or OCI card works. Foreign nationals must present their passport and valid visa. All hotels on GetHotelStays accept these documents for a smooth check-in.",
-    },
-    {
-        question: "What is the best time to visit Delhi for affordable hotel rates?",
-        answer: "The best time for affordable hotel rates in Delhi is during the off-season (March-September) when prices are 30-50% lower than peak season (October-February). However, even during peak season, GetHotelStays offers competitive rates year-round with our 'Pay 12% Now' model. Book 2-3 weeks in advance for the best deals.",
-    },
-    {
-        question: "How much does a hotel in Delhi cost per night on GetHotelStays?",
-        answer: "Hotel prices in Delhi on GetHotelStays range from ₹500-₹999/night for budget stays in Paharganj/Mahipalpur, ₹1,000-₹2,500/night for mid-range in Karol Bagh/Connaught Place, and ₹3,000-₹15,000+/night for luxury in Aerocity/South Delhi. You only pay 12% online — the rest at the hotel.",
-    },
-    {
-        question: "Can I book a hotel in Delhi for someone else?",
-        answer: "Yes! NRIs frequently book Delhi hotels on GetHotelStays for family members, friends, or business associates visiting India. Simply enter the guest's name and contact details during booking. The guest can check in with their own ID. You pay 12% online — they pay the rest at the hotel.",
-    },
-    {
-        question: "Are there hotels near Delhi's business districts for corporate travelers?",
-        answer: "Absolutely! Delhi has excellent business hotels in Connaught Place, Aerocity, Gurugram, and Noida. These areas offer corporate-friendly hotels with conference rooms, business centers, high-speed WiFi, and executive lounges. GetHotelStays has verified options for corporate travelers with special business rates.",
-    },
-    {
-        question: "What is the Pay 12% Now model for Delhi hotels?",
-        answer: "GetHotelStays' 'Pay 12% Now' model means you only pay 12% of the total room price online to confirm your booking. The remaining 88% is paid directly at the hotel in Delhi when you check in. This gives you flexibility — no need to pay the full amount upfront. Most Delhi hotels accept cash, UPI, card, and international payments at check-in.",
+        question: "Are hotels on GetHotelStays safe for solo female travelers?",
+        answer: "Yes. All partner hotels are vetted for safety standards including 24/7 CCTV surveillance in common areas, secure electronic locks, verified front-desk personnel, and well-connected, secure locations to guarantee complete safety for solo female guests.",
     },
 ];
 

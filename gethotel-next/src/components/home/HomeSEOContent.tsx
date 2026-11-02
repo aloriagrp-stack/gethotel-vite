@@ -1,30 +1,16 @@
 'use client';
 import { useState } from "react";
-import { MapPin, HelpCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { MapPin, HelpCircle, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
+import { HOME_FAQS } from "@/lib/seo";
 
 export default function HomeSEOContent() {
     const [isExpanded, setIsExpanded] = useState(false);
     const [openFaq, setOpenFaq] = useState<number | null>(null);
+    const [showAllFaqs, setShowAllFaqs] = useState(false);
 
-    const faqs = [
-        {
-            q: "Can unmarried couples book hotels with local IDs on GetHotelStays?",
-            a: "Yes, 100%. Under Indian law, consenting adult citizens (18+) with valid original government photo IDs (Aadhaar, Voter ID, Passport, DL) are legally entitled to check into our verified couple-friendly partner hotels without moral policing or awkward questioning."
-        },
-        {
-            q: "Why do I only pay 12% online? Is there any hidden surcharge at check-in?",
-            a: "Zero hidden surcharges. Our 'Pay 12% Now' model lets you reserve your confirmed room instantly with just a 12% deposit online. The remaining 88% is paid directly at the hotel front desk upon check-in via UPI, cash, or card."
-        },
-        {
-            q: "Can I book hourly rooms for 3 hours or 6 hours near Delhi Airport or Railway Station?",
-            a: "Yes! Our flexible micro-stay options allow you to book 3-hour, 6-hour, or 12-hour slots near Indira Gandhi International Airport (T3/T2/T1) and New Delhi Railway Station (NDLS), perfect for transit layovers, fresh-ups, and business meetings."
-        },
-        {
-            q: "Can international tourists and NRIs book hotels in India using overseas cards?",
-            a: "Yes. Our secure checkout accepts all major international Visa, Mastercard, American Express, and PayPal payment options in USD, GBP, EUR, and AED with instant booking confirmation."
-        }
-    ];
+    const faqs = HOME_FAQS;
+    const displayedFaqs = showAllFaqs ? faqs : faqs.slice(0, 6);
 
     return (
         <section className="pt-4 pb-16 md:pb-24 bg-transparent border-t border-slate-200/40">
@@ -344,30 +330,51 @@ export default function HomeSEOContent() {
 
                 {/* ── Section 6: FAQ Accordion ── */}
                 <div className="space-y-6 text-left">
-                    <div className="flex items-center gap-3">
-                        <HelpCircle className="w-6 h-6 text-brand-600 shrink-0" />
-                        <h2 className="text-2xl md:text-4xl font-bold text-slate-900 tracking-tight">
-                            Frequently Asked Questions
-                        </h2>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                            <HelpCircle className="w-6 h-6 text-brand-600 shrink-0" />
+                            <h2 className="text-2xl md:text-4xl font-bold text-slate-900 tracking-tight">
+                                Frequently Asked Questions
+                            </h2>
+                        </div>
+                        <span className="self-start sm:self-auto text-xs px-3 py-1 rounded-full bg-brand-50 text-brand-700 font-bold border border-brand-200">
+                            12 Verified Answers for Guests & AI
+                        </span>
                     </div>
+
                     <div className="space-y-3">
-                        {faqs.map((faq, i) => (
+                        {displayedFaqs.map((faq, i) => (
                             <div key={i} className="border-b border-slate-200/80 pb-4">
                                 <button
                                     onClick={() => setOpenFaq(openFaq === i ? null : i)}
                                     className="w-full flex items-center justify-between py-2 text-left font-bold text-slate-900 text-sm md:text-base cursor-pointer hover:text-brand-600 transition-colors"
                                 >
-                                    <span>{faq.q}</span>
+                                    <span className="pr-4">{faq.question}</span>
                                     {openFaq === i ? <ChevronUp className="w-5 h-5 text-brand-600 shrink-0" /> : <ChevronDown className="w-5 h-5 text-slate-400 shrink-0" />}
                                 </button>
                                 {openFaq === i && (
                                     <div className="pt-2 text-slate-600 text-xs md:text-sm leading-relaxed">
-                                        {faq.a}
+                                        {faq.answer}
                                     </div>
                                 )}
                             </div>
                         ))}
                     </div>
+
+                    {faqs.length > 6 && (
+                        <div className="text-center pt-2">
+                            <button
+                                onClick={() => setShowAllFaqs(!showAllFaqs)}
+                                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-100 hover:bg-brand-50 text-slate-700 hover:text-brand-600 text-xs font-bold border border-slate-200 transition-all cursor-pointer shadow-sm"
+                            >
+                                {showAllFaqs ? (
+                                    <>Show Fewer Questions <ChevronUp className="w-4 h-4" /></>
+                                ) : (
+                                    <>View All {faqs.length} FAQs <ChevronDown className="w-4 h-4" /></>
+                                )}
+                            </button>
+                        </div>
+                    )}
                 </div>
 
             </div>

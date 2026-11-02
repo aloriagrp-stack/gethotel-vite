@@ -1263,8 +1263,17 @@ export default function SuperAdminDashboard() {
                                             );
 
                                             return (
-                                                <tr key={booking.id} className="hover:bg-slate-50/80 transition-colors">
-                                                    <td className="px-4 py-3 text-xs font-semibold text-slate-900">#BK-{booking.id}</td>
+                                                <tr 
+                                                    key={booking.id} 
+                                                    onClick={() => setBreakdownModal({ show: true, booking })}
+                                                    className="hover:bg-blue-50/50 cursor-pointer transition-colors group"
+                                                    title="Click anywhere to inspect booking metrics & financial breakdown"
+                                                >
+                                                    <td className="px-4 py-3">
+                                                        <span className="text-xs font-bold text-blue-600 group-hover:text-blue-700 underline-offset-2 group-hover:underline">
+                                                            #BK-{booking.id}
+                                                        </span>
+                                                    </td>
                                                     <td className="px-4 py-3">
                                                         <div>
                                                             <p className="text-xs font-semibold text-slate-800">{booking.guestFirstName} {booking.guestLastName}</p>
@@ -1308,11 +1317,11 @@ export default function SuperAdminDashboard() {
                                                             Payout: ₹{meta.partnerNetPayout.toLocaleString()}
                                                         </div>
                                                         <button
-                                                            onClick={() => setBreakdownModal({ show: true, booking })}
-                                                            className="inline-flex items-center gap-1 mt-1.5 px-2.5 py-1 text-[11px] font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors cursor-pointer"
+                                                            onClick={(e) => { e.stopPropagation(); setBreakdownModal({ show: true, booking }); }}
+                                                            className="inline-flex items-center gap-1.5 mt-1.5 px-2.5 py-1 text-[11px] font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors cursor-pointer border border-blue-200/60 shadow-2xs"
                                                         >
-                                                            <Eye className="w-3 h-3" />
-                                                            Breakdown
+                                                            <Eye className="w-3.5 h-3.5" />
+                                                            Metrics & Audit
                                                         </button>
                                                     </td>
                                                 </tr>
@@ -1809,70 +1818,138 @@ export default function SuperAdminDashboard() {
                 )}
             </AnimatePresence>
 
-            {/* ─── Minimalist Booking Breakdown Modal ───────────────────────────────── */}
+            {/* ─── Master Booking Metrics & Financial Breakdown Modal ───────────────────────────────── */}
             <AnimatePresence>
                 {breakdownModal.show && breakdownModal.booking && (() => {
                     const bk = breakdownModal.booking;
                     const meta = parseBookingBreakdown(bk);
+                    const cleanPhone = (bk.guestPhone || "").replace(/\D/g, '');
+                    const stayNights = meta.isHourly ? `${meta.durationHours} Hours` : `${meta.nights} ${meta.nights > 1 ? 'Nights' : 'Night'}`;
+
                     return (
                         <>
                             <motion.div
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
-                                className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs z-[200]"
+                                className="fixed inset-0 bg-slate-950/50 backdrop-blur-xs z-[200]"
                                 onClick={() => setBreakdownModal({ show: false, booking: null })}
                             />
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                                className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] max-w-2xl bg-white rounded-2xl z-[210] shadow-2xl border border-slate-200 text-slate-900 overflow-hidden"
+                                className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[96%] max-w-3xl bg-white rounded-2xl z-[210] shadow-2xl border border-slate-200 text-slate-900 overflow-hidden flex flex-col max-h-[90vh]"
                             >
                                 {/* Header */}
-                                <div className="p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50/80">
+                                <div className="p-5 border-b border-slate-200/90 bg-slate-50/80 flex items-start justify-between gap-4">
                                     <div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs font-bold rounded-md">#BK-{bk.id}</span>
-                                            <h3 className="text-base font-bold text-slate-900">{bk.hotel?.name || 'Hotel Reservation'}</h3>
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <span className="px-2.5 py-0.5 bg-blue-600 text-white text-xs font-bold rounded-md shadow-2xs font-mono">
+                                                #BK-{bk.id}
+                                            </span>
+                                            <span className={cn(
+                                                "px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border shadow-2xs",
+                                                bk.status === 'confirmed' ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
+                                                bk.status === 'pending' ? "bg-amber-50 text-amber-700 border-amber-200" :
+                                                bk.status === 'cancelled' ? "bg-rose-50 text-rose-700 border-rose-200" : "bg-slate-100 text-slate-700 border-slate-200"
+                                            )}>
+                                                Status: {bk.status}
+                                            </span>
+                                            <span className={cn(
+                                                "px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border",
+                                                meta.paymentMode === 'PAY_AT_HOTEL' ? "bg-amber-50 text-amber-800 border-amber-200" :
+                                                meta.paymentMode === 'FULL_ONLINE' ? "bg-emerald-50 text-emerald-800 border-emerald-200" :
+                                                "bg-blue-50 text-blue-800 border-blue-200"
+                                            )}>
+                                                {meta.paymentMode === 'PAY_AT_HOTEL' ? 'Pay at Hotel' : meta.paymentMode === 'FULL_ONLINE' ? 'Paid Online' : 'Partial'}
+                                            </span>
+                                            <span className="px-2 py-0.5 bg-purple-50 text-purple-700 border border-purple-200 text-[10px] font-bold rounded-md">
+                                                {meta.isHourly ? 'Hourly Stay' : 'Full Day Stay'}
+                                            </span>
                                         </div>
-                                        <p className="text-xs text-slate-500 mt-0.5">{bk.room?.name || 'Standard Room'}</p>
+                                        <h3 className="text-lg font-bold text-slate-900 mt-2 flex items-center gap-2">
+                                            {bk.hotel?.name || 'Hotel Reservation'}
+                                            {bk.hotel?.city && (
+                                                <span className="text-xs font-normal text-slate-500 flex items-center gap-1">
+                                                    <MapPin className="w-3.5 h-3.5 text-slate-400" /> {bk.hotel.city}
+                                                </span>
+                                            )}
+                                        </h3>
+                                        <p className="text-xs text-slate-600 mt-0.5 font-medium">
+                                            {bk.room?.name || 'Standard Room'} • {meta.mealPlan}
+                                        </p>
                                     </div>
                                     <button
                                         onClick={() => setBreakdownModal({ show: false, booking: null })}
-                                        className="p-1.5 text-slate-400 hover:text-slate-800 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+                                        className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-200/60 transition-colors cursor-pointer"
                                     >
                                         <XCircle className="w-5 h-5" />
                                     </button>
                                 </div>
 
-                                {/* Content */}
-                                <div className="p-6 max-h-[75vh] overflow-y-auto space-y-5">
-                                    {/* Summary Badges Grid */}
-                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                                            <p className="text-[10px] font-semibold uppercase text-slate-400 tracking-wider">Guest</p>
-                                            <p className="text-xs font-bold text-slate-900 mt-0.5 truncate">{bk.guestFirstName} {bk.guestLastName}</p>
-                                            <p className="text-[10px] text-slate-500 truncate">{bk.guestPhone || bk.guestEmail}</p>
+                                {/* Quick Contact & Timestamp Strip */}
+                                <div className="px-5 py-2.5 bg-slate-100/70 border-b border-slate-200/80 flex items-center justify-between flex-wrap gap-2 text-xs">
+                                    <span className="text-slate-500 font-medium">
+                                        Booked on: <strong className="text-slate-800">{formatDateTimeSafe(bk.createdAt || bk.created_at || bk.checkIn)}</strong>
+                                    </span>
+                                    <div className="flex items-center gap-2">
+                                        {cleanPhone && (
+                                            <>
+                                                <a
+                                                    href={`https://wa.me/${cleanPhone}`}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-semibold shadow-2xs transition-colors"
+                                                >
+                                                    <Phone className="w-3 h-3 text-emerald-600" /> WhatsApp Guest
+                                                </a>
+                                                <a
+                                                    href={`tel:${cleanPhone}`}
+                                                    className="inline-flex items-center gap-1.5 px-3 py-1 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold shadow-2xs transition-colors"
+                                                >
+                                                    Call Guest
+                                                </a>
+                                            </>
+                                        )}
+                                        {bk.guestEmail && (
+                                            <a
+                                                href={`mailto:${bk.guestEmail}`}
+                                                className="inline-flex items-center gap-1.5 px-3 py-1 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold shadow-2xs transition-colors"
+                                            >
+                                                <Mail className="w-3 h-3 text-slate-500" /> Email
+                                            </a>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Scrollable Content */}
+                                <div className="p-6 overflow-y-auto space-y-6 flex-1">
+                                    {/* Summary 4-Metrics Cards Grid */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                                        <div className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-200/80 shadow-2xs">
+                                            <p className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">Guest Information</p>
+                                            <p className="text-xs font-bold text-slate-900 mt-1 truncate">{bk.guestFirstName} {bk.guestLastName}</p>
+                                            <p className="text-[11px] text-slate-600 truncate mt-0.5">{bk.guestEmail || 'No email'}</p>
+                                            <p className="text-[11px] text-slate-600 font-mono">{bk.guestPhone || 'No phone'}</p>
                                         </div>
-                                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                                            <p className="text-[10px] font-semibold uppercase text-slate-400 tracking-wider">Rooms & Stay</p>
-                                            <p className="text-xs font-bold text-slate-900 mt-0.5">
-                                                {meta.roomCount} Room(s) • {meta.isHourly ? `${meta.durationHours} Hours` : `${meta.nights} Night(s)`}
-                                            </p>
-                                            <p className="text-[10px] text-slate-500">{bk.totalGuests || 2} Guest(s)</p>
+                                        <div className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-200/80 shadow-2xs">
+                                            <p className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">Stay Timeline</p>
+                                            <p className="text-xs font-bold text-blue-700 mt-1">{stayNights}</p>
+                                            <p className="text-[11px] text-slate-700 mt-0.5">In: <b>{formatDateSafe(bk.checkIn)}</b></p>
+                                            <p className="text-[11px] text-slate-700">Out: <b>{formatDateSafe(bk.checkOut)}</b></p>
                                         </div>
-                                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                                            <p className="text-[10px] font-semibold uppercase text-slate-400 tracking-wider">Meal Plan</p>
-                                            <p className="text-xs font-bold text-emerald-700 mt-0.5">{meta.mealPlan}</p>
-                                            <p className="text-[10px] text-slate-500">{meta.isHourly ? 'Hourly Rate' : 'Daily Rate'}</p>
+                                        <div className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-200/80 shadow-2xs">
+                                            <p className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">Rooms & Guests</p>
+                                            <p className="text-xs font-bold text-slate-900 mt-1">{meta.roomCount} {meta.roomCount > 1 ? 'Rooms' : 'Room'}</p>
+                                            <p className="text-[11px] text-slate-600 mt-0.5">{bk.totalGuests || 2} Total Guests</p>
+                                            <p className="text-[11px] text-emerald-700 font-semibold">{meta.mealPlan}</p>
                                         </div>
-                                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                                            <p className="text-[10px] font-semibold uppercase text-slate-400 tracking-wider">Payment Mode</p>
-                                            <p className="text-xs font-bold text-amber-700 mt-0.5">
-                                                {meta.paymentMode === 'PAY_AT_HOTEL' ? 'Pay Full at Hotel' : meta.paymentMode === 'FULL_ONLINE' ? '100% Paid Online' : 'Partial Online'}
-                                            </p>
-                                            <p className="text-[10px] text-slate-500">{bk.status}</p>
+                                        <div className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-200/80 shadow-2xs">
+                                            <p className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">Total Booking Value</p>
+                                            <p className="text-base font-black text-slate-950 mt-1 font-mono">₹{meta.totalPrice.toLocaleString()}</p>
+                                            <p className="text-[11px] text-emerald-600 font-semibold mt-0.5">Paid: ₹{meta.amountPaid.toLocaleString()}</p>
+                                            <p className="text-[11px] text-amber-600 font-semibold">Due: ₹{meta.amountDueAtHotel.toLocaleString()}</p>
                                         </div>
                                     </div>
 
@@ -1933,8 +2010,8 @@ export default function SuperAdminDashboard() {
                                                     </tr>
                                                     <tr className="bg-blue-50/40 border-t border-slate-200">
                                                         <td className="px-4 py-2.5 font-semibold text-blue-800">Platform Commission ({meta.commissionRate}%)</td>
-                                                        <td className="px-4 py-2.5 text-blue-700">GetHotelStays standard platform commission</td>
-                                                        <td className="px-4 py-2.5 text-right font-bold text-blue-800">+ ₹{meta.commissionAmount.toLocaleString()}</td>
+                                                        <td className="px-4 py-2.5 text-blue-700">Deducted platform fee (12%)</td>
+                                                        <td className="px-4 py-2.5 text-right font-bold text-blue-800">- ₹{meta.commissionAmount.toLocaleString()}</td>
                                                     </tr>
                                                     <tr className="bg-emerald-50/60 font-bold border-t border-emerald-200">
                                                         <td className="px-4 py-3 text-emerald-950">Property Payout ({100 - meta.commissionRate}%)</td>
