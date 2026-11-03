@@ -5,7 +5,11 @@ const {
     approvePartnerRequest,
     declinePartnerRequest,
     bulkApprovePartnerRequests,
-    bulkDeclinePartnerRequests
+    bulkDeclinePartnerRequests,
+    getBankDetails,
+    saveBankDetails,
+    getPartnerPayouts,
+    requestPartnerPayout
 } = require('../controllers/partnerController');
 const { check } = require('express-validator');
 const { validate } = require('../middleware/validate');
@@ -35,5 +39,14 @@ router.put('/requests/bulk-approve', protect, authorize('super_admin'), bulkAppr
 router.put('/requests/bulk-decline', protect, authorize('super_admin'), bulkDeclinePartnerRequests);
 router.put('/requests/:id/approve', protect, authorize('super_admin'), approvePartnerRequest);
 router.put('/requests/:id/decline', protect, authorize('super_admin'), declinePartnerRequest);
+
+// Bank Account & Payout Details for Partners
+router.get('/bank-details/:hotelId', protect, authorize('hotel_admin', 'super_admin', 'admin', 'partner', 'superadmin'), getBankDetails);
+router.post('/bank-details/:hotelId', protect, authorize('hotel_admin', 'super_admin', 'admin', 'partner', 'superadmin'), saveBankDetails);
+router.put('/bank-details/:hotelId', protect, authorize('hotel_admin', 'super_admin', 'admin', 'partner', 'superadmin'), saveBankDetails);
+
+// Payout History & Withdrawal Requests for Partners
+router.get('/payouts/:hotelId', protect, authorize('hotel_admin', 'super_admin', 'admin', 'partner', 'superadmin'), getPartnerPayouts);
+router.post('/payouts/:hotelId', protect, authorize('hotel_admin', 'super_admin', 'admin', 'partner', 'superadmin'), requestPartnerPayout);
 
 module.exports = router;

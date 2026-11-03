@@ -343,69 +343,69 @@ export default function AdminDestinationAnalytics() {
     }
 
     return (
-        <div className="bg-transparent text-white font-sans select-none space-y-8 min-h-screen">
+        <div className="bg-transparent text-slate-800 font-sans select-none space-y-6 min-h-screen">
             
             {/* View Mode & Map Toggle Toolbar */}
-            <div className="flex items-center justify-between pb-2 border-b border-neutral-800/60">
-                <div className="flex items-center gap-2 bg-[#0c0c0c] border border-[#1c1c1c] p-1 rounded-xl">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+                <div className="flex items-center gap-2 bg-slate-100 border border-slate-200 p-1 rounded-xl">
                     <button
                         onClick={() => setViewTab("analytics")}
                         className={cn(
                             "px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5",
-                            viewTab === "analytics" ? "bg-white text-black shadow-sm" : "text-neutral-400 hover:text-white"
+                            viewTab === "analytics" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600 hover:text-slate-900"
                         )}
                     >
-                        <BarChart3 className="w-3.5 h-3.5" />
+                        <BarChart3 className="w-3.5 h-3.5 text-blue-600" />
                         <span>Analytics View</span>
                     </button>
                     <button
                         onClick={() => setViewTab("map")}
                         className={cn(
                             "px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5",
-                            viewTab === "map" ? "bg-white text-black shadow-sm" : "text-neutral-400 hover:text-white"
+                            viewTab === "map" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600 hover:text-slate-900"
                         )}
                     >
-                        <Compass className="w-3.5 h-3.5" />
+                        <Compass className="w-3.5 h-3.5 text-emerald-600" />
                         <span>Interactive Map Radar</span>
                     </button>
                 </div>
 
                 <button
                     onClick={handleExportCSV}
-                    className="px-3.5 py-1.5 bg-neutral-900 hover:bg-[#1f1f1f] border border-[#262626] text-white font-bold text-xs rounded-xl flex items-center gap-2 transition-all cursor-pointer shadow-sm active:scale-95"
+                    className="px-4 py-2 bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 font-bold text-xs rounded-xl flex items-center gap-2 transition-all cursor-pointer shadow-2xs active:scale-95"
                 >
-                    <Download className="w-3.5 h-3.5 text-neutral-300" />
+                    <Download className="w-3.5 h-3.5 text-slate-500" />
                     <span>Export Report</span>
                 </button>
             </div>
 
             {/* INTERACTIVE MAP RADAR VIEW */}
             {viewTab === "map" && (
-                <div className="bg-neutral-900/40 border border-neutral-800/80 rounded-xl p-5 space-y-6">
-                    <div className="flex items-center justify-between pb-4 border-b border-neutral-800/60">
+                <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs space-y-6">
+                    <div className="flex items-center justify-between pb-4 border-b border-slate-200">
                         <div>
-                            <h3 className="text-xs font-black uppercase text-white tracking-widest flex items-center gap-2">
-                                <Compass className="w-4 h-4 text-emerald-400" />
+                            <h3 className="text-xs font-bold uppercase text-slate-900 tracking-wider flex items-center gap-2">
+                                <Compass className="w-4 h-4 text-emerald-600" />
                                 <span>Interactive Geographic Booking Radar Map</span>
                             </h3>
-                            <p className="text-[10px] font-medium text-neutral-400 mt-0.5">
+                            <p className="text-xs text-slate-500 mt-0.5">
                                 Click any destination node on the map to inspect real-time hotel properties and booking stats
                             </p>
                         </div>
-                        <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">
+                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                             ● Live DB Hotspots Active
                         </span>
                     </div>
 
                     {/* Interactive Vector Map Grid */}
-                    <div className="relative h-[420px] w-full bg-neutral-950 border border-[#1a1a1a] rounded-2xl overflow-hidden flex items-center justify-center p-4">
+                    <div className="relative h-[420px] w-full bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden flex items-center justify-center p-4">
                         
                         {/* India Stylized Vector Path Background */}
-                        <svg className="w-full h-full opacity-30 pointer-events-none" viewBox="0 0 100 100" fill="none">
+                        <svg className="w-full h-full opacity-40 pointer-events-none" viewBox="0 0 100 100" fill="none">
                             <path 
                                 d="M 35 15 L 45 12 L 52 25 L 48 40 L 55 60 L 45 85 L 38 90 L 30 75 L 25 55 L 28 35 Z" 
-                                fill="#161616" 
-                                stroke="#2e2e2e" 
+                                fill="#e2e8f0" 
+                                stroke="#cbd5e1" 
                                 strokeWidth="0.8" 
                             />
                         </svg>
@@ -421,13 +421,13 @@ export default function AdminDestinationAnalytics() {
                                     style={{ left: `${c.x}%`, top: `${c.y}%` }}
                                 >
                                     <div className="relative flex items-center justify-center">
-                                        <span className="w-6 h-6 rounded-full bg-emerald-500/20 absolute -inset-1 animate-ping" />
+                                        <span className="w-6 h-6 rounded-full bg-blue-500/20 absolute -inset-1 animate-ping" />
                                         <span className={cn(
-                                            "w-3.5 h-3.5 rounded-full shadow-lg transition-transform border border-black",
-                                            isSelected ? "bg-white scale-125 shadow-[0_0_12px_#ffffff]" : "bg-emerald-400 group-hover:scale-125"
+                                            "w-3.5 h-3.5 rounded-full shadow-md transition-transform border border-white",
+                                            isSelected ? "bg-blue-600 scale-125 ring-4 ring-blue-100" : "bg-blue-600 group-hover:scale-125"
                                         )} />
                                     </div>
-                                    <span className="text-[9px] font-black text-white bg-[#101010]/90 px-1.5 py-0.5 rounded border border-[#262626] whitespace-nowrap block mt-1 uppercase tracking-tight shadow-md">
+                                    <span className="text-[10px] font-bold text-slate-800 bg-white/95 px-2 py-0.5 rounded-lg border border-slate-200 whitespace-nowrap block mt-1 uppercase tracking-tight shadow-2xs">
                                         {c.city} ({c.bookingsCount})
                                     </span>
                                 </div>
@@ -436,31 +436,31 @@ export default function AdminDestinationAnalytics() {
 
                         {/* Node Detail Popup Card */}
                         {selectedCityNode && (
-                            <div className="absolute bottom-6 right-6 bg-[#121212] border border-[#2c2c2c] rounded-2xl p-5 shadow-2xl space-y-3 w-80 backdrop-blur-md">
-                                <div className="flex items-center justify-between border-b border-[#222] pb-2">
-                                    <div className="flex items-center gap-2 font-bold text-sm text-white">
+                            <div className="absolute bottom-6 right-6 bg-white border border-slate-200 rounded-2xl p-5 shadow-xl space-y-3 w-80">
+                                <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                                    <div className="flex items-center gap-2 font-bold text-sm text-slate-900">
                                         <span>{selectedCityNode.flag}</span>
                                         <span className="uppercase">{selectedCityNode.city}</span>
                                     </div>
-                                    <button onClick={() => setSelectedCityNode(null)} className="p-1 text-neutral-400 hover:text-white cursor-pointer">
+                                    <button onClick={() => setSelectedCityNode(null)} className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer">
                                         <X className="w-4 h-4" />
                                     </button>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3 text-xs font-mono">
-                                    <div className="bg-[#181818] border border-[#262626] p-2.5 rounded-xl">
-                                        <span className="text-[9px] text-neutral-500 uppercase block">Active Hotels</span>
-                                        <span className="text-base font-black text-white">{selectedCityNode.hotelCount} Properties</span>
+                                    <div className="bg-slate-50 border border-slate-200 p-2.5 rounded-xl">
+                                        <span className="text-[10px] font-bold text-slate-500 uppercase block">Active Hotels</span>
+                                        <span className="text-sm font-black text-slate-900">{selectedCityNode.hotelCount} Properties</span>
                                     </div>
-                                    <div className="bg-[#181818] border border-[#262626] p-2.5 rounded-xl">
-                                        <span className="text-[9px] text-neutral-500 uppercase block">Bookings</span>
-                                        <span className="text-base font-black text-white">{selectedCityNode.bookingsCount} Stays</span>
+                                    <div className="bg-slate-50 border border-slate-200 p-2.5 rounded-xl">
+                                        <span className="text-[10px] font-bold text-slate-500 uppercase block">Bookings</span>
+                                        <span className="text-sm font-black text-slate-900">{selectedCityNode.bookingsCount} Stays</span>
                                     </div>
                                 </div>
 
                                 <div className="flex items-center justify-between text-xs pt-1 font-mono">
-                                    <span className="text-neutral-400">Gross GMV Revenue:</span>
-                                    <span className="font-bold text-emerald-400">₹{selectedCityNode.revenue.toLocaleString()}</span>
+                                    <span className="text-slate-500 font-semibold">Gross GMV:</span>
+                                    <span className="font-bold text-emerald-700">₹{selectedCityNode.revenue.toLocaleString()}</span>
                                 </div>
 
                                 <button
@@ -468,7 +468,7 @@ export default function AdminDestinationAnalytics() {
                                         setSearchQuery(selectedCityNode.city);
                                         setViewTab("analytics");
                                     }}
-                                    className="w-full py-2 bg-white hover:bg-neutral-200 text-black font-bold text-xs rounded-xl transition-all cursor-pointer text-center uppercase tracking-wider"
+                                    className="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition-all cursor-pointer text-center uppercase tracking-wider shadow-xs"
                                 >
                                     Filter Analytics By {selectedCityNode.city}
                                 </button>
@@ -483,13 +483,13 @@ export default function AdminDestinationAnalytics() {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                     
                     {/* LEFT COLUMN: TOP DESTINATIONS BREAKDOWN (4 COLS) */}
-                    <div className="lg:col-span-4 bg-neutral-900/40 border border-neutral-800/80 rounded-xl p-5 space-y-6">
-                        <div className="flex items-center justify-between pb-4 border-b border-neutral-800/60">
-                            <h3 className="text-xs font-black uppercase text-white tracking-widest flex items-center gap-2">
-                                <Globe className="w-4 h-4 text-emerald-400" />
+                    <div className="lg:col-span-4 bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs space-y-6">
+                        <div className="flex items-center justify-between pb-4 border-b border-slate-200">
+                            <h3 className="text-xs font-bold uppercase text-slate-900 tracking-wider flex items-center gap-2">
+                                <Globe className="w-4 h-4 text-emerald-600" />
                                 <span>Top Destinations Breakdown</span>
                             </h3>
-                            <span className="text-[10px] font-bold text-neutral-400 uppercase">{realCityStats.length} Cities</span>
+                            <span className="text-[10px] font-bold text-slate-500 uppercase bg-slate-100 px-2 py-0.5 rounded-md">{realCityStats.length} Cities</span>
                         </div>
 
                         <div className="space-y-4">
@@ -497,21 +497,21 @@ export default function AdminDestinationAnalytics() {
                                 <div key={item.city} className="space-y-2 group">
                                     <div className="flex items-center justify-between text-xs">
                                         <div className="flex items-center gap-2.5 min-w-0">
-                                            <span className="text-[10px] font-bold text-neutral-500 font-mono w-4">{idx + 1}.</span>
+                                            <span className="text-[10px] font-bold text-slate-400 font-mono w-4">{idx + 1}.</span>
                                             <span className="text-sm">{item.flag}</span>
-                                            <span className="font-bold text-white uppercase tracking-tight truncate group-hover:text-emerald-400 transition-colors">
+                                            <span className="font-bold text-slate-900 uppercase tracking-tight truncate group-hover:text-blue-600 transition-colors">
                                                 {item.city}
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-3 shrink-0 font-mono">
-                                            <span className="font-bold text-neutral-200 text-xs">{item.bookingsCount} bookings</span>
-                                            <span className="text-[10px] font-bold text-emerald-400">{item.growth}</span>
+                                            <span className="font-bold text-slate-700 text-xs">{item.bookingsCount} bookings</span>
+                                            <span className="text-[10px] font-bold text-emerald-700">{item.growth}</span>
                                         </div>
                                     </div>
 
-                                    <div className="h-1.5 w-full bg-[#161616] border border-[#222222] rounded-full overflow-hidden shadow-inner">
+                                    <div className="h-1.5 w-full bg-slate-100 border border-slate-200 rounded-full overflow-hidden shadow-inner">
                                         <div 
-                                            className="h-full bg-white rounded-full transition-all duration-500"
+                                            className="h-full bg-blue-600 rounded-full transition-all duration-500"
                                             style={{ width: `${item.percentage}%` }}
                                         />
                                     </div>
@@ -521,13 +521,13 @@ export default function AdminDestinationAnalytics() {
                     </div>
 
                     {/* RIGHT COLUMN: MONTHLY TRENDS AREA CHART WITH DYNAMIC TIMEFRAME DROPDOWN (8 COLS) */}
-                    <div className="lg:col-span-8 bg-neutral-900/40 border border-neutral-800/80 rounded-xl p-5 space-y-6">
+                    <div className="lg:col-span-8 bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs space-y-6">
                         
                         {/* Chart Header + Timeframe Dropdown */}
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-800/60">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
                             <div>
-                                <h3 className="text-xs font-black uppercase text-white tracking-widest flex items-center gap-2">
-                                    <BarChart3 className="w-4 h-4 text-emerald-400" />
+                                <h3 className="text-xs font-bold uppercase text-slate-900 tracking-wider flex items-center gap-2">
+                                    <BarChart3 className="w-4 h-4 text-blue-600" />
                                     <span>
                                         {timeframe === "today" ? "Today's Booking Timeline (Hourly)" :
                                          timeframe === "last_week" ? "Weekly Booking Timeline (By Day)" :
@@ -536,8 +536,8 @@ export default function AdminDestinationAnalytics() {
                                          "Booking Trends & Revenue Performance"}
                                     </span>
                                 </h3>
-                                <p className="text-[10px] font-medium text-neutral-400 mt-0.5">
-                                    Aggregated booking count timeline calculated dynamically for timeframe: <span className="text-white font-bold uppercase">{timeframe.replace(/_/g, ' ')}</span>
+                                <p className="text-xs text-slate-500 mt-0.5">
+                                    Aggregated booking count timeline for: <span className="text-slate-900 font-bold uppercase">{timeframe.replace(/_/g, ' ')}</span>
                                 </p>
                             </div>
 
@@ -545,55 +545,55 @@ export default function AdminDestinationAnalytics() {
                                 {/* Legend */}
                                 <div className="flex items-center gap-3 text-xs font-bold mr-2 hidden sm:flex">
                                     <div className="flex items-center gap-1.5">
-                                        <span className="w-3 h-0.5 bg-white rounded-full" />
-                                        <span className="text-neutral-300 text-[10px] uppercase tracking-wider">Current Period</span>
+                                        <span className="w-3 h-1 bg-blue-600 rounded-full" />
+                                        <span className="text-slate-600 text-[10px] uppercase tracking-wider">Current Period</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
-                                        <span className="w-3 h-0.5 bg-neutral-600 rounded-full" />
-                                        <span className="text-neutral-400 text-[10px] uppercase tracking-wider">Previous Period</span>
+                                        <span className="w-3 h-0.5 bg-slate-300 rounded-full" />
+                                        <span className="text-slate-400 text-[10px] uppercase tracking-wider">Previous Period</span>
                                     </div>
                                 </div>
 
-                                {/* Dynamic Timeframe Dropdown as requested by user */}
+                                {/* Dynamic Timeframe Dropdown */}
                                 <div className="relative">
                                     <select
                                         value={timeframe}
                                         onChange={(e) => setTimeframe(e.target.value as TimeframeOption)}
-                                        className="bg-neutral-900 hover:bg-[#1a1a1a] border border-[#2a2a2a] text-white font-bold text-xs rounded-xl px-3 py-1.5 pr-8 appearance-none focus:outline-none focus:border-neutral-500 transition-all cursor-pointer shadow-sm uppercase tracking-wider"
+                                        className="bg-slate-50 hover:bg-white border border-slate-300 text-slate-900 font-bold text-xs rounded-xl px-3 py-1.5 pr-8 appearance-none focus:outline-none focus:border-blue-600 transition-all cursor-pointer shadow-2xs uppercase tracking-wider"
                                     >
                                         <option value="today">Today</option>
                                         <option value="last_week">Last Week</option>
                                         <option value="last_month">Last Month</option>
-                                        <option value="last_3_months">Last 3 Month</option>
-                                        <option value="last_6_months">Last 6 Month</option>
-                                        <option value="last_1_year">Last 1 Yar</option>
-                                        <option value="last_3_years">Last 3 Year</option>
+                                        <option value="last_3_months">Last 3 Months</option>
+                                        <option value="last_6_months">Last 6 Months</option>
+                                        <option value="last_1_year">Last 1 Year</option>
+                                        <option value="last_3_years">Last 3 Years</option>
                                         <option value="all_time">All Time</option>
                                     </select>
-                                    <ChevronDown className="w-3.5 h-3.5 text-neutral-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                    <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                                 </div>
                             </div>
                         </div>
 
-                        {/* Razor-Sharp Professional Area Chart */}
+                        {/* Professional Area Chart */}
                         <div className="relative h-[280px] w-full pt-4">
                             <svg className="w-full h-full overflow-visible" viewBox="0 0 600 240" preserveAspectRatio="none">
                                 <defs>
-                                    <linearGradient id="minimalWhiteArea" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stopColor="#ffffff" stopOpacity="0.12" />
-                                        <stop offset="100%" stopColor="#ffffff" stopOpacity="0.0" />
+                                    <linearGradient id="minimalLightArea" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor="#2563eb" stopOpacity="0.15" />
+                                        <stop offset="100%" stopColor="#2563eb" stopOpacity="0.0" />
                                     </linearGradient>
                                 </defs>
 
-                                {/* Clean Minimal Horizontal Grid Lines */}
+                                {/* Grid Lines */}
                                 {[40, 90, 140, 190].map((y, idx) => (
-                                    <line key={idx} x1="0" y1={y} x2="600" y2={y} stroke="#181818" strokeWidth="1" />
+                                    <line key={idx} x1="0" y1={y} x2="600" y2={y} stroke="#f1f5f9" strokeWidth="1" />
                                 ))}
 
-                                {/* Line 1: Previous Period (Dark Neutral) */}
+                                {/* Line 1: Previous Period */}
                                 <polyline
                                     fill="none"
-                                    stroke="#444444"
+                                    stroke="#cbd5e1"
                                     strokeWidth="1.5"
                                     strokeDasharray="4 4"
                                     points={chartTimeline.map((d, i) => {
@@ -605,7 +605,7 @@ export default function AdminDestinationAnalytics() {
 
                                 {/* Line 2 Area Fill: Current Period */}
                                 <polygon
-                                    fill="url(#minimalWhiteArea)"
+                                    fill="url(#minimalLightArea)"
                                     points={`10,200 ${chartTimeline.map((d, i) => {
                                         const x = (i / (chartTimeline.length - 1)) * 580 + 10;
                                         const y = 200 - (d.currentYear / maxChartVal) * 160;
@@ -613,10 +613,10 @@ export default function AdminDestinationAnalytics() {
                                     }).join(" ")} 590,200`}
                                 />
 
-                                {/* Line 2 Stroke: Current Period (Matte White) */}
+                                {/* Line 2 Stroke: Current Period */}
                                 <polyline
                                     fill="none"
-                                    stroke="#ffffff"
+                                    stroke="#2563eb"
                                     strokeWidth="2.5"
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
@@ -627,23 +627,23 @@ export default function AdminDestinationAnalytics() {
                                     }).join(" ")}
                                 />
 
-                                {/* Interactive Points on Current Period */}
+                                {/* Interactive Points */}
                                 {chartTimeline.map((d, i) => {
                                     const x = (i / (chartTimeline.length - 1)) * 580 + 10;
                                     const y = 200 - (d.currentYear / maxChartVal) * 160;
                                     const isSelected = hoveredMonth?.index === i;
                                     return (
                                         <g key={i} className="cursor-pointer" onMouseEnter={() => setHoveredMonth({ index: i, month: d.label, value: d.currentYear })}>
-                                            <circle cx={x} cy={y} r={isSelected ? "6" : "3.5"} fill="#050505" stroke="#ffffff" strokeWidth="2" />
+                                            <circle cx={x} cy={y} r={isSelected ? "6" : "3.5"} fill="#ffffff" stroke="#2563eb" strokeWidth="2" />
                                         </g>
                                     );
                                 })}
 
-                                {/* X-Axis Dynamic Time Labels */}
+                                {/* X-Axis Labels */}
                                 {chartTimeline.map((d, i) => {
                                     const x = (i / (chartTimeline.length - 1)) * 580 + 10;
                                     return (
-                                        <text key={i} x={x} y="225" textAnchor="middle" fill="#777777" fontSize="10" fontWeight="bold">
+                                        <text key={i} x={x} y="225" textAnchor="middle" fill="#94a3b8" fontSize="10" fontWeight="bold">
                                             {d.label}
                                         </text>
                                     );
@@ -653,11 +653,11 @@ export default function AdminDestinationAnalytics() {
                             {/* Minimal Hover Tooltip */}
                             {hoveredMonth && (
                                 <div 
-                                    className="absolute bg-neutral-900 border border-[#2e2e2e] rounded-xl px-3 py-1.5 shadow-xl text-center pointer-events-none transform -translate-x-1/2 -translate-y-12"
+                                    className="absolute bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 shadow-xl text-center pointer-events-none transform -translate-x-1/2 -translate-y-12"
                                     style={{ left: `${(hoveredMonth.index / (chartTimeline.length - 1)) * 96 + 2}%`, top: "30%" }}
                                 >
-                                    <p className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest">{hoveredMonth.month}</p>
-                                    <p className="text-xs font-black text-white">{hoveredMonth.value} Bookings</p>
+                                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">{hoveredMonth.month}</p>
+                                    <p className="text-xs font-bold text-white">{hoveredMonth.value} Bookings</p>
                                 </div>
                             )}
                         </div>
@@ -667,27 +667,27 @@ export default function AdminDestinationAnalytics() {
             )}
 
             {/* DETAILED CITY RANKING & REVENUE TABLE */}
-            <div className="bg-[#0c0c0c] border border-[#1c1c1c] border-t-[#2d2d2d] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.9)] overflow-hidden space-y-4">
+            <div className="bg-white border border-slate-200/90 rounded-2xl overflow-hidden shadow-xs space-y-0">
                 
                 {/* Search Controls */}
-                <div className="p-6 border-b border-neutral-800/60 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="p-6 border-b border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-50/50">
                     <div>
-                        <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                        <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
                             Detailed Destination Ranking & Revenue Table
                         </h3>
-                        <p className="text-[10px] font-medium text-neutral-400 mt-0.5">
+                        <p className="text-xs text-slate-500 mt-0.5">
                             Filter and view city-level booking statistics calculated directly from platform records
                         </p>
                     </div>
 
                     <div className="relative w-full sm:w-72">
-                        <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-500" />
+                        <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                         <input
                             type="text"
                             placeholder="Search city or region..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 bg-neutral-900 border border-[#262626] rounded-xl text-xs font-bold text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-500"
+                            className="w-full pl-10 pr-4 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-2xs transition-all"
                         />
                     </div>
                 </div>
@@ -696,7 +696,7 @@ export default function AdminDestinationAnalytics() {
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse text-xs">
                         <thead>
-                            <tr className="bg-[#0e0e0e] border-b border-neutral-800/60 text-neutral-400 font-bold uppercase tracking-wider text-[10px]">
+                            <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
                                 <th className="py-3.5 px-6 w-16 text-center">Rank</th>
                                 <th className="py-3.5 px-6">Destination City</th>
                                 <th className="py-3.5 px-6">State / Region</th>
@@ -708,51 +708,51 @@ export default function AdminDestinationAnalytics() {
                                 <th className="py-3.5 px-6 text-center">Growth</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-[#181818] font-medium text-neutral-300">
+                        <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
                             {searchedCities.map((cityStat, idx) => (
-                                <tr key={cityStat.city} className="hover:bg-[#121212] transition-colors">
+                                <tr key={cityStat.city} className="hover:bg-slate-50/70 transition-colors">
                                     <td className="py-4 px-6 text-center">
                                         <span className={cn(
-                                            "w-6 h-6 rounded-lg inline-flex items-center justify-center font-bold text-xs font-mono",
-                                            idx === 0 ? "bg-white text-black font-black" : "bg-[#181818] border border-[#2a2a2a] text-neutral-400"
+                                            "w-6 h-6 rounded-lg inline-flex items-center justify-center font-bold text-xs font-mono shadow-2xs",
+                                            idx === 0 ? "bg-slate-900 text-white font-black" : "bg-slate-100 border border-slate-200 text-slate-600"
                                         )}>
                                             {idx + 1}
                                         </span>
                                     </td>
-                                    <td className="py-4 px-6 font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                                    <td className="py-4 px-6 font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
                                         <span>{cityStat.flag}</span>
                                         <span>{cityStat.city}</span>
                                     </td>
-                                    <td className="py-4 px-6 text-neutral-400 text-xs">
+                                    <td className="py-4 px-6 text-slate-500 text-xs">
                                         {cityStat.region}
                                     </td>
-                                    <td className="py-4 px-6 text-center font-bold text-neutral-300 font-mono">
+                                    <td className="py-4 px-6 text-center font-bold text-slate-700 font-mono">
                                         {cityStat.hotelCount} Properties
                                     </td>
-                                    <td className="py-4 px-6 text-center font-bold text-white font-mono">
+                                    <td className="py-4 px-6 text-center font-bold text-slate-900 font-mono">
                                         {cityStat.bookingsCount}
                                     </td>
                                     <td className="py-4 px-6 min-w-[160px]">
                                         <div className="space-y-1">
-                                            <div className="flex justify-between text-[10px] font-bold">
+                                            <div className="flex justify-between text-[10px] font-bold text-slate-700">
                                                 <span>{cityStat.percentage}%</span>
                                             </div>
-                                            <div className="w-full bg-[#161616] border border-[#242424] h-1.5 rounded-full overflow-hidden">
+                                            <div className="w-full bg-slate-100 border border-slate-200 h-1.5 rounded-full overflow-hidden">
                                                 <div 
-                                                    className="bg-white h-full rounded-full transition-all"
+                                                    className="bg-blue-600 h-full rounded-full transition-all"
                                                     style={{ width: `${cityStat.percentage}%` }}
                                                 />
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="py-4 px-6 text-right font-bold text-white font-mono">
+                                    <td className="py-4 px-6 text-right font-bold text-slate-900 font-mono">
                                         ₹{cityStat.revenue.toLocaleString()}
                                     </td>
-                                    <td className="py-4 px-6 text-right font-bold text-neutral-300 font-mono">
+                                    <td className="py-4 px-6 text-right font-bold text-slate-700 font-mono">
                                         ₹{cityStat.avgValue.toLocaleString()}
                                     </td>
                                     <td className="py-4 px-6 text-center">
-                                        <span className="px-2.5 py-1 bg-emerald-950/60 border border-emerald-800/40 text-emerald-400 text-[10px] font-bold rounded-lg uppercase">
+                                        <span className="px-2.5 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold rounded-lg uppercase shadow-2xs">
                                             {cityStat.growth}
                                         </span>
                                     </td>

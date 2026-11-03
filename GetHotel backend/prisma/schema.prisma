@@ -150,6 +150,7 @@ model hotel {
   review                review[]
   room                  room[]
   staff                 staff[]
+  message               message[]
 
   @@index([userId], map: "Hotel_userId_fkey")
 }
@@ -336,6 +337,7 @@ model user {
   review                review[]
   staff                 staff[]
   ai_conversations      ai_conversation[]
+  message               message[]
 }
 
 model payout {
@@ -439,5 +441,21 @@ model ai_user_profile {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
+  @@index([userId])
+}
+
+model message {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  hotelId   Int
+  content   String   @db.Text
+  sender    String   @default("user")
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hotel     hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+
+  @@index([hotelId])
   @@index([userId])
 }

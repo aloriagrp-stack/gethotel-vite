@@ -16,10 +16,13 @@ import {
     Activity, Copy, Hash, Map, Eye, EyeOff,
     Percent, DollarSign, CalendarDays, Lock, Unlock,
     Smartphone, Search, Monitor, Star, Bookmark,
-    ArrowLeft
+    ArrowLeft,
+    Sparkles,
+    Ticket
 } from "lucide-react";
 import { cn, safeParse } from "@/lib/utils";
-import { hotelApi } from "@/lib/api";
+import { hotelApi, couponApi } from "@/lib/api";
+import confetti from "canvas-confetti";
 
 const formatPrice = (price: any) => {
     return new Intl.NumberFormat('en-IN', {
@@ -127,6 +130,83 @@ export default function PartnerRoomsPage() {
     const [isOptimizing, setIsOptimizing] = useState(false);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [showHourlyConfirm, setShowHourlyConfirm] = useState(false);
+
+    // Launch Promotion Prompt for Room Cards
+    const [showPromoPopup, setShowPromoPopup] = useState(false);
+    const [selectedPromoPercent, setSelectedPromoPercent] = useState<number>(10);
+    const [isApplyingPromo, setIsApplyingPromo] = useState(false);
+
+    const triggerPromotionPrompt = async (hotelId: number, currentRooms: any[]) => {
+        if (!currentRooms || currentRooms.length === 0) return;
+        if (typeof window === 'undefined') return;
+        const dismissed = sessionStorage.getItem(`promo_prompt_dismissed_${hotelId}`);
+        if (dismissed) return;
+
+        try {
+            const couponRes = await couponApi.getCoupons(hotelId);
+            if (couponRes.success && Array.isArray(couponRes.data)) {
+                const activeCoupons = couponRes.data.filter((c: any) => c.isActive !== false);
+                if (activeCoupons.length === 0) {
+                    setTimeout(() => setShowPromoPopup(true), 600);
+                }
+            }
+        } catch (e) {
+            console.warn("Could not check coupons for promo prompt:", e);
+        }
+    };
+
+    const handleDismissPromoPopup = () => {
+        setShowPromoPopup(false);
+        if (hotel?.id && typeof window !== 'undefined') {
+            sessionStorage.setItem(`promo_prompt_dismissed_${hotel.id}`, 'true');
+        }
+    };
+
+    const handleApplyLaunchPromo = async () => {
+        if (!hotel?.id) return;
+        setIsApplyingPromo(true);
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            const nextMonth = new Date();
+            nextMonth.setDate(nextMonth.getDate() + 30);
+            const nextMonthStr = nextMonth.toISOString().split('T')[0];
+
+            const couponData = {
+                code: `LAUNCH${selectedPromoPercent}`,
+                discountType: 'percentage',
+                discountValue: String(selectedPromoPercent),
+                minBookingAmt: '0',
+                startDate: today,
+                endDate: nextMonthStr,
+                usageLimit: '100',
+                promoType: 'standard',
+                targetAudience: 'all',
+                minStay: '1',
+                applyToRooms: 'all'
+            };
+
+            const res = await couponApi.createCoupon(hotel.id, couponData);
+            if (res.success) {
+                confetti({
+                    particleCount: 120,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: ['#2563eb', '#10b981', '#f59e0b']
+                });
+                showToast(`Launch Promotion (${selectedPromoPercent}% OFF) successfully activated!`, "success");
+                setShowPromoPopup(false);
+                if (typeof window !== 'undefined') {
+                    sessionStorage.setItem(`promo_prompt_dismissed_${hotel.id}`, 'true');
+                }
+            } else {
+                showToast(res.message || "Failed to create promotion", "error");
+            }
+        } catch (err: any) {
+            showToast(err.message || "Failed to create promotion", "error");
+        } finally {
+            setIsApplyingPromo(false);
+        }
+    };
 
     const commonHighlights = [
         { label: "Cancellation", options: ["Free till 24h", "Non-refundable", "Free till 48h"] },
@@ -316,6 +396,7 @@ export default function PartnerRoomsPage() {
                         const roomsRes = await hotelApi.getRooms(String(myHotel.id));
                         if (roomsRes.success && Array.isArray(roomsRes.data)) {
                             setRooms(roomsRes.data);
+                            triggerPromotionPrompt(myHotel.id, roomsRes.data);
                         } else {
                             setRooms(myHotel.rooms || myHotel.room || []);
                         }
@@ -636,6 +717,7 @@ export default function PartnerRoomsPage() {
                 const res = await hotelApi.addRoom(hotelIdToUse, dataToSave);
                 if (res.success) {
                     setRooms(prev => [...prev, res.data]);
+                    triggerPromotionPrompt(hotelIdToUse, [...rooms, res.data]);
                     showToast("New room category created!", "success");
                     setIsEditing(false);
                 } else {
@@ -1612,6 +1694,143 @@ export default function PartnerRoomsPage() {
                         </div>
                     )}
                 </AnimatePresence>
+
+            
+
+            {/* Launch Promotion Modal (English Prompt When First Room Cards Exist) */}
+            <AnimatePresence>
+                {showPromoPopup && (
+                    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+                        <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={handleDismissPromoPopup}
+                            className="absolute inset-0 bg-slate-950/45 backdrop-blur-xs"
+                        />
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 15 }}
+                            className="relative bg-white rounded-2xl border border-slate-300 p-6 sm:p-7 max-w-lg w-full shadow-2xl space-y-5 overflow-hidden"
+                        >
+                            {/* Top Badge & Close */}
+                            <div className="flex items-start justify-between">
+                                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-300 flex items-center gap-1.5">
+                                    <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                                    <span>Recommended Next Step</span>
+                                </span>
+                                <button 
+                                    onClick={handleDismissPromoPopup}
+                                    className="text-slate-400 hover:text-slate-900 p-1 cursor-pointer transition-colors"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
+
+                            {/* Icon + Title + Explanation */}
+                            <div className="space-y-2">
+                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center shadow-md">
+                                    <Ticket className="w-6 h-6" />
+                                </div>
+                                <h3 className="text-xl font-black text-slate-950 tracking-tight">
+                                    Boost Your Bookings: Set Up a Launch Promotion
+                                </h3>
+                                <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                                    Your room categories and prices are now configured. Adding a promotional discount helps your property rank higher on search results and attracts your first guest bookings!
+                                </p>
+                            </div>
+
+                            {/* Quick Discount Selector */}
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-slate-800 block">
+                                    Select Your Launch Discount Percentage:
+                                </label>
+                                <div className="grid grid-cols-3 gap-2.5">
+                                    {[
+                                        { percent: 10, label: "10% OFF", desc: "Launch Deal" },
+                                        { percent: 15, label: "15% OFF", desc: "Recommended" },
+                                        { percent: 20, label: "20% OFF", desc: "Fast Traction" }
+                                    ].map(opt => (
+                                        <button
+                                            key={opt.percent}
+                                            type="button"
+                                            onClick={() => setSelectedPromoPercent(opt.percent)}
+                                            className={cn(
+                                                "p-3 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center",
+                                                selectedPromoPercent === opt.percent
+                                                    ? "bg-slate-950 text-white border-slate-950 shadow-sm"
+                                                    : "bg-white text-slate-800 border-slate-300 hover:bg-slate-50"
+                                            )}
+                                        >
+                                            <span className="text-base font-black">{opt.label}</span>
+                                            <span className={cn(
+                                                "text-[10px] font-semibold mt-0.5",
+                                                selectedPromoPercent === opt.percent ? "text-slate-300" : "text-slate-500"
+                                            )}>
+                                                {opt.desc}
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Live Badge Preview */}
+                            <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-950 flex items-start gap-2.5">
+                                <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+                                <div className="leading-relaxed">
+                                    <span>Code </span>
+                                    <strong className="font-mono bg-white px-1.5 py-0.5 rounded border border-emerald-300 text-slate-950">
+                                        LAUNCH{selectedPromoPercent}
+                                    </strong>
+                                    <span> will be activated for 30 days. Guests browsing your rooms will see the <strong>{selectedPromoPercent}% OFF</strong> deal badge!</span>
+                                </div>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="space-y-2.5 pt-2 border-t border-slate-200">
+                                <button
+                                    onClick={handleApplyLaunchPromo}
+                                    disabled={isApplyingPromo}
+                                    className="w-full py-3 bg-slate-950 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                                >
+                                    {isApplyingPromo ? (
+                                        <>
+                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                            <span>Applying Promotion...</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Zap className="w-4 h-4 text-amber-400" />
+                                            <span>Apply {selectedPromoPercent}% Launch Promotion Now</span>
+                                        </>
+                                    )}
+                                </button>
+
+                                <div className="flex items-center justify-between pt-1 text-xs">
+                                    <button
+                                        onClick={handleDismissPromoPopup}
+                                        className="text-slate-500 hover:text-slate-800 font-semibold cursor-pointer"
+                                    >
+                                        Remind Me Later
+                                    </button>
+
+                                    <button
+                                        onClick={() => {
+                                            handleDismissPromoPopup();
+                                            window.location.href = `/partner-dashboard/coupons?activeHotelId=${hotel?.id || ''}`;
+                                        }}
+                                        className="text-blue-700 hover:text-blue-900 font-bold hover:underline flex items-center gap-1 cursor-pointer"
+                                    >
+                                        <span>Customize in Promotions Tab</span>
+                                        <ChevronRight className="w-3.5 h-3.5" />
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
             </div>
         );
     }
@@ -1647,6 +1866,143 @@ export default function PartnerRoomsPage() {
                         </motion.div>
                     )}
                 </AnimatePresence>
+
+            
+
+            {/* Launch Promotion Modal (English Prompt When First Room Cards Exist) */}
+            <AnimatePresence>
+                {showPromoPopup && (
+                    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+                        <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={handleDismissPromoPopup}
+                            className="absolute inset-0 bg-slate-950/45 backdrop-blur-xs"
+                        />
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 15 }}
+                            className="relative bg-white rounded-2xl border border-slate-300 p-6 sm:p-7 max-w-lg w-full shadow-2xl space-y-5 overflow-hidden"
+                        >
+                            {/* Top Badge & Close */}
+                            <div className="flex items-start justify-between">
+                                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-300 flex items-center gap-1.5">
+                                    <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                                    <span>Recommended Next Step</span>
+                                </span>
+                                <button 
+                                    onClick={handleDismissPromoPopup}
+                                    className="text-slate-400 hover:text-slate-900 p-1 cursor-pointer transition-colors"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
+
+                            {/* Icon + Title + Explanation */}
+                            <div className="space-y-2">
+                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center shadow-md">
+                                    <Ticket className="w-6 h-6" />
+                                </div>
+                                <h3 className="text-xl font-black text-slate-950 tracking-tight">
+                                    Boost Your Bookings: Set Up a Launch Promotion
+                                </h3>
+                                <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                                    Your room categories and prices are now configured. Adding a promotional discount helps your property rank higher on search results and attracts your first guest bookings!
+                                </p>
+                            </div>
+
+                            {/* Quick Discount Selector */}
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-slate-800 block">
+                                    Select Your Launch Discount Percentage:
+                                </label>
+                                <div className="grid grid-cols-3 gap-2.5">
+                                    {[
+                                        { percent: 10, label: "10% OFF", desc: "Launch Deal" },
+                                        { percent: 15, label: "15% OFF", desc: "Recommended" },
+                                        { percent: 20, label: "20% OFF", desc: "Fast Traction" }
+                                    ].map(opt => (
+                                        <button
+                                            key={opt.percent}
+                                            type="button"
+                                            onClick={() => setSelectedPromoPercent(opt.percent)}
+                                            className={cn(
+                                                "p-3 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center",
+                                                selectedPromoPercent === opt.percent
+                                                    ? "bg-slate-950 text-white border-slate-950 shadow-sm"
+                                                    : "bg-white text-slate-800 border-slate-300 hover:bg-slate-50"
+                                            )}
+                                        >
+                                            <span className="text-base font-black">{opt.label}</span>
+                                            <span className={cn(
+                                                "text-[10px] font-semibold mt-0.5",
+                                                selectedPromoPercent === opt.percent ? "text-slate-300" : "text-slate-500"
+                                            )}>
+                                                {opt.desc}
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Live Badge Preview */}
+                            <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-950 flex items-start gap-2.5">
+                                <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+                                <div className="leading-relaxed">
+                                    <span>Code </span>
+                                    <strong className="font-mono bg-white px-1.5 py-0.5 rounded border border-emerald-300 text-slate-950">
+                                        LAUNCH{selectedPromoPercent}
+                                    </strong>
+                                    <span> will be activated for 30 days. Guests browsing your rooms will see the <strong>{selectedPromoPercent}% OFF</strong> deal badge!</span>
+                                </div>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="space-y-2.5 pt-2 border-t border-slate-200">
+                                <button
+                                    onClick={handleApplyLaunchPromo}
+                                    disabled={isApplyingPromo}
+                                    className="w-full py-3 bg-slate-950 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                                >
+                                    {isApplyingPromo ? (
+                                        <>
+                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                            <span>Applying Promotion...</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Zap className="w-4 h-4 text-amber-400" />
+                                            <span>Apply {selectedPromoPercent}% Launch Promotion Now</span>
+                                        </>
+                                    )}
+                                </button>
+
+                                <div className="flex items-center justify-between pt-1 text-xs">
+                                    <button
+                                        onClick={handleDismissPromoPopup}
+                                        className="text-slate-500 hover:text-slate-800 font-semibold cursor-pointer"
+                                    >
+                                        Remind Me Later
+                                    </button>
+
+                                    <button
+                                        onClick={() => {
+                                            handleDismissPromoPopup();
+                                            window.location.href = `/partner-dashboard/coupons?activeHotelId=${hotel?.id || ''}`;
+                                        }}
+                                        className="text-blue-700 hover:text-blue-900 font-bold hover:underline flex items-center gap-1 cursor-pointer"
+                                    >
+                                        <span>Customize in Promotions Tab</span>
+                                        <ChevronRight className="w-3.5 h-3.5" />
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
 
                 <div className="flex items-center gap-3">
                     <div className="bg-white border border-slate-200 p-1 rounded-none flex items-center shadow-sm">
@@ -1825,6 +2181,141 @@ export default function PartnerRoomsPage() {
                                         className="flex-1 px-6 py-4 bg-purple-600 text-white rounded-none font-black text-[10px] uppercase tracking-widest hover:bg-purple-700 shadow-lg shadow-purple-100 transition-all"
                                     >
                                         Enable Now
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Launch Promotion Modal (English Prompt When First Room Cards Exist) */}
+            <AnimatePresence>
+                {showPromoPopup && (
+                    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+                        <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={handleDismissPromoPopup}
+                            className="absolute inset-0 bg-slate-950/45 backdrop-blur-xs"
+                        />
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 15 }}
+                            className="relative bg-white rounded-2xl border border-slate-300 p-6 sm:p-7 max-w-lg w-full shadow-2xl space-y-5 overflow-hidden"
+                        >
+                            {/* Top Badge & Close */}
+                            <div className="flex items-start justify-between">
+                                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-300 flex items-center gap-1.5">
+                                    <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                                    <span>Recommended Next Step</span>
+                                </span>
+                                <button 
+                                    onClick={handleDismissPromoPopup}
+                                    className="text-slate-400 hover:text-slate-900 p-1 cursor-pointer transition-colors"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
+
+                            {/* Icon + Title + Explanation */}
+                            <div className="space-y-2">
+                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center shadow-md">
+                                    <Ticket className="w-6 h-6" />
+                                </div>
+                                <h3 className="text-xl font-black text-slate-950 tracking-tight">
+                                    Boost Your Bookings: Set Up a Launch Promotion
+                                </h3>
+                                <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                                    Your room categories and prices are now configured. Adding a promotional discount helps your property rank higher on search results and attracts your first guest bookings!
+                                </p>
+                            </div>
+
+                            {/* Quick Discount Selector */}
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-slate-800 block">
+                                    Select Your Launch Discount Percentage:
+                                </label>
+                                <div className="grid grid-cols-3 gap-2.5">
+                                    {[
+                                        { percent: 10, label: "10% OFF", desc: "Launch Deal" },
+                                        { percent: 15, label: "15% OFF", desc: "Recommended" },
+                                        { percent: 20, label: "20% OFF", desc: "Fast Traction" }
+                                    ].map(opt => (
+                                        <button
+                                            key={opt.percent}
+                                            type="button"
+                                            onClick={() => setSelectedPromoPercent(opt.percent)}
+                                            className={cn(
+                                                "p-3 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center",
+                                                selectedPromoPercent === opt.percent
+                                                    ? "bg-slate-950 text-white border-slate-950 shadow-sm"
+                                                    : "bg-white text-slate-800 border-slate-300 hover:bg-slate-50"
+                                            )}
+                                        >
+                                            <span className="text-base font-black">{opt.label}</span>
+                                            <span className={cn(
+                                                "text-[10px] font-semibold mt-0.5",
+                                                selectedPromoPercent === opt.percent ? "text-slate-300" : "text-slate-500"
+                                            )}>
+                                                {opt.desc}
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Live Badge Preview */}
+                            <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-950 flex items-start gap-2.5">
+                                <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+                                <div className="leading-relaxed">
+                                    <span>Code </span>
+                                    <strong className="font-mono bg-white px-1.5 py-0.5 rounded border border-emerald-300 text-slate-950">
+                                        LAUNCH{selectedPromoPercent}
+                                    </strong>
+                                    <span> will be activated for 30 days. Guests browsing your rooms will see the <strong>{selectedPromoPercent}% OFF</strong> deal badge!</span>
+                                </div>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="space-y-2.5 pt-2 border-t border-slate-200">
+                                <button
+                                    onClick={handleApplyLaunchPromo}
+                                    disabled={isApplyingPromo}
+                                    className="w-full py-3 bg-slate-950 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                                >
+                                    {isApplyingPromo ? (
+                                        <>
+                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                            <span>Applying Promotion...</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Zap className="w-4 h-4 text-amber-400" />
+                                            <span>Apply {selectedPromoPercent}% Launch Promotion Now</span>
+                                        </>
+                                    )}
+                                </button>
+
+                                <div className="flex items-center justify-between pt-1 text-xs">
+                                    <button
+                                        onClick={handleDismissPromoPopup}
+                                        className="text-slate-500 hover:text-slate-800 font-semibold cursor-pointer"
+                                    >
+                                        Remind Me Later
+                                    </button>
+
+                                    <button
+                                        onClick={() => {
+                                            handleDismissPromoPopup();
+                                            window.location.href = `/partner-dashboard/coupons?activeHotelId=${hotel?.id || ''}`;
+                                        }}
+                                        className="text-blue-700 hover:text-blue-900 font-bold hover:underline flex items-center gap-1 cursor-pointer"
+                                    >
+                                        <span>Customize in Promotions Tab</span>
+                                        <ChevronRight className="w-3.5 h-3.5" />
                                     </button>
                                 </div>
                             </div>

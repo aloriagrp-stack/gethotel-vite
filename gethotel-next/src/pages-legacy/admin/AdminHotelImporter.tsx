@@ -248,24 +248,24 @@ export const AdminHotelImporter: React.FC = () => {
     });
 
     return (
-        <div className="min-h-screen bg-[#09090b] text-neutral-100 p-6 md:p-10 font-sans select-none">
+        <div className="space-y-6 text-slate-800 font-sans select-none pb-12">
             
             {/* Top Bar Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-200">
                 <div>
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-[#141414] border border-[#262626] flex items-center justify-center text-emerald-400 shadow-inner">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shadow-2xs">
                             <Sparkles className="w-5 h-5" />
                         </div>
                         <div>
-                            <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2.5">
+                            <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
                                 Hotel Scraper & Agent Importer
-                                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide bg-emerald-950/80 text-emerald-400 border border-emerald-800/40 flex items-center gap-1.5">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1.5 shadow-2xs">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                     EXTENSION LINKED & READY
                                 </span>
                             </h1>
-                            <p className="text-xs text-neutral-400 mt-0.5">
+                            <p className="text-xs text-slate-500 mt-1">
                                 Scrape hotel pages via GHS Extension and import directly into GHS database with 1-Click.
                             </p>
                         </div>
@@ -276,7 +276,7 @@ export const AdminHotelImporter: React.FC = () => {
                     <button
                         onClick={loadData}
                         disabled={loading}
-                        className="px-3.5 py-2 rounded-xl bg-[#181818] hover:bg-[#222222] text-white text-xs font-bold border border-[#2a2a2a] transition-all flex items-center gap-2 cursor-pointer shadow-sm"
+                        className="px-4 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-800 text-xs font-bold border border-slate-300 transition-all flex items-center gap-2 cursor-pointer shadow-2xs"
                     >
                         <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
                         Refresh
@@ -284,7 +284,7 @@ export const AdminHotelImporter: React.FC = () => {
 
                     <button
                         onClick={() => setShowSettingsModal(true)}
-                        className="p-2 rounded-xl bg-[#181818] hover:bg-[#222222] text-neutral-400 hover:text-white border border-[#2a2a2a] transition-all cursor-pointer shadow-sm"
+                        className="p-2 rounded-xl bg-white hover:bg-slate-50 text-slate-500 hover:text-slate-800 border border-slate-300 transition-all cursor-pointer shadow-2xs"
                         title="Connection Settings"
                     >
                         <Settings className="w-4 h-4" />
@@ -292,64 +292,64 @@ export const AdminHotelImporter: React.FC = () => {
                 </div>
             </div>
 
-            {/* Pure Black Skeuomorphic Stat Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-                <div className="bg-neutral-900/40 border border-neutral-800/80  rounded-2xl  p-5">
-                    <div className="flex items-center justify-between text-neutral-400 text-xs mb-2">
-                        <span className="font-bold">Queued Hotels</span>
-                        <Building2 className="w-4 h-4 text-emerald-400" />
+            {/* Stat Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs">
+                    <div className="flex items-center justify-between text-slate-500 text-xs mb-2">
+                        <span className="font-bold uppercase tracking-wider text-[11px]">Queued Hotels</span>
+                        <Building2 className="w-4 h-4 text-emerald-600" />
                     </div>
-                    <p className="text-2xl font-bold text-white tracking-tight">
+                    <p className="text-2xl font-black text-slate-900 tracking-tight">
                         {hotels.length}
                     </p>
-                    <p className="text-[10px] text-neutral-500 mt-1 font-medium">Ready for 1-click import</p>
+                    <p className="text-[10px] text-slate-400 mt-1 font-semibold">Ready for 1-click import</p>
                 </div>
 
-                <div className="bg-neutral-900/40 border border-neutral-800/80  rounded-2xl  p-5">
-                    <div className="flex items-center justify-between text-neutral-400 text-xs mb-2">
-                        <span className="font-bold">With Images</span>
-                        <ImageIcon className="w-4 h-4 text-emerald-400" />
+                <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs">
+                    <div className="flex items-center justify-between text-slate-500 text-xs mb-2">
+                        <span className="font-bold uppercase tracking-wider text-[11px]">With Images</span>
+                        <ImageIcon className="w-4 h-4 text-emerald-600" />
                     </div>
-                    <p className="text-2xl font-bold text-white tracking-tight">
+                    <p className="text-2xl font-black text-slate-900 tracking-tight">
                         {hotels.filter(h => (h.images && h.images.length > 0) || h.coverImageUrl).length}
                     </p>
-                    <p className="text-[10px] text-neutral-500 mt-1 font-medium">Up to 30 WebP photos</p>
+                    <p className="text-[10px] text-slate-400 mt-1 font-semibold">Up to 30 WebP photos</p>
                 </div>
 
-                <div className="bg-neutral-900/40 border border-neutral-800/80  rounded-2xl  p-5">
-                    <div className="flex items-center justify-between text-neutral-400 text-xs mb-2">
-                        <span className="font-bold">Room Types</span>
-                        <BedDouble className="w-4 h-4 text-purple-400" />
+                <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs">
+                    <div className="flex items-center justify-between text-slate-500 text-xs mb-2">
+                        <span className="font-bold uppercase tracking-wider text-[11px]">Room Types</span>
+                        <BedDouble className="w-4 h-4 text-purple-600" />
                     </div>
-                    <p className="text-2xl font-bold text-white tracking-tight">
+                    <p className="text-2xl font-black text-slate-900 tracking-tight">
                         {hotels.reduce((acc, h) => acc + (h.roomTypes ? h.roomTypes.length : 1), 0)}
                     </p>
-                    <p className="text-[10px] text-neutral-500 mt-1 font-medium">Categories mapped</p>
+                    <p className="text-[10px] text-slate-400 mt-1 font-semibold">Categories mapped</p>
                 </div>
 
-                <div className="bg-neutral-900/40 border border-neutral-800/80  rounded-2xl  p-5">
-                    <div className="flex items-center justify-between text-neutral-400 text-xs mb-2">
-                        <span className="font-bold">Live in GHS</span>
-                        <CheckCircle2 className="w-4 h-4 text-amber-400" />
+                <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs">
+                    <div className="flex items-center justify-between text-slate-500 text-xs mb-2">
+                        <span className="font-bold uppercase tracking-wider text-[11px]">Live in GHS</span>
+                        <CheckCircle2 className="w-4 h-4 text-amber-500" />
                     </div>
-                    <p className="text-2xl font-bold text-emerald-400 tracking-tight">
+                    <p className="text-2xl font-black text-emerald-600 tracking-tight">
                         {stats?.ghsStats?.totalHotelsInGhs || 0}
                     </p>
-                    <p className="text-[10px] text-neutral-500 mt-1 font-medium">Total active database</p>
+                    <p className="text-[10px] text-slate-400 mt-1 font-semibold">Total active database</p>
                 </div>
             </div>
 
             {/* Filter & Batch Action Bar */}
-            <div className="bg-neutral-900/40 border border-neutral-800/80  rounded-2xl  p-4 mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="bg-white border border-slate-200/90 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xs">
                 <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
                     <div className="relative min-w-[220px]">
-                        <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" />
+                        <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                         <input
                             type="text"
                             placeholder="Search hotel or city..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#141414] border border-[#262626] text-white text-xs placeholder:text-neutral-600 focus:outline-none focus:border-neutral-500 shadow-inner"
+                            className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 text-slate-900 text-xs placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-2xs transition-all"
                         />
                     </div>
 
@@ -358,7 +358,7 @@ export const AdminHotelImporter: React.FC = () => {
                         placeholder="Filter city..."
                         value={cityFilter}
                         onChange={(e) => { setCityFilter(e.target.value); setPage(1); }}
-                        className="px-3.5 py-2 rounded-xl bg-[#141414] border border-[#262626] text-white text-xs placeholder:text-neutral-600 focus:outline-none focus:border-neutral-500 min-w-[130px] shadow-inner"
+                        className="px-3.5 py-2 rounded-xl bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 text-slate-900 text-xs placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 min-w-[130px] shadow-2xs transition-all"
                     />
                 </div>
 
@@ -366,10 +366,10 @@ export const AdminHotelImporter: React.FC = () => {
                     <button
                         onClick={handleImportSelected}
                         disabled={selectedIds.size === 0 || importing}
-                        className={`px-5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                        className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
                             selectedIds.size > 0 && !importing
-                                ? "bg-neutral-100 hover:bg-white text-black shadow-md active:scale-98"
-                                : "bg-[#141414] text-neutral-600 border border-[#262626] cursor-not-allowed"
+                                ? "bg-slate-900 hover:bg-slate-800 text-white shadow-xs"
+                                : "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed"
                         }`}
                     >
                         <Download className="w-3.5 h-3.5" />
@@ -379,7 +379,7 @@ export const AdminHotelImporter: React.FC = () => {
                     <button
                         onClick={handleImportAll}
                         disabled={hotels.length === 0 || importing}
-                        className="px-5 py-2 rounded-xl bg-[#181818] hover:bg-[#222222] text-white text-xs font-bold border border-[#2a2a2a] transition-all disabled:opacity-40 flex items-center gap-2 cursor-pointer shadow-sm"
+                        className="px-5 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-800 text-xs font-bold border border-slate-300 transition-all disabled:opacity-40 flex items-center gap-2 cursor-pointer shadow-2xs"
                     >
                         Import All ({hotels.length})
                     </button>
@@ -387,17 +387,17 @@ export const AdminHotelImporter: React.FC = () => {
             </div>
 
             {/* Scraped Hotels Table */}
-            <div className="bg-neutral-900/40 border border-neutral-800/80  rounded-2xl  overflow-hidden">
+            <div className="bg-white border border-slate-200/90 rounded-2xl overflow-hidden shadow-xs">
                 {loading ? (
-                    <div className="p-16 text-center text-neutral-500 text-xs font-medium space-y-2">
-                        <div className="w-6 h-6 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                    <div className="p-16 text-center text-slate-500 text-xs font-medium space-y-2">
+                        <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
                         Loading queued hotels...
                     </div>
                 ) : filteredHotels.length === 0 ? (
-                    <div className="p-16 text-center text-neutral-400 text-xs font-medium space-y-3">
-                        <Building2 className="w-8 h-8 text-neutral-600 mx-auto" />
-                        <p className="text-sm font-bold text-white">No Hotels in Queue</p>
-                        <p className="text-neutral-500 max-w-sm mx-auto">
+                    <div className="p-16 text-center text-slate-500 text-xs font-medium space-y-3">
+                        <Building2 className="w-8 h-8 text-slate-300 mx-auto" />
+                        <p className="text-sm font-bold text-slate-900">No Hotels in Queue</p>
+                        <p className="text-slate-500 max-w-sm mx-auto">
                             Open MakeMyTrip or any hotel page, click the GHS Chrome Extension, and click <strong>"Export to GHS Super Admin"</strong>!
                         </p>
                     </div>
@@ -405,13 +405,13 @@ export const AdminHotelImporter: React.FC = () => {
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-[#080808] text-neutral-400 text-[11px] font-bold uppercase tracking-wider border-b border-[#1f1f1f]">
+                                <tr className="bg-slate-50/80 text-slate-500 text-[10px] font-bold uppercase tracking-wider border-b border-slate-200">
                                     <th className="p-4 w-12 text-center">
                                         <input
                                             type="checkbox"
                                             checked={selectedIds.size === hotels.length && hotels.length > 0}
                                             onChange={handleSelectAll}
-                                            className="w-4 h-4 rounded border-[#262626] bg-[#141414] accent-emerald-400 cursor-pointer"
+                                            className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                                         />
                                     </th>
                                     <th className="p-4">Hotel Details</th>
@@ -423,7 +423,7 @@ export const AdminHotelImporter: React.FC = () => {
                                     <th className="p-4 text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-[#181818] text-xs font-medium text-neutral-300">
+                            <tbody className="divide-y divide-slate-100 text-xs font-medium text-slate-800">
                                 {filteredHotels.map((h) => {
                                     const isSelected = selectedIds.has(h.id);
                                     const roomCount = h.roomTypes ? h.roomTypes.length : 1;
@@ -433,14 +433,14 @@ export const AdminHotelImporter: React.FC = () => {
                                     return (
                                         <tr 
                                             key={h.id} 
-                                            className={`hover:bg-[#121212] transition-colors ${isSelected ? 'bg-[#161616]' : ''}`}
+                                            className={`hover:bg-slate-50/70 transition-colors ${isSelected ? 'bg-blue-50/40' : ''}`}
                                         >
                                             <td className="p-4 text-center">
                                                 <input
                                                     type="checkbox"
                                                     checked={isSelected}
                                                     onChange={() => handleToggleSelect(h.id)}
-                                                    className="w-4 h-4 rounded border-[#262626] bg-[#141414] accent-emerald-400 cursor-pointer"
+                                                    className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                                                 />
                                             </td>
 
@@ -449,43 +449,43 @@ export const AdminHotelImporter: React.FC = () => {
                                                     <img 
                                                         src={coverUrl} 
                                                         alt={h.name} 
-                                                        className="w-12 h-12 rounded-xl object-cover bg-[#141414] border border-[#262626] shrink-0"
+                                                        className="w-12 h-12 rounded-xl object-cover bg-slate-100 border border-slate-200 shrink-0 shadow-2xs"
                                                         onError={(e) => {
                                                             (e.target as HTMLElement).setAttribute('src', 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=200&q=80');
                                                         }}
                                                     />
                                                     <div>
-                                                        <p className="font-bold text-white text-xs">{h.name}</p>
-                                                        <p className="text-[11px] text-neutral-400 mt-0.5">{h.address || h.city}</p>
+                                                        <p className="font-bold text-slate-900 text-xs">{h.name}</p>
+                                                        <p className="text-[11px] text-slate-500 mt-0.5">{h.address || h.city}</p>
                                                     </div>
                                                 </div>
                                             </td>
 
-                                            <td className="p-4 text-neutral-300 font-medium">
+                                            <td className="p-4 text-slate-700 font-medium">
                                                 {h.city}
                                             </td>
 
                                             <td className="p-4">
-                                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-950/80 text-amber-400 border border-amber-800/40">
+                                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
                                                     {h.starRating || 4} ★
                                                 </span>
                                             </td>
 
-                                            <td className="p-4 text-neutral-300 font-medium">
+                                            <td className="p-4 text-slate-700 font-medium">
                                                 {roomCount} types
                                             </td>
 
-                                            <td className="p-4 text-neutral-300 font-medium">
+                                            <td className="p-4 text-slate-700 font-medium">
                                                 {imageCount} photos
                                             </td>
 
                                             <td className="p-4">
                                                 {h.isAlreadyImported ? (
-                                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-800/40 flex items-center gap-1 w-max">
+                                                    <span className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1 w-max">
                                                         <Check className="w-3 h-3" /> Live in GHS
                                                     </span>
                                                 ) : (
-                                                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#181818] text-neutral-400 border border-[#2a2a2a] w-max inline-block">
+                                                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200 w-max inline-block">
                                                         Ready
                                                     </span>
                                                 )}
@@ -496,7 +496,7 @@ export const AdminHotelImporter: React.FC = () => {
                                                     <button
                                                         onClick={() => handleSingleImport(h)}
                                                         disabled={importing}
-                                                        className="px-3.5 py-1.5 rounded-xl bg-[#181818] hover:bg-[#222222] text-white hover:text-emerald-400 font-bold text-xs border border-[#2d2d2d] transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+                                                        className="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
                                                     >
                                                         <Download className="w-3 h-3" />
                                                         {h.isAlreadyImported ? 'Re-Sync' : 'Import'}
@@ -505,7 +505,7 @@ export const AdminHotelImporter: React.FC = () => {
                                                     <button
                                                         onClick={() => handleDeleteHotel(h)}
                                                         disabled={importing}
-                                                        className="p-1.5 rounded-xl bg-[#181818] hover:bg-red-950/60 text-neutral-400 hover:text-red-400 border border-[#2d2d2d] hover:border-red-800/40 transition-all cursor-pointer shadow-sm"
+                                                        className="p-1.5 rounded-xl bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-slate-200 hover:border-rose-200 transition-all cursor-pointer shadow-2xs"
                                                         title="Delete from Queue"
                                                     >
                                                         <Trash2 className="w-4 h-4" />

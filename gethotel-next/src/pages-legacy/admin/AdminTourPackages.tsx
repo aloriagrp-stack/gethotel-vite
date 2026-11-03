@@ -579,217 +579,230 @@ export default function AdminTourPackages() {
     };
 
     return (
-        <div className="space-y-8 pb-12 font-sans text-neutral-100">
+        <div className="space-y-6 animate-in fade-in duration-300 max-w-[1400px] text-slate-900 pb-16 font-sans">
             {/* Top Header Bar */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-neutral-900/40 p-6 rounded-2xl border border-neutral-800/80  ">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-200/80">
                 <div>
-                    <h2 className="text-2xl font-black text-white flex items-center gap-2 tracking-tight">
-                        <Palmtree className="w-6 h-6 text-emerald-400" />
-                        Super Admin Tour Packages & Settings Manager
-                    </h2>
-                    <p className="text-xs text-neutral-400 mt-1 font-semibold">
-                        Manage packages, hero banners, popular destination circles & filter line settings live.
+                    <div className="flex items-center gap-2">
+                        <Palmtree className="w-4 h-4 text-emerald-600" />
+                        <h1 className="text-xl font-bold text-slate-900 tracking-tight">Tour Packages & Catalog</h1>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-0.5 font-medium">
+                        Manage live packages, hero banners, destination circles & category filter settings.
                     </p>
                 </div>
 
-                {subTab === "packages" && (
-                    <div className="flex items-center gap-3 shrink-0 flex-wrap">
+                <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+                    {subTab === "packages" && (
+                        <>
+                            <button
+                                onClick={() => {
+                                    setBulkJsonText("");
+                                    setBulkParsedItems([]);
+                                    setBulkParseError("");
+                                    setIsBulkModalOpen(true);
+                                }}
+                                className="px-3.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-2xs"
+                            >
+                                <FileJson className="w-3.5 h-3.5 text-emerald-600" />
+                                <span>Bulk Import (JSON)</span>
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    resetForm();
+                                    setEditingPackage(null);
+                                    setIsAddModalOpen(true);
+                                }}
+                                className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-sm"
+                            >
+                                <Plus className="w-3.5 h-3.5 text-white" />
+                                <span>Add Single Tour</span>
+                            </button>
+                        </>
+                    )}
+
+                    {subTab === "destinations" && (
                         <button
                             onClick={() => {
-                                setBulkJsonText("");
-                                setBulkParsedItems([]);
-                                setBulkParseError("");
-                                setIsBulkModalOpen(true);
+                                setEditingDest(null);
+                                setDestFormData({ name: "", image: "" });
+                                setIsDestModalOpen(true);
                             }}
-                            className="px-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl flex items-center gap-2 transition-all cursor-pointer shadow-lg shadow-emerald-950/40 uppercase tracking-wider"
+                            className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-sm"
                         >
-                            <FileJson className="w-4 h-4" />
-                            <span>Bulk Import (JSON)</span>
+                            <Plus className="w-3.5 h-3.5 text-white" />
+                            <span>Add Destination Circle</span>
                         </button>
-
-                        <button
-                            onClick={() => {
-                                resetForm();
-                                setEditingPackage(null);
-                                setIsAddModalOpen(true);
-                            }}
-                            className="px-5 py-3 bg-neutral-100 hover:bg-white text-black font-bold text-xs rounded-xl flex items-center gap-2 transition-all cursor-pointer shadow-lg uppercase tracking-wider"
-                        >
-                            <Plus className="w-4 h-4 text-black" />
-                            <span>Add Single Tour</span>
-                        </button>
-                    </div>
-                )}
-
-                {subTab === "destinations" && (
-                    <button
-                        onClick={() => {
-                            setEditingDest(null);
-                            setDestFormData({ name: "", image: "" });
-                            setIsDestModalOpen(true);
-                        }}
-                        className="px-5 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl flex items-center gap-2 transition-all cursor-pointer shadow-lg shrink-0 uppercase tracking-wider"
-                    >
-                        <Plus className="w-4 h-4 text-white" />
-                        <span>Add Destination Circle</span>
-                    </button>
-                )}
+                    )}
+                </div>
             </div>
 
             {/* Success Status Toast */}
             {statusMessage && (
-                <div className="p-4 bg-emerald-950/80 text-emerald-300 border border-emerald-800/40 rounded-xl text-xs font-bold flex items-center gap-2 backdrop-blur-sm">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <div className="p-3.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-bold flex items-center gap-2 shadow-2xs animate-in fade-in">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                     <span>{statusMessage}</span>
                 </div>
             )}
 
             {/* MANAGEMENT SUB-TAB NAVIGATION BAR */}
-            <div className="flex items-center gap-2 bg-neutral-900/40 p-2 rounded-2xl border border-neutral-800/80 overflow-x-auto no-scrollbar">
+            <div className="flex items-center gap-1.5 bg-slate-100 border border-slate-200/80 p-1.5 rounded-xl overflow-x-auto no-scrollbar">
                 <button
                     onClick={() => setSubTab("packages")}
-                    className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
+                    className={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
                         subTab === "packages"
-                            ? "bg-neutral-100 text-black shadow-md"
-                            : "text-neutral-400 hover:text-white hover:bg-[#181818]"
+                            ? "bg-white text-slate-900 shadow-sm border border-slate-200/70"
+                            : "text-slate-600 hover:text-slate-900"
                     }`}
                 >
-                    <Palmtree className="w-4 h-4" />
+                    <Palmtree className="w-4 h-4 text-emerald-600" />
                     <span>Tour Packages ({packages.length})</span>
                 </button>
 
                 <button
                     onClick={() => setSubTab("banners")}
-                    className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
+                    className={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
                         subTab === "banners"
-                            ? "bg-neutral-100 text-black shadow-md"
-                            : "text-neutral-400 hover:text-white hover:bg-[#181818]"
+                            ? "bg-white text-slate-900 shadow-sm border border-slate-200/70"
+                            : "text-slate-600 hover:text-slate-900"
                     }`}
                 >
-                    <ImageIcon className="w-4 h-4" />
+                    <ImageIcon className="w-4 h-4 text-blue-600" />
                     <span>Hero Banners ({banners.length})</span>
                 </button>
 
                 <button
                     onClick={() => setSubTab("destinations")}
-                    className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
+                    className={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
                         subTab === "destinations"
-                            ? "bg-neutral-100 text-black shadow-md"
-                            : "text-neutral-400 hover:text-white hover:bg-[#181818]"
+                            ? "bg-white text-slate-900 shadow-sm border border-slate-200/70"
+                            : "text-slate-600 hover:text-slate-900"
                     }`}
                 >
-                    <CircleDot className="w-4 h-4" />
+                    <CircleDot className="w-4 h-4 text-purple-600" />
                     <span>Destination Circles ({destinations.length})</span>
                 </button>
 
                 <button
                     onClick={() => setSubTab("filters")}
-                    className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
+                    className={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
                         subTab === "filters"
-                            ? "bg-neutral-100 text-black shadow-md"
-                            : "text-neutral-400 hover:text-white hover:bg-[#181818]"
+                            ? "bg-white text-slate-900 shadow-sm border border-slate-200/70"
+                            : "text-slate-600 hover:text-slate-900"
                     }`}
                 >
-                    <Tag className="w-4 h-4" />
+                    <Tag className="w-4 h-4 text-amber-600" />
                     <span>Filter Line Settings</span>
                 </button>
             </div>
 
             {/* TAB 1: TOUR PACKAGES LIST */}
             {subTab === "packages" && (
-                <div className="bg-neutral-900/40 rounded-2xl border border-neutral-800/80   overflow-hidden">
-                    <div className="p-5 border-b border-[#1f1f1f] bg-[#0e0e0e] flex items-center justify-between">
-                        <h3 className="text-base font-bold text-white">
-                            Active Tour Packages ({packages.length})
-                        </h3>
+                <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
+                    <div className="px-6 py-4 border-b border-slate-200/80 bg-slate-50/50 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <h3 className="text-sm font-bold text-slate-900 tracking-tight">
+                                Active Tour Packages
+                            </h3>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200/80 text-slate-700">
+                                {packages.length} Packages
+                            </span>
+                        </div>
                     </div>
 
-                    <div className="divide-y divide-[#181818]">
-                        {packages.map((pkg) => (
-                            <div key={pkg.id} className="p-4 flex items-center justify-between gap-4 hover:bg-[#121212] transition-colors">
-                                <div className="flex items-center gap-4 min-w-0">
-                                    <img
-                                        src={pkg.image}
-                                        alt=""
-                                        className="w-16 h-16 rounded-xl object-cover shrink-0 border border-[#282828] shadow-inner"
-                                    />
-                                    <div className="min-w-0">
-                                        <h4 className="text-xs font-bold text-white truncate">{pkg.title}</h4>
-                                        <p className="text-[11px] text-neutral-400 font-medium flex items-center gap-1 mt-0.5">
-                                            <MapPin className="w-3 h-3 text-emerald-400 shrink-0" />
-                                            <span>{pkg.destination}</span>
-                                        </p>
-                                        <div className="flex items-center gap-2 mt-1.5">
-                                            <span className="text-[10px] font-semibold text-neutral-300 bg-[#161616] border border-[#262626] px-2.5 py-0.5 rounded-lg">{pkg.duration}</span>
-                                            <span className="text-[10px] font-bold uppercase text-white bg-neutral-800 border border-neutral-700 px-2.5 py-0.5 rounded-lg">{pkg.badge}</span>
+                    <div className="divide-y divide-slate-100">
+                        {packages.length === 0 ? (
+                            <div className="p-12 text-center text-slate-400 text-xs font-medium">
+                                No tour packages created yet. Click "+ Add Single Tour" or "Bulk Import (JSON)" above to create one.
+                            </div>
+                        ) : (
+                            packages.map((pkg) => (
+                                <div key={pkg.id} className="p-4 sm:px-6 flex items-center justify-between gap-4 hover:bg-slate-50/80 transition-colors">
+                                    <div className="flex items-center gap-4 min-w-0">
+                                        <img
+                                            src={pkg.image}
+                                            alt=""
+                                            className="w-14 h-14 rounded-xl object-cover shrink-0 border border-slate-200 shadow-2xs"
+                                        />
+                                        <div className="min-w-0">
+                                            <h4 className="text-xs font-bold text-slate-900 truncate">{pkg.title}</h4>
+                                            <p className="text-[11px] text-slate-500 font-medium flex items-center gap-1 mt-0.5">
+                                                <MapPin className="w-3 h-3 text-emerald-600 shrink-0" />
+                                                <span>{pkg.destination}</span>
+                                            </p>
+                                            <div className="flex items-center gap-2 mt-1.5">
+                                                <span className="text-[10px] font-semibold text-slate-600 bg-slate-100 border border-slate-200 px-2.5 py-0.5 rounded-lg">{pkg.duration}</span>
+                                                <span className="text-[10px] font-bold uppercase text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-lg">{pkg.badge}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-4 shrink-0">
+                                        <div className="text-right">
+                                            <span className="text-sm font-black text-slate-900 block font-mono">₹{pkg.price?.toLocaleString()}</span>
+                                            <span className="text-[10px] text-slate-400 line-through font-medium">₹{pkg.originalPrice?.toLocaleString()}</span>
+                                        </div>
+
+                                        <div className="flex items-center gap-1.5">
+                                            <button
+                                                onClick={() => openEditModal(pkg)}
+                                                className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 bg-white border border-slate-200 rounded-xl transition-colors cursor-pointer shadow-2xs"
+                                                title="Edit Package"
+                                            >
+                                                <Edit className="w-3.5 h-3.5" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeletePackage(pkg.id)}
+                                                className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 bg-white border border-slate-200 rounded-xl transition-colors cursor-pointer shadow-2xs"
+                                                title="Delete Package"
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
-
-                                <div className="flex items-center gap-4 shrink-0">
-                                    <div className="text-right">
-                                        <span className="text-sm font-black text-white block">₹{pkg.price?.toLocaleString()}</span>
-                                        <span className="text-[10px] text-neutral-500 line-through">₹{pkg.originalPrice?.toLocaleString()}</span>
-                                    </div>
-
-                                    <div className="flex items-center gap-1">
-                                        <button
-                                            onClick={() => openEditModal(pkg)}
-                                            className="p-2 text-neutral-300 hover:bg-[#1f1f1f] rounded-lg transition-colors cursor-pointer border border-[#282828]"
-                                            title="Edit Package"
-                                        >
-                                            <Edit className="w-4 h-4" />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDeletePackage(pkg.id)}
-                                            className="p-2 text-red-400 hover:bg-red-950/60 rounded-lg transition-colors cursor-pointer border border-red-900/40"
-                                            title="Delete Package"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
+                            ))
+                        )}
                     </div>
                 </div>
             )}
 
             {/* TAB 2: HERO BANNER MANAGEMENT */}
             {subTab === "banners" && (
-                <div className="bg-neutral-900/40 p-6 rounded-2xl border border-neutral-800/80   space-y-6">
+                <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-xs space-y-6">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
-                            <h3 className="text-base font-bold text-white flex items-center gap-2">
-                                <ImageIcon className="w-4 h-4 text-emerald-400" />
+                            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                                <ImageIcon className="w-4 h-4 text-blue-600" />
                                 Hero Banner Slides ({banners.length}/5)
                             </h3>
-                            <p className="text-xs text-neutral-400 mt-0.5">Curved banner images shown at top of `/packages` page.</p>
+                            <p className="text-xs text-slate-500 mt-0.5 font-medium">Curved banner images shown at top of `/packages` page.</p>
                         </div>
                         <button
                             onClick={handleSaveBannersLive}
                             disabled={isSavingBanners}
-                            className="px-6 py-3 bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
+                            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-sm flex items-center justify-center gap-2 disabled:opacity-50"
                         >
-                            {isSavingBanners ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                            {isSavingBanners ? <RefreshCw className="w-3.5 h-3.5 animate-spin text-white" /> : <Save className="w-3.5 h-3.5 text-white" />}
                             <span>Save & Publish Banners Live</span>
                         </button>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         {banners.map((banner, index) => (
-                            <div key={banner.id} className="relative h-32 rounded-xl overflow-hidden border border-[#262626] group shadow-inner">
-                                <img src={banner.image} alt="" className="w-full h-full object-cover" />
-                                <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2">
+                            <div key={banner.id} className="relative h-36 rounded-2xl overflow-hidden border border-slate-200 shadow-sm group">
+                                <img src={banner.image} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                <div className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2">
                                     <button
                                         onClick={() => handleDeleteBanner(banner.id)}
-                                        className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-500 transition-colors cursor-pointer shadow-md"
+                                        className="p-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl transition-colors cursor-pointer shadow-md"
                                         title="Delete Slide"
                                     >
                                         <Trash2 className="w-4 h-4" />
                                     </button>
                                 </div>
-                                <span className="absolute bottom-2 left-2 bg-black/90 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-md border border-[#333333]">
+                                <span className="absolute bottom-2.5 left-2.5 bg-slate-900/80 backdrop-blur-xs text-white text-[10px] font-bold px-2.5 py-1 rounded-lg border border-white/20">
                                     Slide #{index + 1}
                                 </span>
                             </div>
@@ -798,12 +811,12 @@ export default function AdminTourPackages() {
 
                     {banners.length < 5 && (
                         <div className="pt-2">
-                            <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-[#2b2b2b] hover:border-emerald-500/50 bg-[#121212] hover:bg-[#161616] rounded-2xl cursor-pointer transition-all group shadow-sm">
-                                <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                                    <Upload className="w-6 h-6" />
+                            <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-300 hover:border-blue-500 bg-slate-50/70 hover:bg-blue-50/30 rounded-2xl cursor-pointer transition-all group">
+                                <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform border border-blue-200">
+                                    <Upload className="w-5 h-5" />
                                 </div>
-                                <span className="text-xs font-bold text-white mb-1">Click to Upload Local Image File</span>
-                                <span className="text-[10px] text-neutral-400 font-medium">Select photo from your computer/device to add as Hero Banner slide</span>
+                                <span className="text-xs font-bold text-slate-800 mb-0.5">Click to Upload Local Image File</span>
+                                <span className="text-[10px] text-slate-500 font-medium">Select photo from your computer/device to add as Hero Banner slide</span>
                                 <input
                                     type="file"
                                     accept="image/*"
@@ -818,14 +831,14 @@ export default function AdminTourPackages() {
 
             {/* TAB 3: DESTINATION CIRCLES MANAGEMENT */}
             {subTab === "destinations" && (
-                <div className="bg-neutral-900/40 p-6 rounded-2xl border border-neutral-800/80   space-y-6">
+                <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-xs space-y-6">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h3 className="text-base font-bold text-white flex items-center gap-2">
-                                <CircleDot className="w-4 h-4 text-blue-400" />
+                            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                                <CircleDot className="w-4 h-4 text-purple-600" />
                                 Popular Destination Story Circles ({destinations.length})
                             </h3>
-                            <p className="text-xs text-neutral-400 mt-0.5">
+                            <p className="text-xs text-slate-500 mt-0.5 font-medium">
                                 Add, edit, or delete circular destination avatars shown on `/packages`.
                             </p>
                         </div>
@@ -836,26 +849,26 @@ export default function AdminTourPackages() {
                         {destinations.map((dest) => (
                             <div
                                 key={dest.id}
-                                className="bg-[#121212] border border-[#222222] rounded-2xl p-4 flex flex-col items-center gap-3 relative group hover:border-blue-500/50 transition-all"
+                                className="bg-slate-50 hover:bg-white border border-slate-200 hover:border-purple-300 rounded-2xl p-4 flex flex-col items-center gap-3 relative group transition-all shadow-2xs hover:shadow-sm"
                             >
-                                <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-white/20 bg-black shadow-md">
-                                    <img src={dest.image} alt={dest.name} className="w-full h-full object-cover" />
+                                <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-slate-200 bg-slate-100 shadow-sm">
+                                    <img src={dest.image} alt={dest.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                 </div>
 
-                                <span className="text-xs font-bold text-white truncate max-w-full">{dest.name}</span>
+                                <span className="text-xs font-bold text-slate-900 truncate max-w-full">{dest.name}</span>
 
                                 {/* Quick Actions Overlay */}
                                 <div className="flex items-center gap-1.5 mt-1">
                                     <button
                                         onClick={() => openEditDestModal(dest)}
-                                        className="p-1.5 bg-[#1f1f1f] text-neutral-300 hover:text-white rounded-lg border border-[#333] transition-colors cursor-pointer"
+                                        className="p-1.5 bg-white text-slate-600 hover:text-blue-600 rounded-lg border border-slate-200 transition-colors cursor-pointer shadow-2xs"
                                         title="Edit Destination"
                                     >
                                         <Edit className="w-3.5 h-3.5" />
                                     </button>
                                     <button
                                         onClick={() => handleDeleteDestination(dest.id, dest.name)}
-                                        className="p-1.5 bg-red-950/60 text-red-400 hover:text-red-300 rounded-lg border border-red-900/40 transition-colors cursor-pointer"
+                                        className="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg border border-rose-200 transition-colors cursor-pointer shadow-2xs"
                                         title="Delete Destination"
                                     >
                                         <Trash2 className="w-3.5 h-3.5" />
@@ -869,25 +882,25 @@ export default function AdminTourPackages() {
 
             {/* TAB 4: FILTER LINE SETTINGS */}
             {subTab === "filters" && (
-                <div className="bg-neutral-900/40 p-6 rounded-2xl border border-neutral-800/80   space-y-6">
+                <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-xs space-y-6">
                     <div>
-                        <h3 className="text-base font-bold text-white flex items-center gap-2">
-                            <Tag className="w-4 h-4 text-emerald-400" />
+                        <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                            <Tag className="w-4 h-4 text-amber-600" />
                             Filter Tag Line Settings
                         </h3>
-                        <p className="text-xs text-neutral-400 mt-0.5">
+                        <p className="text-xs text-slate-500 mt-0.5 font-medium">
                             Control whether the filter tag line is displayed on `/packages` and manage active filter tags.
                         </p>
                     </div>
 
                     {/* Toggle Visibility Card */}
-                    <div className="p-4 bg-[#121212] border border-[#222] rounded-xl flex items-center justify-between">
+                    <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between">
                         <div className="space-y-0.5">
-                            <h4 className="text-xs font-bold text-white flex items-center gap-2">
-                                {filterConfig.showFilterLine ? <Eye className="w-4 h-4 text-emerald-400" /> : <EyeOff className="w-4 h-4 text-neutral-500" />}
+                            <h4 className="text-xs font-bold text-slate-900 flex items-center gap-2">
+                                {filterConfig.showFilterLine ? <Eye className="w-4 h-4 text-emerald-600" /> : <EyeOff className="w-4 h-4 text-slate-400" />}
                                 <span>Filter Tag Bar Visibility</span>
                             </h4>
-                            <p className="text-[11px] text-neutral-400">
+                            <p className="text-[11px] text-slate-500 font-medium">
                                 {filterConfig.showFilterLine ? "Currently VISIBLE on public page." : "Currently HIDDEN from public page."}
                             </p>
                         </div>
@@ -896,8 +909,8 @@ export default function AdminTourPackages() {
                             onClick={toggleFilterLineVisibility}
                             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
                                 filterConfig.showFilterLine
-                                    ? "bg-emerald-950 text-emerald-300 border-emerald-700/50 hover:bg-emerald-900"
-                                    : "bg-neutral-800 text-neutral-400 border-neutral-700 hover:text-white"
+                                    ? "bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100"
+                                    : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
                             }`}
                         >
                             {filterConfig.showFilterLine ? "Visible (Click to Hide)" : "Hidden (Click to Show)"}
@@ -905,8 +918,8 @@ export default function AdminTourPackages() {
                     </div>
 
                     {/* Manage Filter Tags */}
-                    <div className="space-y-3 pt-2 border-t border-[#1f1f1f]">
-                        <h4 className="text-xs font-bold text-neutral-300 uppercase tracking-wider">
+                    <div className="space-y-3 pt-2 border-t border-slate-200">
+                        <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">
                             Active Filter Tags ({filterConfig.filterTags.length})
                         </h4>
 
@@ -914,13 +927,13 @@ export default function AdminTourPackages() {
                             {filterConfig.filterTags.map((tag) => (
                                 <div
                                     key={tag}
-                                    className="px-3 py-1.5 bg-[#181818] border border-[#2b2b2b] rounded-xl text-xs font-bold text-white flex items-center gap-2 group"
+                                    className="px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 flex items-center gap-2 group shadow-2xs"
                                 >
                                     <span>{tag}</span>
                                     {tag !== "All" && (
                                         <button
                                             onClick={() => handleDeleteFilterTag(tag)}
-                                            className="text-neutral-500 hover:text-red-400 transition-colors cursor-pointer"
+                                            className="text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
                                             title="Delete Filter Tag"
                                         >
                                             <X className="w-3.5 h-3.5" />
@@ -938,11 +951,11 @@ export default function AdminTourPackages() {
                                 placeholder="Type new filter tag name (e.g. Honeymoon, Luxury)..."
                                 value={newTagInput}
                                 onChange={(e) => setNewTagInput(e.target.value)}
-                                className="flex-1 px-4 py-2.5 bg-[#141414] border border-[#282828] rounded-xl text-xs font-medium text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-500 font-mono"
+                                className="flex-1 px-4 py-2 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-2xs transition-all"
                             />
                             <button
                                 type="submit"
-                                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shrink-0 uppercase tracking-wider"
+                                className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shrink-0 shadow-sm"
                             >
                                 Add Filter Tag
                             </button>
@@ -954,20 +967,20 @@ export default function AdminTourPackages() {
             {/* CREATE / EDIT DESTINATION CIRCLE MODAL */}
             <AnimatePresence>
                 {isDestModalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-neutral-900/40 rounded-2xl shadow-2xl border border-neutral-800/80  w-full max-w-md overflow-hidden text-white"
+                            className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden text-slate-900"
                         >
-                            <div className="p-5 bg-[#0e0e0e] border-b border-[#1f1f1f] flex items-center justify-between">
-                                <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                            <div className="p-5 bg-slate-50/80 border-b border-slate-200 flex items-center justify-between">
+                                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
                                     {editingDest ? "Edit Destination Circle" : "Add Destination Circle"}
                                 </h3>
                                 <button
                                     onClick={() => setIsDestModalOpen(false)}
-                                    className="w-7 h-7 rounded-full bg-[#181818] border border-[#2a2a2a] text-neutral-400 hover:text-white flex items-center justify-center cursor-pointer"
+                                    className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors cursor-pointer border border-slate-200"
                                 >
                                     <X className="w-4 h-4" />
                                 </button>
@@ -975,23 +988,23 @@ export default function AdminTourPackages() {
 
                             <form onSubmit={handleSaveDestination} className="p-5 space-y-4 text-xs font-medium">
                                 <div>
-                                    <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">Destination Name</label>
+                                    <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">Destination Name</label>
                                     <input
                                         type="text"
                                         required
                                         placeholder="e.g. Goa, Manali, Shimla..."
                                         value={destFormData.name}
                                         onChange={e => setDestFormData({ ...destFormData, name: e.target.value })}
-                                        className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-white focus:outline-none focus:border-neutral-500 font-mono"
+                                        className="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-xl text-slate-900 font-semibold focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-2xs transition-all"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">Destination Thumbnail Image</label>
-                                    <label className="flex flex-col items-center justify-center p-5 border border-dashed border-[#333] hover:border-emerald-500/50 bg-[#141414] hover:bg-[#181818] rounded-xl cursor-pointer transition-all">
-                                        <Upload className="w-5 h-5 text-emerald-400 mb-1" />
-                                        <span className="text-xs font-bold text-neutral-200">Click to Select Local Image File</span>
-                                        <span className="text-[10px] text-neutral-500 font-medium mt-0.5">Choose photo from your device</span>
+                                    <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">Destination Thumbnail Image</label>
+                                    <label className="flex flex-col items-center justify-center p-5 border-2 border-dashed border-slate-300 hover:border-blue-500 bg-slate-50 hover:bg-blue-50/30 rounded-xl cursor-pointer transition-all">
+                                        <Upload className="w-5 h-5 text-blue-600 mb-1" />
+                                        <span className="text-xs font-bold text-slate-800">Click to Select Local Image File</span>
+                                        <span className="text-[10px] text-slate-500 font-medium mt-0.5">Choose photo from your device</span>
                                         <input
                                             type="file"
                                             accept="image/*"
@@ -1010,8 +1023,8 @@ export default function AdminTourPackages() {
 
                                 {destFormData.image && (
                                     <div className="flex flex-col items-center pt-2">
-                                        <span className="text-[10px] text-neutral-400 font-bold mb-1">Thumbnail Preview:</span>
-                                        <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-emerald-500/50 shadow-md">
+                                        <span className="text-[10px] text-slate-500 font-bold mb-1">Thumbnail Preview:</span>
+                                        <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-blue-500 shadow-md">
                                             <img src={destFormData.image} alt="Preview" className="w-full h-full object-cover" />
                                         </div>
                                     </div>
@@ -1020,7 +1033,7 @@ export default function AdminTourPackages() {
                                 <div className="pt-3">
                                     <button
                                         type="submit"
-                                        className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-colors cursor-pointer shadow-md"
+                                        className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-colors cursor-pointer shadow-md"
                                     >
                                         {editingDest ? "Update Destination Circle" : "Save Destination Circle"}
                                     </button>
@@ -1034,20 +1047,20 @@ export default function AdminTourPackages() {
             {/* FULL EDIT / CREATE TOUR PACKAGE MODAL */}
             <AnimatePresence>
                 {isAddModalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-neutral-900/40 rounded-2xl shadow-2xl border border-neutral-800/80  w-full max-w-xl overflow-hidden text-white"
+                            className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 w-full max-w-xl overflow-hidden text-slate-900"
                         >
-                            <div className="p-5 bg-[#0e0e0e] border-b border-[#1f1f1f] flex items-center justify-between">
-                                <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                            <div className="p-5 bg-slate-50/80 border-b border-slate-200 flex items-center justify-between">
+                                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
                                     {editingPackage ? "Edit Tour Package Details" : "Create New Tour Package"}
                                 </h3>
                                 <button
                                     onClick={() => setIsAddModalOpen(false)}
-                                    className="w-7 h-7 rounded-full bg-[#181818] border border-[#2a2a2a] text-neutral-400 hover:text-white flex items-center justify-center cursor-pointer"
+                                    className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors cursor-pointer border border-slate-200"
                                 >
                                     <X className="w-4 h-4" />
                                 </button>
@@ -1055,68 +1068,68 @@ export default function AdminTourPackages() {
 
                             <form onSubmit={handleSavePackage} className="p-5 space-y-4 text-xs font-medium max-h-[82vh] overflow-y-auto">
                                 <div>
-                                    <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">Package Title</label>
+                                    <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">Package Title</label>
                                     <input
                                         type="text"
                                         required
                                         placeholder="e.g. Royal Rajasthan Heritage & Fort Trail"
                                         value={formData.title}
                                         onChange={e => setFormData({ ...formData, title: e.target.value })}
-                                        className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-white focus:outline-none focus:border-neutral-500 font-mono"
+                                        className="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-xl text-slate-900 font-semibold focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-2xs transition-all"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">Destinations Covered</label>
+                                    <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">Destinations Covered</label>
                                     <input
                                         type="text"
                                         required
                                         placeholder="e.g. Jaipur • Udaipur • Jodhpur"
                                         value={formData.destination}
                                         onChange={e => setFormData({ ...formData, destination: e.target.value })}
-                                        className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-white focus:outline-none focus:border-neutral-500 font-mono"
+                                        className="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-xl text-slate-900 font-semibold focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-2xs transition-all"
                                     />
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
-                                        <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">Duration</label>
+                                        <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">Duration</label>
                                         <input
                                             type="text"
                                             required
                                             placeholder="e.g. 5 Days / 4 Nights"
                                             value={formData.duration}
                                             onChange={e => setFormData({ ...formData, duration: e.target.value })}
-                                            className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-white focus:outline-none focus:border-neutral-500 font-mono"
+                                            className="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-xl text-slate-900 font-semibold focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-2xs transition-all"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">Badge Label</label>
+                                        <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">Badge Label</label>
                                         <select
                                             value={formData.badge}
                                             onChange={e => setFormData({ ...formData, badge: e.target.value })}
-                                            className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-white focus:outline-none focus:border-neutral-500 font-mono"
+                                            className="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-xl text-slate-900 font-semibold focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-2xs transition-all"
                                         >
-                                            <option className="bg-black text-white">Bestseller</option>
-                                            <option className="bg-black text-white">Trending</option>
-                                            <option className="bg-black text-white">Popular</option>
-                                            <option className="bg-black text-white">Super Saver</option>
-                                            <option className="bg-black text-white">Top Rated</option>
-                                            <option className="bg-black text-white">Bucket List</option>
+                                            <option>Bestseller</option>
+                                            <option>Trending</option>
+                                            <option>Popular</option>
+                                            <option>Super Saver</option>
+                                            <option>Top Rated</option>
+                                            <option>Bucket List</option>
                                         </select>
                                     </div>
                                 </div>
 
                                 {/* ─── 2-WAY REACTIVE PRICING & DISCOUNT CALCULATOR ─── */}
-                                <div className="p-4 bg-[#141414] border border-[#262626] rounded-2xl space-y-3">
+                                <div className="p-4 bg-emerald-50/50 border border-emerald-200 rounded-2xl space-y-3">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
-                                            <Percent className="w-3.5 h-3.5" />
+                                        <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider flex items-center gap-1.5">
+                                            <Percent className="w-3.5 h-3.5 text-emerald-600" />
                                             <span>Smart 2-Way Pricing & Discount Calculator</span>
                                         </span>
                                         {formData.originalPrice > 0 && formData.price > 0 && (
-                                            <span className="text-xs font-bold text-neutral-300">
-                                                Formula: <span className="line-through text-neutral-500">₹{formData.originalPrice.toLocaleString()}</span> ➔ <span className="text-emerald-400 font-extrabold">₹{formData.price.toLocaleString()}</span> {formData.discountPercent ? `(${formData.discountPercent})` : ""}
+                                            <span className="text-xs font-bold text-slate-700">
+                                                Formula: <span className="line-through text-slate-400">₹{formData.originalPrice.toLocaleString()}</span> ➔ <span className="text-emerald-700 font-extrabold">₹{formData.price.toLocaleString()}</span> {formData.discountPercent ? `(${formData.discountPercent})` : ""}
                                             </span>
                                         )}
                                     </div>
@@ -1124,21 +1137,21 @@ export default function AdminTourPackages() {
                                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                         {/* 1. Original Rack Price */}
                                         <div>
-                                            <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1">Original Price (₹)</label>
+                                            <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1">Original Price (₹)</label>
                                             <input
                                                 type="number"
                                                 required
                                                 placeholder="e.g. 10000"
                                                 value={formData.originalPrice || ""}
                                                 onChange={e => handleOriginalPriceChange(e.target.value)}
-                                                className="w-full px-3.5 py-2.5 bg-[#181818] border border-[#2c2c2c] rounded-xl text-white focus:outline-none focus:border-neutral-500 font-mono text-xs font-bold"
+                                                className="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-blue-600 font-mono text-xs font-bold"
                                             />
-                                            <span className="text-[9px] text-neutral-500 mt-0.5 block">Crossed-out rack price</span>
+                                            <span className="text-[9px] text-slate-500 mt-0.5 block">Crossed-out rack price</span>
                                         </div>
 
                                         {/* 2. Discount % Input */}
                                         <div>
-                                            <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1">Discount (%)</label>
+                                            <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1">Discount (%)</label>
                                             <div className="relative">
                                                 <input
                                                     type="number"
@@ -1147,31 +1160,31 @@ export default function AdminTourPackages() {
                                                     placeholder="e.g. 50"
                                                     value={parseFloat(String(formData.discountPercent || "").replace(/[^0-9.]/g, "")) || ""}
                                                     onChange={e => handleDiscountChange(e.target.value)}
-                                                    className="w-full pl-3.5 pr-8 py-2.5 bg-[#181818] border border-[#2c2c2c] rounded-xl text-amber-400 focus:outline-none focus:border-amber-500 font-mono text-xs font-bold"
+                                                    className="w-full pl-3.5 pr-8 py-2 bg-white border border-slate-300 rounded-xl text-amber-700 focus:outline-none focus:border-amber-500 font-mono text-xs font-bold"
                                                 />
-                                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-amber-400">%</span>
+                                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-amber-600">%</span>
                                             </div>
-                                            <span className="text-[9px] text-neutral-500 mt-0.5 block">Auto-calculates offer rate</span>
+                                            <span className="text-[9px] text-slate-500 mt-0.5 block">Auto-calculates offer rate</span>
                                         </div>
 
                                         {/* 3. Offer Rate (Selling Price) */}
                                         <div>
-                                            <label className="block text-[10px] font-bold text-emerald-400 uppercase mb-1">Offer Rate (₹ Selling)</label>
+                                            <label className="block text-[10px] font-bold text-emerald-800 uppercase mb-1">Offer Rate (₹ Selling)</label>
                                             <input
                                                 type="number"
                                                 required
                                                 placeholder="e.g. 5000"
                                                 value={formData.price || ""}
                                                 onChange={e => handlePriceChange(e.target.value)}
-                                                className="w-full px-3.5 py-2.5 bg-[#181818] border border-emerald-800/60 rounded-xl text-emerald-400 focus:outline-none focus:border-emerald-500 font-mono text-xs font-black"
+                                                className="w-full px-3.5 py-2 bg-white border border-emerald-300 rounded-xl text-emerald-700 focus:outline-none focus:border-emerald-600 font-mono text-xs font-black"
                                             />
-                                            <span className="text-[9px] text-emerald-500 mt-0.5 block">Final price shown to guest</span>
+                                            <span className="text-[9px] text-emerald-600 mt-0.5 block">Final price shown to guest</span>
                                         </div>
                                     </div>
 
                                     {/* Quick 1-Click Discount Chips */}
                                     <div className="flex items-center gap-1.5 flex-wrap pt-1">
-                                        <span className="text-[10px] text-neutral-400 font-semibold mr-1">Quick Discount:</span>
+                                        <span className="text-[10px] text-slate-500 font-semibold mr-1">Quick Discount:</span>
                                         {[10, 20, 30, 40, 50, 60, 70].map((pct) => (
                                             <button
                                                 key={pct}
@@ -1179,8 +1192,8 @@ export default function AdminTourPackages() {
                                                 onClick={() => handleDiscountChange(pct)}
                                                 className={`px-2 py-0.5 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer ${
                                                     parseFloat(String(formData.discountPercent || "").replace(/[^0-9.]/g, "")) === pct
-                                                        ? "bg-amber-400 text-black shadow-sm font-black"
-                                                        : "bg-[#1f1f1f] text-neutral-300 hover:bg-[#282828] hover:text-white border border-[#333]"
+                                                        ? "bg-amber-400 text-slate-900 shadow-sm font-black"
+                                                        : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
                                                 }`}
                                             >
                                                 {pct}%
@@ -1191,7 +1204,7 @@ export default function AdminTourPackages() {
 
                                 {/* ─── COVER PHOTO (LOCAL DROP & UPLOAD) ─── */}
                                 <div className="space-y-2">
-                                    <label className="block text-[10px] font-bold text-neutral-400 uppercase">Package Cover Photo (Local File Upload / Drag & Drop)</label>
+                                    <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">Package Cover Photo (Local File Upload)</label>
                                     <div
                                         onDragOver={e => e.preventDefault()}
                                         onDrop={async e => {
@@ -1203,11 +1216,11 @@ export default function AdminTourPackages() {
                                                 showNotification("Cover photo updated!");
                                             }
                                         }}
-                                        className="flex flex-col items-center justify-center p-4 border border-dashed border-[#333] hover:border-emerald-500/50 bg-[#141414] hover:bg-[#181818] rounded-xl cursor-pointer transition-all relative"
+                                        className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-slate-300 hover:border-blue-500 bg-slate-50 hover:bg-blue-50/30 rounded-xl cursor-pointer transition-all relative"
                                     >
-                                        <Upload className="w-5 h-5 text-emerald-400 mb-1" />
-                                        <span className="text-xs font-bold text-neutral-200">Click to Select Local Cover Photo or Drag & Drop File Here</span>
-                                        <span className="text-[10px] text-neutral-500 font-medium mt-0.5">JPEG, PNG, WebP supported</span>
+                                        <Upload className="w-5 h-5 text-blue-600 mb-1" />
+                                        <span className="text-xs font-bold text-slate-800">Click to Select Local Cover Photo or Drag & Drop File</span>
+                                        <span className="text-[10px] text-slate-500 font-medium mt-0.5">JPEG, PNG, WebP supported</span>
                                         <input
                                             type="file"
                                             accept="image/*"
@@ -1224,13 +1237,13 @@ export default function AdminTourPackages() {
                                     </div>
 
                                     {formData.image && (
-                                        <div className="relative h-32 rounded-xl overflow-hidden border border-[#282828] group">
+                                        <div className="relative h-32 rounded-xl overflow-hidden border border-slate-200 group">
                                             <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
-                                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                            <div className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                                 <button
                                                     type="button"
                                                     onClick={() => setFormData({ ...formData, image: "" })}
-                                                    className="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white font-bold text-xs rounded-lg transition-colors cursor-pointer shadow-md"
+                                                    className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-lg transition-colors cursor-pointer shadow-md"
                                                 >
                                                     Remove Cover Image
                                                 </button>
@@ -1241,7 +1254,7 @@ export default function AdminTourPackages() {
 
                                 {/* ─── TOUR GALLERY PHOTOS (LOCAL DROP & UPLOAD MULTIPLE) ─── */}
                                 <div className="space-y-2">
-                                    <label className="block text-[10px] font-bold text-neutral-400 uppercase">
+                                    <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
                                         Tour Gallery Photos ({(formData.gallery || []).length} Selected)
                                     </label>
                                     <div
@@ -1250,11 +1263,11 @@ export default function AdminTourPackages() {
                                             e.preventDefault();
                                             if (e.dataTransfer.files) handleGalleryUpload(e.dataTransfer.files);
                                         }}
-                                        className="flex flex-col items-center justify-center p-4 border border-dashed border-[#333] hover:border-blue-500/50 bg-[#141414] hover:bg-[#181818] rounded-xl cursor-pointer transition-all relative"
+                                        className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-slate-300 hover:border-blue-500 bg-slate-50 hover:bg-blue-50/30 rounded-xl cursor-pointer transition-all relative"
                                     >
-                                        <ImageIcon className="w-5 h-5 text-blue-400 mb-1" />
-                                        <span className="text-xs font-bold text-neutral-200">Drag & Drop Multiple Gallery Photos or Click to Browse</span>
-                                        <span className="text-[10px] text-neutral-500 font-medium mt-0.5">Select multiple local image files</span>
+                                        <ImageIcon className="w-5 h-5 text-blue-600 mb-1" />
+                                        <span className="text-xs font-bold text-slate-800">Drag & Drop Multiple Gallery Photos or Click to Browse</span>
+                                        <span className="text-[10px] text-slate-500 font-medium mt-0.5">Select multiple local image files</span>
                                         <input
                                             type="file"
                                             accept="image/*"
@@ -1270,12 +1283,12 @@ export default function AdminTourPackages() {
                                     {Array.isArray(formData.gallery) && formData.gallery.length > 0 && (
                                         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
                                             {formData.gallery.map((photoUrl, idx) => (
-                                                <div key={idx} className="w-16 h-14 rounded-lg overflow-hidden bg-neutral-900 border border-[#2c2c2c] shrink-0 relative group">
+                                                <div key={idx} className="w-16 h-14 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 shrink-0 relative group">
                                                     <img src={photoUrl} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover" />
                                                     <button
                                                         type="button"
                                                         onClick={() => handleRemoveGalleryImage(idx)}
-                                                        className="absolute top-1 right-1 p-0.5 bg-black/80 hover:bg-rose-600 text-white rounded opacity-80 group-hover:opacity-100 transition-all cursor-pointer"
+                                                        className="absolute top-1 right-1 p-0.5 bg-slate-900/80 hover:bg-rose-600 text-white rounded opacity-80 group-hover:opacity-100 transition-all cursor-pointer"
                                                         title="Delete Photo"
                                                     >
                                                         <X className="w-3 h-3" />
@@ -1288,53 +1301,53 @@ export default function AdminTourPackages() {
 
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
-                                        <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">Included Stay</label>
+                                        <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">Included Stay</label>
                                         <input
                                             type="text"
                                             placeholder="e.g. 4-Star Resort"
                                             value={formData.includedStay}
                                             onChange={e => setFormData({ ...formData, includedStay: e.target.value })}
-                                            className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-white focus:outline-none focus:border-neutral-500 font-mono"
+                                            className="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-xl text-slate-900 font-semibold focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-2xs transition-all"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">Transport Details</label>
+                                        <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">Transport Details</label>
                                         <input
                                             type="text"
                                             placeholder="e.g. Private Sedan Cab"
                                             value={formData.transport}
                                             onChange={e => setFormData({ ...formData, transport: e.target.value })}
-                                            className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-white focus:outline-none focus:border-neutral-500 font-mono"
+                                            className="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-xl text-slate-900 font-semibold focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-2xs transition-all"
                                         />
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">Package Overview</label>
+                                    <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">Package Overview</label>
                                     <textarea
                                         rows={3}
                                         placeholder="Write a brief overview describing the highlights of this tour package..."
                                         value={formData.overview}
                                         onChange={e => setFormData({ ...formData, overview: e.target.value })}
-                                        className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-white focus:outline-none focus:border-neutral-500 resize-none font-mono"
+                                        className="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-xl text-slate-900 font-medium focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-2xs resize-none transition-all"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">Package Inclusions (One per line)</label>
+                                    <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">Package Inclusions (One per line)</label>
                                     <textarea
                                         rows={3}
                                         placeholder="4-Star Resort Stay with Breakfast&#10;Private Cab for Sightseeing&#10;Airport Pick & Drop"
                                         value={formData.inclusions}
                                         onChange={e => setFormData({ ...formData, inclusions: e.target.value })}
-                                        className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-white focus:outline-none font-mono text-[11px] resize-none"
+                                        className="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-xl text-slate-900 font-medium focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-2xs resize-none transition-all text-xs"
                                     />
                                 </div>
 
                                 <div className="pt-3">
                                     <button
                                         type="submit"
-                                        className="w-full py-3 bg-neutral-100 hover:bg-white text-black font-bold text-xs uppercase tracking-wider rounded-xl transition-colors cursor-pointer shadow-md"
+                                        className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-colors cursor-pointer shadow-md"
                                     >
                                         {editingPackage ? "Save All Package Changes" : "Publish Complete Tour Package"}
                                     </button>
@@ -1346,27 +1359,27 @@ export default function AdminTourPackages() {
 
                 {/* BULK JSON IMPORT MODAL */}
                 {isBulkModalOpen && (
-                    <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-[#0e0e0e] border border-[#262626] border-t-[#3a3a3a] shadow-2xl rounded-3xl w-full max-w-3xl overflow-hidden my-auto max-h-[92vh] flex flex-col"
+                            className="bg-white border border-slate-200 shadow-2xl rounded-3xl w-full max-w-3xl overflow-hidden my-auto max-h-[92vh] flex flex-col text-slate-900"
                         >
                             {/* Modal Header */}
-                            <div className="p-6 border-b border-neutral-800/80 flex items-center justify-between bg-[#121212] shrink-0">
+                            <div className="p-6 border-b border-slate-200 flex items-center justify-between bg-slate-50/70 shrink-0">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                                    <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shadow-2xs">
                                         <FileJson className="w-5 h-5" />
                                     </div>
                                     <div>
                                         <div className="flex items-center gap-2">
-                                            <h3 className="text-lg font-black text-white">Bulk Tour Import via JSON</h3>
-                                            <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-800/40 px-2 py-0.5 rounded-full">
+                                            <h3 className="text-base font-bold text-slate-900">Bulk Tour Import via JSON</h3>
+                                            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
                                                 1 to 200+ Tours Supported
                                             </span>
                                         </div>
-                                        <p className="text-xs text-neutral-400 mt-0.5">
+                                        <p className="text-xs text-slate-500 mt-0.5 font-medium">
                                             Import complete tour catalogs, itineraries, inclusions & exclusions in one click.
                                         </p>
                                     </div>
@@ -1378,37 +1391,37 @@ export default function AdminTourPackages() {
                                         setBulkParsedItems([]);
                                         setBulkParseError("");
                                     }}
-                                    className="p-2 text-neutral-400 hover:text-white bg-[#181818] hover:bg-[#222] rounded-xl transition-all cursor-pointer"
+                                    className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors cursor-pointer border border-slate-200"
                                 >
-                                    <X className="w-5 h-5" />
+                                    <X className="w-4 h-4" />
                                 </button>
                             </div>
 
                             <div className="p-6 space-y-6 overflow-y-auto flex-1">
                                 {/* Input Mode Selector Tabs */}
-                                <div className="flex items-center gap-2 bg-[#141414] p-1.5 rounded-xl border border-[#222]">
+                                <div className="flex items-center gap-2 bg-slate-100 p-1.5 rounded-xl border border-slate-200/80">
                                     <button
                                         type="button"
                                         onClick={() => setBulkInputTab("file")}
-                                        className={`flex-1 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                                        className={`flex-1 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                                             bulkInputTab === "file"
-                                                ? "bg-neutral-200 text-black shadow-sm"
-                                                : "text-neutral-400 hover:text-white hover:bg-[#1a1a1a]"
+                                                ? "bg-white text-slate-900 shadow-sm border border-slate-200/70"
+                                                : "text-slate-600 hover:text-slate-900"
                                         }`}
                                     >
-                                        <UploadCloud className="w-4 h-4" />
+                                        <UploadCloud className="w-4 h-4 text-emerald-600" />
                                         <span>Upload .JSON File</span>
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => setBulkInputTab("text")}
-                                        className={`flex-1 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                                        className={`flex-1 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                                             bulkInputTab === "text"
-                                                ? "bg-neutral-200 text-black shadow-sm"
-                                                : "text-neutral-400 hover:text-white hover:bg-[#1a1a1a]"
+                                                ? "bg-white text-slate-900 shadow-sm border border-slate-200/70"
+                                                : "text-slate-600 hover:text-slate-900"
                                         }`}
                                     >
-                                        <FileCode className="w-4 h-4" />
+                                        <FileCode className="w-4 h-4 text-blue-600" />
                                         <span>Paste Raw JSON Text</span>
                                     </button>
                                 </div>
@@ -1424,15 +1437,15 @@ export default function AdminTourPackages() {
                                             const file = e.dataTransfer.files?.[0];
                                             if (file) handleFileUpload(file);
                                         }}
-                                        className="p-8 border-2 border-dashed border-[#2d2d2d] hover:border-emerald-500/60 bg-[#121212] hover:bg-[#151515] rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer transition-all group"
+                                        className="p-8 border-2 border-dashed border-slate-300 hover:border-emerald-500 bg-slate-50 hover:bg-emerald-50/20 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer transition-all group shadow-2xs"
                                     >
-                                        <div className="w-14 h-14 rounded-2xl bg-[#1a1a1a] border border-[#282828] group-hover:border-emerald-500/40 flex items-center justify-center text-neutral-400 group-hover:text-emerald-400 mb-3 transition-colors">
+                                        <div className="w-14 h-14 rounded-2xl bg-white border border-slate-200 group-hover:border-emerald-400 flex items-center justify-center text-slate-400 group-hover:text-emerald-600 mb-3 transition-colors shadow-2xs">
                                             <UploadCloud className="w-7 h-7" />
                                         </div>
-                                        <span className="text-sm font-bold text-white group-hover:text-emerald-300 transition-colors">
+                                        <span className="text-sm font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">
                                             Click to browse or Drag & Drop .json file here
                                         </span>
-                                        <span className="text-xs text-neutral-500 mt-1">
+                                        <span className="text-xs text-slate-500 mt-1 font-medium">
                                             Supports .json files containing product catalog or tours array
                                         </span>
                                         <input
@@ -1452,7 +1465,7 @@ export default function AdminTourPackages() {
                                 {bulkInputTab === "text" && (
                                     <div className="space-y-2">
                                         <div className="flex items-center justify-between">
-                                            <label className="text-xs font-bold text-neutral-300">Paste JSON Array or Catalog Object</label>
+                                            <label className="text-xs font-bold text-slate-700">Paste JSON Array or Catalog Object</label>
                                             <button
                                                 type="button"
                                                 onClick={() => {
@@ -1474,7 +1487,7 @@ export default function AdminTourPackages() {
 ]`;
                                                     handleParseJsonInput(sample);
                                                 }}
-                                                className="text-[11px] font-bold text-emerald-400 hover:underline"
+                                                className="text-[11px] font-bold text-emerald-600 hover:text-emerald-700 hover:underline"
                                             >
                                                 Insert Sample JSON Format
                                             </button>
@@ -1484,25 +1497,25 @@ export default function AdminTourPackages() {
                                             value={bulkJsonText}
                                             onChange={(e) => handleParseJsonInput(e.target.value)}
                                             placeholder='[ { "title": "Manali Snow Escape", "destination": "Manali", "duration": "5 Days", "inclusions": [...], "itinerary": [...] } ]'
-                                            className="w-full p-4 bg-[#141414] border border-[#282828] rounded-2xl text-neutral-200 font-mono text-xs focus:outline-none focus:border-emerald-500/60 resize-y"
+                                            className="w-full p-4 bg-slate-50 focus:bg-white border border-slate-300 rounded-2xl text-slate-900 font-mono text-xs focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 resize-y shadow-2xs"
                                         />
                                     </div>
                                 )}
 
                                 {/* Real-time Parser Status Indicator */}
                                 {bulkParseError ? (
-                                    <div className="p-3.5 bg-red-950/60 border border-red-800/40 rounded-xl text-red-300 text-xs font-bold flex items-center gap-2">
-                                        <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
+                                    <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs font-bold flex items-center gap-2">
+                                        <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
                                         <span>{bulkParseError}</span>
                                     </div>
                                 ) : bulkParsedItems.length > 0 ? (
-                                    <div className="p-4 bg-emerald-950/60 border border-emerald-800/40 rounded-2xl space-y-3">
-                                        <div className="flex items-center justify-between text-emerald-300 text-xs font-bold">
+                                    <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl space-y-3">
+                                        <div className="flex items-center justify-between text-emerald-800 text-xs font-bold">
                                             <span className="flex items-center gap-2">
-                                                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                                                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                                                 <span>Valid JSON Detected: {bulkParsedItems.length} Tour Package(s) Ready to Import</span>
                                             </span>
-                                            <span className="text-[11px] font-mono text-neutral-400 bg-black/40 px-2 py-0.5 rounded-lg">
+                                            <span className="text-[11px] font-mono text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-lg">
                                                 {bulkParsedItems.length} items parsed
                                             </span>
                                         </div>
@@ -1510,12 +1523,12 @@ export default function AdminTourPackages() {
                                         {/* Preview List of first 4 items */}
                                         <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
                                             {bulkParsedItems.slice(0, 5).map((item, idx) => (
-                                                <div key={idx} className="p-2.5 bg-black/50 border border-emerald-900/30 rounded-xl flex items-center justify-between gap-3 text-xs">
+                                                <div key={idx} className="p-2.5 bg-white border border-emerald-200 rounded-xl flex items-center justify-between gap-3 text-xs shadow-2xs">
                                                     <div className="min-w-0">
-                                                        <span className="font-bold text-white truncate block">
+                                                        <span className="font-bold text-slate-900 truncate block">
                                                             {idx + 1}. {item.title || item.tour_name || item.name || "Untitled Tour"}
                                                         </span>
-                                                        <span className="text-[11px] text-neutral-400 flex items-center gap-2 mt-0.5">
+                                                        <span className="text-[11px] text-slate-500 flex items-center gap-2 mt-0.5 font-medium">
                                                             <span>📍 {item.destination || (Array.isArray(item.destinations) ? item.destinations.join(", ") : "India")}</span>
                                                             <span>•</span>
                                                             <span>⏱️ {item.duration || "5 Days"}</span>
@@ -1527,13 +1540,13 @@ export default function AdminTourPackages() {
                                                             )}
                                                         </span>
                                                     </div>
-                                                    <span className="text-[11px] font-bold text-emerald-400 bg-emerald-900/40 px-2 py-1 rounded-lg shrink-0">
+                                                    <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded-lg shrink-0 font-mono">
                                                         {item.price > 0 ? `₹${item.price.toLocaleString()}` : "Price: ₹0 (Draft)"}
                                                     </span>
                                                 </div>
                                             ))}
                                             {bulkParsedItems.length > 5 && (
-                                                <p className="text-[11px] text-neutral-400 text-center pt-1 font-semibold">
+                                                <p className="text-[11px] text-slate-500 text-center pt-1 font-semibold">
                                                     + {bulkParsedItems.length - 5} more tour packages will be imported...
                                                 </p>
                                             )}
@@ -1542,32 +1555,32 @@ export default function AdminTourPackages() {
                                 ) : null}
 
                                 {/* Optional Defaults Configuration */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-neutral-800/80">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-200">
                                     <div>
-                                        <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">
+                                        <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                                             Default Price (if missing in JSON)
                                         </label>
                                         <div className="relative">
-                                            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-500 text-xs font-bold">₹</span>
+                                            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">₹</span>
                                             <input
                                                 type="number"
                                                 value={bulkDefaultPrice}
                                                 onChange={(e) => setBulkDefaultPrice(parseFloat(e.target.value) || 0)}
                                                 placeholder="0 (Leave as ₹0 for manual admin pricing)"
-                                                className="w-full pl-8 pr-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-white text-xs font-mono focus:outline-none focus:border-emerald-500"
+                                                className="w-full pl-8 pr-3.5 py-2.5 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-xl text-slate-900 text-xs font-mono font-semibold focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-2xs transition-all"
                                             />
                                         </div>
-                                        <p className="text-[10px] text-neutral-500 mt-1">Keep ₹0 if you want to set prices manually from the admin panel later.</p>
+                                        <p className="text-[10px] text-slate-500 mt-1 font-medium">Keep ₹0 if you want to set prices manually from the admin panel later.</p>
                                     </div>
 
                                     <div>
-                                        <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1.5">
+                                        <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                                             Default Badge (if missing in JSON)
                                         </label>
                                         <select
                                             value={bulkDefaultBadge}
                                             onChange={(e) => setBulkDefaultBadge(e.target.value)}
-                                            className="w-full px-3.5 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-white text-xs focus:outline-none focus:border-emerald-500 cursor-pointer"
+                                            className="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-xl text-slate-900 text-xs font-semibold focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-2xs transition-all cursor-pointer"
                                         >
                                             <option value="Bestseller">Bestseller</option>
                                             <option value="Trending">Trending</option>
@@ -1575,13 +1588,13 @@ export default function AdminTourPackages() {
                                             <option value="Super Saver">Super Saver</option>
                                             <option value="Luxury">Luxury</option>
                                         </select>
-                                        <p className="text-[10px] text-neutral-500 mt-1">Applied only if an item does not have a category/badge specified.</p>
+                                        <p className="text-[10px] text-slate-500 mt-1 font-medium">Applied only if an item does not have a category/badge specified.</p>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Modal Footer Actions */}
-                            <div className="p-6 border-t border-neutral-800/80 bg-[#121212] flex items-center justify-end gap-3 shrink-0">
+                            <div className="p-6 border-t border-slate-200 bg-slate-50/70 flex items-center justify-end gap-3 shrink-0">
                                 <button
                                     type="button"
                                     disabled={isBulkImporting}
@@ -1590,7 +1603,7 @@ export default function AdminTourPackages() {
                                         setBulkJsonText("");
                                         setBulkParsedItems([]);
                                     }}
-                                    className="px-5 py-2.5 rounded-xl border border-[#282828] text-neutral-300 hover:text-white hover:bg-[#181818] text-xs font-bold transition-all cursor-pointer"
+                                    className="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-bold transition-all cursor-pointer shadow-2xs"
                                 >
                                     Cancel
                                 </button>
@@ -1599,20 +1612,20 @@ export default function AdminTourPackages() {
                                     type="button"
                                     disabled={isBulkImporting || bulkParsedItems.length === 0}
                                     onClick={handleExecuteBulkImport}
-                                    className={`px-6 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shadow-lg ${
+                                    className={`px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shadow-md ${
                                         isBulkImporting || bulkParsedItems.length === 0
-                                            ? "bg-neutral-800 text-neutral-500 cursor-not-allowed"
-                                            : "bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold shadow-emerald-950/50"
+                                            ? "bg-slate-300 text-slate-500 cursor-not-allowed"
+                                            : "bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold shadow-emerald-600/20"
                                     }`}
                                 >
                                     {isBulkImporting ? (
                                         <>
-                                            <RefreshCw className="w-4 h-4 animate-spin" />
+                                            <RefreshCw className="w-3.5 h-3.5 animate-spin text-white" />
                                             <span>Importing {bulkParsedItems.length} Tours to DB...</span>
                                         </>
                                     ) : (
                                         <>
-                                            <Upload className="w-4 h-4" />
+                                            <Upload className="w-3.5 h-3.5 text-white" />
                                             <span>
                                                 {bulkParsedItems.length > 0
                                                     ? `Import All ${bulkParsedItems.length} Tours Now`

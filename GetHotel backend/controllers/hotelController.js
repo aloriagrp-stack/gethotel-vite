@@ -103,8 +103,10 @@ exports.searchHotels = async (req, res, next) => {
 
                 if (req.query.destination_index !== undefined) {
                     const destIndex = parseInt(req.query.destination_index);
-                    if (config.destinations && config.destinations[destIndex] && config.destinations[destIndex].linkedHotelIds) {
-                        linkedHotelIds = config.destinations[destIndex].linkedHotelIds.map(id => parseInt(id));
+                    const isHourlySearch = req.query.stayType === 'hourly' || req.query.isHourly === 'true';
+                    const targetDestinations = isHourlySearch ? (config.hourly_destinations || config.destinations || []) : (config.destinations || []);
+                    if (targetDestinations && targetDestinations[destIndex] && targetDestinations[destIndex].linkedHotelIds) {
+                        linkedHotelIds = targetDestinations[destIndex].linkedHotelIds.map(id => parseInt(id));
                     }
                 } else if (req.query.collection_index !== undefined) {
                     const collIndex = parseInt(req.query.collection_index);

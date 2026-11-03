@@ -124,7 +124,7 @@ export default function FinancialHubPage() {
 
                     <button 
                         onClick={() => alert("Downloading Financial Ledger Statement (PDF)...")}
-                        className="px-3.5 py-1.5 bg-white hover:bg-neutral-800 border border-slate-200 text-slate-900 font-medium text-xs rounded-lg transition-colors cursor-pointer flex items-center gap-2"
+                        className="px-3.5 py-1.5 bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 font-bold text-xs rounded-xl transition-colors cursor-pointer flex items-center gap-2 shadow-2xs"
                     >
                         <Download className="w-3.5 h-3.5 text-slate-500" />
                         <span>Export</span>

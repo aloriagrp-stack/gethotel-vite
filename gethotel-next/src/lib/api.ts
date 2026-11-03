@@ -220,6 +220,10 @@ export const paymentApi = {
 
 export const partnerApi = {
     submitRequest: (data: any) => apiFetch('/partner/request', { method: 'POST', body: JSON.stringify(data) }),
+    getBankDetails: (hotelId: number | string) => apiFetch('/partner/bank-details/' + hotelId),
+    updateBankDetails: (hotelId: number | string, data: any) => apiFetch('/partner/bank-details/' + hotelId, { method: 'POST', body: JSON.stringify(data) }),
+    getPayouts: (hotelId: number | string) => apiFetch('/partner/payouts/' + hotelId),
+    requestPayout: (hotelId: number | string, data: { amount: number }) => apiFetch('/partner/payouts/' + hotelId, { method: 'POST', body: JSON.stringify(data) }),
 };
 
 export const adminApi = {
@@ -273,6 +277,9 @@ export const adminApi = {
     bulkOnboardHistory: () => apiFetch('/admin/ai/bulk-onboard-history'),
     bulkUpdatePromotions: (data: { hotelIds: number[]; code: string; discountType: string; discountValue: number; isActive: boolean; startDate?: string; endDate?: string }) => apiFetch('/admin/hotels/bulk-promotion', { method: 'POST', body: JSON.stringify(data) }),
     bulkDeletePromotions: (data: { hotelIds: number[]; code: string }) => apiFetch('/admin/hotels/bulk-delete-promotion', { method: 'POST', body: JSON.stringify(data) }),
+    getBankRequests: () => apiFetch('/admin/bank-requests'),
+    approveBankRequest: (hotelId: number | string) => apiFetch('/admin/bank-requests/' + hotelId + '/approve', { method: 'PUT' }),
+    rejectBankRequest: (hotelId: number | string, reason?: string) => apiFetch('/admin/bank-requests/' + hotelId + '/reject', { method: 'PUT', body: JSON.stringify({ reason }) }),
 };
 
 export const otaApi = {
@@ -324,8 +331,9 @@ export const homepageApi = {
 };
 
 export const messageApi = {
-    sendMessage: (messageData: { hotelId: number; content: string }) => apiFetch('/messages', { method: 'POST', body: JSON.stringify(messageData) }),
-    getHotelMessages: (hotelId: number) => apiFetch(`/messages/hotel/${hotelId}`),
+    sendMessage: (messageData: { hotelId: number; content: string; targetUserId?: number }) => apiFetch('/messages', { method: 'POST', body: JSON.stringify(messageData) }),
+    getHotelMessages: (hotelId: number, targetUserId?: number) => apiFetch(`/messages/hotel/${hotelId}${targetUserId ? '?userId=' + targetUserId : ''}`),
+    getGuestHotelThread: (hotelId: number) => apiFetch(`/messages/thread/${hotelId}`),
     getMyMessages: () => apiFetch('/messages/my-messages'),
 };
 

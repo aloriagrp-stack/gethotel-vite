@@ -189,25 +189,27 @@ export default function AdminPromotions({ hotels, onRefresh }: AdminPromotionsPr
     }, [hotels]);
 
     return (
-        <div className="space-y-6 text-neutral-100">
+        <div className="space-y-6 text-slate-800">
             {/* Header Toolbar */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-neutral-800/80">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-200">
                 <div>
-                    <h2 className="text-xl font-semibold text-white tracking-tight flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                    <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
                         Promotions & Coupons
                     </h2>
-                    <p className="text-xs text-neutral-400 mt-0.5">
+                    <p className="text-xs text-slate-500 mt-1">
                         Manage global platform coupon campaigns, discount rules, and bulk property allocations.
                     </p>
                 </div>
 
-                <div className="flex items-center gap-4 text-xs text-neutral-400">
-                    <span>Hotels: <strong className="text-white font-medium">{stats.totalHotels}</strong></span>
-                    <span>Promoted: <strong className="text-white font-medium">{stats.hotelsWithPromos}</strong></span>
-                    <span>Active: <strong className="text-emerald-400 font-medium">{stats.activePromosCount}</strong></span>
+                <div className="flex items-center gap-4 text-xs text-slate-600 bg-white border border-slate-200 rounded-xl px-4 py-2 shadow-2xs">
+                    <span>Hotels: <strong className="text-slate-900 font-bold">{stats.totalHotels}</strong></span>
+                    <span className="text-slate-300">|</span>
+                    <span>Promoted: <strong className="text-slate-900 font-bold">{stats.hotelsWithPromos}</strong></span>
+                    <span className="text-slate-300">|</span>
+                    <span>Active: <strong className="text-emerald-700 font-bold">{stats.activePromosCount}</strong></span>
                     {selectedHotelIds.length > 0 && (
-                        <span className="text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-md font-medium">
+                        <span className="text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-lg font-bold ml-1">
                             {selectedHotelIds.length} Selected
                         </span>
                     )}
@@ -216,24 +218,24 @@ export default function AdminPromotions({ hotels, onRefresh }: AdminPromotionsPr
 
             {/* Notification Messages */}
             {successMessage && (
-                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-emerald-400 text-xs">
+                <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 font-medium text-xs shadow-2xs">
                     {successMessage}
                 </div>
             )}
             {errorMessage && (
-                <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-xs">
+                <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 font-medium text-xs shadow-2xs">
                     {errorMessage}
                 </div>
             )}
 
-            {/* Config Hub: Minimal Tabs & Inline Form */}
-            <div className="bg-neutral-900/40 border border-neutral-800/80 rounded-xl p-5 space-y-4">
-                <div className="flex border-b border-neutral-800/60 pb-3 gap-2">
+            {/* Config Hub: Modern Tabs & Inline Form */}
+            <div className="bg-white border border-slate-200/90 rounded-2xl p-6 space-y-5 shadow-xs">
+                <div className="inline-flex p-1 bg-slate-100 border border-slate-200/80 rounded-xl gap-1">
                     <button
                         onClick={() => { setBulkMode("apply"); setErrorMessage(""); setSuccessMessage(""); }}
                         className={cn(
-                            "px-3.5 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer",
-                            bulkMode === "apply" ? "bg-white text-black" : "text-neutral-400 hover:text-white"
+                            "px-4 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer",
+                            bulkMode === "apply" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600 hover:text-slate-900"
                         )}
                     >
                         Apply Promotion
@@ -241,8 +243,8 @@ export default function AdminPromotions({ hotels, onRefresh }: AdminPromotionsPr
                     <button
                         onClick={() => { setBulkMode("remove"); setErrorMessage(""); setSuccessMessage(""); }}
                         className={cn(
-                            "px-3.5 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer",
-                            bulkMode === "remove" ? "bg-white text-black" : "text-neutral-400 hover:text-white"
+                            "px-4 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer",
+                            bulkMode === "remove" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600 hover:text-slate-900"
                         )}
                     >
                         Remove Promotion
@@ -253,66 +255,66 @@ export default function AdminPromotions({ hotels, onRefresh }: AdminPromotionsPr
                     <form onSubmit={handleApplyPromotion} className="space-y-4">
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                             <div>
-                                <label className="block text-xs font-medium text-neutral-400 mb-1.5">Coupon Code</label>
+                                <label className="block text-xs font-bold text-slate-700 mb-1.5">Coupon Code</label>
                                 <input
                                     type="text"
                                     placeholder="e.g. GET15"
                                     value={promoCode}
                                     onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                                    className="w-full px-3 py-1.5 bg-neutral-900 border border-neutral-800 rounded-lg text-xs text-white focus:outline-none focus:border-neutral-700 uppercase font-mono"
+                                    className="w-full px-3.5 py-2 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 uppercase font-mono placeholder:text-slate-400 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-2xs outline-none transition-all"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-neutral-400 mb-1.5">Discount Value</label>
+                                <label className="block text-xs font-bold text-slate-700 mb-1.5">Discount Value</label>
                                 <input
                                     type="number"
                                     placeholder="15"
                                     value={discountValue}
                                     onChange={(e) => setDiscountValue(e.target.value)}
-                                    className="w-full px-3 py-1.5 bg-neutral-900 border border-neutral-800 rounded-lg text-xs text-white focus:outline-none focus:border-neutral-700 font-mono"
+                                    className="w-full px-3.5 py-2 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 font-mono placeholder:text-slate-400 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-2xs outline-none transition-all"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-neutral-400 mb-1.5">Discount Type</label>
+                                <label className="block text-xs font-bold text-slate-700 mb-1.5">Discount Type</label>
                                 <select
                                     value={discountType}
                                     onChange={(e) => setDiscountType(e.target.value)}
-                                    className="w-full px-3 py-1.5 bg-neutral-900 border border-neutral-800 rounded-lg text-xs text-white focus:outline-none focus:border-neutral-700 font-mono"
+                                    className="w-full px-3.5 py-2 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 font-mono focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-2xs outline-none transition-all cursor-pointer"
                                 >
                                     <option value="percentage">Percent (%)</option>
                                     <option value="fixed">Fixed (₹)</option>
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-neutral-400 mb-1.5">Initial State</label>
+                                <label className="block text-xs font-bold text-slate-700 mb-1.5">Initial State</label>
                                 <button
                                     type="button"
                                     onClick={() => setIsActive(p => !p)}
-                                    className="w-full px-3 py-1.5 bg-neutral-900 border border-neutral-800 rounded-lg text-xs text-white outline-none flex justify-between items-center cursor-pointer"
+                                    className="w-full px-3.5 py-2 bg-slate-50 hover:bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 outline-none flex justify-between items-center cursor-pointer shadow-2xs transition-all"
                                 >
                                     <span>{isActive ? "Active" : "Paused"}</span>
-                                    <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-emerald-400' : 'bg-neutral-500'}`} />
+                                    <span className={`w-2.5 h-2.5 rounded-full ${isActive ? 'bg-emerald-500 ring-4 ring-emerald-100' : 'bg-slate-400'}`} />
                                 </button>
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs font-medium text-neutral-400 mb-1.5">Start Date</label>
+                                <label className="block text-xs font-bold text-slate-700 mb-1.5">Start Date</label>
                                 <input
                                     type="date"
                                     value={startDate}
                                     onChange={(e) => setStartDate(e.target.value)}
-                                    className="w-full px-3 py-1.5 bg-neutral-900 border border-neutral-800 rounded-lg text-xs text-white focus:outline-none focus:border-neutral-700 font-mono"
+                                    className="w-full px-3.5 py-2 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 font-mono focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-2xs outline-none transition-all"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-neutral-400 mb-1.5">End Date</label>
+                                <label className="block text-xs font-bold text-slate-700 mb-1.5">End Date</label>
                                 <input
                                     type="date"
                                     value={endDate}
                                     onChange={(e) => setEndDate(e.target.value)}
-                                    className="w-full px-3 py-1.5 bg-neutral-900 border border-neutral-800 rounded-lg text-xs text-white focus:outline-none focus:border-neutral-700 font-mono"
+                                    className="w-full px-3.5 py-2 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 font-mono focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-2xs outline-none transition-all"
                                 />
                             </div>
                         </div>
@@ -320,27 +322,27 @@ export default function AdminPromotions({ hotels, onRefresh }: AdminPromotionsPr
                         <button
                             type="submit"
                             disabled={actionLoading || selectedHotelIds.length === 0}
-                            className="px-4 py-2 bg-white hover:bg-neutral-200 text-black rounded-lg text-xs font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                            className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-sm"
                         >
                             {actionLoading ? "Processing..." : `Apply to ${selectedHotelIds.length} Selected`}
                         </button>
                     </form>
                 ) : (
                     <form onSubmit={handleRemovePromotion} className="flex flex-wrap items-end gap-3">
-                        <div className="min-w-[220px]">
-                            <label className="block text-xs font-medium text-neutral-400 mb-1.5">Coupon Code to Delete</label>
+                        <div className="min-w-[240px]">
+                            <label className="block text-xs font-bold text-slate-700 mb-1.5">Coupon Code to Delete</label>
                             <input
                                 type="text"
                                 placeholder="WELCOME10"
                                 value={deleteCode}
                                 onChange={(e) => setDeleteCode(e.target.value.toUpperCase())}
-                                className="w-full px-3 py-1.5 bg-neutral-900 border border-neutral-800 rounded-lg text-xs text-white focus:outline-none focus:border-neutral-700 uppercase font-mono"
+                                className="w-full px-3.5 py-2 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 uppercase font-mono placeholder:text-slate-400 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-2xs outline-none transition-all"
                             />
                         </div>
                         <button
                             type="submit"
                             disabled={actionLoading || selectedHotelIds.length === 0 || !deleteCode}
-                            className="px-4 py-2 bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 rounded-lg text-xs font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                            className="px-5 py-2.5 bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 rounded-xl text-xs font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-2xs"
                         >
                             {actionLoading ? "Deleting..." : `Delete from ${selectedHotelIds.length} Selected`}
                         </button>
@@ -349,25 +351,25 @@ export default function AdminPromotions({ hotels, onRefresh }: AdminPromotionsPr
             </div>
 
             {/* List and Selection Table */}
-            <div className="bg-neutral-900/40 border border-neutral-800/80 rounded-xl overflow-hidden space-y-0">
-                <div className="px-5 py-3.5 border-b border-neutral-800/80 flex flex-wrap items-center justify-between gap-4">
+            <div className="bg-white border border-slate-200/90 rounded-2xl overflow-hidden shadow-xs space-y-0">
+                <div className="px-5 py-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4 bg-slate-50/60">
                     <div className="relative max-w-sm w-full">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-500" />
+                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                         <input
                             type="text"
                             placeholder="Filter properties..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-9 pr-3 py-1.5 bg-neutral-900 border border-neutral-800 rounded-lg text-xs text-white focus:outline-none focus:border-neutral-700 placeholder:text-neutral-500"
+                            className="w-full pl-9 pr-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 placeholder:text-slate-400 shadow-2xs transition-all"
                         />
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium text-neutral-400">City:</span>
+                        <span className="text-xs font-bold text-slate-600">City:</span>
                         <select
                             value={searchCity}
                             onChange={(e) => setSearchCity(e.target.value)}
-                            className="px-3 py-1.5 bg-neutral-900 border border-neutral-800 rounded-lg text-xs text-white outline-none cursor-pointer focus:border-neutral-700"
+                            className="px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 outline-none cursor-pointer focus:border-blue-600 shadow-2xs"
                         >
                             {cities.map(c => (
                                 <option key={c} value={c}>{c}</option>
@@ -378,14 +380,14 @@ export default function AdminPromotions({ hotels, onRefresh }: AdminPromotionsPr
 
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
-                        <thead className="bg-neutral-900/60 border-b border-neutral-800/80 text-xs font-medium text-neutral-400">
+                        <thead className="bg-slate-50/80 border-b border-slate-200 text-[10px] font-bold uppercase tracking-wider text-slate-500">
                             <tr>
                                 <th className="py-3 px-4 w-10">
                                     <input
                                         type="checkbox"
                                         checked={filteredHotels.length > 0 && selectedHotelIds.length === filteredHotels.length}
                                         onChange={handleSelectAll}
-                                        className="w-3.5 h-3.5 border-neutral-800 text-emerald-500 rounded focus:ring-0 cursor-pointer bg-neutral-900"
+                                        className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                                     />
                                 </th>
                                 <th className="py-3 px-4">Property</th>
@@ -393,7 +395,7 @@ export default function AdminPromotions({ hotels, onRefresh }: AdminPromotionsPr
                                 <th className="py-3 px-4">Active Promotions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-neutral-800/60 text-xs">
+                        <tbody className="divide-y divide-slate-100 text-xs">
                             {filteredHotels.length > 0 ? (
                                 filteredHotels.map(h => {
                                     const isSelected = selectedHotelIds.includes(h.id);
@@ -401,46 +403,46 @@ export default function AdminPromotions({ hotels, onRefresh }: AdminPromotionsPr
                                     return (
                                         <tr 
                                             key={h.id} 
-                                            className={cn("hover:bg-neutral-800/30 transition-colors", isSelected && "bg-neutral-800/20")}
+                                            className={cn("hover:bg-slate-50/70 transition-colors", isSelected && "bg-blue-50/40")}
                                         >
-                                            <td className="py-3 px-4">
+                                            <td className="py-3.5 px-4">
                                                 <input
                                                     type="checkbox"
                                                     checked={isSelected}
                                                     onChange={() => handleSelectHotel(h.id)}
-                                                    className="w-3.5 h-3.5 border-neutral-800 text-emerald-500 rounded focus:ring-0 cursor-pointer bg-neutral-900"
+                                                    className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                                                 />
                                             </td>
-                                            <td className="py-3 px-4">
+                                            <td className="py-3.5 px-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 rounded-lg overflow-hidden bg-neutral-900 border border-neutral-800 shrink-0">
+                                                    <div className="w-9 h-9 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0 shadow-2xs">
                                                         {h.thumbnail ? (
                                                             <img src={h.thumbnail} alt={h.name} className="w-full h-full object-cover" />
                                                         ) : (
-                                                            <div className="w-full h-full flex items-center justify-center text-neutral-600 text-[10px]">
+                                                            <div className="w-full h-full flex items-center justify-center text-slate-400 text-[10px]">
                                                                 N/A
                                                             </div>
                                                         )}
                                                     </div>
-                                                    <span className="font-medium text-white">{h.name}</span>
+                                                    <span className="font-bold text-slate-900">{h.name}</span>
                                                 </div>
                                             </td>
-                                            <td className="py-3 px-4">
-                                                <span className="text-neutral-400 flex items-center gap-1">
-                                                    <MapPin className="w-3 h-3 text-neutral-500" /> {h.city}
+                                            <td className="py-3.5 px-4">
+                                                <span className="text-slate-600 font-medium flex items-center gap-1.5">
+                                                    <MapPin className="w-3.5 h-3.5 text-slate-400" /> {h.city}
                                                 </span>
                                             </td>
-                                            <td className="py-3 px-4">
+                                            <td className="py-3.5 px-4">
                                                 <div className="flex flex-wrap gap-1.5">
                                                     {coupons.length > 0 ? (
                                                         coupons.map(c => (
                                                             <span 
                                                                 key={c.id} 
                                                                 className={cn(
-                                                                    "inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono",
+                                                                    "inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold shadow-2xs",
                                                                     c.isActive 
-                                                                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" 
-                                                                        : "bg-neutral-800 text-neutral-500"
+                                                                        ? "bg-emerald-50 text-emerald-700 border border-emerald-200" 
+                                                                        : "bg-slate-100 text-slate-500 border border-slate-200"
                                                                 )}
                                                             >
                                                                 <Tag className="w-2.5 h-2.5" />
@@ -448,7 +450,7 @@ export default function AdminPromotions({ hotels, onRefresh }: AdminPromotionsPr
                                                             </span>
                                                         ))
                                                     ) : (
-                                                        <span className="text-neutral-500 text-[11px]">
+                                                        <span className="text-slate-400 text-[11px] font-medium">
                                                             None
                                                         </span>
                                                     )}
@@ -459,7 +461,7 @@ export default function AdminPromotions({ hotels, onRefresh }: AdminPromotionsPr
                                 })
                             ) : (
                                 <tr>
-                                    <td colSpan={4} className="py-12 text-center text-xs text-neutral-500">
+                                    <td colSpan={4} className="py-12 text-center text-xs text-slate-400 font-medium">
                                         No properties matched your criteria.
                                     </td>
                                 </tr>

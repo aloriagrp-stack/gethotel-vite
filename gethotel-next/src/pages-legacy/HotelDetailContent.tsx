@@ -15,6 +15,7 @@ import ImageGallery from "@/components/hotels/ImageGallery";
 import PriceBox from "@/components/hotels/PriceBox";
 import { cn, ratingLabel, amenityIcon, amenityLabel, formatDate, formatPrice, safeParse, formatDateLocal, getHotelUrl } from "@/lib/utils";
 import { hotelApi, messageApi, couponApi } from "@/lib/api";
+import GuestHotelChatModal from "@/components/chat/GuestHotelChatModal";
 import { useAuth } from "@/context/AuthContext";
 import { useWishlist } from "@/context/WishlistContext";
 import SmartSearchBar from "@/components/search/SmartSearchBar";
@@ -1955,6 +1956,26 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                     )}
 
 
+                    {/* Direct Chat with Front Desk Banner */}
+                    <div className="p-6 md:p-8 bg-gradient-to-r from-slate-950 to-blue-950 text-white rounded-3xl shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center shrink-0 border border-white/20">
+                                <MessageSquare className="w-6 h-6 text-emerald-400" />
+                            </div>
+                            <div>
+                                <h3 className="text-base sm:text-lg font-black tracking-tight">Have questions before booking?</h3>
+                                <p className="text-xs text-slate-300 font-medium mt-0.5">Chat directly with {hotel?.name} reception about check-in, policies, or amenities.</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => setIsMessageModalOpen(true)}
+                            className="px-6 py-3.5 bg-white text-slate-950 hover:bg-slate-100 rounded-2xl text-xs font-black uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer shrink-0"
+                        >
+                            <MessageSquare className="w-4 h-4 text-blue-600" />
+                            <span>Chat with Hotel</span>
+                        </button>
+                    </div>
+
                     {/* Hotel FAQs Section for SEO & User Clarity */}
                     <section className="pt-12 pb-6 border-t border-slate-100 space-y-6">
                         <div>
@@ -2460,24 +2481,14 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
             {/* Modals & Overlays */}
             <AnimatePresence>
                 {isMessageModalOpen && (
-                    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsMessageModalOpen(false)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
-                        <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }} className="relative w-full max-w-lg bg-white rounded-2xl p-8 shadow-2xl">
-                            <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-xl font-bold">Message Host</h3>
-                                <button onClick={() => setIsMessageModalOpen(false)} className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center"><X className="w-5 h-5" /></button>
-                            </div>
-                            <textarea
-                                value={messageContent}
-                                onChange={(e) => setMessageContent(e.target.value)}
-                                placeholder="Type your inquiry here..."
-                                className="w-full h-40 p-4 bg-slate-50 border border-slate-100 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 outline-none resize-none mb-6"
-                            />
-                            <button onClick={handleSendMessage} disabled={isSendingMessage} className="w-full py-4 bg-brand-600 text-white text-xs font-black uppercase tracking-[0.2em] rounded-xl shadow-xl hover:bg-brand-700 transition-all disabled:opacity-50">
-                                {isSendingMessage ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Send Message"}
-                            </button>
-                        </motion.div>
-                    </div>
+                    <GuestHotelChatModal
+                        isOpen={isMessageModalOpen}
+                        onClose={() => setIsMessageModalOpen(false)}
+                        hotelId={hotel?.id || Number(id)}
+                        hotelName={hotel?.name || "Hotel"}
+                        hotelThumbnail={hotel?.thumbnail || safeParse(hotel?.images)?.[0]}
+                        hotelCity={hotel?.city}
+                    />
                 )}
             </AnimatePresence>
 

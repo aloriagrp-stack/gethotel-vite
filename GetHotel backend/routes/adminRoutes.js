@@ -63,4 +63,10 @@ router.post('/packages/import-json', packageController.importPackagesJson);
 router.put('/packages/hero-config', packageController.updateHeroConfig);
 router.get('/packages/hero-config', packageController.getHeroConfig);
 
+// Partner Bank Details Approval routes
+const { getAdminBankRequests, approveAdminBankRequest, rejectAdminBankRequest } = require('../controllers/partnerController');
+router.get('/bank-requests', getAdminBankRequests);
+router.put('/bank-requests/:hotelId/approve', approveAdminBankRequest);
+router.put('/bank-requests/:hotelId/reject', rejectAdminBankRequest);
+
 module.exports = router;

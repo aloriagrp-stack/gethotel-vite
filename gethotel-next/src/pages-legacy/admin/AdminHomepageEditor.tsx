@@ -444,27 +444,27 @@ export default function AdminHomepageEditor() {
     const selectedIdsInModal = getLinkingTargetIds();
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500 pb-20 text-neutral-100">
+        <div className="space-y-8 animate-in fade-in duration-500 pb-20 text-slate-800">
             {/* Header / Hero Save Config */}
-            <section className="bg-neutral-900/40 border border-neutral-800/80 rounded-xl p-5 md:p-6">
-                <div className="flex items-center justify-between mb-6 pb-4 border-b border-neutral-800/60">
-                    <h3 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2 font-sans">
-                        <LayoutTemplate className="w-4 h-4 text-emerald-400" /> Hero Section Headlines & Carousel
+            <section className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs">
+                <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
+                    <h3 className="text-xs font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                        <LayoutTemplate className="w-4 h-4 text-emerald-600" /> Hero Section Headlines & Carousel
                     </h3>
                     <button 
                         onClick={handleSaveConfig}
                         disabled={saving}
-                        className={`px-5 py-2.5 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-all flex items-center gap-2 shadow-md cursor-pointer ${
+                        className={`px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 shadow-xs cursor-pointer ${
                             saving 
-                                ? "bg-amber-500 text-black cursor-wait" 
+                                ? "bg-amber-500 text-white cursor-wait" 
                                 : savedConfig 
-                                    ? "bg-emerald-600 hover:bg-emerald-500 text-white" 
-                                    : "bg-white hover:bg-neutral-200 text-black"
+                                    ? "bg-emerald-600 hover:bg-emerald-700 text-white" 
+                                    : "bg-slate-900 hover:bg-slate-800 text-white"
                         }`}
                     >
                         {saving ? (
                             <>
-                                <Loader2 className="w-4 h-4 animate-spin text-black" />
+                                <Loader2 className="w-4 h-4 animate-spin text-white" />
                                 Saving...
                             </>
                         ) : savedConfig ? (
@@ -474,7 +474,7 @@ export default function AdminHomepageEditor() {
                             </>
                         ) : (
                             <>
-                                <Save className="w-4 h-4 text-black" />
+                                <Save className="w-4 h-4 text-white" />
                                 Save Changes
                             </>
                         )}
@@ -482,23 +482,23 @@ export default function AdminHomepageEditor() {
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 mt-2 gap-4">
                     <div className="flex items-center gap-4">
-                        <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest block">Headline Cycles (Max 3)</span>
-                        <div className="flex items-center gap-1.5 bg-[#141414] px-3 py-1.5 rounded-xl border border-[#262626]">
-                            <span className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest">Pause Interval</span>
+                        <span className="text-xs font-bold text-slate-600 uppercase tracking-wider block">Headline Cycles (Max 3)</span>
+                        <div className="flex items-center gap-2 bg-slate-50 px-3.5 py-1.5 rounded-xl border border-slate-300">
+                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Pause Interval</span>
                             <select
                                 value={heroTransitionInterval}
                                 onChange={(e) => {
                                     setHeroTransitionInterval(e.target.value);
                                     setSavedConfig(false);
                                 }}
-                                className="bg-transparent text-xs font-bold text-white uppercase tracking-wider outline-none border-none cursor-pointer"
+                                className="bg-transparent text-xs font-bold text-slate-800 uppercase tracking-wider outline-none border-none cursor-pointer"
                             >
-                                <option value="3" className="bg-black text-white">3 Seconds</option>
-                                <option value="4" className="bg-black text-white">4 Seconds</option>
-                                <option value="5" className="bg-black text-white">5 Seconds</option>
-                                <option value="6" className="bg-black text-white">6 Seconds</option>
-                                <option value="8" className="bg-black text-white">8 Seconds</option>
-                                <option value="10" className="bg-black text-white">10 Seconds</option>
+                                <option value="3">3 Seconds</option>
+                                <option value="4">4 Seconds</option>
+                                <option value="5">5 Seconds</option>
+                                <option value="6">6 Seconds</option>
+                                <option value="8">8 Seconds</option>
+                                <option value="10">10 Seconds</option>
                             </select>
                         </div>
                     </div>
@@ -506,7 +506,7 @@ export default function AdminHomepageEditor() {
                         <button 
                             type="button" 
                             onClick={handleAddHeadline}
-                            className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest hover:text-emerald-300 flex items-center gap-1 cursor-pointer"
+                            className="text-xs font-bold text-emerald-700 hover:text-emerald-800 uppercase tracking-wider flex items-center gap-1.5 cursor-pointer bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200"
                         >
                             <Plus className="w-3.5 h-3.5" /> Add Headline
                         </button>
@@ -515,27 +515,27 @@ export default function AdminHomepageEditor() {
 
                 <div className="space-y-4">
                     {headlines.map((headline: any, idx: number) => (
-                        <div key={idx} className="bg-neutral-900/60 p-4 rounded-lg border border-neutral-800 relative flex flex-col md:flex-row gap-4 items-center">
-                            <span className="text-xs font-black text-neutral-500 uppercase tracking-wider md:w-16"># {idx + 1}</span>
+                        <div key={idx} className="bg-slate-50 p-4 rounded-xl border border-slate-200 relative flex flex-col md:flex-row gap-4 items-center">
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider md:w-16"># {idx + 1}</span>
                             <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                                 <div>
-                                    <label className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest block mb-1">Main Title Part</label>
+                                    <label className="text-[10px] font-bold text-slate-600 uppercase tracking-wider block mb-1">Main Title Part</label>
                                     <input 
                                         type="text" 
                                         value={headline.title}
                                         onChange={(e) => handleUpdateHeadline(idx, 'title', e.target.value)}
                                         placeholder="e.g. Where would you"
-                                        className="w-full bg-neutral-900 border border-neutral-800 text-white rounded-lg px-3 py-1.5 text-xs font-medium outline-none focus:border-neutral-400 transition-colors"
+                                        className="w-full bg-white border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2 text-xs font-semibold outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-2xs transition-all"
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest block mb-1">Highlight Part (Blue Accent)</label>
+                                    <label className="text-[10px] font-bold text-slate-600 uppercase tracking-wider block mb-1">Highlight Part (Blue Accent)</label>
                                     <input 
                                         type="text" 
                                         value={headline.highlight}
                                         onChange={(e) => handleUpdateHeadline(idx, 'highlight', e.target.value)}
                                         placeholder="e.g. like to stay?"
-                                        className="w-full bg-neutral-900 border border-neutral-800 text-white rounded-lg px-3 py-1.5 text-xs font-medium outline-none focus:border-neutral-400 transition-colors"
+                                        className="w-full bg-white border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2 text-xs font-semibold outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-2xs transition-all"
                                     />
                                 </div>
                             </div>
@@ -544,7 +544,7 @@ export default function AdminHomepageEditor() {
                                 <button 
                                     type="button"
                                     onClick={() => handleRemoveHeadline(idx)}
-                                    className="text-red-400 hover:text-red-300 hover:bg-[#201010] p-2 rounded-xl shrink-0 cursor-pointer"
+                                    className="text-rose-500 hover:text-rose-700 hover:bg-rose-50 p-2 rounded-xl shrink-0 cursor-pointer transition-colors"
                                 >
                                     <Trash2 className="w-4 h-4" />
                                 </button>
@@ -555,55 +555,55 @@ export default function AdminHomepageEditor() {
             </section>
 
             {/* Trending Destinations Editor */}
-            <section className="bg-neutral-900/40 border border-neutral-800/80 rounded-xl p-5 md:p-6">
-                <div className="flex items-center justify-between mb-6 pb-4 border-b border-neutral-800/60">
-                    <h3 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
-                        <ImageIcon className="w-4 h-4 text-emerald-400" /> Destination Cards Editor
+            <section className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs">
+                <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
+                    <h3 className="text-xs font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                        <ImageIcon className="w-4 h-4 text-emerald-600" /> Destination Cards Editor
                     </h3>
-                    <button onClick={handleAddDestination} className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest hover:text-emerald-300 flex items-center gap-1 cursor-pointer">
+                    <button onClick={handleAddDestination} className="text-xs font-bold text-emerald-700 hover:text-emerald-800 uppercase tracking-wider flex items-center gap-1.5 cursor-pointer bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200">
                         <Plus className="w-3.5 h-3.5" /> Add Destination
                     </button>
                 </div>
                 
                 <div className="space-y-4">
                     {destinations.map((dest, i) => (
-                        <div key={i} className="flex flex-col md:flex-row gap-4 items-start md:items-center bg-neutral-900/60 p-4 rounded-lg border border-neutral-800 relative group hover:border-neutral-700 transition-colors">
+                        <div key={i} className="flex flex-col md:flex-row gap-4 items-start md:items-center bg-slate-50 p-4 rounded-xl border border-slate-200 relative group hover:border-slate-300 transition-colors">
                             {/* Destination Thumbnail Preview */}
-                            <div className="w-16 h-16 rounded-xl bg-[#1c1c1c] border border-[#2c2c2c] overflow-hidden shrink-0 flex items-center justify-center relative shadow-inner">
+                            <div className="w-16 h-16 rounded-xl bg-slate-200 border border-slate-300 overflow-hidden shrink-0 flex items-center justify-center relative shadow-inner">
                                 {dest.image ? (
                                     <img src={dest.image} alt={dest.name || "Destination"} className="w-full h-full object-cover" />
                                 ) : (
-                                    <ImageIcon className="w-6 h-6 text-neutral-500" />
+                                    <ImageIcon className="w-6 h-6 text-slate-400" />
                                 )}
                             </div>
 
                             <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
                                 <div>
-                                    <label className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest block mb-1">Destination</label>
+                                    <label className="text-[10px] font-bold text-slate-600 uppercase tracking-wider block mb-1">Destination</label>
                                     <input 
                                         type="text" 
                                         value={dest.name}
                                         onChange={(e) => handleUpdateDestination(i, 'name', e.target.value)}
                                         placeholder="e.g. Indonesia"
-                                        className="w-full bg-neutral-900 border border-neutral-800 text-white rounded-lg px-3 py-1.5 text-xs font-medium outline-none focus:border-neutral-400 transition-colors"
+                                        className="w-full bg-white border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2 text-xs font-semibold outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-2xs transition-all"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest block mb-1">Stats Line</label>
+                                    <label className="text-[10px] font-bold text-slate-600 uppercase tracking-wider block mb-1">Stats Line</label>
                                     <input 
                                         type="text" 
                                         value={dest.properties}
                                         onChange={(e) => handleUpdateDestination(i, 'properties', e.target.value)}
                                         placeholder="e.g. 1,345 Hotels • 24 Packages"
-                                        className="w-full bg-neutral-900 border border-neutral-800 text-white rounded-lg px-3 py-1.5 text-xs font-medium outline-none focus:border-neutral-400 transition-colors"
+                                        className="w-full bg-white border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2 text-xs font-semibold outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-2xs transition-all"
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest block mb-1">Image Control</label>
+                                    <label className="text-[10px] font-bold text-slate-600 uppercase tracking-wider block mb-1">Image Control</label>
                                     <div className="flex gap-2">
-                                        <label className="px-3.5 py-2.5 bg-[#202020] hover:bg-[#2a2a2a] text-white rounded-xl text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer select-none transition-colors shrink-0 border border-[#333]">
-                                            <Plus className="w-3.5 h-3.5" />
+                                        <label className="px-3.5 py-2 bg-white hover:bg-slate-100 text-slate-800 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer select-none transition-colors shrink-0 border border-slate-300 shadow-2xs">
+                                            <Plus className="w-3.5 h-3.5 text-slate-600" />
                                             <span>{dest.image ? "Change" : "Upload"}</span>
                                             <input 
                                                 type="file" 
@@ -626,7 +626,7 @@ export default function AdminHomepageEditor() {
                                             <button 
                                                 type="button"
                                                 onClick={() => handleUpdateDestination(i, 'image', '')}
-                                                className="px-3 py-2 text-red-400 hover:bg-[#201010] border border-[#301818] rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all shrink-0 cursor-pointer"
+                                                className="px-3 py-2 text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shrink-0 cursor-pointer shadow-2xs"
                                                 title="Clear Image"
                                             >
                                                 Remove
@@ -638,13 +638,13 @@ export default function AdminHomepageEditor() {
                             
                             {/* Link Hotels Control */}
                             <div className="w-full md:w-auto shrink-0 flex flex-col">
-                                <span className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest block mb-1">Property Link</span>
+                                <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wider block mb-1">Property Link</span>
                                 <button 
                                     onClick={() => setLinkingTarget({ type: 'destination', index: i })}
-                                    className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider border transition-all cursor-pointer ${
+                                    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider border transition-all cursor-pointer shadow-2xs ${
                                         getLinkedHotelsCount('destination', i) > 0 
-                                            ? "bg-emerald-950/60 border-emerald-800/50 text-emerald-300" 
-                                            : "bg-[#1c1c1c] border-[#2c2c2c] text-neutral-300 hover:text-white"
+                                            ? "bg-emerald-50 border-emerald-300 text-emerald-800" 
+                                            : "bg-white border-slate-300 text-slate-700 hover:bg-slate-100"
                                     }`}
                                 >
                                     <LinkIcon className="w-3.5 h-3.5" />
@@ -656,7 +656,7 @@ export default function AdminHomepageEditor() {
                                 </button>
                             </div>
 
-                            <button onClick={() => handleRemoveDestination(i)} className="text-red-400 p-2 hover:bg-[#201010] rounded-xl shrink-0 md:self-end md:mb-0.5 cursor-pointer">
+                            <button onClick={() => handleRemoveDestination(i)} className="text-rose-500 p-2 hover:bg-rose-50 rounded-xl shrink-0 md:self-end md:mb-0.5 cursor-pointer transition-colors">
                                 <Trash2 className="w-4 h-4" />
                             </button>
                         </div>
@@ -665,64 +665,64 @@ export default function AdminHomepageEditor() {
             </section>
 
             {/* Featured Collections Editor */}
-            <section className="bg-neutral-900/40 border border-neutral-800/80 rounded-xl p-5 md:p-6">
-                <div className="flex items-center justify-between mb-6 pb-4 border-b border-neutral-800/60">
-                    <h3 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
-                        <Layers className="w-4 h-4 text-blue-400" /> Featured Collections
+            <section className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs">
+                <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
+                    <h3 className="text-xs font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                        <Layers className="w-4 h-4 text-blue-600" /> Featured Collections
                     </h3>
-                    <button onClick={handleAddCollection} className="text-[10px] font-bold text-blue-400 uppercase tracking-widest hover:text-blue-300 flex items-center gap-1 cursor-pointer">
+                    <button onClick={handleAddCollection} className="text-xs font-bold text-blue-700 hover:text-blue-800 uppercase tracking-wider flex items-center gap-1.5 cursor-pointer bg-blue-50 px-3 py-1.5 rounded-xl border border-blue-200">
                         <Plus className="w-3.5 h-3.5" /> Add Collection
                     </button>
                 </div>
                 
                 <div className="space-y-4">
                     {collections.map((coll, i) => (
-                        <div key={i} className="flex flex-col md:flex-row gap-4 items-start md:items-center bg-neutral-900/60 p-4 rounded-lg border border-neutral-800 relative group hover:border-neutral-700 transition-colors animate-in fade-in-50 duration-300">
+                        <div key={i} className="flex flex-col md:flex-row gap-4 items-start md:items-center bg-slate-50 p-4 rounded-xl border border-slate-200 relative group hover:border-slate-300 transition-colors animate-in fade-in-50 duration-300">
                             {/* Collection Thumbnail Preview */}
-                            <div className="w-16 h-16 rounded-xl bg-[#1c1c1c] border border-[#2c2c2c] overflow-hidden shrink-0 flex items-center justify-center relative shadow-inner">
+                            <div className="w-16 h-16 rounded-xl bg-slate-200 border border-slate-300 overflow-hidden shrink-0 flex items-center justify-center relative shadow-inner">
                                 {coll.image ? (
                                     <img src={coll.image} alt={coll.title || "Collection"} className="w-full h-full object-cover" />
                                 ) : (
-                                    <ImageIcon className="w-6 h-6 text-neutral-500" />
+                                    <ImageIcon className="w-6 h-6 text-slate-400" />
                                 )}
                             </div>
 
                             <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 w-full">
                                 <div>
-                                    <label className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest block mb-1">Collection Title</label>
+                                    <label className="text-[10px] font-bold text-slate-600 uppercase tracking-wider block mb-1">Collection Title</label>
                                     <input 
                                         type="text" 
                                         value={coll.title}
                                         onChange={(e) => handleUpdateCollection(i, 'title', e.target.value)}
                                         placeholder="e.g. Luxury Stays"
-                                        className="w-full bg-neutral-900 border border-neutral-800 text-white rounded-lg px-3 py-1.5 text-xs font-medium outline-none focus:border-neutral-400 transition-colors"
+                                        className="w-full bg-white border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2 text-xs font-semibold outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-2xs transition-all"
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest block mb-1">Subtitle</label>
+                                    <label className="text-[10px] font-bold text-slate-600 uppercase tracking-wider block mb-1">Subtitle</label>
                                     <input 
                                         type="text" 
                                         value={coll.subtitle}
                                         onChange={(e) => handleUpdateCollection(i, 'subtitle', e.target.value)}
                                         placeholder="e.g. Premium stays"
-                                        className="w-full bg-neutral-900 border border-neutral-800 text-white rounded-lg px-3 py-1.5 text-xs font-medium outline-none focus:border-neutral-400 transition-colors"
+                                        className="w-full bg-white border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2 text-xs font-semibold outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-2xs transition-all"
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest block mb-1">Label Tag</label>
+                                    <label className="text-[10px] font-bold text-slate-600 uppercase tracking-wider block mb-1">Label Tag</label>
                                     <input 
                                         type="text" 
                                         value={coll.label}
                                         onChange={(e) => handleUpdateCollection(i, 'label', e.target.value)}
                                         placeholder="e.g. Premium"
-                                        className="w-full bg-neutral-900 border border-neutral-800 text-white rounded-lg px-3 py-1.5 text-xs font-medium outline-none focus:border-neutral-400 transition-colors"
+                                        className="w-full bg-white border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2 text-xs font-semibold outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-2xs transition-all"
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest block mb-1">Image Control</label>
+                                    <label className="text-[10px] font-bold text-slate-600 uppercase tracking-wider block mb-1">Image Control</label>
                                     <div className="flex gap-2">
-                                        <label className="px-3.5 py-2.5 bg-[#202020] hover:bg-[#2a2a2a] text-white rounded-xl text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer select-none transition-colors shrink-0 border border-[#333]">
-                                            <Plus className="w-3.5 h-3.5" />
+                                        <label className="px-3.5 py-2 bg-white hover:bg-slate-100 text-slate-800 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer select-none transition-colors shrink-0 border border-slate-300 shadow-2xs">
+                                            <Plus className="w-3.5 h-3.5 text-slate-600" />
                                             <span>{coll.image ? "Change" : "Upload"}</span>
                                             <input 
                                                 type="file" 
@@ -745,7 +745,7 @@ export default function AdminHomepageEditor() {
                                             <button 
                                                 type="button"
                                                 onClick={() => handleUpdateCollection(i, 'image', '')}
-                                                className="px-3 py-2 text-red-400 hover:bg-[#201010] border border-[#301818] rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all shrink-0 cursor-pointer"
+                                                className="px-3 py-2 text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shrink-0 cursor-pointer shadow-2xs"
                                                 title="Clear Image"
                                             >
                                                 Remove
@@ -757,13 +757,13 @@ export default function AdminHomepageEditor() {
                             
                             {/* Link Hotels Control */}
                             <div className="w-full md:w-auto shrink-0 flex flex-col">
-                                <span className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest block mb-1">Property Link</span>
+                                <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wider block mb-1">Property Link</span>
                                 <button 
                                     onClick={() => setLinkingTarget({ type: 'collection', index: i })}
-                                    className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider border transition-all cursor-pointer ${
+                                    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider border transition-all cursor-pointer shadow-2xs ${
                                         getLinkedHotelsCount('collection', i) > 0 
-                                            ? "bg-blue-950/60 border-blue-800/50 text-blue-300" 
-                                            : "bg-[#1c1c1c] border-[#2c2c2c] text-neutral-300 hover:text-white"
+                                            ? "bg-blue-50 border-blue-300 text-blue-800" 
+                                            : "bg-white border-slate-300 text-slate-700 hover:bg-slate-100"
                                     }`}
                                 >
                                     <LinkIcon className="w-3.5 h-3.5" />
@@ -775,7 +775,7 @@ export default function AdminHomepageEditor() {
                                 </button>
                             </div>
 
-                            <button onClick={() => handleRemoveCollection(i)} className="text-red-400 p-2 hover:bg-[#201010] rounded-xl shrink-0 md:self-end md:mb-0.5 cursor-pointer">
+                            <button onClick={() => handleRemoveCollection(i)} className="text-rose-500 p-2 hover:bg-rose-50 rounded-xl shrink-0 md:self-end md:mb-0.5 cursor-pointer transition-colors">
                                 <Trash2 className="w-4 h-4" />
                             </button>
                         </div>
@@ -784,26 +784,26 @@ export default function AdminHomepageEditor() {
             </section>
 
             {/* Trending Hotels Toggle List */}
-            <section className="bg-neutral-900/40 border border-neutral-800/80 rounded-xl p-5 md:p-6">
-                <h3 className="text-xs font-black text-white uppercase tracking-widest mb-6 pb-4 border-b border-neutral-800/60 flex items-center gap-2">
-                    <LinkIcon className="w-4 h-4 text-amber-400" /> Choose Trending Hotels
+            <section className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs">
+                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-widest mb-6 pb-4 border-b border-slate-200 flex items-center gap-2">
+                    <LinkIcon className="w-4 h-4 text-amber-500" /> Choose Trending Hotels
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {hotels.map(hotel => {
                         const isSelected = selectedTrendingIds.includes(hotel.id);
                         return (
-                            <div key={hotel.id} className="flex items-center justify-between p-4 bg-[#141414] border border-[#222222] rounded-xl hover:border-neutral-700 transition-colors">
+                            <div key={hotel.id} className="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-xl hover:border-slate-300 transition-colors">
                                 <div>
-                                    <p className="text-xs font-bold text-white line-clamp-1">{hotel.name}</p>
-                                    <p className="text-[10px] text-neutral-400 font-semibold">{hotel.city}</p>
+                                    <p className="text-xs font-bold text-slate-900 line-clamp-1">{hotel.name}</p>
+                                    <p className="text-[10px] text-slate-500 font-semibold">{hotel.city}</p>
                                 </div>
                                 <button
                                     type="button"
                                     onClick={() => handleToggleTrendingLocal(hotel.id)}
-                                    className={`px-3 py-1.5 rounded-xl text-[9px] font-extrabold uppercase tracking-wider transition-all cursor-pointer ${
+                                    className={`px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer shadow-2xs ${
                                         isSelected 
-                                        ? "bg-amber-950/80 text-amber-300 border border-amber-800/60 shadow-sm" 
-                                        : "bg-[#202020] text-neutral-400 border border-[#303030] hover:text-white"
+                                        ? "bg-amber-100 text-amber-900 border border-amber-300" 
+                                        : "bg-white text-slate-700 border border-slate-300 hover:bg-slate-100"
                                     }`}
                                 >
                                     {isSelected ? "Selected" : "Add"}
@@ -817,17 +817,17 @@ export default function AdminHomepageEditor() {
                         type="button"
                         onClick={handleSaveTrendingBulk}
                         disabled={savingTrending}
-                        className={`px-6 py-2.5 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-all flex items-center gap-2 shadow-md cursor-pointer disabled:opacity-50 ${
+                        className={`px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 shadow-xs cursor-pointer disabled:opacity-50 ${
                             savingTrending 
-                                ? "bg-amber-500 text-black cursor-wait" 
+                                ? "bg-amber-500 text-white cursor-wait" 
                                 : savedTrending 
-                                    ? "bg-emerald-600 hover:bg-emerald-500 text-white" 
-                                    : "bg-white hover:bg-neutral-200 text-black"
+                                    ? "bg-emerald-600 hover:bg-emerald-700 text-white" 
+                                    : "bg-slate-900 hover:bg-slate-800 text-white"
                         }`}
                     >
                         {savingTrending ? (
                             <>
-                                <Loader2 className="w-4 h-4 animate-spin text-black" />
+                                <Loader2 className="w-4 h-4 animate-spin text-white" />
                                 Updating...
                             </>
                         ) : savedTrending ? (
@@ -837,7 +837,7 @@ export default function AdminHomepageEditor() {
                             </>
                         ) : (
                             <>
-                                <Save className="w-4 h-4" />
+                                <Save className="w-4 h-4 text-white" />
                                 Update Trending
                             </>
                         )}
@@ -847,37 +847,37 @@ export default function AdminHomepageEditor() {
 
             {/* Premium Link Hotels Modal */}
             {linkingTarget && (
-                <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-300">
-                    <div className="bg-neutral-900 w-full max-w-2xl rounded-xl border border-neutral-800 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden animate-in zoom-in-95 duration-300">
+                <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-300">
+                    <div className="bg-white w-full max-w-2xl rounded-2xl border border-slate-200 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden animate-in zoom-in-95 duration-300">
                         {/* Modal Header */}
-                        <div className="p-6 border-b border-neutral-800/60 flex items-center justify-between bg-neutral-900">
+                        <div className="p-6 border-b border-slate-200 flex items-center justify-between bg-white">
                             <div>
-                                <h4 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
-                                    <Hotel className="w-4 h-4 text-emerald-400" /> Link Explicit Hotels
+                                <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                                    <Hotel className="w-4 h-4 text-emerald-600" /> Link Explicit Hotels
                                 </h4>
-                                <p className="text-xs text-neutral-400 font-semibold mt-1">
-                                    Define exactly which hotels load for: <span className="text-emerald-400 font-bold">"{getLinkingTargetName()}"</span>
+                                <p className="text-xs text-slate-500 font-medium mt-1">
+                                    Define exactly which hotels load for: <span className="text-emerald-700 font-bold">"{getLinkingTargetName()}"</span>
                                 </p>
                             </div>
                             <button 
                                 onClick={() => { setLinkingTarget(null); setHotelSearch(""); }}
-                                className="w-8 h-8 rounded-full bg-[#1f1f1f] hover:bg-[#2a2a2a] flex items-center justify-center text-neutral-400 hover:text-white transition-all cursor-pointer"
+                                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-800 transition-all cursor-pointer"
                             >
                                 <X className="w-4 h-4" />
                             </button>
                         </div>
 
                         {/* Modal Toolbar */}
-                        <div className="p-4 border-b border-neutral-800/60 bg-[#0c0c0c] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                        <div className="p-4 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                             {/* Search bar */}
                             <div className="relative flex-1">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                                 <input 
                                     type="text" 
                                     value={hotelSearch}
                                     onChange={(e) => setHotelSearch(e.target.value)}
                                     placeholder="Search by hotel name or city..."
-                                    className="w-full bg-[#161616] border border-[#282828] text-white rounded-xl pl-9 pr-4 py-2 text-xs font-bold focus:border-neutral-400 outline-none"
+                                    className="w-full bg-white border border-slate-300 text-slate-900 rounded-xl pl-9 pr-4 py-2 text-xs font-semibold focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none shadow-2xs"
                                 />
                             </div>
 
@@ -885,13 +885,13 @@ export default function AdminHomepageEditor() {
                             <div className="flex items-center gap-2">
                                 <button 
                                     onClick={() => handleSelectAllHotels(modalFilteredIds)}
-                                    className="px-3 py-2 bg-[#1c1c1c] hover:bg-[#262626] text-neutral-200 text-[9px] font-bold uppercase tracking-wider rounded-lg transition-colors cursor-pointer border border-[#303030]"
+                                    className="px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold uppercase tracking-wider rounded-xl transition-colors cursor-pointer border border-slate-300 shadow-2xs"
                                 >
                                     Select All Filtered
                                 </button>
                                 <button 
                                     onClick={() => handleClearAllHotels(modalFilteredIds)}
-                                    className="px-3 py-2 bg-red-950/50 hover:bg-red-950 text-red-300 text-[9px] font-bold uppercase tracking-wider rounded-lg transition-colors cursor-pointer border border-red-900/50"
+                                    className="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold uppercase tracking-wider rounded-xl transition-colors cursor-pointer border border-rose-200 shadow-2xs"
                                 >
                                     Clear Filtered
                                 </button>
@@ -899,17 +899,17 @@ export default function AdminHomepageEditor() {
                         </div>
 
                         {/* Modal Selection Counter Banner */}
-                        <div className="px-6 py-2.5 bg-[#141414] text-[10px] font-bold text-neutral-300 border-b border-neutral-800/60 flex items-center justify-between shrink-0">
-                            <span>Selected: <strong className="text-white">{selectedIdsInModal.length}</strong> hotels in total</span>
+                        <div className="px-6 py-2.5 bg-slate-100 text-xs font-semibold text-slate-700 border-b border-slate-200 flex items-center justify-between shrink-0">
+                            <span>Selected: <strong className="text-slate-900 font-bold">{selectedIdsInModal.length}</strong> hotels in total</span>
                             {hotelSearch && (
-                                <span className="text-neutral-500 font-semibold">
+                                <span className="text-slate-500 font-medium">
                                     Showing {modalFilteredHotels.length} of {hotels.length} hotels
                                 </span>
                             )}
                         </div>
 
                         {/* Modal Hotel List */}
-                        <div className="flex-1 overflow-y-auto p-6 bg-neutral-950 space-y-2.5">
+                        <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50 space-y-2.5">
                             {modalFilteredHotels.length > 0 ? (
                                 modalFilteredHotels.map(hotel => {
                                     const isSelected = selectedIdsInModal.includes(hotel.id);
@@ -917,24 +917,24 @@ export default function AdminHomepageEditor() {
                                         <div 
                                             key={hotel.id}
                                             onClick={() => handleToggleHotelLink(hotel.id)}
-                                            className={`p-3.5 bg-[#121212] border rounded-xl flex items-center justify-between gap-4 cursor-pointer transition-all select-none hover:border-neutral-600 ${
+                                            className={`p-3.5 bg-white border rounded-xl flex items-center justify-between gap-4 cursor-pointer transition-all select-none hover:border-slate-400 shadow-2xs ${
                                                 isSelected 
-                                                    ? "border-emerald-500/80 bg-[#16201a]" 
-                                                    : "border-[#222222]"
+                                                    ? "border-emerald-500 bg-emerald-50/60 ring-1 ring-emerald-500/30" 
+                                                    : "border-slate-200"
                                             }`}
                                         >
                                             <div className="flex items-center gap-3.5 min-w-0">
                                                 {/* Checkbox circle */}
                                                 <div className={`w-5 h-5 rounded-full flex items-center justify-center border transition-all ${
                                                     isSelected 
-                                                        ? "bg-emerald-500 border-emerald-500 text-black" 
-                                                        : "border-[#404040] bg-[#1a1a1a]"
+                                                        ? "bg-emerald-600 border-emerald-600 text-white" 
+                                                        : "border-slate-300 bg-white"
                                                 }`}>
                                                     {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
                                                 </div>
 
                                                 {/* Hotel thumbnail */}
-                                                <div className="w-11 h-11 rounded-lg bg-[#202020] overflow-hidden shrink-0 border border-[#2c2c2c] relative">
+                                                <div className="w-11 h-11 rounded-lg bg-slate-100 overflow-hidden shrink-0 border border-slate-200 relative">
                                                     {hotel.thumbnail ? (
                                                         <img 
                                                             src={hotel.thumbnail} 
@@ -942,7 +942,7 @@ export default function AdminHomepageEditor() {
                                                             className="w-full h-full object-cover" 
                                                         />
                                                     ) : (
-                                                        <div className="w-full h-full flex items-center justify-center text-neutral-500">
+                                                        <div className="w-full h-full flex items-center justify-center text-slate-400">
                                                             <Hotel className="w-5 h-5" />
                                                         </div>
                                                     )}
@@ -950,19 +950,19 @@ export default function AdminHomepageEditor() {
 
                                                 {/* Hotel details */}
                                                 <div className="min-w-0">
-                                                    <p className="text-xs font-bold text-white leading-snug truncate">{hotel.name}</p>
-                                                    <p className="text-[10px] text-neutral-400 font-medium mt-0.5">{hotel.city}, India</p>
+                                                    <p className="text-xs font-bold text-slate-900 leading-snug truncate">{hotel.name}</p>
+                                                    <p className="text-[10px] text-slate-500 font-medium mt-0.5">{hotel.city}, India</p>
                                                 </div>
                                             </div>
 
                                             {/* Indicators */}
                                             <div className="flex items-center gap-2 shrink-0">
                                                 {hotel.isFeatured && (
-                                                    <span className="bg-amber-950/80 text-amber-300 text-[8px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full border border-amber-800/60">
+                                                    <span className="bg-amber-50 text-amber-800 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border border-amber-200">
                                                         Featured
                                                     </span>
                                                 )}
-                                                <span className="text-neutral-400 text-[10px] font-bold">
+                                                <span className="text-slate-600 text-xs font-bold">
                                                     ★ {hotel.starRating || 5}
                                                 </span>
                                             </div>
@@ -971,11 +971,11 @@ export default function AdminHomepageEditor() {
                                 })
                             ) : (
                                 <div className="py-12 flex flex-col items-center justify-center text-center">
-                                    <div className="w-12 h-12 bg-[#181818] rounded-full flex items-center justify-center text-neutral-500 mb-3">
+                                    <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mb-3">
                                         <Search className="w-5 h-5" />
                                     </div>
-                                    <p className="text-xs font-bold text-neutral-300">No hotels match your search</p>
-                                    <p className="text-[10px] text-neutral-500 font-medium mt-1 max-w-xs">
+                                    <p className="text-xs font-bold text-slate-800">No hotels match your search</p>
+                                    <p className="text-xs text-slate-500 font-medium mt-1 max-w-xs">
                                         Try adjusting your search query or clear the filter to view all hotels.
                                     </p>
                                 </div>
@@ -983,10 +983,10 @@ export default function AdminHomepageEditor() {
                         </div>
 
                         {/* Modal Footer */}
-                        <div className="p-4 border-t border-[#1f1f1f] bg-neutral-900 flex items-center justify-end shrink-0">
+                        <div className="p-4 border-t border-slate-200 bg-white flex items-center justify-end shrink-0">
                             <button 
                                 onClick={() => { setLinkingTarget(null); setHotelSearch(""); }}
-                                className="px-6 py-2.5 bg-white hover:bg-neutral-200 text-black text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-md cursor-pointer"
+                                className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-xs cursor-pointer"
                             >
                                 Done Mapping
                             </button>

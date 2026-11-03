@@ -507,3 +507,599 @@ exports.bulkDeclinePartnerRequests = async (req, res) => {
         res.status(400).json({ success: false, error: err.message });
     }
 };
+
+
+// @desc    Get bank details for a partner hotel
+// @route   GET /api/partner/bank-details/:hotelId
+// @access  Private (hotel_admin, super_admin)
+exports.getBankDetails = async (req, res) => {
+    try {
+        const hotelId = parseInt(req.params.hotelId);
+        if (!hotelId || isNaN(hotelId)) {
+            return res.status(400).json({ success: false, message: 'Valid Hotel ID required' });
+        }
+
+        // Verify hotel ownership if user is hotel_admin
+        const isSuperAdmin = ['super_admin', 'superadmin', 'admin'].includes(req.user.role);
+        if (!isSuperAdmin) {
+            const hotel = await prisma.hotel.findFirst({
+                where: { id: hotelId, userId: req.user.id }
+            });
+            if (!hotel) {
+                return res.status(403).json({ success: false, message: 'Not authorized to view bank details for this property' });
+            }
+        }
+
+        const configKey = `partner_bank_${hotelId}`;
+        const record = await prisma.homepage_config.findUnique({
+            where: { key: configKey }
+        });
+
+        if (!record || !record.value) {
+            return res.status(200).json({
+                success: true,
+                data: null,
+                message: 'No bank details configured yet'
+            });
+        }
+
+        let parsed = null;
+        try {
+            parsed = JSON.parse(record.value);
+        } catch (_) {
+            parsed = null;
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: parsed
+        });
+    } catch (err) {
+        console.error("GET_BANK_DETAILS_ERROR:", err);
+        return res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// @desc    Save or update bank details for a partner hotel (Submits for Super Admin approval)
+// @route   POST/PUT /api/partner/bank-details/:hotelId
+// @access  Private (hotel_admin, super_admin)
+exports.saveBankDetails = async (req, res) => {
+    try {
+        const hotelId = parseInt(req.params.hotelId);
+        if (!hotelId || isNaN(hotelId)) {
+            return res.status(400).json({ success: false, message: 'Valid Hotel ID required' });
+        }
+
+        const isSuperAdmin = ['super_admin', 'superadmin', 'admin'].includes(req.user.role);
+        let hotelOwner = null;
+        if (!isSuperAdmin) {
+            hotelOwner = await prisma.hotel.findFirst({
+                where: { id: hotelId, userId: req.user.id },
+                include: { user: { select: { id: true, name: true, email: true } } }
+            });
+            if (!hotelOwner) {
+                return res.status(403).json({ success: false, message: 'Not authorized to update bank details for this property' });
+            }
+        } else {
+            hotelOwner = await prisma.hotel.findUnique({
+                where: { id: hotelId },
+                include: { user: { select: { id: true, name: true, email: true } } }
+            });
+        }
+
+        const {
+            accountHolderName,
+            bankName,
+            accountNumber,
+            ifscCode,
+            accountType,
+            branchName,
+            upiId,
+            panGst
+        } = req.body;
+
+        if (!accountHolderName || !String(accountHolderName).trim()) {
+            return res.status(400).json({ success: false, message: 'Beneficiary account holder name is required' });
+        }
+        if (!bankName || !String(bankName).trim()) {
+            return res.status(400).json({ success: false, message: 'Bank name is required' });
+        }
+        if (!accountNumber || !String(accountNumber).trim()) {
+            return res.status(400).json({ success: false, message: 'Account number is required' });
+        }
+        if (!ifscCode || !String(ifscCode).trim()) {
+            return res.status(400).json({ success: false, message: 'IFSC code is required' });
+        }
+        if (!upiId || !String(upiId).trim()) {
+            return res.status(400).json({ success: false, message: 'UPI ID is required' });
+        }
+
+        const cleanAccountNumber = String(accountNumber).trim();
+        const cleanIfsc = String(ifscCode).trim().toUpperCase();
+
+        const bankData = {
+            hotelId,
+            hotelName: hotelOwner?.name || `Hotel #${hotelId}`,
+            accountHolderName: String(accountHolderName).trim(),
+            bankName: String(bankName).trim(),
+            accountNumber: cleanAccountNumber,
+            maskedAccountNumber: cleanAccountNumber.length > 4 
+                ? '•••• •••• •••• ' + cleanAccountNumber.slice(-4) 
+                : cleanAccountNumber,
+            ifscCode: cleanIfsc,
+            accountType: accountType || 'Current',
+            branchName: branchName ? String(branchName).trim() : '',
+            upiId: String(upiId).trim(),
+            panGst: panGst ? String(panGst).trim().toUpperCase() : '',
+            status: isSuperAdmin ? 'approved' : 'pending',
+            isVerified: isSuperAdmin ? true : false,
+            submittedAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            submittedBy: req.user.email || req.user.name || 'Partner'
+        };
+
+        const configKey = `partner_bank_${hotelId}`;
+        const strValue = JSON.stringify(bankData);
+
+        await prisma.homepage_config.upsert({
+            where: { key: configKey },
+            update: { value: strValue },
+            create: { key: configKey, value: strValue }
+        });
+
+        // Notify Super Admin in notification table
+        try {
+            const superAdmins = await prisma.user.findMany({
+                where: { role: 'super_admin' },
+                select: { id: true }
+            });
+            for (const sa of superAdmins) {
+                await prisma.notification.create({
+                    data: {
+                        userId: sa.id,
+                        hotelId: hotelId,
+                        title: 'Bank Verification Request',
+                        message: `${bankData.hotelName} submitted bank account details (${bankData.bankName} - ${bankData.maskedAccountNumber}) for approval.`,
+                        type: 'info'
+                    }
+                });
+            }
+        } catch (notifErr) {
+            console.warn('Could not record admin notification:', notifErr.message);
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: isSuperAdmin 
+                ? 'Bank details saved and approved successfully.' 
+                : 'Bank details submitted successfully! Super Admin will review and approve your account shortly.',
+            data: bankData
+        });
+    } catch (err) {
+        console.error("SAVE_BANK_DETAILS_ERROR:", err);
+        return res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// @desc    Get all partner bank approval requests for Super Admin
+// @route   GET /api/admin/bank-requests
+// @access  Private (Super Admin)
+exports.getAdminBankRequests = async (req, res) => {
+    try {
+        const rows = await prisma.homepage_config.findMany({
+            where: {
+                key: { startsWith: 'partner_bank_' }
+            }
+        });
+
+        const bankRequests = [];
+        const hotelIds = [];
+
+        for (const row of rows) {
+            try {
+                const parsed = JSON.parse(row.value);
+                if (parsed && parsed.hotelId) {
+                    bankRequests.push({ ...parsed, configKey: row.key });
+                    hotelIds.push(parsed.hotelId);
+                }
+            } catch (_) {}
+        }
+
+        // Fetch hotels & owners in batch
+        const hotels = await prisma.hotel.findMany({
+            where: { id: { in: hotelIds } },
+            select: {
+                id: true,
+                name: true,
+                city: true,
+                address: true,
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true
+                    }
+                }
+            }
+        });
+
+        const hotelMap = {};
+        hotels.forEach(h => { hotelMap[h.id] = h; });
+
+        const enriched = bankRequests.map(item => {
+            const h = hotelMap[item.hotelId];
+            return {
+                ...item,
+                hotelName: item.hotelName || h?.name || `Hotel #${item.hotelId}`,
+                hotelCity: h?.city || '—',
+                ownerName: h?.user?.name || item.submittedBy || 'Partner',
+                ownerEmail: h?.user?.email || item.submittedBy || '—',
+                status: item.status || (item.isVerified ? 'approved' : 'pending')
+            };
+        });
+
+        // Sort: pending first, then by date descending
+        enriched.sort((a, b) => {
+            if (a.status === 'pending' && b.status !== 'pending') return -1;
+            if (a.status !== 'pending' && b.status === 'pending') return 1;
+            return new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime();
+        });
+
+        return res.status(200).json({
+            success: true,
+            count: enriched.length,
+            data: enriched
+        });
+    } catch (err) {
+        console.error("GET_ADMIN_BANK_REQUESTS_ERROR:", err);
+        return res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// @desc    Approve partner bank details & send confirmation email
+// @route   PUT /api/admin/bank-requests/:hotelId/approve
+// @access  Private (Super Admin)
+exports.approveAdminBankRequest = async (req, res) => {
+    try {
+        const hotelId = parseInt(req.params.hotelId);
+        if (!hotelId || isNaN(hotelId)) {
+            return res.status(400).json({ success: false, message: 'Valid Hotel ID required' });
+        }
+
+        const configKey = `partner_bank_${hotelId}`;
+        const record = await prisma.homepage_config.findUnique({
+            where: { key: configKey }
+        });
+
+        if (!record || !record.value) {
+            return res.status(404).json({ success: false, message: 'Bank details not found for this property' });
+        }
+
+        let bankData = JSON.parse(record.value);
+        bankData.status = 'approved';
+        bankData.isVerified = true;
+        bankData.approvedAt = new Date().toISOString();
+        bankData.approvedBy = req.user.email || req.user.name || 'Super Admin';
+
+        await prisma.homepage_config.update({
+            where: { key: configKey },
+            data: { value: JSON.stringify(bankData) }
+        });
+
+        // Fetch Hotel & Owner Details
+        const hotel = await prisma.hotel.findUnique({
+            where: { id: hotelId },
+            include: { user: { select: { id: true, name: true, email: true } } }
+        });
+
+        const targetEmail = hotel?.user?.email || bankData.submittedBy;
+        const partnerName = hotel?.user?.name || bankData.accountHolderName || 'Partner';
+        const hotelName = hotel?.name || bankData.hotelName || `Hotel #${hotelId}`;
+
+        // Create partner notification
+        if (hotel?.user?.id) {
+            try {
+                await prisma.notification.create({
+                    data: {
+                        userId: hotel.user.id,
+                        hotelId: hotelId,
+                        title: 'Bank Account Approved & Verified!',
+                        message: `Your bank account (${bankData.bankName} - ${bankData.maskedAccountNumber}) for ${hotelName} has been approved by Super Admin. Weekly automated payouts are now active.`,
+                        type: 'success'
+                    }
+                });
+            } catch (nErr) {
+                console.warn('Could not record notification:', nErr);
+            }
+        }
+
+        // Send Confirmation Email to Partner
+        if (targetEmail && targetEmail.includes('@')) {
+            try {
+                const SMTP_HOST = process.env.EMAIL_HOST || 'mail.gethotelstays.com';
+                const SMTP_PORT = parseInt(process.env.EMAIL_PORT) || 465;
+                const SMTP_USER = process.env.EMAIL_USER || 'reservation@gethotelstays.com';
+                const SMTP_PASS = process.env.EMAIL_PASS || 'Gethotel@2026';
+                const SMTP_SECURE = process.env.EMAIL_SECURE !== undefined 
+                    ? (process.env.EMAIL_SECURE === 'true') 
+                    : (SMTP_PORT === 465);
+
+                const transporter = nodemailer.createTransport({
+                    host: SMTP_HOST,
+                    port: SMTP_PORT,
+                    secure: SMTP_SECURE,
+                    auth: { user: SMTP_USER, pass: SMTP_PASS },
+                    tls: { rejectUnauthorized: false }
+                });
+
+                const mailOptions = {
+                    from: `"GetHotelStays Settlements" <${SMTP_USER}>`,
+                    to: targetEmail,
+                    subject: `✅ Bank Account Verified & Approved for Payouts — ${hotelName}`,
+                    html: `
+                        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px 24px; background: #ffffff; color: #1e293b; border: 1px solid #e2e8f0; border-radius: 16px;">
+                            <div style="border-bottom: 2px solid #059669; padding-bottom: 20px; margin-bottom: 24px;">
+                                <span style="font-size: 24px; font-weight: 900; color: #0f172a; letter-spacing: -0.5px;">GetHotelStays<span style="color: #2563eb;">.</span></span>
+                                <span style="display: block; font-size: 11px; text-transform: uppercase; font-weight: 700; color: #059669; letter-spacing: 1.5px; margin-top: 4px;">Bank Account Verified & Approved</span>
+                            </div>
+
+                            <h2 style="font-size: 20px; font-weight: 800; color: #059669; margin-top: 0; margin-bottom: 12px;">🎉 Payout Account Activated!</h2>
+                            <p style="font-size: 14px; line-height: 1.6; color: #334155; margin-bottom: 16px;">Hello <b>${partnerName}</b>,</p>
+                            <p style="font-size: 14px; line-height: 1.6; color: #334155; margin-bottom: 20px;">
+                                Your bank account details for <b>${hotelName}</b> have been reviewed and officially <b>APPROVED</b> by Super Admin.
+                            </p>
+
+                            <!-- Bank Details Summary Card -->
+                            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+                                <h4 style="margin-top: 0; margin-bottom: 14px; font-size: 12px; font-weight: 800; text-transform: uppercase; color: #64748b;">Verified Account Details</h4>
+                                <table style="width: 100%; font-size: 13px; line-height: 1.8;">
+                                    <tr>
+                                        <td style="color: #64748b; width: 45%;">Account Holder:</td>
+                                        <td style="font-weight: 700; color: #0f172a;">${bankData.accountHolderName}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="color: #64748b;">Bank Name:</td>
+                                        <td style="font-weight: 700; color: #0f172a;">${bankData.bankName}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="color: #64748b;">Account Number:</td>
+                                        <td style="font-weight: 700; color: #0f172a; font-family: monospace;">${bankData.maskedAccountNumber}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="color: #64748b;">IFSC Code:</td>
+                                        <td style="font-weight: 700; color: #0f172a; font-family: monospace;">${bankData.ifscCode}</td>
+                                    </tr>
+                                    ${bankData.upiId ? `
+                                    <tr>
+                                        <td style="color: #64748b;">UPI ID:</td>
+                                        <td style="font-weight: 700; color: #0f172a;">${bankData.upiId}</td>
+                                    </tr>
+                                    ` : ''}
+                                    <tr>
+                                        <td style="color: #64748b;">Status:</td>
+                                        <td style="font-weight: 800; color: #059669;">Verified & Ready for Payouts</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <!-- Payout Schedule Info -->
+                            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+                                <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #166534;">
+                                    <b>📅 Weekly Settlements:</b> All guest booking earnings (88% net after flat 12% commission) will now be automatically transferred to this verified account every Monday via IMPS/NEFT.
+                                </p>
+                            </div>
+
+                            <div style="margin: 28px 0; text-align: center;">
+                                <a href="${process.env.FRONTEND_URL || 'https://gethotelstays.com'}/partner-dashboard/payments" style="background: #0f172a; color: #ffffff; padding: 12px 28px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 13px; display: inline-block;">
+                                    View Payout Dashboard →
+                                </a>
+                            </div>
+
+                            <p style="margin-top: 24px; color: #94a3b8; font-size: 11px; line-height: 1.6; border-top: 1px solid #f1f5f9; padding-top: 16px;">
+                                If you did not request this update, please contact our support team immediately at reservation@gethotelstays.com.
+                            </p>
+                        </div>
+                    `
+                };
+
+                await transporter.sendMail(mailOptions);
+                console.log(`Bank approval email sent to ${targetEmail}`);
+            } catch (mailErr) {
+                console.error('Failed to send bank approval email:', mailErr.message);
+            }
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: 'Bank account approved successfully, and confirmation email sent to partner.',
+            data: bankData
+        });
+    } catch (err) {
+        console.error("APPROVE_BANK_REQUEST_ERROR:", err);
+        return res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// @desc    Reject partner bank details
+// @route   PUT /api/admin/bank-requests/:hotelId/reject
+// @access  Private (Super Admin)
+exports.rejectAdminBankRequest = async (req, res) => {
+    try {
+        const hotelId = parseInt(req.params.hotelId);
+        if (!hotelId || isNaN(hotelId)) {
+            return res.status(400).json({ success: false, message: 'Valid Hotel ID required' });
+        }
+
+        const configKey = `partner_bank_${hotelId}`;
+        const record = await prisma.homepage_config.findUnique({
+            where: { key: configKey }
+        });
+
+        if (!record || !record.value) {
+            return res.status(404).json({ success: false, message: 'Bank details not found' });
+        }
+
+        const reason = req.body.reason || 'Verification could not be completed with the provided bank info.';
+        let bankData = JSON.parse(record.value);
+        bankData.status = 'rejected';
+        bankData.isVerified = false;
+        bankData.rejectionReason = reason;
+        bankData.rejectedAt = new Date().toISOString();
+        bankData.rejectedBy = req.user.email || req.user.name || 'Super Admin';
+
+        await prisma.homepage_config.update({
+            where: { key: configKey },
+            data: { value: JSON.stringify(bankData) }
+        });
+
+        // Notify Partner User
+        const hotel = await prisma.hotel.findUnique({
+            where: { id: hotelId },
+            include: { user: { select: { id: true, name: true, email: true } } }
+        });
+
+        if (hotel?.user?.id) {
+            try {
+                await prisma.notification.create({
+                    data: {
+                        userId: hotel.user.id,
+                        hotelId: hotelId,
+                        title: 'Bank Verification Declined',
+                        message: `Your bank details for ${hotel.name} were declined: ${reason}. Please update your details.`,
+                        type: 'warning'
+                    }
+                });
+            } catch (_) {}
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: 'Bank details rejected.',
+            data: bankData
+        });
+    } catch (err) {
+        console.error("REJECT_BANK_REQUEST_ERROR:", err);
+        return res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// @desc    Get payout history for a partner hotel
+// @route   GET /api/partner/payouts/:hotelId
+// @access  Private (hotel_admin, super_admin)
+exports.getPartnerPayouts = async (req, res) => {
+    try {
+        const hotelId = parseInt(req.params.hotelId);
+        if (!hotelId || isNaN(hotelId)) {
+            return res.status(400).json({ success: false, message: 'Valid Hotel ID required' });
+        }
+
+        const isSuperAdmin = ['super_admin', 'superadmin', 'admin'].includes(req.user.role);
+        if (!isSuperAdmin) {
+            const hotel = await prisma.hotel.findFirst({
+                where: { id: hotelId, userId: req.user.id }
+            });
+            if (!hotel) {
+                return res.status(403).json({ success: false, message: 'Not authorized for this property' });
+            }
+        }
+
+        const payouts = await prisma.payout.findMany({
+            where: { hotelId },
+            orderBy: { createdAt: 'desc' },
+            take: 50
+        });
+
+        // Also fetch bank config
+        const configKey = `partner_bank_${hotelId}`;
+        const bankRecord = await prisma.homepage_config.findUnique({ where: { key: configKey } });
+        let bankData = null;
+        if (bankRecord && bankRecord.value) {
+            try { bankData = JSON.parse(bankRecord.value); } catch (_) {}
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: payouts,
+            bankDetails: bankData
+        });
+    } catch (err) {
+        console.error("GET_PARTNER_PAYOUTS_ERROR:", err);
+        return res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// @desc    Request a withdrawal / payout for a partner hotel
+// @route   POST /api/partner/payouts/:hotelId
+// @access  Private (hotel_admin, super_admin)
+exports.requestPartnerPayout = async (req, res) => {
+    try {
+        const hotelId = parseInt(req.params.hotelId);
+        if (!hotelId || isNaN(hotelId)) {
+            return res.status(400).json({ success: false, message: 'Valid Hotel ID required' });
+        }
+
+        const isSuperAdmin = ['super_admin', 'superadmin', 'admin'].includes(req.user.role);
+        let hotel = null;
+        if (!isSuperAdmin) {
+            hotel = await prisma.hotel.findFirst({
+                where: { id: hotelId, userId: req.user.id }
+            });
+            if (!hotel) {
+                return res.status(403).json({ success: false, message: 'Not authorized for this property' });
+            }
+        } else {
+            hotel = await prisma.hotel.findUnique({ where: { id: hotelId } });
+        }
+
+        const amount = parseFloat(req.body.amount);
+        if (!amount || isNaN(amount) || amount <= 0) {
+            return res.status(400).json({ success: false, message: 'Please enter a valid positive withdrawal amount' });
+        }
+
+        // Check if bank details are approved
+        const configKey = `partner_bank_${hotelId}`;
+        const bankRecord = await prisma.homepage_config.findUnique({ where: { key: configKey } });
+        let bankData = null;
+        if (bankRecord && bankRecord.value) {
+            try { bankData = JSON.parse(bankRecord.value); } catch (_) {}
+        }
+
+        const bankRef = bankData?.maskedAccountNumber 
+            ? `${bankData.bankName} (${bankData.maskedAccountNumber})` 
+            : 'Bank Transfer';
+
+        const newPayout = await prisma.payout.create({
+            data: {
+                hotelId,
+                amount,
+                status: 'pending',
+                bankReference: bankRef
+            }
+        });
+
+        // Notify super admin
+        try {
+            const superAdmins = await prisma.user.findMany({ where: { role: 'super_admin' }, select: { id: true } });
+            for (const sa of superAdmins) {
+                await prisma.notification.create({
+                    data: {
+                        userId: sa.id,
+                        hotelId,
+                        title: 'New Withdrawal Request',
+                        message: `${hotel.name} requested a withdrawal of ₹${amount.toLocaleString()} to ${bankRef}.`,
+                        type: 'info'
+                    }
+                });
+            }
+        } catch (_) {}
+
+        return res.status(200).json({
+            success: true,
+            message: `Withdrawal request of ₹${amount.toLocaleString()} submitted successfully! Funds will be transferred following admin approval.`,
+            data: newPayout
+        });
+    } catch (err) {
+        console.error("REQUEST_PARTNER_PAYOUT_ERROR:", err);
+        return res.status(500).json({ success: false, message: err.message });
+    }
+};

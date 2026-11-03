@@ -606,32 +606,32 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
     ];
 
     return (
-        <div className="w-full flex flex-col h-screen bg-[#09090b] text-neutral-100 font-sans overflow-hidden">
+        <div className="w-full flex flex-col h-[calc(100vh-140px)] min-h-[640px] bg-white border border-slate-200/90 rounded-2xl shadow-xs overflow-hidden font-sans text-slate-800">
             {/* Header / Select Hotel Selector */}
-            <div className="px-6 py-4 bg-neutral-900/40 border-b border-[#1f1f1f]  flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="px-6 py-4 bg-white border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-[#161616] border border-[#262626] rounded-xl flex items-center justify-center">
-                        <Sparkles className="w-5 h-5 text-emerald-400 animate-pulse" />
+                    <div className="w-10 h-10 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-center">
+                        <Sparkles className="w-5 h-5 text-emerald-600" />
                     </div>
                     <div>
-                        <h3 className="text-sm font-bold text-white uppercase tracking-wider">AI Room Onboarding Copilot</h3>
-                        <p className="text-[10px] text-neutral-400 font-medium uppercase tracking-widest mt-0.5">Extract and draft rooms setup using Generative AI</p>
+                        <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">AI Room Onboarding Copilot</h3>
+                        <p className="text-[10px] text-slate-500 font-semibold tracking-wider mt-0.5">Extract and draft rooms setup using Generative AI</p>
                     </div>
                 </div>
                 {activeSubTab === "tours" ? (
                     <div className="flex items-center gap-2">
-                        <span className="px-3 py-1.5 rounded-xl bg-emerald-950/80 border border-emerald-700/50 text-emerald-400 text-xs font-bold flex items-center gap-1.5 shadow-sm">
-                            <Palmtree className="w-4 h-4 text-emerald-400" />
+                        <span className="px-3.5 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-1.5 shadow-2xs">
+                            <Palmtree className="w-4 h-4 text-emerald-600" />
                             <span>Tour Packages Active</span>
                         </span>
                     </div>
                 ) : (
                     <div className="flex items-center gap-3">
-                        <span className="text-[10px] font-bold uppercase text-neutral-400 tracking-wider">
+                        <span className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">
                             {loadingHotels ? (
-                                <span className="text-emerald-400 animate-pulse">Loading Hotels...</span>
+                                <span className="text-emerald-600 animate-pulse">Loading Hotels...</span>
                             ) : loadingRoomsPercent !== null ? (
-                                <span className="text-emerald-400 animate-pulse">Loading Rooms ({loadingRoomsPercent}%)...</span>
+                                <span className="text-emerald-600 animate-pulse">Loading Rooms ({loadingRoomsPercent}%)...</span>
                             ) : (
                                 "Target Hotel:"
                             )}
@@ -641,32 +641,32 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                                 value={selectedHotelId}
                                 onChange={(e) => setSelectedHotelId(e.target.value === "" ? "" : Number(e.target.value))}
                                 disabled={loadingRoomsPercent !== null || loadingHotels}
-                                className="appearance-none w-full pl-4 pr-10 py-2.5 bg-[#141414] border border-[#262626] rounded-xl text-xs font-bold text-white focus:outline-none focus:border-neutral-500 transition-colors cursor-pointer font-mono disabled:opacity-90"
+                                className="appearance-none w-full pl-4 pr-10 py-2.5 bg-slate-50 hover:bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-blue-600 transition-colors cursor-pointer disabled:opacity-90 shadow-2xs"
                             >
                                 {loadingHotels ? (
-                                    <option value="" className="bg-black text-white">Loading hotels list...</option>
+                                    <option value="">Loading hotels list...</option>
                                 ) : loadingRoomsPercent !== null ? (
-                                    <option value={selectedHotelId} className="bg-black text-white">
+                                    <option value={selectedHotelId}>
                                         {activeHotel ? activeHotel.name : "Loading..."}
                                     </option>
                                 ) : (
                                     <>
-                                        <option value="" className="bg-black text-white">-- Select Target Hotel --</option>
+                                        <option value="">-- Select Target Hotel --</option>
                                         {hotels.map((h) => (
-                                            <option key={h.id} value={h.id} className="bg-black text-white">
+                                            <option key={h.id} value={h.id}>
                                                 {h.name} ({h.city})
                                             </option>
                                         ))}
                                     </>
                                 )}
                             </select>
-                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 pointer-events-none" />
+                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                             
                             {(loadingRoomsPercent !== null || loadingHotels) && (
-                                <div className="absolute bottom-[1px] left-[1px] right-[1px] h-[3px] bg-[#1a1a1a] overflow-hidden rounded-b-xl">
+                                <div className="absolute bottom-[1px] left-[1px] right-[1px] h-[3px] bg-slate-200 overflow-hidden rounded-b-xl">
                                     <div 
                                         className={cn(
-                                            "h-full bg-emerald-400 transition-all ease-out",
+                                            "h-full bg-emerald-500 transition-all ease-out",
                                             loadingHotels ? "w-full animate-pulse duration-1000" : "duration-75"
                                         )} 
                                         style={loadingHotels ? undefined : { width: `${loadingRoomsPercent}%` }}
@@ -679,14 +679,14 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
             </div>
 
             {/* Sub Tabs Selector */}
-            <div className="px-6 bg-[#090909] border-b border-[#1f1f1f] flex gap-6">
+            <div className="px-6 bg-slate-50 border-b border-slate-200 flex gap-6">
                 <button
                     onClick={() => setActiveSubTab("rooms")}
                     className={cn(
                         "py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-all cursor-pointer",
                         activeSubTab === "rooms"
-                            ? "border-white text-white"
-                            : "border-transparent text-neutral-500 hover:text-neutral-300"
+                            ? "border-slate-900 text-slate-900 font-extrabold"
+                            : "border-transparent text-slate-500 hover:text-slate-800"
                     )}
                 >
                     Rooms Setup (Chat)
@@ -696,11 +696,11 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                     className={cn(
                         "py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-all cursor-pointer flex items-center gap-1.5",
                         activeSubTab === "tours"
-                            ? "border-emerald-400 text-emerald-400"
-                            : "border-transparent text-neutral-500 hover:text-neutral-300"
+                            ? "border-emerald-600 text-emerald-700 font-extrabold"
+                            : "border-transparent text-slate-500 hover:text-slate-800"
                     )}
                 >
-                    <Palmtree className="w-3.5 h-3.5 text-emerald-400" />
+                    <Palmtree className="w-3.5 h-3.5 text-emerald-600" />
                     <span>Tour Onboarding (AI)</span>
                 </button>
                 <button
@@ -708,8 +708,8 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                     className={cn(
                         "py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-all cursor-pointer",
                         activeSubTab === "reviews"
-                            ? "border-white text-white"
-                            : "border-transparent text-neutral-500 hover:text-neutral-300"
+                            ? "border-slate-900 text-slate-900 font-extrabold"
+                            : "border-transparent text-slate-500 hover:text-slate-800"
                     )}
                 >
                     Import Reviews (AI)
@@ -719,8 +719,8 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                     className={cn(
                         "py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-all cursor-pointer",
                         activeSubTab === "bulk"
-                            ? "border-white text-white"
-                            : "border-transparent text-neutral-500 hover:text-neutral-300"
+                            ? "border-slate-900 text-slate-900 font-extrabold"
+                            : "border-transparent text-slate-500 hover:text-slate-800"
                     )}
                 >
                     Bulk Onboard (JSON)
@@ -730,29 +730,29 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
             {activeSubTab === "rooms" ? (
                 <>
                     {/* Chat Area */}
-                    <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-[#09090b]">
+                    <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/40">
                         {messages.map((msg) => {
                             const isAI = msg.sender === "ai";
                             return (
                                 <div key={msg.id} className={cn("flex flex-col max-w-[85%] space-y-2", isAI ? "self-start text-left" : "self-end ml-auto text-right")}>
                                     {/* Search Queries and Sources display */}
                                     {isAI && msg.searchQueries && msg.searchQueries.length > 0 && (
-                                        <div className="flex flex-col gap-1.5 px-3 py-2 bg-[#121212] border border-[#262626] rounded-xl max-w-lg mb-1 self-start shadow-sm text-[10px]">
-                                            <div className="flex items-center gap-1.5 text-neutral-400 font-bold text-[9px] uppercase tracking-wider">
-                                                <Sparkles className="w-3 h-3 text-emerald-400 animate-pulse" />
+                                        <div className="flex flex-col gap-1.5 px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl max-w-lg mb-1 self-start shadow-2xs text-[10px]">
+                                            <div className="flex items-center gap-1.5 text-slate-600 font-bold text-[9px] uppercase tracking-wider">
+                                                <Sparkles className="w-3 h-3 text-emerald-600 animate-pulse" />
                                                 <span>AI Search Queries:</span>
                                             </div>
                                             <div className="flex flex-wrap gap-1.5">
                                                 {msg.searchQueries.map((q, idx) => (
-                                                    <span key={idx} className="bg-[#181818] border border-[#2a2a2a] px-2.5 py-0.5 rounded-lg text-[9px] text-neutral-200 font-medium">
+                                                    <span key={idx} className="bg-slate-100 border border-slate-200 px-2.5 py-0.5 rounded-lg text-[9px] text-slate-700 font-medium">
                                                         "{q}"
                                                     </span>
                                                 ))}
                                             </div>
                                             {msg.searchSources && msg.searchSources.length > 0 && (
-                                                <div className="mt-1 flex flex-col gap-1 border-t border-[#1f1f1f] pt-1">
-                                                    <span className="text-[8px] font-bold uppercase tracking-wider text-neutral-500">Sources consulted:</span>
-                                                    <div className="flex flex-wrap gap-x-2.5 gap-y-1 text-[9px] text-emerald-400 font-medium lowercase">
+                                                <div className="mt-1 flex flex-col gap-1 border-t border-slate-200 pt-1">
+                                                    <span className="text-[8px] font-bold uppercase tracking-wider text-slate-500">Sources consulted:</span>
+                                                    <div className="flex flex-wrap gap-x-2.5 gap-y-1 text-[9px] text-emerald-700 font-medium lowercase">
                                                         {msg.searchSources.map((src, idx) => (
                                                             <a 
                                                                 key={idx} 
@@ -774,17 +774,17 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                                     {/* Message Bubble */}
                                     <div
                                         className={cn(
-                                            "px-5 py-3.5 rounded-2xl text-xs font-medium leading-relaxed whitespace-pre-wrap shadow-sm",
+                                            "px-5 py-3.5 rounded-2xl text-xs font-medium leading-relaxed whitespace-pre-wrap shadow-2xs",
                                             isAI 
-                                                ? "bg-neutral-900/40 border border-neutral-800/80  text-white rounded-tl-none " 
-                                                : "bg-neutral-100 text-black font-semibold rounded-tr-none"
+                                                ? "bg-white border border-slate-200/90 text-slate-800 rounded-tl-none shadow-xs" 
+                                                : "bg-slate-900 text-white font-medium rounded-tr-none shadow-xs"
                                         )}
                                     >
                                         {msg.text}
                                     </div>
 
                                     {/* Timestamp */}
-                                    <span className={cn("text-[9px] text-neutral-500 font-bold uppercase tracking-wider px-1", isAI ? "self-start" : "self-end")}>
+                                    <span className={cn("text-[9px] text-slate-400 font-bold uppercase tracking-wider px-1", isAI ? "self-start" : "self-end")}>
                                         {msg.timestamp.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
                                     </span>
 
@@ -1207,15 +1207,15 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
 
                     {/* Prompt Suggestions */}
                     {messages.length === 1 && selectedHotelId && (
-                        <div className="px-6 py-3 bg-[#080808] border-t border-[#1f1f1f] flex flex-wrap gap-2 items-center">
-                            <span className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Quick Prompts:</span>
+                        <div className="px-6 py-3 bg-slate-50 border-t border-slate-200 flex flex-wrap gap-2 items-center">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Quick Prompts:</span>
                             {SUGGESTIONS.map((item, idx) => (
                                 <button
                                     key={idx}
                                     onClick={() => {
                                         setInputValue(item.prompt);
                                     }}
-                                    className="px-4 py-2 bg-[#141414] border border-[#262626] text-neutral-300 text-[10px] font-bold uppercase rounded-xl tracking-wider hover:bg-[#1f1f1f] hover:text-white transition-all cursor-pointer"
+                                    className="px-3.5 py-1.5 bg-white border border-slate-200 text-slate-700 text-xs font-semibold rounded-xl hover:bg-slate-100 hover:text-slate-900 transition-all cursor-pointer shadow-2xs"
                                 >
                                     {item.label}
                                 </button>
@@ -1224,13 +1224,13 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                     )}
 
                     {/* Footer Input Area */}
-                    <div className="p-4 bg-neutral-900/40 border-t border-[#1f1f1f] space-y-3">
-                        <div className="flex flex-col gap-2 border border-[#262626] rounded-xl p-3 bg-[#141414] focus-within:border-neutral-500 transition-colors">
+                    <div className="p-4 bg-white border-t border-slate-200 space-y-3">
+                        <div className="flex flex-col gap-2 border border-slate-300 rounded-2xl p-3 bg-slate-50 focus-within:bg-white focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-100 transition-all shadow-2xs">
                             {/* Attachment Preview Area */}
                             {attachedImages.length > 0 && (
-                                <div className="flex flex-wrap gap-2 pb-2 border-b border-[#1f1f1f]">
+                                <div className="flex flex-wrap gap-2 pb-2 border-b border-slate-200">
                                     {attachedImages.map((img, idx) => (
-                                        <div key={idx} className="relative w-16 h-16 rounded-xl border border-[#282828] overflow-hidden bg-[#181818] flex items-center justify-center shrink-0">
+                                        <div key={idx} className="relative w-16 h-16 rounded-xl border border-slate-300 overflow-hidden bg-slate-100 flex items-center justify-center shrink-0">
                                             <img src={img} className="w-full h-full object-cover" />
                                             <button
                                                 type="button"
@@ -1250,7 +1250,7 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                                     type="button"
                                     disabled={loading || !selectedHotelId}
                                     onClick={() => fileInputRef.current?.click()}
-                                    className="p-2 text-neutral-400 hover:text-white disabled:text-neutral-600 hover:bg-[#1f1f1f] rounded-lg transition-colors cursor-pointer"
+                                    className="p-2 text-slate-400 hover:text-slate-700 disabled:text-slate-300 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
                                     title="Attach images (converts to WebP)"
                                 >
                                     <Paperclip className="w-4 h-4" />
@@ -1277,14 +1277,14 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                                             handleSend();
                                         }
                                     }}
-                                    className="flex-1 py-2 text-xs font-bold text-white focus:outline-none placeholder:text-neutral-600 bg-transparent font-mono disabled:cursor-not-allowed"
+                                    className="flex-1 py-1.5 text-xs font-semibold text-slate-900 focus:outline-none placeholder:text-slate-400 bg-transparent disabled:cursor-not-allowed"
                                 />
                                 
                                 {/* Send Button */}
                                 <button
                                     onClick={() => handleSend()}
                                     disabled={loading || !selectedHotelId || (!inputValue.trim() && urls.every(u => !u.trim()) && attachedImages.length === 0)}
-                                    className="p-2.5 bg-neutral-100 hover:bg-white text-black rounded-lg disabled:bg-[#1f1f1f] disabled:text-neutral-600 disabled:cursor-not-allowed transition-colors cursor-pointer shadow-md"
+                                    className="p-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed transition-all cursor-pointer shadow-xs"
                                 >
                                     <Send className="w-4 h-4" />
                                 </button>
@@ -1296,19 +1296,19 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                                 <button
                                     type="button"
                                     onClick={() => setShowUrlInput(!showUrlInput)}
-                                    className="text-[10px] text-neutral-500 hover:text-neutral-300 font-bold uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer"
+                                    className="text-xs text-slate-500 hover:text-slate-800 font-bold uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer"
                                 >
                                     <span>{showUrlInput ? "− Hide Website Link Option" : "+ Optional: Have an external OTA link? (Click to expand)"}</span>
                                 </button>
-                                <span className="text-[9px] text-emerald-400/80 font-bold uppercase tracking-wider self-end flex items-center gap-1.5">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                <span className="text-[10px] text-emerald-700 font-bold uppercase tracking-wider self-end flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                                     100% Pure Chat • In-House Python AI Engine
                                 </span>
                             </div>
 
                             {showUrlInput && (
-                                <div className="flex flex-col gap-2 w-full pt-2 border-t border-[#1f1f1f]">
-                                    <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Optional OTA Links (Multi-scraping):</span>
+                                <div className="flex flex-col gap-2 w-full pt-2 border-t border-slate-200">
+                                    <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wider block mb-1">Optional OTA Links (Multi-scraping):</span>
                                     <div className="space-y-2 w-full">
                                         {urls.map((url, index) => (
                                             <div key={index} className="flex items-center gap-2">
@@ -1322,13 +1322,13 @@ export default function AdminAICopilot({ hotels, loadingHotels = false }: AdminA
                                                         setUrls(newUrls);
                                                     }}
                                                     disabled={loading || !selectedHotelId}
-                                                    className="w-full md:w-80 px-3.5 py-2 bg-[#141414] border border-[#262626] rounded-xl text-[10px] font-mono text-white focus:outline-none focus:border-neutral-500 placeholder:text-neutral-600 disabled:bg-[#141414] disabled:cursor-not-allowed"
+                                                    className="w-full md:w-80 px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 placeholder:text-slate-400 disabled:bg-slate-100 disabled:cursor-not-allowed shadow-2xs transition-all"
                                                 />
                                                 {urls.length > 1 && (
                                                     <button
                                                         type="button"
                                                         onClick={() => setUrls(urls.filter((_: string, i: number) => i !== index))}
-                                                        className="p-2 text-red-400 hover:bg-red-950/80 rounded-lg transition-colors cursor-pointer"
+                                                        className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
                                                         title="Remove URL"
                                                     >
                                                         <Trash2 className="w-3.5 h-3.5" />

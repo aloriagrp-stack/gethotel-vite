@@ -81,6 +81,13 @@ const cleanDestinationName = (name?: string) => {
     return name.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}\u{FE0F}]/gu, '').trim();
 };
 
+const formatDestinationImage = (img?: string) => {
+    if (!img) return "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=800&auto=format&fit=crop";
+    if (img.startsWith("http://") || img.startsWith("https://") || img.startsWith("data:")) return img;
+    if (img.startsWith("/uploads/")) return `/api${img}`;
+    return img;
+};
+
 export default function ExploreByDestinations({ 
     destinations, 
     hourlyDestinations, 
@@ -99,10 +106,14 @@ export default function ExploreByDestinations({
 
     const getDestinationUrl = (dest: any, index: number) => {
         if (dest.url) {
-            if (isHourly && !dest.url.includes("stayType=")) {
-                return dest.url.includes("?") ? `${dest.url}&stayType=hourly` : `${dest.url}?stayType=hourly`;
+            let finalUrl = dest.url;
+            if (dest.linkedHotelIds && dest.linkedHotelIds.length > 0 && !finalUrl.includes("destination_index=")) {
+                finalUrl = finalUrl.includes("?") ? `${finalUrl}&destination_index=${index}` : `${finalUrl}?destination_index=${index}`;
             }
-            return dest.url;
+            if (isHourly && !finalUrl.includes("stayType=")) {
+                return finalUrl.includes("?") ? `${finalUrl}&stayType=hourly` : `${finalUrl}?stayType=hourly`;
+            }
+            return finalUrl;
         }
         const n = (dest.name || '').toLowerCase().trim();
         const stayQuery = isHourly ? '?stayType=hourly' : '';
@@ -196,7 +207,7 @@ export default function ExploreByDestinations({
                             >
                                 {/* Full Bleed Image */}
                                 <Image
-                                    src={dest.image}
+                                    src={formatDestinationImage(dest.image)}
                                     alt={name}
                                     fill
                                     className="object-cover"

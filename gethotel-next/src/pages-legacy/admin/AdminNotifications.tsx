@@ -105,20 +105,20 @@ export default function AdminNotificationsPage() {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-slate-200/80">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-slate-200">
                 <div>
-                    <h2 className="text-xl font-semibold text-slate-900 tracking-tight flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                    <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
                         Activity & Alerts
                     </h2>
-                    <p className="text-xs text-slate-500 mt-0.5">
+                    <p className="text-xs text-slate-500 mt-1">
                         Real-time feed of live reservations, partner requests, and platform events.
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
                     <button 
                         onClick={() => alert("Activity feed refreshed.")}
-                        className="px-3.5 py-1.5 bg-white hover:bg-neutral-800 border border-slate-200 text-slate-700 hover:text-slate-900 text-xs font-medium rounded-lg transition-colors cursor-pointer"
+                        className="px-4 py-2 bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 hover:text-slate-900 text-xs font-bold rounded-xl transition-all cursor-pointer shadow-2xs"
                     >
                         Mark All as Read
                     </button>
@@ -129,21 +129,28 @@ export default function AdminNotificationsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
                 {/* Left Sidebar: Filters & System Health */}
                 <div className="lg:col-span-4 space-y-4">
-                    <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs p-4 space-y-3">
-                        <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider pb-2 border-b border-slate-200/60">Filter Activity</h3>
+                    <div className="bg-white border border-slate-200/90 rounded-2xl shadow-xs p-5 space-y-3">
+                        <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider pb-2 border-b border-slate-100">Filter Activity</h3>
                         <div className="space-y-1.5">
                             {(['all', 'unread', 'read'] as const).map((t) => (
                                 <button
                                     key={t}
                                     onClick={() => setFilter(t)}
                                     className={cn(
-                                        "w-full flex items-center justify-between px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer capitalize",
-                                        filter === t ? "bg-neutral-800 text-slate-900" : "text-slate-500 hover:bg-white hover:text-slate-900"
+                                        "w-full flex items-center justify-between px-3.5 py-2.5 text-xs rounded-xl transition-all cursor-pointer capitalize",
+                                        filter === t 
+                                            ? "bg-slate-900 text-white font-bold shadow-xs" 
+                                            : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-semibold"
                                     )}
                                 >
                                     <span>{t} Activity</span>
                                     {t === 'unread' && unreadCount > 0 && (
-                                        <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full text-[10px] font-medium">
+                                        <span className={cn(
+                                            "px-2 py-0.5 rounded-full text-[10px] font-bold",
+                                            filter === t 
+                                                ? "bg-emerald-500/20 text-emerald-300 border border-emerald-400/30" 
+                                                : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                        )}>
                                             {unreadCount}
                                         </span>
                                     )}
@@ -152,15 +159,15 @@ export default function AdminNotificationsPage() {
                         </div>
                     </div>
 
-                    <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs p-4 space-y-3">
+                    <div className="bg-white border border-slate-200/90 rounded-2xl shadow-xs p-5 space-y-3">
                         <div className="flex items-center justify-between">
-                            <span className="text-xs font-medium text-slate-500">System Availability</span>
-                            <span className="text-xs font-semibold text-emerald-400">99.9%</span>
+                            <span className="text-xs font-bold text-slate-600">System Availability</span>
+                            <span className="text-xs font-bold text-emerald-600">99.9%</span>
                         </div>
-                        <div className="h-1.5 w-full bg-neutral-800 rounded-full overflow-hidden">
-                            <div className="h-full bg-emerald-400 w-[99.9%]" />
+                        <div className="h-1.5 w-full bg-slate-100 border border-slate-200 rounded-full overflow-hidden">
+                            <div className="h-full bg-emerald-500 w-[99.9%] rounded-full" />
                         </div>
-                        <p className="text-[11px] text-slate-400">All services operational</p>
+                        <p className="text-[11px] text-slate-500 font-medium">All services operational</p>
                     </div>
                 </div>
 
@@ -171,33 +178,33 @@ export default function AdminNotificationsPage() {
                             <div 
                                 key={item.id}
                                 className={cn(
-                                    "bg-white/40 border rounded-xl p-4 transition-colors",
-                                    item.isRead ? "border-slate-200/60 opacity-80" : "border-slate-200/90 bg-white/60"
+                                    "bg-white border rounded-2xl p-4.5 shadow-xs transition-all hover:border-slate-300",
+                                    item.isRead ? "border-slate-200 opacity-85" : "border-slate-200/90 ring-1 ring-blue-500/10"
                                 )}
                             >
                                 <div className="flex items-start gap-3.5">
                                     <div className={cn(
-                                        "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border",
-                                        item.type === 'booking' ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" :
-                                        item.type === 'partner' ? "bg-blue-500/10 border-blue-500/20 text-blue-400" : "bg-neutral-800 border-slate-300 text-slate-700"
+                                        "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border shadow-2xs",
+                                        item.type === 'booking' ? "bg-emerald-50 border-emerald-200 text-emerald-600" :
+                                        item.type === 'partner' ? "bg-blue-50 border-blue-200 text-blue-600" : "bg-purple-50 border-purple-200 text-purple-600"
                                     )}>
                                         {item.type === 'booking' ? <Hotel className="w-4 h-4" /> : 
                                          item.type === 'partner' ? <User className="w-4 h-4" /> : <Info className="w-4 h-4" />}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center justify-between mb-1">
-                                            <h4 className="text-xs font-medium text-slate-900 truncate pr-2">{item.title}</h4>
-                                            <span className="text-[11px] text-slate-400 shrink-0">{item.createdAt}</span>
+                                            <h4 className="text-xs font-bold text-slate-900 truncate pr-2">{item.title}</h4>
+                                            <span className="text-[10px] font-semibold text-slate-400 shrink-0">{item.createdAt}</span>
                                         </div>
-                                        <p className="text-xs text-slate-500 leading-relaxed">{item.message}</p>
+                                        <p className="text-xs text-slate-600 leading-relaxed font-normal">{item.message}</p>
                                     </div>
                                 </div>
                             </div>
                         ))
                     ) : (
-                        <div className="bg-white/40 border border-slate-200/80 border-dashed py-16 rounded-xl text-center">
+                        <div className="bg-white border border-slate-200 border-dashed py-16 rounded-2xl text-center shadow-xs">
                             <Inbox className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                            <p className="text-xs text-slate-400">No activity recorded for this filter</p>
+                            <p className="text-xs text-slate-500 font-medium">No activity recorded for this filter</p>
                         </div>
                     )}
                 </div>

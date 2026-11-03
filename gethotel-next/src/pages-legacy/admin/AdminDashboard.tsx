@@ -158,6 +158,14 @@ export default function SuperAdminDashboard() {
     const [reviewSearchQuery, setReviewSearchQuery] = useState("");
     const [reviewsSubTab, setReviewsSubTab] = useState<"list" | "import">("list");
 
+    // Bank Account Approval states
+    const [requestSubTab, setRequestSubTab] = useState<"properties" | "bank">("properties");
+    const [bankRequests, setBankRequests] = useState<any[]>([]);
+    const [loadingBankRequests, setLoadingBankRequests] = useState(false);
+    const [bankActionId, setBankActionId] = useState<number | null>(null);
+    const [bankToast, setBankToast] = useState<{ show: boolean, msg: string, type: 'success' | 'error' }>({ show: false, msg: '', type: 'success' });
+    const [revealedBankId, setRevealedBankId] = useState<number | null>(null);
+
     useEffect(() => {
         const tabFromUrl = searchParams.get("tab");
         const hotelIdFromUrl = searchParams.get("hotelId");
@@ -234,6 +242,9 @@ export default function SuperAdminDashboard() {
                     setPartnerRequests(requestRes.data || []);
                     setLoadedSections(prev => ({ ...prev, requests: true }));
                 }));
+                requests.push(adminApi.getBankRequests().then((bankRes) => {
+                    if (bankRes.success) setBankRequests(bankRes.data || []);
+                }).catch(() => {}));
             }
 
             if (needsPartners) {
@@ -312,6 +323,60 @@ export default function SuperAdminDashboard() {
             alert(err.message || "Failed to decline request");
         } finally {
             setActionLoading(null);
+        }
+    };
+
+    // Bank Approval Handlers
+    const fetchBankRequests = async () => {
+        setLoadingBankRequests(true);
+        try {
+            const res = await adminApi.getBankRequests();
+            if (res.success && res.data) {
+                setBankRequests(res.data);
+            }
+        } catch (e) {
+            console.error("Failed to fetch bank requests:", e);
+        } finally {
+            setLoadingBankRequests(false);
+        }
+    };
+
+    const handleApproveBank = async (hotelId: number, hotelName?: string) => {
+        if (!confirm(`Approve bank account for ${hotelName || 'this property'}? An automated confirmation email will be sent to the partner.`)) return;
+        setBankActionId(hotelId);
+        try {
+            const res = await adminApi.approveBankRequest(hotelId);
+            if (res.success) {
+                setBankToast({ show: true, msg: "Bank account approved & confirmation email sent to partner!", type: "success" });
+                fetchBankRequests();
+                setTimeout(() => setBankToast(prev => ({ ...prev, show: false })), 6000);
+            } else {
+                setBankToast({ show: true, msg: res.message || "Failed to approve bank details", type: "error" });
+            }
+        } catch (err: any) {
+            setBankToast({ show: true, msg: err.message || "Approval failed", type: "error" });
+        } finally {
+            setBankActionId(null);
+        }
+    };
+
+    const handleRejectBank = async (hotelId: number, hotelName?: string) => {
+        const reason = prompt(`Enter reason for declining bank details of ${hotelName || 'this hotel'} (e.g. IFSC code mismatch):`, "IFSC code or Account number mismatch");
+        if (reason === null) return;
+        setBankActionId(hotelId);
+        try {
+            const res = await adminApi.rejectBankRequest(hotelId, reason);
+            if (res.success) {
+                setBankToast({ show: true, msg: "Bank details rejected.", type: "success" });
+                fetchBankRequests();
+                setTimeout(() => setBankToast(prev => ({ ...prev, show: false })), 5000);
+            } else {
+                setBankToast({ show: true, msg: res.message || "Failed to reject bank details", type: "error" });
+            }
+        } catch (err: any) {
+            setBankToast({ show: true, msg: err.message || "Rejection failed", type: "error" });
+        } finally {
+            setBankActionId(null);
         }
     };
 
@@ -702,145 +767,404 @@ export default function SuperAdminDashboard() {
             )}
 
             {activeTab === "requests" && (
-                <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs overflow-hidden">
-                    <div className="px-5 py-3.5 border-b border-slate-200/80 flex items-center justify-between">
-                        <div>
-                            <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Property Requests</h3>
-                            <p className="text-[11px] text-slate-500 mt-0.5">Review and approve new hotel partners</p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            {selectedIds.length > 0 && (
-                                <div className="flex items-center gap-2 pr-3 border-r border-slate-200">
-                                    <span className="text-xs font-medium text-slate-900">{selectedIds.length} Selected</span>
-                                    <button
-                                        onClick={() => setBulkModal({ show: true, type: 'approve' })}
-                                        className="px-2.5 py-1 bg-white text-black text-xs font-medium rounded-md hover:bg-neutral-200 transition-colors"
-                                    >
-                                        Bulk Approve
-                                    </button>
-                                    <button
-                                        onClick={() => setBulkModal({ show: true, type: 'decline' })}
-                                        className="px-2.5 py-1 bg-red-500/10 text-red-400 text-xs font-medium rounded-md hover:bg-red-500/20 transition-colors"
-                                    >
-                                        Bulk Decline
-                                    </button>
-                                </div>
-                            )}
-                            <span className="px-2 py-0.5 bg-amber-500/10 text-amber-400 text-xs font-medium rounded-md">
-                                {partnerRequests.filter(r => r.status === 'pending').length} Pending
-                            </span>
-                        </div>
-                    </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead className="bg-slate-50/80 border-b border-slate-200/80">
-                                <tr>
-                                    <th className="px-4 py-3 w-10">
-                                        <input
-                                            type="checkbox"
-                                            className="w-4 h-4 rounded border-slate-300 border-slate-300 text-slate-900 focus:ring-0 cursor-pointer"
-                                            checked={selectedIds.length === partnerRequests.filter(r => r.status === 'pending').length && selectedIds.length > 0}
-                                            onChange={handleSelectAll}
-                                        />
-                                    </th>
-                                    <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Hotel Info</th>
-                                    <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Owner Details</th>
-                                    <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Location</th>
-                                    <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Status</th>
-                                    <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                                {smartFilter(partnerRequests, searchQuery, ['hotelName', 'userName', 'userEmail', 'city', 'hotelUsername', 'address'])
-                                    .map((req) => (
-                                        <tr key={req.id} className={cn(
-                                            "hover:bg-slate-50/80 transition-colors",
-                                            selectedIds.includes(req.id) ? "bg-slate-100/60" : ""
-                                        )}>
-                                            <td className="px-4 py-3">
-                                                {req.status === 'pending' && (
-                                                    <input
-                                                        type="checkbox"
-                                                        className="w-4 h-4 rounded border-slate-300 border-slate-300 text-slate-900 focus:ring-0 cursor-pointer"
-                                                        checked={selectedIds.includes(req.id)}
-                                                        onChange={() => toggleSelect(req.id)}
-                                                    />
-                                                )}
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 bg-slate-50 flex items-center justify-center border border-slate-200 rounded-lg shrink-0">
-                                                        <Hotel className="w-4 h-4 text-slate-500" />
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-xs font-medium text-slate-900">{req.hotelName}</p>
-                                                        <p className="text-[11px] text-slate-400">@{req.hotelUsername}</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <div>
-                                                    <p className="text-xs font-medium text-slate-800">{req.userName}</p>
-                                                    <p className="text-[11px] text-slate-400">{req.userEmail}</p>
-                                                    <p className="text-[11px] text-slate-400">{req.userPhone}</p>
-                                                </div>
-                                            </td>
-                                            <td className="px-4 py-3 text-xs text-slate-500">
-                                                {req.city}, {req.address}
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <span className={cn(
-                                                    "px-2 py-0.5 text-[11px] font-medium rounded-md",
-                                                    req.status === 'pending' ? "bg-amber-500/10 text-amber-400" : "bg-emerald-500/10 text-emerald-400"
-                                                )}>
-                                                    {req.status}
-                                                </span>
-                                            </td>
-                                            <td className="px-4 py-3 text-right">
-                                                <div className="flex justify-end gap-2">
-                                                    <button
-                                                        onClick={() => setRequestDetailModal({ show: true, request: req })}
-                                                        className="p-1.5 bg-slate-50 text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors rounded-md border border-slate-200"
-                                                        title="View Details"
-                                                    >
-                                                        <Eye className="w-3.5 h-3.5" />
-                                                    </button>
-
-                                                    {req.status === 'pending' && (
-                                                        <>
-                                                            <button
-                                                                onClick={() => handleApproveRequest(req.id)}
-                                                                disabled={actionLoading === req.id}
-                                                                className="px-3 py-1 bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium rounded-md transition-colors disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
-                                                            >
-                                                                {actionLoading === req.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
-                                                                Approve
-                                                            </button>
-
-                                                            <button
-                                                                onClick={() => handleDeclineRequest(req.id)}
-                                                                disabled={actionLoading === req.id}
-                                                                className="px-3 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-medium rounded-md transition-colors disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
-                                                            >
-                                                                {actionLoading === req.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <XCircle className="w-3 h-3" />}
-                                                                Decline
-                                                            </button>
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                {partnerRequests.length === 0 && (
-                                    <tr>
-                                        <td colSpan={6} className="py-16 text-center">
-                                            <p className="text-xs text-slate-400 font-medium">No requests found</p>
-                                        </td>
-                                    </tr>
+                <div className="space-y-5">
+                    {/* Sub-tab Navigation */}
+                    <div className="flex items-center justify-between border-b border-slate-200/80 pb-3">
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setRequestSubTab('properties')}
+                                className={cn(
+                                    "px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer",
+                                    requestSubTab === 'properties'
+                                        ? "bg-slate-900 text-white shadow-xs"
+                                        : "bg-slate-100 text-slate-600 hover:bg-slate-200/80"
                                 )}
-                            </tbody>
-                        </table>
+                            >
+                                <Hotel className="w-4 h-4" />
+                                <span>Property Signups</span>
+                                <span className={cn(
+                                    "px-2 py-0.5 rounded-full text-[10px] font-bold",
+                                    requestSubTab === 'properties' ? "bg-white/20 text-white" : "bg-slate-200 text-slate-700"
+                                )}>
+                                    {partnerRequests.filter(r => r.status === 'pending').length}
+                                </span>
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    setRequestSubTab('bank');
+                                    fetchBankRequests();
+                                }}
+                                className={cn(
+                                    "px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer",
+                                    requestSubTab === 'bank'
+                                        ? "bg-slate-900 text-white shadow-xs"
+                                        : "bg-slate-100 text-slate-600 hover:bg-slate-200/80"
+                                )}
+                            >
+                                <CreditCard className="w-4 h-4" />
+                                <span>Bank Account Approvals</span>
+                                <span className={cn(
+                                    "px-2 py-0.5 rounded-full text-[10px] font-bold",
+                                    bankRequests.filter(b => b.status === 'pending').length > 0 
+                                        ? "bg-amber-400 text-slate-950 font-black animate-pulse" 
+                                        : (requestSubTab === 'bank' ? "bg-white/20 text-white" : "bg-slate-200 text-slate-700")
+                                )}>
+                                    {bankRequests.filter(b => b.status === 'pending').length}
+                                </span>
+                            </button>
+                        </div>
+
+                        {requestSubTab === 'bank' && (
+                            <button
+                                onClick={fetchBankRequests}
+                                disabled={loadingBankRequests}
+                                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100 transition-colors flex items-center gap-1.5 cursor-pointer"
+                            >
+                                <RefreshCw className={cn("w-3.5 h-3.5", loadingBankRequests && "animate-spin")} />
+                                <span>Refresh</span>
+                            </button>
+                        )}
                     </div>
+
+                    {/* Bank Action Toast Notification */}
+                    {bankToast.show && (
+                        <div className={cn(
+                            "p-4 rounded-xl text-xs font-semibold flex items-center gap-3 animate-in fade-in shadow-xs",
+                            bankToast.type === 'success' 
+                                ? "bg-emerald-50 border border-emerald-200 text-emerald-800" 
+                                : "bg-rose-50 border border-rose-200 text-rose-800"
+                        )}>
+                            {bankToast.type === 'success' ? <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" /> : <XCircle className="w-4 h-4 text-rose-600 shrink-0 text-rose-600" />}
+                            <span>{bankToast.msg}</span>
+                        </div>
+                    )}
+
+                    {/* 1. Property Signups Table */}
+                    {requestSubTab === 'properties' && (
+                        <div className="bg-white border border-slate-200/90 rounded-2xl shadow-xs overflow-hidden">
+                            <div className="px-5 py-3.5 border-b border-slate-200/80 flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Property Requests</h3>
+                                    <p className="text-[11px] text-slate-500 mt-0.5">Review and approve new hotel partners</p>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    {selectedIds.length > 0 && (
+                                        <div className="flex items-center gap-2 pr-3 border-r border-slate-200">
+                                            <span className="text-xs font-medium text-slate-900">{selectedIds.length} Selected</span>
+                                            <button
+                                                onClick={() => setBulkModal({ show: true, type: 'approve' })}
+                                                className="px-2.5 py-1 bg-white text-black text-xs font-medium rounded-md hover:bg-neutral-200 transition-colors"
+                                            >
+                                                Bulk Approve
+                                            </button>
+                                            <button
+                                                onClick={() => setBulkModal({ show: true, type: 'decline' })}
+                                                className="px-2.5 py-1 bg-red-500/10 text-red-400 text-xs font-medium rounded-md hover:bg-red-500/20 transition-colors"
+                                            >
+                                                Bulk Decline
+                                            </button>
+                                        </div>
+                                    )}
+                                    <span className="px-2 py-0.5 bg-amber-500/10 text-amber-600 text-xs font-medium rounded-md">
+                                        {partnerRequests.filter(r => r.status === 'pending').length} Pending
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left">
+                                    <thead className="bg-slate-50/80 border-b border-slate-200/80">
+                                        <tr>
+                                            <th className="px-4 py-3 w-10">
+                                                <input
+                                                    type="checkbox"
+                                                    className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-0 cursor-pointer"
+                                                    checked={selectedIds.length === partnerRequests.filter(r => r.status === 'pending').length && selectedIds.length > 0}
+                                                    onChange={handleSelectAll}
+                                                />
+                                            </th>
+                                            <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Hotel Info</th>
+                                            <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Owner Details</th>
+                                            <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Location</th>
+                                            <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Status</th>
+                                            <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100">
+                                        {smartFilter(partnerRequests, searchQuery, ['hotelName', 'userName', 'userEmail', 'city', 'hotelUsername', 'address'])
+                                            .map((req) => (
+                                                <tr key={req.id} className={cn(
+                                                    "hover:bg-slate-50/80 transition-colors",
+                                                    selectedIds.includes(req.id) ? "bg-slate-100/60" : ""
+                                                )}>
+                                                    <td className="px-4 py-3">
+                                                        {req.status === 'pending' && (
+                                                            <input
+                                                                type="checkbox"
+                                                                className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-0 cursor-pointer"
+                                                                checked={selectedIds.includes(req.id)}
+                                                                onChange={() => toggleSelect(req.id)}
+                                                            />
+                                                        )}
+                                                    </td>
+                                                    <td className="px-4 py-3">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-8 h-8 bg-slate-50 flex items-center justify-center border border-slate-200 rounded-lg shrink-0">
+                                                                <Hotel className="w-4 h-4 text-slate-500" />
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-xs font-medium text-slate-900">{req.hotelName}</p>
+                                                                <p className="text-[11px] text-slate-400">@{req.hotelUsername}</p>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-3">
+                                                        <div>
+                                                            <p className="text-xs font-medium text-slate-800">{req.userName}</p>
+                                                            <p className="text-[11px] text-slate-400">{req.userEmail}</p>
+                                                            <p className="text-[11px] text-slate-400">{req.userPhone}</p>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-3 text-xs text-slate-500">
+                                                        {req.city}, {req.address}
+                                                    </td>
+                                                    <td className="px-4 py-3">
+                                                        <span className={cn(
+                                                            "px-2 py-0.5 text-[11px] font-medium rounded-md",
+                                                            req.status === 'pending' ? "bg-amber-500/10 text-amber-600" : "bg-emerald-500/10 text-emerald-600"
+                                                        )}>
+                                                            {req.status}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-4 py-3 text-right">
+                                                        <div className="flex justify-end gap-2">
+                                                            <button
+                                                                onClick={() => setRequestDetailModal({ show: true, request: req })}
+                                                                className="p-1.5 bg-slate-50 text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors rounded-md border border-slate-200"
+                                                                title="View Details"
+                                                            >
+                                                                <Eye className="w-3.5 h-3.5" />
+                                                            </button>
+
+                                                            {req.status === 'pending' && (
+                                                                <>
+                                                                    <button
+                                                                        onClick={() => handleApproveRequest(req.id)}
+                                                                        disabled={actionLoading === req.id}
+                                                                        className="px-3 py-1 bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium rounded-md transition-colors disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+                                                                    >
+                                                                        {actionLoading === req.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
+                                                                        Approve
+                                                                    </button>
+
+                                                                    <button
+                                                                        onClick={() => handleDeclineRequest(req.id)}
+                                                                        disabled={actionLoading === req.id}
+                                                                        className="px-3 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-xs font-medium rounded-md transition-colors disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+                                                                    >
+                                                                        {actionLoading === req.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <XCircle className="w-3 h-3" />}
+                                                                        Decline
+                                                                    </button>
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        {partnerRequests.length === 0 && (
+                                            <tr>
+                                                <td colSpan={6} className="py-16 text-center">
+                                                    <p className="text-xs text-slate-400 font-medium">No requests found</p>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 2. Bank Account Approvals Table */}
+                    {requestSubTab === 'bank' && (
+                        <div className="bg-white border border-slate-200/90 rounded-2xl shadow-xs overflow-hidden">
+                            <div className="px-5 py-4 border-b border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <div>
+                                    <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                                        <CreditCard className="w-4 h-4 text-blue-600" />
+                                        Partner Bank Account Approvals
+                                    </h3>
+                                    <p className="text-[11px] text-slate-500 mt-0.5">
+                                        Approving an account activates weekly automated payouts and dispatches confirmation email to partner.
+                                    </p>
+                                </div>
+                                <span className={cn(
+                                    "px-2.5 py-1 text-xs font-bold rounded-lg self-start sm:self-auto",
+                                    bankRequests.filter(b => b.status === 'pending').length > 0 
+                                        ? "bg-amber-50 text-amber-700 border border-amber-200" 
+                                        : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                )}>
+                                    {bankRequests.filter(b => b.status === 'pending').length} Pending Approvals
+                                </span>
+                            </div>
+
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left">
+                                    <thead className="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                                        <tr>
+                                            <th className="px-4 py-3">Property</th>
+                                            <th className="px-4 py-3">Account Holder</th>
+                                            <th className="px-4 py-3">Bank & Account No.</th>
+                                            <th className="px-4 py-3">IFSC & UPI</th>
+                                            <th className="px-4 py-3">Status</th>
+                                            <th className="px-4 py-3 text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100 text-xs">
+                                        {bankRequests.map((bReq) => {
+                                            const isPending = bReq.status === 'pending';
+                                            const isApproved = bReq.status === 'approved';
+                                            const isRejected = bReq.status === 'rejected';
+                                            const isRevealed = revealedBankId === bReq.hotelId;
+                                            const isActionLoading = bankActionId === bReq.hotelId;
+
+                                            return (
+                                                <tr key={bReq.hotelId} className="hover:bg-slate-50/80 transition-colors">
+                                                    <td className="px-4 py-3.5">
+                                                        <div className="flex items-center gap-2.5">
+                                                            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100">
+                                                                <Hotel className="w-4 h-4" />
+                                                            </div>
+                                                            <div>
+                                                                <p className="font-bold text-slate-900">{bReq.hotelName}</p>
+                                                                <p className="text-[11px] text-slate-400">ID #{bReq.hotelId} • {bReq.hotelCity || '—'}</p>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+
+                                                    <td className="px-4 py-3.5">
+                                                        <div>
+                                                            <p className="font-bold text-slate-800">{bReq.accountHolderName}</p>
+                                                            <p className="text-[11px] text-slate-400">{bReq.ownerEmail}</p>
+                                                        </div>
+                                                    </td>
+
+                                                    <td className="px-4 py-3.5">
+                                                        <div>
+                                                            <p className="font-semibold text-slate-900">{bReq.bankName}</p>
+                                                            <div className="flex items-center gap-1.5 mt-0.5">
+                                                                <span className="font-mono text-slate-600 font-medium">
+                                                                    {isRevealed ? bReq.accountNumber : (bReq.maskedAccountNumber || bReq.accountNumber)}
+                                                                </span>
+                                                                <button
+                                                                    onClick={() => setRevealedBankId(isRevealed ? null : bReq.hotelId)}
+                                                                    className="text-slate-400 hover:text-slate-600 cursor-pointer"
+                                                                    title={isRevealed ? "Hide full number" : "Show full number"}
+                                                                >
+                                                                    {isRevealed ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                                                                </button>
+                                                                <span className="text-[10px] text-slate-400 font-bold uppercase ml-1">
+                                                                    ({bReq.accountType || 'Current'})
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+
+                                                    <td className="px-4 py-3.5">
+                                                        <div>
+                                                            <p className="font-mono font-bold text-slate-800">{bReq.ifscCode}</p>
+                                                            {bReq.upiId && (
+                                                                <p className="text-[11px] text-emerald-600 font-medium mt-0.5">UPI: {bReq.upiId}</p>
+                                                            )}
+                                                        </div>
+                                                    </td>
+
+                                                    <td className="px-4 py-3.5">
+                                                        {isPending && (
+                                                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                                                                <Clock className="w-3 h-3 animate-pulse text-amber-600" />
+                                                                Pending Approval
+                                                            </span>
+                                                        )}
+                                                        {isApproved && (
+                                                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                                                Approved & Active
+                                                            </span>
+                                                        )}
+                                                        {isRejected && (
+                                                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                                                                <XCircle className="w-3 h-3 text-rose-600" />
+                                                                Declined
+                                                            </span>
+                                                        )}
+                                                    </td>
+
+                                                    <td className="px-4 py-3.5 text-right">
+                                                        <div className="flex items-center justify-end gap-2">
+                                                            {isPending && (
+                                                                <>
+                                                                    <button
+                                                                        onClick={() => handleApproveBank(bReq.hotelId, bReq.hotelName)}
+                                                                        disabled={isActionLoading}
+                                                                        className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                                                                        title="Approve Bank Details & Send Activation Mail"
+                                                                    >
+                                                                        {isActionLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
+                                                                        <span>Approve & Send Mail</span>
+                                                                    </button>
+
+                                                                    <button
+                                                                        onClick={() => handleRejectBank(bReq.hotelId, bReq.hotelName)}
+                                                                        disabled={isActionLoading}
+                                                                        className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                                                                    >
+                                                                        <XCircle className="w-3.5 h-3.5" />
+                                                                        <span>Decline</span>
+                                                                    </button>
+                                                                </>
+                                                            )}
+
+                                                            {isApproved && (
+                                                                <button
+                                                                    onClick={() => handleApproveBank(bReq.hotelId, bReq.hotelName)}
+                                                                    disabled={isActionLoading}
+                                                                    className="px-2.5 py-1 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 rounded-lg text-[11px] font-medium transition-all flex items-center gap-1 cursor-pointer"
+                                                                    title="Re-send confirmation email to partner"
+                                                                >
+                                                                    {isActionLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Mail className="w-3 h-3" />}
+                                                                    <span>Re-send Mail</span>
+                                                                </button>
+                                                            )}
+
+                                                            {isRejected && (
+                                                                <button
+                                                                    onClick={() => handleApproveBank(bReq.hotelId, bReq.hotelName)}
+                                                                    disabled={isActionLoading}
+                                                                    className="px-2.5 py-1 bg-slate-900 text-white rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 cursor-pointer"
+                                                                >
+                                                                    <span>Re-approve</span>
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+
+                                        {bankRequests.length === 0 && (
+                                            <tr>
+                                                <td colSpan={6} className="py-16 text-center text-slate-400">
+                                                    <CreditCard className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                                                    <p className="text-xs font-semibold text-slate-700">No bank approval requests found</p>
+                                                    <p className="text-[11px] text-slate-400 mt-0.5">When partners submit their bank details for payouts, they will appear here.</p>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 

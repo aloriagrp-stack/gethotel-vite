@@ -24,6 +24,8 @@ import {
     ShieldCheck
 } from "lucide-react";
 import { bookingApi, paymentApi } from "@/lib/api";
+import GuestHotelChatModal from "@/components/chat/GuestHotelChatModal";
+import { MessageSquare } from "lucide-react";
 import { formatPrice, formatDate, cn, safeParse, getHotelUrl } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -32,6 +34,7 @@ export default function MyBookingsPage() {
     const [bookings, setBookings] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [chatTarget, setChatTarget] = useState<any>(null);
 
     useEffect(() => {
         const fetchBookings = async () => {
@@ -617,13 +620,18 @@ export default function MyBookingsPage() {
                                                         </Link>
                                                         <button
                                                             onClick={() => {
-                                                                const phone = booking.hotel?.phone || "919000000000";
-                                                                const ref = `#GH-${Number(booking.id) + 10000}`;
-                                                                window.open(`https://wa.me/${phone}?text=Hi, I have a booking (${ref}) at ${booking.hotel?.name}.`, '_blank');
+                                                                setChatTarget({
+                                                                    hotelId: booking.hotel?.id,
+                                                                    hotelName: booking.hotel?.name || "Hotel Front Desk",
+                                                                    thumbnail: safeParse(booking.room?.images)?.[0] || booking.hotel?.thumbnail,
+                                                                    city: booking.hotel?.city,
+                                                                    bookingRef: `GH-${Number(booking.id) + 10000}`
+                                                                });
                                                             }}
-                                                            className="px-5 sm:px-8 py-3.5 sm:py-4 bg-white border border-slate-200 text-slate-900 rounded-xl sm:rounded-[20px] font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center justify-center gap-2 shadow-sm"
+                                                            className="px-5 sm:px-8 py-3.5 sm:py-4 bg-white border border-slate-300 hover:border-slate-800 text-slate-900 rounded-xl sm:rounded-[20px] font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer"
                                                         >
-                                                            Contact Hotel
+                                                            <MessageSquare className="w-4 h-4 text-blue-600" />
+                                                            <span>Chat with Hotel</span>
                                                         </button>
                                                     </div>
 
@@ -675,6 +683,17 @@ export default function MyBookingsPage() {
                     </div>
                 )}
             </div>
+
+            {/* In-app Direct Hotel Chat Modal */}
+            <GuestHotelChatModal
+                isOpen={Boolean(chatTarget)}
+                onClose={() => setChatTarget(null)}
+                hotelId={chatTarget?.hotelId}
+                hotelName={chatTarget?.hotelName || "Hotel"}
+                hotelThumbnail={chatTarget?.thumbnail}
+                hotelCity={chatTarget?.city}
+                bookingReference={chatTarget?.bookingRef}
+            />
         </div>
     );
 }
