@@ -901,6 +901,22 @@ app.listen(PORT, () => {
         const prisma = require('./config/db');
         const { generateSitemap } = require('./utils/sitemap');
         console.log('[server] Triggering sitemap regeneration on startup...');
+        // Ensure message table exists for guest-hotel chat
+        prisma.$executeRawUnsafe(`
+            CREATE TABLE IF NOT EXISTS \`message\` (
+                \`id\` INT NOT NULL AUTO_INCREMENT,
+                \`userId\` INT NOT NULL,
+                \`hotelId\` INT NOT NULL,
+                \`content\` TEXT NOT NULL,
+                \`sender\` VARCHAR(191) NOT NULL DEFAULT 'user',
+                \`isRead\` BOOLEAN NOT NULL DEFAULT false,
+                \`createdAt\` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+                PRIMARY KEY (\`id\`),
+                INDEX \`message_hotelId_idx\` (\`hotelId\`),
+                INDEX \`message_userId_idx\` (\`userId\`)
+            ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+        `).catch(() => {});
+
         generateSitemap(prisma).catch(err => console.error('[server] Startup sitemap regeneration failed:', err));
     } catch (err) {
         console.error('[server] Failed to require sitemap module at startup:', err);
