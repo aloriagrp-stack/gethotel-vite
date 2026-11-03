@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { 
     X, Send, Loader2, MessageSquare, 
-    Hotel, ShieldCheck, CheckCheck, Clock
+    Hotel, ShieldCheck, CheckCheck, Clock, ExternalLink
 } from "lucide-react";
 import { messageApi } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
@@ -134,12 +134,21 @@ export default function GuestHotelChatModal({
                             </div>
                         </div>
 
-                        <button 
-                            onClick={onClose}
-                            className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer"
-                        >
-                            <X className="w-5 h-5" />
-                        </button>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                            <a 
+                                href={`/chat?hotelId=${hotelId}${bookingReference ? `&bookingRef=${bookingReference}` : ''}`}
+                                className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+                                title="Open Full Screen Chat"
+                            >
+                                <ExternalLink className="w-4 h-4" />
+                            </a>
+                            <button 
+                                onClick={onClose}
+                                className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
                     </div>
 
                     {/* Booking Banner (if opened from a booking) */}
@@ -156,7 +165,7 @@ export default function GuestHotelChatModal({
                     )}
 
                     {/* Chat Messages Body */}
-                    <div className="flex-1 p-4 sm:p-5 overflow-y-auto bg-slate-50/60 space-y-3.5">
+                    <div className="flex-1 p-4 sm:p-5 overflow-y-auto bg-slate-50/60 space-y-3.5 flex flex-col">
                         {loading && messages.length === 0 ? (
                             <div className="h-full flex flex-col items-center justify-center text-slate-400 gap-2">
                                 <Loader2 className="w-7 h-7 animate-spin text-slate-600" />
@@ -194,7 +203,7 @@ export default function GuestHotelChatModal({
                                         key={msg.id}
                                         className={cn(
                                             "flex flex-col max-w-[82%]",
-                                            isUser ? "ml-auto items-end" : "items-start"
+                                            isUser ? "ml-auto items-end self-end" : "mr-auto items-start self-start"
                                         )}
                                     >
                                         <div 

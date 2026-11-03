@@ -12,6 +12,7 @@ import CookieConsent from "@/components/common/CookieConsent";
 import FloatingCartPill from "@/components/common/FloatingCartPill";
 import AICopilot from "@/components/home/AICopilot";
 import { paymentApi } from "@/lib/api";
+import { cn } from "@/lib/utils";
 
 export default function ConditionalLayout({
     children,
@@ -35,13 +36,24 @@ export default function ConditionalLayout({
                            cleanPathname.startsWith("/list-property/register") || 
                            cleanPathname.startsWith("/partner") || 
                            cleanPathname.startsWith("/partner-select") ||
+                           cleanPathname.startsWith("/chat") ||
                            pathname.includes("/admin") ||
                            pathname.includes("/partner-dashboard") ||
                            pathname.includes("controlhub") ||
                            pathname.includes("superadmin") ||
                            pathname.includes("/list-property/register") ||
-                           pathname.includes("/partner-select");
-    const isNoFooterPage = cleanPathname === "/login" || cleanPathname === "/register" || cleanPathname.startsWith("/list-property/register") || pathname.includes("/list-property/register");
+                           pathname.includes("/partner-select") ||
+                           pathname.includes("/chat");
+    const normalizedPath = cleanPathname.replace(/\/+$/, "") || "/";
+    const isNoFooterPage = 
+        normalizedPath === "/login" || 
+        normalizedPath === "/register" || 
+        cleanPathname.startsWith("/login") || 
+        cleanPathname.startsWith("/register") || 
+        pathname.includes("/login") || 
+        pathname.includes("/register") || 
+        cleanPathname.startsWith("/list-property/register") || 
+        pathname.includes("/list-property/register");
 
     useEffect(() => {
         const runAutoRecovery = async () => {
@@ -95,6 +107,14 @@ export default function ConditionalLayout({
         runAutoRecovery();
     }, [pathname, navigate]);
 
+    const isLoginPage = 
+        normalizedPath === "/login" || 
+        normalizedPath === "/register" || 
+        cleanPathname.startsWith("/login") || 
+        cleanPathname.startsWith("/register") || 
+        pathname.includes("/login") || 
+        pathname.includes("/register");
+
     if (isNoLayoutPage) {
         return <main className="relative z-10">{children}</main>;
     }
@@ -102,14 +122,14 @@ export default function ConditionalLayout({
     return (
         <>
             <Navbar />
-            <div className="relative min-h-screen">
-                <BlueWavesBackground />
-                <main className="relative">{children}</main>
+            <div className={cn("relative", isLoginPage ? "h-[calc(100dvh-64px)] overflow-hidden" : "min-h-screen")}>
+                {!isLoginPage && <BlueWavesBackground />}
+                <main className={cn("relative", isLoginPage && "h-full overflow-hidden")}>{children}</main>
             </div>
             {!isNoFooterPage && <Footer />}
             <CookieConsent />
-            <FloatingCartPill />
-            <AICopilot />
+            {!isLoginPage && <FloatingCartPill />}
+            {!isLoginPage && <AICopilot />}
         </>
     );
 }

@@ -198,23 +198,23 @@ function LoginContent() {
     }
 
     return (
-        <div className="min-h-screen bg-sky-50/50 flex flex-col md:flex-row overflow-hidden relative">
+        <div className="h-[calc(100dvh-64px)] max-h-[calc(100dvh-64px)] w-full bg-white flex flex-col md:flex-row overflow-hidden relative">
             <SEOHead title="Login or Sign Up | GetHotelStays" description="Sign in to GetHotelStays to manage bookings, save favorites & get exclusive deals on hotels across India." noIndex />
 
 
             {/* Left Panel: Full Screen Image with Focal Point */}
-            <div className="hidden md:block w-1/2 h-screen relative bg-slate-50">
+            <div className="hidden md:block w-1/2 h-full relative bg-slate-50 overflow-hidden shrink-0">
                 <Image 
-                    src="/loginpagephoto.jpg"
+                    src="/login-page-desktop.png"
                     alt="Travel Illustration"
                     fill
-                    className="object-cover object-left"
+                    className="object-cover object-center"
                     priority
                 />
             </div>
 
             {/* Right Panel: Form Area */}
-            <div className="flex-1 min-h-[calc(100vh-80px)] md:h-screen flex items-start md:items-center justify-center p-6 md:p-8 pt-8 md:pt-8 bg-transparent overflow-hidden">
+            <div className="flex-1 h-full flex items-center justify-center p-6 md:p-8 bg-white overflow-hidden">
                 <motion.div 
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -232,7 +232,7 @@ function LoginContent() {
                                 {isRegister ? t('create') : "Login"}
                             </motion.h1>
                         </AnimatePresence>
-                        <p className="text-slate-500 text-[10px] font-medium uppercase tracking-widest">
+                        <p className="text-slate-600 text-[11px] font-bold uppercase tracking-wider mt-0.5">
                             {isRegister 
                                 ? t('join_desc') 
                                 : "Access your traveler profile"}
@@ -255,7 +255,7 @@ function LoginContent() {
                                 <p className="text-[10px] font-bold text-slate-500 leading-relaxed">{otpSuccess}</p>
                             </div>
                             <div className="space-y-0.5">
-                                <label className="text-[9px] font-black text-slate-400 ml-1 uppercase tracking-widest">Enter OTP</label>
+                                <label className="text-xs font-bold text-slate-800 ml-1 uppercase tracking-wider">Enter OTP</label>
                                 <input
                                     type="text"
                                     required
@@ -289,47 +289,47 @@ function LoginContent() {
                                 animate={{ opacity: 1, height: "auto" }}
                                 className="space-y-0.5"
                             >
-                                <label className="text-[9px] font-black text-slate-400 ml-1 uppercase tracking-widest">{t('full_name')}</label>
+                                <label className="text-xs font-bold text-slate-800 ml-1 uppercase tracking-wider">{t('full_name')}</label>
                                 <div className="relative">
-                                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-300" />
+                                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
                                     <input 
                                         type="text" 
                                         required
                                         placeholder="John Doe"
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
-                                        className="w-full bg-slate-50 border border-slate-100 rounded-xl pl-10 pr-4 py-2.5 text-[11px] font-bold text-slate-900 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
+                                        className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-10 pr-4 py-2.5 text-xs font-bold text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all outline-none"
                                     />
                                 </div>
                             </motion.div>
                         )}
 
                         <div className="space-y-0.5">
-                            <label className="text-[9px] font-black text-slate-400 ml-1 uppercase tracking-widest">{t('email')}</label>
+                            <label className="text-xs font-bold text-slate-800 ml-1 uppercase tracking-wider">{t('email')}</label>
                             <div className="relative">
-                                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-300" />
+                                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
                                 <input 
                                     type="email" 
                                     required
                                     placeholder="name@example.com"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full bg-slate-50 border border-slate-100 rounded-xl pl-10 pr-4 py-2.5 text-[11px] font-bold text-slate-900 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
+                                    className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-10 pr-4 py-2.5 text-xs font-bold text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all outline-none"
                                 />
                             </div>
                         </div>
 
                         <div className="space-y-0.5">
-                            <label className="text-[9px] font-black text-slate-400 ml-1 uppercase tracking-widest">{t('password')}</label>
+                            <label className="text-xs font-bold text-slate-800 ml-1 uppercase tracking-wider">{t('password')}</label>
                             <div className="relative">
-                                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-300" />
+                                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
                                 <input 
                                     type={showPassword ? "text" : "password"} 
                                     required
                                     placeholder="••••••••"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full bg-slate-50 border border-slate-100 rounded-xl pl-10 pr-4 py-2.5 text-[11px] font-bold text-slate-900 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none pr-12"
+                                    className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-10 pr-4 py-2.5 text-xs font-bold text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all outline-none pr-12"
                                 />
                                 <button 
                                     type="button"
@@ -344,7 +344,7 @@ function LoginContent() {
                         <button 
                             type="submit" 
                             disabled={loading}
-                            className="w-full py-3.5 bg-sky-500 text-white font-black rounded-xl shadow-lg shadow-sky-50 hover:bg-sky-600 hover:scale-[1.01] active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-[10px] uppercase tracking-widest mt-1"
+                            className="w-full py-3 bg-[#0369c5] hover:bg-[#0256a3] text-white font-extrabold rounded-xl shadow-md hover:scale-[1.01] active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-xs uppercase tracking-wider mt-2 cursor-pointer"
                         >
                             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : (
                                 <>{isRegister ? "Create Account" : "Sign In"}</>
@@ -359,8 +359,8 @@ function LoginContent() {
                         <div className="absolute inset-0 flex items-center">
                             <div className="w-full border-t border-slate-100"></div>
                         </div>
-                        <div className="relative flex justify-center text-[7px] font-black text-slate-300 uppercase tracking-[0.3em]">
-                            <span className="bg-white px-3">or continue with</span>
+                        <div className="relative flex justify-center text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                            <span className="bg-white px-3 text-slate-500 font-bold">OR CONTINUE WITH</span>
                         </div>
                     </div>
 
@@ -368,7 +368,7 @@ function LoginContent() {
                         type="button"
                         onClick={handleGoogleLogin}
                         disabled={loading}
-                        className="w-full py-3 border border-slate-100 rounded-xl flex items-center justify-center gap-3 hover:bg-slate-50 transition-all active:scale-[0.98] shadow-sm mb-6"
+                        className="w-full py-3 border border-slate-300 rounded-xl flex items-center justify-center gap-2.5 hover:bg-slate-50 transition-all active:scale-[0.98] shadow-xs mb-4 cursor-pointer"
                     >
                         <svg className="w-3.5 h-3.5" viewBox="0 0 24 24">
                             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -376,13 +376,13 @@ function LoginContent() {
                             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" />
                             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                         </svg>
-                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-700">Google</span>
+                        <span className="text-xs font-bold text-slate-800 tracking-wide">Continue with Google</span>
                     </button>
 
                     <div className="text-center">
                         <button
                             onClick={() => setIsRegister(!isRegister)}
-                            className="text-[9px] font-black text-slate-400 uppercase tracking-widest hover:text-indigo-600 transition-colors"
+                            className="text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
                         >
                             {isRegister
                                 ? <><span>Already have an account? </span><span className="text-indigo-600 underline">Sign in</span></>

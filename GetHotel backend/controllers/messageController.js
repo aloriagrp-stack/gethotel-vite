@@ -10,11 +10,13 @@ exports.sendMessage = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Hotel ID and message content are required.' });
         }
 
-        const isHotelStaff = req.user.role === 'hotel_admin' || req.user.role === 'super_admin';
-        const sender = isHotelStaff ? 'hotel' : 'user';
+        // A message is from 'hotel' ONLY when hotel staff is replying to a guest (targetUserId provided)
+        // In the guest chat (/chat), anyone sending messages is a 'user' (guest) inquiring with the property
+        const isReplyingAsHotel = (req.user.role === 'hotel_admin' || req.user.role === 'super_admin') && Boolean(targetUserId);
+        const sender = isReplyingAsHotel ? 'hotel' : 'user';
 
-        // If hotel staff sends message, it belongs to the target guest (targetUserId)
-        const guestUserId = (isHotelStaff && targetUserId) ? parseInt(targetUserId) : req.user.id;
+        // If hotel staff replies, targetUserId is the guest. Otherwise, req.user.id is the guest.
+        const guestUserId = isReplyingAsHotel ? parseInt(targetUserId) : req.user.id;
 
         const message = await prisma.message.create({
             data: {

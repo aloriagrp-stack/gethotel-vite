@@ -618,21 +618,13 @@ export default function MyBookingsPage() {
                                                         >
                                                             <Ticket className="w-4 h-4" /> View Receipt
                                                         </Link>
-                                                        <button
-                                                            onClick={() => {
-                                                                setChatTarget({
-                                                                    hotelId: booking.hotel?.id,
-                                                                    hotelName: booking.hotel?.name || "Hotel Front Desk",
-                                                                    thumbnail: safeParse(booking.room?.images)?.[0] || booking.hotel?.thumbnail,
-                                                                    city: booking.hotel?.city,
-                                                                    bookingRef: `GH-${Number(booking.id) + 10000}`
-                                                                });
-                                                            }}
+                                                        <Link
+                                                            to={`/chat?hotelId=${booking.hotel?.id}&bookingRef=GH-${Number(booking.id) + 10000}`}
                                                             className="px-5 sm:px-8 py-3.5 sm:py-4 bg-white border border-slate-300 hover:border-slate-800 text-slate-900 rounded-xl sm:rounded-[20px] font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer"
                                                         >
                                                             <MessageSquare className="w-4 h-4 text-blue-600" />
                                                             <span>Chat with Hotel</span>
-                                                        </button>
+                                                        </Link>
                                                     </div>
 
                                                     {activeTab === "upcoming" && (
