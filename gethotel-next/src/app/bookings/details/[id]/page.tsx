@@ -19,5 +19,6 @@ export default async function Page({ params }: { params?: Promise<{ id: string }
     const p = await Promise.resolve(params);
     resolvedId = p?.id || "";
   }
-  return <ClientBookingDetailsPage bookingId={resolvedId} />;
+  const passId = (resolvedId === "1" || resolvedId === "[id]") ? "" : resolvedId;
+  return <ClientBookingDetailsPage bookingId={passId} />;
 }

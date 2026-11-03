@@ -22,10 +22,23 @@ interface BookingDetailsPageProps {
 export default function BookingDetailsPage({ bookingId }: BookingDetailsPageProps = {}) {
     const navParams = useParams<{ id?: string }>();
     const location = useLocation();
-    let rawId = bookingId || navParams?.id;
-    if (!rawId && typeof window !== 'undefined') {
-        const match = (location?.pathname || window.location.pathname).match(/\/bookings?\/details\/([^\/\?]+)/);
-        if (match && match[1]) rawId = match[1];
+    
+    // In Next.js static HTML export, prerender params can bake '1' into the component.
+    // ALWAYS extract the true live booking ID from the browser URL first!
+    let rawId = "";
+    if (typeof window !== 'undefined') {
+        const path = location?.pathname || window.location.pathname || "";
+        const match = path.match(/\/bookings?\/details\/([^\/\?]+)/);
+        if (match && match[1] && match[1] !== '[id]') {
+            rawId = match[1];
+        }
+        if (!rawId) {
+            const search = new URLSearchParams(window.location.search);
+            rawId = search.get("id") || search.get("bookingId") || "";
+        }
+    }
+    if (!rawId) {
+        rawId = (bookingId && bookingId !== "1" && bookingId !== "[id]") ? bookingId : (navParams?.id && navParams.id !== "1" ? navParams.id : "");
     }
     const id = rawId || "";
     const router = useRouter();
@@ -289,18 +302,18 @@ export default function BookingDetailsPage({ bookingId }: BookingDetailsPageProp
         booking?.hotel?.name?.toLowerCase().includes('delhi to agra')
     );
 
-    const hotelName = booking?.hotel?.name || (isTour ? "DELHI TO AGRA HERITAGE ESCAPE" : "Cottage Yes Please");
-    const hotelCity = booking?.hotel?.city || (isTour ? "Delhi / Agra" : "New Delhi");
-    const hotelAddress = booking?.hotel?.address || (isTour ? "Pickup & Drop: Delhi NCR • Destination: Agra, Uttar Pradesh" : "1843, Laxmi Narain Street, Rajguru Marg, Chuna Mandi, Pahar Ganj");
+    const hotelName = booking?.hotel?.name || (isTour ? "DELHI TO AGRA HERITAGE ESCAPE" : "Hotel Reservation");
+    const hotelCity = booking?.hotel?.city || (isTour ? "Delhi / Agra" : "");
+    const hotelAddress = booking?.hotel?.address || (isTour ? "Pickup & Drop: Delhi NCR • Destination: Agra, Uttar Pradesh" : "");
     const hotelThumbnail = booking?.hotel?.thumbnail || (isTour ? "https://images.unsplash.com/photo-1564507592333-c60657eea523?w=800&auto=format&fit=crop&q=80" : "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&w=800&q=75");
-    const checkInDate = booking?.checkIn ? formatDate(booking.checkIn) : (isTour ? "29 Sep 2026" : "16 May 2026");
-    const checkOutDate = booking?.checkOut ? formatDate(booking.checkOut) : (isTour ? "29 Sep 2026" : "17 May 2026");
-    const totalPriceVal = booking?.totalPrice || (isTour ? 19998 : 2940);
-    const amountPaidVal = booking ? (booking.amountPaid ?? (isTour ? totalPriceVal : 0)) : (isTour ? totalPriceVal : Math.round(totalPriceVal * 0.12));
+    const checkInDate = booking?.checkIn ? formatDate(booking.checkIn) : "";
+    const checkOutDate = booking?.checkOut ? formatDate(booking.checkOut) : "";
+    const totalPriceVal = booking?.totalPrice || (isTour ? 19998 : 0);
+    const amountPaidVal = booking ? (booking.amountPaid ?? (isTour ? totalPriceVal : 0)) : 0;
     const payAtHotelVal = isTour ? 0 : Math.max(0, totalPriceVal - amountPaidVal);
     const paymentStatus = isTour ? 'paid' : (booking?.paymentStatus || (amountPaidVal === 0 ? 'pending' : (amountPaidVal >= totalPriceVal ? 'paid' : 'partial')));
-    const displayBookingId = isTour ? (booking?.id ? String(booking.id) : (id || "PKG-GHS-128459")) : (booking ? `#GH-${Number(booking.id) + 10000}` : `#GH-10011`);
-    const roomName = booking?.room?.name || (isTour ? "Tour Package (2 Travelers) • Private AC Cab & Heritage Sightseeing" : "Double Deluxe Room");
+    const displayBookingId = isTour ? (booking?.id ? String(booking.id) : (id || "PKG-GHS-128459")) : (booking ? `#GH-${Number(booking.id) + 10000}` : (id ? `#GH-${id}` : "#GH-Pending"));
+    const roomName = booking?.room?.name || (isTour ? "Tour Package (2 Travelers) • Private AC Cab & Heritage Sightseeing" : "Room Reservation");
     const status = isTour 
         ? ((booking?.status || "").toLowerCase() === 'cancelled' ? 'cancelled' : 'confirmed') 
         : (booking?.status || "confirmed");
