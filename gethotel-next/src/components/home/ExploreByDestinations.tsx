@@ -159,7 +159,7 @@ export default function ExploreByDestinations({
 
             {/* Destinations Cards: Full-width carousel hooked to container margin at rest, open on scroll */}
             <div 
-                className="w-full flex overflow-x-auto gap-4 sm:gap-5 pb-4 pt-1 px-4 sm:px-6 md:px-0 no-scrollbar snap-x snap-mandatory scroll-smooth"
+                className="w-full flex overflow-x-auto gap-4 sm:gap-5 pb-4 pt-1 px-4 sm:px-6 md:px-0 scroll-pl-4 sm:scroll-pl-6 md:scroll-pl-0 no-scrollbar snap-x snap-mandatory scroll-smooth"
                 style={{ WebkitOverflowScrolling: 'touch' }}
             >
                 {/* Desktop Hook Spacer: Holds first card aligned with header at rest, scrolls away freely */}
@@ -247,8 +247,8 @@ export default function ExploreByDestinations({
 
                 {/* Right Edge Spacer so last card has clean margin on full scroll */}
                 <div 
-                    className="shrink-0 hidden md:block pointer-events-none"
-                    style={{ width: 'max(2rem, calc((100vw - 80rem) / 2 + 2rem))' }}
+                    className="shrink-0 pointer-events-none"
+                    style={{ width: 'max(1rem, calc((100vw - 80rem) / 2 + 2rem))' }}
                 />
             </div>
         </section>
