@@ -8,6 +8,13 @@ Features: Auto-tracking, Clean Windows CLI layout, Auto-Fixing Overpriced & Unde
 
 import os
 import sys
+
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(CURRENT_DIR)
+for p in [CURRENT_DIR, PROJECT_ROOT]:
+    if p not in sys.path:
+        sys.path.insert(0, p)
+
 import json
 import subprocess
 from rich.console import Console
@@ -715,7 +722,10 @@ class GHSTerminalAgent:
                 self.deep_clone_hotel_prompt()
 
             elif opt == "7":
-                from agent.hotel_bulk_harvester import run_bulk_harvester
+                try:
+                    from hotel_bulk_harvester import run_bulk_harvester
+                except ImportError:
+                    from agent.hotel_bulk_harvester import run_bulk_harvester
                 run_bulk_harvester()
                 self._load_hotels(force_refresh=True)
 
@@ -733,7 +743,10 @@ class GHSTerminalAgent:
 
         max_photos = IntPrompt.ask("How many HD photos to download locally?", default=8)
 
-        from agent.hotel_deep_cloner import clone_hotel, save_to_mysql
+        try:
+            from hotel_deep_cloner import clone_hotel, save_to_mysql
+        except ImportError:
+            from agent.hotel_deep_cloner import clone_hotel, save_to_mysql
 
         with console.status("[bold cyan]Deep scraping listing & downloading high-res photos...[/bold cyan]", spinner="dots"):
             cloned = clone_hotel(url.strip(), max_photos=max_photos)
@@ -837,7 +850,10 @@ class GHSTerminalAgent:
             elif choice == "10":
                 self.deep_clone_hotel_prompt()
             elif choice == "11":
-                from agent.hotel_bulk_harvester import run_bulk_harvester
+                try:
+                    from hotel_bulk_harvester import run_bulk_harvester
+                except ImportError:
+                    from agent.hotel_bulk_harvester import run_bulk_harvester
                 run_bulk_harvester()
                 self._load_hotels(force_refresh=True)
             elif choice == "6":
@@ -855,13 +871,19 @@ if __name__ == "__main__":
     agent = GHSTerminalAgent()
     if len(sys.argv) > 1 and sys.argv[1].lower() == "bulk":
         count = int(sys.argv[2]) if len(sys.argv) > 2 and sys.argv[2].isdigit() else None
-        from agent.hotel_bulk_harvester import run_bulk_harvester
+        try:
+            from hotel_bulk_harvester import run_bulk_harvester
+        except ImportError:
+            from agent.hotel_bulk_harvester import run_bulk_harvester
         run_bulk_harvester(target_count=count)
         sys.exit(0)
 
     if len(sys.argv) > 1 and sys.argv[1].startswith("http"):
         url = sys.argv[1]
-        from agent.hotel_deep_cloner import clone_hotel, save_to_mysql
+        try:
+            from hotel_deep_cloner import clone_hotel, save_to_mysql
+        except ImportError:
+            from agent.hotel_deep_cloner import clone_hotel, save_to_mysql
         agent.display_banner()
         console.print(f"\n[bold cyan]📥 DIRECT HOTEL URL RECEIVED:[/bold cyan] {url}\n")
         with console.status("[bold cyan]Deep scraping listing & downloading high-res photos...[/bold cyan]", spinner="dots"):

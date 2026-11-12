@@ -23,6 +23,9 @@ console = Console()
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(CURRENT_DIR)
+for p in [CURRENT_DIR, PROJECT_ROOT]:
+    if p not in sys.path:
+        sys.path.insert(0, p)
 
 def normalize_ota_url(url: str) -> str:
     """Extracts base hotel path identifier for robust de-duplication."""
@@ -151,7 +154,10 @@ def run_bulk_harvester(target_count: int = None, default_photos: int = 6):
         return
 
     # Step 5: Start Sequential Harvesting
-    from agent.hotel_deep_cloner import clone_hotel, save_to_mysql
+    try:
+        from hotel_deep_cloner import clone_hotel, save_to_mysql
+    except ImportError:
+        from agent.hotel_deep_cloner import clone_hotel, save_to_mysql
 
     successful = []
     failed = []
