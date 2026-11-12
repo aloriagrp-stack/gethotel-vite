@@ -395,14 +395,14 @@ def save_to_mysql(hotel_data: dict) -> int | None:
             sql = """
                 INSERT INTO hotel (
                     name, city, address, description, starRating, 
-                    thumbnail, images, amenities, mainAmenities,
+                    pricePerNight, thumbnail, images, amenities, mainAmenities,
                     bookingUrl, bookingPrice, otaLastFetchedAt,
-                    listingType, userId, isActive, isApproved
+                    listingType, userId, isActive, createdAt, updatedAt
                 ) VALUES (
                     %s, %s, %s, %s, %s,
-                    %s, %s, %s, %s,
+                    %s, %s, %s, %s, %s,
                     %s, %s, NOW(),
-                    'directory', 2, 1, 1
+                    'directory', 2, 1, NOW(), NOW()
                 )
             """
             cur.execute(sql, (
@@ -411,6 +411,7 @@ def save_to_mysql(hotel_data: dict) -> int | None:
                 hotel_data["address"],
                 hotel_data["description"],
                 hotel_data["starRating"],
+                float(hotel_data.get("bookingPrice") or 0.0),
                 hotel_data["thumbnail"],
                 json.dumps(hotel_data["imagesList"]),
                 json.dumps(hotel_data["amenities"]),
