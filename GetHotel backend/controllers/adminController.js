@@ -351,7 +351,7 @@ exports.getAdminHotelDetail = async (req, res) => {
         const hotel = await prisma.hotel.findUnique({
             where: { id: hotelId },
             include: {
-                user: { select: { id: true, name: true, email: true, role: true, createdAt: true } },
+                user: { select: { id: true, name: true, email: true, role: true } },
                 room: true,
                 booking: {
                     include: {
@@ -2118,6 +2118,236 @@ exports.bulkDeletePromotions = async (req, res) => {
         res.json({ success: true, message: `Successfully removed promotion '${code}' from selected hotels.` });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Convert hotel listingType ('directory' <-> 'bookable')
+// @route   PUT /api/admin/hotels/:id/convert-type
+// @access  Super Admin
+exports.convertListingType = async (req, res) => {
+    try {
+        const hotelId = parseInt(req.params.id);
+        const {
+            listingType, name, city, address, contactPhone, contactEmail,
+            contactPerson, pricePerNight, bookingUrl, bookingPrice, mmtUrl, mmtPrice,
+            description, thumbnail, images, amenities, mainAmenities, starRating
+        } = req.body;
+        
+        const updatePayload = {};
+        if (listingType) updatePayload.listingType = listingType;
+        if (name) updatePayload.name = name;
+        if (city) updatePayload.city = city;
+        if (address) updatePayload.address = address;
+        if (contactPhone !== undefined) updatePayload.contactPhone = contactPhone;
+        if (contactEmail !== undefined) updatePayload.contactEmail = contactEmail;
+        if (contactPerson !== undefined) updatePayload.contactPerson = contactPerson;
+        if (pricePerNight !== undefined) updatePayload.pricePerNight = parseFloat(pricePerNight);
+        if (bookingUrl !== undefined) updatePayload.bookingUrl = bookingUrl;
+        if (bookingPrice !== undefined) updatePayload.bookingPrice = bookingPrice ? parseInt(bookingPrice) : null;
+        if (mmtUrl !== undefined) updatePayload.mmtUrl = mmtUrl;
+        if (mmtPrice !== undefined) updatePayload.mmtPrice = mmtPrice ? parseInt(mmtPrice) : null;
+        if (bookingPrice || mmtPrice) updatePayload.otaLastFetchedAt = new Date();
+        if (description !== undefined) updatePayload.description = description;
+        if (thumbnail !== undefined) updatePayload.thumbnail = thumbnail;
+        if (images !== undefined) updatePayload.images = typeof images === 'string' ? images : JSON.stringify(images);
+        if (amenities !== undefined) updatePayload.amenities = typeof amenities === 'string' ? amenities : JSON.stringify(amenities);
+        if (mainAmenities !== undefined) updatePayload.mainAmenities = typeof mainAmenities === 'string' ? mainAmenities : JSON.stringify(mainAmenities);
+        if (starRating !== undefined) updatePayload.starRating = parseInt(starRating) || 5;
+
+        const updated = await prisma.hotel.update({
+            where: { id: hotelId },
+            data: updatePayload
+        });
+
+        res.status(200).json({ success: true, message: `Hotel ${hotelId} updated successfully`, data: updated });
+    } catch (err) {
+        res.status(400).json({ success: false, message: err.message });
+    }
+};
+
+// @desc    Create a new directory hotel directly from Super Admin
+// @route   POST /api/admin/hotels/directory
+// @access  Super Admin
+exports.createDirectoryHotel = async (req, res) => {
+    try {
+        const { name, city, address, contactPhone, contactEmail, contactPerson, bookingUrl, bookingPrice, mmtUrl, mmtPrice, thumbnail } = req.body;
+        if (!name || !city) {
+            return res.status(400).json({ success: false, message: 'Hotel name and city are required' });
+        }
+
+        let adminUser = await prisma.user.findFirst({ where: { role: 'super_admin' } });
+        if (!adminUser) {
+            adminUser = await prisma.user.findFirst();
+        }
+
+        const fallbackThumb = thumbnail || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80';
+
+        const newHotel = await prisma.hotel.create({
+            data: {
+                name,
+                city,
+                address: address || city,
+                tagline: `${name} — Verified Hotel in ${city}`,
+                description: `Discover ${name} in ${city}. Verified property with direct contact and live OTA price comparison.`,
+                listingType: 'directory',
+                contactPhone: contactPhone || null,
+                contactEmail: contactEmail || null,
+                contactPerson: contactPerson || null,
+                bookingUrl: bookingUrl || null,
+                bookingPrice: bookingPrice ? parseInt(bookingPrice) : null,
+                mmtUrl: mmtUrl || null,
+                mmtPrice: mmtPrice ? parseInt(mmtPrice) : null,
+                otaLastFetchedAt: (bookingPrice || mmtPrice) ? new Date() : null,
+                thumbnail: fallbackThumb,
+                images: JSON.stringify([fallbackThumb]),
+                pricePerNight: bookingPrice ? parseInt(bookingPrice) : 2500,
+                userId: adminUser ? adminUser.id : 1,
+                isActive: true
+            }
+        });
+
+        res.status(201).json({ success: true, message: 'Directory hotel created successfully', data: newHotel });
+    } catch (err) {
+        res.status(400).json({ success: false, message: err.message });
+    }
+};
+
+// @desc    Get directory hotels ranked by lead calls and views
+// @route   GET /api/admin/directory/top-leads
+// @access  Super Admin
+exports.getDirectoryLeads = async (req, res) => {
+    try {
+        const directoryHotels = await prisma.hotel.findMany({
+            where: { listingType: 'directory' },
+            select: {
+                id: true,
+                name: true,
+                city: true,
+                address: true,
+                contactPhone: true,
+                contactEmail: true,
+                callClicks: true,
+                emailClicks: true,
+                viewCount: true,
+                createdAt: true,
+                updatedAt: true
+            },
+            orderBy: [
+                { callClicks: 'desc' },
+                { viewCount: 'desc' }
+            ]
+        });
+
+        res.status(200).json({ success: true, count: directoryHotels.length, data: directoryHotels });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// @desc    Upload local image file (Base64 -> WebP)
+// @route   POST /api/admin/upload-image
+// @access  Super Admin
+const { processBase64Image } = require('../middleware/imageUpload');
+exports.uploadAdminImage = async (req, res) => {
+    try {
+        const { image } = req.body || {};
+        if (!image) {
+            return res.status(400).json({ success: false, message: 'Image data is required' });
+        }
+        const uploadedUrl = await processBase64Image(image);
+        return res.status(200).json({ success: true, url: uploadedUrl });
+    } catch (err) {
+        console.error('[Admin Upload Error]', err);
+        return res.status(500).json({ success: false, message: err.message });
+    }
+};
+exports.fetchOtaPrices = async (req, res) => {
+    try {
+        const hotelId = req.params.id && !isNaN(parseInt(req.params.id)) ? parseInt(req.params.id) : null;
+        const { bookingUrl, mmtUrl } = req.body || {};
+        const { spawn } = require('child_process');
+        const path = require('path');
+        const projectRoot = path.resolve(__dirname, '../..');
+
+        const args = ['agent/ota_price_agent.py'];
+        if (bookingUrl) args.push('--booking-url', bookingUrl);
+        if (mmtUrl) args.push('--mmt-url', mmtUrl);
+        if (hotelId) args.push('--hotel-id', String(hotelId));
+
+        if (!bookingUrl && !mmtUrl && !hotelId) {
+            return res.status(400).json({ success: false, message: 'Provide hotelId or OTA URLs' });
+        }
+
+        const child = spawn('python', args, { cwd: projectRoot, timeout: 90000 });
+        let stdout = '';
+        let stderr = '';
+
+        child.stdout.on('data', (d) => { stdout += d.toString(); });
+        child.stderr.on('data', (d) => { stderr += d.toString(); });
+
+        child.on('close', (code) => {
+            if (stdout) {
+                try {
+                    const lines = stdout.trim().split('\n');
+                    const lastLine = lines[lines.length - 1];
+                    const data = JSON.parse(lastLine);
+                    return res.status(200).json(data);
+                } catch (parseErr) {
+                    console.error('[OTA Parse Error]', stdout);
+                }
+            }
+            if (code !== 0) {
+                console.error('[OTA Agent Error]', stderr);
+                return res.status(500).json({ success: false, message: 'Failed to fetch prices from OTA', error: stderr });
+            }
+            res.status(500).json({ success: false, message: 'No output from OTA agent' });
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+exports.cloneHotelFromOta = async (req, res) => {
+    try {
+        const { url, maxPhotos = 8, saveDb = false } = req.body || {};
+        if (!url) {
+            return res.status(400).json({ success: false, message: 'Hotel URL is required' });
+        }
+        const { spawn } = require('child_process');
+        const path = require('path');
+        const projectRoot = path.resolve(__dirname, '../..');
+
+        const args = ['agent/hotel_deep_cloner.py', '--url', url, '--max-photos', String(maxPhotos)];
+        if (saveDb) {
+            args.push('--save-db');
+        }
+
+        const child = spawn('python', args, { cwd: projectRoot, timeout: 120000 });
+        let stdout = '';
+        let stderr = '';
+
+        child.stdout.on('data', (d) => { stdout += d.toString(); });
+        child.stderr.on('data', (d) => { stderr += d.toString(); });
+
+        child.on('close', (code) => {
+            if (stdout) {
+                try {
+                    const lines = stdout.trim().split('\n');
+                    const lastLine = lines[lines.length - 1];
+                    const data = JSON.parse(lastLine);
+                    return res.status(200).json(data);
+                } catch (parseErr) {
+                    console.error('[Clone Parse Error]', stdout);
+                }
+            }
+            if (code !== 0) {
+                console.error('[Cloner Agent Error]', stderr);
+                return res.status(500).json({ success: false, message: 'Failed to clone hotel from OTA', error: stderr });
+            }
+            res.status(500).json({ success: false, message: 'No output from cloner agent' });
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
     }
 };
 

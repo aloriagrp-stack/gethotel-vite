@@ -4,7 +4,9 @@ const {
     getAllHotels, getAllBookings, getAdminHotelDetail, updateHotelMetrics, recalculateHotelMetrics, 
     suspendHotel, deleteHotel, getPayouts, approvePayout, createQuickPartner, createBulkHotels, 
     getUsers, getGlobalReviews, deleteReview, createBulkPartnersWithHotels,
-    bulkUpdatePromotions, bulkDeletePromotions
+    bulkUpdatePromotions, bulkDeletePromotions,
+    convertListingType, getDirectoryLeads, createDirectoryHotel, fetchOtaPrices, uploadAdminImage,
+    cloneHotelFromOta
 } = require('../controllers/adminController');
 const { getAnalytics } = require('../controllers/analyticsController');
 const { getAIChatAnalytics } = require('../controllers/adminAiChatController');
@@ -32,6 +34,13 @@ router.put('/hotels/:id/suspend', suspendHotel);
 router.put('/hotels/trending/bulk', updateTrendingBulk);
 router.put('/hotels/:id/trending', toggleTrending);
 router.put('/hotels/:id/featured', toggleFeatured);
+router.put('/hotels/:id/convert-type', convertListingType);
+router.post('/hotels/:id/fetch-ota-prices', fetchOtaPrices);
+router.post('/hotels/fetch-ota-prices', fetchOtaPrices);
+router.post('/hotels/directory', createDirectoryHotel);
+router.post('/upload-image', uploadAdminImage);
+router.post('/hotels/clone-from-ota', cloneHotelFromOta);
+router.get('/directory/top-leads', getDirectoryLeads);
 router.delete('/hotels/:id', deleteHotel);
 router.get('/bookings', getAllBookings);
 router.get('/partners', getPartners);

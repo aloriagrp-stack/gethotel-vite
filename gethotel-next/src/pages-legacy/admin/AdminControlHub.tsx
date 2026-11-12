@@ -108,23 +108,32 @@ export default function AdminControlHub({ hotels, loading = false }: AdminContro
                             type="button"
                             onClick={() => setSubTab(stat.type as any)}
                             className={cn(
-                                "p-5 text-left rounded-xl border transition-all cursor-pointer",
+                                "p-5 text-left rounded-xl border transition-all cursor-pointer shadow-xs",
                                 isActive
-                                    ? "bg-slate-900 text-white border-slate-900 text-slate-900"
-                                    : "bg-white/40 border-slate-200/80 text-slate-700 hover:border-slate-300"
+                                    ? "bg-slate-900 border-slate-900 text-white shadow-sm ring-1 ring-slate-900"
+                                    : "bg-white border-slate-200/90 text-slate-700 hover:border-slate-300 hover:bg-slate-50/50"
                             )}
                         >
                             <div className="flex justify-between items-center mb-3">
-                                <span className="text-xs font-medium text-slate-500">{stat.label}</span>
-                                <Icon className={cn("w-4 h-4", isActive ? "text-slate-900" : "text-slate-400")} />
+                                <span className={cn("text-xs font-semibold tracking-wide", isActive ? "text-slate-300" : "text-slate-500")}>
+                                    {stat.label}
+                                </span>
+                                <div className={cn(
+                                    "w-7 h-7 rounded-lg flex items-center justify-center transition-colors",
+                                    isActive ? "bg-white/10 text-emerald-400" : "bg-slate-100 text-slate-500"
+                                )}>
+                                    <Icon className="w-3.5 h-3.5" />
+                                </div>
                             </div>
                             <div className="flex items-baseline justify-between">
-                                <h3 className="text-2xl font-semibold text-slate-900 tracking-tight">{stat.count}</h3>
+                                <h3 className={cn("text-2xl font-bold tracking-tight", isActive ? "text-white" : "text-slate-900")}>
+                                    {stat.count}
+                                </h3>
                                 <span className={cn(
-                                    "text-[11px] font-medium px-2 py-0.5 rounded",
-                                    isActive ? "bg-slate-800 text-white" : "bg-slate-100 text-slate-500"
+                                    "text-[11px] font-semibold px-2.5 py-0.5 rounded-full transition-colors",
+                                    isActive ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" : "bg-slate-100 text-slate-600"
                                 )}>
-                                    {isActive ? "Active View" : "Select"}
+                                    {isActive ? "● Active View" : "View Inventory"}
                                 </span>
                             </div>
                         </button>
@@ -180,10 +189,10 @@ export default function AdminControlHub({ hotels, loading = false }: AdminContro
                                                     )}
                                                 </div>
                                                 <div>
-                                                    <p className="text-xs font-medium text-slate-900 hover:text-emerald-400 transition-colors">
+                                                    <p className="text-xs font-semibold text-slate-900 hover:text-emerald-600 transition-colors">
                                                         {hotel.name}
                                                     </p>
-                                                    <p className="text-[11px] text-slate-400 mt-0.5">
+                                                    <p className="text-[11px] text-slate-500 mt-0.5">
                                                         {hotel.city}, {hotel.address}
                                                     </p>
                                                 </div>
@@ -192,18 +201,18 @@ export default function AdminControlHub({ hotels, loading = false }: AdminContro
                                         <td className="px-5 py-3.5">
                                             <div className="flex flex-col gap-1">
                                                 <span className="text-slate-500 text-[11px]">
-                                                    Total Rooms: <b className="text-slate-900 font-medium">{rooms.length}</b>
+                                                    Total Rooms: <b className="text-slate-900 font-semibold">{rooms.length}</b>
                                                 </span>
                                                 <div className="flex gap-1.5 mt-0.5">
                                                     <span className={cn(
-                                                        "px-2 py-0.5 text-[10px] font-medium rounded",
-                                                        nightlyCount > 0 ? "bg-blue-500/10 text-blue-400 border border-blue-500/20" : "bg-neutral-800 text-slate-400"
+                                                        "px-2 py-0.5 text-[10px] font-semibold rounded-md border",
+                                                        nightlyCount > 0 ? "bg-blue-50 text-blue-700 border-blue-200" : "bg-slate-50 text-slate-400 border-slate-200"
                                                     )}>
                                                         {nightlyCount} Nightly
                                                     </span>
                                                     <span className={cn(
-                                                        "px-2 py-0.5 text-[10px] font-medium rounded",
-                                                        hourlyCount > 0 ? "bg-purple-500/10 text-purple-400 border border-purple-500/20" : "bg-neutral-800 text-slate-400"
+                                                        "px-2 py-0.5 text-[10px] font-semibold rounded-md border",
+                                                        hourlyCount > 0 ? "bg-purple-50 text-purple-700 border-purple-200" : "bg-slate-50 text-slate-400 border-slate-200"
                                                     )}>
                                                         {hourlyCount} Hourly
                                                     </span>
@@ -212,11 +221,11 @@ export default function AdminControlHub({ hotels, loading = false }: AdminContro
                                         </td>
                                         <td className="px-5 py-3.5">
                                             <div className="flex flex-col">
-                                                <span className="text-xs font-medium text-slate-900">
+                                                <span className="text-xs font-semibold text-slate-900">
                                                     ₹{hotel.pricePerNight?.toLocaleString()} <span className="text-[11px] font-normal text-slate-500">/night</span>
                                                 </span>
                                                 {hourlyCount > 0 && (
-                                                    <span className="text-[11px] text-purple-400 mt-0.5">
+                                                    <span className="text-[11px] font-medium text-purple-600 mt-0.5">
                                                         Hourly stays enabled
                                                     </span>
                                                 )}
@@ -228,7 +237,7 @@ export default function AdminControlHub({ hotels, loading = false }: AdminContro
                                                     e.stopPropagation();
                                                     setSelectedHotelId(hotel.id);
                                                 }}
-                                                className="text-xs font-medium text-slate-700 hover:text-slate-900 border border-slate-200 hover:border-slate-300 bg-white hover:bg-neutral-800 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+                                                className="text-xs font-semibold text-slate-700 hover:text-white border border-slate-200 hover:border-slate-900 bg-white hover:bg-slate-900 px-3.5 py-1.5 rounded-lg transition-all shadow-2xs hover:shadow-xs cursor-pointer"
                                             >
                                                 Manage
                                             </button>

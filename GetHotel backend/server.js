@@ -921,4 +921,28 @@ app.listen(PORT, () => {
     } catch (err) {
         console.error('[server] Failed to require sitemap module at startup:', err);
     }
+
+    // Automated Background OTA Price Scraper
+    try {
+        const { exec } = require('child_process');
+        const path = require('path');
+        const projectRoot = path.resolve(__dirname, '..');
+
+        const runOtaPriceSync = () => {
+            console.log('[OTA Price Agent] Starting automated background price refresh for directory hotels...');
+            exec('python agent/ota_price_agent.py --all', { cwd: projectRoot, timeout: 300000 }, (err, stdout, stderr) => {
+                if (err) {
+                    console.error('[OTA Price Agent] Background sync warning:', stderr || err.message);
+                } else {
+                    console.log('[OTA Price Agent] Background sync finished:', stdout.trim());
+                }
+            });
+        };
+
+        // Run 2 minutes after boot, then every 6 hours
+        setTimeout(runOtaPriceSync, 120000);
+        setInterval(runOtaPriceSync, 6 * 60 * 60 * 1000);
+    } catch (otaErr) {
+        console.error('[OTA Price Agent] Failed to initialize scheduler:', otaErr);
+    }
 });

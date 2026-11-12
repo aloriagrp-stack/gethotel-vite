@@ -9,7 +9,8 @@ const {
     getMyHotels,
     createReview,
     replyToReview,
-    getSearchSuggestions
+    getSearchSuggestions,
+    trackHotelLead
 } = require('../controllers/hotelController');
 
 const { getRooms, addRoom, updateRoom, deleteRoom, bulkUpdateRooms } = require('../controllers/roomController');
@@ -82,6 +83,9 @@ router.route('/my-hotels')
 router.route('/update')
     .post(protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), updateHotel)
     .put(protect, authorize('hotel_admin', 'super_admin', 'partner', 'admin', 'superadmin'), updateHotel);
+
+// Track directory / hotel leads (calls, emails, views)
+router.post('/:id/track-lead', trackHotelLead);
 
 router.route('/:id')
     .get(getHotel)

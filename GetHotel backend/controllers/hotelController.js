@@ -15,10 +15,13 @@ const nightsBetween = (checkIn, checkOut) => {
 exports.getHotels = async (req, res, next) => {
     try {
         console.log("Fetching hotels from database...");
-        const { city } = req.query;
+        const { city, listingType } = req.query;
         const whereClause = {};
         if (city && city !== "All" && city !== "India") {
             whereClause.city = { contains: city };
+        }
+        if (listingType) {
+            whereClause.listingType = listingType;
         }
         const hotels = await prisma.hotel.findMany({
             where: whereClause,
@@ -39,6 +42,19 @@ exports.getHotels = async (req, res, next) => {
                 isTrending: true,
                 isActive: true,
                 qualityScore: true,
+                listingType: true,
+                contactPhone: true,
+                contactEmail: true,
+                contactPerson: true,
+                websiteUrl: true,
+                callClicks: true,
+                viewCount: true,
+                bookingUrl: true,
+                bookingPrice: true,
+                mmtUrl: true,
+                mmtPrice: true,
+                otaCurrency: true,
+                otaLastFetchedAt: true,
                 room: true,
                 coupon: true
             },
@@ -233,6 +249,19 @@ exports.searchHotels = async (req, res, next) => {
                 isTrending: true,
                 isActive: true,
                 qualityScore: true,
+                listingType: true,
+                contactPhone: true,
+                contactEmail: true,
+                contactPerson: true,
+                websiteUrl: true,
+                callClicks: true,
+                viewCount: true,
+                bookingUrl: true,
+                bookingPrice: true,
+                mmtUrl: true,
+                mmtPrice: true,
+                otaCurrency: true,
+                otaLastFetchedAt: true,
                 room: true,
                 coupon: true
             }
@@ -1012,6 +1041,85 @@ exports.getSearchSuggestions = async (req, res, next) => {
     } catch (err) {
         console.error("Error getting search suggestions:", err);
         res.status(500).json({ success: false, message: "Error getting suggestions", error: err.message });
+    }
+};
+
+// @desc    Track click on call, email, or view for directory / bookable hotels
+// @route   POST /api/hotels/:id/track-lead
+// @access  Public
+exports.trackHotelLead = async (req, res) => {
+    try {
+        const hotelId = await resolveHotelId(req.params.id);
+        if (!hotelId) {
+            return res.status(404).json({ success: false, message: 'Hotel not found' });
+        }
+        
+        let action = 'view';
+        if (typeof req.body === 'string') {
+            try {
+                const parsed = JSON.parse(req.body);
+                action = parsed.action || 'view';
+            } catch (_) {}
+        } else if (req.body && req.body.action) {
+            action = req.body.action;
+        }
+
+        // Validate allowed actions
+        const validActions = ['call', 'email', 'view', 'ota_booking', 'ota_mmt'];
+        if (!validActions.includes(action)) {
+            action = 'view';
+        }
+
+        const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1').split(',')[0].trim();
+        const userAgent = (req.headers['user-agent'] || '').slice(0, 500);
+        const referrer = (req.headers['referer'] || req.headers['referrer'] || '').slice(0, 500);
+
+        // Anti-spam de-duplication:
+        // Ignore rapid duplicate clicks from the same IP within cooldown window
+        const cooldownSeconds = action === 'view' ? 600 : 15; // 10 min for view, 15 sec for call/email
+        const recentDuplicate = await prisma.$queryRawUnsafe(`
+            SELECT id FROM hotel_lead_event 
+            WHERE hotelId = ? AND action = ? AND ipAddress = ? AND createdAt >= DATE_SUB(NOW(), INTERVAL ? SECOND)
+            LIMIT 1
+        `, hotelId, action, ip, cooldownSeconds).catch(() => []);
+
+        if (Array.isArray(recentDuplicate) && recentDuplicate.length > 0) {
+            // Already counted recently from this IP - return success without inflating count
+            const current = await prisma.hotel.findUnique({
+                where: { id: hotelId },
+                select: { id: true, name: true, callClicks: true, emailClicks: true, viewCount: true }
+            });
+            return res.status(200).json({ success: true, deduplicated: true, data: current });
+        }
+
+        // Record real verifiable lead event into audit log table
+        await prisma.$executeRawUnsafe(`
+            INSERT INTO hotel_lead_event (hotelId, action, ipAddress, userAgent, referrer)
+            VALUES (?, ?, ?, ?, ?)
+        `, hotelId, action, ip, userAgent, referrer).catch((e) => console.error('[Lead Log Error]', e.message));
+
+        // Increment count on hotel model
+        let updateData = {};
+        if (action === 'call') {
+            updateData = { callClicks: { increment: 1 } };
+        } else if (action === 'email') {
+            updateData = { emailClicks: { increment: 1 } };
+        } else if (action === 'view') {
+            updateData = { viewCount: { increment: 1 } };
+        }
+
+        let updated = null;
+        if (Object.keys(updateData).length > 0) {
+            updated = await prisma.hotel.update({
+                where: { id: hotelId },
+                data: updateData,
+                select: { id: true, name: true, callClicks: true, emailClicks: true, viewCount: true }
+            });
+        }
+
+        res.status(200).json({ success: true, data: updated });
+    } catch (err) {
+        res.status(400).json({ success: false, message: err.message });
     }
 };
 

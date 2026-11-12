@@ -691,8 +691,39 @@ export const buildHotelSEO = (hotel: {
     starRating?: number;
     description?: string;
     images?: string[];
+    listingType?: string;
+    contactPhone?: string;
+    contactEmail?: string;
+    bookingPrice?: number;
+    mmtPrice?: number;
 }) => {
     const location = [hotel.city, hotel.state].filter(Boolean).join(", ") || "India";
+
+    if (hotel.listingType === "directory") {
+        const phoneSnippet = hotel.contactPhone ? ` (Phone: ${hotel.contactPhone})` : "";
+        return {
+            title: `${hotel.name}, ${location} — Verified Contact Number, Phone & Rates | GetHotelStays`,
+            description: `Verified direct contact number${phoneSnippet}, email & reception address for ${hotel.name}, ${location}. Check room availability, manager contact & compare live Booking.com & MMT deals on GetHotelStays.`,
+            keywords: [
+                hotel.name.toLowerCase(),
+                `${hotel.name.toLowerCase()} contact number`,
+                `${hotel.name.toLowerCase()} phone number`,
+                `${hotel.name.toLowerCase()} reception number`,
+                `${hotel.name.toLowerCase()} manager contact`,
+                `${hotel.name.toLowerCase()} address`,
+                `${hotel.name.toLowerCase()} booking`,
+                `${hotel.name.toLowerCase()} booking.com`,
+                `${hotel.name.toLowerCase()} makemytrip`,
+                `${hotel.name.toLowerCase()} reviews`,
+                `hotel ${hotel.name.toLowerCase()}`,
+                `${hotel.city?.toLowerCase() || ""} hotels`,
+                "gethotelstays",
+            ].filter(Boolean),
+            ogType: "place",
+            ogImage: hotel.images?.[0] || SITE.logo,
+        };
+    }
+
     const priceFormatted = hotel.pricePerNight ? `₹${hotel.pricePerNight?.toLocaleString("en-IN")}` : "";
     const price = priceFormatted ? `from ${priceFormatted}/night` : "";
     const stars = hotel.starRating ? `${hotel.starRating}-Star` : "";
@@ -906,8 +937,8 @@ export const buildHotelSchema = (hotel: any, reviews?: any[]) => {
         name: hotel.name,
         description: hotel.description || `Book ${hotel.name} — premium hotel in ${hotel.city || "India"}.`,
         url: `${SITE.url}${getHotelUrl(hotel.id, hotel.name)}`,
-        telephone: hotel.phone || undefined,
-        email: hotel.email || undefined,
+        telephone: hotel.contactPhone || hotel.phone || undefined,
+        email: hotel.contactEmail || hotel.email || undefined,
         starRating: hotel.starRating
             ? { "@type": "Rating", ratingValue: hotel.starRating, bestRating: 5 }
             : undefined,

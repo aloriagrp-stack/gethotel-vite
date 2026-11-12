@@ -5,9 +5,9 @@ import Image from "@/components/common/Image";
 import { Link, useSearchParams } from "react-router-dom";
 import {
     MapPin, ChevronRight, ChevronLeft, Check, Loader2, Shield, Zap, TrendingUp, ShieldCheck,
-    Plus, Minus, Clock, Users, X, Calendar, Phone, Star, Award, Coffee, Wifi, MessageSquare,
+    Plus, Minus, Clock, Users, X, Calendar, Phone, Mail, Star, Award, Coffee, Wifi, MessageSquare,
     Send, Share2, Search, Heart, Info, AlertCircle, ArrowLeft, ArrowRight, ChevronDown, ChevronUp, Bed,
-    BedDouble, Maximize2, Edit3, CreditCard, Tag, Copy
+    BedDouble, Maximize2, Edit3, CreditCard, Tag, Copy, ExternalLink
 } from "lucide-react";
 import { useNavigate as useRouter } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -165,7 +165,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
     };
     const [rooms, setRooms] = useState<any[]>([]);
     const [coupons, setCoupons] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(!initialHotel);
     const [selectedRoomForDetails, setSelectedRoomForDetails] = useState<any>(null);
     const [currentRoomImage, setCurrentRoomImage] = useState(0);
     const [slideDirection, setSlideDirection] = useState(0); // 1 for next, -1 for prev
@@ -343,6 +343,30 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
         };
         fetchHotel();
     }, [id]);
+
+    // Track real organic guest page views with session deduplication
+    useEffect(() => {
+        if (!hotel?.id) return;
+        try {
+            const sessionKey = `viewed_lead_h_${hotel.id}`;
+            if (!sessionStorage.getItem(sessionKey)) {
+                sessionStorage.setItem(sessionKey, "1");
+                const url = `/api/hotels/${hotel.id}/track-lead`;
+                const payload = JSON.stringify({ action: "view" });
+                if (typeof navigator !== "undefined" && navigator.sendBeacon) {
+                    const blob = new Blob([payload], { type: "application/json" });
+                    navigator.sendBeacon(url, blob);
+                } else {
+                    fetch(url, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: payload,
+                        keepalive: true
+                    }).catch(() => {});
+                }
+            }
+        } catch (_) {}
+    }, [hotel?.id]);
 
     useEffect(() => {
         const fetchRooms = async () => {
@@ -854,8 +878,224 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                         </div>
                     </section>
 
-                    {/* 2. Rooms Inventory */}
-                    <section id="rooms" className="space-y-6 pt-1 border-t border-slate-100">
+                    {hotel?.listingType === 'directory' ? (
+                        /* Minimalist Directory Reception & Live Rate Comparison Hub */
+                        <section id="directory-hub" className="space-y-6 pt-2">
+                            {/* Header */}
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b border-slate-100">
+                                <div>
+                                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 text-white text-[11px] font-semibold tracking-wide mb-2 shadow-xs">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                        Verified Property Directory
+                                    </div>
+                                    <h2 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
+                                        Direct Front Desk & Online Rates Comparison
+                                    </h2>
+                                    <p className="text-xs text-slate-500 mt-0.5 max-w-xl">
+                                        Call or email reception directly for zero-commission quotes, or compare live deals from trusted online partners below.
+                                    </p>
+                                </div>
+                                
+                                <a 
+                                    href="/list-property" 
+                                    className="text-xs text-slate-500 hover:text-slate-900 font-medium inline-flex items-center gap-1 self-start sm:self-center shrink-0 hover:underline"
+                                >
+                                    Hotel Manager? Claim Listing →
+                                </a>
+                            </div>
+
+                            {/* 2-Column Minimalist Layout */}
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                                {/* Left Column: Direct Reception Contact Box (5 cols) */}
+                                <div className="lg:col-span-5 bg-gradient-to-b from-slate-50/80 to-white rounded-2xl border border-slate-200 p-6 flex flex-col justify-between space-y-5 shadow-xs">
+                                    <div className="space-y-2">
+                                        <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200/60 w-fit">
+                                            <Check className="w-3.5 h-3.5" /> Direct Hotel Contact • Zero Markup
+                                        </div>
+                                        <h3 className="text-lg font-bold text-slate-900 leading-snug">
+                                            Connect with Reception
+                                        </h3>
+                                        <p className="text-xs text-slate-500 leading-relaxed">
+                                            Speak directly with front desk staff for room availability, corporate/wedding quotes, or direct reservations.
+                                        </p>
+                                    </div>
+
+                                    <div className="space-y-2.5 pt-1">
+                                        {(hotel.contactPhone || hotel.phone) && (
+                                            <a
+                                                href={`tel:${hotel.contactPhone || hotel.phone}`}
+                                                onClick={() => {
+                                                    try {
+                                                        const url = `/api/hotels/${hotel.id}/track-lead`;
+                                                        const payload = JSON.stringify({ action: 'call' });
+                                                        if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+                                                            navigator.sendBeacon(url, new Blob([payload], { type: 'application/json' }));
+                                                        } else {
+                                                            fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload, keepalive: true }).catch(() => {});
+                                                        }
+                                                    } catch (_) {}
+                                                }}
+                                                className="group flex items-center justify-between w-full px-4 py-3 bg-slate-900 hover:bg-black text-white rounded-xl transition-all shadow-xs hover:shadow active:scale-[0.99]"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                                                        <Phone className="w-4 h-4" />
+                                                    </div>
+                                                    <div className="text-left">
+                                                        <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Call Reception</div>
+                                                        <div className="text-xs font-bold text-white tracking-wide">{hotel.contactPhone || hotel.phone}</div>
+                                                    </div>
+                                                </div>
+                                                <span className="text-[11px] font-semibold text-emerald-400 group-hover:translate-x-0.5 transition-transform">Call Now →</span>
+                                            </a>
+                                        )}
+
+                                        {hotel.contactEmail && (
+                                            <a
+                                                href={`mailto:${hotel.contactEmail}?subject=Reservation Enquiry for ${hotel.name} via GetHotelStays`}
+                                                onClick={() => {
+                                                    try {
+                                                        const url = `/api/hotels/${hotel.id}/track-lead`;
+                                                        const payload = JSON.stringify({ action: 'email' });
+                                                        if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+                                                            navigator.sendBeacon(url, new Blob([payload], { type: 'application/json' }));
+                                                        } else {
+                                                            fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload, keepalive: true }).catch(() => {});
+                                                        }
+                                                    } catch (_) {}
+                                                }}
+                                                className="group flex items-center justify-between w-full px-4 py-3 bg-white hover:bg-slate-50 text-slate-800 rounded-xl border border-slate-200 transition-all shadow-2xs hover:shadow active:scale-[0.99]"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center shrink-0">
+                                                        <Mail className="w-4 h-4" />
+                                                    </div>
+                                                    <div className="text-left min-w-0">
+                                                        <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Official Email</div>
+                                                        <div className="text-xs font-semibold text-slate-800 truncate max-w-[200px]">{hotel.contactEmail}</div>
+                                                    </div>
+                                                </div>
+                                                <span className="text-[11px] font-semibold text-slate-600 group-hover:translate-x-0.5 transition-transform">Send Email →</span>
+                                            </a>
+                                        )}
+                                    </div>
+
+                                    <div className="pt-2 border-t border-slate-200/80 text-[11px] text-slate-400 flex items-center justify-between">
+                                        <span>⚡ Zero platform fee</span>
+                                        <span>📍 Verified on-site front desk</span>
+                                    </div>
+                                </div>
+
+                                {/* Right Column: Live OTA Comparison (Booking.com & MakeMyTrip) (7 cols) */}
+                                <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 p-6 flex flex-col justify-between space-y-4 shadow-xs">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Trusted Online Platforms</div>
+                                            <h3 className="text-base font-bold text-slate-900 mt-0.5">Compare Live Online Rates</h3>
+                                        </div>
+                                        <span className="text-[11px] font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">Instant Confirmation</span>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                        {/* Booking.com Card */}
+                                        <a
+                                            href={hotel.bookingUrl || `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(hotel.name + ' ' + (hotel.city || ''))}`}
+                                            target="_blank"
+                                            rel="nofollow noopener noreferrer"
+                                            onClick={() => {
+                                                try {
+                                                    const url = `/api/hotels/${hotel.id}/track-lead`;
+                                                    const payload = JSON.stringify({ action: 'ota_booking' });
+                                                    if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+                                                        navigator.sendBeacon(url, new Blob([payload], { type: 'application/json' }));
+                                                    } else {
+                                                        fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload, keepalive: true }).catch(() => {});
+                                                    }
+                                                } catch (_) {}
+                                            }}
+                                            className="group flex flex-col justify-between p-4 rounded-xl border border-slate-200 hover:border-blue-300 hover:bg-blue-50/20 transition-all shadow-2xs hover:shadow-sm"
+                                        >
+                                            <div className="flex items-center justify-between mb-3">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-8 h-8 rounded-lg bg-[#003580] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                                                        B.
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-xs font-bold text-slate-900 group-hover:text-blue-700 leading-tight">Booking.com</div>
+                                                        <div className="text-[10px] text-slate-400">Global Online Partner</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="pt-3 border-t border-slate-100 flex items-end justify-between">
+                                                <div>
+                                                    <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Starting from</div>
+                                                    <div className="text-base font-black text-slate-900">
+                                                        {hotel.bookingPrice ? `₹${Number(hotel.bookingPrice).toLocaleString('en-IN')}` : 'Check Live'}
+                                                        {hotel.bookingPrice && <span className="text-[10px] font-normal text-slate-500"> /night</span>}
+                                                    </div>
+                                                </div>
+                                                <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#003580] group-hover:bg-[#00224f] text-white text-[11px] font-semibold transition-all">
+                                                    Check <ExternalLink className="w-3 h-3" />
+                                                </span>
+                                            </div>
+                                        </a>
+
+                                        {/* MakeMyTrip Card */}
+                                        <a
+                                            href={hotel.mmtUrl || `https://www.makemytrip.com/hotels/hotel-listing/?city=${encodeURIComponent(hotel.city || 'Delhi')}&searchText=${encodeURIComponent(hotel.name)}`}
+                                            target="_blank"
+                                            rel="nofollow noopener noreferrer"
+                                            onClick={() => {
+                                                try {
+                                                    const url = `/api/hotels/${hotel.id}/track-lead`;
+                                                    const payload = JSON.stringify({ action: 'ota_mmt' });
+                                                    if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+                                                        navigator.sendBeacon(url, new Blob([payload], { type: 'application/json' }));
+                                                    } else {
+                                                        fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload, keepalive: true }).catch(() => {});
+                                                    }
+                                                } catch (_) {}
+                                            }}
+                                            className="group flex flex-col justify-between p-4 rounded-xl border border-slate-200 hover:border-red-300 hover:bg-red-50/20 transition-all shadow-2xs hover:shadow-sm"
+                                        >
+                                            <div className="flex items-center justify-between mb-3">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-8 h-8 rounded-lg bg-[#eb2026] text-white flex items-center justify-center font-bold text-[10px] shrink-0 shadow-xs">
+                                                        MMT
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-xs font-bold text-slate-900 group-hover:text-red-700 leading-tight">MakeMyTrip</div>
+                                                        <div className="text-[10px] text-slate-400">Domestic Online Partner</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="pt-3 border-t border-slate-100 flex items-end justify-between">
+                                                <div>
+                                                    <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Starting from</div>
+                                                    <div className="text-base font-black text-slate-900">
+                                                        {hotel.mmtPrice ? `₹${Number(hotel.mmtPrice).toLocaleString('en-IN')}` : 'Check Live'}
+                                                        {hotel.mmtPrice && <span className="text-[10px] font-normal text-slate-500"> /night</span>}
+                                                    </div>
+                                                </div>
+                                                <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#eb2026] group-hover:bg-[#c0181d] text-white text-[11px] font-semibold transition-all">
+                                                    Check <ExternalLink className="w-3 h-3" />
+                                                </span>
+                                            </div>
+                                        </a>
+                                    </div>
+
+                                    <div className="pt-2 text-[11px] text-slate-400 flex items-center justify-between">
+                                        <span>* Rates may vary by dates and room category</span>
+                                        <span className="text-slate-600 font-medium">Free cancellation options</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    ) : (
+                        /* 2. Rooms Inventory */
+                        <section id="rooms" className="space-y-6 pt-1 border-t border-slate-100">
                         {stayType === 'hourly' && (
                             <div className="bg-blue-50 rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
                                 <div className="flex items-center gap-4">
@@ -1610,6 +1850,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                                 })}
                         </div>
                     </section>
+                )}
 
                     {/* 3. Wellness & Facilities */}
                     {wellness.enabled && (

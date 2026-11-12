@@ -2,7 +2,7 @@
 
 import Image from "@/components/common/Image";
 import { useNavigate as useRouter, useSearchParams } from "react-router-dom";
-import { MapPin, Star, Heart, ChevronLeft, ChevronRight, Check, Zap, CreditCard, Clock, Wifi, Wind, Car, Coffee, Tv } from "lucide-react";
+import { MapPin, Star, Heart, ChevronLeft, ChevronRight, Check, Zap, CreditCard, Clock, Wifi, Wind, Car, Coffee, Tv, Phone, PhoneCall, Mail } from "lucide-react";
 import { motion } from "framer-motion";
 import type { Hotel } from "@/types";
 import { cn, formatPrice, safeParse, getHotelUrl } from "@/lib/utils";
@@ -28,6 +28,27 @@ export default function HotelCard({ hotel, className }: HotelCardProps) {
     const duration = searchParams.get("duration") || "3";
     const hasExplicitGuests = searchParams.has("adults") || searchParams.has("guests");
     const adults = Number(searchParams.get("adults") || searchParams.get("guests") || "2");
+
+    const isDirectory = (hotel as any).listingType === 'directory';
+    const contactPhone = (hotel as any).contactPhone || (hotel as any).phone;
+    const contactEmail = (hotel as any).contactEmail || (hotel as any).email;
+
+    const handleTrackLead = (e: React.MouseEvent, action: 'call' | 'email') => {
+        e.preventDefault();
+        e.stopPropagation();
+        try {
+            fetch(`/api/hotels/${hotel.id}/track-lead`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action })
+            }).catch(() => {});
+        } catch (_) {}
+        if (action === 'call' && contactPhone) {
+            window.location.href = `tel:${contactPhone}`;
+        } else if (action === 'email' && contactEmail) {
+            window.location.href = `mailto:${contactEmail}`;
+        }
+    };
 
     const rooms = (hotel as any).room || [];
     let basePrice = hotel.pricePerNight;
@@ -218,15 +239,23 @@ export default function HotelCard({ hotel, className }: HotelCardProps) {
                 </div>
 
                 <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5 z-10">
-                    {hasDiscount && (
-                        <div className="bg-brand-600 text-white text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded shadow-lg flex items-center gap-1">
-                            <Zap className="w-2.5 h-2.5 fill-white" /> {discountPercent}% OFF
+                    {isDirectory ? (
+                        <div className="bg-emerald-600 text-white text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded shadow-lg flex items-center gap-1">
+                            <PhoneCall className="w-2.5 h-2.5" /> DIRECT LISTING
                         </div>
-                    )}
-                    {mode === 'hourly' && rooms.some((r: any) => r.isHourlyEnabled || r.is_hourly_enabled) && (
-                        <div className="bg-purple-600 text-white text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded shadow-lg flex items-center gap-1">
-                            <Clock className="w-2.5 h-2.5" /> HOURLY
-                        </div>
+                    ) : (
+                        <>
+                            {hasDiscount && (
+                                <div className="bg-brand-600 text-white text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded shadow-lg flex items-center gap-1">
+                                    <Zap className="w-2.5 h-2.5 fill-white" /> {discountPercent}% OFF
+                                </div>
+                            )}
+                            {mode === 'hourly' && rooms.some((r: any) => r.isHourlyEnabled || r.is_hourly_enabled) && (
+                                <div className="bg-purple-600 text-white text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded shadow-lg flex items-center gap-1">
+                                    <Clock className="w-2.5 h-2.5" /> HOURLY
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
 
@@ -279,28 +308,64 @@ export default function HotelCard({ hotel, className }: HotelCardProps) {
                         </div>
                     </div>
 
-                    <div className="mt-4 flex items-end justify-between">
-                        <div className="flex flex-col">
-                            <div className="flex items-baseline gap-2">
-                                <span className="text-[10px] font-black text-brand-600 uppercase tracking-widest leading-none">
-                                    {mode === 'hourly' ? `For ${duration} Hours` : 'Per Night'}
+                    {isDirectory ? (
+                        <div className="mt-4 flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
+                            <div className="flex flex-col">
+                                <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest leading-none">
+                                    Direct Hotel Listing
                                 </span>
-                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">before taxes</span>
+                                <span className="text-sm font-black text-slate-800 mt-1 tracking-tight">
+                                    {hotel.pricePerNight > 0 ? `Est. ${formatPrice(hotel.pricePerNight)}` : 'Call for Best Deal'}
+                                </span>
                             </div>
-                            <div className="flex flex-col mt-1">
-                                <span className="text-2xl font-black text-slate-950 tracking-tighter italic leading-none">{formatPrice(basePrice)}</span>
-                                {hasDiscount && (
-                                    <span className="text-sm font-bold text-slate-400/80 line-through decoration-red-500 decoration-2 mt-0.5 tracking-tight">
-                                        {formatPrice(originalPrice)}
-                                    </span>
+                            
+                            <div className="flex items-center gap-1.5">
+                                {contactPhone && (
+                                    <button
+                                        onClick={(e) => handleTrackLead(e, 'call')}
+                                        className="flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300 hover:scale-105 active:scale-95 shadow-md shadow-emerald-600/20"
+                                        title={`Call Hotel: ${contactPhone}`}
+                                    >
+                                        <Phone className="w-3.5 h-3.5" />
+                                        <span>Call Hotel</span>
+                                    </button>
+                                )}
+                                {contactEmail && !contactPhone && (
+                                    <button
+                                        onClick={(e) => handleTrackLead(e, 'email')}
+                                        className="flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300 hover:scale-105 active:scale-95 shadow-md"
+                                        title={`Email Hotel: ${contactEmail}`}
+                                    >
+                                        <Mail className="w-3.5 h-3.5" />
+                                        <span>Email</span>
+                                    </button>
                                 )}
                             </div>
                         </div>
-                        
-                        <button className="btn-shine-effect flex items-center justify-center gap-1.5 px-8 py-3 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 group-hover:scale-105 active:scale-95 shadow-md shadow-brand-600/20">
-                            <span className="relative z-10">Book</span>
-                        </button>
-                    </div>
+                    ) : (
+                        <div className="mt-4 flex items-end justify-between">
+                            <div className="flex flex-col">
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-[10px] font-black text-brand-600 uppercase tracking-widest leading-none">
+                                        {mode === 'hourly' ? `For ${duration} Hours` : 'Per Night'}
+                                    </span>
+                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">before taxes</span>
+                                </div>
+                                <div className="flex flex-col mt-1">
+                                    <span className="text-2xl font-black text-slate-950 tracking-tighter italic leading-none">{formatPrice(basePrice)}</span>
+                                    {hasDiscount && (
+                                        <span className="text-sm font-bold text-slate-400/80 line-through decoration-red-500 decoration-2 mt-0.5 tracking-tight">
+                                            {formatPrice(originalPrice)}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                            
+                            <button className="btn-shine-effect flex items-center justify-center gap-1.5 px-8 py-3 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 group-hover:scale-105 active:scale-95 shadow-md shadow-brand-600/20">
+                                <span className="relative z-10">Book</span>
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

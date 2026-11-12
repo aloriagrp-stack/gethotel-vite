@@ -6,7 +6,7 @@ import confetti from "canvas-confetti";
 import {
     Menu, X, MapPin, User, Heart, Bell, Hotel, Globe,
     LogOut, Settings, ClipboardList, ChevronDown, UserRound, CheckCircle2,
-    AlertCircle, Shield, FileText, Mail
+    AlertCircle, Shield, FileText, Mail, Building
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useWishlist } from "@/context/WishlistContext";
@@ -252,6 +252,10 @@ export default function Navbar() {
                                         <UserRound className="w-5 h-5 text-slate-400" />
                                         <span className="text-sm font-bold">My Profile</span>
                                     </Link>
+                                    <Link to={`/${langCode}/hotels-directory`} onClick={() => setDropdownOpen(false)} className="flex items-center gap-3 px-5 py-3.5 text-slate-700 hover:bg-slate-50 transition-all border-b border-slate-50">
+                                        <Building className="w-5 h-5 text-emerald-600" />
+                                        <span className="text-sm font-bold">Hotels Directory</span>
+                                    </Link>
                                     <Link to={`/${langCode}/list-property`} onClick={() => setDropdownOpen(false)} className="flex items-center gap-3 px-5 py-3.5 text-slate-700 hover:bg-slate-50 transition-all border-b border-slate-50">
                                         <Hotel className="w-5 h-5 text-sky-600" />
                                         <span className="text-sm font-bold">List Your Property</span>
@@ -351,6 +355,13 @@ export default function Navbar() {
                                         className="block px-3 py-2.5 rounded-lg text-slate-800 font-medium text-sm hover:bg-slate-50 transition-colors"
                                     >
                                         {t('hotels')}
+                                    </Link>
+                                    <Link 
+                                        to={`/${langCode}/hotels-directory`} 
+                                        onClick={() => setMobileOpen(false)} 
+                                        className="block px-3 py-2.5 rounded-lg text-slate-800 font-medium text-sm hover:bg-slate-50 transition-colors"
+                                    >
+                                        Hotels Directory
                                     </Link>
                                     <Link 
                                         to={`/${langCode}/my-bookings`} 
@@ -478,6 +489,9 @@ export default function Navbar() {
                                     </Link>
                                     <Link to={`/${langCode}/wishlist`} onClick={() => setProfileMobileOpen(false)} className="block px-3 py-2.5 rounded-lg text-slate-800 font-medium text-sm hover:bg-slate-50 transition-colors">
                                         Wishlist
+                                    </Link>
+                                    <Link to={`/${langCode}/hotels-directory`} onClick={() => setProfileMobileOpen(false)} className="block px-3 py-2.5 rounded-lg text-slate-800 font-medium text-sm hover:bg-slate-50 transition-colors">
+                                        Hotels Directory
                                     </Link>
                                     
                                     <div className="h-px bg-slate-100 my-3" />

@@ -41,3 +41,6 @@ Thumbs.db
 *.zip
 __pycache__/
 *.pyc
+.*_cache.json
+*.cache.json
+api_requests.log

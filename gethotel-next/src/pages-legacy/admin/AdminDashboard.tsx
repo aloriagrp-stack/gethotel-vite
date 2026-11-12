@@ -12,7 +12,7 @@ import {
     CreditCard, TrendingUp, MoreVertical,
     ArrowUpRight, ArrowDownRight, Globe, ChevronRight, Loader2, ArrowRight,
     Key, ShieldAlert, Eye, EyeOff, Star, MessageSquare, Trash2, Sparkles,
-    UserCheck, Mail, Phone, Calendar, LogIn, Shield, Copy, ExternalLink, RefreshCw, LayoutGrid, Percent, Bot, Palmtree, MapPin
+    UserCheck, Mail, Phone, Calendar, LogIn, Shield, Copy, ExternalLink, RefreshCw, LayoutGrid, Percent, Bot, Palmtree, MapPin, BookOpen
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "@/components/common/Image";
@@ -22,6 +22,7 @@ import AdminFinance from "./AdminFinance";
 import AdminHomepageEditor from "./AdminHomepageEditor";
 import AdminDestinationsManager from "./AdminDestinationsManager";
 import AdminControlHub from "./AdminControlHub";
+import AdminDirectory from "./AdminDirectory";
 import AdminAddPartner from "./AdminAddPartner";
 import AdminMultiRoomSetup from "./AdminMultiRoomSetup";
 import AdminPromotions from "./AdminPromotions";
@@ -212,7 +213,7 @@ export default function SuperAdminDashboard() {
             const needsStats = (normalizedTab === "overview") && shouldLoad("stats");
             const needsRequests = ["overview", "requests"].includes(normalizedTab) && shouldLoad("requests");
             const needsPartners = ["users", "addPartner"].includes(normalizedTab) && shouldLoad("partners");
-            const needsHotels = ["hotels", "controlhub", "addPartner", "multi-room", "ai-copilot", "reviews", "promotions"].includes(normalizedTab) && shouldLoad("hotels");
+            const needsHotels = ["hotels", "controlhub", "directory", "addPartner", "multi-room", "ai-copilot", "reviews", "promotions"].includes(normalizedTab) && shouldLoad("hotels");
             const needsBookings = normalizedTab === "bookings" && shouldLoad("bookings");
             const needsReviews = normalizedTab === "reviews" && shouldLoad("reviews");
 
@@ -526,6 +527,7 @@ export default function SuperAdminDashboard() {
         { id: "tour-packages", label: "Tour Packages Manager", icon: Palmtree },
         { id: "users", label: "Users", icon: Users },
         { id: "hotels", label: "Properties", icon: Hotel },
+        { id: "directory", label: "Directory", icon: BookOpen },
         { id: "promotions", label: "Promotions & Coupons", icon: Percent },
         { id: "bookings", label: "Bookings", icon: CreditCard },
         { id: "reviews", label: "Reviews", icon: MessageSquare },
@@ -556,7 +558,7 @@ export default function SuperAdminDashboard() {
 
     return (
         <div className={cn(activeTab === "ai-copilot" ? "p-0 h-screen overflow-hidden flex flex-col" : "p-8", "min-w-0")}>
-            {activeTab !== "ai-copilot" && activeTab !== "destination-analytics" && activeTab !== "destinations" && (
+            {activeTab !== "ai-copilot" && activeTab !== "destination-analytics" && activeTab !== "destinations" && activeTab !== "hotels" && activeTab !== "controlhub" && activeTab !== "directory" && (
                 <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 border-b border-slate-200/80 pb-5">
                     <div>
                         <h2 className="text-xl font-semibold text-slate-900 tracking-tight flex items-center gap-2.5">
@@ -596,7 +598,9 @@ export default function SuperAdminDashboard() {
                     {activeTab === "notifications" && <AdminNotifications />}
                     {activeTab === "disputes" && <AdminDisputes />}
                     {activeTab === "promotions" && <AdminPromotions hotels={hotels} onRefresh={() => fetchDashboardData('hotels', true)} />}
+                    {activeTab === "directory" && <AdminDirectory hotels={hotels} loading={loading} onRefresh={() => fetchDashboardData('hotels', true)} />}
                     {activeTab === "controlhub" && <AdminControlHub hotels={hotels} loading={loading} />}
+                    {activeTab === "hotels" && <AdminControlHub hotels={hotels} loading={loading} />}
                     {activeTab === "multi-room" && <AdminMultiRoomSetup hotels={hotels} />}
                     {activeTab === "addPartner" && <AdminAddPartner hotels={hotels} partners={partners} setPartners={setPartners} />}
                     {activeTab === "ai-copilot" && <AdminAICopilot hotels={hotels} loadingHotels={!loadedSections.hotels} />}
@@ -1659,66 +1663,7 @@ export default function SuperAdminDashboard() {
                 </div>
             )}
 
-            {activeTab === "hotels" && (
-                selectedHotelId ? (
-                    <AdminHotelDetails hotelId={selectedHotelId} onBack={() => setSelectedHotelId(null)} />
-                ) : (
-                    <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs overflow-hidden">
-                        <div className="px-5 py-3.5 border-b border-slate-200/80 flex items-center justify-between">
-                            <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Property Management</h3>
-                            <p className="text-xs text-slate-500">{hotels.length} Properties</p>
-                        </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left">
-                                <thead className="bg-slate-50/80 border-b border-slate-200/80">
-                                    <tr>
-                                        <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Hotel Name</th>
-                                        <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Location</th>
-                                        <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Price</th>
-                                        <th className="px-4 py-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100">
-                                    {smartFilter(hotels, searchQuery, ['name', 'city', 'hotelUsername', 'address', 'id'])
-                                        .map((hotel) => (
-                                            <tr
-                                                key={hotel.id}
-                                                onClick={() => setSelectedHotelId(hotel.id)}
-                                                className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
-                                            >
-                                                <td className="px-4 py-3">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-center overflow-hidden shrink-0">
-                                                            {hotel.thumbnail ? (
-                                                                <Image src={hotel.thumbnail} alt={hotel.name} width={32} height={32} className="object-cover w-full h-full" />
-                                                            ) : (
-                                                                <Hotel className="w-4 h-4 text-slate-500" />
-                                                            )}
-                                                        </div>
-                                                        <span className="text-xs font-medium text-slate-900 group-hover:text-slate-700 transition-colors">{hotel.name}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-3 text-xs text-slate-500">{hotel.city}</td>
-                                                <td className="px-4 py-3 text-xs font-medium text-emerald-400">₹{hotel.pricePerNight}</td>
-                                                <td className="px-4 py-3 text-xs text-right">
-                                                    <button 
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setSelectedHotelId(hotel.id);
-                                                        }}
-                                                        className="text-xs text-slate-500 group-hover:text-slate-900 transition-colors cursor-pointer font-medium"
-                                                    >
-                                                        View Details →
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                )
-            )}
+
 
             {/* ─── Global Reviews Tab ──────────────────────────────────────────────── */}
             {activeTab === "reviews" && (

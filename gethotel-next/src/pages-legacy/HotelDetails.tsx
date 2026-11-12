@@ -10,9 +10,10 @@ import { buildHotelSEO, buildHotelSchema, buildBreadcrumbSchema, buildHotelFAQSc
 
 interface HotelDetailPageProps {
     hotelId?: string;
+    initialHotel?: any;
 }
 
-export default function HotelDetailPage({ hotelId }: HotelDetailPageProps = {}) {
+export default function HotelDetailPage({ hotelId, initialHotel }: HotelDetailPageProps = {}) {
     const navParams = useParams<{ id?: string }>();
     const location = useLocation();
 
@@ -30,11 +31,16 @@ export default function HotelDetailPage({ hotelId }: HotelDetailPageProps = {}) 
     }
     const id = extracted ? decodeURIComponent(extracted).trim() : "";
 
-    const [hotel, setHotel] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
+    const [hotel, setHotel] = useState<any>(initialHotel || null);
+    const [loading, setLoading] = useState(!initialHotel);
     const [error, setError] = useState(false);
 
     useEffect(() => {
+        if (initialHotel && (String(initialHotel.id) === id || initialHotel.slug === id)) {
+            setHotel(initialHotel);
+            setLoading(false);
+            return;
+        }
         const fetchHotel = async () => {
             if (!id) {
                 setLoading(false);

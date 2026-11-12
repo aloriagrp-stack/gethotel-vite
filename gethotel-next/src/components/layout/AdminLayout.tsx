@@ -6,7 +6,7 @@ import {
     LayoutDashboard, Hotel, Users,
     BarChart3, Settings, LogOut,
     Search, Clock,
-    Calendar, LayoutTemplate, SlidersHorizontal, Star, Globe, Sparkles, Bot, Palmtree, Download, MapPin,
+    Calendar, LayoutTemplate, SlidersHorizontal, Star, Globe, Sparkles, Bot, Palmtree, Download, MapPin, BookOpen,
     ChevronLeft, ChevronRight, Menu, X, Percent, Bell
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -63,13 +63,13 @@ export default function AdminLayout({ children }: { children?: React.ReactNode }
             title: "Overview",
             items: [
                 { id: "overview", label: "Dashboard", icon: LayoutDashboard, tab: "overview" },
-                { id: "controlhub", label: "Properties Hub", icon: SlidersHorizontal, tab: "controlhub" },
             ]
         },
         {
             title: "Operations",
             items: [
-                { id: "hotels", label: "Properties", icon: Hotel, tab: "hotels" },
+                { id: "hotels", label: "Properties Hub", icon: Hotel, tab: "hotels" },
+                { id: "directory", label: "Directory", icon: BookOpen, tab: "directory" },
                 { id: "bookings", label: "Bookings", icon: Calendar, tab: "bookings" },
                 { id: "requests", label: "Partner Requests", icon: Clock, tab: "requests" },
                 { id: "users", label: "Users & Customers", icon: Users, tab: "users" },

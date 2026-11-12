@@ -141,6 +141,20 @@ model hotel {
   isActive              Boolean        @default(true)
   otaApiKey             String?        @unique(map: "Hotel_otaApiKey_key")
   otaEnabled            Boolean        @default(false)
+  listingType           String         @default("bookable")
+  contactPhone          String?        @db.VarChar(50)
+  contactEmail          String?        @db.VarChar(100)
+  contactPerson         String?        @db.VarChar(100)
+  websiteUrl            String?        @db.VarChar(255)
+  callClicks            Int            @default(0)
+  emailClicks           Int            @default(0)
+  viewCount             Int            @default(0)
+  bookingUrl            String?        @db.VarChar(500)
+  bookingPrice          Int?
+  mmtUrl                String?        @db.VarChar(500)
+  mmtPrice              Int?
+  otaCurrency           String         @default("INR")
+  otaLastFetchedAt      DateTime?
   booking               booking[]
   coupon                coupon[]
   user                  user           @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Hotel_userId_fkey")

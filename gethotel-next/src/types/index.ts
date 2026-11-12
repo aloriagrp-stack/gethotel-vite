@@ -59,6 +59,20 @@ export interface Hotel {
     noShowRate?: number;
     bookingAcceptanceRate?: number;
     complaintsCount?: number;
+    listingType?: "bookable" | "directory";
+    contactPhone?: string;
+    contactEmail?: string;
+    contactPerson?: string;
+    websiteUrl?: string;
+    callClicks?: number;
+    emailClicks?: number;
+    viewCount?: number;
+    bookingUrl?: string;
+    bookingPrice?: number;
+    mmtUrl?: string;
+    mmtPrice?: number;
+    otaCurrency?: string;
+    otaLastFetchedAt?: string;
 }
 
 // ─── Room ────────────────────────────────────────────────────────────────────
