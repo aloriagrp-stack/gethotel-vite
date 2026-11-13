@@ -67,9 +67,13 @@ class GHSTerminalAgent:
     def _load_hotels(self, force_refresh=False):
         """Fetches live hotels from GHS platform or fast cache and tracks newly onboarded ones."""
         with console.status("[bold cyan]Connecting to GetHotelStays.com Live API...[/bold cyan]", spinner="dots"):
-            self.hotels = self.api.get_hotels(force_refresh=force_refresh)
+            raw_hotels = self.api.get_hotels(force_refresh=force_refresh)
+            # STRICT ISOLATION: Directory hotels have ZERO connection to pricing, rate engines, or promotions!
+            # self.hotels contains ONLY active bookable partner hotels.
+            self.hotels = [h for h in raw_hotels if h.get("listingType") != "directory"]
+            self.directory_hotels = [h for h in raw_hotels if h.get("listingType") == "directory"]
 
-        # Detect newly onboarded hotels
+        # Detect newly onboarded BOOKABLE partner hotels (directory hotels are strictly excluded)
         self.known_ids = self._load_known_ids()
         if not self.known_ids:
             self.known_ids = {h["id"] for h in self.hotels}
@@ -590,7 +594,7 @@ class GHSTerminalAgent:
                     leads = self.api.get_directory_leads()
 
                 if not leads:
-                    leads = [h for h in self.hotels if h.get("listingType") == "directory"]
+                    leads = getattr(self, "directory_hotels", [])
 
                 if not leads:
                     console.print("[yellow]No hotels currently set to 'directory' mode.[/yellow]")
@@ -691,7 +695,7 @@ class GHSTerminalAgent:
             elif opt == "5":
                 self.display_banner()
                 console.print("\n[bold cyan]🌐 AUTO-SYNC OTA PRICES & DEEP LINKS (Booking.com & MakeMyTrip)[/bold cyan]\n")
-                dir_hotels = [h for h in self.hotels if h.get("listingType") == "directory"]
+                dir_hotels = getattr(self, "directory_hotels", [])
                 if not dir_hotels:
                     console.print("[yellow]No directory hotels found. Switch some hotels to 'directory' first![/yellow]")
                     Prompt.ask("\nPress Enter to continue")
