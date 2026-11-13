@@ -99,7 +99,7 @@ class GHSTerminalAgent:
                 summary += f" ...and {len(self.new_hotels) - 3} more"
             console.print(Panel(
                 f"[bold green]🔔 {len(self.new_hotels)} NEW ONBOARDED HOTEL(S) DETECTED![/bold green]\n{summary}\n"
-                f"[bold yellow]👉 Run Option [8] to auto-search MMT prices & activate sweet spot promos![/bold yellow]",
+                f"[bold yellow]👉 Run Option [6] to auto-search MMT prices & activate sweet spot promos![/bold yellow]",
                 border_style="green",
                 expand=False
             ))
@@ -810,21 +810,28 @@ class GHSTerminalAgent:
             self.display_banner()
             new_count_str = f" [bold red]({len(self.new_hotels)} NEW!)[/bold red]" if self.new_hotels else ""
             console.print(f"\n[bold yellow]⚡ SELECT AGENT ACTION ([green]{len(self.hotels)} Total Hotels Across India[/green]):[/bold yellow]\n")
+
+            console.print("  [bold white]--- 💰 RATES & SWEET SPOT PROMOTIONS ---[/bold white]")
             console.print("  [bold cyan][1][/bold cyan] 📊 [bold white]Audit Hotels & Rates[/bold white] (See Base, Promo %, Display Price vs MMT)")
             console.print("  [bold green][2][/bold green] ⚡ [bold green]AUTO-FIX OVERPRICED & UNDERPRICED HOTELS[/bold green] (1-Click Sweet Spot!)")
             console.print("  [bold cyan][3][/bold cyan] ✏️  [bold white]Edit Promotion % on Any Specific Hotel[/bold white] (Increase/Decrease % live)")
             console.print("  [bold cyan][4][/bold cyan] 🌐 [bold white]Live Web Search Market Rate for Any Hotel[/bold white] (DDGS Real-time MMT/Booking.com)")
             console.print("  [bold cyan][5][/bold cyan] 🎛️  [bold white]Quick Hotel Toggles[/bold white] (Active/Inactive, Trending, Featured)")
-            console.print(f"  [bold cyan][8][/bold cyan] 🆕 [bold yellow]Setup Newly Onboarded Hotels[/bold yellow]{new_count_str} (Auto-find MMT price & set promo)")
-            console.print("  [bold cyan][9][/bold cyan] 📖 [bold yellow]HOTEL DIRECTORY & LEAD CENTER[/bold yellow] (View Call Leads, 1-Click Converter)")
-            console.print("  [bold yellow][10][/bold yellow] 📥 [bold yellow]Deep-Clone Hotel from Booking.com URL (Auto-Downloads Photos & Creates Listing)[/bold yellow]")
-            console.print("  [bold green][11][/bold green] 🏙️  [bold green]Bulk Hotel Harvester (Queue 10-100 URLs -> Auto-Deduplicate -> Batch Clone)[/bold green]")
-            console.print("  [bold yellow][12][/bold yellow] 📞 [bold yellow]Google Maps Hotel Contact Enricher (Auto-Find Front Desk Phone & Email)[/bold yellow]")
-            console.print("  [bold cyan][6][/bold cyan] 🚀 [bold magenta]Push & Deploy Live to Production[/bold magenta] (GitHub CI/CD)")
-            console.print("  [bold cyan][7][/bold cyan] 🔄 [bold white]Refresh Live Database Data[/bold white]")
+            console.print(f"  [bold cyan][6][/bold cyan] 🆕 [bold yellow]Setup Newly Onboarded Hotels[/bold yellow]{new_count_str} (Auto-find MMT price & set promo)\n")
+
+            console.print("  [bold white]--- 🏨 DIRECTORY & CLONING SUITE ---[/bold white]")
+            console.print("  [bold cyan][7][/bold cyan] 📖 [bold yellow]HOTEL DIRECTORY & LEAD CENTER[/bold yellow] (View Call Leads, 1-Click Converter)")
+            console.print("  [bold yellow][8][/bold yellow] 📥 [bold yellow]Deep-Clone Hotel from Booking.com URL (Auto-Downloads Photos & Creates Listing)[/bold yellow]")
+            console.print("  [bold green][9][/bold green] 🏙️  [bold green]Bulk Hotel Harvester (Queue 10-100 URLs -> Auto-Deduplicate -> Batch Clone)[/bold green]")
+            console.print("  [bold yellow][10][/bold yellow] 📞 [bold yellow]Google Maps Hotel Contact Enricher (Auto-Find Phone, Email & Website)[/bold yellow]")
+            console.print("  [bold yellow][11][/bold yellow] 📦 [bold yellow]View / Open Empty Box (Unresolved Hotels Registry)[/bold yellow]\n")
+
+            console.print("  [bold white]--- 🚀 CLOUD DEPLOYMENT & DATABASE ---[/bold white]")
+            console.print("  [bold cyan][12][/bold cyan] 🚀 [bold magenta]Push & Deploy Live to Production[/bold magenta] (GitHub CI/CD)")
+            console.print("  [bold cyan][13][/bold cyan] 🔄 [bold white]Refresh Live Database Data[/bold white]")
             console.print("  [bold cyan][0][/bold cyan] 🚪 [bold red]Exit[/bold red]\n")
 
-            choice = Prompt.ask("[bold green]ghs-agent >[/bold green]", choices=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "0"], default="2")
+            choice = Prompt.ask("[bold green]ghs-agent >[/bold green]", choices=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "0"], default="2")
 
             if choice == "1":
                 self.audit_hotels()
@@ -849,20 +856,20 @@ class GHSTerminalAgent:
                 Prompt.ask("\nPress Enter to return to menu")
             elif choice == "5":
                 self.toggle_quick_action()
-            elif choice == "8":
+            elif choice == "6":
                 self.setup_newly_onboarded_hotels()
-            elif choice == "9":
+            elif choice == "7":
                 self.directory_manager()
-            elif choice == "10":
+            elif choice == "8":
                 self.deep_clone_hotel_prompt()
-            elif choice == "11":
+            elif choice == "9":
                 try:
                     from hotel_bulk_harvester import run_bulk_harvester
                 except ImportError:
                     from agent.hotel_bulk_harvester import run_bulk_harvester
                 run_bulk_harvester()
                 self._load_hotels(force_refresh=True)
-            elif choice == "12":
+            elif choice == "10":
                 clear_screen()
                 try:
                     from google_maps_enricher import menu as enricher_menu
@@ -870,9 +877,28 @@ class GHSTerminalAgent:
                     from agent.google_maps_enricher import menu as enricher_menu
                 enricher_menu()
                 self._load_hotels(force_refresh=True)
-            elif choice == "6":
+            elif choice == "11":
+                empty_box_file = os.path.join(PROJECT_ROOT, "empty_box", "empty_box_registry.json")
+                if os.path.exists(empty_box_file):
+                    try:
+                        with open(empty_box_file, "r", encoding="utf-8") as f:
+                            data = json.load(f)
+                        console.print(Panel(
+                            f"[bold yellow]📦 EMPTY BOX CONTAINS {len(data)} UNRESOLVED HOTEL(S)[/bold yellow]\n\n" +
+                            "\n".join([f"• [bold white]#{item.get('id')}[/bold white] {item.get('name')} ({item.get('city')})" for item in data[:15]]) +
+                            (f"\n...and {len(data) - 15} more" if len(data) > 15 else "") +
+                            f"\n\n[dim cyan]Full details: {empty_box_file}[/dim cyan]",
+                            title="Empty Box Contents",
+                            border_style="yellow"
+                        ))
+                    except Exception as e:
+                        console.print(f"[red]Could not read Empty Box: {e}[/red]")
+                else:
+                    console.print("[green]✓ Empty Box is clean! No unresolved hotels.[/green]")
+                Prompt.ask("\nPress Enter to return to menu")
+            elif choice == "12":
                 self.git_push_deploy()
-            elif choice == "7":
+            elif choice == "13":
                 self._load_hotels(force_refresh=True)
                 console.print("[bold green]✓ Live data refreshed from GetHotelStays API![/bold green]")
                 Prompt.ask("\nPress Enter to return to menu")
