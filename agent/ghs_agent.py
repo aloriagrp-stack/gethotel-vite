@@ -774,7 +774,9 @@ class GHSTerminalAgent:
             new_id = save_to_mysql(cloned)
             if new_id:
                 console.print(f"\n[bold green]🎉 SUCCESS! Hotel listing created with ID #{new_id}![/bold green]")
-                console.print(f"[dim white]Live URL slug: /hotel/{cloned.get('name', '').lower().replace(' ', '-')}[/dim white]")
+                city_s = re.sub(r'[^a-z0-9\-]+', '', cloned.get('city', 'india').lower().replace(' ', '-'))
+                hotel_s = re.sub(r'[^a-z0-9\-]+', '', cloned.get('name', '').lower().replace(' ', '-'))
+                console.print(f"[dim white]Live URL slug: /hotels-directory/{city_s}/{hotel_s}[/dim white]")
                 self._load_hotels(force_refresh=True)
             else:
                 console.print("[bold red]Failed to save hotel to MySQL database.[/bold red]")

@@ -247,42 +247,44 @@ exports.searchHotels = async (req, res, next) => {
             }
         }
 
-        const hotels = await prisma.hotel.findMany({
-            where: whereClause,
-            select: {
-                id: true,
-                name: true,
-                tagline: true,
-                city: true,
-                address: true,
-                pricePerNight: true,
-                starRating: true,
-                guestRating: true,
-                reviewCount: true,
-                thumbnail: true,
-                images: true,
-                amenities: true,
-                isFeatured: true,
-                isTrending: true,
-                isActive: true,
-                qualityScore: true,
-                listingType: true,
-                contactPhone: true,
-                contactEmail: true,
-                contactPerson: true,
-                websiteUrl: true,
-                callClicks: true,
-                viewCount: true,
-                bookingUrl: true,
-                bookingPrice: true,
-                mmtUrl: true,
-                mmtPrice: true,
-                otaCurrency: true,
-                otaLastFetchedAt: true,
-                room: true,
-                coupon: true
-            }
-        });
+        let hotels;
+        try {
+            hotels = await prisma.hotel.findMany({
+                where: whereClause,
+                select: {
+                    id: true,
+                    name: true,
+                    tagline: true,
+                    city: true,
+                    address: true,
+                    pricePerNight: true,
+                    starRating: true,
+                    guestRating: true,
+                    reviewCount: true,
+                    thumbnail: true,
+                    images: true,
+                    amenities: true,
+                    isFeatured: true,
+                    isTrending: true,
+                    isActive: true,
+                    qualityScore: true,
+                    room: true,
+                    coupon: true
+                }
+            });
+        } catch (searchErr) {
+            console.warn("[searchHotels] Prisma findMany failed, falling back to safe query:", searchErr.message);
+            hotels = await prisma.hotel.findMany({
+                where: {
+                    isActive: true
+                },
+                include: {
+                    room: true,
+                    coupon: true
+                },
+                take: 50
+            });
+        }
 
         const availableHotels = [];
 

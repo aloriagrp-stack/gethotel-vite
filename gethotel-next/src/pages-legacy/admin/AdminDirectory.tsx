@@ -434,7 +434,9 @@ export default function AdminDirectory({ hotels, loading = false, onRefresh }: A
     // =========================================================================
     if (managedHotel) {
         const hotelSlug = slugify(managedHotel.name);
-        const fullLiveUrl = typeof window !== "undefined" ? `${window.location.origin}/hotel/${hotelSlug}` : `/hotel/${hotelSlug}`;
+        const citySlug = slugify(managedHotel.city || "india");
+        const dirSlugUrl = `/hotels-directory/${citySlug}/${hotelSlug}`;
+        const fullLiveUrl = typeof window !== "undefined" ? `${window.location.origin}${dirSlugUrl}` : dirSlugUrl;
 
         return (
             <div className="space-y-6 pb-20 max-w-7xl mx-auto">
@@ -469,7 +471,7 @@ export default function AdminDirectory({ hotels, loading = false, onRefresh }: A
                         {managedHotel.id && (
                             <>
                                 <a
-                                    href={`/hotel/${hotelSlug}`}
+                                    href={dirSlugUrl}
                                     target="_blank"
                                     rel="noreferrer"
                                     className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-xl text-xs font-semibold shadow-2xs transition-colors"
@@ -637,7 +639,7 @@ export default function AdminDirectory({ hotels, loading = false, onRefresh }: A
                                 </div>
                                 <div className="flex items-center justify-between gap-2">
                                     <span className="text-xs font-mono text-blue-700 truncate">
-                                        /hotel/{hotelSlug}
+                                        {dirSlugUrl}
                                     </span>
                                     <button
                                         type="button"

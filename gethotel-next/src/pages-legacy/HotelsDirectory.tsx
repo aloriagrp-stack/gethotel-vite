@@ -140,8 +140,9 @@ export default function HotelsDirectory() {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredHotels.map((hotel) => {
-                            const slug = slugify(hotel.name || `hotel-${hotel.id}`);
-                            const detailUrl = `/hotel/${hotel.id}/${slug}`;
+                            const citySlug = slugify(hotel.city || 'india');
+                            const hotelSlug = slugify(hotel.name || `hotel-${hotel.id}`);
+                            const detailUrl = `/hotels-directory/${citySlug}/${hotelSlug}`;
                             const allAmenities = safeParse(hotel.amenities, ["WiFi", "AC"]);
 
                             return (

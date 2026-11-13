@@ -21,8 +21,11 @@ export default function HotelDetailPage({ hotelId, initialHotel }: HotelDetailPa
     let extracted = '';
     if (typeof window !== 'undefined') {
         const pathname = location?.pathname || window.location.pathname;
+        const dirMatch = pathname.match(/\/hotels-directory\/[^\/]+\/([^\/\?]+)/);
         const match = pathname.match(/\/hotel\/([^\/\?]+)/);
-        if (match && match[1]) {
+        if (dirMatch && dirMatch[1]) {
+            extracted = dirMatch[1];
+        } else if (match && match[1]) {
             extracted = match[1];
         }
     }
