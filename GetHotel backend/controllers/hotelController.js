@@ -549,6 +549,19 @@ exports.getHotel = async (req, res, next) => {
             return res.status(404).json({ success: false, message: 'Hotel not found' });
         }
 
+        // Augment with raw directory fields so listingType & OTA price comparison fields are guaranteed
+        try {
+            const rawRows = await prisma.$queryRawUnsafe(
+                `SELECT listingType, contactPhone, contactEmail, contactPerson, websiteUrl, callClicks, viewCount, bookingUrl, bookingPrice, mmtUrl, mmtPrice, otaCurrency, otaLastFetchedAt FROM hotel WHERE id = ?`,
+                hotelId
+            );
+            if (rawRows && rawRows.length > 0) {
+                Object.assign(hotel, rawRows[0]);
+            }
+        } catch (rawErr) {
+            console.warn("[getHotel] Raw directory augment error:", rawErr.message);
+        }
+
         const formattedReviews = (hotel.review || []).map(r => ({
             ...r,
             reply: r.partnerReply
