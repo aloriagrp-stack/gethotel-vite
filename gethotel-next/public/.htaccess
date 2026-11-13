@@ -116,6 +116,8 @@ RewriteRule ^ - [L]
 
 # 2. Dynamic Next.js Catch-alls
 RewriteRule ^hotel/.*$ /hotel/1/index.html [L,QSA]
+RewriteRule ^hotels-directory/[^/]+/[^/]+/?$ /hotels-directory/delhi/stay/index.html [L,QSA]
+RewriteRule ^hotels-directory/?$ /hotels-directory/index.html [L,QSA]
 RewriteRule ^booking/.*$ /booking/details/1/index.html [L,QSA]
 RewriteRule ^bookings/.*$ /bookings/details/1/index.html [L,QSA]
 RewriteRule ^packages/.*$ /packages/1/index.html [L,QSA]

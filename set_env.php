@@ -48,4 +48,18 @@ foreach ($restartPaths as $rp) {
     echo "Restart touch written to: $rp\n";
 }
 
+echo "\n=== 3. CHECKING HTACCESS ROUTING FOR HOTELS-DIRECTORY ===\n";
+$htaccessFile = '/home/vgyuvmpi/public_html/.htaccess';
+if (file_exists($htaccessFile)) {
+    $content = file_get_contents($htaccessFile);
+    if (strpos($content, 'hotels-directory/[^/]+/[^/]+') === false) {
+        $rule = "\nRewriteRule ^hotels-directory/[^/]+/[^/]+/?$ /hotels-directory/delhi/stay/index.html [L,QSA]\nRewriteRule ^hotels-directory/?$ /hotels-directory/index.html [L,QSA]\n";
+        $content = str_replace('RewriteRule ^hotel/.*$ /hotel/1/index.html [L,QSA]', "RewriteRule ^hotel/.*$ /hotel/1/index.html [L,QSA]" . $rule, $content);
+        file_put_contents($htaccessFile, $content);
+        echo "Injected hotels-directory rewrite rules into .htaccess\n";
+    } else {
+        echo "hotels-directory rewrite rules already present in .htaccess\n";
+    }
+}
+
 echo "\nSYNC AND RESTART FINISHED SUCCESSFULLY.\n";
