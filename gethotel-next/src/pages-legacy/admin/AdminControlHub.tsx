@@ -36,8 +36,9 @@ export default function AdminControlHub({ hotels, loading = false }: AdminContro
         }
     };
 
-    // Filtered & classified hotels
-    const classifiedHotels = hotels.map(h => ({
+    // Filtered & classified hotels (Strictly bookable only - directory hotels are isolated to Directory tab)
+    const bookableOnlyHotels = (hotels || []).filter(h => h.listingType !== "directory");
+    const classifiedHotels = bookableOnlyHotels.map(h => ({
         ...h,
         category: classifyHotel(h)
     }));

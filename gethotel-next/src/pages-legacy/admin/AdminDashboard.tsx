@@ -597,13 +597,13 @@ export default function SuperAdminDashboard() {
                     {activeTab === "settings" && <AdminSettings />}
                     {activeTab === "notifications" && <AdminNotifications />}
                     {activeTab === "disputes" && <AdminDisputes />}
-                    {activeTab === "promotions" && <AdminPromotions hotels={hotels} onRefresh={() => fetchDashboardData('hotels', true)} />}
+                    {activeTab === "promotions" && <AdminPromotions hotels={hotels.filter((h: any) => h.listingType !== 'directory')} onRefresh={() => fetchDashboardData('hotels', true)} />}
                     {activeTab === "directory" && <AdminDirectory hotels={hotels} loading={loading} onRefresh={() => fetchDashboardData('hotels', true)} />}
-                    {activeTab === "controlhub" && <AdminControlHub hotels={hotels} loading={loading} />}
-                    {activeTab === "hotels" && <AdminControlHub hotels={hotels} loading={loading} />}
-                    {activeTab === "multi-room" && <AdminMultiRoomSetup hotels={hotels} />}
-                    {activeTab === "addPartner" && <AdminAddPartner hotels={hotels} partners={partners} setPartners={setPartners} />}
-                    {activeTab === "ai-copilot" && <AdminAICopilot hotels={hotels} loadingHotels={!loadedSections.hotels} />}
+                    {activeTab === "controlhub" && <AdminControlHub hotels={hotels.filter((h: any) => h.listingType !== 'directory')} loading={loading} />}
+                    {activeTab === "hotels" && <AdminControlHub hotels={hotels.filter((h: any) => h.listingType !== 'directory')} loading={loading} />}
+                    {activeTab === "multi-room" && <AdminMultiRoomSetup hotels={hotels.filter((h: any) => h.listingType !== 'directory')} />}
+                    {activeTab === "addPartner" && <AdminAddPartner hotels={hotels.filter((h: any) => h.listingType !== 'directory')} partners={partners} setPartners={setPartners} />}
+                    {activeTab === "ai-copilot" && <AdminAICopilot hotels={hotels.filter((h: any) => h.listingType !== 'directory')} loadingHotels={!loadedSections.hotels} />}
                     {activeTab === "tour-packages" && <AdminTourPackages />}
                     {activeTab === "destinations" && <AdminDestinationsManager />}
                     {activeTab === "destination-analytics" && <AdminDestinationAnalytics />}
