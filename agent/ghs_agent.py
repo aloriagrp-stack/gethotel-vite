@@ -863,6 +863,7 @@ class GHSTerminalAgent:
                 run_bulk_harvester()
                 self._load_hotels(force_refresh=True)
             elif choice == "12":
+                clear_screen()
                 try:
                     from google_maps_enricher import menu as enricher_menu
                 except ImportError:

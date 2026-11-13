@@ -117,8 +117,8 @@ def get_db_hotels(only_missing=True):
         conn.close()
 
 
-def save_hotel_contact_to_dbs(hotel_id: int, phone: str, email: str, website: str) -> dict:
-    """Updates contact details in both Localhost and Live MariaDB."""
+def save_hotel_contact_to_dbs(hotel_id: int, hotel_name: str, city: str, phone: str, email: str, website: str) -> dict:
+    """Updates contact details in both Localhost and Live MariaDB by ID and Name/City."""
     results = {"local": False, "live": False}
     update_fields = []
     params = []
@@ -136,25 +136,27 @@ def save_hotel_contact_to_dbs(hotel_id: int, phone: str, email: str, website: st
         return results
 
     update_fields.append("updatedAt = NOW()")
-    params.append(hotel_id)
-    query = f"UPDATE hotel SET {', '.join(update_fields)} WHERE id = %s"
-
-    # Local DB
+    
+    # 1. Update Local DB (match by id or name+city)
     try:
         l_conn = pymysql.connect(**LOCAL_DB)
+        local_params = list(params) + [hotel_id, hotel_name, city]
+        local_query = f"UPDATE hotel SET {', '.join(update_fields)} WHERE id = %s OR (name = %s AND city = %s)"
         with l_conn.cursor() as cur:
-            cur.execute(query, tuple(params))
+            cur.execute(local_query, tuple(local_params))
         l_conn.commit()
         l_conn.close()
         results["local"] = True
     except Exception as e:
         console.print(f"  [dim yellow]Local DB Update Notice: {e}[/dim yellow]")
 
-    # Live DB
+    # 2. Update Live DB (match primarily by name+city, then fallback to id)
     try:
         live_conn = pymysql.connect(**LIVE_DB)
+        live_params = list(params) + [hotel_name, city, hotel_id]
+        live_query = f"UPDATE hotel SET {', '.join(update_fields)} WHERE (name = %s AND city = %s) OR id = %s"
         with live_conn.cursor() as cur:
-            cur.execute(query, tuple(params))
+            cur.execute(live_query, tuple(live_params))
         live_conn.commit()
         live_conn.close()
         results["live"] = True
@@ -164,8 +166,14 @@ def save_hotel_contact_to_dbs(hotel_id: int, phone: str, email: str, website: st
     return results
 
 
+def clear_terminal():
+    """Completely wipes Windows conhost / CMD buffer cleanly."""
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+
 def run_enricher(limit: int = None, hotel_id_filter: int = None):
     """Main enrichment workflow using Playwright with stealth Chrome."""
+    clear_terminal()
     console.print(Panel(
         "[bold cyan]GOOGLE MAPS DIRECTORY HOTEL CONTACT ENRICHER[/bold cyan]\n"
         "[dim]Auto-scrapes official reception phone numbers & website links from Google Maps\n"
@@ -236,7 +244,8 @@ def run_enricher(limit: int = None, hotel_id_filter: int = None):
             query = f"{clean_name} {locality} {h_city}".strip()
             maps_url = f"https://www.google.com/maps/search/{urllib.parse.quote(query)}"
 
-            console.print(f"[{idx}/{len(hotels)}] [bold white]ID {h_id}: {h_name}[/bold white]...", end=" ")
+            short_name = (h_name[:40] + '..') if len(h_name) > 42 else h_name
+            console.print(f"[{idx}/{len(hotels)}] [bold white]#{h_id:<3d} {short_name:<42}[/bold white] ➔", end=" ")
 
             phone = ""
             website = ""
@@ -288,13 +297,42 @@ def run_enricher(limit: int = None, hotel_id_filter: int = None):
                 console.print(f"[dim red](Lookup error: {nav_err})[/dim red]")
                 continue
 
+            # Fallback 2: Website tel: links if official website was discovered
+            if not phone and website:
+                try:
+                    w_res = requests.get(website, headers={"User-Agent": "Mozilla/5.0"}, timeout=6)
+                    if w_res.status_code == 200:
+                        w_soup = BeautifulSoup(w_res.text, "html.parser")
+                        tel_a = w_soup.find("a", href=re.compile(r'^tel:'))
+                        if tel_a and tel_a.get("href"):
+                            raw_tel = tel_a["href"].replace("tel:", "").strip()
+                            clean_p = clean_phone_number(raw_tel)
+                            if len(re.sub(r'\D', '', clean_p)) >= 10:
+                                phone = clean_p
+                except Exception:
+                    pass
+
+            # Fallback 3: Search DuckDuckGo snippet for formatted Indian numbers
+            if not phone:
+                try:
+                    from ddgs import DDGS
+                    with DDGS() as ddgs:
+                        ddg_results = list(ddgs.text(f'"{clean_name}" {locality} {h_city} phone reception contact', max_results=3))
+                    snippets = " ".join([r.get("title", "") + " " + r.get("body", "") for r in ddg_results])
+                    # Strictly match formatted Indian numbers with prefix or hyphen to avoid arbitrary digits
+                    strict_phones = re.findall(r'(?:\+91[\s\-]?[6-9]\d{4}[\s\-]?\d{5}|011[\s\-]?[0-9]{8}|0[6-9]\d{9}|(?:(?:\+91|0)[6-9]\d{9}))', snippets)
+                    if strict_phones:
+                        phone = clean_phone_number(strict_phones[0])
+                except Exception:
+                    pass
+
             if phone:
-                res = save_hotel_contact_to_dbs(h_id, phone, email, website)
+                res = save_hotel_contact_to_dbs(h_id, h_name, h_city, phone, email, website)
                 enriched_count += 1
                 live_badge = "[green]✓ Live DB[/green]" if res.get("live") else "[yellow]Local only[/yellow]"
                 console.print(f"[bold green]FOUND![/bold green] 📞 {phone} {f'🌐 {website}' if website else ''} {f'✉️ {email}' if email else ''} ({live_badge})")
             else:
-                console.print("[dim text-slate-400]No phone listed on Maps.[/dim text-slate-400]")
+                console.print("[dim text-slate-400]No phone listed on Maps/Web.[/dim text-slate-400]")
 
             time.sleep(0.8)
 
@@ -306,7 +344,7 @@ def run_enricher(limit: int = None, hotel_id_filter: int = None):
 def menu():
     """Interactive command-line menu."""
     while True:
-        console.clear()
+        clear_terminal()
         console.print(Panel(
             "[bold cyan]📞 GOOGLE MAPS HOTEL CONTACT ENRICHER[/bold cyan]\n"
             "[white]Finds official front desk phone numbers, emails & websites from Google Maps\n"
