@@ -131,10 +131,10 @@ export default function HotelsDirectory() {
                         </p>
                         <button
                             type="button"
-                            onClick={() => { setSearchQuery(""); setSelectedCity("All"); }}
+                            onClick={() => setSearchQuery("")}
                             className="px-4 py-2 bg-slate-900 text-white text-xs font-semibold rounded-xl hover:bg-black transition-colors"
                         >
-                            Clear Filters
+                            Clear Search
                         </button>
                     </div>
                 ) : (
