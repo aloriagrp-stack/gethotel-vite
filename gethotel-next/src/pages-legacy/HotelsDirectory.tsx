@@ -197,11 +197,11 @@ export default function HotelsDirectory() {
                                         {/* Bottom Action Section */}
                                         <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
                                             {/* Starting Room Rate */}
-                                            {(hotel.bookingPrice || hotel.mmtPrice) ? (
+                                            {(hotel.bookingPrice || hotel.pricePerNight) ? (
                                                 <div>
                                                     <span className="text-[10px] text-slate-400 font-medium block">Starting Room Rate:</span>
                                                     <span className="font-extrabold text-slate-900 text-sm">
-                                                        ₹{Number(hotel.bookingPrice || hotel.mmtPrice).toLocaleString('en-IN')}<span className="text-[10px] text-slate-400 font-normal">/night</span>
+                                                        ₹{Number(hotel.bookingPrice || hotel.pricePerNight).toLocaleString('en-IN')}<span className="text-[10px] text-slate-400 font-normal">/night</span>
                                                     </span>
                                                 </div>
                                             ) : (

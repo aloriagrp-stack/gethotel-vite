@@ -986,108 +986,67 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                                     </div>
                                 </div>
 
-                                {/* Right Column: Live OTA Comparison (Booking.com & MakeMyTrip) (7 cols) */}
+                                {/* Right Column: Live OTA Comparison (Booking.com) (7 cols) */}
                                 <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 p-6 flex flex-col justify-between space-y-4 shadow-xs">
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Trusted Online Platforms</div>
+                                            <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Global Online Partner</div>
                                             <h3 className="text-base font-bold text-slate-900 mt-0.5">Compare Live Online Rates</h3>
                                         </div>
-                                        <span className="text-[11px] font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">Instant Confirmation</span>
+                                        <span className="text-[11px] font-medium text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-100">
+                                            Instant Confirmation
+                                        </span>
                                     </div>
 
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                                        {/* Booking.com Card */}
-                                        <a
-                                            href={hotel.bookingUrl || `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(hotel.name + ' ' + (hotel.city || ''))}`}
-                                            target="_blank"
-                                            rel="nofollow noopener noreferrer"
-                                            onClick={() => {
-                                                try {
-                                                    const url = `/api/hotels/${hotel.id}/track-lead`;
-                                                    const payload = JSON.stringify({ action: 'ota_booking' });
-                                                    if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
-                                                        navigator.sendBeacon(url, new Blob([payload], { type: 'application/json' }));
-                                                    } else {
-                                                        fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload, keepalive: true }).catch(() => {});
-                                                    }
-                                                } catch (_) {}
-                                            }}
-                                            className="group flex flex-col justify-between p-4 rounded-xl border border-slate-200 hover:border-blue-300 hover:bg-blue-50/20 transition-all shadow-2xs hover:shadow-sm"
-                                        >
-                                            <div className="flex items-center justify-between mb-3">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-8 h-8 rounded-lg bg-[#003580] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
-                                                        B.
-                                                    </div>
-                                                    <div>
-                                                        <div className="text-xs font-bold text-slate-900 group-hover:text-blue-700 leading-tight">Booking.com</div>
-                                                        <div className="text-[10px] text-slate-400">Global Online Partner</div>
-                                                    </div>
+                                    {/* Booking.com Primary Card */}
+                                    <a
+                                        href={hotel.bookingUrl || `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(hotel.name + ' ' + (hotel.city || ''))}`}
+                                        target="_blank"
+                                        rel="nofollow noopener noreferrer"
+                                        onClick={() => {
+                                            try {
+                                                const url = `/api/hotels/${hotel.id}/track-lead`;
+                                                const payload = JSON.stringify({ action: 'ota_booking' });
+                                                if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+                                                    navigator.sendBeacon(url, new Blob([payload], { type: 'application/json' }));
+                                                } else {
+                                                    fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload, keepalive: true }).catch(() => {});
+                                                }
+                                            } catch (_) {}
+                                        }}
+                                        className="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-xl border border-slate-200 hover:border-blue-400 hover:bg-blue-50/30 transition-all shadow-2xs hover:shadow-md cursor-pointer"
+                                    >
+                                        <div className="flex items-center gap-3.5">
+                                            <div className="w-12 h-12 rounded-xl bg-[#003580] text-white flex items-center justify-center font-black text-base shrink-0 shadow-sm">
+                                                B.
+                                            </div>
+                                            <div>
+                                                <div className="text-sm font-bold text-slate-900 group-hover:text-blue-700 leading-tight">
+                                                    Booking.com Official Listing
+                                                </div>
+                                                <div className="text-xs text-slate-500 mt-0.5">
+                                                    Official hotel page & verified guest reviews
                                                 </div>
                                             </div>
+                                        </div>
 
-                                            <div className="pt-3 border-t border-slate-100 flex items-end justify-between">
-                                                <div>
-                                                    <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Starting from</div>
-                                                    <div className="text-base font-black text-slate-900">
-                                                        {hotel.bookingPrice ? `₹${Number(hotel.bookingPrice).toLocaleString('en-IN')}` : 'Check Live'}
-                                                        {hotel.bookingPrice && <span className="text-[10px] font-normal text-slate-500"> /night</span>}
-                                                    </div>
-                                                </div>
-                                                <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#003580] group-hover:bg-[#00224f] text-white text-[11px] font-semibold transition-all">
-                                                    Check <ExternalLink className="w-3 h-3" />
-                                                </span>
-                                            </div>
-                                        </a>
-
-                                        {/* MakeMyTrip Card */}
-                                        <a
-                                            href={hotel.mmtUrl || `https://www.makemytrip.com/hotels/hotel-listing/?city=${encodeURIComponent(hotel.city || 'Delhi')}&searchText=${encodeURIComponent(hotel.name)}`}
-                                            target="_blank"
-                                            rel="nofollow noopener noreferrer"
-                                            onClick={() => {
-                                                try {
-                                                    const url = `/api/hotels/${hotel.id}/track-lead`;
-                                                    const payload = JSON.stringify({ action: 'ota_mmt' });
-                                                    if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
-                                                        navigator.sendBeacon(url, new Blob([payload], { type: 'application/json' }));
-                                                    } else {
-                                                        fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload, keepalive: true }).catch(() => {});
-                                                    }
-                                                } catch (_) {}
-                                            }}
-                                            className="group flex flex-col justify-between p-4 rounded-xl border border-slate-200 hover:border-red-300 hover:bg-red-50/20 transition-all shadow-2xs hover:shadow-sm"
-                                        >
-                                            <div className="flex items-center justify-between mb-3">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-8 h-8 rounded-lg bg-[#eb2026] text-white flex items-center justify-center font-bold text-[10px] shrink-0 shadow-xs">
-                                                        MMT
-                                                    </div>
-                                                    <div>
-                                                        <div className="text-xs font-bold text-slate-900 group-hover:text-red-700 leading-tight">MakeMyTrip</div>
-                                                        <div className="text-[10px] text-slate-400">Domestic Online Partner</div>
-                                                    </div>
+                                        <div className="flex items-center justify-between sm:justify-end gap-5 pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+                                            <div className="text-left sm:text-right">
+                                                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Starting from</div>
+                                                <div className="text-lg font-black text-slate-900">
+                                                    {hotel.bookingPrice ? `₹${Number(hotel.bookingPrice).toLocaleString('en-IN')}` : (hotel.pricePerNight ? `₹${Number(hotel.pricePerNight).toLocaleString('en-IN')}` : 'Check Live')}
+                                                    {(hotel.bookingPrice || hotel.pricePerNight) && <span className="text-xs font-normal text-slate-500"> /night</span>}
                                                 </div>
                                             </div>
-
-                                            <div className="pt-3 border-t border-slate-100 flex items-end justify-between">
-                                                <div>
-                                                    <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Starting from</div>
-                                                    <div className="text-base font-black text-slate-900">
-                                                        {hotel.mmtPrice ? `₹${Number(hotel.mmtPrice).toLocaleString('en-IN')}` : 'Check Live'}
-                                                        {hotel.mmtPrice && <span className="text-[10px] font-normal text-slate-500"> /night</span>}
-                                                    </div>
-                                                </div>
-                                                <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#eb2026] group-hover:bg-[#c0181d] text-white text-[11px] font-semibold transition-all">
-                                                    Check <ExternalLink className="w-3 h-3" />
-                                                </span>
-                                            </div>
-                                        </a>
-                                    </div>
+                                            <span className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#003580] group-hover:bg-[#00224f] text-white text-xs font-bold transition-all shadow-xs group-hover:shadow group-hover:translate-x-0.5">
+                                                <span>Check Deal</span>
+                                                <ExternalLink className="w-3.5 h-3.5" />
+                                            </span>
+                                        </div>
+                                    </a>
 
                                     <div className="pt-2 text-[11px] text-slate-400 flex items-center justify-between">
-                                        <span>* Rates may vary by dates and room category</span>
+                                        <span>* Rates fetched from live Booking.com inventory</span>
                                         <span className="text-slate-600 font-medium">Free cancellation options</span>
                                     </div>
                                 </div>

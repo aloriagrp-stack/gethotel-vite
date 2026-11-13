@@ -1778,3 +1778,14 @@
 {"timestamp":"2026-10-18T18:56:59.826Z","method":"GET","url":"/api/hotels","ip":"::1","userAgent":"node"}
 {"timestamp":"2026-10-18T18:57:52.315Z","method":"GET","url":"/api/hotels","ip":"::1","userAgent":"node"}
 {"timestamp":"2026-10-18T19:19:32.492Z","method":"GET","url":"/api/homepage/config","ip":"::1","userAgent":"node"}
+{"timestamp":"2026-11-13T07:23:39.159Z","method":"GET","url":"/api/hotels?listingType=directory","ip":"::1","userAgent":"python-requests/2.32.5"}
+{"timestamp":"2026-11-13T07:30:03.732Z","method":"GET","url":"/api/hotels/44","ip":"::1","userAgent":"python-requests/2.32.5"}
+{"timestamp":"2026-11-13T07:45:39.080Z","method":"GET","url":"/api/hotels/hotel-baba-deluxe-near-new-delhi-railway-station-and-city-center-by-rcg-hotels","ip":"::1","userAgent":"python-requests/2.32.5"}
+{"timestamp":"2026-11-13T07:53:34.151Z","method":"GET","url":"/api/hotels/1","ip":"::1","userAgent":"node"}
+{"timestamp":"2026-11-13T07:53:34.193Z","method":"GET","url":"/api/hotels/stay","ip":"::1","userAgent":"node"}
+{"timestamp":"2026-11-13T07:53:35.278Z","method":"GET","url":"/api/hotels/1","ip":"::1","userAgent":"node"}
+{"timestamp":"2026-11-13T07:56:09.822Z","method":"GET","url":"/api/hotels/search?city=New+Delhi","ip":"::1","userAgent":"python-requests/2.32.5"}
+{"timestamp":"2026-11-13T08:12:18.840Z","method":"GET","url":"/api/hotels?listingType=directory","ip":"::1","userAgent":"python-requests/2.32.5"}
+{"timestamp":"2026-11-13T12:52:20.954Z","method":"GET","url":"/api/hotels/1","ip":"::1","userAgent":"node"}
+{"timestamp":"2026-11-13T12:52:21.480Z","method":"GET","url":"/api/hotels/stay","ip":"::1","userAgent":"node"}
+{"timestamp":"2026-11-13T12:52:21.996Z","method":"GET","url":"/api/hotels/1","ip":"::1","userAgent":"node"}

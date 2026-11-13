@@ -1,10 +1,14 @@
 {
-  "generated": "2026-11-12",
-  "totalHotels": 12,
+  "generated": "2026-11-13",
+  "totalHotels": 14,
   "pages": [
     {
       "url": "/hotels/delhi",
       "priority": "0.95"
+    },
+    {
+      "url": "/hotels/delhi/paharganj",
+      "priority": "0.9"
     },
     {
       "url": "/hotels/delhi/mahipalpur",

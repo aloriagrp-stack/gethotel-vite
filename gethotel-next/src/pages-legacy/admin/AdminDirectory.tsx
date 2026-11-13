@@ -216,17 +216,17 @@ export default function AdminDirectory({ hotels, loading = false, onRefresh }: A
         }
     };
 
-    // Fetch lowest prices from Booking.com / MMT
+    // Fetch lowest price from Booking.com
     const handleFetchOtaPrices = async () => {
-        if (!managedHotel?.bookingUrl && !managedHotel?.mmtUrl) {
-            alert("Please paste a Booking.com or MakeMyTrip link first!");
+        if (!managedHotel?.bookingUrl) {
+            alert("Please paste a Booking.com listing link first!");
             return;
         }
 
         setIsFetchingOta(true);
         setOtaStatusMsg({
             type: 'info',
-            text: 'Fetching latest starting rates from OTA listings...'
+            text: 'Fetching latest starting rate from Booking.com...'
         });
 
         try {
@@ -243,7 +243,7 @@ export default function AdminDirectory({ hotels, loading = false, onRefresh }: A
                 },
                 body: JSON.stringify({
                     bookingUrl: managedHotel.bookingUrl || "",
-                    mmtUrl: managedHotel.mmtUrl || ""
+                    hotelId: managedHotel.id
                 })
             });
 
@@ -255,24 +255,27 @@ export default function AdminDirectory({ hotels, loading = false, onRefresh }: A
                 data = { success: false, message: "Server connection failed. Retrying..." };
             }
 
-            if (data.success) {
+            if (data.success && data.bookingPrice) {
+                const newPrice = Number(data.bookingPrice);
                 setManagedHotel((prev: any) => ({
                     ...prev,
-                    bookingPrice: data.bookingPrice !== undefined && data.bookingPrice !== null ? data.bookingPrice : prev.bookingPrice,
-                    mmtPrice: data.mmtPrice !== undefined && data.mmtPrice !== null ? data.mmtPrice : prev.mmtPrice,
+                    bookingPrice: newPrice,
+                    pricePerNight: newPrice,
                     otaLastFetchedAt: new Date().toISOString()
                 }));
-                const parts = [];
-                if (data.bookingPrice) parts.push(`Booking.com: ₹${Number(data.bookingPrice).toLocaleString('en-IN')}`);
-                if (data.mmtPrice) parts.push(`MMT: ₹${Number(data.mmtPrice).toLocaleString('en-IN')}`);
                 setOtaStatusMsg({
                     type: 'success',
-                    text: `Lowest starting price updated (${parts.join(' | ') || 'Rates synced'})`
+                    text: `Booking.com starting price updated: ₹${newPrice.toLocaleString('en-IN')}/night`
+                });
+            } else if (data.success) {
+                setOtaStatusMsg({
+                    type: 'success',
+                    text: data.message || 'Rates verified successfully.'
                 });
             } else {
                 setOtaStatusMsg({
                     type: 'error',
-                    text: data.message || 'Could not fetch rate from OTA'
+                    text: data.message || 'Could not fetch live rate. You can manually enter the price below.'
                 });
             }
         } catch (err: any) {
@@ -769,21 +772,21 @@ export default function AdminDirectory({ hotels, loading = false, onRefresh }: A
                         </div>
                     </div>
 
-                    {/* CARD 3: OTA Affiliate Links & Rates */}
+                    {/* CARD 3: Booking.com Affiliate Link & Rates */}
                     <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs space-y-4">
                         <div className="flex items-center justify-between pb-3 border-b border-slate-100 flex-wrap gap-2">
                             <div className="flex items-center gap-2">
                                 <Globe className="w-4 h-4 text-slate-700" />
                                 <div>
-                                    <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">OTA Deep Links & Rates</h3>
-                                    <p className="text-[10px] text-slate-400">Lowest room price is fetched directly from OTA listings</p>
+                                    <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Booking.com Link & Starting Rate</h3>
+                                    <p className="text-[10px] text-slate-400">Lowest room price is fetched from Booking.com or edited directly</p>
                                 </div>
                             </div>
 
                             <button
                                 type="button"
                                 onClick={handleFetchOtaPrices}
-                                disabled={isFetchingOta || (!managedHotel.bookingUrl && !managedHotel.mmtUrl)}
+                                disabled={isFetchingOta || !managedHotel.bookingUrl}
                                 className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-slate-900 hover:bg-black active:scale-95 text-white rounded-xl text-xs font-semibold transition-all shadow-2xs disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                             >
                                 <RefreshCw className={`w-3.5 h-3.5 ${isFetchingOta ? 'animate-spin' : ''}`} />
@@ -826,12 +829,24 @@ export default function AdminDirectory({ hotels, loading = false, onRefresh }: A
                                         <span className="text-xs font-bold text-slate-900">Booking.com</span>
                                     </div>
                                     <span className="text-[10px] text-slate-500 bg-white px-2 py-0.5 rounded border border-slate-200 font-medium">
-                                        Global
+                                        Global Partner
                                     </span>
                                 </div>
 
                                 <div>
-                                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">Booking.com Listing URL</label>
+                                    <div className="flex items-center justify-between mb-1">
+                                        <label className="block text-[11px] font-semibold text-slate-700">Booking.com Listing URL</label>
+                                        {managedHotel.bookingUrl && (
+                                            <a
+                                                href={managedHotel.bookingUrl}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="text-[11px] text-blue-600 hover:text-blue-800 font-semibold inline-flex items-center gap-1"
+                                            >
+                                                Open Link <ExternalLink className="w-3 h-3" />
+                                            </a>
+                                        )}
+                                    </div>
                                     <input
                                         type="url"
                                         value={managedHotel.bookingUrl || ""}
@@ -841,127 +856,34 @@ export default function AdminDirectory({ hotels, loading = false, onRefresh }: A
                                     />
                                 </div>
 
-                                <div className="p-3 bg-white border border-slate-200 rounded-lg flex items-center justify-between">
-                                    <div>
-                                        <div className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">Lowest Room Starting Rate</div>
-                                        <div className="mt-0.5 flex items-baseline gap-2">
-                                            {managedHotel.bookingPrice ? (
-                                                <>
-                                                    <span className="text-lg font-bold text-slate-900">
-                                                        ₹{Number(managedHotel.bookingPrice).toLocaleString('en-IN')}
-                                                    </span>
-                                                    <span className="text-[11px] text-slate-500 font-medium">/ night</span>
-                                                </>
-                                            ) : (
-                                                <span className="text-xs text-slate-400 italic">
-                                                    Rate not fetched yet. Click "Fetch Live Rates" above.
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                    {managedHotel.bookingUrl && (
-                                        <a
-                                            href={managedHotel.bookingUrl}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="text-[11px] text-slate-600 hover:text-slate-900 font-semibold inline-flex items-center gap-1"
-                                        >
-                                            Open <ExternalLink className="w-3 h-3" />
-                                        </a>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* MakeMyTrip Group */}
-                            <div className="p-4 bg-slate-50/70 rounded-xl border border-slate-200 space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-6 h-6 rounded bg-[#eb2026] text-white flex items-center justify-center font-bold text-[9px]">
-                                            MMT
-                                        </div>
-                                        <span className="text-xs font-bold text-slate-900">MakeMyTrip</span>
-                                    </div>
-                                    <span className="text-[10px] text-slate-500 bg-white px-2 py-0.5 rounded border border-slate-200 font-medium">
-                                        Domestic
-                                    </span>
-                                </div>
-
-                                <div>
-                                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">MakeMyTrip Listing URL</label>
-                                    <input
-                                        type="url"
-                                        value={managedHotel.mmtUrl || ""}
-                                        onChange={(e) => setManagedHotel({ ...managedHotel, mmtUrl: e.target.value })}
-                                        placeholder="https://www.makemytrip.com/hotels/..."
-                                        className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:ring-1 focus:ring-slate-900 focus:outline-none"
-                                    />
-                                </div>
-
-                                <div className="p-3 bg-white border border-slate-200 rounded-lg flex items-center justify-between">
-                                    <div>
-                                        <div className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">Lowest Room Starting Rate</div>
-                                        <div className="mt-0.5 flex items-baseline gap-2">
-                                            {managedHotel.mmtPrice ? (
-                                                <>
-                                                    <span className="text-lg font-bold text-slate-900">
-                                                        ₹{Number(managedHotel.mmtPrice).toLocaleString('en-IN')}
-                                                    </span>
-                                                    <span className="text-[11px] text-slate-500 font-medium">/ night</span>
-                                                </>
-                                            ) : (
-                                                <span className="text-xs text-slate-400 italic">
-                                                    Rate not fetched yet. Click "Fetch Live Rates" above.
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                    {managedHotel.mmtUrl && (
-                                        <a
-                                            href={managedHotel.mmtUrl}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="text-[11px] text-slate-600 hover:text-slate-900 font-semibold inline-flex items-center gap-1"
-                                        >
-                                            Open <ExternalLink className="w-3 h-3" />
-                                        </a>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Optional Manual Override Toggle */}
-                            <div className="pt-1">
-                                <button
-                                    type="button"
-                                    onClick={() => setShowManualOverride(!showManualOverride)}
-                                    className="text-[11px] text-slate-500 hover:text-slate-800 underline font-medium cursor-pointer"
-                                >
-                                    {showManualOverride ? "Hide Manual Price Inputs" : "Manual price override (optional)"}
-                                </button>
-
-                                {showManualOverride && (
-                                    <div className="grid grid-cols-2 gap-3 mt-2.5 p-3 bg-slate-50 rounded-xl border border-slate-200">
-                                        <div>
-                                            <label className="block text-[10px] font-semibold text-slate-600 mb-1">Manual Booking.com (₹)</label>
+                                <div className="p-3 bg-white border border-slate-200 rounded-lg">
+                                    <label className="block text-[10px] uppercase font-semibold text-slate-500 tracking-wider mb-1.5">
+                                        Lowest Room Starting Rate (₹ / night)
+                                    </label>
+                                    <div className="flex items-center gap-3">
+                                        <div className="relative flex-1">
+                                            <span className="absolute left-3 top-2 text-xs font-bold text-slate-400">₹</span>
                                             <input
                                                 type="number"
-                                                value={managedHotel.bookingPrice || ""}
-                                                onChange={(e) => setManagedHotel({ ...managedHotel, bookingPrice: e.target.value })}
-                                                placeholder="e.g. 3200"
-                                                className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none"
+                                                value={managedHotel.bookingPrice ?? managedHotel.pricePerNight ?? ""}
+                                                onChange={(e) => {
+                                                    const val = e.target.value !== "" ? parseFloat(e.target.value) : "";
+                                                    setManagedHotel({
+                                                        ...managedHotel,
+                                                        bookingPrice: val,
+                                                        pricePerNight: val !== "" ? val : 0
+                                                    });
+                                                }}
+                                                placeholder="e.g. 2499"
+                                                className="w-full pl-7 pr-3 py-2 text-sm font-bold text-slate-900 bg-slate-50/50 border border-slate-200 rounded-lg focus:bg-white focus:ring-1 focus:ring-slate-900 focus:outline-none"
                                             />
                                         </div>
-                                        <div>
-                                            <label className="block text-[10px] font-semibold text-slate-600 mb-1">Manual MMT (₹)</label>
-                                            <input
-                                                type="number"
-                                                value={managedHotel.mmtPrice || ""}
-                                                onChange={(e) => setManagedHotel({ ...managedHotel, mmtPrice: e.target.value })}
-                                                placeholder="e.g. 3450"
-                                                className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none"
-                                            />
-                                        </div>
+                                        <span className="text-xs text-slate-400 font-medium whitespace-nowrap">/ night</span>
                                     </div>
-                                )}
+                                    <p className="text-[10px] text-slate-400 mt-1.5">
+                                        Directly editable. Users will see this starting rate on the directory & detail pages.
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>

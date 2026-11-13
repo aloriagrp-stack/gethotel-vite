@@ -702,23 +702,21 @@ class GHSTerminalAgent:
                     continue
                 
                 console.print(f"Found [bold green]{len(dir_hotels)}[/bold green] directory hotels.\n")
-                if Confirm.ask("Do you want to auto-fetch latest market rates and generate Booking.com/MMT deep links?"):
+                if Confirm.ask("Do you want to auto-fetch latest market rates and generate Booking.com deep links?"):
                     for dh in dir_hotels:
                         hname = dh.get("name", "")
                         hcity = (dh.get("city") or "India").strip()
                         hid = dh.get("id")
-                        with console.status(f"[cyan]Searching OTA rates for {hname}...[/cyan]", spinner="dots"):
+                        with console.status(f"[cyan]Searching Booking.com rate for {hname}...[/cyan]", spinner="dots"):
                             rate = get_benchmark_rate(hname) or live_search_rate(hname, f"{hcity} {dh.get('address', '')}")
                         
                         b_price = int(rate["avg"]) if rate and rate.get("avg") else 2800
-                        m_price = int(rate["min"] + 200) if rate and rate.get("min") else b_price + 150
                         b_url = dh.get("bookingUrl") or f"https://www.booking.com/searchresults.html?ss={hname.replace(' ', '+')}+{hcity}"
-                        m_url = dh.get("mmtUrl") or f"https://www.makemytrip.com/hotels/hotel-listing/?city={hcity}&searchText={hname.replace(' ', '+')}"
                         
-                        self.api.convert_listing_type(hid, listing_type="directory", booking_url=b_url, booking_price=b_price, mmt_url=m_url, mmt_price=m_price)
-                        console.print(f"  [green]✓[/green] [ID {hid}] {hname} ➔ Booking.com: ₹{b_price} | MMT: ₹{m_price}")
+                        self.api.convert_listing_type(hid, listing_type="directory", booking_url=b_url, booking_price=b_price)
+                        console.print(f"  [green]✓[/green] [ID {hid}] {hname} ➔ Booking.com Starting Rate: ₹{b_price}")
                     
-                    console.print("\n[bold green]🎉 Successfully synced OTA prices and affiliate links for all directory hotels![/bold green]")
+                    console.print("\n[bold green]🎉 Successfully synced Booking.com prices and affiliate links for all directory hotels![/bold green]")
                     self._load_hotels(force_refresh=True)
                 Prompt.ask("\nPress Enter to continue")
 
@@ -820,11 +818,12 @@ class GHSTerminalAgent:
             console.print("  [bold cyan][9][/bold cyan] 📖 [bold yellow]HOTEL DIRECTORY & LEAD CENTER[/bold yellow] (View Call Leads, 1-Click Converter)")
             console.print("  [bold yellow][10][/bold yellow] 📥 [bold yellow]Deep-Clone Hotel from Booking.com URL (Auto-Downloads Photos & Creates Listing)[/bold yellow]")
             console.print("  [bold green][11][/bold green] 🏙️  [bold green]Bulk Hotel Harvester (Queue 10-100 URLs -> Auto-Deduplicate -> Batch Clone)[/bold green]")
+            console.print("  [bold yellow][12][/bold yellow] 📞 [bold yellow]Google Maps Hotel Contact Enricher (Auto-Find Front Desk Phone & Email)[/bold yellow]")
             console.print("  [bold cyan][6][/bold cyan] 🚀 [bold magenta]Push & Deploy Live to Production[/bold magenta] (GitHub CI/CD)")
             console.print("  [bold cyan][7][/bold cyan] 🔄 [bold white]Refresh Live Database Data[/bold white]")
             console.print("  [bold cyan][0][/bold cyan] 🚪 [bold red]Exit[/bold red]\n")
 
-            choice = Prompt.ask("[bold green]ghs-agent >[/bold green]", choices=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "0"], default="2")
+            choice = Prompt.ask("[bold green]ghs-agent >[/bold green]", choices=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "0"], default="2")
 
             if choice == "1":
                 self.audit_hotels()
@@ -861,6 +860,13 @@ class GHSTerminalAgent:
                 except ImportError:
                     from agent.hotel_bulk_harvester import run_bulk_harvester
                 run_bulk_harvester()
+                self._load_hotels(force_refresh=True)
+            elif choice == "12":
+                try:
+                    from google_maps_enricher import menu as enricher_menu
+                except ImportError:
+                    from agent.google_maps_enricher import menu as enricher_menu
+                enricher_menu()
                 self._load_hotels(force_refresh=True)
             elif choice == "6":
                 self.git_push_deploy()

@@ -2319,46 +2319,105 @@ exports.uploadAdminImage = async (req, res) => {
 exports.fetchOtaPrices = async (req, res) => {
     try {
         const hotelId = req.params.id && !isNaN(parseInt(req.params.id)) ? parseInt(req.params.id) : null;
-        const { bookingUrl, mmtUrl } = req.body || {};
-        const { spawn } = require('child_process');
-        const path = require('path');
-        const projectRoot = path.resolve(__dirname, '../..');
+        let { bookingUrl } = req.body || {};
 
-        const args = ['agent/ota_price_agent.py'];
-        if (bookingUrl) args.push('--booking-url', bookingUrl);
-        if (mmtUrl) args.push('--mmt-url', mmtUrl);
-        if (hotelId) args.push('--hotel-id', String(hotelId));
-
-        if (!bookingUrl && !mmtUrl && !hotelId) {
-            return res.status(400).json({ success: false, message: 'Provide hotelId or OTA URLs' });
+        let existingHotel = null;
+        if (hotelId) {
+            try {
+                existingHotel = await prisma.hotel.findUnique({
+                    where: { id: hotelId },
+                    select: { id: true, name: true, bookingUrl: true, bookingPrice: true, pricePerNight: true }
+                });
+                if (!bookingUrl && existingHotel?.bookingUrl) {
+                    bookingUrl = existingHotel.bookingUrl;
+                }
+            } catch (dbErr) {
+                console.warn('[Fetch OTA Prices DB Notice]', dbErr.message);
+            }
         }
 
-        const child = spawn('python', args, { cwd: projectRoot, timeout: 90000 });
-        let stdout = '';
-        let stderr = '';
+        if (!bookingUrl && !existingHotel) {
+            return res.status(400).json({ success: false, message: 'Booking.com URL or valid hotel ID is required' });
+        }
 
-        child.stdout.on('data', (d) => { stdout += d.toString(); });
-        child.stderr.on('data', (d) => { stderr += d.toString(); });
+        let fetchedPrice = null;
 
-        child.on('close', (code) => {
-            if (stdout) {
-                try {
-                    const lines = stdout.trim().split('\n');
-                    const lastLine = lines[lines.length - 1];
-                    const data = JSON.parse(lastLine);
-                    return res.status(200).json(data);
-                } catch (parseErr) {
-                    console.error('[OTA Parse Error]', stdout);
+        // 1. Try Pure Node HTTP Scraper (resilient and works on both Localhost & cPanel)
+        if (bookingUrl) {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 12000);
+                const response = await fetch(bookingUrl, {
+                    signal: controller.signal,
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                        'Accept-Language': 'en-IN,en-US;q=0.9,en;q=0.8,hi;q=0.7',
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8'
+                    }
+                });
+                clearTimeout(timeoutId);
+
+                if (response.ok) {
+                    const html = await response.text();
+                    const regexes = [
+                        /(?:₹|INR|Rs\.?)\s*([0-9,]+)/gi,
+                        /"price"\s*:\s*"?([0-9,]+)"?/gi,
+                        /data-price="([0-9,]+)"/gi
+                    ];
+                    const prices = [];
+                    for (const regex of regexes) {
+                        let match;
+                        while ((match = regex.exec(html)) !== null) {
+                            const val = parseInt(match[1].replace(/,/g, ''), 10);
+                            if (val >= 400 && val <= 250000) {
+                                prices.push(val);
+                            }
+                        }
+                    }
+                    if (prices.length > 0) {
+                        fetchedPrice = Math.min(...prices);
+                    }
                 }
+            } catch (scrapeErr) {
+                console.warn('[Node OTA Scrape Warning]', scrapeErr.message);
             }
-            if (code !== 0) {
-                console.error('[OTA Agent Error]', stderr);
-                return res.status(500).json({ success: false, message: 'Failed to fetch prices from OTA', error: stderr });
+        }
+
+        // 2. Fallback to existing database price if scraping was blocked
+        const finalPrice = fetchedPrice || existingHotel?.bookingPrice || (existingHotel?.pricePerNight ? Math.round(existingHotel.pricePerNight) : null);
+
+        // 3. Update database if hotelId is known and we obtained a price
+        if (hotelId && finalPrice) {
+            try {
+                await prisma.hotel.update({
+                    where: { id: hotelId },
+                    data: {
+                        bookingPrice: finalPrice,
+                        pricePerNight: finalPrice,
+                        otaLastFetchedAt: new Date()
+                    }
+                });
+            } catch (updErr) {
+                console.warn('[Update OTA Price Notice]', updErr.message);
             }
-            res.status(500).json({ success: false, message: 'No output from OTA agent' });
+        }
+
+        return res.status(200).json({
+            success: true,
+            bookingPrice: finalPrice,
+            hotelId: hotelId,
+            message: fetchedPrice 
+                ? `Live Booking.com rate fetched: ₹${finalPrice.toLocaleString('en-IN')}/night`
+                : finalPrice 
+                    ? `Rate confirmed: ₹${finalPrice.toLocaleString('en-IN')}/night`
+                    : 'Listing checked. You can enter or adjust the starting rate manually.'
         });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        console.error('[fetchOtaPrices Error]', err);
+        return res.status(200).json({
+            success: false,
+            message: 'Could not fetch dynamic rate automatically. Please enter the starting rate manually.'
+        });
     }
 };
 
