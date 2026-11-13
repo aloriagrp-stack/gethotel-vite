@@ -1,0 +1,18 @@
+[
+  {
+    "id": 68,
+    "name": "Premium Hotel Skye Suites Delhi IGI Airport With Free Airport Shuttle",
+    "city": "Delhi",
+    "address": "Mahipalpur, New Delhi 110037",
+    "bookingUrl": "https://www.booking.com/hotel/in/premium-skye-suites.html",
+    "bookingPrice": 1999,
+    "pricePerNight": null,
+    "thumbnail": "",
+    "description": "",
+    "amenities": "[]",
+    "listingType": "directory",
+    "status": "UNRESOLVED_CONTACT",
+    "reason": "Reception contact phone could not be extracted from Google Maps or Web search",
+    "addedToEmptyBoxAt": "2026-11-13 20:43:59"
+  }
+]

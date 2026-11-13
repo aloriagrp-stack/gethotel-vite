@@ -8,7 +8,9 @@ import os
 import sys
 import re
 import time
+import json
 import urllib.parse
+from datetime import datetime
 import pymysql
 import requests
 from bs4 import BeautifulSoup
@@ -18,6 +20,10 @@ from rich.panel import Panel
 from rich.prompt import Prompt, Confirm
 
 console = Console()
+
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(CURRENT_DIR)
+EMPTY_BOX_DIR = os.path.join(PROJECT_ROOT, "empty_box")
 
 # Database Configs
 LOCAL_DB = {
@@ -107,7 +113,7 @@ def get_db_hotels(only_missing=True):
 
     try:
         with conn.cursor(pymysql.cursors.DictCursor) as cur:
-            sql = "SELECT id, name, city, address, contactPhone, contactEmail, websiteUrl, bookingUrl FROM hotel WHERE listingType = 'directory'"
+            sql = "SELECT id, name, city, address, contactPhone, contactEmail, websiteUrl, bookingUrl, bookingPrice, pricePerNight, thumbnail, description, amenities, listingType FROM hotel WHERE listingType = 'directory'"
             if only_missing:
                 sql += " AND (contactPhone IS NULL OR contactPhone = '')"
             sql += " ORDER BY id ASC"
@@ -164,6 +170,88 @@ def save_hotel_contact_to_dbs(hotel_id: int, hotel_name: str, city: str, phone: 
         console.print(f"  [dim yellow]Live DB Update Notice: {e}[/dim yellow]")
 
     return results
+
+
+def move_to_empty_box(unfound_hotels: list):
+    """Saves full profile details of hotels whose contact numbers could not be found to the empty_box folder."""
+    if not unfound_hotels:
+        return
+
+    os.makedirs(EMPTY_BOX_DIR, exist_ok=True)
+    json_path = os.path.join(EMPTY_BOX_DIR, "empty_box_registry.json")
+    report_path = os.path.join(EMPTY_BOX_DIR, "unfound_hotels_report.md")
+
+    # Load existing registry if any to merge without duplicates
+    existing_registry = {}
+    if os.path.exists(json_path):
+        try:
+            with open(json_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, list):
+                    for item in data:
+                        k = str(item.get("id")) if item.get("id") else item.get("name")
+                        existing_registry[k] = item
+        except Exception:
+            pass
+
+    # Merge newly unfound hotels
+    for h in unfound_hotels:
+        hotel_entry = {
+            "id": h.get("id"),
+            "name": h.get("name"),
+            "city": h.get("city"),
+            "address": h.get("address") or "N/A",
+            "bookingUrl": h.get("bookingUrl") or "",
+            "bookingPrice": h.get("bookingPrice") or h.get("pricePerNight"),
+            "pricePerNight": h.get("pricePerNight"),
+            "thumbnail": h.get("thumbnail") or "",
+            "description": h.get("description") or "",
+            "amenities": h.get("amenities") or "[]",
+            "listingType": h.get("listingType", "directory"),
+            "status": "UNRESOLVED_CONTACT",
+            "reason": "Reception contact phone could not be extracted from Google Maps or Web search",
+            "addedToEmptyBoxAt": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        k = str(h.get("id")) if h.get("id") else h.get("name")
+        existing_registry[k] = hotel_entry
+
+    # Save JSON registry
+    registry_list = list(existing_registry.values())
+    with open(json_path, "w", encoding="utf-8") as f:
+        json.dump(registry_list, f, indent=2, ensure_ascii=False)
+
+    # Save Markdown Report with clickable links
+    with open(report_path, "w", encoding="utf-8") as f:
+        f.write("# 📦 Empty Box — Unresolved Directory Hotels\n\n")
+        f.write(f"Total Unresolved Properties: **{len(registry_list)}**  \n")
+        f.write(f"Last Updated: **{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}**\n\n")
+        f.write("| ID | Hotel Name | City | Starting Price | Booking.com URL |\n")
+        f.write("| :--- | :--- | :--- | :--- | :--- |\n")
+        for item in registry_list:
+            b_link = f"[Open Listing ↗]({item['bookingUrl']})" if item.get('bookingUrl') else "N/A"
+            price_str = f"₹{item.get('bookingPrice')}" if item.get('bookingPrice') else "N/A"
+            f.write(f"| #{item.get('id')} | **{item.get('name')}** | {item.get('city')} | {price_str} | {b_link} |\n")
+
+        f.write("\n---\n\n## 📋 Detailed Property Profiles & Manual Follow-Up\n\n")
+        for item in registry_list:
+            f.write(f"### #{item.get('id')} — {item.get('name')}\n")
+            f.write(f"- **City:** {item.get('city')}\n")
+            f.write(f"- **Full Address:** {item.get('address') or 'N/A'}\n")
+            f.write(f"- **Booking.com Link:** {item.get('bookingUrl') or 'N/A'}\n")
+            f.write(f"- **Starting Room Rate:** ₹{item.get('bookingPrice') or 'N/A'} /night\n")
+            if item.get('thumbnail'):
+                f.write(f"- **Cover Photo:** {item.get('thumbnail')}\n")
+            if item.get('description'):
+                f.write(f"- **Description:** {item.get('description')[:250]}...\n")
+            f.write(f"- **Logged In Empty Box At:** {item.get('addedToEmptyBoxAt')}\n\n")
+
+    console.print(Panel(
+        f"[bold green]📦 SUCCESS: {len(unfound_hotels)} hotel(s) moved to the Empty Box![/bold green]\n"
+        f"[white]Full profiles, booking links, and address details saved to:[/white]\n"
+        f"  📁 [bold cyan]empty_box/empty_box_registry.json[/bold cyan]\n"
+        f"  📁 [bold cyan]empty_box/unfound_hotels_report.md[/bold cyan]",
+        border_style="green"
+    ))
 
 
 def clear_terminal():
@@ -228,6 +316,7 @@ def run_enricher(limit: int = None, hotel_id_filter: int = None):
         return
 
     enriched_count = 0
+    unfound_hotels = []
 
     with sync_playwright() as p:
         try:
@@ -383,13 +472,18 @@ def run_enricher(limit: int = None, hotel_id_filter: int = None):
                 live_badge = "[green]✓ Live DB[/green]" if res.get("live") else "[yellow]Local only[/yellow]"
                 console.print(f"[bold green]FOUND![/bold green] 📞 {phone} {f'🌐 {website}' if website else ''} {f'✉️ {email}' if email else ''} ({live_badge})")
             else:
+                unfound_hotels.append(hotel)
                 console.print("[dim text-slate-400]No phone listed on Web/Maps.[/dim text-slate-400]")
 
             time.sleep(0.5)
 
         browser.close()
 
-    console.print(f"\n[bold green]🎉 Finished! Enriched {enriched_count} hotel(s) with front desk contacts![/bold green]\n")
+    console.print(f"\n[bold green]🎉 Finished! Enriched {enriched_count} hotel(s) with front desk contacts![/bold green]")
+    if unfound_hotels:
+        console.print(f"[bold yellow]⚠️ Could not automatically find contacts for {len(unfound_hotels)} hotel(s).[/bold yellow]\n")
+        if Confirm.ask(f"[bold cyan]Would you like to move these {len(unfound_hotels)} unfound hotel(s) to the Empty Box?[/bold cyan]", default=True):
+            move_to_empty_box(unfound_hotels)
 
 
 def menu():
@@ -406,9 +500,10 @@ def menu():
         console.print("  [bold cyan][1][/bold cyan] ⚡ Enrich First 10 Missing Hotels (Quick Test)")
         console.print("  [bold cyan][2][/bold cyan] 🚀 Enrich ALL Missing Directory Hotels (Batch Auto-Pilot)")
         console.print("  [bold cyan][3][/bold cyan] 🎯 Enrich Specific Hotel by ID")
+        console.print("  [bold yellow][4][/bold yellow] 📦 View / Open Empty Box (Unresolved Hotels)")
         console.print("  [bold red][0][/bold red] 🔙 Back to Previous Menu\n")
 
-        choice = Prompt.ask("Choose an option", choices=["1", "2", "3", "0"], default="1")
+        choice = Prompt.ask("Choose an option", choices=["1", "2", "3", "4", "0"], default="1")
 
         if choice == "1":
             run_enricher(limit=10)
@@ -422,6 +517,25 @@ def menu():
                 run_enricher(hotel_id_filter=int(hid))
             else:
                 console.print("[red]Invalid ID[/red]")
+            Prompt.ask("\nPress Enter to return to menu")
+        elif choice == "4":
+            json_path = os.path.join(EMPTY_BOX_DIR, "empty_box_registry.json")
+            if os.path.exists(json_path):
+                try:
+                    with open(json_path, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                    console.print(Panel(
+                        f"[bold yellow]📦 EMPTY BOX CONTAINS {len(data)} UNRESOLVED HOTEL(S)[/bold yellow]\n\n" +
+                        "\n".join([f"• [bold white]#{item.get('id')}[/bold white] {item.get('name')} ({item.get('city')})" for item in data[:15]]) +
+                        (f"\n...and {len(data) - 15} more" if len(data) > 15 else "") +
+                        f"\n\n[dim cyan]Full details & markdown report: {EMPTY_BOX_DIR}[/dim cyan]",
+                        title="Empty Box Contents",
+                        border_style="yellow"
+                    ))
+                except Exception as e:
+                    console.print(f"[red]Could not read Empty Box: {e}[/red]")
+            else:
+                console.print("[green]✓ Empty Box is currently empty! All hotels have contacts.[/green]")
             Prompt.ask("\nPress Enter to return to menu")
         elif choice == "0":
             break
