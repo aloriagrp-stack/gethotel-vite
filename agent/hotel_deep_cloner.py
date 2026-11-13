@@ -130,6 +130,12 @@ def clone_hotel(url: str, max_photos: int = 10) -> dict:
     """Full deep scrape of hotel listing and download of photos."""
     from playwright.sync_api import sync_playwright
 
+    # Canonicalize Booking.com URL (strip stale session & tracking params)
+    clean_canonical_url = url
+    m_canonical = re.match(r'^(https?://[^/]*booking\.com/hotel/[^?#]+\.html)', url)
+    if m_canonical:
+        clean_canonical_url = m_canonical.group(1)
+
     target_url = ensure_dates(url)
     result = {
         "success": False,
@@ -141,7 +147,7 @@ def clone_hotel(url: str, max_photos: int = 10) -> dict:
         "amenities": [],
         "thumbnail": "",
         "imagesList": [],
-        "bookingUrl": url,
+        "bookingUrl": clean_canonical_url,
         "bookingPrice": None,
         "downloadedPhotosCount": 0
     }
