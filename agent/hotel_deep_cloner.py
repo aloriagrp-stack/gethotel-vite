@@ -367,10 +367,19 @@ def clone_hotel(url: str, max_photos: int = 10) -> dict:
                 if local_path:
                     downloaded_local_paths.append(local_path)
 
+            if upgraded_urls:
+                result["cdnThumbnail"] = upgraded_urls[0]
+                result["cdnImagesList"] = upgraded_urls[1:max_photos]
+
             if downloaded_local_paths:
-                result["thumbnail"] = downloaded_local_paths[0]
-                result["imagesList"] = downloaded_local_paths[1:]
+                # Use CDN URL as primary thumbnail if available for universal remote & local viewing
+                result["thumbnail"] = upgraded_urls[0] if upgraded_urls else downloaded_local_paths[0]
+                result["imagesList"] = upgraded_urls[1:max_photos] if upgraded_urls else downloaded_local_paths[1:]
+                result["localThumbnail"] = downloaded_local_paths[0]
                 result["downloadedPhotosCount"] = len(downloaded_local_paths)
+            elif upgraded_urls:
+                result["thumbnail"] = upgraded_urls[0]
+                result["imagesList"] = upgraded_urls[1:max_photos]
 
             result["success"] = bool(result["name"])
 
@@ -384,47 +393,71 @@ def clone_hotel(url: str, max_photos: int = 10) -> dict:
 
 
 def save_to_mysql(hotel_data: dict) -> int | None:
-    """Saves the cloned hotel directly into MySQL database."""
-    try:
-        import pymysql
-        conn = pymysql.connect(
-            host="127.0.0.1", port=3306, user="root", password="",
-            database="vgyuvmpi_gethotel_db", autocommit=True
-        )
-        with conn.cursor() as cur:
-            sql = """
-                INSERT INTO hotel (
-                    name, city, address, description, starRating, 
-                    pricePerNight, thumbnail, images, amenities, mainAmenities,
-                    bookingUrl, bookingPrice, otaLastFetchedAt,
-                    listingType, userId, isActive, createdAt, updatedAt
-                ) VALUES (
-                    %s, %s, %s, %s, %s,
-                    %s, %s, %s, %s, %s,
-                    %s, %s, NOW(),
-                    'directory', 2, 1, NOW(), NOW()
-                )
-            """
-            cur.execute(sql, (
-                hotel_data["name"],
-                hotel_data["city"],
-                hotel_data["address"],
-                hotel_data["description"],
-                hotel_data["starRating"],
-                float(hotel_data.get("bookingPrice") or 0.0),
-                hotel_data["thumbnail"],
-                json.dumps(hotel_data["imagesList"]),
-                json.dumps(hotel_data["amenities"]),
-                json.dumps(hotel_data["amenities"]),
-                hotel_data.get("bookingUrl", ""),
-                hotel_data.get("bookingPrice")
-            ))
-            new_id = cur.lastrowid
+    """Saves the cloned hotel directly into BOTH Localhost and Live Production MySQL databases."""
+    import pymysql
+
+    thumb = hotel_data.get("cdnThumbnail") or hotel_data.get("thumbnail")
+    imgs = hotel_data.get("cdnImagesList") or hotel_data.get("imagesList", [])
+
+    db_configs = [
+        {"name": "Localhost", "host": "127.0.0.1", "port": 3306, "user": "root", "password": "", "database": "vgyuvmpi_gethotel_db"},
+        {"name": "Live Production", "host": "103.108.220.145", "port": 3306, "user": "vgyuvmpi_gethotel_db", "password": "shriyanshking", "database": "vgyuvmpi_gethotel_db"}
+    ]
+
+    saved_id = None
+    for cfg in db_configs:
+        try:
+            conn = pymysql.connect(
+                host=cfg["host"], port=cfg["port"], user=cfg["user"], password=cfg["password"],
+                database=cfg["database"], autocommit=True, connect_timeout=6
+            )
+            with conn.cursor() as cur:
+                # Check for existing
+                cur.execute("SELECT id FROM hotel WHERE name = %s AND listingType = 'directory'", (hotel_data["name"],))
+                existing = cur.fetchone()
+                if existing:
+                    sys.stderr.write(f"[{cfg['name']}] Hotel already exists in database with ID #{existing[0]}\n")
+                    if not saved_id:
+                        saved_id = existing[0]
+                    conn.close()
+                    continue
+
+                sql = """
+                    INSERT INTO hotel (
+                        name, city, address, description, starRating, 
+                        pricePerNight, thumbnail, images, amenities, mainAmenities,
+                        bookingUrl, bookingPrice, otaLastFetchedAt,
+                        listingType, userId, isActive, createdAt, updatedAt
+                    ) VALUES (
+                        %s, %s, %s, %s, %s,
+                        %s, %s, %s, %s, %s,
+                        %s, %s, NOW(),
+                        'directory', 2, 1, NOW(), NOW()
+                    )
+                """
+                cur.execute(sql, (
+                    hotel_data["name"],
+                    hotel_data["city"],
+                    hotel_data["address"],
+                    hotel_data["description"],
+                    hotel_data["starRating"],
+                    float(hotel_data.get("bookingPrice") or 0.0),
+                    thumb,
+                    json.dumps(imgs),
+                    json.dumps(hotel_data.get("amenities", [])),
+                    json.dumps(hotel_data.get("amenities", [])),
+                    hotel_data.get("bookingUrl", ""),
+                    hotel_data.get("bookingPrice")
+                ))
+                new_id = cur.lastrowid
+                sys.stderr.write(f"[{cfg['name']}] Successfully saved hotel ID #{new_id}\n")
+                if not saved_id:
+                    saved_id = new_id
             conn.close()
-            return new_id
-    except Exception as e:
-        sys.stderr.write(f"[MySQL Insert Error] {e}\n")
-        return None
+        except Exception as e:
+            sys.stderr.write(f"[{cfg['name']} MySQL Insert Error] {e}\n")
+
+    return saved_id
 
 
 def main():

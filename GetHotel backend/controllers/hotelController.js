@@ -23,43 +23,60 @@ exports.getHotels = async (req, res, next) => {
         if (listingType) {
             whereClause.listingType = listingType;
         }
-        const hotels = await prisma.hotel.findMany({
-            where: whereClause,
-            select: {
-                id: true,
-                name: true,
-                tagline: true,
-                city: true,
-                address: true,
-                pricePerNight: true,
-                starRating: true,
-                guestRating: true,
-                reviewCount: true,
-                thumbnail: true,
-                images: true,
-                amenities: true,
-                isFeatured: true,
-                isTrending: true,
-                isActive: true,
-                qualityScore: true,
-                listingType: true,
-                contactPhone: true,
-                contactEmail: true,
-                contactPerson: true,
-                websiteUrl: true,
-                callClicks: true,
-                viewCount: true,
-                bookingUrl: true,
-                bookingPrice: true,
-                mmtUrl: true,
-                mmtPrice: true,
-                otaCurrency: true,
-                otaLastFetchedAt: true,
-                room: true,
-                coupon: true
-            },
-            take: 500
-        });
+        let hotels;
+        try {
+            hotels = await prisma.hotel.findMany({
+                where: whereClause,
+                select: {
+                    id: true,
+                    name: true,
+                    tagline: true,
+                    city: true,
+                    address: true,
+                    pricePerNight: true,
+                    starRating: true,
+                    guestRating: true,
+                    reviewCount: true,
+                    thumbnail: true,
+                    images: true,
+                    amenities: true,
+                    isFeatured: true,
+                    isTrending: true,
+                    isActive: true,
+                    qualityScore: true,
+                    listingType: true,
+                    contactPhone: true,
+                    contactEmail: true,
+                    contactPerson: true,
+                    websiteUrl: true,
+                    callClicks: true,
+                    viewCount: true,
+                    bookingUrl: true,
+                    bookingPrice: true,
+                    mmtUrl: true,
+                    mmtPrice: true,
+                    otaCurrency: true,
+                    otaLastFetchedAt: true,
+                    room: true,
+                    coupon: true
+                },
+                take: 500
+            });
+        } catch (findErr) {
+            console.warn("[getHotels] Prisma findMany failed, falling back to raw SQL:", findErr.message);
+            let sql = "SELECT * FROM hotel WHERE 1=1";
+            const params = [];
+            if (city && city !== "All" && city !== "India") {
+                sql += " AND city LIKE ?";
+                params.push(`%${city}%`);
+            }
+            if (listingType) {
+                sql += " AND listingType = ?";
+                params.push(listingType);
+            }
+            sql += " ORDER BY id DESC LIMIT 500";
+            hotels = await prisma.$queryRawUnsafe(sql, ...params);
+        }
         const count = hotels ? hotels.length : 0;
         console.log(`Found ${count} hotels.`);
         res.status(200).json({ success: true, count, data: hotels || [] });

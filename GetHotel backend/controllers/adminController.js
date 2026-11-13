@@ -2181,32 +2181,53 @@ exports.createDirectoryHotel = async (req, res) => {
         }
 
         const fallbackThumb = thumbnail || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80';
+        const price = bookingPrice ? parseInt(bookingPrice) : 2500;
+        const bPrice = bookingPrice ? parseInt(bookingPrice) : null;
+        const mPrice = mmtPrice ? parseInt(mmtPrice) : null;
+        const uid = adminUser ? adminUser.id : 2;
 
-        const newHotel = await prisma.hotel.create({
-            data: {
-                name,
-                city,
-                address: address || city,
-                tagline: `${name} — Verified Hotel in ${city}`,
-                description: `Discover ${name} in ${city}. Verified property with direct contact and live OTA price comparison.`,
-                listingType: 'directory',
-                contactPhone: contactPhone || null,
-                contactEmail: contactEmail || null,
-                contactPerson: contactPerson || null,
-                bookingUrl: bookingUrl || null,
-                bookingPrice: bookingPrice ? parseInt(bookingPrice) : null,
-                mmtUrl: mmtUrl || null,
-                mmtPrice: mmtPrice ? parseInt(mmtPrice) : null,
-                otaLastFetchedAt: (bookingPrice || mmtPrice) ? new Date() : null,
-                thumbnail: fallbackThumb,
-                images: JSON.stringify([fallbackThumb]),
-                pricePerNight: bookingPrice ? parseInt(bookingPrice) : 2500,
-                userId: adminUser ? adminUser.id : 1,
-                isActive: true
-            }
-        });
-
-        res.status(201).json({ success: true, message: 'Directory hotel created successfully', data: newHotel });
+        try {
+            const newHotel = await prisma.hotel.create({
+                data: {
+                    name,
+                    city,
+                    address: address || city,
+                    tagline: `${name} — Verified Hotel in ${city}`,
+                    description: `Discover ${name} in ${city}. Verified property with direct contact and live OTA price comparison.`,
+                    listingType: 'directory',
+                    contactPhone: contactPhone || null,
+                    contactEmail: contactEmail || null,
+                    contactPerson: contactPerson || null,
+                    bookingUrl: bookingUrl || null,
+                    bookingPrice: bPrice,
+                    mmtUrl: mmtUrl || null,
+                    mmtPrice: mPrice,
+                    otaLastFetchedAt: (bPrice || mPrice) ? new Date() : null,
+                    thumbnail: fallbackThumb,
+                    images: JSON.stringify([fallbackThumb]),
+                    pricePerNight: price,
+                    userId: uid,
+                    isActive: true
+                }
+            });
+            return res.status(201).json({ success: true, message: 'Directory hotel created successfully', data: newHotel });
+        } catch (createErr) {
+            console.warn("[createDirectoryHotel] Falling back to raw SQL insert:", createErr.message);
+            await prisma.$executeRawUnsafe(`
+                INSERT INTO hotel (
+                    name, city, address, tagline, description, pricePerNight, starRating,
+                    thumbnail, images, listingType, contactPhone, contactEmail, contactPerson,
+                    bookingUrl, bookingPrice, mmtUrl, mmtPrice, otaLastFetchedAt, userId, isActive, createdAt, updatedAt
+                ) VALUES (?, ?, ?, ?, ?, ?, 3, ?, ?, 'directory', ?, ?, ?, ?, ?, ?, ?, NOW(), ?, 1, NOW(), NOW())
+            `,
+                name, city, address || city, `${name} — Verified Hotel in ${city}`,
+                `Discover ${name} in ${city}. Verified property with direct contact and live OTA price comparison.`,
+                price, fallbackThumb, JSON.stringify([fallbackThumb]),
+                contactPhone || null, contactEmail || null, contactPerson || null,
+                bookingUrl || null, bPrice, mmtUrl || null, mPrice, uid
+            );
+            return res.status(201).json({ success: true, message: 'Directory hotel created successfully via SQL' });
+        }
     } catch (err) {
         res.status(400).json({ success: false, message: err.message });
     }
@@ -2217,28 +2238,39 @@ exports.createDirectoryHotel = async (req, res) => {
 // @access  Super Admin
 exports.getDirectoryLeads = async (req, res) => {
     try {
-        const directoryHotels = await prisma.hotel.findMany({
-            where: { listingType: 'directory' },
-            select: {
-                id: true,
-                name: true,
-                city: true,
-                address: true,
-                contactPhone: true,
-                contactEmail: true,
-                callClicks: true,
-                emailClicks: true,
-                viewCount: true,
-                createdAt: true,
-                updatedAt: true
-            },
-            orderBy: [
-                { callClicks: 'desc' },
-                { viewCount: 'desc' }
-            ]
-        });
+        let directoryHotels;
+        try {
+            directoryHotels = await prisma.hotel.findMany({
+                where: { listingType: 'directory' },
+                select: {
+                    id: true,
+                    name: true,
+                    city: true,
+                    address: true,
+                    contactPhone: true,
+                    contactEmail: true,
+                    callClicks: true,
+                    emailClicks: true,
+                    viewCount: true,
+                    createdAt: true,
+                    updatedAt: true
+                },
+                orderBy: [
+                    { callClicks: 'desc' },
+                    { viewCount: 'desc' }
+                ]
+            });
+        } catch (findErr) {
+            console.warn("[getDirectoryLeads] Falling back to raw SQL:", findErr.message);
+            directoryHotels = await prisma.$queryRawUnsafe(`
+                SELECT id, name, city, address, contactPhone, contactEmail, callClicks, emailClicks, viewCount, createdAt, updatedAt
+                FROM hotel
+                WHERE listingType = 'directory'
+                ORDER BY callClicks DESC, viewCount DESC
+            `);
+        }
 
-        res.status(200).json({ success: true, count: directoryHotels.length, data: directoryHotels });
+        res.status(200).json({ success: true, count: directoryHotels ? directoryHotels.length : 0, data: directoryHotels || [] });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }

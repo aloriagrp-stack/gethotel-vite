@@ -37,28 +37,33 @@ def normalize_ota_url(url: str) -> str:
     return url.split('?')[0].lower().strip()
 
 def get_existing_hotel_signatures():
-    """Fetches all existing hotel bookingUrls and names from MySQL to detect duplicates."""
+    """Fetches all existing hotel bookingUrls and names from both Local and Live MySQL to detect duplicates."""
     signatures = {}
-    try:
-        import pymysql
-        conn = pymysql.connect(
-            host="127.0.0.1", port=3306, user="root", password="",
-            database="vgyuvmpi_gethotel_db", autocommit=True
-        )
-        with conn.cursor() as cur:
-            cur.execute("SELECT id, name, bookingUrl FROM hotel")
-            for row in cur.fetchall():
-                hid, name, b_url = row[0], row[1], row[2]
-                if b_url:
-                    norm = normalize_ota_url(b_url)
-                    if norm:
-                        signatures[norm] = {"id": hid, "name": name, "reason": "Booking URL match"}
-                if name:
-                    clean_n = name.lower().strip()
-                    signatures[clean_n] = {"id": hid, "name": name, "reason": "Hotel Name match"}
-        conn.close()
-    except Exception as e:
-        console.print(f"[dim red]Warning checking database: {e}[/dim red]")
+    import pymysql
+    db_configs = [
+        {"host": "127.0.0.1", "port": 3306, "user": "root", "password": "", "database": "vgyuvmpi_gethotel_db"},
+        {"host": "103.108.220.145", "port": 3306, "user": "vgyuvmpi_gethotel_db", "password": "shriyanshking", "database": "vgyuvmpi_gethotel_db"}
+    ]
+    for cfg in db_configs:
+        try:
+            conn = pymysql.connect(
+                host=cfg["host"], port=cfg["port"], user=cfg["user"], password=cfg["password"],
+                database=cfg["database"], autocommit=True, connect_timeout=5
+            )
+            with conn.cursor() as cur:
+                cur.execute("SELECT id, name, bookingUrl FROM hotel")
+                for row in cur.fetchall():
+                    hid, name, b_url = row[0], row[1], row[2]
+                    if b_url:
+                        norm = normalize_ota_url(b_url)
+                        if norm:
+                            signatures[norm] = {"id": hid, "name": name, "reason": "Booking URL match"}
+                    if name:
+                        clean_n = name.lower().strip()
+                        signatures[clean_n] = {"id": hid, "name": name, "reason": "Hotel Name match"}
+            conn.close()
+        except Exception:
+            pass
     return signatures
 
 def run_bulk_harvester(target_count: int = None, default_photos: int = 6):
