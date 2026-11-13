@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
     Phone, Mail, Globe, Plus, Search, Copy, ExternalLink,
     X, Save, ArrowLeft, Eye, Building, RefreshCw, Star,
