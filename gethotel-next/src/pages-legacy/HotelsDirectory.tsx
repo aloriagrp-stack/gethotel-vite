@@ -162,13 +162,6 @@ export default function HotelsDirectory() {
                                             <MapPin className="w-3.5 h-3.5 text-blue-600 drop-shadow-xs" />
                                             <span>{hotel.city || "India"}</span>
                                         </div>
-
-                                        {hotel.starRating && (
-                                            <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-b from-white/85 via-white/50 to-white/25 backdrop-blur-xl backdrop-saturate-[190%] border border-white/70 shadow-[inset_0_1.5px_1px_0_rgba(255,255,255,0.95),inset_0_-1px_1px_0_rgba(0,0,0,0.06),0_6px_20px_rgba(0,0,0,0.12)] text-slate-900 text-[11px] font-extrabold tracking-tight">
-                                                <Star className="w-3 h-3 fill-amber-400 text-amber-400 drop-shadow-xs" />
-                                                <span>{hotel.starRating}★</span>
-                                            </div>
-                                        )}
                                     </div>
 
                                     {/* Content Body */}
