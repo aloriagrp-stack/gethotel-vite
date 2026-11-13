@@ -171,12 +171,39 @@ def clear_terminal():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 
+def clean_hotel_search_query(name: str, addr: str = "", city: str = "Delhi") -> str:
+    """Strips OTA booking keywords, promos, and extracts core hotel name + locality."""
+    n = re.sub(r'\(.*?\)', '', name)
+    n = re.sub(r'[-–—]\s*by\s+.*$', '', n, flags=re.IGNORECASE)
+    remove_words = [
+        'with free airport transport', 'free airport transport', 'free airport shuttle', 'free shuttle',
+        'a luxury hotel', 'luxury hotel', 'near new delhi railway station and city center',
+        'near new delhi railway station', 'near connaught place', 'in city centre at new delhi',
+        'in city centre', 'near igi delhi airport', 'near delhi igi airport', 'near igi airport',
+        'delhi airport', 'terminel-3 hotel near d', 'terminal-3 igi airport', 'terminel-3', 'terminal 3',
+        'with luxury restaurant', 'luxury sky deck & terrace', 'near rajori metro', 'free cancellation',
+        'by rcg hotels', 'by jmd group', 'by m s hospitality'
+    ]
+    for w in remove_words:
+        n = re.sub(re.escape(w), ' ', n, flags=re.IGNORECASE)
+    n = re.sub(r'[^a-zA-Z0-9\s]', ' ', n)
+    core = " ".join(n.split())
+
+    locality = ""
+    for loc in ["Paharganj", "Mahipalpur", "Aerocity", "Karol Bagh", "Rohini", "Dwarka", "Vasant Kunj", "Connaught Place", "South Delhi"]:
+        if loc.lower() in (name + " " + addr).lower():
+            locality = loc
+            break
+
+    return f"{core} {locality} {city}".strip()
+
+
 def run_enricher(limit: int = None, hotel_id_filter: int = None):
     """Main enrichment workflow using Playwright with stealth Chrome."""
     clear_terminal()
     console.print(Panel(
-        "[bold cyan]GOOGLE MAPS DIRECTORY HOTEL CONTACT ENRICHER[/bold cyan]\n"
-        "[dim]Auto-scrapes official reception phone numbers & website links from Google Maps\n"
+        "[bold cyan]GOOGLE MAPS & SEARCH DIRECTORY HOTEL CONTACT ENRICHER[/bold cyan]\n"
+        "[dim]Auto-scrapes verified reception phone numbers, emails & official websites\n"
         "Synchronizes directly with Localhost (127.0.0.1) & Live Production (103.108.220.145)[/dim]",
         border_style="cyan"
     ))
@@ -192,7 +219,7 @@ def run_enricher(limit: int = None, hotel_id_filter: int = None):
     if limit and limit > 0:
         hotels = hotels[:limit]
 
-    console.print(f"[bold yellow]Found {len(hotels)} directory hotel(s) to check on Google Maps.[/bold yellow]\n")
+    console.print(f"[bold yellow]Found {len(hotels)} directory hotel(s) to check.[/bold yellow]\n")
 
     try:
         from playwright.sync_api import sync_playwright
@@ -232,99 +259,123 @@ def run_enricher(limit: int = None, hotel_id_filter: int = None):
             h_city = hotel.get("city") or "Delhi"
             h_addr = hotel.get("address") or ""
 
-            # Extract key locality if present (e.g. Paharganj, Karol Bagh, Aerocity)
-            locality = ""
-            for loc in ["Paharganj", "Karol Bagh", "Mahipalpur", "Aerocity", "Rohini", "Dwarka", "Connaught Place"]:
-                if loc.lower() in (h_name + " " + h_addr).lower():
-                    locality = loc
-                    break
-
-            clean_name = re.sub(r'\(.*?\)', '', h_name)
-            clean_name = re.sub(r'(?:near|by\s+[a-z\s]+|terminal\s*\d+).*$', '', clean_name, flags=re.IGNORECASE).strip(' -')
-            query = f"{clean_name} {locality} {h_city}".strip()
-            maps_url = f"https://www.google.com/maps/search/{urllib.parse.quote(query)}"
-
-            short_name = (h_name[:40] + '..') if len(h_name) > 42 else h_name
-            console.print(f"[{idx}/{len(hotels)}] [bold white]#{h_id:<3d} {short_name:<42}[/bold white] ➔", end=" ")
+            search_kw = clean_hotel_search_query(h_name, h_addr, h_city)
+            short_name = (h_name[:38] + '..') if len(h_name) > 40 else h_name
+            console.print(f"[{idx}/{len(hotels)}] [bold white]#{h_id:<3d} {short_name:<40}[/bold white] ➔", end=" ")
 
             phone = ""
             website = ""
             email = ""
 
+            # ----------------------------------------------------
+            # TIER 1: Google Web Search (Knowledge Panel & Snippet)
+            # ----------------------------------------------------
             try:
-                page.goto(maps_url, wait_until="domcontentloaded", timeout=20000)
-                page.wait_for_timeout(3000)
-
-                # If Google Maps returned a list instead of single place card, click the first place
+                g_url = f"https://www.google.com/search?q={urllib.parse.quote(search_kw + ' contact number')}"
                 try:
-                    place_links = page.locator('a[href*="/maps/place/"]')
-                    if place_links.count() > 0:
-                        place_links.first.click(timeout=3000)
-                        page.wait_for_timeout(2500)
+                    page.goto(g_url, timeout=10000)
+                except Exception:
+                    pass
+                page.wait_for_timeout(2000)
+                g_body = page.inner_text('body')
+
+                # Match formatted phone numbers
+                g_phones = re.findall(r'(?:Phone Number:\s*|Call\s+)?((?:\+91[\-\s]?)?[6-9]\d{4}[\s\-]?\d{5}|(?:\+91[\-\s]?)?011[\s\-]?[0-9]{8}|[6-9]\d{9})', g_body)
+                for ph in g_phones:
+                    clean_p = clean_phone_number(ph)
+                    raw_digits = re.sub(r'\D', '', clean_p)
+                    if len(raw_digits) in [10, 11, 12]:
+                        phone = clean_p
+                        break
+
+                # Extract first non-OTA website
+                for a in page.query_selector_all('a[href^="http"]'):
+                    href = a.get_attribute('href')
+                    if href and not any(x in href.lower() for x in ['google', 'booking.com', 'makemytrip', 'agoda', 'tripadvisor', 'goibibo', 'justdial', 'youtube', 'facebook', 'instagram']):
+                        website = href.split('?')[0]
+                        break
+
+                # Extract email if mentioned in snippet
+                g_emails = [e for e in re.findall(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+', g_body) if not any(x in e for x in ['google', 'sentry', 'example', 'wix'])]
+                if g_emails:
+                    email = g_emails[0]
+
+            except Exception:
+                pass
+
+            # Alternative search if "Hotel" in name masked brand
+            if not phone and "hotel" in search_kw.lower():
+                try:
+                    alt_kw = re.sub(r'\bhotel\b', '', search_kw, flags=re.IGNORECASE).strip()
+                    g_alt_url = f"https://www.google.com/search?q={urllib.parse.quote(alt_kw + ' contact number phone')}"
+                    try:
+                        page.goto(g_alt_url, timeout=9000)
+                    except Exception:
+                        pass
+                    page.wait_for_timeout(1800)
+                    alt_body = page.inner_text('body')
+                    alt_phones = re.findall(r'(?:Phone Number:\s*|Call\s+)?((?:\+91[\-\s]?)?[6-9]\d{4}[\s\-]?\d{5}|(?:\+91[\-\s]?)?011[\s\-]?[0-9]{8}|[6-9]\d{9})', alt_body)
+                    for ph in alt_phones:
+                        clean_p = clean_phone_number(ph)
+                        raw_digits = re.sub(r'\D', '', clean_p)
+                        if len(raw_digits) in [10, 11, 12]:
+                            phone = clean_p
+                            break
                 except Exception:
                     pass
 
-                content = page.content()
-
-                # 1. Extract phone:tel links or aria labels
-                phones_tel = re.findall(r'phone:tel:([0-9\+\s\-]+)', content)
-                aria_phones = re.findall(r'Phone:\s*([0-9\+\s\-]+)', content)
-                candidate_phones = phones_tel + aria_phones
-
-                if not candidate_phones:
-                    # Fallback text regex
-                    body_txt = page.inner_text('body')
-                    candidate_phones = re.findall(r'(?:(?:\+91[\s\-]?)?[6-9][0-9]{9}|(?:011|022)[\s\-]?[0-9]{7,8})', body_txt)
-
-                if candidate_phones:
-                    phone = clean_phone_number(candidate_phones[0])
-
-                # 2. Extract official website from authority link
-                web_matches = re.findall(r'data-item-id="authority"[^>]*href="([^"]+)"', content)
-                if web_matches:
-                    raw_web = web_matches[0]
-                    if "/url?q=" in raw_web:
-                        raw_web = raw_web.split("/url?q=")[1].split("&")[0]
-                    raw_web = urllib.parse.unquote(raw_web)
-                    if not any(x in raw_web.lower() for x in ["booking.com", "makemytrip", "agoda", "tripadvisor"]):
-                        website = raw_web.split("?")[0]
-
-                # 3. If website found, extract email
-                if website:
-                    email = extract_email_from_website(website)
-
-            except Exception as nav_err:
-                console.print(f"[dim red](Lookup error: {nav_err})[/dim red]")
-                continue
-
-            # Fallback 2: Website tel: links if official website was discovered
-            if not phone and website:
-                try:
-                    w_res = requests.get(website, headers={"User-Agent": "Mozilla/5.0"}, timeout=6)
-                    if w_res.status_code == 200:
-                        w_soup = BeautifulSoup(w_res.text, "html.parser")
-                        tel_a = w_soup.find("a", href=re.compile(r'^tel:'))
-                        if tel_a and tel_a.get("href"):
-                            raw_tel = tel_a["href"].replace("tel:", "").strip()
-                            clean_p = clean_phone_number(raw_tel)
-                            if len(re.sub(r'\D', '', clean_p)) >= 10:
-                                phone = clean_p
-                except Exception:
-                    pass
-
-            # Fallback 3: Search DuckDuckGo snippet for formatted Indian numbers
+            # ----------------------------------------------------
+            # TIER 2: Google Maps Places Search (if phone not found)
+            # ----------------------------------------------------
             if not phone:
                 try:
-                    from ddgs import DDGS
-                    with DDGS() as ddgs:
-                        ddg_results = list(ddgs.text(f'"{clean_name}" {locality} {h_city} phone reception contact', max_results=3))
-                    snippets = " ".join([r.get("title", "") + " " + r.get("body", "") for r in ddg_results])
-                    # Strictly match formatted Indian numbers with prefix or hyphen to avoid arbitrary digits
-                    strict_phones = re.findall(r'(?:\+91[\s\-]?[6-9]\d{4}[\s\-]?\d{5}|011[\s\-]?[0-9]{8}|0[6-9]\d{9}|(?:(?:\+91|0)[6-9]\d{9}))', snippets)
-                    if strict_phones:
-                        phone = clean_phone_number(strict_phones[0])
+                    maps_url = f"https://www.google.com/maps/search/{urllib.parse.quote(search_kw)}"
+                    page.goto(maps_url, wait_until="domcontentloaded", timeout=15000)
+                    page.wait_for_timeout(2500)
+
+                    try:
+                        place_links = page.locator('a[href*="/maps/place/"]')
+                        if place_links.count() > 0:
+                            place_links.first.click(timeout=2500)
+                            page.wait_for_timeout(2000)
+                    except Exception:
+                        pass
+
+                    content = page.content()
+                    phones_tel = re.findall(r'phone:tel:([0-9\+\s\-]+)', content)
+                    aria_phones = re.findall(r'Phone:\s*([0-9\+\s\-]+)', content)
+                    m_candidates = phones_tel + aria_phones
+                    if m_candidates:
+                        phone = clean_phone_number(m_candidates[0])
+
+                    if not website:
+                        web_matches = re.findall(r'data-item-id="authority"[^>]*href="([^"]+)"', content)
+                        if web_matches:
+                            raw_web = web_matches[0]
+                            if "/url?q=" in raw_web:
+                                raw_web = raw_web.split("/url?q=")[1].split("&")[0]
+                            raw_web = urllib.parse.unquote(raw_web)
+                            if not any(x in raw_web.lower() for x in ["booking.com", "makemytrip", "agoda", "tripadvisor"]):
+                                website = raw_web.split("?")[0]
                 except Exception:
                     pass
+
+            # ----------------------------------------------------
+            # TIER 3: Website Scrape for Contact & Email
+            # ----------------------------------------------------
+            if website:
+                if not email:
+                    email = extract_email_from_website(website)
+                if not phone:
+                    try:
+                        w_res = requests.get(website, headers={"User-Agent": "Mozilla/5.0"}, timeout=5)
+                        if w_res.status_code == 200:
+                            w_soup = BeautifulSoup(w_res.text, "html.parser")
+                            tel_a = w_soup.find("a", href=re.compile(r'^tel:'))
+                            if tel_a and tel_a.get("href"):
+                                phone = clean_phone_number(tel_a["href"].replace("tel:", "").strip())
+                    except Exception:
+                        pass
 
             if phone:
                 res = save_hotel_contact_to_dbs(h_id, h_name, h_city, phone, email, website)
@@ -332,9 +383,9 @@ def run_enricher(limit: int = None, hotel_id_filter: int = None):
                 live_badge = "[green]✓ Live DB[/green]" if res.get("live") else "[yellow]Local only[/yellow]"
                 console.print(f"[bold green]FOUND![/bold green] 📞 {phone} {f'🌐 {website}' if website else ''} {f'✉️ {email}' if email else ''} ({live_badge})")
             else:
-                console.print("[dim text-slate-400]No phone listed on Maps/Web.[/dim text-slate-400]")
+                console.print("[dim text-slate-400]No phone listed on Web/Maps.[/dim text-slate-400]")
 
-            time.sleep(0.8)
+            time.sleep(0.5)
 
         browser.close()
 
