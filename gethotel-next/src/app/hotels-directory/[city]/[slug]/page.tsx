@@ -68,3 +68,4 @@ export default async function Page({ params }: { params: Promise<{ city: string;
 
   return <ClientHotelDetailsPage hotelId={slug} initialHotel={initialHotel} />;
 }
+

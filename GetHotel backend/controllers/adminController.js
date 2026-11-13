@@ -317,6 +317,29 @@ exports.getAllHotels = async (req, res) => {
             },
             orderBy: { createdAt: 'desc' }
         });
+
+        // Augment with raw database fields to guarantee listingType and directory fields are present
+        try {
+            const rawDirRows = await prisma.$queryRawUnsafe(`
+                SELECT id, listingType, contactPhone, contactEmail, contactPerson, websiteUrl,
+                       callClicks, emailClicks, viewCount, bookingUrl, bookingPrice, mmtUrl, mmtPrice,
+                       otaCurrency, otaLastFetchedAt
+                FROM hotel
+            `);
+            if (rawDirRows && rawDirRows.length > 0) {
+                const rawMap = new Map();
+                rawDirRows.forEach(r => rawMap.set(r.id, r));
+                hotels.forEach(h => {
+                    const extra = rawMap.get(h.id);
+                    if (extra) {
+                        Object.assign(h, extra);
+                    }
+                });
+            }
+        } catch (rawErr) {
+            console.warn("[getAllHotels] Raw directory augment warning:", rawErr.message);
+        }
+
         res.json({ success: true, data: hotels });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });

@@ -61,11 +61,33 @@ export default function AdminDirectory({ hotels, loading = false, onRefresh }: A
     const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
     const [cloneUrl, setCloneUrl] = useState("");
     const [isCloning, setIsCloning] = useState(false);
+    const [directList, setDirectList] = useState<any[]>([]);
     const thumbnailInputRef = useRef<HTMLInputElement>(null);
     const galleryInputRef = useRef<HTMLInputElement>(null);
 
-    // Filter directory hotels only
-    const directoryHotels = (hotels || []).filter(h => h.listingType === "directory");
+    const loadDirectList = () => {
+        fetch("/api/hotels?listingType=directory")
+            .then(r => r.json())
+            .then(d => {
+                if (d.success && Array.isArray(d.data)) {
+                    setDirectList(d.data);
+                }
+            })
+            .catch(() => {});
+    };
+
+    useEffect(() => {
+        loadDirectList();
+    }, []);
+
+    // Combine hotels from props and direct endpoint to guarantee all properties appear
+    const mergedMap = new Map();
+    (hotels || []).filter(h => h.listingType === "directory").forEach(h => mergedMap.set(h.id, h));
+    directList.forEach(h => {
+        const existing = mergedMap.get(h.id) || {};
+        mergedMap.set(h.id, { ...existing, ...h });
+    });
+    const directoryHotels = Array.from(mergedMap.values());
 
     // Filter by search query
     const filteredHotels = directoryHotels.filter(hotel => {
