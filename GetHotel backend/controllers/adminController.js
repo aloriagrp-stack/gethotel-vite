@@ -7,7 +7,17 @@ const fs = require('fs');
 
 exports.getStats = async (req, res) => {
     try {
-        const totalHotels = await prisma.hotel.count();
+        const bookableHotels = await prisma.hotel.count({
+            where: {
+                NOT: { listingType: 'directory' }
+            }
+        });
+        const directoryHotels = await prisma.hotel.count({
+            where: {
+                listingType: 'directory'
+            }
+        });
+        const totalHotels = bookableHotels + directoryHotels;
         const totalUsers = await prisma.user.count({
             where: { role: 'user' }
         });
@@ -60,6 +70,8 @@ exports.getStats = async (req, res) => {
             success: true,
             data: {
                 totalHotels,
+                bookableHotels,
+                directoryHotels,
                 totalUsers,
                 totalBookings,
                 totalRevenue,

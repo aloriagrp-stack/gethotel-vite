@@ -540,10 +540,46 @@ export default function SuperAdminDashboard() {
     ];
 
     const stats = [
-        { label: "Platform Earnings (18%)", value: "₹" + Math.round((statsData?.totalRevenue || 0) * 0.18).toLocaleString(), trend: "+15.2%", isUp: true, icon: TrendingUp },
-        { label: "Gross Volume (GMV)", value: "₹" + (statsData?.totalRevenue || 0).toLocaleString(), trend: "+12.5%", isUp: true, icon: CreditCard },
-        { label: "Total Hotels", value: (statsData?.totalHotels || 0).toString(), trend: "+4", isUp: true, icon: Hotel },
-        { label: "Total Bookings", value: (statsData?.totalBookings || 0).toString(), trend: "-2%", isUp: false, icon: BarChart3 },
+        {
+            label: "Platform Earnings (18%)",
+            value: "₹" + Math.round((statsData?.totalRevenue || 0) * 0.18).toLocaleString(),
+            trend: "+15.2%",
+            isUp: true,
+            icon: TrendingUp,
+            badgeClass: "bg-emerald-50 text-emerald-700 border-emerald-200/70"
+        },
+        {
+            label: "Gross Volume (GMV)",
+            value: "₹" + (statsData?.totalRevenue || 0).toLocaleString(),
+            trend: "+12.5%",
+            isUp: true,
+            icon: CreditCard,
+            badgeClass: "bg-emerald-50 text-emerald-700 border-emerald-200/70"
+        },
+        {
+            label: "Direct Partner Hotels",
+            value: ((statsData?.bookableHotels !== undefined ? statsData.bookableHotels : hotels.filter((h: any) => h.listingType !== 'directory').length) || 0).toString(),
+            trend: "⚡ Bookable Direct",
+            isUp: true,
+            icon: Hotel,
+            badgeClass: "bg-emerald-50 text-emerald-700 border-emerald-200/70"
+        },
+        {
+            label: "Directory Listings",
+            value: ((statsData?.directoryHotels !== undefined ? statsData.directoryHotels : hotels.filter((h: any) => h.listingType === 'directory').length) || 0).toString(),
+            trend: "📍 Directory",
+            isUp: true,
+            icon: BookOpen,
+            badgeClass: "bg-blue-50 text-blue-700 border-blue-200/70"
+        },
+        {
+            label: "Total Bookings",
+            value: (statsData?.totalBookings || 0).toString(),
+            trend: "-2%",
+            isUp: false,
+            icon: BarChart3,
+            badgeClass: "bg-rose-50 text-rose-700 border-rose-200/70"
+        },
     ];
 
     const isInitialLoading = loading && Object.keys(loadedSections).length === 0;
@@ -613,8 +649,8 @@ export default function SuperAdminDashboard() {
 
                     {activeTab === "overview" && (
                 <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                        {stats.map((stat) => {
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-6">
+                        {stats.map((stat: any) => {
                             const Icon = stat.icon;
                             return (
                                 <div key={stat.label} className="bg-white p-5 border border-slate-200/90 rounded-xl shadow-xs hover:border-slate-300 transition-colors">
@@ -626,7 +662,7 @@ export default function SuperAdminDashboard() {
                                         <h3 className="text-2xl font-semibold text-slate-900 tracking-tight">{stat.value}</h3>
                                         <span className={cn(
                                             "text-[11px] font-semibold px-2 py-0.5 rounded-md border",
-                                            stat.isUp ? "bg-emerald-50 text-emerald-700 border-emerald-200/70" : "bg-rose-50 text-rose-700 border-rose-200/70"
+                                            stat.badgeClass || (stat.isUp ? "bg-emerald-50 text-emerald-700 border-emerald-200/70" : "bg-rose-50 text-rose-700 border-rose-200/70")
                                         )}>
                                             {stat.trend}
                                         </span>

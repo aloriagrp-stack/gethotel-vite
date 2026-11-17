@@ -24,6 +24,8 @@ console = Console()
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(CURRENT_DIR)
 EMPTY_BOX_DIR = os.path.join(PROJECT_ROOT, "empty_box")
+import threading
+EMPTY_BOX_LOCK = threading.Lock()
 
 # Database Configs
 LOCAL_DB = {
@@ -43,7 +45,9 @@ LIVE_DB = {
     "database": "vgyuvmpi_gethotel_db",
     "port": 3306,
     "charset": "utf8mb4",
-    "connect_timeout": 8
+    "connect_timeout": 8,
+    "read_timeout": 10,
+    "write_timeout": 10
 }
 
 
@@ -98,17 +102,12 @@ def extract_email_from_website(website_url: str) -> str:
 
 
 def get_db_hotels(only_missing=True):
-    """Fetches directory hotels from local MySQL (fallback to live)."""
+    """Fetches directory hotels directly from Live Production MariaDB."""
     conn = None
-    for cfg in [LOCAL_DB, LIVE_DB]:
-        try:
-            conn = pymysql.connect(**cfg)
-            break
-        except Exception:
-            continue
-
-    if not conn:
-        console.print("[bold red]❌ Could not connect to either Localhost or Live MySQL database![/bold red]")
+    try:
+        conn = pymysql.connect(**LIVE_DB)
+    except Exception as e:
+        console.print(f"[bold red]❌ Could not connect to Live MySQL database: {e}[/bold red]")
         return []
 
     try:
@@ -124,7 +123,7 @@ def get_db_hotels(only_missing=True):
 
 
 def save_hotel_contact_to_dbs(hotel_id: int, hotel_name: str, city: str, phone: str, email: str, website: str) -> dict:
-    """Updates contact details in both Localhost and Live MariaDB by ID and Name/City."""
+    """Updates contact details strictly in Live Production MariaDB (Local DB remains completely untouched)."""
     results = {"local": False, "live": False}
     update_fields = []
     params = []
@@ -142,21 +141,8 @@ def save_hotel_contact_to_dbs(hotel_id: int, hotel_name: str, city: str, phone: 
         return results
 
     update_fields.append("updatedAt = NOW()")
-    
-    # 1. Update Local DB (match by id or name+city)
-    try:
-        l_conn = pymysql.connect(**LOCAL_DB)
-        local_params = list(params) + [hotel_id, hotel_name, city]
-        local_query = f"UPDATE hotel SET {', '.join(update_fields)} WHERE id = %s OR (name = %s AND city = %s)"
-        with l_conn.cursor() as cur:
-            cur.execute(local_query, tuple(local_params))
-        l_conn.commit()
-        l_conn.close()
-        results["local"] = True
-    except Exception as e:
-        console.print(f"  [dim yellow]Local DB Update Notice: {e}[/dim yellow]")
 
-    # 2. Update Live DB (match primarily by name+city, then fallback to id)
+    # Update Live DB strictly (match by id or name+city)
     try:
         live_conn = pymysql.connect(**LIVE_DB)
         live_params = list(params) + [hotel_name, city, hotel_id]
@@ -177,73 +163,74 @@ def move_to_empty_box(unfound_hotels: list):
     if not unfound_hotels:
         return
 
-    os.makedirs(EMPTY_BOX_DIR, exist_ok=True)
-    json_path = os.path.join(EMPTY_BOX_DIR, "empty_box_registry.json")
-    report_path = os.path.join(EMPTY_BOX_DIR, "unfound_hotels_report.md")
+    with EMPTY_BOX_LOCK:
+        os.makedirs(EMPTY_BOX_DIR, exist_ok=True)
+        json_path = os.path.join(EMPTY_BOX_DIR, "empty_box_registry.json")
+        report_path = os.path.join(EMPTY_BOX_DIR, "unfound_hotels_report.md")
 
-    # Load existing registry if any to merge without duplicates
-    existing_registry = {}
-    if os.path.exists(json_path):
-        try:
-            with open(json_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                if isinstance(data, list):
-                    for item in data:
-                        k = str(item.get("id")) if item.get("id") else item.get("name")
-                        existing_registry[k] = item
-        except Exception:
-            pass
+        # Load existing registry if any to merge without duplicates
+        existing_registry = {}
+        if os.path.exists(json_path):
+            try:
+                with open(json_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    if isinstance(data, list):
+                        for item in data:
+                            k = str(item.get("id")) if item.get("id") else item.get("name")
+                            existing_registry[k] = item
+            except Exception:
+                pass
 
-    # Merge newly unfound hotels
-    for h in unfound_hotels:
-        hotel_entry = {
-            "id": h.get("id"),
-            "name": h.get("name"),
-            "city": h.get("city"),
-            "address": h.get("address") or "N/A",
-            "bookingUrl": h.get("bookingUrl") or "",
-            "bookingPrice": h.get("bookingPrice") or h.get("pricePerNight"),
-            "pricePerNight": h.get("pricePerNight"),
-            "thumbnail": h.get("thumbnail") or "",
-            "description": h.get("description") or "",
-            "amenities": h.get("amenities") or "[]",
-            "listingType": h.get("listingType", "directory"),
-            "status": "UNRESOLVED_CONTACT",
-            "reason": "Reception contact phone could not be extracted from Google Maps or Web search",
-            "addedToEmptyBoxAt": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        }
-        k = str(h.get("id")) if h.get("id") else h.get("name")
-        existing_registry[k] = hotel_entry
+        # Merge newly unfound hotels
+        for h in unfound_hotels:
+            hotel_entry = {
+                "id": h.get("id"),
+                "name": h.get("name"),
+                "city": h.get("city"),
+                "address": h.get("address") or "N/A",
+                "bookingUrl": h.get("bookingUrl") or "",
+                "bookingPrice": h.get("bookingPrice") or h.get("pricePerNight"),
+                "pricePerNight": h.get("pricePerNight"),
+                "thumbnail": h.get("thumbnail") or "",
+                "description": h.get("description") or "",
+                "amenities": h.get("amenities") or "[]",
+                "listingType": h.get("listingType", "directory"),
+                "status": "UNRESOLVED_CONTACT",
+                "reason": "Reception contact phone could not be extracted from Google Maps or Web search",
+                "addedToEmptyBoxAt": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+            k = str(h.get("id")) if h.get("id") else h.get("name")
+            existing_registry[k] = hotel_entry
 
-    # Save JSON registry
-    registry_list = list(existing_registry.values())
-    with open(json_path, "w", encoding="utf-8") as f:
-        json.dump(registry_list, f, indent=2, ensure_ascii=False)
+        # Save JSON registry
+        registry_list = list(existing_registry.values())
+        with open(json_path, "w", encoding="utf-8") as f:
+            json.dump(registry_list, f, indent=2, ensure_ascii=False)
 
-    # Save Markdown Report with clickable links
-    with open(report_path, "w", encoding="utf-8") as f:
-        f.write("# 📦 Empty Box — Unresolved Directory Hotels\n\n")
-        f.write(f"Total Unresolved Properties: **{len(registry_list)}**  \n")
-        f.write(f"Last Updated: **{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}**\n\n")
-        f.write("| ID | Hotel Name | City | Starting Price | Booking.com URL |\n")
-        f.write("| :--- | :--- | :--- | :--- | :--- |\n")
-        for item in registry_list:
-            b_link = f"[Open Listing ↗]({item['bookingUrl']})" if item.get('bookingUrl') else "N/A"
-            price_str = f"₹{item.get('bookingPrice')}" if item.get('bookingPrice') else "N/A"
-            f.write(f"| #{item.get('id')} | **{item.get('name')}** | {item.get('city')} | {price_str} | {b_link} |\n")
+        # Save Markdown Report with clickable links
+        with open(report_path, "w", encoding="utf-8") as f:
+            f.write("# 📦 Empty Box — Unresolved Directory Hotels\n\n")
+            f.write(f"Total Unresolved Properties: **{len(registry_list)}**  \n")
+            f.write(f"Last Updated: **{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}**\n\n")
+            f.write("| ID | Hotel Name | City | Starting Price | Booking.com URL |\n")
+            f.write("| :--- | :--- | :--- | :--- | :--- |\n")
+            for item in registry_list:
+                b_link = f"[Open Listing ↗]({item['bookingUrl']})" if item.get('bookingUrl') else "N/A"
+                price_str = f"₹{item.get('bookingPrice')}" if item.get('bookingPrice') else "N/A"
+                f.write(f"| #{item.get('id')} | **{item.get('name')}** | {item.get('city')} | {price_str} | {b_link} |\n")
 
-        f.write("\n---\n\n## 📋 Detailed Property Profiles & Manual Follow-Up\n\n")
-        for item in registry_list:
-            f.write(f"### #{item.get('id')} — {item.get('name')}\n")
-            f.write(f"- **City:** {item.get('city')}\n")
-            f.write(f"- **Full Address:** {item.get('address') or 'N/A'}\n")
-            f.write(f"- **Booking.com Link:** {item.get('bookingUrl') or 'N/A'}\n")
-            f.write(f"- **Starting Room Rate:** ₹{item.get('bookingPrice') or 'N/A'} /night\n")
-            if item.get('thumbnail'):
-                f.write(f"- **Cover Photo:** {item.get('thumbnail')}\n")
-            if item.get('description'):
-                f.write(f"- **Description:** {item.get('description')[:250]}...\n")
-            f.write(f"- **Logged In Empty Box At:** {item.get('addedToEmptyBoxAt')}\n\n")
+            f.write("\n---\n\n## 📋 Detailed Property Profiles & Manual Follow-Up\n\n")
+            for item in registry_list:
+                f.write(f"### #{item.get('id')} — {item.get('name')}\n")
+                f.write(f"- **City:** {item.get('city')}\n")
+                f.write(f"- **Full Address:** {item.get('address') or 'N/A'}\n")
+                f.write(f"- **Booking.com Link:** {item.get('bookingUrl') or 'N/A'}\n")
+                f.write(f"- **Starting Room Rate:** ₹{item.get('bookingPrice') or 'N/A'} /night\n")
+                if item.get('thumbnail'):
+                    f.write(f"- **Cover Photo:** {item.get('thumbnail')}\n")
+                if item.get('description'):
+                    f.write(f"- **Description:** {item.get('description')[:250]}...\n")
+                f.write(f"- **Logged In Empty Box At:** {item.get('addedToEmptyBoxAt')}\n\n")
 
     console.print(Panel(
         f"[bold green]📦 SUCCESS: {len(unfound_hotels)} hotel(s) moved to the Empty Box![/bold green]\n"
@@ -286,9 +273,10 @@ def clean_hotel_search_query(name: str, addr: str = "", city: str = "Delhi") -> 
     return f"{core} {locality} {city}".strip()
 
 
-def run_enricher(limit: int = None, hotel_id_filter: int = None):
+def run_enricher(limit: int = None, hotel_id_filter: int = None, hotel_id_list: list = None, auto_empty_box: bool = False, clear_screen_on_start: bool = True):
     """Main enrichment workflow using Playwright with stealth Chrome."""
-    clear_terminal()
+    if clear_screen_on_start:
+        clear_terminal()
     console.print(Panel(
         "[bold cyan]GOOGLE MAPS & SEARCH DIRECTORY HOTEL CONTACT ENRICHER[/bold cyan]\n"
         "[dim]Auto-scrapes verified reception phone numbers, emails & official websites\n"
@@ -296,9 +284,15 @@ def run_enricher(limit: int = None, hotel_id_filter: int = None):
         border_style="cyan"
     ))
 
-    hotels = get_db_hotels(only_missing=(hotel_id_filter is None))
-    if hotel_id_filter:
-        hotels = [h for h in hotels if h["id"] == hotel_id_filter]
+    if hotel_id_list:
+        all_hotels = get_db_hotels(only_missing=False)
+        id_set = set(hotel_id_list)
+        hotels = [h for h in all_hotels if h["id"] in id_set]
+    elif hotel_id_filter:
+        all_hotels = get_db_hotels(only_missing=False)
+        hotels = [h for h in all_hotels if h["id"] == hotel_id_filter]
+    else:
+        hotels = get_db_hotels(only_missing=True)
 
     if not hotels:
         console.print("[bold green]✓ All directory hotels already have front desk contact numbers assigned![/bold green]")
@@ -482,8 +476,116 @@ def run_enricher(limit: int = None, hotel_id_filter: int = None):
     console.print(f"\n[bold green]🎉 Finished! Enriched {enriched_count} hotel(s) with front desk contacts![/bold green]")
     if unfound_hotels:
         console.print(f"[bold yellow]⚠️ Could not automatically find contacts for {len(unfound_hotels)} hotel(s).[/bold yellow]\n")
-        if Confirm.ask(f"[bold cyan]Would you like to move these {len(unfound_hotels)} unfound hotel(s) to the Empty Box?[/bold cyan]", default=True):
+        if auto_empty_box or Confirm.ask(f"[bold cyan]Would you like to move these {len(unfound_hotels)} unfound hotel(s) to the Empty Box?[/bold cyan]", default=True):
             move_to_empty_box(unfound_hotels)
+
+
+def enrich_single_hotel_task(hotel: dict, page, auto_empty_box: bool = True, print_lock=None) -> dict:
+    """Enriches a single hotel dictionary using an existing Playwright page in a worker thread."""
+    h_id = hotel.get("id") or hotel.get("hotelId")
+    h_name = hotel.get("name") or ""
+    h_city = hotel.get("city") or "Delhi"
+    h_addr = hotel.get("address") or ""
+
+    search_kw = clean_hotel_search_query(h_name, h_addr, h_city)
+    phone = ""
+    website = hotel.get("websiteUrl") or ""
+    email = hotel.get("contactEmail") or ""
+
+    # Tier 1: Google Web Search
+    try:
+        g_url = f"https://www.google.com/search?q={urllib.parse.quote(search_kw + ' contact number')}"
+        try:
+            page.goto(g_url, timeout=10000)
+        except Exception:
+            pass
+        page.wait_for_timeout(1800)
+        g_body = page.inner_text('body')
+
+        g_phones = re.findall(r'(?:Phone Number:\s*|Call\s+)?((?:\+91[\-\s]?)?[6-9]\d{4}[\s\-]?\d{5}|(?:\+91[\-\s]?)?011[\s\-]?[0-9]{8}|[6-9]\d{9})', g_body)
+        for ph in g_phones:
+            clean_p = clean_phone_number(ph)
+            raw_digits = re.sub(r'\D', '', clean_p)
+            if len(raw_digits) in [10, 11, 12]:
+                phone = clean_p
+                break
+
+        if not website:
+            for a in page.query_selector_all('a[href^="http"]'):
+                href = a.get_attribute('href')
+                if href and not any(x in href.lower() for x in ['google', 'booking.com', 'makemytrip', 'agoda', 'tripadvisor', 'goibibo', 'justdial', 'youtube', 'facebook', 'instagram']):
+                    website = href.split('?')[0]
+                    break
+
+        if not email:
+            g_emails = [e for e in re.findall(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+', g_body) if not any(x in e for x in ['google', 'sentry', 'example', 'wix'])]
+            if g_emails:
+                email = g_emails[0]
+    except Exception:
+        pass
+
+    # Tier 2: Google Maps Places Search
+    if not phone:
+        try:
+            maps_url = f"https://www.google.com/maps/search/{urllib.parse.quote(search_kw)}"
+            page.goto(maps_url, wait_until="domcontentloaded", timeout=12000)
+            page.wait_for_timeout(2000)
+
+            try:
+                place_links = page.locator('a[href*="/maps/place/"]')
+                if place_links.count() > 0:
+                    place_links.first.click(timeout=2000)
+                    page.wait_for_timeout(1500)
+            except Exception:
+                pass
+
+            content = page.content()
+            phones_tel = re.findall(r'phone:tel:([0-9\+\s\-]+)', content)
+            aria_phones = re.findall(r'Phone:\s*([0-9\+\s\-]+)', content)
+            m_candidates = phones_tel + aria_phones
+            if m_candidates:
+                phone = clean_phone_number(m_candidates[0])
+
+            if not website:
+                web_matches = re.findall(r'data-item-id="authority"[^>]*href="([^"]+)"', content)
+                if web_matches:
+                    raw_web = web_matches[0]
+                    if "/url?q=" in raw_web:
+                        raw_web = raw_web.split("/url?q=")[1].split("&")[0]
+                    raw_web = urllib.parse.unquote(raw_web)
+                    if not any(x in raw_web.lower() for x in ["booking.com", "makemytrip", "agoda", "tripadvisor"]):
+                        website = raw_web.split("?")[0]
+        except Exception:
+            pass
+
+    # Tier 3: Website Scrape
+    if website:
+        if not email:
+            email = extract_email_from_website(website)
+        if not phone:
+            try:
+                w_res = requests.get(website, headers={"User-Agent": "Mozilla/5.0"}, timeout=5)
+                if w_res.status_code == 200:
+                    w_soup = BeautifulSoup(w_res.text, "html.parser")
+                    tel_a = w_soup.find("a", href=re.compile(r'^tel:'))
+                    if tel_a and tel_a.get("href"):
+                        phone = clean_phone_number(tel_a["href"].replace("tel:", "").strip())
+            except Exception:
+                pass
+
+    if phone:
+        save_hotel_contact_to_dbs(h_id, h_name, h_city, phone, email, website)
+        if print_lock:
+            with print_lock:
+                console.print(f"  [bold green]📞 ENRICHED:[/bold green] #{h_id} {h_name[:32]} ➔ [bold white]{phone}[/bold white] {f'✉️ {email}' if email else ''}")
+        return {"success": True, "id": h_id, "phone": phone, "email": email, "website": website}
+    else:
+        if auto_empty_box:
+            move_to_empty_box([hotel])
+        if print_lock:
+            with print_lock:
+                console.print(f"  [dim yellow]📦 EMPTY BOX:[/dim yellow] #{h_id} {h_name[:32]} (No phone listed on Web/Maps)")
+        return {"success": False, "id": h_id, "reason": "No phone"}
 
 
 def menu():

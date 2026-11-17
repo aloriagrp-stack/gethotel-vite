@@ -711,11 +711,14 @@ class GHSTerminalAgent:
                         with console.status(f"[cyan]Searching Booking.com rate for {hname}...[/cyan]", spinner="dots"):
                             rate = get_benchmark_rate(hname) or live_search_rate(hname, f"{hcity} {dh.get('address', '')}")
                         
-                        b_price = int(rate["avg"]) if rate and rate.get("avg") else 2800
-                        b_url = dh.get("bookingUrl") or f"https://www.booking.com/searchresults.html?ss={hname.replace(' ', '+')}+{hcity}"
+                        b_price = int(rate["min"]) if rate and rate.get("min") else (int(rate["avg"]) if rate and rate.get("avg") else None)
+                        b_url = dh.get("bookingUrl") or f"https://www.booking.com/searchresults.html?ss={urllib.parse.quote_plus(hname + ' ' + hcity)}"
                         
-                        self.api.convert_listing_type(hid, listing_type="directory", booking_url=b_url, booking_price=b_price)
-                        console.print(f"  [green]✓[/green] [ID {hid}] {hname} ➔ Booking.com Starting Rate: ₹{b_price}")
+                        if b_price:
+                            self.api.convert_listing_type(hid, listing_type="directory", booking_url=b_url, booking_price=b_price)
+                            console.print(f"  [green]✓[/green] [ID {hid}] {hname} ➔ Live Booking.com Rate: [bold yellow]₹{b_price}[/bold yellow]")
+                        else:
+                            console.print(f"  [dim yellow]?[/dim yellow] [ID {hid}] {hname} ➔ Rate not available on OTA link")
                     
                     console.print("\n[bold green]🎉 Successfully synced Booking.com prices and affiliate links for all directory hotels![/bold green]")
                     self._load_hotels(force_refresh=True)

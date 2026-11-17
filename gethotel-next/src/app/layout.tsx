@@ -13,6 +13,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://gethotelstays.com"),
+  referrer: "no-referrer",
   title: {
     default: PAGE_SEO.home.title,
     template: "%s | GetHotelStays",
@@ -101,6 +102,7 @@ export default function RootLayout({
   return (
     <html lang="en-IN" prefix="og: https://ogp.me/ns#">
       <head>
+        <meta name="referrer" content="no-referrer" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="icon" type="image/png" href="/favicon.png" />
         <link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="any" />

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GHS Liquid Harvester</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+
+<body>
+  <!-- Ambient Liquid Mesh Orbs -->
+  <div class="ambient-glow">
+    <div class="orb orb-cyan"></div>
+    <div class="orb orb-emerald"></div>
+    <div class="orb orb-purple"></div>
+  </div>
+
+  <div class="glass-container">
+    <!-- Header -->
+    <header class="glass-header">
+      <div class="brand">
+        <div class="bolt-badge">
+          <span class="bolt">⚡</span>
+        </div>
+        <div class="brand-text">
+          <h1>GetHotelStays</h1>
+          <span class="subtitle">Liquid Harvester</span>
+        </div>
+      </div>
+      <div class="badge-pill">
+        <span class="pulse-indicator"></span>
+        <span class="badge-text">v1.2</span>
+      </div>
+    </header>
+
+    <!-- Connection Status Bar -->
+    <div class="glass-card status-card">
+      <div class="status-indicator">
+        <span class="dot" id="status-dot"></span>
+        <span id="page-status">Connecting to Booking.com...</span>
+      </div>
+    </div>
+
+    <!-- Liquid Stat Cards -->
+    <div class="glass-card stats-card">
+      <div class="stat-box">
+        <div class="stat-glow"></div>
+        <div class="stat-num" id="stat-hotels">0</div>
+        <div class="stat-lbl">Hotels in Queue</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-box">
+        <div class="stat-glow"></div>
+        <div class="stat-num" id="stat-pages">0</div>
+        <div class="stat-lbl">Pages Scanned</div>
+      </div>
+    </div>
+
+    <!-- Action Buttons with Refraction Shine -->
+    <div class="actions">
+      <button id="btn-toggle" class="btn btn-liquid-start">
+        <span class="shine"></span>
+        <span class="btn-icon">🚀</span>
+        <span id="btn-toggle-text">Start Auto Harvest</span>
+      </button>
+
+      <button id="btn-download" class="btn btn-liquid-save">
+        <span class="shine"></span>
+        <span class="btn-icon">💾</span>
+        <span>Download JSON Queue</span>
+      </button>
+
+      <button id="btn-clear" class="btn btn-liquid-ghost">
+        <span>🗑️ Clear Harvested Data</span>
+      </button>
+    </div>
+
+    <!-- Footer -->
+    <footer class="glass-footer">
+      <span>16-Agent Cloner Stream Active</span>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+
+</html>

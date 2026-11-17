@@ -126,8 +126,8 @@ def download_photo_playwright(page, url: str, slug: str, idx: int) -> str | None
     return None
 
 
-def clone_hotel(url: str, max_photos: int = 10) -> dict:
-    """Full deep scrape of hotel listing and download of photos."""
+def clone_hotel(url: str, max_photos: int = 25, download_locally: bool = False, card_price: int = None, page=None) -> dict:
+    """Full deep scrape of hotel listing and extraction of HD photo URLs."""
     from playwright.sync_api import sync_playwright
 
     # Canonicalize Booking.com URL (strip stale session & tracking params)
@@ -152,261 +152,284 @@ def clone_hotel(url: str, max_photos: int = 10) -> dict:
         "downloadedPhotosCount": 0
     }
 
-    with sync_playwright() as p:
-        browser = p.chromium.launch(channel="chrome", headless=True)
+    own_browser = False
+    browser = None
+    pw_manager = None
+
+    if page is None:
+        own_browser = True
+        pw_manager = sync_playwright()
+        p = pw_manager.__enter__()
+        try:
+            browser = p.chromium.launch(channel="chrome", headless=True, args=["--no-sandbox", "--disable-dev-shm-usage"])
+        except Exception:
+            browser = p.chromium.launch(channel="msedge", headless=True, args=["--no-sandbox", "--disable-dev-shm-usage"])
         page = browser.new_page(
             user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
             extra_http_headers={"Accept-Language": "en-IN,en;q=0.9"}
         )
 
+    try:
+        sys.stderr.write(f"Connecting to: {target_url}\n")
+        page.goto(target_url, timeout=40000)
         try:
-            sys.stderr.write(f"Connecting to: {target_url}\n")
-            page.goto(target_url, timeout=40000)
+            page.wait_for_load_state("domcontentloaded", timeout=20000)
+        except Exception:
+            pass
+        page.wait_for_timeout(5000)
+        for _ in range(12):
             try:
-                page.wait_for_load_state("domcontentloaded", timeout=20000)
+                c = page.content()
+                if len(c) > 20000:
+                    break
             except Exception:
                 pass
-            page.wait_for_timeout(5000)
-            for _ in range(12):
-                try:
-                    c = page.content()
-                    if len(c) > 20000:
-                        break
-                except Exception:
-                    pass
-                page.wait_for_timeout(1500)
-            page.keyboard.press("Escape")
-            html = page.content()
+            page.wait_for_timeout(1500)
+        page.keyboard.press("Escape")
+        html = page.content()
 
-            # Attempt JSON-LD extraction first (often standard across OTAs)
-            json_ld_data = {}
-            for script_txt in page.evaluate("""() => {
-                return Array.from(document.querySelectorAll('script[type="application/ld+json"]'))
-                    .map(s => s.innerText);
-            }"""):
-                try:
-                    parsed = json.loads(script_txt)
-                    if isinstance(parsed, list):
-                        for item in parsed:
+        # Attempt JSON-LD extraction first (often standard across OTAs)
+        json_ld_data = {}
+        for script_txt in page.evaluate("""() => {
+            return Array.from(document.querySelectorAll('script[type="application/ld+json"]'))
+                .map(s => s.innerText);
+        }"""):
+            try:
+                parsed = json.loads(script_txt)
+                if isinstance(parsed, list):
+                    for item in parsed:
+                        if isinstance(item, dict) and item.get("@type") in ["Hotel", "LodgingBusiness", "Resort"]:
+                            json_ld_data = item
+                            break
+                elif isinstance(parsed, dict):
+                    if parsed.get("@type") in ["Hotel", "LodgingBusiness", "Resort"]:
+                        json_ld_data = parsed
+                        break
+                    if "@graph" in parsed and isinstance(parsed["@graph"], list):
+                        for item in parsed["@graph"]:
                             if isinstance(item, dict) and item.get("@type") in ["Hotel", "LodgingBusiness", "Resort"]:
                                 json_ld_data = item
                                 break
-                    elif isinstance(parsed, dict):
-                        if parsed.get("@type") in ["Hotel", "LodgingBusiness", "Resort"]:
-                            json_ld_data = parsed
-                            break
-                        if "@graph" in parsed and isinstance(parsed["@graph"], list):
-                            for item in parsed["@graph"]:
-                                if isinstance(item, dict) and item.get("@type") in ["Hotel", "LodgingBusiness", "Resort"]:
-                                    json_ld_data = item
-                                    break
-                except Exception:
-                    pass
+            except Exception:
+                pass
 
-            # 1. Hotel Name
-            if json_ld_data.get("name"):
-                result["name"] = json_ld_data["name"]
+        # 1. Hotel Name
+        if json_ld_data.get("name"):
+            result["name"] = json_ld_data["name"]
+        else:
+            name_el = page.query_selector('[data-testid="title"], h2.pp-header__title, #hp_hotel_name, h1')
+            if name_el and name_el.inner_text().strip():
+                result["name"] = parse_clean_name(name_el.inner_text().strip())
             else:
-                name_el = page.query_selector('[data-testid="title"], h2.pp-header__title, #hp_hotel_name, h1')
-                if name_el and name_el.inner_text().strip():
-                    result["name"] = parse_clean_name(name_el.inner_text().strip())
-                else:
-                    raw_title = page.title()
-                    result["name"] = parse_clean_name(raw_title.split(",")[0].strip())
+                raw_title = page.title()
+                result["name"] = parse_clean_name(raw_title.split(",")[0].strip())
 
-            # 2. Address & City
-            if json_ld_data.get("address"):
-                addr = json_ld_data["address"]
-                if isinstance(addr, dict):
-                    parts = [addr.get("streetAddress", ""), addr.get("addressLocality", ""), addr.get("postalCode", ""), addr.get("addressCountry", "")]
-                    clean_parts = []
-                    for p in parts:
-                        p_str = p.strip() if isinstance(p, str) else ""
-                        if p_str and p_str.lower() not in [c.lower() for c in clean_parts]:
-                            clean_parts.append(p_str)
-                    result["address"] = ", ".join(clean_parts)
-                elif isinstance(addr, str):
-                    result["address"] = addr.strip()
+        # 2. Address & City
+        if json_ld_data.get("address"):
+            addr = json_ld_data["address"]
+            if isinstance(addr, dict):
+                parts = [addr.get("streetAddress", ""), addr.get("addressLocality", ""), addr.get("postalCode", ""), addr.get("addressCountry", "")]
+                clean_parts = []
+                for p in parts:
+                    p_str = p.strip() if isinstance(p, str) else ""
+                    if p_str and p_str.lower() not in [c.lower() for c in clean_parts]:
+                        clean_parts.append(p_str)
+                result["address"] = ", ".join(clean_parts)
+            elif isinstance(addr, str):
+                result["address"] = addr.strip()
 
-            if not result["address"]:
-                addr_el = page.query_selector('[data-node_tt_id="location_score_tooltip"], .hp_address_subtitle, [data-testid="address"]')
-                if addr_el and addr_el.inner_text().strip():
-                    raw_addr = addr_el.inner_text().strip()
-                    raw_addr = re.sub(r'(Great location|Show map|Excellent location)[^a-zA-Z0-9]*', '', raw_addr, flags=re.IGNORECASE).strip()
-                    result["address"] = raw_addr
-                else:
-                    m_addr = re.search(r'"streetAddress":\s*"([^"]+)"', html)
-                    if m_addr:
-                        result["address"] = m_addr.group(1)
-
-            result["city"] = detect_city(result["address"] + " " + result["name"], url)
-
-            # 3. Star Rating
-            rating_els = page.query_selector_all('[data-testid="rating-stars"] span, [aria-label*="star"], .bui-rating')
-            stars = 4
-            for r_el in rating_els:
-                label = r_el.get_attribute("aria-label") or r_el.inner_text() or ""
-                m = re.search(r'([1-5])\s*star', label, re.IGNORECASE)
-                if m:
-                    stars = int(m.group(1))
-                    break
-            result["starRating"] = stars
-
-            # 4. Description
-            if json_ld_data.get("description") and len(json_ld_data["description"]) > 40:
-                result["description"] = json_ld_data["description"]
+        if not result["address"]:
+            addr_el = page.query_selector('[data-node_tt_id="location_score_tooltip"], .hp_address_subtitle, [data-testid="address"]')
+            if addr_el and addr_el.inner_text().strip():
+                raw_addr = addr_el.inner_text().strip()
+                raw_addr = re.sub(r'(Great location|Show map|Excellent location)[^a-zA-Z0-9]*', '', raw_addr, flags=re.IGNORECASE).strip()
+                result["address"] = raw_addr
             else:
-                desc_el = page.query_selector('[data-testid="property-description"], #property_description_content, .hp_desc')
-                if desc_el and desc_el.inner_text().strip():
-                    result["description"] = desc_el.inner_text().strip()
+                m_addr = re.search(r'"streetAddress":\s*"([^"]+)"', html)
+                if m_addr:
+                    result["address"] = m_addr.group(1)
+
+        result["city"] = detect_city(result["address"] + " " + result["name"], url)
+
+        # 3. Star Rating
+        rating_els = page.query_selector_all('[data-testid="rating-stars"] span, [aria-label*="star"], .bui-rating')
+        stars = 4
+        for r_el in rating_els:
+            label = r_el.get_attribute("aria-label") or r_el.inner_text() or ""
+            m = re.search(r'([1-5])\s*star', label, re.IGNORECASE)
+            if m:
+                stars = int(m.group(1))
+                break
+        result["starRating"] = stars
+
+        # 4. Description
+        if json_ld_data.get("description") and len(json_ld_data["description"]) > 40:
+            result["description"] = json_ld_data["description"]
+        else:
+            desc_el = page.query_selector('[data-testid="property-description"], #property_description_content, .hp_desc')
+            if desc_el and desc_el.inner_text().strip():
+                result["description"] = desc_el.inner_text().strip()
+            else:
+                m_desc = re.search(r'"description":\s*"([^"]+)"', html)
+                if m_desc and len(m_desc.group(1)) > 50:
+                    result["description"] = m_desc.group(1).replace('\\"', '"').replace('\\n', '\n')
                 else:
-                    m_desc = re.search(r'"description":\s*"([^"]+)"', html)
-                    if m_desc and len(m_desc.group(1)) > 50:
-                        result["description"] = m_desc.group(1).replace('\\"', '"').replace('\\n', '\n')
-                    else:
-                        result["description"] = f"Experience premium hospitality at {result['name']} located in {result['city']}. Features spacious modern rooms, attentive staff, and high comfort for couples, families, and business travelers."
+                    result["description"] = f"Experience premium hospitality at {result['name']} located in {result['city']}. Features spacious modern rooms, attentive staff, and high comfort for couples, families, and business travelers."
 
-            # 5. Amenities Matching
-            amenity_map = {
-                "wifi": "WiFi",
-                "wi-fi": "WiFi",
-                "air condition": "AC",
-                "air-condition": "AC",
-                "swimming pool": "Swimming Pool",
-                "pool": "Swimming Pool",
-                "parking": "Parking",
-                "restaurant": "Restaurant",
-                "dining": "Restaurant",
-                "room service": "Room Service",
-                "power backup": "Power Backup",
-                "generator": "Power Backup",
-                "elevator": "Elevator",
-                "lift": "Elevator",
-                "cctv": "CCTV",
-                "security": "CCTV",
-                "geyser": "Geyser",
-                "hot water": "Geyser",
-                "couple": "Couple Friendly",
-                "breakfast": "Breakfast Included",
-                "pet": "Pet Friendly",
-                "spa": "Spa",
-                "gym": "Gym",
-                "fitness": "Gym"
-            }
-            body_text = page.inner_text("body").lower()
-            matched_amenities = []
-            for kw, standard_label in amenity_map.items():
-                if kw in body_text and standard_label not in matched_amenities:
-                    matched_amenities.append(standard_label)
+        # 5. Amenities Matching
+        amenity_map = {
+            "wifi": "WiFi",
+            "wi-fi": "WiFi",
+            "air condition": "AC",
+            "air-condition": "AC",
+            "swimming pool": "Swimming Pool",
+            "pool": "Swimming Pool",
+            "parking": "Parking",
+            "restaurant": "Restaurant",
+            "dining": "Restaurant",
+            "room service": "Room Service",
+            "power backup": "Power Backup",
+            "generator": "Power Backup",
+            "elevator": "Elevator",
+            "lift": "Elevator",
+            "cctv": "CCTV",
+            "security": "CCTV",
+            "geyser": "Geyser",
+            "hot water": "Geyser",
+            "couple": "Couple Friendly",
+            "breakfast": "Breakfast Included",
+            "pet": "Pet Friendly",
+            "spa": "Spa",
+            "gym": "Gym",
+            "fitness": "Gym"
+        }
+        body_text = page.inner_text("body").lower()
+        matched_amenities = []
+        for kw, standard_label in amenity_map.items():
+            if kw in body_text and standard_label not in matched_amenities:
+                matched_amenities.append(standard_label)
 
-            if not matched_amenities:
-                matched_amenities = ["WiFi", "AC", "Power Backup", "Geyser"]
-            result["amenities"] = matched_amenities
+        if not matched_amenities:
+            matched_amenities = ["WiFi", "AC", "Power Backup", "Geyser"]
+        result["amenities"] = matched_amenities
 
-            # 6. Price Extraction
-            price_selectors = [
-                '[data-testid="price-and-discounted-price"]',
-                '.prco-valign-middle-helper',
-                '.bui-price-display__value',
-                '[data-price]'
-            ]
-            for p_sel in price_selectors:
-                els = page.query_selector_all(p_sel)
-                for el in els:
-                    txt = el.inner_text()
-                    val = extract_price(txt)
-                    if val:
-                        result["bookingPrice"] = val
-                        break
-                if result["bookingPrice"]:
+        # 6. Price Extraction
+        price_selectors = [
+            '[data-testid="price-and-discounted-price"]',
+            '.prco-valign-middle-helper',
+            '.bui-price-display__value',
+            '[data-price]'
+        ]
+        for p_sel in price_selectors:
+            els = page.query_selector_all(p_sel)
+            for el in els:
+                txt = el.inner_text()
+                val = extract_price(txt)
+                if val:
+                    result["bookingPrice"] = val
                     break
+            if result["bookingPrice"]:
+                break
 
-            if not result["bookingPrice"]:
-                result["bookingPrice"] = extract_price(body_text)
+        if not result["bookingPrice"]:
+            result["bookingPrice"] = extract_price(body_text)
 
-            # 7. High-Res Photos Extraction
-            raw_photo_urls = []
+        if card_price and not result["bookingPrice"]:
+            result["bookingPrice"] = card_price
+        elif card_price and result["bookingPrice"]:
+            result["bookingPrice"] = min(result["bookingPrice"], card_price)
 
-            # (A) Check JSON-LD image list
-            if json_ld_data.get("image"):
-                j_imgs = json_ld_data["image"]
-                if isinstance(j_imgs, list):
-                    for u in j_imgs:
-                        if isinstance(u, str) and "bstatic.com" in u:
-                            raw_photo_urls.append(u)
-                elif isinstance(j_imgs, str) and "bstatic.com" in j_imgs:
-                    raw_photo_urls.append(j_imgs)
+        # 7. High-Res Photos Extraction
+        raw_photo_urls = []
 
-            # (B) Check DOM images
-            dom_imgs = page.evaluate("""() => {
-                const list = [];
-                document.querySelectorAll('img, a[data-thumb-url], [data-src]').forEach(el => {
-                    const src = el.src || el.getAttribute('data-thumb-url') || el.getAttribute('data-src') || el.href;
-                    if (src && src.includes('bstatic.com') && src.includes('/hotel/')) {
-                        list.push(src);
-                    }
-                });
-                return Array.from(new Set(list));
-            }""")
-            for u in dom_imgs:
-                if u not in raw_photo_urls:
-                    raw_photo_urls.append(u)
+        # (A) Check JSON-LD image list
+        if json_ld_data.get("image"):
+            j_imgs = json_ld_data["image"]
+            if isinstance(j_imgs, list):
+                for u in j_imgs:
+                    if isinstance(u, str) and "bstatic.com" in u:
+                        raw_photo_urls.append(u)
+            elif isinstance(j_imgs, str) and "bstatic.com" in j_imgs:
+                raw_photo_urls.append(j_imgs)
 
-            # (C) Page regex search with ?k= token
-            regex_matches = re.findall(r'https://cf\.bstatic\.com/xdata/images/hotel/[a-zA-Z0-9_\-\./]+(?:\.jpg|\.jpeg|\.webp)(?:\?[^"\'<>\s]+)?', html)
-            for m in regex_matches:
-                clean_u = html_lib.unescape(m)
-                if clean_u not in raw_photo_urls and "icon" not in clean_u and "logo" not in clean_u:
-                    raw_photo_urls.append(clean_u)
+        # (B) Check DOM images
+        dom_imgs = page.evaluate("""() => {
+            const list = [];
+            document.querySelectorAll('img, a[data-thumb-url], [data-src]').forEach(el => {
+                const src = el.src || el.getAttribute('data-thumb-url') || el.getAttribute('data-src') || el.href;
+                if (src && src.includes('bstatic.com') && src.includes('/hotel/')) {
+                    list.push(src);
+                }
+            });
+            return Array.from(new Set(list));
+        }""")
+        for u in dom_imgs:
+            if u not in raw_photo_urls:
+                raw_photo_urls.append(u)
 
-            # Upgrade resolution to max1280x900
-            upgraded_urls = []
-            for u in raw_photo_urls:
-                hi_res = re.sub(r'/(?:square|max)\d+x?\d*/', '/max1280x900/', u)
-                if hi_res not in upgraded_urls:
-                    upgraded_urls.append(hi_res)
+        # (C) Page regex search with ?k= token
+        regex_matches = re.findall(r'https://cf\.bstatic\.com/xdata/images/hotel/[a-zA-Z0-9_\-\./]+(?:\.jpg|\.jpeg|\.webp)(?:\?[^"\'<>\s]+)?', html)
+        for m in regex_matches:
+            clean_u = html_lib.unescape(m)
+            if clean_u not in raw_photo_urls and "icon" not in clean_u and "logo" not in clean_u:
+                raw_photo_urls.append(clean_u)
 
+        # Upgrade resolution to max1280x900
+        upgraded_urls = []
+        for u in raw_photo_urls:
+            hi_res = re.sub(r'/(?:square|max)\d+x?\d*/', '/max1280x900/', u)
+            if hi_res not in upgraded_urls:
+                upgraded_urls.append(hi_res)
+
+        downloaded_local_paths = []
+        if download_locally and max_photos > 0:
             sys.stderr.write(f"Found {len(upgraded_urls)} HD photos. Downloading {min(len(upgraded_urls), max_photos)} locally...\n")
-            downloaded_local_paths = []
             for idx, p_url in enumerate(upgraded_urls[:max_photos]):
                 local_path = download_photo_playwright(page, p_url, result["name"] or "hotel", idx)
                 if local_path:
                     downloaded_local_paths.append(local_path)
+        else:
+            sys.stderr.write(f"Found {len(upgraded_urls)} HD photos. Linking high-speed CDN URLs (0 disk space used)...\n")
 
-            if upgraded_urls:
-                result["cdnThumbnail"] = upgraded_urls[0]
-                result["cdnImagesList"] = upgraded_urls[1:max_photos]
+        if upgraded_urls:
+            result["cdnThumbnail"] = upgraded_urls[0]
+            result["cdnImagesList"] = upgraded_urls[1:max(max_photos, 25)]
+            result["thumbnail"] = upgraded_urls[0]
+            result["imagesList"] = upgraded_urls[1:max(max_photos, 25)]
 
-            if downloaded_local_paths:
-                # Use CDN URL as primary thumbnail if available for universal remote & local viewing
-                result["thumbnail"] = upgraded_urls[0] if upgraded_urls else downloaded_local_paths[0]
-                result["imagesList"] = upgraded_urls[1:max_photos] if upgraded_urls else downloaded_local_paths[1:]
-                result["localThumbnail"] = downloaded_local_paths[0]
-                result["downloadedPhotosCount"] = len(downloaded_local_paths)
-            elif upgraded_urls:
-                result["thumbnail"] = upgraded_urls[0]
-                result["imagesList"] = upgraded_urls[1:max_photos]
+        if downloaded_local_paths:
+            result["localThumbnail"] = downloaded_local_paths[0]
+            result["downloadedPhotosCount"] = len(downloaded_local_paths)
+        else:
+            result["downloadedPhotosCount"] = len(result["imagesList"])
 
-            result["success"] = bool(result["name"])
+        result["success"] = bool(result["name"])
 
-        except Exception as e:
-            sys.stderr.write(f"[Cloner Error] {e}\n")
-            result["error"] = str(e)
-        finally:
-            browser.close()
+    except Exception as e:
+        sys.stderr.write(f"[Cloner Error] {e}\n")
+        result["error"] = str(e)
+    finally:
+        if own_browser:
+            try:
+                if browser:
+                    browser.close()
+                if pw_manager:
+                    pw_manager.__exit__(None, None, None)
+            except Exception:
+                pass
 
     return result
 
 
 def save_to_mysql(hotel_data: dict) -> int | None:
-    """Saves the cloned hotel directly into BOTH Localhost and Live Production MySQL databases."""
+    """Saves the cloned hotel directly into Live Production MySQL database (Local DB is kept clean)."""
     import pymysql
 
     thumb = hotel_data.get("cdnThumbnail") or hotel_data.get("thumbnail")
     imgs = hotel_data.get("cdnImagesList") or hotel_data.get("imagesList", [])
 
+    # ONLY Live Production MariaDB (Never save directory clutter to Localhost)
     db_configs = [
-        {"name": "Localhost", "host": "127.0.0.1", "port": 3306, "user": "root", "password": "", "database": "vgyuvmpi_gethotel_db"},
         {"name": "Live Production", "host": "103.108.220.145", "port": 3306, "user": "vgyuvmpi_gethotel_db", "password": "shriyanshking", "database": "vgyuvmpi_gethotel_db"}
     ]
 
@@ -415,16 +438,30 @@ def save_to_mysql(hotel_data: dict) -> int | None:
         try:
             conn = pymysql.connect(
                 host=cfg["host"], port=cfg["port"], user=cfg["user"], password=cfg["password"],
-                database=cfg["database"], autocommit=True, connect_timeout=6
+                database=cfg["database"], autocommit=True, connect_timeout=8,
+                read_timeout=10, write_timeout=10
             )
             with conn.cursor() as cur:
                 # Check for existing
-                cur.execute("SELECT id FROM hotel WHERE name = %s AND listingType = 'directory'", (hotel_data["name"],))
+                cur.execute("SELECT id FROM hotel WHERE (name = %s OR bookingUrl = %s) AND listingType = 'directory'", (hotel_data["name"], hotel_data.get("bookingUrl", "")))
                 existing = cur.fetchone()
                 if existing:
-                    sys.stderr.write(f"[{cfg['name']}] Hotel already exists in database with ID #{existing[0]}\n")
+                    existing_id = existing[0]
+                    # Dynamically update the latest live Booking.com rate and URL
+                    if hotel_data.get("bookingPrice"):
+                        cur.execute("""
+                            UPDATE hotel 
+                            SET pricePerNight = %s, bookingPrice = %s, bookingUrl = %s, otaLastFetchedAt = NOW(), updatedAt = NOW()
+                            WHERE id = %s
+                        """, (
+                            float(hotel_data.get("bookingPrice")),
+                            hotel_data.get("bookingPrice"),
+                            hotel_data.get("bookingUrl", ""),
+                            existing_id
+                        ))
+                    sys.stderr.write(f"[{cfg['name']}] Hotel already exists (ID #{existing_id}), updated with latest live dynamic rate ₹{hotel_data.get('bookingPrice')}\n")
                     if not saved_id:
-                        saved_id = existing[0]
+                        saved_id = existing_id
                     conn.close()
                     continue
 

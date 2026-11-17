@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "GHS Hotel Harvester & Lead Extractor",
+  "version": "1.0.0",
+  "description": "Ultra-fast automated hotel link & dynamic rate harvester for Booking.com. Feeds GetHotelStays multi-worker agent.",
+  "permissions": [
+    "storage",
+    "downloads",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "*://*.booking.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "GHS Hotel Harvester",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.booking.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
