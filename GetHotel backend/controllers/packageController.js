@@ -36,6 +36,12 @@ const ensureTableExists = async () => {
             // Column already exists
         }
         try {
+            await prisma.$executeRawUnsafe(`ALTER TABLE tour_packages ADD COLUMN booking_url TEXT DEFAULT NULL;`);
+        } catch (e) {}
+        try {
+            await prisma.$executeRawUnsafe(`ALTER TABLE tour_packages ADD COLUMN viator_code VARCHAR(100) DEFAULT NULL;`);
+        } catch (e) {}
+        try {
             await prisma.$executeRawUnsafe(`DELETE FROM tour_packages WHERE price = 145000 OR slug LIKE '%palace-on-wheels%';`);
         } catch (e) {}
     } catch (err) {
@@ -79,6 +85,8 @@ function formatPackage(row) {
         inclusions: typeof row.inclusions === "string" ? JSON.parse(row.inclusions || "[]") : (row.inclusions || []),
         exclusions: typeof row.exclusions === "string" ? JSON.parse(row.exclusions || "[]") : (row.exclusions || []),
         itinerary: typeof row.itinerary === "string" ? JSON.parse(row.itinerary || "[]") : (row.itinerary || []),
+        bookingUrl: row.booking_url || null,
+        viatorCode: row.viator_code || null,
         isActive: Boolean(row.is_active),
         createdAt: row.created_at,
         updatedAt: row.updated_at

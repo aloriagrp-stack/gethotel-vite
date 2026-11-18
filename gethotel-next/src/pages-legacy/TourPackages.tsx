@@ -365,154 +365,79 @@ export default function TourPackages() {
                     </div>
                 </div>
 
-                {/* 2. AESTHETIC TOUR PACKAGE CARDS (2-COLUMN LUXURY GRID) */}
-                <div className="space-y-3 sm:space-y-4" ref={packagesGridRef}>
-                    <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                            <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight truncate">
-                                Available Tour Packages {!packagesLoading && `(${filteredPackages.length})`}
-                            </h2>
-                            {selectedDestination !== "All" && (
-                                <span className="px-2 py-0.5 bg-brand-50 text-brand-700 text-[11px] font-bold rounded-md border border-brand-200 shrink-0">
-                                    {selectedDestination}
-                                </span>
-                            )}
-                        </div>
+                {/* 2. VIATOR-STYLE HEADER & TOUR PACKAGE CARDS */}
+                <div className="space-y-4 sm:space-y-5" ref={packagesGridRef}>
+                    {/* Header Title */}
+                    <div>
+                        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight">
+                            All India Tours & Excursions in 2026
+                        </h1>
+                    </div>
 
-                        {/* Small Filter Button right beside Available Tour Packages */}
-                        <div className="flex items-center gap-2 shrink-0">
-                            {filterConfig.showFilterLine && Array.isArray(filterConfig.filterTags) && filterConfig.filterTags.length > 0 && (
+                    {/* Quick Filter Pill Buttons (Exact Viator Style) */}
+                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+                        <button
+                            type="button"
+                            onClick={() => setIsFilterOpen(prev => !prev)}
+                            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold border transition-all cursor-pointer shrink-0 ${
+                                isFilterOpen
+                                    ? "bg-slate-900 text-white border-slate-900"
+                                    : "bg-white border-slate-300 text-slate-800 hover:border-slate-400"
+                            }`}
+                        >
+                            <SlidersHorizontal className="w-3.5 h-3.5" />
+                            <span>Filters</span>
+                        </button>
+
+                        {/* Destination Pills */}
+                        {["All", "Delhi", "Agra", "Jaipur", "Udaipur", "Varanasi", "Goa", "Mumbai"].map((dest) => {
+                            const isSelected = selectedDestination === dest;
+                            return (
                                 <button
-                                    onClick={() => setIsFilterOpen(prev => !prev)}
-                                    className={`flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
-                                        selectedFilterTag !== "All"
-                                            ? "bg-brand-50 border-brand-300 text-brand-700 shadow-xs"
-                                            : isFilterOpen
-                                            ? "bg-slate-100 border-slate-300 text-slate-900 shadow-xs"
-                                            : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                                    key={dest}
+                                    type="button"
+                                    onClick={() => {
+                                        setSelectedDestination(dest);
+                                        setSearchQuery("");
+                                    }}
+                                    className={`px-4 py-2 rounded-full text-xs font-semibold border transition-all cursor-pointer shrink-0 ${
+                                        isSelected
+                                            ? "bg-slate-900 text-white border-slate-900 shadow-xs"
+                                            : "bg-white border-slate-300 text-slate-700 hover:border-slate-400 hover:bg-slate-50"
                                     }`}
-                                    title="Toggle filter tags"
                                 >
-                                    <SlidersHorizontal className="w-3.5 h-3.5 text-current" />
-                                    <span>{selectedFilterTag !== "All" ? selectedFilterTag : "Filters"}</span>
-                                    {selectedFilterTag !== "All" ? (
-                                        <span
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setSelectedFilterTag("All");
-                                            }}
-                                            className="ml-0.5 hover:text-red-600 transition-colors p-0.5"
-                                            title="Clear filter"
-                                        >
-                                            <X className="w-3.5 h-3.5" />
-                                        </span>
-                                    ) : (
-                                        <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform duration-200 ${isFilterOpen ? "rotate-180" : ""}`} />
-                                    )}
+                                    {dest === "All" ? "All Tours" : dest}
                                 </button>
-                            )}
+                            );
+                        })}
+                    </div>
 
-                            {(selectedDestination !== "All" || (!filterConfig.showFilterLine && selectedFilterTag !== "All")) && (
-                                <button
-                                    onClick={() => { setSelectedDestination("All"); setSearchQuery(""); setSelectedFilterTag("All"); }}
-                                    className="text-xs font-bold text-brand-600 hover:underline cursor-pointer"
-                                >
-                                    Clear All
-                                </button>
-                            )}
+                    {/* Results Count & Sort By */}
+                    <div className="flex items-center justify-between text-xs sm:text-sm text-slate-500 pt-1 pb-1">
+                        <span className="font-semibold text-slate-900">
+                            {!packagesLoading ? `${filteredPackages.length} results` : "Loading tours..."}
+                        </span>
+                        <div className="flex items-center gap-1 font-medium text-slate-700 cursor-pointer">
+                            <span>Sort by: <strong className="text-slate-900">Featured</strong></span>
+                            <ChevronDown className="w-4 h-4 text-slate-400" />
                         </div>
                     </div>
 
-                    {/* Expandable Filter Bar when user clicks the small filter button */}
-                    <AnimatePresence>
-                        {isFilterOpen && filterConfig.showFilterLine && Array.isArray(filterConfig.filterTags) && filterConfig.filterTags.length > 0 && (
-                            <motion.div
-                                initial={{ opacity: 0, height: 0, y: -4 }}
-                                animate={{ opacity: 1, height: "auto", y: 0 }}
-                                exit={{ opacity: 0, height: 0, y: -4 }}
-                                transition={{ duration: 0.2 }}
-                                className="overflow-hidden"
-                            >
-                                <div className="py-2 px-2.5 sm:px-3 bg-white/95 rounded-xl border border-slate-200/90 shadow-sm flex items-center justify-between gap-2 flex-wrap">
-                                    <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 flex-1 min-w-0">
-                                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mr-1 flex items-center gap-1 shrink-0">
-                                            <Filter className="w-3 h-3 text-slate-400" />
-                                            <span>Filters:</span>
-                                        </span>
-                                        {filterConfig.filterTags.map((tag) => {
-                                            const isSelected = selectedFilterTag === tag;
-                                            return (
-                                                <button
-                                                    key={tag}
-                                                    onClick={() => setSelectedFilterTag(tag)}
-                                                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
-                                                        isSelected
-                                                            ? "bg-brand-600 text-white shadow-xs shadow-brand-600/30"
-                                                            : "bg-slate-100 hover:bg-slate-200 text-slate-700"
-                                                    }`}
-                                                >
-                                                    {tag}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                    {selectedFilterTag !== "All" && (
-                                        <button
-                                            onClick={() => setSelectedFilterTag("All")}
-                                            className="text-[11px] font-bold text-red-500 hover:text-red-700 cursor-pointer shrink-0 flex items-center gap-0.5 ml-auto"
-                                        >
-                                            <X className="w-3 h-3" />
-                                            Reset
-                                        </button>
-                                    )}
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-
                     {packagesLoading ? (
-                        <div className="grid grid-cols-2 lg:grid-cols-2 gap-0">
-                            {[0, 1, 2, 3].map((i) => (
-                                <React.Fragment key={i}>
-                                    {/* Mobile Skeleton Directly on Background */}
-                                    <div className={`lg:hidden p-2.5 sm:p-3 space-y-2 animate-pulse flex flex-col justify-between border-b border-slate-200/80 ${
-                                        i % 2 === 0 ? "border-r border-slate-200/80 pr-2.5 sm:pr-3" : "pl-2.5 sm:pl-3"
-                                    }`}>
-                                        <div className="space-y-2">
-                                            <div className="aspect-[4/3] bg-slate-200/70 rounded-xl" />
-                                            <div className="h-3 w-14 bg-slate-200/70 rounded" />
-                                            <div className="h-3.5 w-full bg-slate-200/70 rounded" />
-                                            <div className="h-3 w-2/3 bg-slate-200/50 rounded" />
-                                        </div>
-                                        <div className="flex justify-between items-end pt-2">
-                                            <div className="h-4 w-12 bg-slate-300 rounded" />
-                                            <div className="h-6 w-12 bg-slate-200 rounded-lg" />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
+                            {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+                                <div key={i} className="bg-white rounded-2xl overflow-hidden border border-slate-200/90 shadow-xs animate-pulse">
+                                    <div className="aspect-[4/3] bg-slate-200" />
+                                    <div className="p-3.5 sm:p-4 space-y-2.5">
+                                        <div className="h-4 bg-slate-200 rounded w-full" />
+                                        <div className="h-4 bg-slate-200 rounded w-3/4" />
+                                        <div className="h-3 bg-slate-100 rounded w-1/2 pt-1" />
+                                        <div className="flex justify-between items-end pt-3 border-t border-slate-100">
+                                            <div className="h-4 bg-slate-200 rounded w-16" />
+                                            <div className="h-5 bg-slate-200 rounded w-20" />
                                         </div>
                                     </div>
-
-                                    {/* Desktop Horizontal Skeleton Directly on Background */}
-                                    <div className={`hidden lg:flex p-6 space-y-4 animate-pulse min-h-[290px] flex-col justify-between border-b border-slate-200/80 ${
-                                        i % 2 === 0 ? "border-r border-slate-200/80 pr-6 xl:pr-8" : "pl-6 xl:pl-8"
-                                    }`}>
-                                        <div className="flex gap-4 items-stretch">
-                                            <div className="w-[52%] aspect-[16/10] bg-slate-200 rounded-2xl" />
-                                            <div className="flex-1 bg-slate-100 rounded-2xl p-3 flex flex-col justify-between space-y-2">
-                                                <div className="h-3 w-1/2 bg-slate-200 rounded" />
-                                                <div className="h-6 w-3/4 bg-slate-300 rounded" />
-                                                <div className="h-7 w-full bg-slate-200 rounded-xl" />
-                                            </div>
-                                        </div>
-                                        <div className="space-y-2 pt-1">
-                                            <div className="h-4 w-1/3 bg-slate-200 rounded-lg" />
-                                            <div className="h-5 w-4/5 bg-slate-300 rounded-lg" />
-                                            <div className="flex gap-2">
-                                                <div className="h-4 w-16 bg-slate-200 rounded" />
-                                                <div className="h-4 w-20 bg-slate-200 rounded" />
-                                                <div className="h-4 w-16 bg-slate-200 rounded" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </React.Fragment>
+                                </div>
                             ))}
                         </div>
                     ) : packages.length === 0 ? (
@@ -538,250 +463,114 @@ export default function TourPackages() {
                             </button>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-2 lg:grid-cols-2 gap-0">
-                            {filteredPackages.map((pkg, idx) => {
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
+                            {filteredPackages.map((pkg) => {
                                 const packageSlug = pkg.slug || createPackageSlug(pkg.title);
-                                
-                                // Process gallery photos for card preview
                                 const photosList = Array.isArray(pkg.gallery) && pkg.gallery.length > 0
                                     ? pkg.gallery
                                     : [pkg.image || "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=800&q=80"];
-
-                                const activeImgIdx = activeImageIndices[pkg.id] || 0;
-                                const displayImg = photosList[activeImgIdx] || photosList[0];
+                                const displayImg = photosList[0];
                                 const isWishlisted = Boolean(wishlist[pkg.id]);
+                                const isDiscounted = Boolean(pkg.originalPrice && pkg.originalPrice > pkg.price);
+                                const badgeText = pkg.badge || (isDiscounted ? "Special Offer" : "Best Seller");
+                                const isSpecialOffer = badgeText.toLowerCase().includes("offer") || badgeText.toLowerCase().includes("special");
 
                                 return (
-                                    <React.Fragment key={pkg.id}>
-                                        {/* 1. MOBILE VERSION CARD ONLY (lg:hidden) - Directly on Background with Center & Bottom Dividers */}
-                                        <Link
-                                            to={`/${langCode}/packages/${packageSlug}`}
-                                            className={`lg:hidden group py-3 flex flex-col justify-between cursor-pointer transition-colors border-b border-slate-200/80 relative ${
-                                                idx % 2 === 0 ? "border-r border-slate-200/80 pr-2.5 sm:pr-3" : "pl-2.5 sm:pl-3"
-                                            }`}
-                                        >
-                                            <div className="space-y-1.5">
-                                                {/* Top Image Box with Blue Discount Pill + Wishlist */}
-                                                <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-slate-100 group/img">
-                                                    <img
-                                                        src={displayImg}
-                                                        alt={pkg.title}
-                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                                    />
+                                    <Link
+                                        key={pkg.id}
+                                        to={`/${langCode}/packages/${packageSlug}`}
+                                        className="group bg-white rounded-2xl overflow-hidden border border-slate-200/90 hover:border-slate-300 hover:shadow-md transition-all flex flex-col justify-between cursor-pointer"
+                                    >
+                                        {/* 1. Image Box (Aspect 4:3) */}
+                                        <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100">
+                                            <img
+                                                src={displayImg}
+                                                alt={pkg.title}
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                loading="lazy"
+                                            />
 
-                                                    {/* Blue Discount Pill on Top-Left (Exact Blinkit Style) */}
-                                                    {pkg.discountPercent && (
-                                                        <div className="absolute top-1.5 left-1.5 z-10 px-1.5 py-0.5 bg-blue-600 text-white font-extrabold text-[9px] uppercase tracking-wider rounded-md shadow-xs">
-                                                            {pkg.discountPercent}
-                                                        </div>
-                                                    )}
-
-                                                    {/* Wishlist Heart on Top-Right */}
-                                                    <button
-                                                        type="button"
-                                                        onClick={(e) => toggleWishlist(e, pkg.id)}
-                                                        className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-white/90 backdrop-blur-xs text-slate-600 flex items-center justify-center hover:text-red-500 shadow-xs transition-colors z-10"
-                                                        title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
-                                                    >
-                                                        <Heart className={`w-3 h-3 ${isWishlisted ? "fill-red-500 text-red-500" : ""}`} />
-                                                    </button>
-                                                </div>
-
-                                                {/* Details Below Image */}
-                                                <div className="space-y-1">
-                                                    {/* Delivery/Duration Pill (like Blinkit's "⏱ 24 MINS") */}
-                                                    <div className="flex items-center gap-1 text-[10px] font-extrabold text-amber-900 bg-amber-50/90 border border-amber-200/60 px-1.5 py-0.5 rounded-md w-fit">
-                                                        <Clock className="w-2.5 h-2.5 text-amber-600 shrink-0" />
-                                                        <span>{pkg.duration}</span>
-                                                    </div>
-
-                                                    {/* Title (2 lines clamp, like Blinkit item title) */}
-                                                    <h3 className="font-bold text-xs sm:text-[13px] text-slate-900 line-clamp-2 leading-snug min-h-[30px] group-hover:text-brand-600 transition-colors">
-                                                        {pkg.title}
-                                                    </h3>
-
-                                                    {/* Location / Destination subtitle (like Blinkit's "1 unit") */}
-                                                    <div className="flex items-center gap-1 text-[10px] text-slate-500 font-medium truncate">
-                                                        <MapPin className="w-2.5 h-2.5 text-slate-400 shrink-0" />
-                                                        <span className="truncate">{pkg.destination}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Bottom Price & Blinkit Action Button */}
-                                            <div className="flex items-end justify-between gap-1 mt-2.5 pt-2">
-                                                <div className="flex flex-col min-w-0">
-                                                    <span className="text-xs sm:text-sm font-black text-slate-950 leading-tight">
-                                                        ₹{pkg.price?.toLocaleString("en-IN")}
+                                            {/* Badge on Top-Left (Viator Style Pill) */}
+                                            {badgeText && (
+                                                <div className="absolute top-2.5 left-2.5 z-10">
+                                                    <span className={`px-2.5 py-0.5 text-[11px] font-bold rounded-full shadow-xs ${
+                                                        isSpecialOffer
+                                                            ? "bg-rose-100 text-rose-800"
+                                                            : "bg-emerald-100 text-emerald-800"
+                                                    }`}>
+                                                        {badgeText}
                                                     </span>
-                                                    {pkg.originalPrice && pkg.originalPrice > pkg.price && (
-                                                        <span className="text-[10px] text-slate-400 line-through font-medium leading-none mt-0.5">
-                                                            ₹{pkg.originalPrice?.toLocaleString("en-IN")}
-                                                        </span>
-                                                    )}
                                                 </div>
+                                            )}
 
-                                                {/* Iconic Blinkit-style ADD/VIEW button */}
-                                                <div className="px-3 py-1 rounded-lg border border-emerald-600 text-emerald-700 bg-emerald-50/50 hover:bg-emerald-600 hover:text-white font-black text-[11px] uppercase tracking-wider transition-all text-center shrink-0">
-                                                    VIEW
-                                                </div>
+                                            {/* Wishlist Heart on Top-Right */}
+                                            <button
+                                                type="button"
+                                                onClick={(e) => toggleWishlist(e, pkg.id)}
+                                                className="absolute top-2.5 right-2.5 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/30 hover:bg-black/50 text-white flex items-center justify-center transition-colors z-10 cursor-pointer"
+                                                title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+                                            >
+                                                <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isWishlisted ? "fill-rose-500 text-rose-500" : "text-white"}`} />
+                                            </button>
+
+                                            {/* Carousel Indicator Dots */}
+                                            <div className="absolute bottom-2.5 left-0 right-0 flex items-center justify-center gap-1 pointer-events-none z-10">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-white shadow-xs" />
+                                                <span className="w-1.5 h-1.5 rounded-full bg-white/60" />
+                                                <span className="w-1.5 h-1.5 rounded-full bg-white/60" />
+                                                <span className="w-1.5 h-1.5 rounded-full bg-white/60" />
+                                                <span className="w-1.5 h-1.5 rounded-full bg-white/60" />
                                             </div>
-                                        </Link>
+                                        </div>
 
-                                        {/* 2. DESKTOP VERSION CARD ONLY (hidden lg:block) - Directly on Background with Center & Bottom Dividers */}
-                                        <Link
-                                            to={`/${langCode}/packages/${packageSlug}`}
-                                            className={`hidden lg:block group relative py-6 transition-colors border-b border-slate-200/80 cursor-pointer ${
-                                                idx % 2 === 0 ? "border-r border-slate-200/80 pr-6 xl:pr-8" : "pl-6 xl:pl-8"
-                                            }`}
-                                        >
-                                            {/* INNER CARD LAYOUT */}
-                                            <div className="relative z-10 flex flex-col justify-between h-full gap-3.5">
-                                                {/* TOP ROW: Image on Left + Pricing Wagera on Right */}
-                                                <div className="flex items-stretch gap-4">
-                                                    {/* LEFT: Sharp, Clear Tour Image (White Box from User Sketch) */}
-                                                    <div className="relative w-[54%] rounded-2xl overflow-hidden shadow-sm shrink-0 group/img bg-slate-100 aspect-[16/10]">
-                                                        <img
-                                                            src={displayImg}
-                                                            alt={pkg.title}
-                                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                                                        />
+                                        {/* 2. Card Content Body */}
+                                        <div className="p-3.5 sm:p-4 flex flex-col justify-between flex-1 gap-2">
+                                            <div className="space-y-1">
+                                                {/* Title (2 lines clamp) */}
+                                                <h3 className="font-bold text-sm sm:text-[15px] text-slate-900 leading-snug line-clamp-2 group-hover:text-blue-600 transition-colors min-h-[40px]">
+                                                    {pkg.title}
+                                                </h3>
 
-                                                        {/* Badges on Image */}
-                                                        <div className="absolute top-2 left-2 flex items-center gap-1.5 z-10">
-                                                            {pkg.badge && (
-                                                                <span className="px-2 py-0.5 bg-brand-600/90 backdrop-blur-md text-white text-[9px] font-black uppercase tracking-wider rounded-lg shadow-sm">
-                                                                    {pkg.badge}
-                                                                </span>
-                                                            )}
-                                                            {pkg.discountPercent && (
-                                                                <span className="px-2 py-0.5 bg-rose-600 text-white text-[9px] font-black rounded-lg shadow-sm">
-                                                                    {pkg.discountPercent}
-                                                                </span>
-                                                            )}
-                                                        </div>
+                                                {/* Specs (Duration • Free Cancellation) */}
+                                                <p className="text-xs text-slate-500 font-normal">
+                                                    {pkg.duration} • Free Cancellation
+                                                </p>
+                                            </div>
 
-                                                        {/* Gallery Arrow Buttons on Hover */}
-                                                        {photosList.length > 1 && (
-                                                            <>
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={(e) => handlePrevImage(e, pkg.id, photosList.length)}
-                                                                    className="absolute left-1.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-slate-900/60 text-white backdrop-blur-md flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity z-20 hover:bg-brand-600 cursor-pointer"
-                                                                    title="Previous image"
-                                                                >
-                                                                    <ChevronLeft className="w-3 h-3" />
-                                                                </button>
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={(e) => handleNextImage(e, pkg.id, photosList.length)}
-                                                                    className="absolute right-1.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-slate-900/60 text-white backdrop-blur-md flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity z-20 hover:bg-brand-600 cursor-pointer"
-                                                                    title="Next image"
-                                                                >
-                                                                    <ChevronRight className="w-3 h-3" />
-                                                                </button>
-                                                                <span className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 bg-black/60 backdrop-blur-md text-white text-[8px] font-bold rounded">
-                                                                    {activeImgIdx + 1}/{photosList.length}
-                                                                </span>
-                                                            </>
+                                            {/* Bottom Row: Rating on Left, Price on Right */}
+                                            <div className="flex items-end justify-between pt-2 border-t border-slate-100 mt-auto">
+                                                {/* Rating */}
+                                                <div className="flex items-center gap-1 text-xs">
+                                                    <span className="text-emerald-700 font-bold flex items-center gap-0.5">
+                                                        ★ {pkg.rating ? Number(pkg.rating).toFixed(1) : "4.9"}
+                                                    </span>
+                                                    <span className="text-slate-400 font-normal">
+                                                        ({(pkg.reviewsCount || 120).toLocaleString()})
+                                                    </span>
+                                                </div>
+
+                                                {/* Price */}
+                                                <div className="text-right">
+                                                    <span className="text-[10px] sm:text-[11px] text-slate-500 font-normal block leading-tight">
+                                                        from
+                                                    </span>
+                                                    <div className="flex items-baseline justify-end gap-1">
+                                                        {isDiscounted && (
+                                                            <span className="text-xs text-slate-400 line-through font-normal">
+                                                                ₹{pkg.originalPrice?.toLocaleString("en-IN")}
+                                                            </span>
                                                         )}
-                                                    </div>
-
-                                                    {/* RIGHT: "prices and all this side" (Pricing Wagera to right of image, NO BORDER) */}
-                                                    <div className="flex-1 flex flex-col justify-between p-3 rounded-2xl bg-white/70 backdrop-blur-md shadow-xs text-slate-900">
-                                                        <div className="space-y-0.5">
-                                                            <span className="text-[9px] font-extrabold uppercase tracking-wider text-slate-500 block">
-                                                                Package Price
-                                                            </span>
-                                                            <div className="flex items-baseline gap-1.5 flex-wrap">
-                                                                <span className="text-xl xl:text-2xl font-black text-slate-950 tracking-tight leading-tight">
-                                                                    ₹{pkg.price?.toLocaleString("en-IN")}
-                                                                </span>
-                                                                {pkg.originalPrice && pkg.originalPrice > pkg.price && (
-                                                                    <span className="text-[11px] text-slate-400 line-through font-semibold">
-                                                                        ₹{pkg.originalPrice?.toLocaleString("en-IN")}
-                                                                    </span>
-                                                                )}
-                                                            </div>
-
-                                                            {pkg.discountPercent && (
-                                                                <div className="pt-0.5">
-                                                                    <span className="inline-block px-1.5 py-0.5 bg-emerald-50 text-emerald-700 rounded-md text-[9px] font-extrabold">
-                                                                        Save {pkg.discountPercent}
-                                                                    </span>
-                                                                </div>
-                                                            )}
-
-                                                            <span className="text-[9px] text-slate-500 font-medium block pt-0.5">
-                                                                per guest (all taxes incl.)
-                                                            </span>
-                                                        </div>
-
-                                                        {/* Trust mini-badge & CTA Button */}
-                                                        <div className="pt-2 space-y-1.5">
-                                                            <div className="flex items-center gap-1 text-[9px] font-bold text-emerald-600">
-                                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                                                <span>Instant Confirmation</span>
-                                                            </div>
-
-                                                            <div className="w-full py-2 px-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-black text-[11px] uppercase tracking-wider shadow-sm flex items-center justify-center gap-1.5 group-hover:scale-[1.02] transition-all">
-                                                                <span>View Tour</span>
-                                                                <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                {/* BOTTOM: "image ke niche tour details honi chaiye card me" (NO BORDER) */}
-                                                <div className="space-y-2 text-slate-900 pt-0.5">
-                                                    {/* Row 1: Destination Badge, Star Rating, Wishlist Heart */}
-                                                    <div className="flex items-center justify-between gap-2">
-                                                        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-brand-50 rounded-lg text-xs font-extrabold text-brand-700 uppercase tracking-wider">
-                                                            <MapPin className="w-3.5 h-3.5 text-brand-600 shrink-0" />
-                                                            <span className="truncate max-w-[170px]">{pkg.destination}</span>
-                                                        </div>
-
-                                                        <div className="flex items-center gap-1.5">
-                                                            <div className="px-2 py-0.5 rounded-lg bg-amber-50 text-amber-900 flex items-center gap-1 text-xs font-bold">
-                                                                <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
-                                                                <span>{pkg.rating || 5}</span>
-                                                            </div>
-
-                                                            <button
-                                                                type="button"
-                                                                onClick={(e) => toggleWishlist(e, pkg.id)}
-                                                                className="w-7 h-7 rounded-lg bg-white/80 text-slate-600 flex items-center justify-center hover:bg-white hover:text-red-500 transition-all cursor-pointer shadow-xs"
-                                                                title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
-                                                            >
-                                                                <Heart className={`w-3.5 h-3.5 ${isWishlisted ? "fill-red-500 text-red-500" : ""}`} />
-                                                            </button>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Row 2: Tour Title */}
-                                                    <h3 className="font-black text-sm xl:text-base text-slate-900 leading-snug line-clamp-2 group-hover:text-brand-600 transition-colors">
-                                                        {pkg.title}
-                                                    </h3>
-
-                                                    {/* Row 3: Feature Pills (Duration, Stay, Cab) - NO BORDER */}
-                                                    <div className="flex items-center gap-1.5 flex-wrap text-[10px] font-semibold text-slate-700">
-                                                        <span className="px-2.5 py-1 bg-white/70 rounded-lg flex items-center gap-1 shadow-xs">
-                                                            <Clock className="w-3 h-3 text-brand-600" />
-                                                            <span>{pkg.duration}</span>
-                                                        </span>
-                                                        <span className="px-2.5 py-1 bg-white/70 rounded-lg flex items-center gap-1 shadow-xs">
-                                                            <Hotel className="w-3 h-3 text-indigo-600" />
-                                                            <span className="truncate max-w-[120px]">{pkg.includedStay || "Hotel Included"}</span>
-                                                        </span>
-                                                        <span className="px-2.5 py-1 bg-white/70 rounded-lg flex items-center gap-1 shadow-xs">
-                                                            <Car className="w-3 h-3 text-emerald-600" />
-                                                            <span>Private Cab</span>
+                                                        <span className={`text-sm sm:text-base font-extrabold ${isDiscounted ? "text-rose-600" : "text-slate-950"}`}>
+                                                            ₹{pkg.price?.toLocaleString("en-IN")}
                                                         </span>
                                                     </div>
+                                                    <span className="text-[9px] text-slate-400 block leading-tight mt-0.5">
+                                                        Price varies by group size
+                                                    </span>
                                                 </div>
                                             </div>
-                                        </Link>
-                                    </React.Fragment>
+                                        </div>
+                                    </Link>
                                 );
                             })}
                         </div>
