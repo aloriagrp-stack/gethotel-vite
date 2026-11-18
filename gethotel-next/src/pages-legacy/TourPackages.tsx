@@ -246,7 +246,19 @@ export default function TourPackages() {
 
         if (selectedDestination !== "All") {
             const d = selectedDestination.toLowerCase();
-            if (!title.includes(d) && !dest.includes(d)) {
+            if (d === "himachal") {
+                const isHimachal = dest.includes("shimla") || dest.includes("manali") || dest.includes("dharamsala") || title.includes("shimla") || title.includes("manali") || title.includes("himachal");
+                if (!isHimachal) return false;
+            } else if (d === "kerala") {
+                const isKerala = dest.includes("kochi") || dest.includes("munnar") || dest.includes("thekkady") || dest.includes("kerala") || title.includes("kerala");
+                if (!isKerala) return false;
+            } else if (d === "rajasthan") {
+                const isRajasthan = dest.includes("jaipur") || dest.includes("udaipur") || dest.includes("jodhpur") || dest.includes("jaisalmer") || dest.includes("bikaner") || dest.includes("ranthambore") || title.includes("rajasthan");
+                if (!isRajasthan) return false;
+            } else if (d === "south india") {
+                const isSouth = dest.includes("bengaluru") || dest.includes("chennai") || dest.includes("mysore") || dest.includes("hampi") || dest.includes("kochi") || dest.includes("hyderabad") || dest.includes("madurai") || dest.includes("pondicherry");
+                if (!isSouth) return false;
+            } else if (!title.includes(d) && !dest.includes(d)) {
                 return false;
             }
         }
@@ -350,7 +362,11 @@ export default function TourPackages() {
                         </button>
 
                         {/* Destination Pills */}
-                        {["All", "Delhi", "Agra", "Jaipur", "Udaipur", "Varanasi", "Goa", "Mumbai"].map((dest) => {
+                        {[
+                            "All", "Delhi", "Agra", "Jaipur", "Goa", "Kerala", "Mumbai",
+                            "Kashmir", "Ladakh", "Varanasi", "Himachal", "Udaipur", "Amritsar",
+                            "Rishikesh", "South India", "Kolkata", "Andaman"
+                        ].map((dest) => {
                             const isSelected = selectedDestination === dest;
                             return (
                                 <button
