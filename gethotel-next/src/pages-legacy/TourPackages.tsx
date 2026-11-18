@@ -325,46 +325,6 @@ export default function TourPackages() {
             {/* Main Widescreen Desktop Container */}
             <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6 space-y-6 sm:space-y-8">
                 
-                {/* 1. INSTAGRAM-STYLE DESTINATION STORY AVATARS */}
-                <div className="space-y-5 py-3">
-                    <div>
-                        <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
-                            Where Do You Want To Travel?
-                        </h2>
-                    </div>
-
-                    {/* Circular Destination Story Cards (Authentic Instagram Story Ring) */}
-                    <div className="flex items-center gap-5 sm:gap-6 overflow-x-auto no-scrollbar py-2 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
-                        {destinationStories.map((item, idx) => {
-                            const isSelected = selectedDestination === item.name;
-                            return (
-                                <button
-                                    key={item.name}
-                                    onClick={() => {
-                                        setActiveStoryIndex(idx);
-                                        setStoryProgress(0);
-                                    }}
-                                    className="flex flex-col items-center gap-2 group shrink-0 cursor-pointer text-center outline-none focus:outline-none"
-                                >
-                                    {/* Brand Shiny Shimmer Blue Story Ring */}
-                                    <div className="relative p-[2.5px] rounded-full bg-gradient-to-tr from-blue-600 via-sky-400 to-indigo-600 group-hover:from-sky-400 group-hover:via-cyan-300 group-hover:to-blue-600 group-hover:scale-108 group-active:scale-95 transition-all duration-500 shadow-md shadow-sky-500/20 group-hover:shadow-xl group-hover:shadow-sky-500/40">
-                                        <div className="w-18 h-18 sm:w-22 sm:h-22 md:w-24 md:h-24 rounded-full overflow-hidden border-2 border-white bg-white p-0.5 shadow-inner">
-                                            <img
-                                                src={item.image}
-                                                alt={item.name}
-                                                className="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-500"
-                                            />
-                                        </div>
-                                    </div>
-                                    <span className="text-xs sm:text-sm font-bold text-slate-800 group-hover:text-brand-600 transition-colors">
-                                        {item.name}
-                                    </span>
-                                </button>
-                            );
-                        })}
-                    </div>
-                </div>
-
                 {/* 2. VIATOR-STYLE HEADER & TOUR PACKAGE CARDS */}
                 <div className="space-y-4 sm:space-y-5" ref={packagesGridRef}>
                     {/* Header Title */}
