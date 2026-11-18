@@ -70,3 +70,5 @@ Allow: /
 Crawl-delay: 1
 
 Sitemap: https://gethotelstays.com/sitemap.xml
+
+Sitemap: https://gethotelstays.com/sitemap-packages.xml

@@ -440,6 +440,72 @@ export default function TourPackageDetails() {
         }
     ];
 
+    // ─── AEO & SEO STRUCTURED DATA SCHEMAS ──────────────────────────────
+    const canonicalPageUrl = `https://gethotelstays.com/packages/${pkg.slug || cleanId}`;
+    
+    const tripSchema = {
+        "@context": "https://schema.org",
+        "@type": "TouristTrip",
+        "name": pkg.title,
+        "description": pkg.overview || `Book ${pkg.title} in ${destinationName}. Verified tour package with private AC transport, guide and instant confirmation.`,
+        "touristType": ["Family", "Couple", "Solo Traveler", "International Tourist"],
+        "image": allPhotos[0] || pkg.image,
+        "offers": {
+            "@type": "Offer",
+            "price": pricePerAdult.toString(),
+            "priceCurrency": "INR",
+            "availability": "https://schema.org/InStock",
+            "validFrom": "2026-01-01",
+            "url": canonicalPageUrl,
+            "seller": {
+                "@type": "Organization",
+                "name": "GetHotelStays",
+                "url": "https://gethotelstays.com"
+            }
+        },
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": calculatedRating,
+            "reviewCount": reviewsCount.toString(),
+            "bestRating": "5",
+            "worstRating": "1"
+        },
+        "itinerary": {
+            "@type": "ItemList",
+            "numberOfItems": itineraryList.length,
+            "itemListElement": itineraryList.map((item: any, idx: number) => ({
+                "@type": "ListItem",
+                "position": idx + 1,
+                "name": item.title,
+                "description": item.description
+            }))
+        }
+    };
+
+    const faqSchema = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": faqs.map(faq => ({
+            "@type": "Question",
+            "name": faq.q,
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": faq.a
+            }
+        }))
+    };
+
+    const breadcrumbSchema = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://gethotelstays.com" },
+            { "@type": "ListItem", "position": 2, "name": "Tour Packages", "item": "https://gethotelstays.com/packages" },
+            { "@type": "ListItem", "position": 3, "name": `${destinationName} Tours`, "item": "https://gethotelstays.com/packages" },
+            { "@type": "ListItem", "position": 4, "name": pkg.title, "item": canonicalPageUrl }
+        ]
+    };
+
     // Right Column / Mobile Booking Card Component (Blue Theme)
     const renderBookingCard = () => (
         <div className={`bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4 relative ${isDatePickerOpen || isGuestDropdownOpen ? "z-40" : "z-10"}`}>
@@ -684,7 +750,20 @@ export default function TourPackageDetails() {
         <div className="min-h-screen bg-white font-sans text-slate-900 pb-20 lg:pb-16 antialiased">
             <SEOHead
                 title={`${pkg.title} | ${destinationName} Tours | GetHotelStays`}
-                description={`Book ${pkg.title} in ${destinationName}. Includes ${pkg.duration}, private AC transport, guide, and flexible cancellation.`}
+                description={`Book ${pkg.title} in ${destinationName}. Includes ${pkg.duration}, private AC transport, guide, and flexible cancellation. Lowest price guaranteed from ₹${pricePerAdult.toLocaleString()}.`}
+                canonicalUrl={canonicalPageUrl}
+                ogImage={allPhotos[0] || pkg.image}
+                ogType="product"
+                schemas={[tripSchema, faqSchema, breadcrumbSchema]}
+                keywords={[
+                    pkg.title,
+                    `${destinationName} tour package`,
+                    `${destinationName} sightseeing`,
+                    `${destinationName} day trip`,
+                    `book ${destinationName} tours`,
+                    "India tour packages",
+                    "Viator partner tours"
+                ]}
             />
 
             {/* ─── BREADCRUMBS BAR ─────────────────────────── */}
@@ -882,6 +961,32 @@ export default function TourPackageDetails() {
                                 <div className="flex items-start gap-2">
                                     <span className="text-blue-500 font-bold">•</span>
                                     <span>Flexible itinerary tailored to your group's pace</span>
+                                </div>
+                            </div>
+
+                            {/* AEO & AI Overview Fast Facts Block */}
+                            <div className="mt-4 p-3.5 sm:p-4 rounded-2xl bg-blue-50/40 border border-blue-100 space-y-2 text-xs" aria-label="Key Tour Facts for Travelers and AI Assistants">
+                                <div className="text-[11px] font-bold text-blue-700 uppercase tracking-wider flex items-center gap-1.5">
+                                    <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                                    <span>Experience Summary & Fast Facts</span>
+                                </div>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1 text-slate-700">
+                                    <div>
+                                        <span className="text-[10px] text-slate-400 block font-semibold">Starting Price</span>
+                                        <span className="font-extrabold text-slate-900 text-sm">₹{pricePerAdult.toLocaleString()}</span>
+                                    </div>
+                                    <div>
+                                        <span className="text-[10px] text-slate-400 block font-semibold">Duration</span>
+                                        <span className="font-bold text-slate-900">{pkg.duration || "5-11 Hours"}</span>
+                                    </div>
+                                    <div>
+                                        <span className="text-[10px] text-slate-400 block font-semibold">Location</span>
+                                        <span className="font-bold text-slate-900">{destinationName}, India</span>
+                                    </div>
+                                    <div>
+                                        <span className="text-[10px] text-slate-400 block font-semibold">Cancellation</span>
+                                        <span className="font-bold text-blue-700">100% Free (24h)</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
