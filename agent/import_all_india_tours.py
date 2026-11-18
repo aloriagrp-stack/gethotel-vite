@@ -281,7 +281,8 @@ def import_all():
                     # Clean Destination Booking URL with Affiliate pid
                     prod_url = details.get("productUrl")
                     if prod_url:
-                        booking_url = f"{prod_url}?mcid=42383&pid={PARTNER_ID}&medium=api&api_version=2.0"
+                        clean_base = prod_url.split("?")[0]
+                        booking_url = f"{clean_base}?mcid=42383&pid={PARTNER_ID}&medium=api&api_version=2.0"
                     else:
                         booking_url = f"https://www.viator.com/tours/{d_name}/{slug}/d{dest_id}-{code}?mcid=42383&pid={PARTNER_ID}&medium=api&api_version=2.0"
 
