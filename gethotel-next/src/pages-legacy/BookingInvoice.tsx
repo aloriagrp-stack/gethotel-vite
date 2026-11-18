@@ -137,15 +137,24 @@ export default function BookingInvoicePage() {
                     </div>
 
                     <div className="sm:text-right">
-                        <span className={`inline-block px-3 py-1 text-[9px] font-black uppercase tracking-widest rounded border ${
-                            booking.paymentStatus === 'paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
-                            booking.paymentStatus === 'partial' ? 'bg-blue-50 text-blue-700 border-blue-100' :
-                            'bg-amber-50 text-amber-700 border-amber-100'
-                        }`}>
-                            {booking.paymentStatus === 'paid' ? 'Fully Paid' :
-                             booking.paymentStatus === 'partial' ? '12% Deposit Paid' :
-                             'Pay At Hotel'}
-                        </span>
+                        {(() => {
+                            const isPayAtHotel = booking.paymentMode === 'pay_at_hotel' || 
+                                                 booking.internalNotes?.includes('PAY_AT_HOTEL') || 
+                                                 (booking.status === 'confirmed' && booking.paymentStatus === 'pending' && !booking.internalNotes?.includes('ONLINE'));
+                            return (
+                                <span className={`inline-block px-3 py-1 text-[9px] font-black uppercase tracking-widest rounded border ${
+                                    booking.paymentStatus === 'paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
+                                    booking.paymentStatus === 'partial' ? 'bg-blue-50 text-blue-700 border-blue-100' :
+                                    isPayAtHotel ? 'bg-purple-50 text-purple-700 border-purple-100' :
+                                    'bg-amber-50 text-amber-700 border-amber-100'
+                                }`}>
+                                    {booking.paymentStatus === 'paid' ? 'Fully Paid' :
+                                     booking.paymentStatus === 'partial' ? '12% Deposit Paid' :
+                                     isPayAtHotel ? 'Pay At Hotel' :
+                                     'Online Payment Pending'}
+                                </span>
+                            );
+                        })()}
                         <p className="text-3xl font-black text-slate-950 tracking-tight mt-3 notranslate">{formatPrice(booking.totalPrice)}</p>
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1.5">Invoice #GH-{booking.id + 10000}</p>
                     </div>

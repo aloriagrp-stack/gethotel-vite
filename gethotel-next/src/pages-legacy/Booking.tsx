@@ -658,6 +658,7 @@ function BookingContent() {
                 totalGuests: guestsParam,
                 status: bookingStatus,
                 paymentStatus: bookingPaymentStatus,
+                paymentMode: paymentMode,
                 couponCode: appliedCoupon ? appliedCoupon.code : undefined,
                 amountPaid,
                 arrivalTime: arrivalTime || undefined,
@@ -721,11 +722,16 @@ function BookingContent() {
                                 }
                             },
                             modal: {
-                                ondismiss: function() {
+                                ondismiss: async function() {
                                     setIsSubmitting(false);
-                                    alert("Payment was cancelled. You can retry from your bookings dashboard.");
                                     localStorage.removeItem("active_checkout_booking_id");
                                     localStorage.removeItem("active_checkout_booking_time");
+                                    try {
+                                        await bookingApi.cancelBooking(booking.id, "Payment window closed by user without paying");
+                                    } catch (e) {
+                                        console.warn("Could not auto-cancel dismissed booking hold:", e);
+                                    }
+                                    alert("Payment was not completed. Your temporary room hold has been released.");
                                 }
                             },
                             prefill: {
@@ -739,6 +745,16 @@ function BookingContent() {
                         };
 
                         const rzp = new (window as any).Razorpay(options);
+                        rzp.on('payment.failed', async function (resp: any) {
+                            console.error("Razorpay Payment Failed:", resp.error);
+                            setIsSubmitting(false);
+                            localStorage.removeItem("active_checkout_booking_id");
+                            localStorage.removeItem("active_checkout_booking_time");
+                            try {
+                                await bookingApi.cancelBooking(booking.id, "Payment failed: " + (resp.error?.description || "Declined"));
+                            } catch (e) {}
+                            alert(`Payment Failed: ${resp.error?.description || "Transaction declined"}. Your room hold has been cancelled.`);
+                        });
                         rzp.open();
                     } catch (paymentError: any) {
                         console.error("Razorpay workflow failed:", paymentError);

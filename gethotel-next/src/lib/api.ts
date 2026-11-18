@@ -183,7 +183,7 @@ export const bookingApi = {
     getMyBookings: () => apiFetch('/bookings/my-bookings'),
     getBooking: (id: string) => apiFetch(`/bookings/${id}`),
     updateBooking: (id: number, bookingData: any) => apiFetch(`/bookings/${id}`, { method: 'PUT', body: JSON.stringify(bookingData) }),
-    cancelBooking: (id: number) => apiFetch(`/bookings/${id}/cancel`, { method: 'POST' }),
+    cancelBooking: (id: number, reason?: string) => apiFetch(`/bookings/${id}/cancel`, { method: 'POST', body: JSON.stringify({ reason: reason || 'Cancelled by user' }) }),
 };
 
 export const couponApi = {

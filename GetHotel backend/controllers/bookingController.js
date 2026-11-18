@@ -401,8 +401,8 @@ exports.createBooking = async (req, res) => {
                     companyName: guestInfo.companyName || "",
                     roomDetails: JSON.stringify(activeRooms),
                     internalNotes: isPayAtHotel
-                        ? `PAY_AT_HOTEL: Full ₹${calculatedTotal} due at check-in | Coupon: ${couponCode || 'None'} | Discount: ₹${discountAmount}`
-                        : `ONLINE_CHECKOUT_INITIATED: Target ₹${platformFee} (12% deposit) or full ₹${calculatedTotal} | Coupon: ${couponCode || 'None'} | Discount: ₹${discountAmount}`
+                        ? `MODE:PAY_AT_HOTEL | Full ₹${calculatedTotal} due at check-in | Coupon: ${couponCode || 'None'} | Discount: ₹${discountAmount}`
+                        : `MODE:ONLINE_CHECKOUT_INITIATED | Target ₹${platformFee} (12% deposit) or full ₹${calculatedTotal} | Coupon: ${couponCode || 'None'} | Discount: ₹${discountAmount}`
                 }
             });
         });
@@ -456,6 +456,24 @@ exports.createBooking = async (req, res) => {
 // @access  Private
 exports.getMyBookings = async (req, res, next) => {
     try {
+        // Auto-expire abandoned online checkouts older than 10 minutes
+        try {
+            await prisma.booking.updateMany({
+                where: {
+                    userId: req.user.id,
+                    status: 'held',
+                    holdExpiresAt: { lt: new Date() }
+                },
+                data: {
+                    status: 'cancelled',
+                    paymentStatus: 'failed',
+                    cancellationReason: 'Online payment window expired.'
+                }
+            });
+        } catch (expireErr) {
+            console.warn("Auto-expire held bookings warning:", expireErr.message);
+        }
+
         const bookings = await prisma.booking.findMany({
             where: { userId: req.user.id },
             include: {
@@ -467,7 +485,16 @@ exports.getMyBookings = async (req, res, next) => {
             }
         });
 
-        res.status(200).json({ success: true, count: bookings.length, data: bookings });
+        const enrichedBookings = bookings.map(b => {
+            const isPayAtHotel = b.internalNotes?.includes('PAY_AT_HOTEL') || 
+                                 (b.status === 'confirmed' && b.paymentStatus === 'pending' && !b.internalNotes?.includes('ONLINE'));
+            return {
+                ...b,
+                paymentMode: isPayAtHotel ? 'pay_at_hotel' : (b.internalNotes?.includes('12% deposit') ? 'pay_deposit' : 'pay_full_online')
+            };
+        });
+
+        res.status(200).json({ success: true, count: enrichedBookings.length, data: enrichedBookings });
     } catch (err) {
         res.status(400).json({ success: false, message: err.message });
     }
@@ -522,7 +549,37 @@ exports.getBooking = async (req, res) => {
             return res.status(403).json({ success: false, message: 'Not authorized to view this booking' });
         }
 
-        res.status(200).json({ success: true, data: booking });
+        let currentBooking = booking;
+        if (currentBooking.status === 'held' && currentBooking.holdExpiresAt && new Date(currentBooking.holdExpiresAt) < new Date()) {
+            try {
+                currentBooking = await prisma.booking.update({
+                    where: { id: bookingId },
+                    data: {
+                        status: 'cancelled',
+                        paymentStatus: 'failed',
+                        cancellationReason: 'Online payment window expired.'
+                    },
+                    include: {
+                        hotel: true,
+                        room: true,
+                        user: { select: { id: true, name: true, email: true, role: true } },
+                        transactions: true
+                    }
+                });
+            } catch (e) {
+                console.warn("Single booking auto-expire error:", e.message);
+            }
+        }
+
+        const isPayAtHotel = currentBooking.internalNotes?.includes('PAY_AT_HOTEL') || 
+                             (currentBooking.status === 'confirmed' && currentBooking.paymentStatus === 'pending' && !currentBooking.internalNotes?.includes('ONLINE'));
+
+        const enriched = {
+            ...currentBooking,
+            paymentMode: isPayAtHotel ? 'pay_at_hotel' : (currentBooking.internalNotes?.includes('12% deposit') ? 'pay_deposit' : 'pay_full_online')
+        };
+
+        res.status(200).json({ success: true, data: enriched });
     } catch (err) {
         res.status(400).json({ success: false, message: err.message });
     }
@@ -657,13 +714,19 @@ exports.cancelBooking = async (req, res, next) => {
             cancelStatus = 'cancelled';
         }
 
+        const isHeld = booking.status === 'held';
+        const finalStatus = isHeld ? 'cancelled' : cancelStatus;
+        const finalPaymentStatus = isHeld ? 'failed' : (refundAmount > 0 ? 'refunded' : (booking.amountPaid === 0 ? 'cancelled' : booking.paymentStatus));
+
         const updatedBooking = await prisma.booking.update({
             where: { id: bookingId },
             data: { 
-                status: cancelStatus,
-                paymentStatus: refundAmount > 0 ? 'refunded' : booking.paymentStatus,
-                cancellationReason: reason || "User cancelled",
-                internalNotes: `Refund Processed: ₹${refundAmount}`
+                status: finalStatus,
+                paymentStatus: finalPaymentStatus,
+                cancellationReason: reason || (isHeld ? "Online checkout cancelled by user" : "User cancelled"),
+                internalNotes: isHeld 
+                    ? `HOLD_CANCELLED: User abandoned payment | Reason: ${reason || 'User cancelled'}` 
+                    : `Refund Processed: ₹${refundAmount}`
             }
         });
 

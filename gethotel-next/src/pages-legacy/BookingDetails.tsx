@@ -308,9 +308,13 @@ export default function BookingDetailsPage({ bookingId }: BookingDetailsPageProp
     const hotelThumbnail = booking?.hotel?.thumbnail || (isTour ? "https://images.unsplash.com/photo-1564507592333-c60657eea523?w=800&auto=format&fit=crop&q=80" : "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&w=800&q=75");
     const checkInDate = booking?.checkIn ? formatDate(booking.checkIn) : "";
     const checkOutDate = booking?.checkOut ? formatDate(booking.checkOut) : "";
+    const isPayAtHotel = booking?.paymentMode === 'pay_at_hotel' || 
+                         booking?.internalNotes?.includes('PAY_AT_HOTEL') || 
+                         (!isTour && booking?.status === 'confirmed' && booking?.paymentStatus === 'pending' && !booking?.internalNotes?.includes('ONLINE'));
+    const isHeld = !isTour && (booking?.status === 'held');
     const totalPriceVal = booking?.totalPrice || (isTour ? 19998 : 0);
     const amountPaidVal = booking ? (booking.amountPaid ?? (isTour ? totalPriceVal : 0)) : 0;
-    const payAtHotelVal = isTour ? 0 : Math.max(0, totalPriceVal - amountPaidVal);
+    const payAtHotelVal = isTour || isHeld ? 0 : (isPayAtHotel ? totalPriceVal : Math.max(0, totalPriceVal - amountPaidVal));
     const paymentStatus = isTour ? 'paid' : (booking?.paymentStatus || (amountPaidVal === 0 ? 'pending' : (amountPaidVal >= totalPriceVal ? 'paid' : 'partial')));
     const displayBookingId = isTour ? (booking?.id ? String(booking.id) : (id || "PKG-GHS-128459")) : (booking ? `#GH-${Number(booking.id) + 10000}` : (id ? `#GH-${id}` : "#GH-Pending"));
     const roomName = booking?.room?.name || (isTour ? "Tour Package (2 Travelers) • Private AC Cab & Heritage Sightseeing" : "Room Reservation");
@@ -366,12 +370,24 @@ export default function BookingDetailsPage({ bookingId }: BookingDetailsPageProp
                     <div className="flex-1 space-y-2 w-full">
                         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                             <span className={`px-2.5 py-0.5 text-[9px] font-black uppercase tracking-widest rounded border ${
-                                isTour ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-brand-50 text-brand-600 border-brand-100'
+                                isTour ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
+                                isHeld ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                                'bg-brand-50 text-brand-600 border-brand-100'
                             }`}>
-                                {isTour ? `Tour ${status}` : `Reservation ${status}`}
+                                {isTour ? `Tour ${status}` : isHeld ? 'Reservation Held (Awaiting Payment)' : `Reservation ${status}`}
                             </span>
-                            <span className="px-2.5 py-0.5 text-[9px] font-black uppercase tracking-widest rounded border bg-emerald-50 text-emerald-700 border-emerald-100">
-                                {isTour ? 'Fully Paid (All-Inclusive)' : (paymentStatus === 'paid' ? 'Fully Paid' : paymentStatus === 'partial' ? '12% Deposit Paid' : 'Pay At Hotel')}
+                            <span className={`px-2.5 py-0.5 text-[9px] font-black uppercase tracking-widest rounded border ${
+                                isTour ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
+                                isHeld ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                                isPayAtHotel ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                                'bg-emerald-50 text-emerald-700 border-emerald-100'
+                            }`}>
+                                {isTour ? 'Fully Paid (All-Inclusive)' : 
+                                 isHeld ? 'Payment Pending (Online)' :
+                                 paymentStatus === 'paid' ? 'Fully Paid' : 
+                                 paymentStatus === 'partial' ? '12% Deposit Paid' : 
+                                 isPayAtHotel ? 'Pay At Hotel' : 
+                                 'Payment Incomplete'}
                             </span>
                             <span className="text-slate-400 text-[9px] sm:text-[10px] font-bold font-mono">ID: {displayBookingId}</span>
                         </div>
@@ -853,7 +869,9 @@ export default function BookingDetailsPage({ bookingId }: BookingDetailsPageProp
                         </div>
                         <div className="text-right">
                             <span className="px-3 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-widest rounded border border-emerald-100">
-                                {isTour ? 'Fully Paid (All-Inclusive)' : (paymentStatus === 'paid' ? 'Fully Paid' : paymentStatus === 'partial' ? '12% Deposit Paid' : 'Pay At Hotel')}
+                                {isTour ? 'Fully Paid (All-Inclusive)' : 
+                                 isHeld ? 'Payment Pending (Online)' :
+                                 (paymentStatus === 'paid' ? 'Fully Paid' : paymentStatus === 'partial' ? '12% Deposit Paid' : isPayAtHotel ? 'Pay At Hotel' : 'Pending')}
                             </span>
                             <p className="text-[10px] font-mono text-slate-400 mt-2">Voucher ID: {displayBookingId}</p>
                         </div>
