@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   referrer: "no-referrer",
   title: {
     default: PAGE_SEO.home.title,
-    template: "%s | GetHotelStays",
+    template: "%s",
   },
   description: PAGE_SEO.home.description,
   keywords: PAGE_SEO.home.keywords,

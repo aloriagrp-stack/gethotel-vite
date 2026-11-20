@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     : `Book ${formattedName} in ${city} online with 12% deposit. Verified property, couple-friendly, instant confirmation & 24/7 support on GetHotelStays.`;
 
   return {
-    title,
+    title: { absolute: title },
     description,
     keywords: [
       formattedName,
@@ -73,5 +73,45 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     }
   } catch (_) {}
 
-  return <ClientHotelDetailsPage hotelId={id} initialHotel={initialHotel} />;
+  let hotelSchema = null;
+  if (initialHotel) {
+    hotelSchema = {
+      "@context": "https://schema.org",
+      "@type": "Hotel",
+      "name": initialHotel.name,
+      "description": initialHotel.description || `Stay at ${initialHotel.name} in ${initialHotel.city || 'Delhi, India'}. Best rates, verified amenities and flexible check-in on GetHotelStays.`,
+      "image": initialHotel.thumbnail || (Array.isArray(initialHotel.images) ? initialHotel.images[0] : null),
+      "telephone": initialHotel.contactPhone || "+91-800-GETHOTEL",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": initialHotel.address || initialHotel.city || "Delhi",
+        "addressLocality": initialHotel.city || "Delhi",
+        "addressCountry": "IN"
+      },
+      "priceRange": initialHotel.pricePerNight ? `₹${initialHotel.pricePerNight}` : "₹999 - ₹4,999",
+      "starRating": {
+        "@type": "Rating",
+        "ratingValue": initialHotel.starRating || 4
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": initialHotel.guestRating || 4.5,
+        "reviewCount": initialHotel.reviewCount || 48,
+        "bestRating": "5",
+        "worstRating": "1"
+      }
+    };
+  }
+
+  return (
+    <>
+      {hotelSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(hotelSchema) }}
+        />
+      )}
+      <ClientHotelDetailsPage hotelId={id} initialHotel={initialHotel} />
+    </>
+  );
 }

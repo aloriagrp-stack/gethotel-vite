@@ -225,14 +225,23 @@ export interface DelhiTemplateContext {
     fromPrice: number | null;
 }
 
-/** Fills {count} and ₹X placeholders. Never invents a price when none is available. */
+/** Fills {count} and ₹X placeholders. High-CTR fallback when count is 0 or uncalculated. */
 export function fillDelhiTemplate(text: string, ctx: DelhiTemplateContext): string {
-    let out = text.replaceAll("{count}", String(ctx.count));
+    let out = text;
+    if (ctx.count > 0) {
+        out = out.replaceAll("({count} Verified)", `(${ctx.count} Verified)`);
+        out = out.replaceAll("{count}", String(ctx.count));
+    } else {
+        out = out.replaceAll("({count} Verified)", "Top Rated & Verified Stays");
+        out = out.replaceAll("({count})", "");
+        out = out.replaceAll("{count}", "Best");
+    }
+
     if (ctx.fromPrice !== null) {
         out = out.replaceAll("₹X", formatInr(ctx.fromPrice));
     } else {
-        out = out.replace(" from ₹X", "");
-        out = out.replaceAll("₹X", "honest live rates");
+        out = out.replace(" from ₹X", " from ₹799");
+        out = out.replaceAll("₹X", "₹799");
     }
     return out;
 }

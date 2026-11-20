@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import DelhiLandingPage from "@/pages-legacy/delhi/DelhiLandingPage";
-import { delhiPages, getDelhiPage, buildDelhiContext } from "@/lib/delhiSeo";
+import { delhiPages, getDelhiPage, buildDelhiContext, buildDelhiSchemas } from "@/lib/delhiSeo";
 
 export function generateStaticParams() {
   const pages = delhiPages();
@@ -17,26 +17,30 @@ export async function generateMetadata({
 
   if (!page) {
     return {
-      title: "Hotels in Delhi | GetHotelStays",
+      title: { absolute: "Hotels in Delhi | GetHotelStays" },
       description: "Book verified hotels in Delhi at best prices. Pay 12% online, rest at hotel.",
     };
   }
 
   const ctx = buildDelhiContext([], slug);
-  const title = ctx?.title || page.title;
+  let rawTitle = ctx?.title || page.title;
+  rawTitle = rawTitle.replace(/\s*\|\s*GetHotelStays\s*$/i, "").trim();
+  const cleanTitle = `${rawTitle} | GetHotelStays`;
   const description = ctx?.metaDescription || page.metaDescription;
   const canonical = `https://gethotelstays.com/hotels/delhi/${slug}`;
 
   return {
-    title,
+    title: {
+      absolute: cleanTitle,
+    },
     description,
     keywords: page.keywords,
     alternates: {
       canonical,
     },
     openGraph: {
-      title: ctx?.title || title,
-      description: ctx?.metaDescription || description,
+      title: cleanTitle,
+      description,
       url: canonical,
     },
   };
@@ -48,5 +52,20 @@ export default async function Page({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  return <DelhiLandingPage slugOverride={slug} />;
+  const page = getDelhiPage(slug);
+  const ctx = page ? buildDelhiContext([], slug) : null;
+  const schemas = ctx ? buildDelhiSchemas(ctx, "en") : [];
+
+  return (
+    <>
+      {schemas.map((s, idx) => (
+        <script
+          key={idx}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(s) }}
+        />
+      ))}
+      <DelhiLandingPage slugOverride={slug} />
+    </>
+  );
 }
