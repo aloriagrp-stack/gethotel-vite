@@ -4,7 +4,7 @@ import { getHotelsByIds, DELHI_LANDING_HOTEL_MAP } from "@/lib/delhiHotelsHelper
 import { Landmark } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Hotels in Connaught Place, Delhi | Central Delhi Stays",
+  title: "Hotels in Connaught Place (CP) Delhi — Central Hub Stays | GetHotelStays",
   description:
     "Find hotels in Connaught Place (CP), Delhi. Compare location, room facilities, check-in policies and total price for business or leisure stays.",
   keywords: [
@@ -48,35 +48,13 @@ const SECTIONS = [
 
 const FAQS = [
   {
-    question: "Why book a hotel in Connaught Place?",
-    answer:
-      "It may be convenient for central Delhi plans, including meetings, dining and sightseeing. Choose based on the actual locations you need to reach.",
+    "question": "Why stay in Connaught Place Delhi?",
+    "answer": "Connaught Place (CP) is the ultimate central hub of Delhi, surrounded by heritage Georgian architecture, premier dining, shopping, and Rajiv Chowk metro station connecting all parts of Delhi NCR."
   },
   {
-    question: "Are hotels in CP expensive?",
-    answer:
-      "Rates vary by date, property, room type and demand. Compare total prices for your dates instead of assuming one fixed price.",
-  },
-  {
-    question: "How do I check whether a hotel is actually near CP?",
-    answer:
-      "Review its full address and map, then compare the route with your itinerary.",
-  },
-  {
-    question: "Can I book a short stay in central Delhi?",
-    answer:
-      "Some properties may offer short stays. Check the available duration and time slots on each listing.",
-  },
-  {
-    question: "Are parking and Wi-Fi included?",
-    answer:
-      "Amenities and charges vary by property. Confirm the details on the listing before booking.",
-  },
-  {
-    question: "What is important for a business trip?",
-    answer:
-      "Check location, Wi-Fi if needed, desk/workspace details where listed, check-in timing, invoice requirements and cancellation terms.",
-  },
+    "question": "What is the price range for CP hotels on GetHotelStays?",
+    "answer": "Options range from comfortable budget-boutique stays from ₹1,499 to premium business hotels. All feature our 12% advance deposit guarantee."
+  }
 ];
 
 const INTERNAL_LINKS = [

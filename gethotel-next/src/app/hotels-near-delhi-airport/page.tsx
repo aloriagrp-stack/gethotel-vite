@@ -4,7 +4,7 @@ import { getHotelsByIds, DELHI_LANDING_HOTEL_MAP } from "@/lib/delhiHotelsHelper
 import { Plane } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Hotels Near Delhi Airport | Compare & Book Online",
+  title: "Hotels Near Delhi Airport (IGI T3, T2, T1) — From ₹899 with 12% Deposit | GetHotelStays",
   description:
     "Find hotels near Delhi Airport for layovers, early flights and overnight stays. Compare location, facilities, check-in rules and prices, then book online.",
   keywords: [
@@ -48,35 +48,25 @@ const SECTIONS = [
 
 const FAQS = [
   {
-    question: "Which area should I choose for a Delhi Airport hotel?",
-    answer:
-      "Choose based on your terminal, flight time, transport plan and budget. Verify the property's address and route rather than relying on the phrase 'near airport' alone.",
+    "question": "Which is the best area to stay near Delhi Airport (IGI DEL)?",
+    "answer": "Mahipalpur and Aerocity Hospitality District are the two top areas located just 5 to 10 minutes (3-5 km) from Delhi Airport Terminal 3, Terminal 2, and Terminal 1. GetHotelStays provides verified budget-to-premium properties in these hubs with 24x7 check-in."
   },
   {
-    question: "Can I book a hotel for a few hours during a layover?",
-    answer:
-      "Some listings may support short stays; check the available duration and check-in slot for your selected date.",
+    "question": "Can I book a hotel near Delhi Airport for a short layover (3-6 hours)?",
+    "answer": "Yes. GetHotelStays provides flexible 3-hour and 6-hour micro-stay bookings starting from ₹499 in Mahipalpur and Aerocity, complete with attached baths, AC, and high-speed Wi-Fi to freshen up between connecting flights."
   },
   {
-    question: "Do hotels provide airport transfers?",
-    answer:
-      "Transfer services vary by property and may carry an additional charge. Confirm directly in the listing or with the property.",
+    "question": "How much does a hotel near Delhi Airport cost per night?",
+    "answer": "Overnight stays near Delhi Airport start from ₹899 to ₹2,499 per night on GetHotelStays. With our Pay 12% Deposit model, you only pay ~₹100 to ₹300 online to guarantee your reservation."
   },
   {
-    question: "Can I check in late at night?",
-    answer:
-      "Late check-in depends on the property's reception and arrival policy. Confirm your expected arrival time before booking.",
+    "question": "Do Delhi airport hotels offer airport pickup and drop-off?",
+    "answer": "Many partner hotels in Mahipalpur provide airport taxi transfers upon request. In addition, 24/7 Uber, Ola, and Delhi Airport Express Metro connectivity are easily accessible."
   },
   {
-    question: "How much does a hotel near Delhi Airport cost?",
-    answer:
-      "Rates vary by date, duration, room type, demand and included services. Compare the total price displayed for your exact stay.",
-  },
-  {
-    question: "How early should I book?",
-    answer:
-      "Booking ahead gives you more time to compare options, especially around busy travel dates. Always check current availability for your dates.",
-  },
+    "question": "Can couples stay near Delhi Airport with local IDs?",
+    "answer": "Yes. Verified couple-friendly airport hotels on GetHotelStays accept valid local government IDs (Aadhaar, Voter ID, Driving License) for adult guests aged 18+."
+  }
 ];
 
 const INTERNAL_LINKS = [

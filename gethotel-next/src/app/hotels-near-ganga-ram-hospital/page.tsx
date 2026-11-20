@@ -4,7 +4,7 @@ import { getHotelsByIds, DELHI_LANDING_HOTEL_MAP } from "@/lib/delhiHotelsHelper
 import { PlusCircle } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Hotels Near Sir Ganga Ram Hospital, Delhi | Book a Stay",
+  title: "Hotels Near Sir Ganga Ram Hospital Delhi — Rajinder Nagar & Karol Bagh | GetHotelStays",
   description:
     "Find accommodation near Sir Ganga Ram Hospital in Delhi for patient attendants and hospital visits. Check location, room details and booking policies.",
   keywords: [
@@ -48,35 +48,9 @@ const SECTIONS = [
 
 const FAQS = [
   {
-    question: "Where should I stay when visiting Sir Ganga Ram Hospital?",
-    answer:
-      "Choose a property based on its verified address and route to the hospital entrance you need. Confirm travel arrangements for your visit time.",
-  },
-  {
-    question: "Are there hotels for patient attendants?",
-    answer:
-      "Accommodation may be available in the surrounding area, but facilities and policies vary by property. Review the listing and confirm any specific needs.",
-  },
-  {
-    question: "Can I book for one night or a short stay?",
-    answer:
-      "Available durations depend on the property and booking options shown for your dates.",
-  },
-  {
-    question: "Can I cancel if a hospital appointment changes?",
-    answer:
-      "That depends on the rate's cancellation and modification terms. Read them before booking and choose a flexible option if available and suitable.",
-  },
-  {
-    question: "Do properties provide wheelchair access or lifts?",
-    answer:
-      "Accessibility features vary. Check the listing and contact the property to confirm exact access arrangements.",
-  },
-  {
-    question: "Are the hotels affiliated with the hospital?",
-    answer:
-      "Do not assume affiliation. Confirm any claimed relationship directly with the hospital or property; GetHotelStays listings should not imply endorsement without evidence.",
-  },
+    "question": "How far are hotels in Old Rajinder Nagar and Karol Bagh from Sir Ganga Ram Hospital?",
+    "answer": "Most partner properties on GetHotelStays are within 400m to 1.2 km (5 to 10 minutes walk or short e-rickshaw ride) from Sir Ganga Ram Hospital main gate."
+  }
 ];
 
 const INTERNAL_LINKS = [

@@ -22,6 +22,7 @@ import SmartSearchBar from "@/components/search/SmartSearchBar";
 import Loader from "@/components/common/Loader";
 import { useStayMode } from "@/context/StayModeContext";
 import { validateCoupon, isMobileDevice } from "@/lib/promoUtils";
+import VerifiedAlternativesWidget from "@/components/hotels/VerifiedAlternativesWidget";
 
 const formatDateLabel = (ci: string, co: string) => {
     if (!ci || ci === "Dates") return "Add dates";
@@ -1133,6 +1134,14 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Verified Bookable Alternative Stays on GetHotelStays */}
+                            <VerifiedAlternativesWidget
+                                currentHotelId={hotel.id}
+                                city={hotel.city}
+                                title="Need Guaranteed Online Booking? Verified Delhi Hotels (Pay 12% Deposit)"
+                                subtitle="Can't reach the front desk or need an instant confirmed room? Reserve verified properties on GetHotelStays by paying just 12% online and 88% at check-in."
+                            />
                         </section>
                     ) : (
                         /* 2. Rooms Inventory */
@@ -1559,22 +1568,31 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                                     <p className="text-slate-500 font-black italic text-xs uppercase tracking-widest">Updating Room Rates...</p>
                                 </div>
                             ) : displayRooms.length === 0 ? (
-                                <div className="py-20 px-10 bg-slate-50 rounded-[32px] border-2 border-dashed border-slate-200 text-center space-y-4">
-                                    <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto shadow-sm">
-                                        <AlertCircle className="w-10 h-10 text-slate-300" />
+                                <div className="space-y-6">
+                                    <div className="py-14 px-8 bg-slate-50 rounded-[32px] border-2 border-dashed border-slate-200 text-center space-y-4">
+                                        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto shadow-sm">
+                                            <AlertCircle className="w-8 h-8 text-amber-500" />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <h3 className="text-xl font-bold text-slate-950 uppercase tracking-tight">No Rooms Available for These Dates</h3>
+                                            <p className="text-sm font-medium text-slate-500 max-w-md mx-auto">
+                                                We couldn't find available rooms for {searchedGuests} Guests on {formatDateLabel(checkIn, checkOut)}. Try adjusting dates or choose from verified alternative stays below.
+                                            </p>
+                                        </div>
+                                        <button 
+                                            onClick={() => triggerCheckInDropdown()}
+                                            className="px-8 py-3 bg-blue-600 text-white text-[11px] font-bold uppercase tracking-wider rounded-full shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all cursor-pointer"
+                                        >
+                                            Modify Dates / Guests
+                                        </button>
                                     </div>
-                                    <div className="space-y-2">
-                                        <h3 className="text-xl font-bold text-slate-950 uppercase tracking-tight">No Rooms Available</h3>
-                                        <p className="text-sm font-bold text-slate-500 max-w-md mx-auto">
-                                            We couldn't find any rooms matching your criteria ({searchedGuests} Guests on {formatDateLabel(checkIn, checkOut)}). Try adjusting your search.
-                                        </p>
-                                    </div>
-                                    <button 
-                                        onClick={() => triggerCheckInDropdown()}
-                                        className="px-8 py-3 bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all"
-                                    >
-                                        Modify Search
-                                    </button>
+
+                                    <VerifiedAlternativesWidget
+                                        currentHotelId={hotel.id}
+                                        city={hotel.city}
+                                        title="Alternative Verified Stays Available in Delhi"
+                                        subtitle="These top-rated properties have open rooms right now with 12% advance deposit, balance at check-in, and instant confirmed reservation."
+                                    />
                                 </div>
                             ) : displayRooms.map((room: any) => {
                                     const variants = safeParse(room.variants || room.room_variants, []);

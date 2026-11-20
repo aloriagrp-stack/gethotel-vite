@@ -4,7 +4,7 @@ import { getHotelsByIds, DELHI_LANDING_HOTEL_MAP } from "@/lib/delhiHotelsHelper
 import { Building } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Hotels Near Yashobhoomi, Dwarka, Delhi | Book a Stay",
+  title: "Hotels Near Yashobhoomi Dwarka (IICC) — Sector 25 & Sector 13 | GetHotelStays",
   description:
     "Find accommodation near Yashobhoomi Convention Centre in Dwarka, Delhi. Compare location, facilities, check-in rules and total prices for your event dates.",
   keywords: [
@@ -48,35 +48,13 @@ const SECTIONS = [
 
 const FAQS = [
   {
-    question: "How do I choose a hotel near Yashobhoomi?",
-    answer:
-      "Compare the property's exact address and route to the venue entrance relevant to your event.",
+    "question": "Where is the best place to stay for events at Yashobhoomi (IICC Delhi)?",
+    "answer": "Hotels in Dwarka Sector 13, Sector 21, and Sector 25 offer the closest and most convenient access to Yashobhoomi (India International Convention and Expo Centre). Top choice: Apple Tree Residency near Yashobhoomi."
   },
   {
-    question: "Should I book early for an exhibition?",
-    answer:
-      "Booking early can give you more choice, but availability and rates depend on the event and dates. Check current inventory.",
-  },
-  {
-    question: "Are hotels in Dwarka all close to Yashobhoomi?",
-    answer:
-      "No. Dwarka covers a broad area. Verify the individual address and route before choosing.",
-  },
-  {
-    question: "Can I book multiple rooms for a team?",
-    answer:
-      "Availability and group booking terms vary by property. Check the booking flow and contact the property for arrangements that are not shown.",
-  },
-  {
-    question: "Can I cancel if an event schedule changes?",
-    answer:
-      "Cancellation and modification terms depend on the selected rate. Review them before confirming.",
-  },
-  {
-    question: "Are transfers to Yashobhoomi included?",
-    answer:
-      "Do not assume so. Confirm any shuttle or transfer service and charges directly with the property.",
-  },
+    "question": "How far is Yashobhoomi from Delhi Airport T3?",
+    "answer": "Yashobhoomi is connected via the Airport Express Metro extension, reaching IGI Airport Terminal 3 in under 15 minutes."
+  }
 ];
 
 const INTERNAL_LINKS = [

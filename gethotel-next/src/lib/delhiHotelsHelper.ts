@@ -3,8 +3,9 @@ import type { Hotel } from "@/types";
 
 export const allDelhiHotels = delhiHotelsRaw as unknown as Hotel[];
 
-export function getHotelsByIds(ids: number[]): Hotel[] {
-  return allDelhiHotels.filter((h) => ids.includes(h.id));
+export function getHotelsByIds(ids: (number | string)[]): Hotel[] {
+  const numIds = ids.map((id) => Number(id));
+  return allDelhiHotels.filter((h) => numIds.includes(Number(h.id)));
 }
 
 export const DELHI_LANDING_HOTEL_MAP = {

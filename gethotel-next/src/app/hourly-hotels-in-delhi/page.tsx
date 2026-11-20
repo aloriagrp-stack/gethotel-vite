@@ -4,7 +4,7 @@ import { getHotelsByIds, DELHI_LANDING_HOTEL_MAP } from "@/lib/delhiHotelsHelper
 import { Clock } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Hourly Hotels in Delhi | Book a Room for a Few Hours",
+  title: "Hourly Hotels in Delhi — 3, 6 & 12 Hour Micro-Stays from ₹399 | GetHotelStays",
   description:
     "Find hotels in Delhi for short stays by the hour. Compare available properties, check current rates and policies, and book your preferred room online with GetHotelStays.",
   keywords: [
@@ -48,35 +48,25 @@ const SECTIONS = [
 
 const FAQS = [
   {
-    question: "Can I book a hotel in Delhi for only a few hours?",
-    answer:
-      "Some properties may offer hourly or short-duration stays. Check the property's available duration and time slots on the listing before booking.",
+    "question": "Can I book a hotel in Delhi for only a few hours?",
+    "answer": "Yes. GetHotelStays offers dedicated hourly room bookings across Delhi with flexible durations of 3 hours, 6 hours, and 12 hours. It is ideal for airport layovers at IGI Airport, train transit near New Delhi Railway Station, remote work, or short rest between meetings."
   },
   {
-    question: "Are hourly hotel bookings available all day?",
-    answer:
-      "Not necessarily. Availability, check-in windows and minimum duration depend on each property and the selected date.",
+    "question": "What are the hourly hotel room rates in Delhi?",
+    "answer": "Hourly hotel rooms on GetHotelStays start from ₹399 for 3-hour stays and ₹699 for 6-hour stays in key travel hubs including Mahipalpur (Airport T3), Paharganj (NDLS), Karol Bagh, and Connaught Place."
   },
   {
-    question: "What documents do I need to check in?",
-    answer:
-      "Requirements vary by property. Review the listing and confirm which valid government-issued identification documents are accepted before booking.",
+    "question": "Are couple check-ins permitted for hourly bookings?",
+    "answer": "Yes. Hourly rooms are fully couple-friendly and welcome unmarried couples aged 18 and above with valid government photo identification (including local Delhi IDs)."
   },
   {
-    question: "Is the displayed price the final price?",
-    answer:
-      "Review the checkout summary for taxes, fees, duration and any other charges before confirming.",
+    "question": "How do I pay for an hourly hotel booking on GetHotelStays?",
+    "answer": "You only pay a nominal 12% deposit online to secure your slot, and the balance 88% is paid directly at reception upon arrival."
   },
   {
-    question: "Can I cancel an hourly booking?",
-    answer:
-      "Cancellation rules differ by property and rate plan. Read the cancellation terms shown for your selected booking before payment.",
-  },
-  {
-    question: "How do I book an hourly hotel on GetHotelStays?",
-    answer:
-      "Choose your location, date and time, compare available properties, review the policies and complete the booking flow on GetHotelStays.",
-  },
+    "question": "Can I book an hourly hotel room late at night or early morning?",
+    "answer": "Yes. Partner hotels operate 24x7 reception desks, enabling you to check in at any hour of the day or night based on your flight or train schedule."
+  }
 ];
 
 const INTERNAL_LINKS = [

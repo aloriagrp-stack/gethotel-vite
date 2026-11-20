@@ -4,7 +4,7 @@ import { getHotelsByIds, DELHI_LANDING_HOTEL_MAP } from "@/lib/delhiHotelsHelper
 import { ShoppingBag } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Hotels in Karol Bagh, Delhi | Compare Rooms & Book Online",
+  title: "Hotels in Karol Bagh Delhi — Shopping & Family Stays from ₹999 | GetHotelStays",
   description:
     "Explore hotels in Karol Bagh, Delhi for shopping, family visits and business trips. Compare room details, location, policies and total prices.",
   keywords: [
@@ -48,35 +48,13 @@ const SECTIONS = [
 
 const FAQS = [
   {
-    question: "Why stay in Karol Bagh?",
-    answer:
-      "It can be a practical base for visitors with shopping, family or business plans in the area. The best location depends on your itinerary.",
+    "question": "Why choose Karol Bagh for a hotel in Delhi?",
+    "answer": "Karol Bagh is famous for its vibrant shopping streets (Ajmal Khan Road, Gaffar Market), premier vegetarian dining, and direct Blue Line metro connectivity to CP and Dwarka."
   },
   {
-    question: "Are budget hotels available in Karol Bagh?",
-    answer:
-      "Options and rates vary by date, room type and demand. Compare available listings and the final total for your stay.",
-  },
-  {
-    question: "Is Karol Bagh suitable for families?",
-    answer:
-      "Suitability depends on the specific property, room configuration and your needs. Check occupancy, facilities and policies before booking.",
-  },
-  {
-    question: "How do I get to places around Delhi from Karol Bagh?",
-    answer:
-      "Check the hotel's address and plan routes using current local transport information. Travel time varies with destination and traffic.",
-  },
-  {
-    question: "Can I check in early?",
-    answer:
-      "Only if the property offers or confirms early check-in for your booking. Review the listing and ask before arrival.",
-  },
-  {
-    question: "What should I check before booking?",
-    answer:
-      "Review the address, room facilities, guest capacity, ID requirements, cancellation policy and complete price.",
-  },
+    "question": "Are Karol Bagh hotels couple friendly on GetHotelStays?",
+    "answer": "Yes. Verified Karol Bagh hotels welcome couples with valid local photo IDs and provide sanitised, private rooms with 12% deposit booking."
+  }
 ];
 
 const INTERNAL_LINKS = [

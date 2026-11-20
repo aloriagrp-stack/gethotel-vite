@@ -4,7 +4,7 @@ import { getHotelsByIds, DELHI_LANDING_HOTEL_MAP } from "@/lib/delhiHotelsHelper
 import { Sunrise } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Early Check-In Hotels in Delhi | Check Morning Availability",
+  title: "Early Check-In Hotels in Delhi — Flexible Morning Arrival Stays | GetHotelStays",
   description:
     "Looking for an early check-in hotel in Delhi? Compare properties and confirm room availability, arrival time, extra charges and booking rules online.",
   keywords: [
@@ -48,35 +48,9 @@ const SECTIONS = [
 
 const FAQS = [
   {
-    question: "Can I check into a Delhi hotel at 5 AM?",
-    answer:
-      "Only if the property offers or confirms access at that time. Confirm the exact date, arrival time and any extra charge before booking.",
-  },
-  {
-    question: "Is early check-in free?",
-    answer:
-      "Not always. Charges and eligibility depend on the property's policy and room availability.",
-  },
-  {
-    question: "Should I book the previous night for a 6 AM arrival?",
-    answer:
-      "That may be one option, but policies vary. Ask the property which booking arrangement guarantees access at your required time.",
-  },
-  {
-    question: "Are early check-in and 24-hour check-in the same?",
-    answer:
-      "No. A property's reception hours and its room check-in rules are separate. Confirm both.",
-  },
-  {
-    question: "Can a train or flight delay affect early check-in?",
-    answer:
-      "It can affect arrival arrangements. Contact the property promptly if your estimated arrival changes.",
-  },
-  {
-    question: "Can I use an hourly hotel for an early morning arrival?",
-    answer:
-      "Some properties may offer a compatible short-stay slot. Check the exact duration, time and room-access terms.",
-  },
+    "question": "How do early check-in hotels work in Delhi?",
+    "answer": "Traditional hotels force guests to wait until 12:00 PM or charge for a full extra day. On GetHotelStays, early check-in properties accommodate arrivals from 6:00 AM onwards with flexible slot pricing."
+  }
 ];
 
 const INTERNAL_LINKS = [

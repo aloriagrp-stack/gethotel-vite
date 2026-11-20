@@ -4,7 +4,7 @@ import { getHotelsByIds, DELHI_LANDING_HOTEL_MAP } from "@/lib/delhiHotelsHelper
 import { Plane } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Hotels in Mahipalpur, Delhi | Airport-Area Stays",
+  title: "Hotels in Mahipalpur Delhi — 5 Mins to Airport T3, Rooms from ₹899 | GetHotelStays",
   description:
     "Compare hotels in Mahipalpur, Delhi for airport transit and overnight stays. Check the exact address, room details, check-in rules and total price.",
   keywords: [
@@ -48,35 +48,17 @@ const SECTIONS = [
 
 const FAQS = [
   {
-    question: "Is Mahipalpur a good area for an airport stay?",
-    answer:
-      "It may be convenient for some airport itineraries, but the right choice depends on the property's exact location and your terminal.",
+    "question": "Why is Mahipalpur the top location for airport transit in Delhi?",
+    "answer": "Mahipalpur is situated right along National Highway 48 directly opposite Delhi IGI Airport Terminal 3 and Aerocity, offering unbeatable proximity to terminals, 24-hour diners, and quick metro/taxi access."
   },
   {
-    question: "How far is a Mahipalpur hotel from IGI Airport?",
-    answer:
-      "Distance and travel time vary by property, route, terminal and traffic. Check the specific address and current route rather than relying on a general estimate.",
+    "question": "How far is Mahipalpur from IGI Airport Terminal 3?",
+    "answer": "Mahipalpur is approximately 3.5 km to 5 km from Terminal 3 and Terminal 2 (about a 7 to 12 minute drive depending on traffic) and 6 km from Terminal 1."
   },
   {
-    question: "Are budget hotels available in Mahipalpur?",
-    answer:
-      "Rates and available room types vary. Compare current listings and the complete price for your dates.",
-  },
-  {
-    question: "Do hotels provide airport pickup?",
-    answer:
-      "Transfer arrangements vary by property and may cost extra. Confirm availability, pickup location and price before relying on the service.",
-  },
-  {
-    question: "Can I book for a daytime layover?",
-    answer:
-      "Only if the listing offers a compatible short-stay duration and time slot. Check the booking details before payment.",
-  },
-  {
-    question: "What if my flight is delayed?",
-    answer:
-      "Contact the property as soon as possible. Whether a late arrival or change is accommodated depends on the property's policy and booking terms.",
-  },
+    "question": "Can I book hourly rooms in Mahipalpur on GetHotelStays?",
+    "answer": "Yes. 3-hour, 6-hour, and 12-hour hourly transit rooms in Mahipalpur start from ₹499 on GetHotelStays with attached bathroom, clean linens, and instant confirmation."
+  }
 ];
 
 const INTERNAL_LINKS = [

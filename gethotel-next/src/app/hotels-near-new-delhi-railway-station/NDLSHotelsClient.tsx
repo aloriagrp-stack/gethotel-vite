@@ -21,17 +21,20 @@ export default function NDLSHotelsClient({ initialHotels }: NDLSHotelsClientProp
       list = list.filter((h) => (h.pricePerNight || 0) <= 1200);
     } else if (selectedFilter === "lift") {
       list = list.filter((h) => {
-        const amStr = typeof h.amenities === "string" ? h.amenities.toLowerCase() : JSON.stringify(h.amenities || "").toLowerCase();
+        const am: any = h.amenities;
+        const amStr = typeof am === "string" ? am.toLowerCase() : JSON.stringify(am || "").toLowerCase();
         return amStr.includes("lift") || amStr.includes("elevator");
       });
     } else if (selectedFilter === "wifi") {
       list = list.filter((h) => {
-        const amStr = typeof h.amenities === "string" ? h.amenities.toLowerCase() : JSON.stringify(h.amenities || "").toLowerCase();
+        const am: any = h.amenities;
+        const amStr = typeof am === "string" ? am.toLowerCase() : JSON.stringify(am || "").toLowerCase();
         return amStr.includes("wifi");
       });
     } else if (selectedFilter === "frontdesk") {
       list = list.filter((h) => {
-        const amStr = typeof h.amenities === "string" ? h.amenities.toLowerCase() : JSON.stringify(h.amenities || "").toLowerCase();
+        const am: any = h.amenities;
+        const amStr = typeof am === "string" ? am.toLowerCase() : JSON.stringify(am || "").toLowerCase();
         return amStr.includes("front desk") || amStr.includes("24-hour");
       });
     }

@@ -4,7 +4,7 @@ import { getHotelsByIds, DELHI_LANDING_HOTEL_MAP } from "@/lib/delhiHotelsHelper
 import { Heart } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Couple-Friendly Hotels in Delhi | Check Policies & Book",
+  title: "Couple-Friendly Hotels in Delhi — Local ID Accepted & Pay 12% Deposit | GetHotelStays",
   description:
     "Explore couple-friendly hotel options in Delhi. Review each property's guest, identification and check-in policies, compare prices and book online.",
   keywords: [
@@ -48,35 +48,29 @@ const SECTIONS = [
 
 const FAQS = [
   {
-    question: "Do hotels in Delhi accept unmarried couples?",
-    answer:
-      "Policies differ by property. Check the specific listing and confirm directly with the hotel before booking.",
+    "question": "Do hotels in Delhi accept unmarried couples?",
+    "answer": "Yes, absolutely. Under Indian law and Supreme Court rulings, no law prevents two consenting adult citizens (18+) from staying together in a hotel room. On GetHotelStays, all hotels tagged couple-friendly explicitly welcome unmarried couples without moral policing, intrusive questions, or discrimination."
   },
   {
-    question: "Is local ID accepted?",
-    answer:
-      "Local-ID acceptance depends on the property's policy and applicable requirements. Verify the accepted documents for the exact property before confirming.",
+    "question": "Is local Delhi ID accepted for couple check-in?",
+    "answer": "Yes. Every couple-friendly hotel on GetHotelStays explicitly accepts valid government photo ID cards including Delhi state Aadhaar cards, Voter IDs, and Driving Licenses for both adult guests."
   },
   {
-    question: "What identification is required for couples?",
-    answer:
-      "Each property's requirements can differ. Check the listing and confirm which valid government-issued IDs are required for all adult guests.",
+    "question": "How does payment work for couple-friendly hotel bookings?",
+    "answer": "GetHotelStays uses a unique Pay 12% Deposit model. You only pay a 12% deposit online to lock in your reservation, and settle the remaining 88% at hotel reception during check-in via cash, UPI, or credit/debit card."
   },
   {
-    question: "Can two adults book a room online?",
-    answer:
-      "You can select the correct guest count in the booking flow, but the property must permit the stay under its own policies. Verify before payment.",
+    "question": "Are rooms clean, secure, and private?",
+    "answer": "Yes. All properties undergo strict verification ensuring private check-in, 100% guest confidentiality, sanitized rooms with attached washrooms, and zero third-party disclosure of your personal details."
   },
   {
-    question: "Are couple-friendly hotels automatically safer?",
-    answer:
-      "No label can guarantee safety. Review the property's verified details, policies, location and available support information before booking.",
+    "question": "Can I book a room for only a few hours (hourly stay)?",
+    "answer": "Yes. GetHotelStays provides flexible micro-stays in Delhi (3-hour, 6-hour, and 12-hour slots) starting from ₹399 in popular areas like Mahipalpur, Aerocity, Paharganj, Saket, and Karol Bagh."
   },
   {
-    question: "Can I cancel if the property's policy does not match my needs?",
-    answer:
-      "Cancellation eligibility depends on the rate and policy accepted at booking. Confirm requirements before paying to avoid preventable issues.",
-  },
+    "question": "Can I cancel my couple-friendly booking if plans change?",
+    "answer": "Yes. GetHotelStays offers transparent cancellation policies. Most verified rooms can be cancelled prior to check-in with complete deposit refund."
+  }
 ];
 
 const INTERNAL_LINKS = [

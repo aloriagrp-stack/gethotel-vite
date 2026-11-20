@@ -4,7 +4,7 @@ import { getHotelsByIds, DELHI_LANDING_HOTEL_MAP } from "@/lib/delhiHotelsHelper
 import { Building2 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Hotels in Pitampura, Delhi | Business & Event Stays",
+  title: "Hotels in Pitampura Delhi — North Delhi Stays Near Netaji Subhash Place | GetHotelStays",
   description:
     "Compare hotels in Pitampura, Delhi for business visits, family stays and local events. Check property details, location, policies and total price.",
   keywords: [
@@ -48,35 +48,9 @@ const SECTIONS = [
 
 const FAQS = [
   {
-    question: "Are there hotels in Pitampura for business travellers?",
-    answer:
-      "Check current listings for location, facilities and booking terms that suit your trip.",
-  },
-  {
-    question: "Can I find a hotel near an event venue in Pitampura?",
-    answer:
-      "Use the venue's exact address to compare routes and confirm the hotel's location.",
-  },
-  {
-    question: "Does a hotel listing mean it has banquet facilities?",
-    answer:
-      "No. Banquet and event facilities must be explicitly listed and confirmed with the property.",
-  },
-  {
-    question: "Is City Park a four-star hotel?",
-    answer:
-      "Use a star classification only if it is verified from a reliable, current source and accurately reflects the listed property. Do not infer a rating from the name.",
-  },
-  {
-    question: "Can I book several rooms for a function?",
-    answer:
-      "Group availability and terms vary. Check the available inventory and confirm special arrangements with the property.",
-  },
-  {
-    question: "What should I check before confirming?",
-    answer:
-      "Review the address, facilities, guest capacity, total price, check-in policy and cancellation terms.",
-  },
+    "question": "Why stay in Pitampura near Netaji Subhash Place (NSP)?",
+    "answer": "Pitampura is the premier commercial hub of North Delhi with the bustling NSP food and business towers, Red Line metro access, and proximity to major banquet venues on GT Karnal Road."
+  }
 ];
 
 const INTERNAL_LINKS = [

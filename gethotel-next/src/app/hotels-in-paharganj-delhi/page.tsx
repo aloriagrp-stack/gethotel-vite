@@ -4,7 +4,7 @@ import { getHotelsByIds, DELHI_LANDING_HOTEL_MAP } from "@/lib/delhiHotelsHelper
 import { Building2 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Hotels in Paharganj, Delhi | Compare Available Stays",
+  title: "Hotels in Paharganj Delhi — Budget Stays Near NDLS & CP from ₹799 | GetHotelStays",
   description:
     "Explore available hotels in Paharganj, Delhi. Compare location, room facilities, check-in policies and total prices before booking online.",
   keywords: [
@@ -48,35 +48,17 @@ const SECTIONS = [
 
 const FAQS = [
   {
-    question: "Is Paharganj close to New Delhi Railway Station?",
-    answer:
-      "Parts of Paharganj are in the station area, but the route varies by property. Check the exact address and route to your station entrance.",
+    "question": "Is Paharganj safe for family and solo travelers?",
+    "answer": "Yes. When booking verified properties through GetHotelStays, you get hand-inspected hotels located on main market lanes and Chitra Gupta Road with CCTV surveillance, 24/7 front desk security, and clean modern rooms."
   },
   {
-    question: "Are budget hotels available in Paharganj?",
-    answer:
-      "Options vary by date and inventory. Compare the current listings, facilities and final price for your stay.",
+    "question": "How close is Paharganj to Connaught Place?",
+    "answer": "Paharganj is right next to Connaught Place (1.5 km, about 5 minutes by auto or 1 metro station from RK Ashram Marg or NDLS to Rajiv Chowk)."
   },
   {
-    question: "Is every hotel in Paharganj suitable for families?",
-    answer:
-      "No single neighbourhood label guarantees suitability. Review the individual property's room setup, policies and facilities.",
-  },
-  {
-    question: "Can I arrive late at night?",
-    answer:
-      "Confirm reception hours and late-arrival arrangements with the property before booking.",
-  },
-  {
-    question: "Do hotel prices change by date?",
-    answer:
-      "Yes, rates and availability may vary with dates, room type and demand. Check the current price in the booking flow.",
-  },
-  {
-    question: "What should I verify before booking?",
-    answer:
-      "Check address, room details, guest capacity, identification rules, arrival window, cancellation terms and full price.",
-  },
+    "question": "How do I book Paharganj hotels on GetHotelStays?",
+    "answer": "Select your dates or hours, pay only 12% advance deposit online via UPI/card, and pay the remaining 88% at the hotel desk upon arrival."
+  }
 ];
 
 const INTERNAL_LINKS = [

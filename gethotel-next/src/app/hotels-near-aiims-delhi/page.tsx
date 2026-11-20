@@ -4,7 +4,7 @@ import { getHotelsByIds, DELHI_LANDING_HOTEL_MAP } from "@/lib/delhiHotelsHelper
 import { PlusCircle } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Hotels Near AIIMS Delhi | Accommodation for Hospital Visits",
+  title: "Hotels Near AIIMS Delhi — Safdarjung Enclave & Green Park | GetHotelStays",
   description:
     "Compare accommodation near AIIMS Delhi for appointments and family visits. Check each hotel's location, accessibility, policies and total price.",
   keywords: [
@@ -48,35 +48,9 @@ const SECTIONS = [
 
 const FAQS = [
   {
-    question: "How do I find a hotel near AIIMS Delhi?",
-    answer:
-      "Compare each listing's exact address and route to the AIIMS campus or entrance you need.",
-  },
-  {
-    question: "Are there hotels near Safdarjung Hospital too?",
-    answer:
-      "Accommodation options depend on the current inventory. Verify each property's location and route to the specific hospital you plan to visit.",
-  },
-  {
-    question: "Can patient attendants book nearby rooms?",
-    answer:
-      "Guests can compare available accommodation, but amenities and policies differ. Contact the property about any specific needs.",
-  },
-  {
-    question: "Can I request an early check-in for a morning appointment?",
-    answer:
-      "Early check-in is subject to the property's policy and availability. Confirm the arrangement before arrival.",
-  },
-  {
-    question: "What if my appointment date changes?",
-    answer:
-      "Check the booking's cancellation and modification terms. Choose a flexible rate if available and appropriate for your needs.",
-  },
-  {
-    question: "Are hotels endorsed by AIIMS?",
-    answer:
-      "Do not assume endorsement or affiliation. Any such claim should be supported by official evidence.",
-  },
+    "question": "Which hotels are closest to AIIMS and Safdarjung Hospital?",
+    "answer": "Hotels in Safdarjung Enclave, Green Park, and South Extension are located 1 to 2 km from AIIMS hospital. GetHotelStays offers comfortable, hygienic rooms suitable for patients and accompanying families."
+  }
 ];
 
 const INTERNAL_LINKS = [

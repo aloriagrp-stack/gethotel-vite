@@ -4,7 +4,7 @@ import { getHotelsByIds, DELHI_LANDING_HOTEL_MAP } from "@/lib/delhiHotelsHelper
 import { Sparkles } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Hotels in South Delhi | Compare Stays & Book Online",
+  title: "Hotels in South Delhi — Premium Stays in Saket, Hauz Khas & GK | GetHotelStays",
   description:
     "Compare hotels in South Delhi for work, university visits, dining and leisure. Check the exact neighbourhood, amenities, policies and total price.",
   keywords: [
@@ -48,35 +48,13 @@ const SECTIONS = [
 
 const FAQS = [
   {
-    question: "Which area is best for a South Delhi hotel?",
-    answer:
-      "Choose the neighbourhood based on your itinerary, transport needs and budget. South Delhi is broad, so compare actual addresses.",
+    "question": "Which areas in South Delhi have the best hotels?",
+    "answer": "Saket, Greater Kailash (GK 1 & 2), Hauz Khas, Nehru Place, and Green Park offer the best combination of safe upscale residential surroundings, trendy cafes, shopping malls, and metro connectivity."
   },
   {
-    question: "Can I find boutique hotels in South Delhi?",
-    answer:
-      "Availability depends on the current inventory and how each property is categorized. Review individual listings for accurate descriptions.",
-  },
-  {
-    question: "Are hotels near Hauz Khas and Greater Kailash the same location?",
-    answer:
-      "No. They are different areas. Check the property's address and route before booking.",
-  },
-  {
-    question: "How do I compare prices?",
-    answer:
-      "Enter your exact dates and guest count, then compare the full price and included facilities across available listings.",
-  },
-  {
-    question: "Can I request early check-in?",
-    answer:
-      "Ask the property and confirm the arrangement before arrival; it may depend on availability and charges.",
-  },
-  {
-    question: "What facilities should I verify?",
-    answer:
-      "Check the amenities that matter to you—such as Wi-Fi, parking, lift access and room configuration—on the individual listing.",
-  },
+    "question": "Can I book couple-friendly hotels in South Delhi?",
+    "answer": "Yes. South Delhi offers our highest-rated couple-friendly boutique stays accepting local IDs with complete privacy and 12% advance deposit."
+  }
 ];
 
 const INTERNAL_LINKS = [

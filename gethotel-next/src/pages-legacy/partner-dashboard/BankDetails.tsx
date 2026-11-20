@@ -136,7 +136,7 @@ export default function PartnerBankDetails() {
 
         setSaving(true);
         try {
-            const res = await partnerApi.saveBankDetails(hotel.id, {
+            const res = await partnerApi.updateBankDetails(hotel.id, {
                 accountHolderName: formData.accountHolderName.trim(),
                 bankName: formData.bankName.trim(),
                 accountNumber: formData.accountNumber.trim(),

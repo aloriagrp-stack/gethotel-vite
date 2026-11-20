@@ -4,7 +4,7 @@ import { getHotelsByIds, DELHI_LANDING_HOTEL_MAP } from "@/lib/delhiHotelsHelper
 import { Train } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Hotels Near New Delhi Railway Station (NDLS) | Book Online",
+  title: "Hotels Near New Delhi Railway Station (NDLS) — Paharganj & Ajmeri Gate | GetHotelStays",
   description:
     "Compare hotels near New Delhi Railway Station (NDLS) for train arrivals, departures and short stays. Check location, check-in rules and total price.",
   keywords: [
@@ -48,35 +48,21 @@ const SECTIONS = [
 
 const FAQS = [
   {
-    question: "How do I find a hotel close to NDLS?",
-    answer:
-      "Compare the address and map for each listing and check the route to the station entrance you need.",
+    "question": "Which side of New Delhi Railway Station has the best hotels?",
+    "answer": "Paharganj (Pahar Ganj / Chelmsford Road side) and Ajmeri Gate side offer hundreds of budget and mid-range hotels within 200m to 800m of NDLS platforms. GetHotelStays curates vetted, clean properties with lift access and 24x7 check-in."
   },
   {
-    question: "Can I check in early after an overnight train?",
-    answer:
-      "Early check-in depends on room availability and the property's policy. Confirm it before booking; do not assume it is included.",
+    "question": "What is the starting price for NDLS hotels on GetHotelStays?",
+    "answer": "Verified rooms near New Delhi Railway Station start from ₹799 per night. Under GetHotelStays' 12% deposit policy, you only pay ~₹95 online to hold the room and pay the rest at reception."
   },
   {
-    question: "Are short-stay rooms available near the station?",
-    answer:
-      "Some properties may offer short-duration stays. Check the specific listing for eligible durations and time slots.",
+    "question": "Can I get early morning check-in after arriving on an early train?",
+    "answer": "Yes. Many NDLS hotels on GetHotelStays offer 24-hour reception and flexible early morning check-in options for passengers arriving on early Rajdhani, Shatabdi, or Vande Bharat expresses."
   },
   {
-    question: "Can families stay near New Delhi Railway Station?",
-    answer:
-      "Check each property's permitted occupancy, room configuration, identification requirements and family-related policies.",
-  },
-  {
-    question: "Will the hotel hold my luggage?",
-    answer:
-      "Luggage storage is property-specific. Contact the property to confirm availability, timings and any charges.",
-  },
-  {
-    question: "How can I compare the total cost?",
-    answer:
-      "Enter the correct dates and occupancy, then review taxes, fees and the final checkout summary before confirming.",
-  },
+    "question": "Are hotels near NDLS couple friendly?",
+    "answer": "Yes. Selected partner hotels in Paharganj and CP-adjacent streets are 100% couple-friendly and accept local government IDs without hassle."
+  }
 ];
 
 const INTERNAL_LINKS = [
