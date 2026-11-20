@@ -172,26 +172,11 @@ export default function ExploreByDestinations({
                     Array.from({ length: 4 }).map((_, idx) => (
                         <div 
                             key={`dest-skeleton-${idx}`} 
-                            className="relative w-[260px] sm:w-[270px] md:w-[280px] shrink-0 aspect-[3/3.9] snap-start rounded-[28px] overflow-hidden bg-slate-200 border border-slate-200/80 shadow-[0_6px_24px_rgba(0,0,0,0.06)]" 
+                            className="relative w-[260px] sm:w-[270px] md:w-[280px] shrink-0 aspect-[3/3.9] snap-start rounded-[24px] overflow-hidden bg-slate-100/90 border border-slate-200/50 p-4 sm:p-5 flex flex-col justify-end animate-pulse" 
                         >
-                            {/* Shimmer Wave Animation */}
-                            <div className="skeleton-wave z-20" />
-
-                            {/* Atmospheric Natural Dark Gradient Overlay matching destination cards */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/30 via-50% to-transparent pointer-events-none z-10" />
-
-                            {/* Destination Info & CTA Card Container Skeleton */}
-                            <div className="absolute inset-x-0 bottom-0 p-3.5 sm:p-4.5 flex flex-col justify-end z-20 space-y-2">
-                                {/* Destination Title Skeleton */}
-                                <div className="h-5 sm:h-6 w-28 sm:w-36 bg-white/80 rounded-lg animate-pulse shadow-sm" />
-
-                                {/* Apple Glassmorphism Explore Button Pill Skeleton */}
-                                <div className="mt-2.5 sm:mt-3 w-full py-2 sm:py-2.5 px-3.5 bg-white/[0.18] backdrop-blur-md border border-white/30 rounded-xl sm:rounded-2xl flex items-center justify-between shadow-sm animate-pulse">
-                                    <div className="h-3 w-20 bg-white/70 rounded-full" />
-                                    <div className="w-4.5 h-4.5 sm:w-5 sm:h-5 rounded-full bg-white/40 flex items-center justify-center border border-white/20">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-white/60" />
-                                    </div>
-                                </div>
+                            <div className="space-y-2.5">
+                                <div className="h-4.5 w-28 bg-slate-200 rounded-lg" />
+                                <div className="h-8 w-full bg-slate-200/60 rounded-xl" />
                             </div>
                         </div>
                     ))
