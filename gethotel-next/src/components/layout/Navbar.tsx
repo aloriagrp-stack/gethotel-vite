@@ -34,7 +34,6 @@ export default function Navbar() {
 
     const navLinks = [
         { href: `/${langCode}`, label: t('home') },
-        { href: `/${langCode}/hotels`, label: t('hotels') },
         { href: `/${langCode}/my-bookings`, label: t('bookings') },
     ];
     const pathname = useLocation().pathname;
@@ -163,7 +162,10 @@ export default function Navbar() {
                             key={link.href}
                             to={link.href}
                             onClick={(e) => {
-                                if (link.href.includes("/my-bookings") && !user) {
+                                if (link.href.includes("/hotels")) {
+                                    e.preventDefault();
+                                    navigate(`/${langCode}?selectDestination=true`);
+                                } else if (link.href.includes("/my-bookings") && !user) {
                                     e.preventDefault();
                                     setActionPopup({ isOpen: true, message: "Please log in first to view your bookings." });
                                 }
@@ -348,13 +350,6 @@ export default function Navbar() {
                                         className="block px-3 py-2.5 rounded-lg text-slate-800 font-medium text-sm hover:bg-slate-50 transition-colors"
                                     >
                                         {t('home')}
-                                    </Link>
-                                    <Link 
-                                        to={`/${langCode}/hotels`} 
-                                        onClick={() => setMobileOpen(false)} 
-                                        className="block px-3 py-2.5 rounded-lg text-slate-800 font-medium text-sm hover:bg-slate-50 transition-colors"
-                                    >
-                                        {t('hotels')}
                                     </Link>
                                     <Link 
                                         to={`/${langCode}/hotels-directory`} 

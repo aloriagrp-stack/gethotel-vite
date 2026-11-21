@@ -613,3 +613,96 @@ exports.sendResetEmail = async (email, name, resetUrl) => {
         throw error;
     }
 };
+
+/**
+ * Send contact inquiry emails: 
+ * 1. Notification to support team
+ * 2. Auto-reply to user
+ */
+exports.sendContactEmail = async ({ name, email, subject, message }) => {
+    try {
+        const cleanSubject = subject?.trim() || "General Inquiry";
+        
+        // 1. Email to Support Team
+        const adminMailOptions = {
+            from: `"GetHotelStays Contact Form" <${SMTP_USER}>`,
+            to: process.env.SUPPORT_EMAIL || 'support@gethotelstays.com',
+            replyTo: email,
+            subject: `[New Inquiry] ${cleanSubject} - ${name}`,
+            html: `
+                <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden;">
+                    <div style="background-color: #0369c5; padding: 25px 30px; text-align: left;">
+                        <h2 style="color: #ffffff; margin: 0; font-size: 20px; font-weight: 800;">New Support Inquiry Received</h2>
+                        <p style="color: #e0f2fe; margin: 5px 0 0 0; font-size: 13px;">via GetHotelStays.com Contact Us Form</p>
+                    </div>
+                    <div style="padding: 30px; color: #1e293b;">
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                            <tr style="border-bottom: 1px solid #f1f5f9;">
+                                <td style="padding: 10px 0; color: #64748b; font-size: 13px; font-weight: 600; width: 120px;">Sender Name:</td>
+                                <td style="padding: 10px 0; color: #0f172a; font-size: 14px; font-weight: 700;">${name}</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #f1f5f9;">
+                                <td style="padding: 10px 0; color: #64748b; font-size: 13px; font-weight: 600;">Email Address:</td>
+                                <td style="padding: 10px 0; color: #0369c5; font-size: 14px; font-weight: 700;"><a href="mailto:${email}" style="color: #0369c5; text-decoration: none;">${email}</a></td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #f1f5f9;">
+                                <td style="padding: 10px 0; color: #64748b; font-size: 13px; font-weight: 600;">Subject:</td>
+                                <td style="padding: 10px 0; color: #0f172a; font-size: 14px; font-weight: 600;">${cleanSubject}</td>
+                            </tr>
+                        </table>
+                        <div style="background-color: #f8fafc; border-left: 4px solid #0369c5; padding: 16px; border-radius: 8px; margin-top: 15px;">
+                            <p style="margin: 0; font-size: 14px; color: #334155; line-height: 1.6; white-space: pre-wrap;">${message}</p>
+                        </div>
+                        <div style="margin-top: 25px; padding-top: 15px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #94a3b8;">
+                            Click "Reply" to respond directly to the sender (${email}).
+                        </div>
+                    </div>
+                </div>
+            `
+        };
+
+        // 2. Auto-reply to Guest
+        const guestMailOptions = {
+            from: `"GetHotelStays Support" <${SMTP_USER}>`,
+            to: email,
+            subject: `We've received your message: ${cleanSubject}`,
+            html: `
+                <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden;">
+                    <div style="background-color: #0369c5; padding: 25px 30px; text-align: left;">
+                        <h2 style="color: #ffffff; margin: 0; font-size: 20px; font-weight: 800;">Thank You for Contacting Us</h2>
+                    </div>
+                    <div style="padding: 30px; color: #1e293b; line-height: 1.6;">
+                        <p style="font-size: 15px; font-weight: 700; color: #0f172a; margin-top: 0;">Hi ${name},</p>
+                        <p style="font-size: 14px; color: #475569;">
+                            We have received your message regarding <strong>"${cleanSubject}"</strong>. Our guest support team is reviewing your query and will get back to you within 2 to 4 hours.
+                        </p>
+                        <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 15px; margin: 20px 0;">
+                            <p style="font-size: 12px; font-weight: 700; color: #64748b; margin: 0 0 8px 0; text-transform: uppercase;">Your Message:</p>
+                            <p style="font-size: 13px; color: #334155; margin: 0; white-space: pre-wrap;">${message}</p>
+                        </div>
+                        <p style="font-size: 13px; color: #64748b; margin-bottom: 0;">
+                            If your query is regarding an urgent booking arrival, you can also reach our 24/7 helpline at <strong>+91 93184 85680</strong>.
+                        </p>
+                    </div>
+                    <div style="background-color: #f8fafc; padding: 15px 30px; text-align: center; border-top: 1px solid #f1f5f9; font-size: 11px; color: #94a3b8;">
+                        © ${new Date().getFullYear()} GetHotelStays.com · Official Guest Support
+                    </div>
+                </div>
+            `
+        };
+
+        // Send support team notification
+        await transporter.sendMail(adminMailOptions);
+        
+        // Send guest acknowledgment (silently catch if guest mailbox bounces)
+        transporter.sendMail(guestMailOptions).catch(err => {
+            console.warn("Guest auto-reply delivery failed:", err.message);
+        });
+
+        console.log(`Contact inquiry sent for ${email}`);
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to send contact inquiry email:", error);
+        throw error;
+    }
+};

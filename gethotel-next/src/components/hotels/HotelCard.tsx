@@ -2,7 +2,7 @@
 
 import Image from "@/components/common/Image";
 import { useNavigate as useRouter, useSearchParams } from "react-router-dom";
-import { MapPin, Star, Heart, ChevronLeft, ChevronRight, Check, Zap, CreditCard, Clock, Wifi, Wind, Car, Coffee, Tv, Phone, PhoneCall, Mail } from "lucide-react";
+import { MapPin, Star, Heart, ChevronLeft, ChevronRight, Check, CreditCard, Clock, Wifi, Wind, Car, Coffee, Tv, Phone, PhoneCall, Mail } from "lucide-react";
 import { motion } from "framer-motion";
 import type { Hotel } from "@/types";
 import { cn, formatPrice, safeParse, getHotelUrl } from "@/lib/utils";
@@ -246,8 +246,8 @@ export default function HotelCard({ hotel, className }: HotelCardProps) {
                     ) : (
                         <>
                             {hasDiscount && (
-                                <div className="bg-brand-600 text-white text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded shadow-lg flex items-center gap-1">
-                                    <Zap className="w-2.5 h-2.5 fill-white" /> {discountPercent}% OFF
+                                <div className="bg-slate-900/30 backdrop-blur-md border border-white/25 text-white text-[9px] font-bold tracking-wider px-2.5 py-0.5 rounded-full shadow-xs drop-shadow-xs inline-flex items-center">
+                                    {discountPercent}% OFF
                                 </div>
                             )}
                             {mode === 'hourly' && rooms.some((r: any) => r.isHourlyEnabled || r.is_hourly_enabled) && (

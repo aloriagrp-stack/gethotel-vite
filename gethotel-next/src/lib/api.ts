@@ -291,6 +291,11 @@ export const analyticsApi = {
     ping: (page: string) => apiFetch('/analytics/ping', { method: 'POST', body: JSON.stringify({ page }) })
 };
 
+export const contactApi = {
+    submit: (data: { name: string; email: string; subject?: string; message: string }) =>
+        apiFetch('/contact', { method: 'POST', body: JSON.stringify(data) }),
+};
+
 export const aiApi = {
     chat: (messages: { role: string; content: string }[]) =>
         apiFetch('/ai/chat', { method: 'POST', body: JSON.stringify({ messages }) }),

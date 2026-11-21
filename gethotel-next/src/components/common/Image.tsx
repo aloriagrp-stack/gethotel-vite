@@ -59,6 +59,8 @@ const Image = ({ src, alt, width, height, fill, priority, unoptimized, className
     overflow: 'hidden',
   };
 
+  const isContain = className?.includes('object-contain');
+
   // Image absolute or layout-specific styling
   const imgStyle: React.CSSProperties = fill ? {
     position: 'absolute',
@@ -68,7 +70,7 @@ const Image = ({ src, alt, width, height, fill, priority, unoptimized, className
     top: 0,
     right: 0,
     bottom: 0,
-    objectFit: 'cover',
+    objectFit: isContain ? 'contain' : 'cover',
     opacity: loaded ? 1 : 0,
     transition: 'opacity 0.4s ease-in-out',
   } : {

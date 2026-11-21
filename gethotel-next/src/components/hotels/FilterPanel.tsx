@@ -96,10 +96,7 @@ export default function FilterPanel({ filters, onChange, isMobileModal = false }
             {!isMobileModal && (
                 <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
                     <div className="flex items-center gap-2">
-                        <div>
-                            <span className="font-extrabold text-slate-950 text-base tracking-tight block leading-tight">Filters</span>
-                            <span className="text-[10px] font-semibold text-slate-400">Refine stays in real-time</span>
-                        </div>
+                        <span className="font-extrabold text-slate-950 text-base tracking-tight block leading-tight">Filters</span>
                         {hasActive && (
                             <span className="text-[10px] bg-brand-600 text-white px-2 py-0.5 rounded-full font-black shadow-sm ml-1">
                                 {filters.starRatings.length + filters.amenities.length + (filters.guestRatingMin ? 1 : 0) + (currentMaxPrice < MAX_PRICE ? 1 : 0)}

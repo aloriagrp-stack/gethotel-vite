@@ -38,65 +38,40 @@ const socials = [
 
 export default function Footer() {
     const footerLinks = {
-        "Delhi Stays": [
-            { label: "Hourly Hotels Delhi", href: `/hourly-hotels-in-delhi` },
-            { label: "Hotels Near Delhi Airport", href: `/hotels-near-delhi-airport` },
-            { label: "Hotels Near NDLS Station", href: `/hotels-near-new-delhi-railway-station` },
-            { label: "Couple Friendly Delhi", href: `/couple-friendly-hotels-in-delhi` },
-            { label: "Hotels in Karol Bagh", href: `/hotels-in-karol-bagh-delhi` },
-            { label: "Hotels in Connaught Place", href: `/hotels-in-connaught-place-delhi` },
-            { label: "Hotels in South Delhi", href: `/hotels-in-south-delhi` },
-            { label: "Hotels in Paharganj", href: `/hotels-in-paharganj-delhi` },
-            { label: "Hotels Near Ganga Ram Hospital", href: `/hotels-near-ganga-ram-hospital` },
-            { label: "Hotels in Mahipalpur", href: `/hotels-in-mahipalpur-delhi` },
-            { label: "Hotels Near AIIMS Delhi", href: `/hotels-near-aiims-delhi` },
-            { label: "Early Check-in Delhi", href: `/early-check-in-hotels-in-delhi` },
-            { label: "Hotels Near Yashobhoomi", href: `/hotels-near-yashobhoomi-dwarka` },
-            { label: "Hotels in Pitampura", href: `/hotels-in-pitampura-delhi` },
-        ],
-        "Top Destinations": [
-            { label: "Delhi Hotels", href: `/delhi-hotels` },
-            { label: "Jaipur Hotels", href: `/jaipur-hotels` },
-            { label: "Udaipur Hotels", href: `/udaipur-hotels` },
-            { label: "Manali Hotels", href: `/manali-hotels` },
-            { label: "Shimla Hotels", href: `/shimla-hotels` },
+        "Partners": [
+            { label: "List Your Property", href: `/list-property` },
+            { label: "Partner Central", href: `/partner` },
+            { label: "Partner Login", href: `/login` },
         ],
         "Support & Legal": [
+            { label: "About Us", href: `/about-us` },
             { label: "Privacy Policy", href: `/privacy-policy` },
             { label: "Terms of Service", href: `/terms-of-service` },
             { label: "Refund & Cancellation", href: `/cancellation-policy` },
             { label: "Pricing Policy", href: `/pricing-policy` },
             { label: "Contact Us", href: `/contact-us` },
         ],
-        "Partners": [
-            { label: "List Your Property", href: `/list-property` },
-            { label: "Partner Central", href: `/partner` },
-            { label: "Partner Login", href: `/login` },
-        ],
     };
 
     return (
         <footer className="bg-transparent text-slate-700 pt-0 pb-8 overflow-hidden relative">
-            {/* Shiny Blue Divider Line */}
-            <div className="relative w-full h-[2px] mb-6 md:mb-8 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-brand-500 to-transparent" />
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-400 to-transparent blur-[2px] opacity-90 animate-pulse" />
-            </div>
+            {/* Simple Minimal Straight Black Divider Line */}
+            <div className="w-full h-[1px] bg-black mb-8 md:mb-10" />
 
             <div className="w-full max-w-none mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 mb-6 md:mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-8">
                     {/* Brand Column */}
-                    <div className="lg:col-span-4 space-y-3">
+                    <div className="md:col-span-6 space-y-3">
                         <Link to="/" className="inline-flex items-center gap-2 group">
                             <span className="text-xl md:text-2xl font-black tracking-tighter text-slate-950 group-hover:text-brand-600 transition-colors">
                                 GetHotelStays<span className="text-brand-600 not-italic">.</span>
                             </span>
                         </Link>
-                        <p className="text-xs text-slate-500 font-medium leading-relaxed max-w-sm">
-                            India's leading verified hotel booking platform. Pay only 12% online and rest at hotel. Trusted by travelers from India & worldwide.
+                        <p className="text-xs text-slate-500 font-normal leading-relaxed max-w-sm">
+                            India's verified hotel booking platform. Flexible options to pay 12% deposit or pay full online. Hourly and full-day stays across India.
                         </p>
                         
-                        <div className="flex items-center gap-2 pt-0.5">
+                        <div className="flex items-center gap-2 pt-1">
                             {socials.map((s, idx) => {
                                 const Icon = s.icon;
                                 return (
@@ -116,69 +91,34 @@ export default function Footer() {
                         </div>
                     </div>
 
-                    {/* Links Columns (Balanced Compact Grid) */}
-                    <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-12 gap-6">
-                        {/* Delhi Stays (2-Column Subgrid to keep footer compact) */}
-                        <div className="sm:col-span-6 space-y-2.5">
-                            <h3 className="text-xs font-bold text-slate-950 uppercase tracking-wider">Delhi Stays</h3>
-                            <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
-                                {footerLinks["Delhi Stays"].map((link, idx) => (
-                                    <Link
-                                        key={idx}
-                                        to={link.href}
-                                        title={link.label}
-                                        className="text-[11.5px] text-slate-600 hover:text-brand-600 transition-colors font-medium truncate block leading-snug"
-                                    >
-                                        {link.label}
-                                    </Link>
+                    {/* Partners & Legal Columns */}
+                    <div className="md:col-span-6 grid grid-cols-2 gap-6">
+                        {/* Partners */}
+                        <div className="space-y-2.5">
+                            <h3 className="text-xs font-bold text-slate-950 uppercase tracking-wider">Partners</h3>
+                            <ul className="space-y-1.5">
+                                {footerLinks["Partners"].map((link, idx) => (
+                                    <li key={idx}>
+                                        <Link
+                                            to={link.href}
+                                            className="text-xs text-slate-600 hover:text-brand-600 transition-colors font-medium block leading-snug"
+                                        >
+                                            {link.label}
+                                        </Link>
+                                    </li>
                                 ))}
-                            </div>
-                        </div>
-
-                        {/* Top Destinations & Partners */}
-                        <div className="sm:col-span-3 space-y-4">
-                            <div className="space-y-2">
-                                <h3 className="text-xs font-bold text-slate-950 uppercase tracking-wider">Top Destinations</h3>
-                                <ul className="space-y-1.5">
-                                    {footerLinks["Top Destinations"].map((link, idx) => (
-                                        <li key={idx}>
-                                            <Link
-                                                to={link.href}
-                                                className="text-[11.5px] text-slate-600 hover:text-brand-600 transition-colors font-medium block leading-snug"
-                                            >
-                                                {link.label}
-                                            </Link>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-
-                            <div className="space-y-2 pt-1">
-                                <h3 className="text-xs font-bold text-slate-950 uppercase tracking-wider">Partners</h3>
-                                <ul className="space-y-1.5">
-                                    {footerLinks["Partners"].map((link, idx) => (
-                                        <li key={idx}>
-                                            <Link
-                                                to={link.href}
-                                                className="text-[11.5px] text-slate-600 hover:text-brand-600 transition-colors font-medium block leading-snug"
-                                            >
-                                                {link.label}
-                                            </Link>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
+                            </ul>
                         </div>
 
                         {/* Support & Legal */}
-                        <div className="sm:col-span-3 space-y-2.5">
+                        <div className="space-y-2.5">
                             <h3 className="text-xs font-bold text-slate-950 uppercase tracking-wider">Support & Legal</h3>
                             <ul className="space-y-1.5">
                                 {footerLinks["Support & Legal"].map((link, idx) => (
                                     <li key={idx}>
                                         <Link
                                             to={link.href}
-                                            className="text-[11.5px] text-slate-600 hover:text-brand-600 transition-colors font-medium block leading-snug"
+                                            className="text-xs text-slate-600 hover:text-brand-600 transition-colors font-medium block leading-snug"
                                         >
                                             {link.label}
                                         </Link>
@@ -189,9 +129,10 @@ export default function Footer() {
                     </div>
                 </div>
 
-                <div className="border-t border-slate-200/60 pt-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-500">
+                {/* Bottom Bar: Copyright & Attribution */}
+                <div className="border-t border-slate-100 pt-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-400">
                     <p>© {new Date().getFullYear()} GetHotelStays.com. All rights reserved.</p>
-                    <p className="font-medium text-slate-600">
+                    <p className="font-medium text-slate-500">
                         Managed by <span className="font-bold text-slate-800">Aloria Group</span> and Developed by <a href="https://alorialabs.in" target="_blank" rel="noopener noreferrer" className="font-bold text-brand-600 hover:underline">alorialabs.in</a>
                     </p>
                 </div>

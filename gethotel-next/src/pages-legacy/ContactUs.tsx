@@ -3,6 +3,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Phone, MapPin, Send, CheckCircle2 } from "lucide-react";
 import SEOHead from "@/components/common/SEOHead";
+import { contactApi } from "@/lib/api";
 
 export default function ContactUs() {
   const [formData, setFormData] = useState({
@@ -13,18 +14,28 @@ export default function ContactUs() {
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.message) return;
     
     setLoading(true);
-    // Simulate API submission
-    setTimeout(() => {
+    setErrorMessage(null);
+    try {
+      const res = await contactApi.submit(formData);
+      if (res && res.success !== false) {
+        setIsSubmitted(true);
+        setFormData({ name: "", email: "", subject: "", message: "" });
+      } else {
+        setErrorMessage(res?.message || "Could not send message. Please try again.");
+      }
+    } catch (err: any) {
+      console.error("Contact form error:", err);
+      setErrorMessage(err.message || "Failed to deliver message. Please reach us at +91 93184 85680.");
+    } finally {
       setLoading(false);
-      setIsSubmitted(true);
-      setFormData({ name: "", email: "", subject: "", message: "" });
-    }, 1000);
+    }
   };
 
   return (
@@ -188,14 +199,23 @@ export default function ContactUs() {
                       />
                     </div>
 
+                    {errorMessage && (
+                      <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl font-medium">
+                        {errorMessage}
+                      </div>
+                    )}
+
                     <button
                       type="submit"
                       disabled={loading}
-                      className="w-full btn-primary font-bold py-3 text-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                      className="w-full bg-brand-600 hover:bg-brand-700 active:bg-brand-800 text-white font-bold py-3.5 px-6 rounded-xl text-sm flex items-center justify-center gap-2 transition-all shadow-md active:scale-[0.99] cursor-pointer disabled:opacity-50"
                     >
-                      {loading ? "Sending..." : (
+                      {loading ? (
+                        <span>Sending...</span>
+                      ) : (
                         <>
-                          <Send className="w-4 h-4" /> Send Message
+                          <Send className="w-4 h-4 shrink-0" />
+                          <span>Send Message</span>
                         </>
                       )}
                     </button>

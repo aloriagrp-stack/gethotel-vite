@@ -911,6 +911,14 @@ class GHSTerminalAgent:
 
 
 if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1].lower() in ["enrich", "maps", "phone", "phones"]:
+        try:
+            from google_maps_enricher import run_enricher
+        except ImportError:
+            from agent.google_maps_enricher import run_enricher
+        run_enricher(auto_empty_box=True, clear_screen_on_start=False)
+        sys.exit(0)
+
     agent = GHSTerminalAgent()
     if len(sys.argv) > 1 and sys.argv[1].lower() == "bulk":
         count = int(sys.argv[2]) if len(sys.argv) > 2 and sys.argv[2].isdigit() else None

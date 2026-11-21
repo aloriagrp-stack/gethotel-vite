@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "@/components/common/Image";
 import { X, ChevronLeft, ChevronRight, Grid2X2, Maximize2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -21,6 +21,17 @@ export default function ImageGallery({ images = [], hotelName }: ImageGalleryPro
     if (validImages.length === 0) {
         validImages.push("https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200&q=80");
     }
+
+    // Lock body scroll when lightbox is open
+    useEffect(() => {
+        if (lightboxOpen) {
+            const originalOverflow = document.body.style.overflow;
+            document.body.style.overflow = "hidden";
+            return () => {
+                document.body.style.overflow = originalOverflow;
+            };
+        }
+    }, [lightboxOpen]);
 
     const openLightbox = (index: number) => {
         setActiveIndex(index);
@@ -113,32 +124,99 @@ export default function ImageGallery({ images = [], hotelName }: ImageGalleryPro
             <AnimatePresence>
                 {lightboxOpen && (
                     <motion.div
-                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[100] bg-slate-950/95 flex flex-col items-center justify-center backdrop-blur-3xl"
+                        initial={{ opacity: 0 }} 
+                        animate={{ opacity: 1 }} 
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[120] bg-white flex flex-col items-center justify-between"
                         onClick={() => setLightboxOpen(false)}
                     >
-                        <div className="absolute top-0 left-0 right-0 p-8 flex items-center justify-between z-[110]">
+                        {/* Header */}
+                        <div 
+                            className="w-full px-5 py-4 sm:px-8 sm:py-5 flex items-center justify-between border-b border-slate-100 bg-white z-[130]"
+                            onClick={(e) => e.stopPropagation()}
+                        >
                             <div className="flex flex-col">
-                                <h3 className="text-white font-black text-lg italic">{hotelName}</h3>
-                                <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">{activeIndex + 1} / {validImages.length}</p>
+                                <h3 className="text-slate-900 font-bold text-base sm:text-lg tracking-tight truncate max-w-[260px] sm:max-w-md">
+                                    {hotelName}
+                                </h3>
+                                <p className="text-xs font-semibold text-slate-500 mt-0.5">
+                                    {activeIndex + 1} / {validImages.length}
+                                </p>
                             </div>
-                            <button onClick={() => setLightboxOpen(false)} className="w-12 h-12 bg-white/10 text-white rounded-2xl flex items-center justify-center"><X className="w-6 h-6" /></button>
+                            <button 
+                                onClick={() => setLightboxOpen(false)} 
+                                className="w-9 h-9 sm:w-10 sm:h-10 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full flex items-center justify-center transition-colors cursor-pointer"
+                                aria-label="Close"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
                         </div>
 
-                        <div className="relative w-full flex-1 flex items-center justify-center">
+                        {/* Image Viewer */}
+                        <div 
+                            className="relative w-full flex-1 flex items-center justify-center p-2 sm:p-6 bg-slate-50/50 select-none overflow-hidden"
+                            onClick={() => setLightboxOpen(false)}
+                        >
                             <AnimatePresence mode="wait">
                                 <motion.div
                                     key={activeIndex}
-                                    initial={{ opacity: 0, x: 100 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -100 }}
-                                    className="relative w-[90vw] h-[70vh]"
+                                    initial={{ opacity: 0, scale: 0.98 }} 
+                                    animate={{ opacity: 1, scale: 1 }} 
+                                    exit={{ opacity: 0, scale: 0.98 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="relative w-full max-w-5xl h-full flex items-center justify-center"
+                                    onClick={(e) => e.stopPropagation()}
                                 >
-                                    <Image src={validImages[activeIndex]} alt="fullscreen" fill className="object-contain" unoptimized />
+                                    <img 
+                                        src={validImages[activeIndex]} 
+                                        alt={`${hotelName} photo ${activeIndex + 1}`} 
+                                        className="max-w-full max-h-[72vh] sm:max-h-[80vh] w-auto h-auto object-contain mx-auto select-none" 
+                                    />
                                 </motion.div>
                             </AnimatePresence>
                             
-                            <button onClick={(e) => { e.stopPropagation(); prev(); }} className="absolute left-4 w-12 h-12 bg-white/5 rounded-full flex items-center justify-center text-white"><ChevronLeft className="w-6 h-6" /></button>
-                            <button onClick={(e) => { e.stopPropagation(); next(); }} className="absolute right-4 w-12 h-12 bg-white/5 rounded-full flex items-center justify-center text-white"><ChevronRight className="w-6 h-6" /></button>
+                            {validImages.length > 1 && (
+                                <>
+                                    <button 
+                                        onClick={(e) => { e.stopPropagation(); prev(); }} 
+                                        className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-11 sm:h-11 bg-white/90 hover:bg-white text-slate-800 rounded-full flex items-center justify-center shadow-md border border-slate-200 active:scale-95 transition-all z-20 cursor-pointer"
+                                        aria-label="Previous photo"
+                                    >
+                                        <ChevronLeft className="w-5 h-5" />
+                                    </button>
+                                    <button 
+                                        onClick={(e) => { e.stopPropagation(); next(); }} 
+                                        className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-11 sm:h-11 bg-white/90 hover:bg-white text-slate-800 rounded-full flex items-center justify-center shadow-md border border-slate-200 active:scale-95 transition-all z-20 cursor-pointer"
+                                        aria-label="Next photo"
+                                    >
+                                        <ChevronRight className="w-5 h-5" />
+                                    </button>
+                                </>
+                            )}
                         </div>
+
+                        {/* Bottom Thumbnail Strip */}
+                        {validImages.length > 1 && (
+                            <div 
+                                className="w-full py-3 px-4 border-t border-slate-100 bg-white flex items-center justify-center gap-1.5 overflow-x-auto no-scrollbar z-[130]"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                {validImages.map((src, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => setActiveIndex(idx)}
+                                        className={cn(
+                                            "relative w-12 h-9 sm:w-14 sm:h-10 rounded-md overflow-hidden shrink-0 transition-all border-2 cursor-pointer",
+                                            idx === activeIndex 
+                                                ? "border-brand-600 ring-2 ring-brand-100 scale-105" 
+                                                : "border-transparent opacity-60 hover:opacity-100"
+                                        )}
+                                    >
+                                        <Image src={src} alt="thumbnail" fill className="object-cover" unoptimized />
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </motion.div>
                 )}
             </AnimatePresence>

@@ -51,6 +51,22 @@ LIVE_DB = {
 }
 
 
+def disable_quickedit():
+    """Prevents Windows Console from freezing when user clicks inside terminal."""
+    if sys.platform == "win32":
+        try:
+            import ctypes
+            kernel32 = ctypes.windll.kernel32
+            hStdin = kernel32.GetStdHandle(-10)
+            mode = ctypes.c_ulong()
+            kernel32.GetConsoleMode(hStdin, ctypes.byref(mode))
+            mode.value &= ~0x0040
+            mode.value |= 0x0080
+            kernel32.SetConsoleMode(hStdin, mode)
+        except Exception:
+            pass
+
+
 def clean_phone_number(raw_phone: str) -> str:
     """Format phone numbers cleanly into Indian standard format."""
     if not raw_phone:
@@ -102,13 +118,17 @@ def extract_email_from_website(website_url: str) -> str:
 
 
 def get_db_hotels(only_missing=True):
-    """Fetches directory hotels directly from Live Production MariaDB."""
+    """Fetches directory hotels directly from Live Production MariaDB with retry."""
     conn = None
-    try:
-        conn = pymysql.connect(**LIVE_DB)
-    except Exception as e:
-        console.print(f"[bold red]❌ Could not connect to Live MySQL database: {e}[/bold red]")
-        return []
+    for attempt in range(1, 4):
+        try:
+            conn = pymysql.connect(**LIVE_DB)
+            break
+        except Exception as e:
+            if attempt == 3:
+                console.print(f"[bold red]❌ Could not connect to Live MySQL database: {e}[/bold red]")
+                return []
+            time.sleep(1)
 
     try:
         with conn.cursor(pymysql.cursors.DictCursor) as cur:
@@ -118,12 +138,38 @@ def get_db_hotels(only_missing=True):
             sql += " ORDER BY id ASC"
             cur.execute(sql)
             return cur.fetchall()
+    except Exception as e:
+        console.print(f"[bold red]❌ Query error: {e}[/bold red]")
+        return []
     finally:
-        conn.close()
+        if conn:
+            conn.close()
+
+
+_SHARED_DB_CONN = None
+
+def get_shared_db_conn():
+    global _SHARED_DB_CONN
+    if _SHARED_DB_CONN is not None:
+        try:
+            _SHARED_DB_CONN.ping(reconnect=True)
+            return _SHARED_DB_CONN
+        except Exception:
+            try:
+                _SHARED_DB_CONN.close()
+            except Exception:
+                pass
+            _SHARED_DB_CONN = None
+
+    try:
+        _SHARED_DB_CONN = pymysql.connect(**LIVE_DB)
+        return _SHARED_DB_CONN
+    except Exception:
+        return None
 
 
 def save_hotel_contact_to_dbs(hotel_id: int, hotel_name: str, city: str, phone: str, email: str, website: str) -> dict:
-    """Updates contact details strictly in Live Production MariaDB (Local DB remains completely untouched)."""
+    """Updates contact details strictly in Live Production MariaDB using persistent fast socket."""
     results = {"local": False, "live": False}
     update_fields = []
     params = []
@@ -142,18 +188,24 @@ def save_hotel_contact_to_dbs(hotel_id: int, hotel_name: str, city: str, phone: 
 
     update_fields.append("updatedAt = NOW()")
 
-    # Update Live DB strictly (match by id or name+city)
-    try:
-        live_conn = pymysql.connect(**LIVE_DB)
-        live_params = list(params) + [hotel_name, city, hotel_id]
-        live_query = f"UPDATE hotel SET {', '.join(update_fields)} WHERE (name = %s AND city = %s) OR id = %s"
-        with live_conn.cursor() as cur:
-            cur.execute(live_query, tuple(live_params))
-        live_conn.commit()
-        live_conn.close()
-        results["live"] = True
-    except Exception as e:
-        console.print(f"  [dim yellow]Live DB Update Notice: {e}[/dim yellow]")
+    # Update Live DB strictly using persistent connection
+    for attempt in range(1, 4):
+        try:
+            db_conn = get_shared_db_conn()
+            if not db_conn:
+                time.sleep(1)
+                continue
+            live_params = list(params) + [hotel_name, city, hotel_id]
+            live_query = f"UPDATE hotel SET {', '.join(update_fields)} WHERE (name = %s AND city = %s) OR id = %s"
+            with db_conn.cursor() as cur:
+                cur.execute(live_query, tuple(live_params))
+            db_conn.commit()
+            results["live"] = True
+            break
+        except Exception as e:
+            if attempt == 3:
+                console.print(f"  [dim yellow]Live DB Notice: {e}[/dim yellow]")
+            time.sleep(1)
 
     return results
 
@@ -247,9 +299,21 @@ def clear_terminal():
 
 
 def clean_hotel_search_query(name: str, addr: str = "", city: str = "Delhi") -> str:
-    """Strips OTA booking keywords, promos, and extracts core hotel name + locality."""
-    n = re.sub(r'\(.*?\)', '', name)
-    n = re.sub(r'[-–—]\s*by\s+.*$', '', n, flags=re.IGNORECASE)
+    """Strips OTA booking keywords, promos, award fluff and extracts clean hotel name + locality."""
+    # Convert standalone ' I ' used as delimiter into dash
+    clean_name = re.sub(r'\s+[I|]\s+', ' - ', name)
+
+    # 1. Cut off marketing taglines after delimiters
+    core = re.split(r'[-–—:|\(]', clean_name)[0].strip()
+    words = core.split()
+    clean_words = []
+    for w in words:
+        if w.lower() in ['award', 'winning', 'complimentary', 'traveller', "traveller's", 'traveler', 'traveler\'s']:
+            break
+        clean_words.append(w)
+    core = " ".join(clean_words[:6])
+
+    # Strip remaining junk promo words
     remove_words = [
         'with free airport transport', 'free airport transport', 'free airport shuttle', 'free shuttle',
         'a luxury hotel', 'luxury hotel', 'near new delhi railway station and city center',
@@ -260,17 +324,30 @@ def clean_hotel_search_query(name: str, addr: str = "", city: str = "Delhi") -> 
         'by rcg hotels', 'by jmd group', 'by m s hospitality'
     ]
     for w in remove_words:
-        n = re.sub(re.escape(w), ' ', n, flags=re.IGNORECASE)
-    n = re.sub(r'[^a-zA-Z0-9\s]', ' ', n)
-    core = " ".join(n.split())
+        core = re.sub(re.escape(w), ' ', core, flags=re.IGNORECASE)
+    core = re.sub(r'[^a-zA-Z0-9\s]', ' ', core)
+    core = " ".join(core.split())
 
+    # Locality priority list (longer first)
+    loc_list = [
+        "Greater Noida", "Connaught Place", "Karol Bagh", "Vasant Kunj", "South Delhi",
+        "Aerocity", "Mahipalpur", "Paharganj", "Rohini", "Dwarka", "Noida", "Gurugram",
+        "Gurgaon", "Panipat", "Faridabad", "Ghaziabad"
+    ]
     locality = ""
-    for loc in ["Paharganj", "Mahipalpur", "Aerocity", "Karol Bagh", "Rohini", "Dwarka", "Vasant Kunj", "Connaught Place", "South Delhi"]:
-        if loc.lower() in (name + " " + addr).lower():
+    combined_str = (name + " " + addr).lower()
+    for loc in loc_list:
+        if loc.lower() in combined_str:
             locality = loc
             break
 
-    return f"{core} {locality} {city}".strip()
+    parts = [core]
+    if locality and locality.lower() not in core.lower():
+        parts.append(locality)
+    if city and city.lower() not in core.lower() and city.lower() not in locality.lower():
+        parts.append(city)
+
+    return " ".join(parts).strip()
 
 
 def run_enricher(limit: int = None, hotel_id_filter: int = None, hotel_id_list: list = None, auto_empty_box: bool = False, clear_screen_on_start: bool = True):
@@ -312,19 +389,27 @@ def run_enricher(limit: int = None, hotel_id_filter: int = None, hotel_id_list: 
     enriched_count = 0
     unfound_hotels = []
 
+    common_args = [
+        "--disable-blink-features=AutomationControlled",
+        "--no-sandbox",
+        "--disable-gpu",
+        "--disable-software-rasterizer",
+        "--disable-dev-shm-usage",
+        "--js-flags=--max-old-space-size=128"
+    ]
     with sync_playwright() as p:
         try:
             browser = p.chromium.launch(
                 channel="chrome",
                 headless=True,
-                args=["--disable-blink-features=AutomationControlled", "--no-sandbox"]
+                args=common_args
             )
         except Exception:
             try:
                 browser = p.chromium.launch(
                     channel="msedge",
                     headless=True,
-                    args=["--disable-blink-features=AutomationControlled", "--no-sandbox"]
+                    args=common_args
                 )
             except Exception as e:
                 console.print(f"[bold red]❌ Could not launch system Chrome or Edge: {e}[/bold red]")
@@ -334,9 +419,10 @@ def run_enricher(limit: int = None, hotel_id_filter: int = None, hotel_id_list: 
             user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             locale="en-IN"
         )
-        page = context.new_page()
+        page = None
 
         for idx, hotel in enumerate(hotels, 1):
+            disable_quickedit()
             h_id = hotel["id"]
             h_name = hotel["name"]
             h_city = hotel.get("city") or "Delhi"
@@ -350,80 +436,48 @@ def run_enricher(limit: int = None, hotel_id_filter: int = None, hotel_id_list: 
             website = ""
             email = ""
 
+            # Recycle Chrome tab every 5 hotels to completely purge Google Maps memory leaks
+            if page is None or page.is_closed() or (idx % 5 == 1):
+                try:
+                    if page and not page.is_closed():
+                        page.close()
+                except Exception:
+                    pass
+                try:
+                    page = context.new_page()
+                except Exception:
+                    time.sleep(1)
+                    page = context.new_page()
+
             # ----------------------------------------------------
-            # TIER 1: Google Web Search (Knowledge Panel & Snippet)
+            # TIER 1: Google Maps Place Search (Primary & Direct)
             # ----------------------------------------------------
             try:
-                g_url = f"https://www.google.com/search?q={urllib.parse.quote(search_kw + ' contact number')}"
-                try:
-                    page.goto(g_url, timeout=10000)
-                except Exception:
-                    pass
-                page.wait_for_timeout(2000)
-                g_body = page.inner_text('body')
+                maps_url = f"https://www.google.com/maps/search/{urllib.parse.quote(search_kw)}"
+                page.goto(maps_url, wait_until="domcontentloaded", timeout=9000)
+                page.wait_for_timeout(2500)
 
-                # Match formatted phone numbers
-                g_phones = re.findall(r'(?:Phone Number:\s*|Call\s+)?((?:\+91[\-\s]?)?[6-9]\d{4}[\s\-]?\d{5}|(?:\+91[\-\s]?)?011[\s\-]?[0-9]{8}|[6-9]\d{9})', g_body)
-                for ph in g_phones:
-                    clean_p = clean_phone_number(ph)
-                    raw_digits = re.sub(r'\D', '', clean_p)
-                    if len(raw_digits) in [10, 11, 12]:
-                        phone = clean_p
-                        break
-
-                # Extract first non-OTA website
-                for a in page.query_selector_all('a[href^="http"]'):
-                    href = a.get_attribute('href')
-                    if href and not any(x in href.lower() for x in ['google', 'booking.com', 'makemytrip', 'agoda', 'tripadvisor', 'goibibo', 'justdial', 'youtube', 'facebook', 'instagram']):
-                        website = href.split('?')[0]
-                        break
-
-                # Extract email if mentioned in snippet
-                g_emails = [e for e in re.findall(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+', g_body) if not any(x in e for x in ['google', 'sentry', 'example', 'wix'])]
-                if g_emails:
-                    email = g_emails[0]
-
-            except Exception:
-                pass
-
-            # Alternative search if "Hotel" in name masked brand
-            if not phone and "hotel" in search_kw.lower():
-                try:
-                    alt_kw = re.sub(r'\bhotel\b', '', search_kw, flags=re.IGNORECASE).strip()
-                    g_alt_url = f"https://www.google.com/search?q={urllib.parse.quote(alt_kw + ' contact number phone')}"
+                first_card = page.query_selector('div.Nv2PK, [role="article"], a.hfpxzc')
+                if first_card:
                     try:
-                        page.goto(g_alt_url, timeout=9000)
-                    except Exception:
-                        pass
-                    page.wait_for_timeout(1800)
-                    alt_body = page.inner_text('body')
-                    alt_phones = re.findall(r'(?:Phone Number:\s*|Call\s+)?((?:\+91[\-\s]?)?[6-9]\d{4}[\s\-]?\d{5}|(?:\+91[\-\s]?)?011[\s\-]?[0-9]{8}|[6-9]\d{9})', alt_body)
-                    for ph in alt_phones:
-                        clean_p = clean_phone_number(ph)
-                        raw_digits = re.sub(r'\D', '', clean_p)
-                        if len(raw_digits) in [10, 11, 12]:
-                            phone = clean_p
-                            break
-                except Exception:
-                    pass
-
-            # ----------------------------------------------------
-            # TIER 2: Google Maps Places Search (if phone not found)
-            # ----------------------------------------------------
-            if not phone:
-                try:
-                    maps_url = f"https://www.google.com/maps/search/{urllib.parse.quote(search_kw)}"
-                    page.goto(maps_url, wait_until="domcontentloaded", timeout=15000)
-                    page.wait_for_timeout(2500)
-
-                    try:
-                        place_links = page.locator('a[href*="/maps/place/"]')
-                        if place_links.count() > 0:
-                            place_links.first.click(timeout=2500)
-                            page.wait_for_timeout(2000)
+                        first_card.click(timeout=2000)
+                        page.wait_for_timeout(2000)
                     except Exception:
                         pass
 
+                # Extract Phone directly from Google Maps Place button
+                phone_btn = page.query_selector('[data-item-id*="phone:tel:"], button[aria-label*="Phone:"], button[data-tooltip*="phone"]')
+                if phone_btn:
+                    lbl = phone_btn.get_attribute("aria-label") or ""
+                    m_p = re.search(r'Phone:\s*([0-9\+\s\-]+)', lbl)
+                    if m_p:
+                        phone = clean_phone_number(m_p.group(1))
+                    else:
+                        txt = phone_btn.inner_text().strip()
+                        if txt:
+                            phone = clean_phone_number(txt)
+
+                if not phone:
                     content = page.content()
                     phones_tel = re.findall(r'phone:tel:([0-9\+\s\-]+)', content)
                     aria_phones = re.findall(r'Phone:\s*([0-9\+\s\-]+)', content)
@@ -431,34 +485,35 @@ def run_enricher(limit: int = None, hotel_id_filter: int = None, hotel_id_list: 
                     if m_candidates:
                         phone = clean_phone_number(m_candidates[0])
 
-                    if not website:
-                        web_matches = re.findall(r'data-item-id="authority"[^>]*href="([^"]+)"', content)
-                        if web_matches:
-                            raw_web = web_matches[0]
-                            if "/url?q=" in raw_web:
-                                raw_web = raw_web.split("/url?q=")[1].split("&")[0]
-                            raw_web = urllib.parse.unquote(raw_web)
-                            if not any(x in raw_web.lower() for x in ["booking.com", "makemytrip", "agoda", "tripadvisor"]):
-                                website = raw_web.split("?")[0]
+                # Extract Website directly from Google Maps Place
+                if not website:
+                    web_btn = page.query_selector('[data-item-id="authority"], a[aria-label*="Website:"], a[data-tooltip*="website"]')
+                    if web_btn and web_btn.get_attribute("href"):
+                        raw_w = web_btn.get_attribute("href")
+                        if "/url?q=" in raw_w:
+                            raw_w = raw_w.split("/url?q=")[1].split("&")[0]
+                        raw_w = urllib.parse.unquote(raw_w)
+                        if not any(x in raw_w.lower() for x in ["booking.com", "makemytrip", "agoda", "tripadvisor", "google.com"]):
+                            website = raw_w.split("?")[0]
+            except Exception:
+                try:
+                    if page and not page.is_closed():
+                        page.close()
                 except Exception:
                     pass
+                page = None
 
-            # ----------------------------------------------------
-            # TIER 3: Website Scrape for Contact & Email
-            # ----------------------------------------------------
-            if website:
-                if not email:
-                    email = extract_email_from_website(website)
-                if not phone:
-                    try:
-                        w_res = requests.get(website, headers={"User-Agent": "Mozilla/5.0"}, timeout=5)
-                        if w_res.status_code == 200:
-                            w_soup = BeautifulSoup(w_res.text, "html.parser")
-                            tel_a = w_soup.find("a", href=re.compile(r'^tel:'))
-                            if tel_a and tel_a.get("href"):
-                                phone = clean_phone_number(tel_a["href"].replace("tel:", "").strip())
-                    except Exception:
-                        pass
+            # Fast website fallback only if phone missing and website exists
+            if not phone and website:
+                try:
+                    w_res = requests.get(website, headers={"User-Agent": "Mozilla/5.0"}, timeout=(2.0, 3.0))
+                    if w_res.status_code == 200:
+                        w_soup = BeautifulSoup(w_res.text, "html.parser")
+                        tel_a = w_soup.find("a", href=re.compile(r'^tel:'))
+                        if tel_a and tel_a.get("href"):
+                            phone = clean_phone_number(tel_a["href"].replace("tel:", "").strip())
+                except Exception:
+                    pass
 
             if phone:
                 res = save_hotel_contact_to_dbs(h_id, h_name, h_city, phone, email, website)
@@ -644,7 +699,14 @@ def menu():
 
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1 and sys.argv[1].isdigit():
-        run_enricher(limit=int(sys.argv[1]))
+    disable_quickedit()
+    if "--all" in sys.argv:
+        run_enricher(auto_empty_box=True, clear_screen_on_start=False)
+    elif len(sys.argv) > 1 and sys.argv[1].isdigit():
+        run_enricher(limit=int(sys.argv[1]), auto_empty_box=True, clear_screen_on_start=False)
+    elif "--limit" in sys.argv:
+        idx = sys.argv.index("--limit")
+        lim = int(sys.argv[idx + 1]) if idx + 1 < len(sys.argv) else 10
+        run_enricher(limit=lim, auto_empty_box=True, clear_screen_on_start=False)
     else:
         menu()

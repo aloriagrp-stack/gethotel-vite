@@ -1,7 +1,7 @@
 # 📦 Empty Box — Unresolved Directory Hotels
 
 Total Unresolved Properties: **124**  
-Last Updated: **2026-11-17 13:39:40**
+Last Updated: **2026-11-17 21:46:33**
 
 | ID | Hotel Name | City | Starting Price | Booking.com URL |
 | :--- | :--- | :--- | :--- | :--- |
@@ -18,7 +18,7 @@ Last Updated: **2026-11-17 13:39:40**
 | #248 | **Hotel The White Sand Suites At Airport** | Delhi | ₹1259 | [Open Listing ↗](https://www.booking.com/hotel/in/muskan-villa-new-delhi.en-gb.html) |
 | #253 | **The NH Suites Hotel Near Aerocity and Yashobhoomi Delhi IGI Airport With- Free Airport Pickup** | Delhi | ₹3872 | [Open Listing ↗](https://www.booking.com/hotel/in/capital-deluxe.html) |
 | #312 | **Boss By A1rooms** | Delhi | ₹647 | [Open Listing ↗](https://www.booking.com/hotel/in/boss-by-a1rooms.en-gb.html) |
-| #329 | **Hotel Hindustan Heaven - Traveller's Choice Award 2023-24-25-26 Best of Best Winning Hotel with Complimentary Airport Pick up** | Delhi | ₹1952 | [Open Listing ↗](https://www.booking.com/hotel/in/hindustan-international-dx-new-delhi.en-gb.html) |
+| #329 | **Hotel Hindustan Heaven - Traveller's Choice Award 2023-24-25-26 Best of Best Winning Hotel with Complimentary Airport Pick up** | Delhi | ₹1698 | [Open Listing ↗](https://www.booking.com/hotel/in/hindustan-international-dx-new-delhi.html) |
 | #335 | **Gateway Shree Guru Suites** | Delhi | ₹1532 | [Open Listing ↗](https://www.booking.com/hotel/in/skyline-house-paharganj.en-gb.html) |
 | #336 | **The Shanti Plaza - Traveler's choice awarded 2025 - New Delhi Railway Station, Paharganj** | Delhi | N/A | [Open Listing ↗](https://www.booking.com/hotel/in/shanti-plaza.en-gb.html) |
 | #339 | **Leela Stayz at City Centre with Free Airport Pickup** | Delhi | ₹4241 | [Open Listing ↗](https://www.booking.com/hotel/in/leena-stayz.en-gb.html) |
@@ -247,16 +247,16 @@ Last Updated: **2026-11-17 13:39:40**
 - **Starting Room Rate:** ₹647 /night
 - **Cover Photo:** https://cf.bstatic.com/xdata/images/hotel/max1280x900/921266963.jpg?k=10611e16182168fb2fdd701f3acbab60035bc2ccc3b3253ef0b17a15fadc833d&o=&hp=1
 - **Description:** Boss By A1rooms is well located in the centre of New Delhi....
-- **Logged In Empty Box At:** 2026-11-15 23:05:13
+- **Logged In Empty Box At:** 2026-11-17 21:41:09
 
 ### #329 — Hotel Hindustan Heaven - Traveller's Choice Award 2023-24-25-26 Best of Best Winning Hotel with Complimentary Airport Pick up
 - **City:** Delhi
 - **Full Address:** 1518, Ranjeet Gali, Sangatrashan, Paharganj, New Delhi, 110055, Paharganj, 110055 New Delhi, India, 1518, Ranjeet Gali, Sangatrashan, Paharganj, New Delhi, 110055, 110055, India
-- **Booking.com Link:** https://www.booking.com/hotel/in/hindustan-international-dx-new-delhi.en-gb.html
-- **Starting Room Rate:** ₹1952 /night
+- **Booking.com Link:** https://www.booking.com/hotel/in/hindustan-international-dx-new-delhi.html
+- **Starting Room Rate:** ₹1698 /night
 - **Cover Photo:** https://cf.bstatic.com/xdata/images/hotel/max1280x900/678586519.jpg?k=74d96ca865ddf13ddde0fde8bf5bd1622b468ffa437b2f53866bdccddbcc6024&o=&hp=1
 - **Description:** Conveniently located in the centre of New Delhi, Hotel Hindustan Heaven - Traveller's Choice Award 2023-24-25-26 Best of Best Winning Hotel with......
-- **Logged In Empty Box At:** 2026-11-15 23:05:13
+- **Logged In Empty Box At:** 2026-11-17 21:46:33
 
 ### #335 — Gateway Shree Guru Suites
 - **City:** Delhi

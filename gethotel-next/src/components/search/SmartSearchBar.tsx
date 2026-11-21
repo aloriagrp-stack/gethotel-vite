@@ -205,6 +205,19 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
         }
     }, [mode]);
 
+    // Auto-open destination picker if URL has selectDestination=true
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('selectDestination') === 'true') {
+                setActiveSection('where');
+                setTimeout(() => {
+                    containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 150);
+            }
+        }
+    }, []);
+
     // Heal checkout date to checkIn + 1 day when the dates picker dropdown is closed with only checkIn selected
     useEffect(() => {
         if (activeSection === null && mode === 'nightly') {

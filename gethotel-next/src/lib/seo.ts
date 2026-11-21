@@ -829,7 +829,7 @@ export const organizationSchema = {
         height: 630,
     },
     description:
-        "GetHotelStays is India's premier online hotel booking platform, offering luxury, boutique and budget hotels across India. Trusted by travelers from India, USA, UK, UAE & worldwide.",
+        "GetHotelStays is India's verified online hotel booking platform, offering flexible full-day and hourly micro-stays (3h, 6h, 12h) across India. Trusted by domestic and international travelers.",
     foundingDate: SITE.foundingYear,
     contactPoint: [
         {
@@ -846,6 +846,31 @@ export const organizationSchema = {
         addressLocality: "Mumbai",
         addressRegion: "Maharashtra",
     },
+    areaServed: [
+        {
+            "@type": "AdministrativeArea",
+            name: "National Capital Region (India)",
+            sameAs: "https://en.wikipedia.org/wiki/National_Capital_Region_(India)",
+        },
+        {
+            "@type": "City",
+            name: "New Delhi",
+            sameAs: "https://en.wikipedia.org/wiki/New_Delhi",
+        },
+        {
+            "@type": "Country",
+            name: "India",
+            sameAs: "https://en.wikipedia.org/wiki/India",
+        },
+    ],
+    knowsAbout: [
+        "Hourly Hotels",
+        "Micro-stays",
+        "Day-use Hotels in India",
+        "Transit Hotels near Delhi Airport",
+        "Couple Friendly Hotels in Delhi",
+        "Hotel Booking India",
+    ],
     sameAs: [
         "https://www.facebook.com/gethotelstays",
         "https://www.instagram.com/bookghs",
@@ -882,9 +907,11 @@ export const travelAgencySchema = {
     url: SITE.url,
     logo: `${SITE.url}/og-image.jpg`,
     image: `${SITE.url}/og-image.jpg`,
-    description: "India's best online hotel booking platform with 10,000+ verified properties.",
+    description: "Verified hotel booking platform offering full-day stays and flexible hourly micro-stays (3h, 6h, 12h) across India with 12% deposit or full online payment.",
     telephone: SITE.phone,
     priceRange: "₹₹-₹₹₹₹",
+    paymentAccepted: ["Cash", "Credit Card", "Debit Card", "UPI", "Net Banking", "PayPal"],
+    currenciesAccepted: "INR, USD, GBP, EUR, AED, CAD, AUD",
     address: {
         "@type": "PostalAddress",
         streetAddress: SITE.address.street,
@@ -893,19 +920,32 @@ export const travelAgencySchema = {
         postalCode: SITE.address.postalCode,
         addressCountry: SITE.address.country,
     },
-    areaServed: {
-        "@type": "Country",
-        name: "India",
-    },
+    areaServed: [
+        {
+            "@type": "AdministrativeArea",
+            name: "National Capital Region (India)",
+            sameAs: "https://en.wikipedia.org/wiki/National_Capital_Region_(India)",
+        },
+        {
+            "@type": "City",
+            name: "New Delhi",
+            sameAs: "https://en.wikipedia.org/wiki/New_Delhi",
+        },
+        {
+            "@type": "Country",
+            name: "India",
+            sameAs: "https://en.wikipedia.org/wiki/India",
+        },
+    ],
     hasOfferCatalog: {
         "@type": "OfferCatalog",
         name: "Hotel Stays India",
         itemListElement: [
-            { "@type": "Offer", itemOffered: { "@type": "LodgingBusiness", name: "Luxury Hotels India" } },
+            { "@type": "Offer", itemOffered: { "@type": "LodgingBusiness", name: "Hourly Hotels India (3h, 6h, 12h)" } },
+            { "@type": "Offer", itemOffered: { "@type": "LodgingBusiness", name: "Couple Friendly Hotels India" } },
+            { "@type": "Offer", itemOffered: { "@type": "LodgingBusiness", name: "Transit Hotels Near Delhi Airport" } },
             { "@type": "Offer", itemOffered: { "@type": "LodgingBusiness", name: "Budget Hotels India" } },
-            { "@type": "Offer", itemOffered: { "@type": "LodgingBusiness", name: "Boutique Hotels India" } },
-            { "@type": "Offer", itemOffered: { "@type": "Resort", name: "Beach Resorts India" } },
-            { "@type": "Offer", itemOffered: { "@type": "Resort", name: "Hill Station Resorts India" } },
+            { "@type": "Offer", itemOffered: { "@type": "LodgingBusiness", name: "Luxury Hotels & Resorts India" } },
         ],
     },
 };
@@ -972,6 +1012,20 @@ export const buildHotelSchema = (hotel: any, reviews?: any[]) => {
                 return [];
             }
         })(),
+        offers: {
+            "@type": "Offer",
+            url: `${SITE.url}${getHotelUrl(hotel.id, hotel.name)}`,
+            priceCurrency: "INR",
+            price: hotel.pricePerNight ? String(hotel.pricePerNight) : undefined,
+            priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            availability: "https://schema.org/InStock",
+            itemCondition: "https://schema.org/NewCondition",
+            acceptedPaymentMethod: [
+                "https://schema.org/PaymentMethodType/CreditCard",
+                "https://schema.org/PaymentMethodType/DebitCard",
+                "https://schema.org/PaymentMethodType/Cash"
+            ],
+        },
     };
 
     // Add aggregate rating if reviews exist
@@ -1037,44 +1091,44 @@ export const HOME_FAQS = [
         answer: "Yes, 100%. Under Indian law, consenting adult citizens (18+) with valid original government photo IDs (Aadhaar, Voter ID, Passport, DL) are legally entitled to check into our verified couple-friendly partner hotels without moral policing, awkward questioning, or local ID restrictions.",
     },
     {
-        question: "Why do I only pay 12% online? Is there any hidden surcharge at check-in?",
-        answer: "Zero hidden surcharges. Our signature 'Pay 12% Now' model lets you reserve your confirmed room instantly with just a 12% advance deposit online. The remaining 88% balance is settled directly at the hotel front desk upon check-in via cash, UPI, or card.",
+        question: "How does payment work on GetHotelStays? Can I pay online or pay at the hotel?",
+        answer: "You have two transparent payment options: 1) Pay 12% Advance Deposit: Pay just 12% online to instantly secure and confirm your room, and settle the remaining 88% balance directly at the hotel front desk upon check-in via cash, UPI, or card. 2) 100% Full Online Payment: Pay the entire amount online during checkout via UPI, debit/credit cards, netbanking, or international cards for a swift, contactless check-in.",
     },
     {
-        question: "Can I book hourly rooms for 3 hours, 6 hours, or 12 hours near Delhi Airport or Railway Stations?",
-        answer: "Yes! Our flexible micro-stay options allow you to book 3-hour, 6-hour, or 12-hour slots near Indira Gandhi International Airport (T3/T2/T1), New Delhi Railway Station (NDLS), and other key hubs. Perfect for transit layovers, fresh-ups, and business meetings without paying for a full 24-hour day.",
+        question: "How do hourly hotels and micro-stays work on GetHotelStays?",
+        answer: "Hourly stays let you book private hotel rooms in flexible duration blocks (3 hours, 6 hours, or 12 hours) rather than paying for a full 24-hour cycle. You enjoy the same verified private room, clean washroom, air conditioning, and high-speed Wi-Fi. It is ideal for flight layovers near Delhi Airport (T3/Aerocity), train layovers near New Delhi Railway Station (NDLS), or freshening up between meetings at savings of up to 40% to 70% compared to 24-hour rates.",
     },
     {
         question: "Can international tourists and NRIs book hotels in India using overseas cards?",
-        answer: "Yes. Our secure global checkout accepts all major international Visa, Mastercard, American Express cards, and PayPal in USD, GBP, EUR, AED, CAD, and AUD with instant booking confirmation and 24/7 guest support.",
+        answer: "Yes. Our secure global checkout accepts all major international Visa, Mastercard, American Express cards, and PayPal in USD, GBP, EUR, AED, CAD, and AUD with instant booking confirmation and 24/7 guest support. International travelers can also choose to pay a 12% advance deposit online and settle the rest at the property.",
     },
     {
         question: "Is my booking 100% guaranteed on GetHotelStays?",
-        answer: "100% guaranteed. All properties on GetHotelStays undergo strict quality and physical verification. Once you pay the 12% advance deposit, your room is instantly confirmed with a unique Booking ID and immediate SMS and email receipt.",
+        answer: "100% guaranteed. All properties on GetHotelStays undergo strict quality and physical verification. Once you complete your reservation (paying either the 12% deposit or full amount online), your room is instantly confirmed with a unique Booking ID and immediate SMS, WhatsApp, and email confirmation.",
     },
     {
         question: "What is the cancellation and refund policy on GetHotelStays?",
-        answer: "Most hotels on GetHotelStays offer free cancellation up to 24 to 48 hours before your scheduled check-in. If you cancel within the free cancellation window, your 12% deposit is refunded promptly. The exact cancellation policy is transparently displayed on each property page before you book.",
+        answer: "Most hotels on GetHotelStays offer free cancellation up to 24 hours before your scheduled check-in. If you cancel within the free cancellation window, any payment made online (including the 12% deposit) is refunded promptly to your original payment method. The exact cancellation terms are transparently displayed on each property page before you book.",
     },
     {
         question: "What government ID documents are required during hotel check-in in India?",
-        answer: "Indian citizens can check in with any valid government-issued photo ID carrying their address (Aadhaar Card, Passport, Voter ID, or Driving License). PAN cards are not accepted as address proof. NRIs and foreign travelers must present their original passport and a valid Indian visa or OCI card.",
+        answer: "Indian citizens can check in with any valid government-issued photo ID carrying their address (Aadhaar Card, Passport, Voter ID, or Driving License). PAN cards are not accepted as address proof under hotel regulations. NRIs and foreign travelers must present their original passport and a valid Indian visa or OCI card.",
     },
     {
         question: "Can I book a hotel on GetHotelStays for someone else?",
-        answer: "Yes! You can book for family members, friends, or corporate colleagues from anywhere in the world. Simply enter the guest's name and contact number during checkout. The guest can check in with their own government ID and settle the remaining 88% balance upon arrival.",
+        answer: "Yes! You can book for family members, friends, or corporate colleagues from anywhere in the world. Simply enter the guest's name and contact number during checkout. The guest can check in with their own government ID and settle any remaining balance upon arrival.",
     },
     {
         question: "Can I request early check-in or late check-out?",
-        answer: "Standard check-in is typically 12:00 PM and check-out is 11:00 AM. However, many partner properties offer early check-in (from 6:00 AM onwards) and late check-out based on room availability. You can also book an hourly slot if arriving during early morning hours.",
+        answer: "Standard full-day check-in is typically 12:00 PM and check-out is 11:00 AM. However, many partner properties offer early check-in and late check-out based on room availability. Alternatively, you can book an hourly micro-stay slot if arriving during early morning hours.",
     },
     {
         question: "Why should I choose GetHotelStays instead of other booking platforms?",
-        answer: "GetHotelStays works directly with verified hotel owners to offer zero booking fees, lowest direct rates, and our traveler-friendly 'Pay 12% Now' model so you don't lock your entire travel budget upfront. We also guarantee genuine couple-friendly policies and 24/7 human support.",
+        answer: "GetHotelStays works directly with verified hotel owners to offer zero hidden booking fees, honest pricing, hourly room booking flexibility (3h/6h/12h), the option to pay just 12% advance or pay in full online, and guaranteed couple-friendly stays with zero moral policing.",
     },
     {
         question: "Which cities in India can I book hotels in?",
-        answer: "GetHotelStays features thousands of verified properties in 500+ Indian cities and tourist destinations, including Delhi, Mumbai, Bangalore, Goa, Jaipur, Udaipur, Manali, Shimla, Varanasi, Hyderabad, Kolkata, Chennai, Agra, and Rishikesh.",
+        answer: "GetHotelStays features verified properties across major Indian cities and tourist destinations, including Delhi NCR (Aerocity, CP, Mahipalpur, Paharganj, South Delhi), Jaipur, Udaipur, Manali, Shimla, Goa, and more.",
     },
     {
         question: "Are hotels on GetHotelStays safe for solo female travelers?",
@@ -1106,7 +1160,7 @@ export const DELHI_FAQS = [
     },
     {
         question: "Can I pay at the hotel in Delhi instead of paying online?",
-        answer: "GetHotelStays uses a 'Pay 12% Now' model — you pay a small deposit (12%) online to confirm your booking, and the remaining amount is paid directly at the hotel in Delhi. This ensures your room is guaranteed while giving you payment flexibility. Most Delhi hotels on our platform accept cash, UPI, card, and international payments at check-in.",
+        answer: "Yes! You can choose our 'Pay 12% Advance Deposit' option — pay just 12% online to lock and confirm your room, and pay the remaining 88% directly at the hotel in Delhi upon check-in. If you prefer, you can also pay 100% online during checkout. Most Delhi partner hotels accept cash, UPI, credit/debit cards, and international cards at check-in.",
     },
     {
         question: "Which Delhi hotels are near the main tourist attractions?",

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, Suspense, useRef, useCallback } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { ArrowUpDown, MapPin, Hotel, X, Search, ChevronDown, SlidersHorizontal } from "lucide-react";
 import type { FilterState, SortOption } from "@/types";
 import { useStayMode } from "@/context/StayModeContext";
@@ -36,8 +36,10 @@ const defaultFilters: FilterState = {
 function HotelListingContent() {
     const { mode } = useStayMode();
     const isMobile = useIsMobile();
+    const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const cityParam = searchParams.get("city") || "All";
+    const cityParam = searchParams.get("city") || searchParams.get("destination") || searchParams.get("location") || "";
+    const hasValidDestination = Boolean(cityParam && cityParam.toLowerCase() !== "all" && cityParam.trim() !== "");
     const guests = searchParams.get("adults") || searchParams.get("guests") || "2";
     const stayType = searchParams.get("stayType") || mode || "nightly";
 
@@ -52,6 +54,13 @@ function HotelListingContent() {
     const [error, setError] = useState<string | null>(null);
     const [showMobileFilter, setShowMobileFilter] = useState(false);
 
+    // Require destination before accessing hotels listing
+    useEffect(() => {
+        if (!hasValidDestination) {
+            navigate("/?selectDestination=true", { replace: true });
+        }
+    }, [hasValidDestination, navigate]);
+
     // Reset page to 1 on searchParams change
     useEffect(() => {
         setPage(1);
@@ -59,6 +68,13 @@ function HotelListingContent() {
 
     // Fetch hotels from API with backend pagination and filters
     useEffect(() => {
+        if (!hasValidDestination) {
+            setLoading(false);
+            setAllHotels([]);
+            setTotalStays(0);
+            return;
+        }
+
         const fetchHotels = async () => {
             try {
                 setLoading(true);
@@ -129,21 +145,21 @@ function HotelListingContent() {
         setPage(1);
     };
 
-    const cityDisplay = cityParam !== "All" ? cityParam : "India";
+    const cityDisplay = hasValidDestination ? cityParam : "Selected Destination";
     const isDelhi = cityParam.toLowerCase() === "delhi" || cityParam.toLowerCase() === "new delhi";
-    const pageTitle = cityParam !== "All"
+    const pageTitle = hasValidDestination
         ? `Hotels in ${cityParam} — Book Affordable to Luxury Stays | GetHotelStays`
-        : PAGE_SEO.hotels.title;
-    const pageDesc = cityParam !== "All" && !isDelhi
+        : "Find & Book Hotels Worldwide | GetHotelStays";
+    const pageDesc = hasValidDestination && !isDelhi
         ? `Find & book the best hotels in ${cityParam}. Compare prices, read reviews, and get instant confirmation. Pay 12% now, rest at hotel. Free cancellation available on GetHotelStays.`
         : isDelhi
             ? `Book 2,000+ verified hotels in Delhi at best prices. Budget stays in Paharganj from ₹699 to luxury in Aerocity. Pay 12% online, rest at hotel. Trusted by NRIs from USA, UK, UAE. Free cancellation & instant confirmation.`
-            : PAGE_SEO.hotels.description;
-    const pageKeywords = cityParam !== "All"
+            : "Search and book hotels worldwide with GetHotelStays. Pay 12% advance, rest at hotel.";
+    const pageKeywords = hasValidDestination
         ? isDelhi
             ? [`hotels in delhi`, `delhi hotels booking`, `cheap hotels in delhi`, `budget hotels in delhi`, `affordable hotels in delhi`, `best hotels in delhi`, `hotels near delhi airport`, `hotels in connaught place delhi`, `delhi hotels for nri`, `book delhi hotel from usa`, `book delhi hotel from uk`, `delhi hotels pay at hotel`, `delhi hotels free cancellation`, `hourly hotels in delhi`, `gethotelstays delhi`]
-            : [`hotels in ${cityParam.toLowerCase()}`, `${cityParam.toLowerCase()} hotels`, `book hotel ${cityParam.toLowerCase()}`, `cheap hotels ${cityParam.toLowerCase()}`, `luxury hotels ${cityParam.toLowerCase()}`, "hotel booking india", "gethotelstays"]
-        : PAGE_SEO.hotels.keywords;
+            : [`hotels in ${cityParam.toLowerCase()}`, `${cityParam.toLowerCase()} hotels`, `book hotel ${cityParam.toLowerCase()}`, `cheap hotels ${cityParam.toLowerCase()}`, `luxury hotels ${cityParam.toLowerCase()}`, "hotel booking", "gethotelstays"]
+        : ["hotel booking", "hotels worldwide", "gethotelstays"];
 
     return (
         <div className="min-h-screen pt-2 pb-16 bg-transparent px-0">
@@ -151,6 +167,7 @@ function HotelListingContent() {
                 title={pageTitle}
                 description={pageDesc}
                 keywords={pageKeywords}
+                noIndex={!loading && visibleHotels.length === 0}
                 ogUrl={`${SITE.url}/hotels${cityParam !== "All" ? `?city=${encodeURIComponent(cityParam)}` : ""}`}
                 canonicalUrl={`${SITE.url}/hotels`}
                 schemas={[
@@ -219,7 +236,7 @@ function HotelListingContent() {
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div>
                                 <h1 className="text-xl md:text-2xl font-extrabold text-slate-950 tracking-tight">
-                                    {cityParam !== "All" ? `Hotels in ${cityParam}` : "All Hotels in India"}
+                                    {hasValidDestination ? `Hotels in ${cityParam}` : "Select Destination"}
                                 </h1>
                                 <p className="text-xs text-slate-500 font-semibold mt-0.5">
                                     <span className="text-slate-900 font-bold">{totalStays}</span> verified properties found
@@ -256,7 +273,23 @@ function HotelListingContent() {
                             </div>
                         </div>
 
-                        {loading && page === 1 ? (
+                        {!hasValidDestination ? (
+                            <div className="flex flex-col items-center justify-center py-20 text-center px-4 bg-white/80 border border-slate-200/80 rounded-3xl shadow-sm">
+                                <div className="w-14 h-14 rounded-2xl bg-brand-50 flex items-center justify-center text-brand-600 mb-4 shadow-sm">
+                                    <MapPin className="w-7 h-7" />
+                                </div>
+                                <h2 className="text-xl font-bold text-slate-900 mb-2">Select a Destination First</h2>
+                                <p className="text-xs text-slate-500 max-w-sm mb-6 font-medium">
+                                    Please choose a city or destination above to view available hotels, room types, and rates.
+                                </p>
+                                <button 
+                                    onClick={() => navigate("/?selectDestination=true")}
+                                    className="px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl shadow-md transition-all cursor-pointer"
+                                >
+                                    Choose Destination
+                                </button>
+                            </div>
+                        ) : loading && page === 1 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {Array.from({ length: 4 }).map((_, i) => (
                                     <HotelCardSkeleton key={i} />
