@@ -1,4 +1,5 @@
 const prisma = require('../config/db');
+const { ALL_DESTINATIONS } = require('../config/destinations');
 
 const toValidDate = (value) => {
     const date = new Date(value);
@@ -156,22 +157,59 @@ exports.searchHotels = async (req, res, next) => {
             whereClause.id = { in: linkedHotelIds };
         } else {
             if (city && city !== "All" && city !== "India") {
-                const searchTerms = city.trim().split(/\s+/).filter(Boolean);
-                if (searchTerms.length > 1) {
-                    whereClause.AND = searchTerms.map(term => ({
-                        OR: [
-                            { name: { contains: term } },
-                            { city: { contains: term } },
-                            { address: { contains: term } }
-                        ]
-                    }));
-                } else if (searchTerms.length === 1) {
-                    const singleTerm = searchTerms[0];
+                const lowerCity = city.trim().toLowerCase();
+                if (lowerCity.includes('delhi')) {
                     whereClause.OR = [
-                        { city: { contains: singleTerm } },
-                        { address: { contains: singleTerm } },
-                        { name: { contains: singleTerm } }
+                        { city: { contains: 'delhi' } },
+                        { city: { contains: 'Delhi' } },
+                        { address: { contains: 'delhi' } },
+                        { address: { contains: 'Delhi' } }
                     ];
+                } else if (lowerCity.includes('bangalore') || lowerCity.includes('bengaluru')) {
+                    whereClause.OR = [
+                        { city: { contains: 'Bangalore' } },
+                        { city: { contains: 'Bengaluru' } },
+                        { address: { contains: 'Bangalore' } },
+                        { address: { contains: 'Bengaluru' } }
+                    ];
+                } else if (lowerCity.includes('kochi') || lowerCity.includes('cochin')) {
+                    whereClause.OR = [
+                        { city: { contains: 'Kochi' } },
+                        { city: { contains: 'Cochin' } },
+                        { address: { contains: 'Kochi' } },
+                        { address: { contains: 'Cochin' } }
+                    ];
+                } else if (lowerCity.includes('mumbai') || lowerCity.includes('bombay')) {
+                    whereClause.OR = [
+                        { city: { contains: 'Mumbai' } },
+                        { city: { contains: 'Bombay' } },
+                        { address: { contains: 'Mumbai' } },
+                        { address: { contains: 'Bombay' } }
+                    ];
+                } else if (lowerCity.includes('goa')) {
+                    whereClause.OR = [
+                        { city: { contains: 'Goa' } },
+                        { address: { contains: 'Goa' } }
+                    ];
+                } else if (lowerCity.includes('agra')) {
+                    whereClause.OR = [
+                        { city: { contains: 'Agra' } },
+                        { address: { contains: 'Agra' } }
+                    ];
+                } else {
+                    const cleanWords = city.replace(/[^a-zA-Z0-9\s]/g, ' ').split(/\s+/).filter(w => w.length > 2);
+                    if (cleanWords.length > 0) {
+                        whereClause.OR = cleanWords.flatMap(term => [
+                            { city: { contains: term } },
+                            { address: { contains: term } },
+                            { name: { contains: term } }
+                        ]);
+                    } else {
+                        whereClause.OR = [
+                            { city: { contains: city.trim() } },
+                            { address: { contains: city.trim() } }
+                        ];
+                    }
                 }
             }
         }
@@ -965,33 +1003,16 @@ exports.getSearchSuggestions = async (req, res, next) => {
 
         const cleanQuery = query.trim().toLowerCase();
 
-        // State to cities mapping
-        const STATE_TO_CITIES = {
-            "rajasthan": ["Jaipur", "Udaipur", "Jodhpur", "Ranthambore"],
-            "himachal pradesh": ["Manali", "Shimla"],
-            "himachal": ["Manali", "Shimla"],
-            "uttar pradesh": ["Agra", "Varanasi"],
-            "up": ["Agra", "Varanasi"],
-            "uttarakhand": ["Bhimtal", "Rudrapur", "Haridwar"],
-            "haryana": ["Gurugram"],
-            "delhi": ["New Delhi", "Delhi"],
-            "goa": ["Goa"]
-        };
+        // 1. Check curated destinations matching query or aliases
+        const matchedDestinations = ALL_DESTINATIONS.filter(d => 
+            d.label.toLowerCase().includes(cleanQuery) ||
+            d.aliases.some(alias => alias.includes(cleanQuery) || cleanQuery.includes(alias))
+        );
 
-        // If query matches a state, return all cities of that state
-        const matchedStateKey = Object.keys(STATE_TO_CITIES).find(key => key.includes(cleanQuery));
-        let citySuggestions = [];
-        if (matchedStateKey) {
-            const cities = STATE_TO_CITIES[matchedStateKey];
-            citySuggestions = cities.map(cityName => ({
-                id: `city-${cityName.toLowerCase().replace(/\s+/g, '-')}`,
-                label: cityName,
-                sublabel: `City in ${matchedStateKey.toUpperCase()}`,
-                category: "city",
-                emoji: "🏙️"
-            }));
-        } else {
-            // 1. Fetch matching hotels to extract distinct cities or sub-cities/areas
+        let citySuggestions = matchedDestinations.slice(0, 4);
+
+        // 2. If no curated destination matched, query DB for distinct cities/addresses
+        if (citySuggestions.length === 0) {
             const matchingHotelsForCities = await prisma.hotel.findMany({
                 where: {
                     OR: [
@@ -1004,70 +1025,85 @@ exports.getSearchSuggestions = async (req, res, next) => {
                     city: true,
                     address: true
                 },
-                take: 30
+                take: 20
             });
 
-            const citiesSet = new Set();
+            const citiesSet = new Map();
             matchingHotelsForCities.forEach(h => {
-                if (h.city && h.city.toLowerCase().includes(cleanQuery)) {
-                    citiesSet.add(h.city.trim());
-                } else if (h.address && h.address.toLowerCase().includes(cleanQuery)) {
-                    const parts = h.address.split(',').map(p => p.trim());
-                    const matchingPart = parts.find(p => p.toLowerCase().includes(cleanQuery));
-                    if (matchingPart) {
-                        const cleanPart = matchingPart.replace(/[^a-zA-Z0-9\s-]/g, '').trim();
-                        if (
-                            cleanPart.length >= 3 && 
-                            cleanPart.length <= 45 && 
-                            !cleanPart.toLowerCase().includes(h.city.toLowerCase())
-                        ) {
-                            citiesSet.add(`${cleanPart}, ${h.city.trim()}`);
-                        } else {
-                            citiesSet.add(h.city.trim());
+                if (h.city) {
+                    const rawCity = h.city.trim();
+                    // Filter out test cities or garbage data
+                    if (rawCity.length >= 3 && !/^\d+$/.test(rawCity) && !['fake', 'eeeeee'].includes(rawCity.toLowerCase())) {
+                        const normalizedCity = rawCity.toLowerCase().includes('delhi') ? 'New Delhi' : rawCity;
+                        const key = normalizedCity.toLowerCase();
+                        if (!citiesSet.has(key)) {
+                            citiesSet.set(key, {
+                                id: `city-${key.replace(/[^a-z0-9]+/g, '-')}`,
+                                label: normalizedCity,
+                                queryCity: rawCity,
+                                sublabel: normalizedCity === 'New Delhi' ? 'National Capital Region, India' : `${normalizedCity}, India`,
+                                category: 'city',
+                                emoji: '🏙️'
+                            });
                         }
-                    } else {
-                        citiesSet.add(h.city.trim());
                     }
                 }
             });
 
-            citySuggestions = Array.from(citiesSet).map(cityName => ({
-                id: `city-${cityName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
-                label: cityName,
-                sublabel: "City / Area",
-                category: "city",
-                emoji: "🏙️"
-            })).slice(0, 5);
+            citySuggestions = Array.from(citiesSet.values()).slice(0, 4);
         }
 
-        // 2. Fetch matching hotels by name or city
-        const matchingHotels = await prisma.hotel.findMany({
+        // 3. Fetch matching hotels primarily by NAME
+        let matchingHotels = await prisma.hotel.findMany({
             where: {
-                OR: [
-                    { name: { contains: cleanQuery } },
-                    { city: { contains: cleanQuery } }
-                ],
+                name: { contains: cleanQuery },
                 isActive: true
             },
             select: {
                 id: true,
                 name: true,
                 city: true,
+                address: true,
                 thumbnail: true
             },
-            take: 5
+            take: 4
         });
 
-        const hotelSuggestions = matchingHotels.map(h => ({
-            id: String(h.id),
-            label: h.name,
-            sublabel: h.city || "India",
-            category: "hotel",
-            thumbnail: h.thumbnail || undefined,
-            emoji: "🏨"
-        }));
+        // If fewer than 2 hotels match by name and query matches a city, fetch top hotels in that city
+        if (matchingHotels.length < 2 && citySuggestions.length > 0) {
+            const cityTerm = citySuggestions[0].queryCity || cleanQuery;
+            const cityHotels = await prisma.hotel.findMany({
+                where: {
+                    city: { contains: cityTerm },
+                    isActive: true,
+                    id: { notIn: matchingHotels.map(h => h.id) }
+                },
+                select: {
+                    id: true,
+                    name: true,
+                    city: true,
+                    address: true,
+                    thumbnail: true
+                },
+                take: 4 - matchingHotels.length
+            });
+            matchingHotels = [...matchingHotels, ...cityHotels];
+        }
 
-        const suggestions = [...citySuggestions, ...hotelSuggestions];
+        const hotelSuggestions = matchingHotels.map(h => {
+            const cleanCity = (h.city && h.city.toLowerCase().includes('delhi')) ? 'New Delhi' : (h.city || 'India');
+            return {
+                id: String(h.id),
+                label: h.name,
+                sublabel: `${cleanCity}, India`,
+                category: "hotel",
+                thumbnail: h.thumbnail || undefined,
+                emoji: "🏨"
+            };
+        });
+
+        // Combine and limit
+        const suggestions = [...citySuggestions.slice(0, 4), ...hotelSuggestions];
 
         res.status(200).json({ success: true, data: suggestions });
     } catch (err) {

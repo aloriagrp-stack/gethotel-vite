@@ -1950,25 +1950,6 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                         );
                     })()}
 
-                    {/* FAQs Section (Booking.com Style) */}
-                    {hotelFaqs.length > 0 && (
-                        <section className="space-y-10 pt-16 pb-20">
-                            <div className="space-y-2">
-                                <h2 className="text-2xl font-black text-slate-900 tracking-tight">FAQs about {hotel.name}</h2>
-                            </div>
-                            
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12">
-                                {hotelFaqs.map((faq: any, idx: number) => {
-                                    return (
-                                        <div key={idx}>
-                                            <FAQItem faq={faq} />
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </section>
-                    )}
-
                     {/* 6. Trending Hotels in Area */}
                     {trendingHotels.length > 0 && (
                         <section className="space-y-4 pt-6 sm:pt-8 border-t border-slate-200/80">
@@ -2048,6 +2029,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
 
                         <div className="bg-white rounded-2xl border border-slate-200/70 px-5 sm:px-6 divide-y divide-slate-100">
                             {[
+                                ...hotelFaqs,
                                 {
                                     question: `Is ${hotel.name} couple friendly and are local IDs accepted?`,
                                     answer: `Yes, ${hotel.name} is 100% couple friendly and welcomes adult couples (18+). Valid original government photo IDs including Aadhaar Card, Driving License, Voter ID, and Passport are accepted at check-in with complete privacy.`

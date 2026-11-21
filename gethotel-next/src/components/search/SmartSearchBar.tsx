@@ -450,6 +450,10 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
                                         onChange={e => setQuery(e.target.value)}
                                         onFocus={(e) => { e.stopPropagation(); setActiveSection("where"); }}
                                         placeholder="Destination..."
+                                        autoComplete="off"
+                                        autoCorrect="off"
+                                        autoCapitalize="off"
+                                        spellCheck={false}
                                         className="w-full bg-transparent outline-none text-[13px] font-black text-slate-950 italic truncate"
                                     />
                                 </div>
@@ -505,7 +509,7 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
                                                                         </div>
                                                                         <div className="min-w-0 flex-1">
                                                                             <p className="font-extrabold text-slate-900 text-xs truncate group-hover:text-brand-600 transition-colors">{s.label}</p>
-                                                                            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider truncate">
+                                                                            <p className="text-[11px] font-medium text-slate-400 truncate">
                                                                                 {s.sublabel || "City"}
                                                                             </p>
                                                                         </div>
@@ -722,7 +726,18 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
                                     </div>
                                     <div className="relative">
                                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-600" />
-                                        <input autoFocus type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search destinations..." className="w-full pl-12 pr-4 py-4 bg-slate-50 rounded-full font-bold outline-none transition-all text-slate-900" />
+                                        <input 
+                                            autoFocus 
+                                            type="text" 
+                                            value={query} 
+                                            onChange={e => setQuery(e.target.value)} 
+                                            placeholder="Search destinations..." 
+                                            autoComplete="off"
+                                            autoCorrect="off"
+                                            autoCapitalize="off"
+                                            spellCheck={false}
+                                            className="w-full pl-12 pr-4 py-4 bg-slate-50 rounded-full font-bold outline-none transition-all text-slate-900" 
+                                        />
                                     </div>
                                 </div>
                                 <div className="flex-1 overflow-y-auto px-6 pb-6 mt-4 space-y-3">
@@ -774,7 +789,7 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
                                                                         </div>
                                                                         <div className="min-w-0 flex-1">
                                                                             <p className="font-extrabold text-slate-950 text-sm truncate">{s.label}</p>
-                                                                            <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider truncate">
+                                                                            <p className="text-[11px] font-medium text-slate-400 truncate">
                                                                                 {s.sublabel || "City"}
                                                                             </p>
                                                                         </div>
