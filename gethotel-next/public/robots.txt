@@ -6,6 +6,7 @@ Allow: /
 Disallow: /admin/
 Disallow: /partner-dashboard/
 Disallow: /api/
+Disallow: /booking
 Disallow: /booking/
 Disallow: /bookings/
 Disallow: /login

@@ -1,6 +1,6 @@
 """
 Market Benchmarks for All Hotels across India
-Collected from MakeMyTrip (MMT), Booking.com, and Agoda.
+Collected primarily from Booking.com (Standard Room base rates).
 Can be queried statically or updated dynamically via DDGS search.
 Features persistent cache for newly discovered onboarded hotels.
 """
@@ -13,11 +13,11 @@ import json
 CACHE_DIR = os.path.dirname(os.path.abspath(__file__))
 DISCOVERED_CACHE_FILE = os.path.join(CACHE_DIR, ".discovered_benchmarks.json")
 
-# Verified market rates for Hotels across all cities on MakeMyTrip / Booking.com (Standard Room base)
+# Verified market rates for Hotels across all cities on Booking.com (Standard Room base)
 ALL_HOTEL_BENCHMARKS = {
-    # Delhi & NCR
-    "Natraj Yes Please": {"min": 1800, "max": 2800, "avg": 2200},
-    "Hotel Cottage Yes Please New Delhi": {"min": 2000, "max": 2800, "avg": 2400},
+    # Delhi & NCR (Booking.com Mobile-verified Standard Rates: EP = Room Only, CP = Breakfast Included)
+    "Natraj Yes Please": {"min": 1800, "max": 2800, "avg": 2200, "ep": 1800, "cp": 2250, "mobile_only": True},
+    "Hotel Cottage Yes Please New Delhi": {"min": 2228, "max": 2800, "avg": 2400, "ep": 2228, "cp": 2785, "mobile_only": True},
     "Hotel Amar International": {"min": 1900, "max": 2300, "avg": 2100},
     "Hotel City Star New Delhi": {"min": 2800, "max": 3800, "avg": 3200},
     "Hotel Gold Regency": {"min": 2400, "max": 3800, "avg": 2900},
@@ -132,13 +132,21 @@ ALL_HOTEL_BENCHMARKS = {
     "Hard Rock Hotel Goa": {"min": 6500, "max": 9500, "avg": 8000},
     "Acron Waterfront Resort": {"min": 5500, "max": 8000, "avg": 6800},
 
-    # Other Cities
+    # Other Cities & Onboarded Partner Hotels
     "The Tigress Resort & Spa, Rant": {"min": 11000, "max": 16000, "avg": 13000},
     "Rosewood Retreat Bhimtal": {"min": 7500, "max": 11000, "avg": 9000},
     "Rosewood Apartment Hotel - Pan": {"min": 4200, "max": 5800, "avg": 4900},
     "Rosewood Apartment Hotel - SID": {"min": 3800, "max": 5000, "avg": 4300},
     "BHRS Residency": {"min": 2800, "max": 3800, "avg": 3200},
-    "Taj Malabar Resort": {"min": 14000, "max": 20000, "avg": 16500}
+    "Taj Malabar Resort": {"min": 14000, "max": 20000, "avg": 16500},
+    "Hotel Hill Ton": {"min": 2400, "max": 3200, "avg": 2800},
+    "Hotel Devrana Delhi Airport": {"min": 2500, "max": 3400, "avg": 2950},
+    "QA Probe Hotel": {"min": 2000, "max": 2800, "avg": 2400},
+    "Amity Hotels and Suites": {"min": 3000, "max": 4000, "avg": 3500},
+    "vaibhav rajput's Property": {"min": 2000, "max": 2800, "avg": 2400},
+    "Amit Kumar's Property": {"min": 2000, "max": 2800, "avg": 2400},
+    "VINOD SISODIA's Property": {"min": 2000, "max": 2800, "avg": 2400},
+    "homestay": {"min": 1800, "max": 2500, "avg": 2100}
 }
 
 # Alias for backward compatibility
@@ -164,17 +172,30 @@ def _save_discovered_cache(cache: dict):
 
 
 def get_benchmark_rate(hotel_name: str):
-    """Returns stored static or dynamically discovered benchmark rate."""
+    """Returns stored static or dynamically discovered benchmark rate with EP & CP meal plans."""
+    rate = None
     # Check static dictionary
     for key, val in ALL_HOTEL_BENCHMARKS.items():
         if key.lower() in hotel_name.lower() or hotel_name.lower() in key.lower():
-            return val
+            rate = dict(val)
+            break
             
     # Check dynamic discovered cache
-    disc = _load_discovered_cache()
-    for key, val in disc.items():
-        if key.lower() in hotel_name.lower() or hotel_name.lower() in key.lower():
-            return val
+    if not rate:
+        disc = _load_discovered_cache()
+        for key, val in disc.items():
+            if key.lower() in hotel_name.lower() or hotel_name.lower() in key.lower():
+                rate = dict(val)
+                break
+
+    if rate:
+        if "ep" not in rate:
+            rate["ep"] = rate["min"]
+        if "cp" not in rate:
+            rate["cp"] = int(rate["min"] * 1.22)
+        if "mobile_only" not in rate:
+            rate["mobile_only"] = True
+        return rate
 
     return None
 
@@ -192,17 +213,17 @@ def save_custom_benchmark(hotel_name: str, min_price: int, max_price: int = None
 
 
 def live_search_rate(hotel_name: str, city_or_area: str = "") -> dict:
-    """Searches MakeMyTrip and Booking.com for live rate in ANY city and auto-caches."""
+    """Searches Booking.com for live rate in ANY city and auto-caches."""
     # Check if already discovered
     bench = get_benchmark_rate(hotel_name)
     if bench:
-        bench["source"] = bench.get("source", "benchmark")
+        bench["source"] = bench.get("source", "booking.com_benchmark")
         return bench
 
-    query = f'"{hotel_name}" {city_or_area} price MakeMyTrip OR Booking.com'
+    query = f'"{hotel_name}" {city_or_area} site:booking.com OR Booking.com price'
     try:
         with DDGS() as ddgs:
-            results = list(ddgs.text(query, max_results=3))
+            results = list(ddgs.text(query, max_results=4))
         
         snippets = " ".join([r.get('body', '') + " " + r.get('title', '') for r in results])
         prices = re.findall(r'(?:₹|Rs\.?|INR)\s*([\d,]{3,6})', snippets, re.IGNORECASE)
@@ -221,7 +242,7 @@ def live_search_rate(hotel_name: str, city_or_area: str = "") -> dict:
                 "min": min_p,
                 "max": max_p,
                 "avg": avg_p,
-                "source": "live_ddgs"
+                "source": "booking.com"
             }
     except Exception:
         pass

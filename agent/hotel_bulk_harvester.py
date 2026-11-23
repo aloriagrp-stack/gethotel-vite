@@ -32,12 +32,17 @@ for p in [CURRENT_DIR, PROJECT_ROOT]:
 
 
 def normalize_ota_url(url: str) -> str:
-    """Extracts base hotel path identifier for robust de-duplication."""
+    """Extracts base hotel path identifier for robust de-duplication across Booking.com and Brevistay."""
     if not url:
         return ""
+    # Booking.com pattern
     m = re.search(r'(hotel/[a-zA-Z0-9_\-]+/[a-zA-Z0-9_\-]+\.html)', url)
     if m:
         return m.group(1).lower()
+    # Brevistay pattern
+    mb = re.search(r'(hotels/[a-zA-Z0-9_\-]+-\d+)', url)
+    if mb:
+        return mb.group(1).lower()
     return url.split('?')[0].lower().strip()
 
 
@@ -186,17 +191,32 @@ def run_automated_search_harvester(
     """
     console.print(Panel(
         "[bold cyan]🚀 AUTOMATED CITY SEARCH RESULTS CRAWLER (2,000+ HOTELS SUITE)[/bold cyan]\n"
-        "[white]Provide ONE Booking.com City Search Results URL.\n"
-        "Agent 1 crawls pages -> Agent 2 clones & downloads photos -> Agent 3 finds phone & email.\n"
+        "[white]Supported Platforms: [bold yellow]Booking.com[/bold yellow] (Nightly) & [bold green]Brevistay[/bold green] (Hourly Micro-Stays: 3h, 6h, 12h)\n"
+        "Agent 1 crawls search pages -> Agent 2 clones & downloads photos -> Agent 3 finds phone & email.\n"
         "Direct Live Cloud Insertion: Saves strictly to Live Production (103.108.220.145)[/white]",
         border_style="cyan"
     ))
 
-    default_search_url = "https://www.booking.com/searchresults.html?ss=New+Delhi&dest_id=-2106102&dest_type=city"
-    console.print(f"[dim]Default Delhi URL: {default_search_url}[/dim]\n")
-
     if not search_url:
-        search_url = Prompt.ask("[bold green]Paste Booking.com Search Results URL[/bold green]", default=default_search_url).strip()
+        console.print("[bold yellow]Choose Platform / Source to Harvest:[/bold yellow]")
+        console.print("  [1] 🏨 [bold white]Booking.com City Search[/bold white] (Nightly Standard Hotels)")
+        console.print("  [2] ⏱️  [bold green]Brevistay Hourly Search[/bold green] (3h, 6h, 12h Micro-Stays & Transit Rooms)")
+        console.print("  [3] 🔗 [bold cyan]Custom Search URL / City Name[/bold cyan] (Auto-detect platform)\n")
+        
+        src_choice = Prompt.ask("Select option", choices=["1", "2", "3"], default="1")
+        if src_choice == "1":
+            default_search_url = "https://www.booking.com/searchresults.html?ss=New+Delhi&dest_id=-2106102&dest_type=city"
+            search_url = Prompt.ask("[bold green]Paste Booking.com Search Results URL[/bold green]", default=default_search_url).strip()
+        elif src_choice == "2":
+            city_input = Prompt.ask("[bold green]Enter City for Brevistay Hourly Search (e.g. delhi, mumbai, bangalore, jaipur)[/bold green]", default="delhi").strip()
+            if city_input.startswith("http"):
+                search_url = city_input
+            else:
+                clean_city = re.sub(r'[^a-zA-Z0-9\-]+', '-', city_input.lower()).strip('-')
+                search_url = f"https://www.brevistay.com/hotels-in-{clean_city}"
+        else:
+            search_url = Prompt.ask("[bold green]Enter any Booking.com or Brevistay Search URL[/bold green]").strip()
+
     if target_count is None:
         target_count = IntPrompt.ask("[bold green]How many fresh hotels to harvest in this batch?[/bold green]", default=50)
     if photos_per_hotel is None:
@@ -215,11 +235,11 @@ def run_automated_search_harvester(
 
     # Step 2: Run Agent 1 (Search Crawler)
     try:
-        from hotel_search_crawler import crawl_booking_search
+        from hotel_search_crawler import crawl_search_results
     except ImportError:
-        from agent.hotel_search_crawler import crawl_booking_search
+        from agent.hotel_search_crawler import crawl_search_results
 
-    collected_hotels = crawl_booking_search(
+    collected_hotels = crawl_search_results(
         search_url=search_url,
         target_count=target_count,
         existing_signatures=existing_signatures

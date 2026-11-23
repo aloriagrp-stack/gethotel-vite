@@ -26,9 +26,19 @@ import {
     SITE,
 } from "@/lib/seo";
 
-export default function HomePage() {
+export default function HomePage({ initialMode }: { initialMode?: "nightly" | "hourly" } = {}) {
+  const { setMode } = useStayMode();
   const [homeConfig, setHomeConfig] = useState<any>(null);
   const [configLoading, setConfigLoading] = useState(true);
+
+  // Sync mode from prop or path
+  useEffect(() => {
+    if (initialMode) {
+      setMode(initialMode);
+    } else if (typeof window !== 'undefined' && window.location.pathname.includes('/hourly')) {
+      setMode('hourly');
+    }
+  }, [initialMode, setMode]);
 
   // Fetch config once on mount
   useEffect(() => {

@@ -1,14 +1,35 @@
 /**
- * GHS Hotel Harvester - Content Script (Injected on Booking.com)
- * BULLETPROOF, UNSTOPPABLE EXTRACTION ENGINE
- * - Auto-scrolls all the way to page bottom to trigger all lazy cards
+ * GHS Hotel Harvester - Content Script (Injected on Booking.com & Brevistay)
+ * BULLETPROOF, UNSTOPPABLE MULTI-PLATFORM EXTRACTION ENGINE
+ * - Supports Booking.com (Nightly Standard) & Brevistay (Hourly Micro-Stays: 3h, 6h, 12h)
+ * - Auto-skips corporate hotel chains (Radisson, Pride, Bloom, Hyatt, OYO, etc.)
+ * - Auto-scrolls all the way to bottom to trigger lazy loading
  * - Auto-dismisses sign-in / cookie popups
- * - Extracts links, names, and dynamic prices
- * - Navigates via Next button or URL offset fallback (works for 10,000+ hotels)
- * - Auto-resumes across page reloads without stopping!
+ * - Extracts clean URLs, names, and dynamic pricing
+ * - Features on-page glass floating pill with live hotel count
  */
 
+const isBrevistay = window.location.hostname.includes("brevistay.com");
 let onPagePill = null;
+
+// Major Corporate Hotel Chains List (Skip these so GHS targets independent boutique partners)
+const BIG_CHAINS = [
+  "radisson", "hyatt", "marriott", "hilton", "holiday inn", "crowne plaza",
+  "novotel", "ibis", "mercure", "pullman", "sofitel", "wyndham", "ramada",
+  "best western", "taj", "vivanta", "ginger", "itc", "fortune", "welcomhotel",
+  "oberoi", "trident", "leela", "lemon tree", "red fox", "pride plaza",
+  "pride hotel", "bloom hotel", "bloomrooms", "bloom boutique", "the lalit",
+  "sarovar", "golden tulip", "royal orchid", "regenta", "the byke", "lords hotel",
+  "lords inn", "lords plaza", "spree", "amritara", "summit", "7 apple",
+  "the fern", "fern hotel", "clarks", "country inn", "zolo", "saltstayz",
+  "fabhotel", "treebo", "oyo", "townhouse", "sterling", "club mahindra", "qotel"
+];
+
+function isCorporateChain(name) {
+  if (!name) return false;
+  const lower = name.toLowerCase();
+  return BIG_CHAINS.some(c => new RegExp(`\\b${c}\\b`, "i").test(lower));
+}
 
 function createOrUpdateOnPagePill(count, isRunning, pageNum = 1) {
   if (!onPagePill) {
@@ -19,7 +40,7 @@ function createOrUpdateOnPagePill(count, isRunning, pageNum = 1) {
       bottom: 24px;
       right: 24px;
       z-index: 999999999;
-      background: rgba(15, 23, 42, 0.65);
+      background: rgba(15, 23, 42, 0.72);
       backdrop-filter: blur(20px) saturate(190%);
       -webkit-backdrop-filter: blur(20px) saturate(190%);
       color: #f8fafc;
@@ -43,14 +64,15 @@ function createOrUpdateOnPagePill(count, isRunning, pageNum = 1) {
     document.body.appendChild(onPagePill);
   }
 
+  const platformLabel = isBrevistay ? "⏱️ Brevistay" : "🏨 Booking";
   const statusDot = isRunning ? "🟢 Running" : "⏸️ Paused";
   onPagePill.innerHTML = `
     <span style="display:flex;align-items:center;gap:4px;color:#38bdf8;">
       <span style="font-size:15px;filter:drop-shadow(0 0 4px #38bdf8);">⚡</span> GHS
     </span>
     <span style="height:14px;width:1px;background:rgba(255,255,255,0.2);"></span>
-    <span style="color:#4ade80;font-size:15px;font-weight:800;filter:drop-shadow(0 0 6px rgba(74,222,128,0.4));">${count} Hotels</span>
-    <span style="color:#94a3b8;font-size:11px;font-weight:600;">(Pg ${pageNum})</span>
+    <span style="color:#4ade80;font-size:14px;font-weight:800;filter:drop-shadow(0 0 6px rgba(74,222,128,0.4));">${count} Hotels</span>
+    <span style="color:#94a3b8;font-size:11px;font-weight:600;">(${platformLabel} | Pg ${pageNum})</span>
     <span style="font-size:12px;padding:2px 8px;border-radius:12px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);">${statusDot}</span>
   `;
 }
@@ -68,7 +90,7 @@ function cleanHotelUrl(rawUrl) {
 function dismissPopups() {
   try {
     const popups = document.querySelectorAll(
-      'button[aria-label="Dismiss sign-in info."], button[aria-label="Close"], #onetrust-accept-btn-handler, [data-testid="header-sign-in-prompt-dismiss"]'
+      'button[aria-label="Dismiss sign-in info."], button[aria-label="Close"], #onetrust-accept-btn-handler, [data-testid="header-sign-in-prompt-dismiss"], button[class*="close"], [aria-label*="close"]'
     );
     popups.forEach(btn => {
       if (btn && btn.offsetParent !== null) {
@@ -83,60 +105,114 @@ async function extractCurrentCards() {
   const store = await chrome.storage.local.get(["ghs_harvested_hotels"]);
   const harvested = store.ghs_harvested_hotels || {};
 
-  // Find all cards or hotel links
-  const cards = document.querySelectorAll('[data-testid="property-card"], [data-testid="property-card-container"]');
+  if (isBrevistay) {
+    // ==========================================
+    // BREVISTAY EXTRACTION ENGINE
+    // ==========================================
+    const allLinks = document.querySelectorAll('a[href*="/hotels/"]');
+    allLinks.forEach(a => {
+      const href = a.href || "";
+      if (/\/hotels\/[a-zA-Z0-9\-]+-\d+/.test(href)) {
+        const cleanUrl = cleanHotelUrl(href);
 
-  cards.forEach(card => {
-    const linkEl = card.querySelector('a[data-testid="title-link"], a[href*="/hotel/"]');
-    const titleEl = card.querySelector('[data-testid="title"], [data-testid="header-title"], h3');
-    const priceEl = card.querySelector('[data-testid="price-and-discounted-price"], span[data-testid="price-and-discounted-price"]');
+        // Find parent card container
+        const cardContainer = a.closest('div[class*="hotel"], div[class*="Card"], div[class*="card"]') || a;
+        const titleEl = cardContainer.querySelector('h2, h3, h4, [class*="title"], [class*="Title"], [class*="name"], [class*="Name"]');
 
-    if (linkEl && linkEl.href) {
-      const url = cleanHotelUrl(linkEl.href);
-      if (url && url.includes("/hotel/")) {
-        const name = titleEl ? titleEl.innerText.trim() : (linkEl.innerText || "").trim();
-
-        let cardPrice = null;
-        if (priceEl && priceEl.innerText) {
-          const digits = priceEl.innerText.replace(/[^\d]/g, "");
-          if (digits) cardPrice = parseInt(digits, 10);
+        let name = "";
+        if (titleEl && titleEl.innerText.trim()) {
+          name = titleEl.innerText.trim();
+        } else if (a.innerText.trim().length > 3 && !/view|book|detail|more|reserve/i.test(a.innerText)) {
+          name = a.innerText.trim();
         } else {
-          // Backup price regex from card text
-          const m = card.innerText.match(/₹\s*([\d,]+)/);
-          if (m) {
-            const digits = m[1].replace(/,/g, "");
-            cardPrice = parseInt(digits, 10);
-          }
+          const rawSlug = cleanUrl.split("/").pop().replace(/-\d+$/, "").replace(/-in-[a-z0-9\-]+$/i, "");
+          name = rawSlug.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase());
         }
 
-        if (!harvested[url]) {
-          harvested[url] = {
+        // Filter out big corporate hotel chains
+        if (isCorporateChain(name)) {
+          return;
+        }
+
+        let hourlyPrice = null;
+        const priceMatch = cardContainer.innerText.match(/₹\s*([\d,]+)/);
+        if (priceMatch) {
+          hourlyPrice = parseInt(priceMatch[1].replace(/,/g, ""), 10);
+        }
+
+        if (!harvested[cleanUrl]) {
+          harvested[cleanUrl] = {
             name: name,
-            url: url,
-            card_price: cardPrice,
+            url: cleanUrl,
+            card_price: hourlyPrice,
+            source: "brevistay",
+            is_hourly: true,
             harvestedAt: new Date().toISOString()
           };
         }
       }
-    }
-  });
+    });
 
-  // Also check any standalone hotel links on page as fallback
-  const allHotelLinks = document.querySelectorAll('a[href*="/hotel/"]');
-  allHotelLinks.forEach(a => {
-    const u = cleanHotelUrl(a.href);
-    if (u && u.includes("/hotel/") && !harvested[u]) {
-      const text = a.innerText.trim();
-      if (text.length > 3 && !text.toLowerCase().includes("show on map") && !text.toLowerCase().includes("reviews")) {
-        harvested[u] = {
-          name: text,
-          url: u,
-          card_price: null,
-          harvestedAt: new Date().toISOString()
-        };
+  } else {
+    // ==========================================
+    // BOOKING.COM EXTRACTION ENGINE
+    // ==========================================
+    const cards = document.querySelectorAll('[data-testid="property-card"], [data-testid="property-card-container"]');
+    cards.forEach(card => {
+      const linkEl = card.querySelector('a[data-testid="title-link"], a[href*="/hotel/"]');
+      const titleEl = card.querySelector('[data-testid="title"], [data-testid="header-title"], h3');
+      const priceEl = card.querySelector('[data-testid="price-and-discounted-price"], span[data-testid="price-and-discounted-price"]');
+
+      if (linkEl && linkEl.href) {
+        const url = cleanHotelUrl(linkEl.href);
+        if (url && url.includes("/hotel/")) {
+          const name = titleEl ? titleEl.innerText.trim() : (linkEl.innerText || "").trim();
+
+          let cardPrice = null;
+          if (priceEl && priceEl.innerText) {
+            const digits = priceEl.innerText.replace(/[^\d]/g, "");
+            if (digits) cardPrice = parseInt(digits, 10);
+          } else {
+            const m = card.innerText.match(/₹\s*([\d,]+)/);
+            if (m) {
+              const digits = m[1].replace(/,/g, "");
+              cardPrice = parseInt(digits, 10);
+            }
+          }
+
+          if (!harvested[url]) {
+            harvested[url] = {
+              name: name,
+              url: url,
+              card_price: cardPrice,
+              source: "booking.com",
+              is_hourly: false,
+              harvestedAt: new Date().toISOString()
+            };
+          }
+        }
       }
-    }
-  });
+    });
+
+    // Standalone hotel links fallback
+    const allHotelLinks = document.querySelectorAll('a[href*="/hotel/"]');
+    allHotelLinks.forEach(a => {
+      const u = cleanHotelUrl(a.href);
+      if (u && u.includes("/hotel/") && !harvested[u]) {
+        const text = a.innerText.trim();
+        if (text.length > 3 && !text.toLowerCase().includes("show on map") && !text.toLowerCase().includes("reviews")) {
+          harvested[u] = {
+            name: text,
+            url: u,
+            card_price: null,
+            source: "booking.com",
+            is_hourly: false,
+            harvestedAt: new Date().toISOString()
+          };
+        }
+      }
+    });
+  }
 
   const totalCount = Object.keys(harvested).length;
   await chrome.storage.local.set({ ghs_harvested_hotels: harvested });
@@ -174,7 +250,9 @@ function findNextPageButton() {
     'button[data-testid="pagination-next"]',
     'nav[aria-label="Pagination"] ol li:last-child button',
     'nav[aria-label="Pagination"] button:last-child',
-    'a[aria-label="Next page"]'
+    'a[aria-label="Next page"]',
+    'a[class*="pagination-next"]',
+    'li[class*="next"] a'
   ];
   for (const s of nextSelectors) {
     try {
@@ -203,21 +281,21 @@ async function runAutoHarvesterLoop() {
 
       const curPage = state.ghs_pages_scanned || 1;
 
-      // 1. Instant Warp Jump to Page Bottom (0ms delay, Zero lag!)
+      // 1. Instant Warp Jump to Page Bottom
       window.scrollTo(0, document.body.scrollHeight);
-      await sleep(350);
+      await sleep(400);
 
       // Extract cards
       const totalCount = await extractCurrentCards();
       createOrUpdateOnPagePill(totalCount, true, curPage);
 
-      // 2. CHECK FOR "LOAD MORE RESULTS" BUTTON (Instant Click)
+      // 2. CHECK FOR "LOAD MORE RESULTS" BUTTON
       const loadMoreBtn = findLoadMoreButton();
       if (loadMoreBtn) {
         await chrome.storage.local.set({ ghs_pages_scanned: curPage + 1 });
         createOrUpdateOnPagePill(totalCount, true, curPage + 1);
         loadMoreBtn.click();
-        await sleep(1400); // Fast 1.4s wait for new hotels to stream in
+        await sleep(1500);
         continue;
       }
 
@@ -227,22 +305,26 @@ async function runAutoHarvesterLoop() {
         await chrome.storage.local.set({ ghs_pages_scanned: curPage + 1 });
         createOrUpdateOnPagePill(totalCount, true, curPage + 1);
         nextBtn.click();
-        await sleep(2200); // Wait for page navigation
+        await sleep(2200);
         continue;
       }
 
-      // 4. BULLETPROOF URL OFFSET FALLBACK
-      // If neither button is clicked, increment offset by 25
-      const currentUrl = new URL(window.location.href);
-      const curOffset = parseInt(currentUrl.searchParams.get("offset") || "0", 10);
-      const nextOffset = curOffset + 25;
+      // 4. URL PAGINATION FALLBACK
+      if (!isBrevistay) {
+        const currentUrl = new URL(window.location.href);
+        const curOffset = parseInt(currentUrl.searchParams.get("offset") || "0", 10);
+        const nextOffset = curOffset + 25;
 
-      if (nextOffset <= 15000) {
-        await chrome.storage.local.set({ ghs_pages_scanned: curPage + 1 });
-        currentUrl.searchParams.set("offset", nextOffset.toString());
-        window.location.href = currentUrl.toString();
-        await sleep(6000);
-        return;
+        if (nextOffset <= 15000) {
+          await chrome.storage.local.set({ ghs_pages_scanned: curPage + 1 });
+          currentUrl.searchParams.set("offset", nextOffset.toString());
+          window.location.href = currentUrl.toString();
+          await sleep(6000);
+          return;
+        }
+      } else {
+        // Brevistay single page scroll loop
+        await sleep(2000);
       }
     } catch (loopErr) {
       console.error("Harvester loop tick error:", loopErr);
@@ -261,14 +343,13 @@ async function runAutoHarvesterLoop() {
   createOrUpdateOnPagePill(count, !!data.ghs_is_active, page);
 
   if (data.ghs_is_active) {
-    // Small delay after page load before starting scroll
     setTimeout(() => {
       runAutoHarvesterLoop();
     }, 1500);
   }
 })();
 
-// Listen to native storage state changes (100% reliable, zero connection errors)
+// Listen to native storage state changes
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === "local" && changes.ghs_is_active !== undefined) {
     if (changes.ghs_is_active.newValue) {

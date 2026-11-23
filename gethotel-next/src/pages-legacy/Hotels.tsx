@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense, useRef, useCallback } from "react";
+import React, { useState, useEffect, Suspense, useRef, useCallback, useMemo } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { ArrowUpDown, MapPin, Hotel, X, Search, ChevronDown, SlidersHorizontal } from "lucide-react";
 import type { FilterState, SortOption } from "@/types";
@@ -84,6 +84,7 @@ function HotelListingContent() {
                     params[key] = value;
                 });
 
+                params.stayType = stayType;
                 params.page = String(page);
                 params.limit = "12";
                 params.minPrice = String(filters.priceRange[0]);
@@ -134,7 +135,16 @@ function HotelListingContent() {
         fetchHotels();
     }, [searchParams, filters, searchQuery, sort, page]);
 
-    const visibleHotels = allHotels;
+    const visibleHotels = useMemo(() => {
+        if (stayType === 'hourly') {
+            return allHotels.filter(hotel => {
+                const hotelAny = hotel as any;
+                const rooms = hotelAny.room || hotelAny.rooms || [];
+                return rooms.some((r: any) => r.isHourlyEnabled === true);
+            });
+        }
+        return allHotels;
+    }, [allHotels, stayType]);
 
     const loadMore = useCallback(() => {
         setPage(prev => prev + 1);
@@ -222,6 +232,7 @@ function HotelListingContent() {
                                     hideStories
                                     className="w-full"
                                     initialState={{
+                                        stayType: stayType,
                                         destination: cityParam !== "All" ? { label: cityParam, id: cityParam.toLowerCase(), category: "trending" } : null,
                                         dates: {
                                             checkIn: searchParams.get("checkIn") ? new Date(searchParams.get("checkIn") as string) : null,
@@ -236,10 +247,10 @@ function HotelListingContent() {
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div>
                                 <h1 className="text-xl md:text-2xl font-extrabold text-slate-950 tracking-tight">
-                                    {hasValidDestination ? `Hotels in ${cityParam}` : "Select Destination"}
+                                    {hasValidDestination ? (stayType === "hourly" ? `Hourly Hotels in ${cityParam}` : `Hotels in ${cityParam}`) : "Select Destination"}
                                 </h1>
                                 <p className="text-xs text-slate-500 font-semibold mt-0.5">
-                                    <span className="text-slate-900 font-bold">{totalStays}</span> verified properties found
+                                    <span className="text-slate-900 font-bold">{stayType === "hourly" ? visibleHotels.length : totalStays}</span> {stayType === "hourly" ? "verified hourly properties found" : "verified properties found"}
                                 </p>
                             </div>
 

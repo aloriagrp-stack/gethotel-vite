@@ -3,7 +3,7 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate as useRouter } from "react-router-dom";
-import { Search, X, ChevronDown, Calendar as CalendarIcon, Users, MapPin, Plus, Minus, ArrowLeft, ChevronLeft, ChevronRight, ArrowUpDown, Hotel } from "lucide-react";
+import { Search, X, ChevronDown, Calendar as CalendarIcon, Users, MapPin, Plus, Minus, ArrowLeft, ChevronLeft, ChevronRight, ArrowUpDown, Hotel, Clock } from "lucide-react";
 import type { SmartSearchState } from "@/types/search";
 import { cn, formatDateLocal } from "@/lib/utils";
 import DestinationStoryViewer from "@/components/home/DestinationStoryViewer";
@@ -25,14 +25,18 @@ const TIME_SLOTS = ["08:00 AM", "09:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", 
 const DURATIONS = [3, 6, 12];
 
 const TOP_DESTINATIONS = [
-    { label: "Goa", region: "Beach & Nightlife" },
-    { label: "Udaipur", region: "Lakes & Palaces" },
-    { label: "Shimla", region: "Snow & Mountains" },
-    { label: "Jaipur", region: "Pink City Heritage" },
-    { label: "Munnar", region: "Tea Gardens & Kerala" },
-    { label: "Jodhpur", region: "Blue City" },
-    { label: "Gurgaon", region: "India" },
-    { label: "Rishikesh", region: "India" },
+    { id: "city-delhi", label: "Delhi / New Delhi", queryCity: "Delhi", region: "National Capital Region, India", category: "city" },
+    { id: "city-goa", label: "Goa", queryCity: "Goa", region: "Beach & Coastal Stays, India", category: "city" },
+    { id: "city-jaipur", label: "Jaipur", queryCity: "Jaipur", region: "Pink City Heritage, Rajasthan", category: "city" },
+    { id: "city-udaipur", label: "Udaipur", queryCity: "Udaipur", region: "Lakes & Palaces, Rajasthan", category: "city" },
+    { id: "city-mumbai", label: "Mumbai", queryCity: "Mumbai", region: "Financial Capital, Maharashtra", category: "city" },
+    { id: "city-bangalore", label: "Bangalore", queryCity: "Bangalore", region: "Silicon Valley, Karnataka", category: "city" },
+    { id: "city-shimla", label: "Shimla", queryCity: "Shimla", region: "Snow & Mountains, Himachal", category: "city" },
+    { id: "city-manali", label: "Manali", queryCity: "Manali", region: "Mountains & Valleys, Himachal", category: "city" },
+    { id: "city-gurgaon", label: "Gurgaon", queryCity: "Gurgaon", region: "Cyber City & NCR, India", category: "city" },
+    { id: "city-noida", label: "Noida", queryCity: "Noida", region: "Sector 18 & NCR, India", category: "city" },
+    { id: "city-rishikesh", label: "Rishikesh", queryCity: "Rishikesh", region: "Yoga Capital & Ganga, Uttarakhand", category: "city" },
+    { id: "city-munnar", label: "Munnar", queryCity: "Munnar", region: "Tea Gardens & Kerala, India", category: "city" },
 ];
 
 const DESTINATION_STORIES = [
@@ -128,6 +132,12 @@ function StoryHighlightAvatarItem({
 
 export default function SmartSearchBar({ className, hideStories, initialState, onSearch, navigationPath, layoutMode = "home", stories, storiesLoading = false }: any) {
     const { mode } = useStayMode();
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+    // During SSR and initial client hydration, activeMode must be consistent ('nightly') to avoid hydration errors.
+    const activeMode = mounted ? (initialState?.stayType || mode) : 'nightly';
     const isMobile = useIsMobile();
     const router = useRouter();
     const [state, setState] = useState<SmartSearchState>({ ...DEFAULT_STATE, ...(initialState || {}) });
@@ -137,28 +147,50 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
     const containerRef = useRef<HTMLDivElement>(null);
     const [activeSection, setActiveSection] = useState<"where" | "dates" | "guests" | "time" | "duration" | null>(null);
 
-    const [suggestions, setSuggestions] = useState<any[]>([]);
+    const [suggestions, setSuggestions] = useState<any[]>(TOP_DESTINATIONS.slice(0, 6));
     const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
 
     useEffect(() => {
-        if (!query.trim()) {
-            setSuggestions([]);
+        const q = query.trim().toLowerCase();
+        if (!q) {
+            setSuggestions(TOP_DESTINATIONS.slice(0, 6));
             return;
         }
 
+        // 1. Instant local matches
+        const localMatches = TOP_DESTINATIONS.filter(d =>
+            d.label.toLowerCase().includes(q) ||
+            (d.queryCity && d.queryCity.toLowerCase().includes(q)) ||
+            (d.region && d.region.toLowerCase().includes(q))
+        );
+        setSuggestions(localMatches);
+
+        // 2. Fetch backend suggestions (hotels & areas) and merge smoothly
         const delayDebounce = setTimeout(async () => {
             setIsLoadingSuggestions(true);
             try {
                 const res = await hotelApi.getSearchSuggestions(query);
-                if (res && res.success) {
-                    setSuggestions(res.data || []);
+                if (res && res.success && Array.isArray(res.data)) {
+                    const backendData = res.data;
+                    const merged = [...localMatches];
+                    for (const item of backendData) {
+                        const exists = merged.some(m =>
+                            m.id === item.id ||
+                            m.label.toLowerCase() === item.label.toLowerCase() ||
+                            (m.queryCity && item.queryCity && m.queryCity.toLowerCase() === item.queryCity.toLowerCase())
+                        );
+                        if (!exists) {
+                            merged.push(item);
+                        }
+                    }
+                    setSuggestions(merged);
                 }
             } catch (err) {
                 console.error("Error fetching suggestions:", err);
             } finally {
                 setIsLoadingSuggestions(false);
             }
-        }, 250);
+        }, 120);
 
         return () => clearTimeout(delayDebounce);
     }, [query]);
@@ -180,7 +212,7 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
 
     // Adjust checkout date when switching between stay modes
     useEffect(() => {
-        if (mode === 'nightly') {
+        if (activeMode === 'nightly') {
             setState(prev => {
                 if (prev.dates.checkIn && !prev.dates.checkOut) {
                     const nextDay = new Date(prev.dates.checkIn);
@@ -192,7 +224,7 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
                 }
                 return prev;
             });
-        } else if (mode === 'hourly') {
+        } else if (activeMode === 'hourly') {
             setState(prev => {
                 if (prev.dates.checkOut) {
                     return {
@@ -220,7 +252,7 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
 
     // Heal checkout date to checkIn + 1 day when the dates picker dropdown is closed with only checkIn selected
     useEffect(() => {
-        if (activeSection === null && mode === 'nightly') {
+        if (activeSection === null && activeMode === 'nightly') {
             setState(prev => {
                 if (prev.dates.checkIn && !prev.dates.checkOut) {
                     const nextDay = new Date(prev.dates.checkIn);
@@ -239,7 +271,7 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
         const date = new Date(currentYear, currentMonth, day);
         if (date < today) return;
 
-        if (mode === 'hourly') {
+        if (activeMode === 'hourly') {
             setState(prev => ({ ...prev, dates: { checkIn: date, checkOut: null } }));
             return;
         }
@@ -260,7 +292,7 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
         let finalCheckIn = state.dates.checkIn;
         let finalCheckOut = state.dates.checkOut;
 
-        if (mode === 'nightly') {
+        if (activeMode === 'nightly') {
             if (!finalCheckIn) {
                 finalCheckIn = new Date();
                 finalCheckIn.setHours(0, 0, 0, 0);
@@ -281,13 +313,13 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
         const params = new URLSearchParams({
             city: isHotelSelected ? (state.destination?.sublabel || "All") : (state.destination?.label || query || "All"),
             checkIn: formatDateLocal(finalCheckIn),
-            checkOut: mode === 'nightly' ? formatDateLocal(finalCheckOut) : "",
+            checkOut: activeMode === 'nightly' ? formatDateLocal(finalCheckOut) : "",
             adults: String(state.guests.adults),
             children: String(state.guests.children),
             rooms: String(state.guests.rooms),
             stayType: mode,
-            checkInTime: mode === 'hourly' ? (state.checkInTime || "") : "",
-            duration: mode === 'hourly' ? String(state.duration || 3) : "",
+            checkInTime: activeMode === 'hourly' ? (state.checkInTime || "") : "",
+            duration: activeMode === 'hourly' ? String(state.duration || 3) : "",
         });
         await new Promise(r => setTimeout(r, 700));
         setIsSearching(false);
@@ -312,7 +344,7 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
             <div className="w-full relative z-50">
                 <div className={cn(
                     "w-full flex flex-col lg:flex-row lg:items-center relative transition-all duration-700 gap-3 lg:gap-0",
-                    "lg:bg-white/80 lg:backdrop-blur-3xl lg:rounded-full lg:shadow-[0_12px_40px_rgba(0,0,0,0.08)] lg:border lg:border-slate-200/80 lg:p-2",
+                    "lg:bg-white lg:rounded-full lg:shadow-md lg:border lg:border-slate-200/90 lg:p-1.5",
                     "bg-transparent border-0 p-0 shadow-none"
                 )}>
 
@@ -348,10 +380,10 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
                                         <CalendarIcon className="w-3.5 h-3.5" />
                                     </div>
                                     <div className="flex-1 min-w-0 text-left">
-                                        <p suppressHydrationWarning className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{mode === 'hourly' ? "Arrival" : "Dates"}</p>
+                                        <p suppressHydrationWarning className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{activeMode === 'hourly' ? "Arrival" : "Dates"}</p>
                                         <p className="text-[11px] font-black text-slate-900 truncate">
                                             {state.dates.checkIn ? (
-                                                mode === 'hourly'
+                                                activeMode === 'hourly'
                                                     ? `${state.dates.checkIn.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} @ ${state.checkInTime || "10:00 AM"}`
                                                     : state.dates.checkIn.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
                                             ) : "Add Dates"}
@@ -405,10 +437,10 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
                                     <CalendarIcon className="w-4.5 h-4.5" />
                                 </div>
                                 <div className="flex-1 text-left">
-                                    <p suppressHydrationWarning className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{mode === 'hourly' ? "Arrival Date & Time" : "Dates"}</p>
+                                    <p suppressHydrationWarning className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{activeMode === 'hourly' ? "Arrival Date & Time" : "Dates"}</p>
                                     <p className="text-sm font-black text-slate-900 truncate">
                                         {state.dates.checkIn ? (
-                                            mode === 'hourly'
+                                            activeMode === 'hourly'
                                                 ? `${state.dates.checkIn.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} @ ${state.checkInTime || "10:00 AM"} (${state.duration}h)`
                                                 : `${state.dates.checkIn.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}${state.dates.checkOut ? ` - ${state.dates.checkOut.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : ''}`
                                         ) : "Add dates"}
@@ -436,35 +468,46 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
 
                     {/* Desktop View (Horizontal Layout) */}
                     <div className="hidden lg:flex flex-1 items-center">
-                        {/* Destination */}
+                        {/* 1. Destination */}
                         <div className="flex-[1.4] relative">
-                            <div onClick={(e) => { e.stopPropagation(); setActiveSection("where"); }} className={cn("flex items-center gap-3 pl-7 pr-3 py-4 md:py-2.5 cursor-pointer transition-all hover:bg-white/80 rounded-l-full", activeSection === "where" && "bg-white shadow-sm")}>
-                                <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center shadow-sm">
-                                    <MapPin className="w-3.5 h-3.5 text-brand-600" />
-                                </div>
+                            <div 
+                                onClick={(e) => { e.stopPropagation(); setActiveSection("where"); }} 
+                                className={cn(
+                                    "flex items-center gap-2.5 pl-5 pr-3 py-2.5 cursor-pointer transition-colors rounded-full",
+                                    activeSection === "where" ? "bg-slate-50" : "hover:bg-slate-50/70"
+                                )}
+                            >
+                                <MapPin className="w-4 h-4 text-brand-600 shrink-0" />
                                 <div className="flex-1 text-left min-w-0">
-                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Where</p>
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block leading-tight">Where</span>
                                     <input
                                         type="text"
                                         value={query}
                                         onChange={e => setQuery(e.target.value)}
                                         onFocus={(e) => { e.stopPropagation(); setActiveSection("where"); }}
-                                        placeholder="Destination..."
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                e.preventDefault();
+                                                handleSearch();
+                                            }
+                                        }}
+                                        placeholder="City, area or hotel..."
                                         autoComplete="off"
                                         autoCorrect="off"
                                         autoCapitalize="off"
                                         spellCheck={false}
-                                        className="w-full bg-transparent outline-none text-[13px] font-black text-slate-950 italic truncate"
+                                        className="w-full bg-transparent outline-none text-xs sm:text-[13px] font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal truncate"
                                     />
                                 </div>
                             </div>
-                            {activeSection === "where" && query.trim().length > 0 && (
-                                <div className="absolute top-[115%] left-0 w-[420px] bg-white rounded-3xl p-5 shadow-2xl border border-slate-100 z-[500]" onClick={e => e.stopPropagation()}>
+
+                            {activeSection === "where" && (
+                                <div className="absolute top-[120%] left-0 w-[420px] bg-white rounded-2xl p-4 shadow-xl border border-slate-100 z-[500]" onClick={e => e.stopPropagation()}>
                                     {isLoadingSuggestions ? (
-                                        <div className="p-3 space-y-3">
+                                        <div className="p-2 space-y-2.5">
                                             {[1, 2, 3].map((i) => (
                                                 <div key={i} className="flex items-center gap-3 animate-pulse">
-                                                    <div className="w-10 h-10 rounded-xl bg-slate-100 shrink-0" />
+                                                    <div className="w-9 h-9 rounded-xl bg-slate-100 shrink-0" />
                                                     <div className="flex-1 space-y-1.5">
                                                         <div className="h-3 bg-slate-100 rounded w-2/3" />
                                                         <div className="h-2 bg-slate-100 rounded w-1/2" />
@@ -480,8 +523,15 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
 
                                                 if (cityList.length === 0 && hotelList.length === 0) {
                                                     return (
-                                                        <div className="py-8 text-center">
-                                                            <p className="text-xs font-bold text-slate-400 italic">No matches found for &quot;{query}&quot;</p>
+                                                        <div className="py-6 text-center space-y-2">
+                                                            <p className="text-xs font-semibold text-slate-500">No exact matches for &quot;{query}&quot;</p>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleSearch()}
+                                                                className="text-xs font-bold text-brand-600 hover:text-brand-700 underline cursor-pointer"
+                                                            >
+                                                                Search &quot;{query}&quot; across all stays &rarr;
+                                                            </button>
                                                         </div>
                                                     );
                                                 }
@@ -490,27 +540,28 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
                                                     <>
                                                         {cityList.length > 0 && (
                                                             <div className="space-y-1">
-                                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 pb-0.5">
-                                                                    Cities & Destinations
+                                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 pb-0.5">
+                                                                    {query.trim().length === 0 ? "Popular Destinations" : "Cities & Destinations"}
                                                                 </p>
                                                                 {cityList.map(s => (
                                                                     <button
                                                                         key={s.id}
+                                                                        type="button"
                                                                         onClick={e => {
                                                                             e.stopPropagation();
                                                                             setQuery(s.label);
                                                                             setState(p => ({ ...p, destination: s }));
                                                                             setActiveSection("dates");
                                                                         }}
-                                                                        className="w-full flex items-center gap-3 p-2.5 hover:bg-slate-50 rounded-2xl transition-all group text-left"
+                                                                        className="w-full flex items-center gap-2.5 p-2 hover:bg-slate-50 rounded-xl transition-all group text-left cursor-pointer"
                                                                     >
-                                                                        <div className="w-9 h-9 rounded-xl bg-brand-50 flex items-center justify-center group-hover:bg-brand-100 text-brand-600 transition-colors shrink-0">
-                                                                            <MapPin className="w-4 h-4" />
+                                                                        <div className="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center text-brand-600 shrink-0">
+                                                                            <MapPin className="w-3.5 h-3.5" />
                                                                         </div>
                                                                         <div className="min-w-0 flex-1">
-                                                                            <p className="font-extrabold text-slate-900 text-xs truncate group-hover:text-brand-600 transition-colors">{s.label}</p>
+                                                                            <p className="font-bold text-slate-900 text-xs truncate group-hover:text-brand-600 transition-colors">{s.label}</p>
                                                                             <p className="text-[11px] font-medium text-slate-400 truncate">
-                                                                                {s.sublabel || "City"}
+                                                                                {s.region || s.sublabel || "City"}
                                                                             </p>
                                                                         </div>
                                                                     </button>
@@ -520,32 +571,33 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
 
                                                         {hotelList.length > 0 && (
                                                             <div className={cn("space-y-1", cityList.length > 0 && "pt-2 border-t border-slate-100")}>
-                                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 pb-0.5">
+                                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 pb-0.5">
                                                                     Hotels & Stays
                                                                 </p>
                                                                 {hotelList.map(s => (
                                                                     <button
                                                                         key={s.id}
+                                                                        type="button"
                                                                         onClick={e => {
                                                                             e.stopPropagation();
                                                                             setQuery(s.label);
                                                                             setState(p => ({ ...p, destination: s }));
                                                                             setActiveSection("dates");
                                                                         }}
-                                                                        className="w-full flex items-center gap-3 p-2.5 hover:bg-slate-50 rounded-2xl transition-all group text-left"
+                                                                        className="w-full flex items-center gap-2.5 p-2 hover:bg-slate-50 rounded-xl transition-all group text-left cursor-pointer"
                                                                     >
                                                                         {s.thumbnail ? (
-                                                                            <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 bg-slate-100 relative">
-                                                                                <img src={s.thumbnail} alt={s.label} className="object-cover w-full h-full absolute inset-0" loading="lazy" />
+                                                                            <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 bg-slate-100 relative">
+                                                                                <img src={s.thumbnail} alt={s.label} className="object-cover w-full h-full" loading="lazy" />
                                                                             </div>
                                                                         ) : (
-                                                                            <div className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center text-violet-600 shrink-0">
-                                                                                <Hotel className="w-4 h-4" />
+                                                                            <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center text-violet-600 shrink-0">
+                                                                                <Hotel className="w-3.5 h-3.5" />
                                                                             </div>
                                                                         )}
                                                                         <div className="min-w-0 flex-1">
-                                                                            <p className="font-extrabold text-slate-900 text-xs truncate group-hover:text-brand-600 transition-colors">{s.label}</p>
-                                                                            <p className="text-[10px] font-semibold text-slate-400 truncate">
+                                                                            <p className="font-bold text-slate-900 text-xs truncate group-hover:text-brand-600 transition-colors">{s.label}</p>
+                                                                            <p className="text-[10px] font-medium text-slate-400 truncate">
                                                                                 {s.sublabel || "Verified Hotel"}
                                                                             </p>
                                                                         </div>
@@ -562,31 +614,41 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
                             )}
                         </div>
 
-                        {/* Dates */}
-                        <div className="flex-1 relative">
-                            <div onClick={(e) => { e.stopPropagation(); setActiveSection("dates"); }} className={cn("flex items-center gap-3 pl-5 pr-3 py-4 md:py-2.5 cursor-pointer transition-all hover:bg-white/80", activeSection === "dates" && "bg-white shadow-sm")}>
-                                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm">
-                                    <CalendarIcon className="w-3.5 h-3.5 text-brand-600" />
-                                </div>
+                        {/* Thin divider */}
+                        <div className="w-px h-6 bg-slate-200 shrink-0" />
+
+                        {/* 2. Dates / Arrival */}
+                        <div className="flex-[1.2] relative">
+                            <div 
+                                onClick={(e) => { e.stopPropagation(); setActiveSection("dates"); }} 
+                                className={cn(
+                                    "flex items-center gap-2.5 px-4 py-2.5 cursor-pointer transition-colors rounded-full",
+                                    activeSection === "dates" ? "bg-slate-50" : "hover:bg-slate-50/70"
+                                )}
+                            >
+                                <CalendarIcon className="w-4 h-4 text-brand-600 shrink-0" />
                                 <div className="flex-1 text-left min-w-0">
-                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{mode === 'hourly' ? "Arrival" : "Stay Dates"}</p>
-                                    <p className="text-[13px] font-black italic text-slate-950 truncate">
+                                    <span suppressHydrationWarning className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block leading-tight">
+                                        {activeMode === 'hourly' ? "Arrival" : "Dates"}
+                                    </span>
+                                    <p suppressHydrationWarning className="text-xs sm:text-[13px] font-semibold text-slate-900 truncate">
                                         {state.dates.checkIn ? (
-                                            mode === 'hourly'
+                                            activeMode === 'hourly'
                                                 ? `${state.dates.checkIn.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} @ ${state.checkInTime || "10:00 AM"}`
                                                 : `${state.dates.checkIn.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${state.dates.checkOut?.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) || '...'}`
-                                        ) : "Select Dates"}
+                                        ) : (activeMode === 'hourly' ? "Select Date" : "Select Dates")}
                                     </p>
                                 </div>
                             </div>
+
                             {activeSection === "dates" && (
-                                <div className="absolute top-[115%] left-1/2 -translate-x-1/2 w-[380px] bg-white rounded-[40px] p-8 shadow-premium z-[500]" onClick={e => e.stopPropagation()}>
-                                    <div className="flex justify-between items-center mb-6">
-                                        <button onClick={() => setCurrentMonth(m => m === 0 ? 11 : m - 1)} className="p-2 hover:bg-slate-50/50 rounded-full"><ChevronLeft className="w-4 h-4" /></button>
-                                        <p className="font-black italic text-slate-900">{monthName} {currentYear}</p>
-                                        <button onClick={() => setCurrentMonth(m => m === 11 ? 0 : m + 1)} className="p-2 hover:bg-slate-50/50 rounded-full"><ChevronRight className="w-4 h-4" /></button>
+                                <div className="absolute top-[120%] left-1/2 -translate-x-1/2 w-[340px] bg-white rounded-2xl p-5 shadow-xl border border-slate-100 z-[500]" onClick={e => e.stopPropagation()}>
+                                    <div className="flex justify-between items-center mb-4">
+                                        <button type="button" onClick={() => setCurrentMonth(m => m === 0 ? 11 : m - 1)} className="p-1.5 hover:bg-slate-100 rounded-full cursor-pointer"><ChevronLeft className="w-4 h-4" /></button>
+                                        <p className="font-bold text-slate-900 text-xs uppercase tracking-wide">{monthName} {currentYear}</p>
+                                        <button type="button" onClick={() => setCurrentMonth(m => m === 11 ? 0 : m + 1)} className="p-1.5 hover:bg-slate-100 rounded-full cursor-pointer"><ChevronRight className="w-4 h-4" /></button>
                                     </div>
-                                    <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-black text-slate-300 mb-2">{['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => <div key={d}>{d}</div>)}</div>
+                                    <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-slate-400 mb-2">{['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => <div key={d}>{d}</div>)}</div>
                                     <div className="grid grid-cols-7 gap-1">
                                         {Array.from({ length: firstDay }).map((_, i) => <div key={`b-${i}`} />)}
                                         {Array.from({ length: daysInMonth }).map((_, i) => {
@@ -596,15 +658,15 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
                                             const isSelected = state.dates.checkIn?.getTime() === date.getTime() || state.dates.checkOut?.getTime() === date.getTime();
                                             const isInRange = state.dates.checkIn && state.dates.checkOut && date > state.dates.checkIn && date < state.dates.checkOut;
                                             return (
-                                                <button key={d} disabled={isPast} onClick={() => handleDateClick(d)} className={cn("h-11 rounded-full text-sm font-bold transition-all", isPast ? "text-slate-100 cursor-not-allowed" : isSelected ? "bg-brand-600 text-white shadow-lg shadow-brand-100" : isInRange ? "bg-brand-50 text-brand-600" : "hover:bg-slate-50 text-slate-700")}>{d}</button>
+                                                <button key={d} type="button" disabled={isPast} onClick={() => handleDateClick(d)} className={cn("h-8 rounded-lg text-xs font-semibold transition-all cursor-pointer", isPast ? "text-slate-200 cursor-not-allowed" : isSelected ? "bg-brand-600 text-white shadow-sm" : isInRange ? "bg-brand-50 text-brand-600" : "hover:bg-slate-100 text-slate-700")}>{d}</button>
                                             );
                                         })}
                                     </div>
 
-                                    {mode === 'hourly' && (
-                                        <div className="space-y-3 pt-4 border-t border-slate-100/50 mt-4">
-                                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Arrival Time</p>
-                                            <div className="grid grid-cols-4 gap-1.5 max-h-32 overflow-y-auto pr-1">
+                                    {activeMode === 'hourly' && (
+                                        <div className="space-y-2 pt-3 border-t border-slate-100 mt-3">
+                                            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Arrival Time</p>
+                                            <div className="grid grid-cols-4 gap-1.5 max-h-28 overflow-y-auto pr-1">
                                                 {TIME_SLOTS.map(t => (
                                                     <button
                                                         key={t}
@@ -612,12 +674,12 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
                                                         onClick={() => {
                                                             setState(prev => ({ ...prev, checkInTime: t }));
                                                             if (!isMobile) {
-                                                                setTimeout(() => setActiveSection("duration"), 300);
+                                                                setTimeout(() => setActiveSection("duration"), 200);
                                                             }
                                                         }}
                                                         className={cn(
-                                                            "py-1.5 rounded-lg text-[9px] font-black tracking-wider transition-all",
-                                                            state.checkInTime === t ? "bg-brand-600 text-white shadow-md shadow-brand-100" : "bg-slate-50 text-slate-500 hover:bg-slate-100"
+                                                            "py-1 rounded-md text-[9px] font-bold tracking-wider transition-all cursor-pointer",
+                                                            state.checkInTime === t ? "bg-brand-600 text-white shadow-sm" : "bg-slate-50 text-slate-600 hover:bg-slate-100"
                                                         )}
                                                     >
                                                         {t}
@@ -630,68 +692,84 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
                             )}
                         </div>
 
-                        {/* Duration (Hourly only) */}
-                        {mode === 'hourly' && (
-                            <div className="flex-1 relative">
-                                <div onClick={(e) => { e.stopPropagation(); setActiveSection("duration"); }} className={cn("flex items-center gap-3 pl-5 pr-3 py-4 md:py-2.5 cursor-pointer transition-all hover:bg-white/80", activeSection === "duration" && "bg-white shadow-sm")}>
-                                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm">
-                                        <ArrowUpDown className="w-3.5 h-3.5 text-brand-600" />
-                                    </div>
-                                    <div className="flex-1 text-left min-w-0">
-                                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Duration</p>
-                                        <p className="text-[13px] font-black italic text-slate-950 truncate">
-                                            {state.duration ? `${state.duration} Hours` : "Select Hours"}
-                                        </p>
-                                    </div>
-                                </div>
-                                {activeSection === "duration" && (
-                                    <div className="absolute top-[115%] left-1/2 -translate-x-1/2 w-[280px] bg-white rounded-[40px] p-6 shadow-premium z-[500]" onClick={e => e.stopPropagation()}>
-                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-brand-600 mb-4 px-1">Stay Duration</h4>
-                                        <div className="flex gap-2">
-                                            {DURATIONS.map(hours => (
-                                                <button
-                                                    key={hours}
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setState(s => ({ ...s, duration: hours }));
-                                                        setActiveSection("guests");
-                                                    }}
-                                                    className={cn(
-                                                        "flex-1 py-3 rounded-2xl text-xs font-black tracking-wider transition-all",
-                                                        state.duration === hours ? "bg-brand-600 text-white shadow-lg shadow-brand-100" : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-100"
-                                                    )}
-                                                >
-                                                    {hours}h
-                                                </button>
-                                            ))}
+                        {/* 3. Duration (Hourly only) */}
+                        {activeMode === 'hourly' && (
+                            <>
+                                <div className="w-px h-6 bg-slate-200 shrink-0" />
+                                <div className="flex-[0.9] relative">
+                                    <div 
+                                        onClick={(e) => { e.stopPropagation(); setActiveSection("duration"); }} 
+                                        className={cn(
+                                            "flex items-center gap-2.5 px-4 py-2.5 cursor-pointer transition-colors rounded-full",
+                                            activeSection === "duration" ? "bg-slate-50" : "hover:bg-slate-50/70"
+                                        )}
+                                    >
+                                        <Clock className="w-4 h-4 text-brand-600 shrink-0" />
+                                        <div className="flex-1 text-left min-w-0">
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block leading-tight">Duration</span>
+                                            <p className="text-xs sm:text-[13px] font-semibold text-slate-900 truncate">
+                                                {state.duration ? `${state.duration} Hours` : "Select Hours"}
+                                            </p>
                                         </div>
                                     </div>
-                                )}
-                            </div>
+                                    {activeSection === "duration" && (
+                                        <div className="absolute top-[120%] left-1/2 -translate-x-1/2 w-[240px] bg-white rounded-2xl p-4 shadow-xl border border-slate-100 z-[500]" onClick={e => e.stopPropagation()}>
+                                            <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-3 px-1">Stay Duration</h4>
+                                            <div className="flex gap-2">
+                                                {DURATIONS.map(hours => (
+                                                    <button
+                                                        key={hours}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setState(s => ({ ...s, duration: hours }));
+                                                            setActiveSection("guests");
+                                                        }}
+                                                        className={cn(
+                                                            "flex-1 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer",
+                                                            state.duration === hours ? "bg-brand-600 text-white shadow-sm" : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200/60"
+                                                        )}
+                                                    >
+                                                        {hours}h
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </>
                         )}
 
-                        {/* Guests */}
-                        <div className="flex-1 relative">
-                            <div onClick={(e) => { e.stopPropagation(); setActiveSection("guests"); }} className={cn("flex items-center gap-3 pl-5 pr-3 py-4 md:py-2.5 cursor-pointer transition-all hover:bg-white/80 rounded-r-full", activeSection === "guests" && "bg-white shadow-sm")}>
-                                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm">
-                                    <Users className="w-3.5 h-3.5 text-brand-600" />
-                                </div>
+                        {/* Thin divider */}
+                        <div className="w-px h-6 bg-slate-200 shrink-0" />
+
+                        {/* 4. Guests */}
+                        <div className="flex-[1] relative">
+                            <div 
+                                onClick={(e) => { e.stopPropagation(); setActiveSection("guests"); }} 
+                                className={cn(
+                                    "flex items-center gap-2.5 px-4 py-2.5 cursor-pointer transition-colors rounded-full",
+                                    activeSection === "guests" ? "bg-slate-50" : "hover:bg-slate-50/70"
+                                )}
+                            >
+                                <Users className="w-4 h-4 text-brand-600 shrink-0" />
                                 <div className="flex-1 text-left min-w-0">
-                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Guests</p>
-                                    <p className="text-[13px] font-black italic text-slate-950 truncate">{state.guests.adults + state.guests.children} Guests · {state.guests.rooms} Room</p>
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block leading-tight">Guests</span>
+                                    <p className="text-xs sm:text-[13px] font-semibold text-slate-900 truncate">
+                                        {state.guests.adults + state.guests.children} Guests · {state.guests.rooms} Room
+                                    </p>
                                 </div>
                             </div>
                             {activeSection === "guests" && (
-                                <div className="absolute top-[115%] right-0 w-[320px] bg-white rounded-[40px] p-8 shadow-premium z-[500]" onClick={e => e.stopPropagation()}>
-                                    <h4 className="text-[10px] font-black uppercase tracking-widest text-brand-600 mb-6 px-1">Guests & Rooms</h4>
-                                    <div className="space-y-6">
+                                <div className="absolute top-[120%] right-0 w-[280px] bg-white rounded-2xl p-4 shadow-xl border border-slate-100 z-[500]" onClick={e => e.stopPropagation()}>
+                                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-4 px-1">Guests & Rooms</h4>
+                                    <div className="space-y-4">
                                         {[{ label: "Adults", k: "adults" }, { label: "Children", k: "children" }, { label: "Rooms", k: "rooms" }].map(i => (
-                                            <div key={i.k} className="flex justify-between items-center">
-                                                <p className="font-bold text-slate-900">{i.label}</p>
-                                                <div className="flex items-center gap-4">
-                                                    <button onClick={() => setState(s => ({ ...s, guests: { ...s.guests, [i.k]: Math.max(i.k === 'children' ? 0 : 1, (s.guests as any)[i.k] - 1) } }))} className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center hover:bg-slate-50 transition-colors"><Minus className="w-3.5 h-3.5" /></button>
-                                                    <span className="font-black w-5 text-center text-sm">{(state.guests as any)[i.k]}</span>
-                                                    <button onClick={() => setState(s => ({ ...s, guests: { ...s.guests, [i.k]: (s.guests as any)[i.k] + 1 } }))} className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center hover:bg-slate-50 transition-colors"><Plus className="w-3.5 h-3.5" /></button>
+                                            <div key={i.k} className="flex justify-between items-center text-xs">
+                                                <p className="font-semibold text-slate-800">{i.label}</p>
+                                                <div className="flex items-center gap-3">
+                                                    <button type="button" onClick={() => setState(s => ({ ...s, guests: { ...s.guests, [i.k]: Math.max(i.k === 'children' ? 0 : 1, (s.guests as any)[i.k] - 1) } }))} className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 transition-colors cursor-pointer"><Minus className="w-3 h-3" /></button>
+                                                    <span className="font-bold w-4 text-center text-xs">{(state.guests as any)[i.k]}</span>
+                                                    <button type="button" onClick={() => setState(s => ({ ...s, guests: { ...s.guests, [i.k]: (s.guests as any)[i.k] + 1 } }))} className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 transition-colors cursor-pointer"><Plus className="w-3 h-3" /></button>
                                                 </div>
                                             </div>
                                         ))}
@@ -700,10 +778,22 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
                             )}
                         </div>
 
-                        {/* Search Btn */}
-                        <div className="p-1.5 shrink-0">
-                            <button onClick={() => handleSearch()} disabled={isSearching} className="w-full px-11 py-3.5 bg-slate-950 hover:bg-brand-600 text-white font-black rounded-full transition-all flex items-center justify-center gap-2 shadow-xl group active:scale-95">
-                                {isSearching ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <> <span className="text-[11px] uppercase tracking-widest italic">Explore</span> <Search className="w-3.5 h-3.5 transition-transform group-hover:scale-110" strokeWidth={3} /></>}
+                        {/* 5. Minimal Search Button (Brand Blue) */}
+                        <div className="p-1 shrink-0">
+                            <button 
+                                type="button" 
+                                onClick={() => handleSearch()} 
+                                disabled={isSearching} 
+                                className="px-6 py-2.5 bg-brand-600 hover:bg-brand-700 active:scale-95 text-white font-bold text-xs uppercase tracking-wider rounded-full shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
+                            >
+                                {isSearching ? (
+                                    <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                ) : (
+                                    <>
+                                        <Search className="w-3.5 h-3.5" />
+                                        <span>Explore</span>
+                                    </>
+                                )}
                             </button>
                         </div>
                     </div>
@@ -884,7 +974,7 @@ export default function SmartSearchBar({ className, hideStories, initialState, o
                                             </div>
                                         </div>
 
-                                        {mode === 'hourly' && (
+                                        {activeMode === 'hourly' && (
                                             <div className="space-y-4 pt-4 border-t border-slate-100 mt-4">
                                                 <div>
                                                     <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Arrival Time</p>

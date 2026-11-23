@@ -20,28 +20,50 @@ export default function Hero({
     storiesLoading = false,
 }: HeroProps) {
     const { mode, setMode } = useStayMode();
+    const [mounted, setMounted] = React.useState(false);
     const navigate = useNavigate();
     const { lang } = useParams();
     const langCode = lang || 'en';
     const searchBarRef = React.useRef<HTMLDivElement>(null);
 
+    React.useEffect(() => {
+        setMounted(true);
+        if (typeof window !== 'undefined' && window.location.pathname.includes('/hourly')) {
+            setMode('hourly');
+        }
+    }, [setMode]);
+
+    const activeMode = mounted ? mode : 'nightly';
+
     const handleHourlyClick = () => {
         setMode('hourly');
-        if (typeof window !== 'undefined' && searchBarRef.current) {
-            const navbarHeight = 60; // sticky navbar height
-            const rect = searchBarRef.current.getBoundingClientRect();
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            const targetY = scrollTop + rect.top - navbarHeight - 14;
-            window.scrollTo({
-                top: Math.max(0, targetY),
-                behavior: 'smooth'
-            });
+        if (typeof window !== 'undefined') {
+            const currentPath = window.location.pathname;
+            const targetPath = currentPath.startsWith('/en') ? '/en/hourly' : '/hourly';
+            if (currentPath !== targetPath && !currentPath.includes('/hourly')) {
+                window.history.pushState(null, '', targetPath);
+            }
+            if (searchBarRef.current) {
+                const navbarHeight = 60; // sticky navbar height
+                const rect = searchBarRef.current.getBoundingClientRect();
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                const targetY = scrollTop + rect.top - navbarHeight - 14;
+                window.scrollTo({
+                    top: Math.max(0, targetY),
+                    behavior: 'smooth'
+                });
+            }
         }
     };
 
     const handleNightlyClick = () => {
         setMode('nightly');
         if (typeof window !== 'undefined') {
+            const currentPath = window.location.pathname;
+            const targetPath = currentPath.startsWith('/en') ? '/en' : '/';
+            if (currentPath.includes('/hourly')) {
+                window.history.pushState(null, '', targetPath);
+            }
             const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
             if (currentScroll > 30 && currentScroll < 450) {
                 window.scrollTo({
@@ -85,12 +107,12 @@ export default function Hero({
                             onClick={handleNightlyClick}
                             className={cn(
                                 "w-full sm:w-auto px-3 py-2.5 md:px-5 md:py-2.5 rounded-full text-xs font-black transition-none flex items-center justify-center gap-1.5 md:gap-2 border shadow-sm cursor-pointer",
-                                mode === 'nightly' 
+                                activeMode === 'nightly' 
                                     ? "bg-slate-950 text-white border-slate-950 shadow-md" 
                                     : "bg-white/90 backdrop-blur-md text-slate-700 border-slate-200/90"
                             )}
                         >
-                            <Hotel className={cn("w-3.5 h-3.5 md:w-4 md:h-4", mode === 'nightly' ? "text-blue-400" : "text-slate-500")} />
+                            <Hotel suppressHydrationWarning className={cn("w-3.5 h-3.5 md:w-4 md:h-4", activeMode === 'nightly' ? "text-blue-400" : "text-slate-500")} />
                             <span>Full Day Stay</span>
                         </button>
 
@@ -100,12 +122,12 @@ export default function Hero({
                             onClick={handleHourlyClick}
                             className={cn(
                                 "w-full sm:w-auto px-3 py-2.5 md:px-5 md:py-2.5 rounded-full text-xs font-black transition-none flex items-center justify-center gap-1.5 md:gap-2 border shadow-sm cursor-pointer",
-                                mode === 'hourly' 
+                                activeMode === 'hourly' 
                                     ? "bg-blue-600 text-white border-blue-600 shadow-md" 
                                     : "bg-white/90 backdrop-blur-md text-slate-700 border-slate-200/90"
                             )}
                         >
-                            <Clock className={cn("w-3.5 h-3.5 md:w-4 md:h-4", mode === 'hourly' ? "text-blue-200 animate-pulse" : "text-slate-500")} />
+                            <Clock suppressHydrationWarning className={cn("w-3.5 h-3.5 md:w-4 md:h-4", activeMode === 'hourly' ? "text-blue-200 animate-pulse" : "text-slate-500")} />
                             <span>Hourly Stay</span>
                         </button>
 

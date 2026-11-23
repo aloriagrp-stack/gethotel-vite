@@ -71,40 +71,68 @@ class GHSApiClient:
             headers["Authorization"] = f"Bearer {self.token}"
         return headers
 
-    def get_hotels(self, force_refresh=False):
+    def get_hotels(self, force_refresh=False, listing_type=None):
         """
-        Fetches all hotels from live API or cache.
-        Uses cached data if younger than 2 hours unless force_refresh is True.
+        Fetches hotels from live API or cache.
+        Ensures 100% of bookable partner hotels are retrieved without being truncated by directory listings.
         """
         if not force_refresh and os.path.exists(HOTELS_CACHE_FILE):
             try:
                 with open(HOTELS_CACHE_FILE, "r", encoding="utf-8") as f:
                     cache_data = json.load(f)
-                    if time.time() - cache_data.get("saved_at", 0) < 7200:
-                        return cache_data.get("hotels", [])
+                    cached_hotels = cache_data.get("hotels", [])
+                    # Health check: cache must contain at least 10 bookable partner hotels
+                    bookable_in_cache = sum(1 for h in cached_hotels if h.get("listingType") != "directory")
+                    if bookable_in_cache >= 10 and (time.time() - cache_data.get("saved_at", 0) < 7200):
+                        if listing_type:
+                            return [h for h in cached_hotels if h.get("listingType") == listing_type]
+                        return cached_hotels
             except Exception:
                 pass
 
         try:
-            url = f"{self.base_url}/hotels"
-            resp = self.session.get(url, headers=self._headers(), timeout=45)
-            data = resp.json()
-            if data.get("success"):
-                hotels = data.get("data", [])
+            # 1. Guaranteed fetch of all bookable partner hotels
+            url_bookable = f"{self.base_url}/hotels?listingType=bookable"
+            resp_bookable = self.session.get(url_bookable, headers=self._headers(), timeout=45)
+            data_bookable = resp_bookable.json()
+            bookable_hotels = data_bookable.get("data", []) if data_bookable.get("success") else []
+
+            # 2. Fetch directory listings
+            url_directory = f"{self.base_url}/hotels?listingType=directory"
+            resp_directory = self.session.get(url_directory, headers=self._headers(), timeout=45)
+            data_directory = resp_directory.json()
+            directory_hotels = data_directory.get("data", []) if data_directory.get("success") else []
+
+            # Deduplicate by ID, prioritizing bookable partner hotels
+            hotel_map = {}
+            for h in bookable_hotels:
+                hotel_map[h["id"]] = h
+            for h in directory_hotels:
+                if h["id"] not in hotel_map:
+                    hotel_map[h["id"]] = h
+
+            all_hotels = list(hotel_map.values())
+
+            if all_hotels:
                 try:
                     with open(HOTELS_CACHE_FILE, "w", encoding="utf-8") as f:
-                        json.dump({"hotels": hotels, "saved_at": time.time()}, f)
+                        json.dump({"hotels": all_hotels, "saved_at": time.time()}, f)
                 except Exception:
                     pass
-                return hotels
-            return []
+
+            if listing_type:
+                return [h for h in all_hotels if h.get("listingType") == listing_type]
+            return all_hotels
         except Exception as e:
             print(f"[API Error] get_hotels: {e}")
             # Fallback to cache if network fails
             if os.path.exists(HOTELS_CACHE_FILE):
                 try:
                     with open(HOTELS_CACHE_FILE, "r", encoding="utf-8") as f:
-                        return json.load(f).get("hotels", [])
+                        cached_hotels = json.load(f).get("hotels", [])
+                        if listing_type:
+                            return [h for h in cached_hotels if h.get("listingType") == listing_type]
+                        return cached_hotels
                 except Exception:
                     pass
             return []

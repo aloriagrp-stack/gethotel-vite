@@ -38,9 +38,12 @@ Thumbs.db
 .cache/
 *.jsonl
 /GetHotel backend/logs/
+*.log
 *.zip
 __pycache__/
 *.pyc
 .*_cache.json
 *.cache.json
+.brevistay_progress.json
+tracker/
 api_requests.log

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import ClientHotelDetailsPage from "@/pages-legacy/HotelDetails";
+import { allDelhiHotels } from "@/lib/delhiHotelsHelper";
 
 export function generateStaticParams() {
   return [{ id: "1" }];
@@ -26,6 +27,22 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       }
     }
   } catch (_) {}
+
+  if (!formattedName || formattedName === `Hotel #${id}`) {
+    const slugify = (s: string) => String(s || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cleanSlug = slugify(id);
+    const staticMatch = (allDelhiHotels as any[]).find((h: any) =>
+      String(h.id) === id ||
+      slugify(h.name) === cleanSlug ||
+      slugify(h.name).includes(cleanSlug) ||
+      cleanSlug.includes(slugify(h.name))
+    );
+    if (staticMatch) {
+      formattedName = staticMatch.name;
+      city = staticMatch.city || "India";
+      contactPhone = staticMatch.contactPhone || "";
+    }
+  }
 
   const title = isDirectory
     ? `${formattedName}, ${city} — Verified Contact Number, Phone & Rates | GetHotelStays`
@@ -72,6 +89,20 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
       }
     }
   } catch (_) {}
+
+  if (!initialHotel) {
+    const slugify = (s: string) => String(s || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cleanSlug = slugify(id);
+    const staticMatch = (allDelhiHotels as any[]).find((h: any) =>
+      String(h.id) === id ||
+      slugify(h.name) === cleanSlug ||
+      slugify(h.name).includes(cleanSlug) ||
+      cleanSlug.includes(slugify(h.name))
+    );
+    if (staticMatch) {
+      initialHotel = staticMatch;
+    }
+  }
 
   let hotelSchema = null;
   if (initialHotel) {

@@ -42,13 +42,223 @@ def set_url_offset(base_url: str, offset: int) -> str:
 
 
 def normalize_ota_url(url: str) -> str:
-    """Extracts base canonical hotel path identifier for robust de-duplication."""
+    """Extracts base canonical hotel path identifier for robust de-duplication across Booking.com and Brevistay."""
     if not url:
         return ""
+    # Booking.com pattern
     m = re.search(r'(hotel/[a-zA-Z0-9_\-]+/[a-zA-Z0-9_\-]+\.html)', url)
     if m:
         return m.group(1).lower()
+    # Brevistay pattern: e.g. /hotels/hotel-airlift-in-delhi-150
+    mb = re.search(r'(hotels/[a-zA-Z0-9_\-]+-\d+)', url)
+    if mb:
+        return mb.group(1).lower()
     return url.split('?')[0].lower().strip()
+
+
+# Major Corporate Hotel Chains List (Skip these because corporate chains cannot negotiate local agreements)
+CHAIN_PATTERNS = [
+    r'\bradisson\b', r'\bhyatt\b', r'\bmarriott\b', r'\bhilton\b',
+    r'\bholiday\s*inn\b', r'\bcrowne\s*plaza\b', r'\bnovotel\b', r'\bibis\b',
+    r'\bmercure\b', r'\bpullman\b', r'\bsofitel\b', r'\bwyndham\b', r'\bramada\b',
+    r'\bbest\s*western\b', r'\btaj\b', r'\bvivanta\b', r'\bginger\b',
+    r'\bitc\b', r'\bwelcomhotel\b', r'\bfortune\s*(select|park|inn|resort|hotel)?\b',
+    r'\boberoi\b', r'\btrident\b', r'\bleela\b', r'\blemon\s*tree\b', r'\bred\s*fox\b',
+    r'\bpride\s*(plaza|hotel|resort|inn)?\b', r'\bbloom\s*(hotel|rooms|boutique)?\b',
+    r'\bthe\s*lalit\b', r'\bsarovar\b', r'\bgolden\s*tulip\b',
+    r'\broyal\s*orchid\b', r'\bregenta\b', r'\bthe\s*byke\b', r'\blords\s*(hotel|inn|plaza)?\b',
+    r'\bspree\b', r'\bamritara\b', r'\bsummit\b', r'\b7\s*apple\b',
+    r'\bthe\s*fern\b', r'\bfern\s*hotel\b', r'\bclarks\s*(inn|premier)?\b',
+    r'\bcountry\s*inn\b', r'\bzolo\b', r'\bsaltstayz\b',
+    r'\bfabhotel[s]?\b', r'\btreebo\b', r'\boyo\b', r'\btownhouse\b',
+    r'\bsterling\b', r'\bclub\s*mahindra\b', r'\bqotel\b'
+]
+_COMPILED_CHAINS = [re.compile(p, re.IGNORECASE) for p in CHAIN_PATTERNS]
+
+
+def is_big_chain(name: str) -> bool:
+    """Detects if a hotel belongs to a corporate national/international chain."""
+    if not name:
+        return False
+    for regex in _COMPILED_CHAINS:
+        if regex.search(name):
+            return True
+    return False
+
+
+def crawl_brevistay_search(
+    search_url_or_city: str,
+    target_count: int = 50,
+    existing_signatures: dict = None,
+    skip_chains: bool = True
+) -> list:
+    """
+    Crawls Brevistay hourly hotels by city or direct search URL.
+    Extracts individual hotel URLs, starting hourly rates, and deduplicates in real-time.
+    Automatically filters out big corporate hotel chains (Radisson, Pride, Bloom, Hyatt, etc.)
+    so GHS focuses strictly on independent partner properties.
+    """
+    import json
+    import requests
+    from bs4 import BeautifulSoup
+
+    if existing_signatures is None:
+        existing_signatures = {}
+
+    target = (search_url_or_city or "delhi").strip()
+    if not target.startswith("http"):
+        clean_city = re.sub(r'[^a-zA-Z0-9\-]+', '-', target.lower()).strip('-')
+        url = f"https://www.brevistay.com/hotels-in-{clean_city}"
+    else:
+        url = target
+
+    console.print(f"\n[bold cyan]🕷️  AGENT 1: Crawling Brevistay Hourly Hotel Search Results...[/bold cyan]")
+    console.print(f"[dim white]Source URL: [green]{url}[/green] | Target: [green]{target_count}[/green] fresh independent hourly hotels[/dim white]")
+    console.print(f"[dim white]Filter active: [bold red]Skipping corporate chains (Radisson, Pride, Bloom, Hyatt, OYO, etc.)[/bold red][/dim white]")
+    console.print(f"[dim white]Skipping duplicates already in DB ([yellow]{len(existing_signatures)}[/yellow] tracked)[/dim white]\n")
+
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
+    }
+
+    collected_hotels = []
+    seen_in_batch = set()
+    unique_db_duplicates = set()
+    skipped_chains = set()
+
+    try:
+        resp = requests.get(url, headers=headers, timeout=20)
+        if resp.status_code != 200:
+            console.print(f"[bold red]Brevistay request returned status {resp.status_code} for {url}[/bold red]")
+            return []
+
+        soup = BeautifulSoup(resp.text, "html.parser")
+
+        # 1. Extract from Next.js __NEXT_DATA__ state if available (Instant structured data)
+        next_data_el = soup.find("script", id="__NEXT_DATA__")
+        if next_data_el and next_data_el.string:
+            try:
+                jd = json.loads(next_data_el.string)
+                d = jd.get("props", {}).get("pageProps", {}).get("data", {})
+                hotels_list = d.get("hotels", [])
+                for h in hotels_list:
+                    if len(collected_hotels) >= target_count:
+                        break
+                    hid = h.get("hotelId")
+                    hname = (h.get("hotelName") or "").strip()
+                    if not hid or not hname:
+                        continue
+
+                    # Filter out big corporate chains
+                    if skip_chains:
+                        if is_big_chain(hname) or h.get("hotel_chain_id") or h.get("hotel_chain_name"):
+                            skipped_chains.add(hname)
+                            continue
+
+                    # Construct canonical link: /hotels/<slug>-in-<city>-<id>
+                    slug_name = re.sub(r'[^a-zA-Z0-9\-]+', '-', hname.lower()).strip('-')
+                    city_slug = re.sub(r'[^a-zA-Z0-9\-]+', '-', (h.get("city_name") or "delhi").lower()).strip('-')
+                    canonical_url = f"https://www.brevistay.com/hotels/{slug_name}-in-{city_slug}-{hid}"
+
+                    norm_url = normalize_ota_url(canonical_url)
+                    norm_name = hname.lower().strip()
+
+                    if norm_url in seen_in_batch or norm_name in seen_in_batch:
+                        continue
+                    seen_in_batch.add(norm_url)
+                    seen_in_batch.add(norm_name)
+
+                    if norm_url in existing_signatures or norm_name in existing_signatures:
+                        unique_db_duplicates.add(norm_url or norm_name)
+                        continue
+
+                    rate3 = h.get("room1_rate3") or h.get("rate3")
+                    collected_hotels.append({
+                        "name": hname,
+                        "url": canonical_url,
+                        "card_price": int(rate3) if rate3 else None,
+                        "source": "brevistay",
+                        "is_hourly": True
+                    })
+            except Exception as je:
+                sys.stderr.write(f"[Brevistay NextData Parse Warning]: {je}\n")
+
+        # 2. Extract all canonical hotel links directly from HTML anchor tags
+        for a in soup.find_all("a", href=True):
+            if len(collected_hotels) >= target_count:
+                break
+            href = a["href"].strip()
+            # Match pattern: /hotels/<slug>-<id>
+            m_hotel = re.search(r'(/hotels/[a-zA-Z0-9\-]+-\d+)$', href)
+            if not m_hotel:
+                continue
+
+            rel_path = m_hotel.group(1)
+            full_url = f"https://www.brevistay.com{rel_path}" if rel_path.startswith("/") else rel_path
+            norm_url = normalize_ota_url(full_url)
+
+            # Clean name from link text or slug
+            link_text = a.get_text(strip=True)
+            if link_text and len(link_text) > 3 and not any(skip in link_text.lower() for skip in ["view", "book", "hotel", "detail", "more"]):
+                clean_name = link_text
+            else:
+                raw_slug = rel_path.split("/")[-1]
+                slug_without_id = re.sub(r'-\d+$', '', raw_slug)
+                slug_without_city = re.sub(r'-in-[a-zA-Z0-9\-]+$', '', slug_without_id)
+                clean_name = slug_without_city.replace("-", " ").title()
+
+            # Filter out big corporate chains
+            if skip_chains and is_big_chain(clean_name):
+                skipped_chains.add(clean_name)
+                continue
+
+            norm_name = clean_name.lower().strip()
+
+            if norm_url in seen_in_batch or norm_name in seen_in_batch:
+                continue
+            seen_in_batch.add(norm_url)
+            seen_in_batch.add(norm_name)
+
+            if norm_url in existing_signatures or norm_name in existing_signatures:
+                unique_db_duplicates.add(norm_url or norm_name)
+                continue
+
+            collected_hotels.append({
+                "name": clean_name,
+                "url": full_url,
+                "card_price": None,
+                "source": "brevistay",
+                "is_hourly": True
+            })
+
+    except Exception as e:
+        console.print(f"[bold red]Brevistay Crawl Error:[/bold red] {e}")
+
+    chain_msg = f" (Skipped [dim red]{len(skipped_chains)}[/dim red] corporate chains)" if skipped_chains else ""
+    console.print(
+        f"\n[bold green]✓ AGENT 1 (BREVISTAY) FINISHED![/bold green] Gathered [bold cyan]{len(collected_hotels)}[/bold cyan] fresh independent hourly hotels "
+        f"{chain_msg} (Skipped [yellow]{len(unique_db_duplicates)}[/yellow] unique DB duplicates).\n"
+    )
+    return collected_hotels
+
+
+def crawl_search_results(
+    search_url: str,
+    target_count: int = 50,
+    existing_signatures: dict = None,
+    **kwargs
+) -> list:
+    """
+    Unified multi-platform crawler for Booking.com (Nightly) and Brevistay (Hourly Micro-Stays).
+    Auto-detects the platform based on URL or explicitly passed source.
+    """
+    url_lower = (search_url or "").lower()
+    source = kwargs.get("source", "").lower()
+    if "brevistay" in url_lower or source == "brevistay":
+        return crawl_brevistay_search(search_url, target_count=target_count, existing_signatures=existing_signatures)
+    else:
+        return crawl_booking_search(search_url, target_count=target_count, existing_signatures=existing_signatures, **kwargs)
 
 
 def crawl_booking_search(

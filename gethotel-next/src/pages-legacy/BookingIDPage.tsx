@@ -33,6 +33,7 @@ import { countries } from "@/lib/countries";
 import { InvoiceTemplate } from "@/components/booking/InvoiceTemplate";
 import { validateCoupon } from "@/lib/promoUtils";
 import { loadRazorpay } from "@/lib/load-razorpay";
+import { HOURLY_TIME_SLOTS, isHourlySlotAllowed, isHourlyDateAllowed } from "@/lib/hourlyUtils";
 
 function BookingContent() {
     const params = useParams();
@@ -814,13 +815,12 @@ function BookingContent() {
                                                 onChange={(e) => setArrivalTime(e.target.value)}
                                                 className="w-full bg-transparent text-sm font-black text-slate-900 outline-none cursor-pointer appearance-none"
                                             >
-                                                {Array.from({ length: 24 }).map((_, i) => {
-                                                    const hour = i.toString().padStart(2, '0');
+                                                {HOURLY_TIME_SLOTS.map(slot => {
+                                                    const allowed = checkIn ? isHourlySlotAllowed(checkIn, slot) : true;
                                                     return (
-                                                        <Fragment key={i}>
-                                                            <option value={`${hour}:00`}>{hour}:00</option>
-                                                            <option value={`${hour}:30`}>{hour}:30</option>
-                                                        </Fragment>
+                                                        <option key={slot} value={slot} disabled={!allowed}>
+                                                            {slot} {!allowed ? '(Min 4h lead time)' : ''}
+                                                        </option>
                                                     );
                                                 })}
                                             </select>

@@ -126,8 +126,124 @@ def download_photo_playwright(page, url: str, slug: str, idx: int) -> str | None
     return None
 
 
+def clone_brevistay_hotel(url: str, max_photos: int = 25, download_locally: bool = False) -> dict:
+    """Extracts property details, photos, and hourly rates (3h, 6h, 12h, 24h) from Brevistay listing."""
+    import requests
+    from bs4 import BeautifulSoup
+
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+    }
+    try:
+        r = requests.get(url, headers=headers, timeout=18)
+        if r.status_code != 200:
+            return {"success": False, "error": f"Brevistay returned status {r.status_code}"}
+
+        soup = BeautifulSoup(r.text, 'html.parser')
+        next_script = soup.find('script', id='__NEXT_DATA__')
+        if not next_script or not next_script.string:
+            return {"success": False, "error": "No __NEXT_DATA__ found on Brevistay listing"}
+
+        jd = json.loads(next_script.string)
+        d = jd.get('props', {}).get('pageProps', {}).get('data', {})
+        if not d:
+            return {"success": False, "error": "Empty hotel data on Brevistay"}
+
+        name = (d.get('hotelName') or '').strip()
+        addr = (d.get('hotelAddress') or '').strip()
+        city = (d.get('city_name') or '').strip()
+        if not city:
+            city = detect_city(addr + " " + name, url)
+
+        # Skip big corporate chains
+        try:
+            from hotel_search_crawler import is_big_chain
+        except ImportError:
+            from agent.hotel_search_crawler import is_big_chain
+
+        if is_big_chain(name) or d.get('hotel_chain_id') or d.get('hotel_chain_name'):
+            chain_label = d.get('hotel_chain_name') or 'Corporate Chain'
+            return {
+                "success": False,
+                "is_chain": True,
+                "name": name,
+                "error": f"Skipping '{name}' ({chain_label}). GHS targets independent boutique partner hotels."
+            }
+
+        rating = float(d.get('rating') or 4.0)
+
+        rate3 = d.get('room1_rate3') or 0
+        rate6 = d.get('room1_rate6') or 0
+        rate12 = d.get('room1_rate12') or 0
+        rate24 = d.get('room1_rate24') or 0
+
+        hourly_rates = {
+            "3": str(rate3) if rate3 else "",
+            "6": str(rate6) if rate6 else "",
+            "12": str(rate12) if rate12 else ""
+        }
+
+        # Photos
+        imgs = []
+        for img_obj in (d.get('hotel_images') or []):
+            if isinstance(img_obj, str) and img_obj.startswith('http'):
+                imgs.append(img_obj)
+            elif isinstance(img_obj, dict):
+                u = img_obj.get('image_url') or img_obj.get('url')
+                if u and u.startswith('http'):
+                    imgs.append(u)
+
+        if max_photos > 0:
+            imgs = imgs[:max_photos]
+
+        # Amenities
+        amenities = []
+        for am in (d.get('amenity_list') or d.get('amenities') or []):
+            if isinstance(am, str) and am.strip():
+                amenities.append(am.strip())
+            elif isinstance(am, dict):
+                val = am.get('name') or am.get('title') or am.get('amenity_name')
+                if val:
+                    amenities.append(str(val).strip())
+
+        desc = (d.get('hotel_share_message') or d.get('hotel_chain_description') or f"Experience a comfortable and flexible stay at {name} in {city}. Verified, safe and couple-friendly with convenient hourly micro-stays (3h, 6h, 12h) and full day accommodation.").strip()
+
+        starting_price = int(rate3 or rate24 or 999)
+        nightly_base = float(rate24 or (rate3 * 2.5) or 2000)
+
+        return {
+            "success": True,
+            "name": name,
+            "city": city,
+            "address": addr,
+            "starRating": min(5, max(1, int(round(rating)))),
+            "guestRating": rating,
+            "description": desc,
+            "amenities": amenities,
+            "thumbnail": imgs[0] if imgs else "",
+            "imagesList": imgs,
+            "bookingUrl": url,
+            "bookingPrice": starting_price,
+            "pricePerNight": nightly_base,
+            "downloadedPhotosCount": len(imgs),
+            "isHourlyEnabled": True,
+            "hourlyRates": hourly_rates,
+            "rate3": rate3,
+            "rate6": rate6,
+            "rate12": rate12,
+            "rate24": rate24,
+            "source": "brevistay"
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
 def clone_hotel(url: str, max_photos: int = 25, download_locally: bool = False, card_price: int = None, page=None) -> dict:
     """Full deep scrape of hotel listing and extraction of HD photo URLs."""
+    if "brevistay" in url.lower():
+        return clone_brevistay_hotel(url, max_photos=max_photos, download_locally=download_locally)
+
     from playwright.sync_api import sync_playwright
 
     # Canonicalize Booking.com URL (strip stale session & tracking params)
@@ -496,6 +612,36 @@ def save_to_mysql(hotel_data: dict) -> int | None:
                 sys.stderr.write(f"[{cfg['name']}] Successfully saved hotel ID #{new_id}\n")
                 if not saved_id:
                     saved_id = new_id
+
+                # If hotel has hourly micro-stays (Brevistay), ensure room inventory entry
+                target_hotel_id = saved_id or new_id
+                if target_hotel_id and hotel_data.get("isHourlyEnabled"):
+                    try:
+                        cur.execute("SELECT id FROM room WHERE hotelId = %s", (target_hotel_id,))
+                        if not cur.fetchone():
+                            room_sql = """
+                                INSERT INTO room (
+                                    hotelId, name, description, pricePerNight, maxOccupancy,
+                                    bedConfiguration, amenities, images, status, isHourlyEnabled,
+                                    hourlyRates, totalInventory, createdAt, updatedAt
+                                ) VALUES (
+                                    %s, %s, %s, %s, 2,
+                                    '1 King Bed', %s, %s, 'active', 1,
+                                    %s, 5, NOW(), NOW()
+                                )
+                            """
+                            cur.execute(room_sql, (
+                                target_hotel_id,
+                                "Standard Room (Hourly/Day-Use)",
+                                f"Equipped for flexible micro-stays (3h, 6h, 12h) and full day at {hotel_data['name']}.",
+                                float(hotel_data.get("pricePerNight") or (hotel_data.get("bookingPrice", 1000) * 2.5)),
+                                json.dumps(hotel_data.get("amenities", [])),
+                                json.dumps(imgs[:4]),
+                                json.dumps(hotel_data.get("hourlyRates") or {})
+                            ))
+                            sys.stderr.write(f"[{cfg['name']}] Created hourly room with 3h/6h/12h rates for hotel ID #{target_hotel_id}\n")
+                    except Exception as re_err:
+                        sys.stderr.write(f"[{cfg['name']} Hourly Room Warning]: {re_err}\n")
             conn.close()
         except Exception as e:
             sys.stderr.write(f"[{cfg['name']} MySQL Insert Error] {e}\n")

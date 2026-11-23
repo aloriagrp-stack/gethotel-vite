@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, Suspense, useRef } from "react";
+import { useState, useEffect, Suspense, useRef, useMemo } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,39 +8,25 @@ import Image from "@/components/common/Image";
 import Loader from "@/components/common/Loader";
 import { Link } from "react-router-dom";
 import {
-    Shield,
     Check,
-    CreditCard,
-    ChevronRight,
     Calendar,
     Users,
     MapPin,
     Loader2,
     X,
-    Zap,
     Star,
     Info,
-    AlertCircle,
-    ArrowLeft,
     Phone,
-    Mail,
-    Globe,
-    Wifi,
-    Maximize2,
-    Hotel,
-    Banknote,
-    Smartphone,
-    BadgeCheck,
-    Clock,
-    Compass
+    Hotel
 } from "lucide-react";
 import { hotelApi, couponApi, bookingApi, paymentApi } from "@/lib/api";
-import { formatPrice, formatDate, safeParse } from "@/lib/utils";
+import { formatDate, safeParse } from "@/lib/utils";
 import confetti from "canvas-confetti";
 import { useAuth } from "@/context/AuthContext";
 import SEOHead from "@/components/common/SEOHead";
 import { validateCoupon } from "@/lib/promoUtils";
 import { loadRazorpay } from "@/lib/load-razorpay";
+import { isHourlySlotAllowed } from "@/lib/hourlyUtils";
 
 const guestSchema = z.object({
     firstName: z.string().min(2, "First name is required"),
@@ -149,8 +135,9 @@ function BookingContent() {
     const [showConfirmAnimation, setShowConfirmAnimation] = useState(false);
     const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
     const [showSkipButton, setShowSkipButton] = useState(false);
-    const [arrivalTime, setArrivalTime] = useState("");
+    const [arrivalTime, setArrivalTime] = useState(searchParams.get("arrivalTime") || "");
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [showDepositInfoModal, setShowDepositInfoModal] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -328,7 +315,7 @@ function BookingContent() {
                     const selectedVariant = variants && variants[0] ? variants[0] : null;
                     const basePrice = selectedVariant?.price ? parseFloat(selectedVariant.price) : (fallbackRoom.pricePerNight ?? hotelData?.pricePerNight ?? 0);
                     const priceDiff = fallbackRoom.dynamicPricePerNight ? (fallbackRoom.dynamicPricePerNight - fallbackRoom.pricePerNight) : 0;
-                    
+
                     loadedRoomsData.push({
                         room: fallbackRoom,
                         variantIdx: "0",
@@ -351,7 +338,7 @@ function BookingContent() {
                     const d1 = new Date(checkIn);
                     const d2 = new Date(checkOut);
                     const stayNights = isNaN(d1.getTime()) || isNaN(d2.getTime()) ? 1 : Math.max(1, Math.floor((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24)));
-                    
+
                     const resolvedRoom = loadedRoomsData[0]?.room || hotelData?.room?.[0] || hotelData?.rooms?.[0];
                     const roomBase = loadedRoomsData[0]?.pricePerNight || (resolvedRoom?.pricePerNight ?? hotelData?.pricePerNight ?? 0);
                     const calculatedBasePrice = roomBase * stayNights;
@@ -366,7 +353,7 @@ function BookingContent() {
 
                     const validCoupons = activeCoupons.filter((c: any) => validateCoupon(c, stayDetailsForAutoApply).valid);
                     validCoupons.sort((a: any, b: any) => Number(b.discountValue) - Number(a.discountValue));
-                    
+
                     if (validCoupons.length > 0) {
                         setAppliedCoupon(validCoupons[0]);
                     }
@@ -391,22 +378,22 @@ function BookingContent() {
         } catch (e) { return 1; }
     })());
 
-    const pricePerNight = isPackage ? packageTotalAmount : (isHourly 
+    const pricePerNight = isPackage ? packageTotalAmount : (isHourly
         ? (safeParse(selectedRoom?.hourlyRates || selectedRoom?.hourly_rates, {})[duration] || (selectedRoom?.pricePerNight ? selectedRoom.pricePerNight / 2 : (hotel?.pricePerNight ? hotel.pricePerNight / 2 : 0)))
         : (() => {
             const basePrice = selectedRoom?.selectedVariant?.price ? parseFloat(selectedRoom.selectedVariant.price) : (selectedRoom?.pricePerNight ?? hotel?.pricePerNight ?? 0);
             const priceDiff = selectedRoom?.dynamicPricePerNight ? (selectedRoom.dynamicPricePerNight - selectedRoom.pricePerNight) : 0;
             return basePrice + priceDiff;
         })());
-    
-    const mealPlanLabel = isPackage ? "All Inclusions Included" : (isHourly 
+
+    const mealPlanLabel = isPackage ? "All Inclusions Included" : (isHourly
         ? `${duration} Hours Stay`
-        : selectedRoom?.selectedVariant 
-            ? (selectedRoom.selectedVariant.mealPlan?.toLowerCase().includes('breakfast') || 
-               selectedRoom.selectedVariant.mealPlan?.toLowerCase().includes('cp') || 
-               selectedRoom.selectedVariant.mealPlan?.toLowerCase().includes('map') || 
-               selectedRoom.selectedVariant.mealPlan?.toLowerCase().includes('ap') 
-                ? "With Breakfast" 
+        : selectedRoom?.selectedVariant
+            ? (selectedRoom.selectedVariant.mealPlan?.toLowerCase().includes('breakfast') ||
+                selectedRoom.selectedVariant.mealPlan?.toLowerCase().includes('cp') ||
+                selectedRoom.selectedVariant.mealPlan?.toLowerCase().includes('map') ||
+                selectedRoom.selectedVariant.mealPlan?.toLowerCase().includes('ap')
+                ? "With Breakfast"
                 : "Without Breakfast")
             : "Room Only");
 
@@ -448,7 +435,7 @@ function BookingContent() {
             baseSubtotal = (pricePerNight || 0) * nights;
             totalRoomsCount = 1;
         }
-        
+
         let discount = 0;
         if (appliedCoupon) {
             if (appliedCoupon.discountType === 'percentage') {
@@ -458,9 +445,9 @@ function BookingContent() {
             }
             discount = Math.min(discount, baseSubtotal);
         }
-        
+
         const discountedSubtotal = Math.max(0, baseSubtotal - discount);
-        
+
         const totalRoomNights = (totalRoomsCount || 1) * (isHourly ? 1 : nights);
         const averagePricePerRoomNight = discountedSubtotal / (totalRoomNights || 1);
 
@@ -478,17 +465,17 @@ function BookingContent() {
         const platformFee = Math.round(total * 0.12); // 12% Deposit Online
         const payAtHotel = total - platformFee; // 88% Balance at Hotel
 
-        return { 
-            baseSubtotal, 
-            discount, 
-            discountedSubtotal, 
-            taxes, 
-            total, 
-            platformFee, 
-            payAtHotel, 
-            gstRate, 
-            totalRoomsCount, 
-            averagePricePerRoomNight 
+        return {
+            baseSubtotal,
+            discount,
+            discountedSubtotal,
+            taxes,
+            total,
+            platformFee,
+            payAtHotel,
+            gstRate,
+            totalRoomsCount,
+            averagePricePerRoomNight
         };
     };
 
@@ -505,6 +492,21 @@ function BookingContent() {
         if (paymentMode === "pay_full_online") return 0;
         return priceDetails.payAtHotel; // pay_deposit
     };
+
+    const propertyImageUrl = useMemo(() => {
+        if (isPackage) {
+            return "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80";
+        }
+        if (selectedRoom) {
+            const roomImgs = getImages(selectedRoom.images);
+            if (roomImgs.length > 0 && roomImgs[0]) return roomImgs[0];
+            if (selectedRoom.thumbnail) return selectedRoom.thumbnail;
+        }
+        if (hotel?.thumbnail) return hotel.thumbnail;
+        const hotelImgs = getImages(hotel?.images);
+        if (hotelImgs.length > 0 && hotelImgs[0]) return hotelImgs[0];
+        return "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80";
+    }, [isPackage, selectedRoom, hotel]);
 
     const { register, handleSubmit, formState: { errors } } = useForm<GuestFormData>({
         resolver: zodResolver(guestSchema),
@@ -642,6 +644,16 @@ function BookingContent() {
                 return;
             }
 
+            if (stayType === 'hourly') {
+                const targetTime = arrivalTime || searchParams.get("arrivalTime") || "12:00 PM";
+                const isAllowed = checkIn ? isHourlySlotAllowed(checkIn, targetTime) : false;
+                if (!isAllowed) {
+                    alert("Hourly micro-stays require at least 4 hours advance booking. Please select a valid check-in date and arrival time.");
+                    setIsSubmitting(false);
+                    return;
+                }
+            }
+
             const roomsPayload = selectedRoomsData.length > 0
                 ? selectedRoomsData.map(item => ({
                     id: String(item.room.id),
@@ -691,7 +703,7 @@ function BookingContent() {
                     try {
                         await loadRazorpay()
                         const orderRes = await paymentApi.createOrder(booking.id);
-                        
+
                         const options = {
                             key: (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_RAZORPAY_KEY_ID) || "rzp_live_T16NuPtvvs9cRV",
                             amount: orderRes.amount,
@@ -722,7 +734,7 @@ function BookingContent() {
                                 }
                             },
                             modal: {
-                                ondismiss: async function() {
+                                ondismiss: async function () {
                                     setIsSubmitting(false);
                                     localStorage.removeItem("active_checkout_booking_id");
                                     localStorage.removeItem("active_checkout_booking_time");
@@ -752,7 +764,7 @@ function BookingContent() {
                             localStorage.removeItem("active_checkout_booking_time");
                             try {
                                 await bookingApi.cancelBooking(booking.id, "Payment failed: " + (resp.error?.description || "Declined"));
-                            } catch (e) {}
+                            } catch (e) { }
                             alert(`Payment Failed: ${resp.error?.description || "Transaction declined"}. Your room hold has been cancelled.`);
                         });
                         rzp.open();
@@ -823,10 +835,10 @@ function BookingContent() {
                         <div className="space-y-5 pb-6 border-b border-slate-200/80">
                             <div className="flex items-center gap-3.5">
                                 <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden bg-slate-200 shrink-0 shadow-xs">
-                                    <Image 
-                                        src={isPackage ? "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80" : (selectedRoom ? (getImages(selectedRoom.images)[0] || selectedRoom.thumbnail) : (hotel?.thumbnail || "/placeholder-hotel.jpg"))} 
-                                        alt={isPackage ? packageTitle : (hotel?.name || "Hotel")} 
-                                        className="w-full h-full object-cover" 
+                                    <Image
+                                        src={propertyImageUrl}
+                                        alt={isPackage ? packageTitle : (hotel?.name || "Hotel")}
+                                        className="w-full h-full object-cover"
                                     />
                                     <div className="absolute bottom-1 left-1 flex items-center gap-0.5 px-1.5 py-0.5 bg-slate-900/80 backdrop-blur-md text-white rounded-md text-[9px] font-black">
                                         <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
@@ -910,7 +922,7 @@ function BookingContent() {
                                 )}
                                 <div className="flex justify-between text-slate-600 items-center">
                                     <span className="flex items-center gap-1.5">
-                                        Taxes & GST 
+                                        Taxes & GST
                                         {priceDetails.gstRate > 0 && (
                                             <span className="text-[9px] px-1.5 py-0.5 bg-brand-50 text-brand-700 font-black rounded border border-brand-100">
                                                 {Math.round(priceDetails.gstRate * 100)}% GST
@@ -1009,109 +1021,101 @@ function BookingContent() {
                                         </p>
                                     </div>
                                 ) : (
-                                    /* HOTELS SUPPORT DEPOSIT, FULL ONLINE & PAY AT HOTEL MODES */
-                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                        {/* Option 1: 12% Deposit */}
-                                        <button
-                                            type="button"
-                                            onClick={() => setPaymentMode("pay_deposit")}
-                                            className={`p-4 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
-                                                paymentMode === "pay_deposit"
-                                                    ? "border-brand-600 bg-brand-50/70 shadow-xs"
-                                                    : "border-slate-200/90 bg-white/80 hover:border-slate-300"
-                                            }`}
-                                        >
-                                            <div>
-                                                <div className="flex items-center justify-between mb-1">
-                                                    <span className="text-xs font-black text-slate-900 uppercase">Pay 12% Deposit</span>
-                                                    {paymentMode === "pay_deposit" && <Check className="w-4 h-4 text-brand-600 shrink-0" />}
+                                    /* SINGLE MINIMAL PAYMENT OPTION: PAY 12% DEPOSIT */
+                                    <div className="p-4 sm:p-5 rounded-2xl border-2 border-brand-600 bg-brand-50/50 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                        <div>
+                                            <div className="flex items-center gap-2 relative">
+                                                <span className="text-sm font-black text-slate-900 uppercase tracking-tight">
+                                                    Pay 12% Deposit Online
+                                                </span>
+
+                                                {/* Minimal (i) button with compact popover */}
+                                                <div className="relative inline-block">
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setShowDepositInfoModal(!showDepositInfoModal);
+                                                        }}
+                                                        className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-brand-100 hover:bg-brand-200 text-brand-700 transition-colors cursor-pointer"
+                                                        title="About 12% deposit"
+                                                    >
+                                                        <Info className="w-3.5 h-3.5" />
+                                                    </button>
+
+                                                    {/* Small minimal comment box */}
+                                                    {showDepositInfoModal && (
+                                                        <div
+                                                            data-nosnippet="true"
+                                                            className="absolute left-0 sm:left-auto sm:right-0 top-7 z-30 w-80 p-4 bg-slate-900 text-white rounded-2xl shadow-xl text-left border border-slate-800 animate-in fade-in zoom-in-95 duration-150"
+                                                            onClick={(e) => e.stopPropagation()}
+                                                        >
+                                                            <div className="flex items-center justify-between pb-1.5 border-b border-slate-800 mb-2">
+                                                                <span className="text-[10px] font-black uppercase tracking-wider text-slate-300">12% Deposit & Concierge Policy</span>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setShowDepositInfoModal(false)}
+                                                                    className="text-slate-400 hover:text-white text-xs cursor-pointer px-1"
+                                                                >
+                                                                    ✕
+                                                                </button>
+                                                            </div>
+                                                            <ul className="space-y-1.5 text-[11px] text-slate-300 leading-relaxed">
+                                                                <li>• <strong>12% Deposit:</strong> Pay 12% online now to request & secure your stay reservation.</li>
+                                                                <li>• <strong>88% at Hotel:</strong> Pay the remaining balance directly at the hotel front desk upon arrival.</li>
+                                                                <li>• <strong>Concierge Allocation:</strong> Rooms are coordinated on-demand with properties as our verified catalog rapidly expands.</li>
+                                                                <li>• <strong>100% Refund Assurance:</strong> In the rare event of on-ground unavailability, our team will relocate you to an equivalent stay nearby, or issue a prompt 100% refund of your deposit directly to your UPI/bank.</li>
+                                                            </ul>
+                                                        </div>
+                                                    )}
                                                 </div>
-                                                <p className="text-[11px] text-slate-500 font-medium leading-normal mb-3">
-                                                    Pay ₹{priceDetails.platformFee.toLocaleString()} now to reserve. Pay remaining balance at hotel.
-                                                </p>
                                             </div>
-                                            <span className="text-[10px] font-black text-brand-700 uppercase bg-brand-100/70 px-2 py-1 rounded-lg w-fit">
+                                            <p className="text-xs text-slate-600 font-medium mt-1 leading-relaxed">
+                                                Pay ₹{priceDetails.platformFee.toLocaleString()} online now. Pay remaining balance ₹{priceDetails.payAtHotel.toLocaleString()} at hotel during check-in.
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+                                            <span className="text-xs font-black text-brand-700 bg-white border border-brand-200 shadow-xs px-3.5 py-2 rounded-xl uppercase tracking-wider">
                                                 Deposit ₹{priceDetails.platformFee.toLocaleString()}
                                             </span>
-                                        </button>
-
-                                        {/* Option 2: Pay Full Online */}
-                                        <button
-                                            type="button"
-                                            onClick={() => setPaymentMode("pay_full_online")}
-                                            className={`p-4 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
-                                                paymentMode === "pay_full_online"
-                                                    ? "border-brand-600 bg-brand-50/70 shadow-xs"
-                                                    : "border-slate-200/90 bg-white/80 hover:border-slate-300"
-                                            }`}
-                                        >
-                                            <div>
-                                                <div className="flex items-center justify-between mb-1">
-                                                    <span className="text-xs font-black text-slate-900 uppercase">Pay Full Online</span>
-                                                    {paymentMode === "pay_full_online" && <Check className="w-4 h-4 text-brand-600 shrink-0" />}
-                                                </div>
-                                                <p className="text-[11px] text-slate-500 font-medium leading-normal mb-3">
-                                                    Instant online confirmation via UPI / Cards / Netbanking.
-                                                </p>
-                                            </div>
-                                            <span className="text-[10px] font-black text-emerald-700 uppercase bg-emerald-100/70 px-2 py-1 rounded-lg w-fit">
-                                                Pay ₹{priceDetails.total.toLocaleString()} Now
-                                            </span>
-                                        </button>
-
-                                        {/* Option 3: Pay at Hotel */}
-                                        <button
-                                            type="button"
-                                            onClick={() => setPaymentMode("pay_at_hotel")}
-                                            className={`p-4 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
-                                                paymentMode === "pay_at_hotel"
-                                                    ? "border-brand-600 bg-brand-50/70 shadow-xs"
-                                                    : "border-slate-200/90 bg-white/80 hover:border-slate-300"
-                                            }`}
-                                        >
-                                            <div>
-                                                <div className="flex items-center justify-between mb-1">
-                                                    <span className="text-xs font-black text-slate-900 uppercase">Pay at Hotel</span>
-                                                    {paymentMode === "pay_at_hotel" && <Check className="w-4 h-4 text-brand-600 shrink-0" />}
-                                                </div>
-                                                <p className="text-[11px] text-slate-500 font-medium leading-normal mb-3">
-                                                    Reserve now for ₹0 online. Pay total amount at hotel upon departure.
-                                                </p>
-                                            </div>
-                                            <span className="text-[10px] font-black text-slate-700 uppercase bg-slate-200/80 px-2 py-1 rounded-lg w-fit">
-                                                Pay ₹0 Now
-                                            </span>
-                                        </button>
+                                        </div>
                                     </div>
                                 )}
-                            </div>
-
-                            {/* 3. Submit Button - Logo Dot Brand Blue Color */}
-                            <button
-                                type="submit"
-                                disabled={isSubmitting}
-                                className="w-full py-4 bg-brand-600 hover:bg-brand-700 active:scale-[0.99] text-white font-black text-sm uppercase tracking-wider rounded-xl shadow-md shadow-brand-600/20 transition-all cursor-pointer flex items-center justify-center gap-2"
-                            >
-                                {isSubmitting ? (
-                                    <>
-                                        <Loader2 className="w-5 h-5 animate-spin" />
-                                        <span>Processing Booking...</span>
-                                    </>
-                                ) : (
-                                    <span>
-                                        {isPackage || paymentMode === "pay_full_online"
-                                            ? `Complete Booking • Pay ₹${priceDetails.total.toLocaleString()} Online`
-                                            : paymentMode === "pay_deposit"
-                                            ? `Complete Booking • Pay ₹${priceDetails.platformFee.toLocaleString()} Deposit`
-                                            : `Reserve Room • Pay ₹${priceDetails.total.toLocaleString()} at Hotel`}
-                                    </span>
-                                )}
-                            </button>
-                        </form>
                     </div>
-                </div>
+
+                    {/* 3. Submit Button - Logo Dot Brand Blue Color */}
+                    <div className="space-y-3">
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="w-full py-4 bg-brand-600 hover:bg-brand-700 active:scale-[0.99] text-white font-black text-sm uppercase tracking-wider rounded-xl shadow-md shadow-brand-600/20 transition-all cursor-pointer flex items-center justify-center gap-2"
+                        >
+                            {isSubmitting ? (
+                                <>
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                    <span>Processing Booking...</span>
+                                </>
+                            ) : (
+                                <span>
+                                    {isPackage
+                                        ? `Complete Booking • Pay ₹${priceDetails.total.toLocaleString()} Online`
+                                        : `Complete Booking • Pay ₹${priceDetails.platformFee.toLocaleString()} Deposit`}
+                                </span>
+                            )}
+                        </button>
+
+                        {!isPackage && (
+                            <div data-nosnippet="true" className="flex items-center justify-center gap-2 text-[11px] text-slate-500 font-medium text-center px-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                                <span>On-demand concierge coordination • 100% deposit refund to UPI/Bank or free relocation if room is unavailable.</span>
+                            </div>
+                        )}
+                    </div>
+                </form>
             </div>
         </div>
+            </div >
+        </div >
     );
 }
 

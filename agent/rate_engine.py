@@ -1,13 +1,13 @@
 """
 GHS Rate Engine
 Calculates true customer-facing display price matching HotelCard.tsx frontend logic,
-compares with MMT/Booking.com rates, and determines the exact promotion percentage
-needed so that the final customer price = (Market Price - ₹150) WITHOUT touching base room rates.
+compares with Booking.com rates, and determines the exact promotion percentage
+needed so that the final customer price = (Booking.com Price - ₹150) WITHOUT touching base room rates.
 """
 
 from datetime import datetime
 
-DEFAULT_OFFSET = 150  # Keep GHS exactly ₹150 cheaper than MMT/Booking.com by default
+DEFAULT_OFFSET = 150  # Keep GHS exactly ₹150 cheaper than Booking.com by default
 
 
 def apply_discount(price: float, val: float, discount_type: str) -> int:
@@ -93,6 +93,12 @@ def calculate_effective_price(hotel: dict) -> dict:
         display_price = int(hotel_base_price)
         original_price = int(hotel_base_price)
 
+    # Safety guard: Base price for a bookable partner hotel should never be 0
+    if original_price <= 0:
+        bp = float(hotel.get("bookingPrice") or 0)
+        original_price = int(bp) if bp > 500 else 2000
+        display_price = original_price
+
     return {
         "display_price": display_price,
         "original_price": int(original_price),
@@ -112,6 +118,8 @@ def calculate_optimal_promotion(base_price: float, market_min: float, offset: in
     The base_price itself is NOT modified!
     """
     target_price = max(500, int(market_min - offset))
+    if base_price <= 0:
+        base_price = max(target_price + offset, 2000)
     
     if base_price <= target_price:
         # Base price is already low enough; no promo discount required
@@ -134,29 +142,35 @@ def calculate_optimal_promotion(base_price: float, market_min: float, offset: in
 def analyze_rate(hotel: dict, market_data: dict, offset: int = DEFAULT_OFFSET) -> dict:
     """
     Full rate intelligence for a hotel:
-    - Calculates effective display price with current promotion.
-    - Evaluates what promotion % is required to hit (Market Min - offset).
+    - Compares against Booking.com Mobile-Only rates.
+    - Evaluates meal plans: EP (Room Only) and CP (Breakfast Included).
+    - Calculates optimal promo discount so GHS is exactly ₹150 cheaper.
     """
     eff = calculate_effective_price(hotel)
     ghs_price = eff["display_price"]
     base_price = eff["original_price"]
+    
     market_avg = market_data.get("avg", 2500)
     market_min = market_data.get("min", market_avg)
+    ep_rate = market_data.get("ep") or market_min
+    cp_rate = market_data.get("cp") or int(ep_rate * 1.22)
+    map_rate = market_data.get("map")
     
-    target_price = max(500, market_min - offset)
-    diff = market_min - ghs_price
+    target_price = max(500, int(ep_rate - offset))
+    target_cp = max(600, int(cp_rate - offset))
+    diff = ep_rate - ghs_price
     
-    promo_calc = calculate_optimal_promotion(base_price, market_min, offset)
+    promo_calc = calculate_optimal_promotion(base_price, ep_rate, offset)
 
     # Classification:
-    if diff > (offset + 80):
+    if diff > (offset + 100):
         status = "UNDERPRICED"
         color = "red"
         advice = f"Too cheap (diff: ₹{diff})! Decrease promo from {eff['discount_pct']}% ➔ {promo_calc['needed_promo_pct']}%"
-    elif (offset - 60) <= diff <= (offset + 60):
+    elif (offset - 60) <= diff <= (offset + 100):
         status = "MATCHED"
         color = "green"
-        advice = f"Perfect! Exactly ₹{diff} below market (~₹{offset} sweet spot)."
+        advice = f"Perfect! Exactly ₹{diff} below Booking.com Mobile (~₹{offset} sweet spot)."
     else:
         status = "OVERPRICED"
         color = "yellow"
@@ -171,9 +185,13 @@ def analyze_rate(hotel: dict, market_data: dict, offset: int = DEFAULT_OFFSET) -
         "base_room_price": base_price,
         "current_promo_pct": eff["discount_pct"],
         "coupon_code": eff["coupon_code"] or "BASIC",
-        "market_min": market_min,
+        "market_min": ep_rate,
         "market_avg": market_avg,
+        "ep_rate": ep_rate,
+        "cp_rate": cp_rate,
+        "map_rate": map_rate,
         "target_price": target_price,
+        "target_cp": target_cp,
         "needed_promo_pct": promo_calc["needed_promo_pct"],
         "resulting_display_price": promo_calc["resulting_display_price"],
         "offset": offset,
@@ -181,6 +199,7 @@ def analyze_rate(hotel: dict, market_data: dict, offset: int = DEFAULT_OFFSET) -
         "status": status,
         "color": color,
         "advice": advice,
+        "has_mobile_tag": market_data.get("mobile_only", True),
         "rooms_count": eff["rooms_count"],
         "rooms": hotel.get("room") or []
     }

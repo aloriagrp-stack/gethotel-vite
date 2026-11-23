@@ -147,6 +147,14 @@ const Image = ({ src, alt, width, height, fill, priority, unoptimized, className
         className={className}
         style={{ ...imgStyle, ...props.style }}
         onLoad={() => setLoaded(true)}
+        onError={(e) => {
+          const target = e.currentTarget;
+          if (!target.src.includes('images.unsplash.com')) {
+            target.src = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80';
+          }
+          setLoaded(true);
+          if (props.onError) props.onError(e);
+        }}
         loading={priority ? 'eager' : 'lazy'}
         decoding="async"
         {...props}

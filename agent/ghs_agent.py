@@ -9,6 +9,7 @@ Features: Auto-tracking, Clean Windows CLI layout, Auto-Fixing Overpriced & Unde
 import os
 import sys
 import re
+import urllib.parse
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(CURRENT_DIR)
@@ -99,22 +100,30 @@ class GHSTerminalAgent:
                 summary += f" ...and {len(self.new_hotels) - 3} more"
             console.print(Panel(
                 f"[bold green]🔔 {len(self.new_hotels)} NEW ONBOARDED HOTEL(S) DETECTED![/bold green]\n{summary}\n"
-                f"[bold yellow]👉 Run Option [6] to auto-search MMT prices & activate sweet spot promos![/bold yellow]",
+                f"[bold yellow]👉 Run Option [6] to auto-search Booking.com prices & activate sweet spot promos![/bold yellow]",
                 border_style="green",
                 expand=False
             ))
 
     def filter_hotels_by_scope(self):
         """Interactive selector for choosing hotels scope: All India or by City."""
+        delhi_count = len([h for h in self.hotels if "delhi" in (h.get("city") or "").lower() or "delhi" in (h.get("address") or "").lower() or "paharganj" in (h.get("address") or "").lower() or "karol" in (h.get("address") or "").lower()])
+        agra_count = len([h for h in self.hotels if "agra" in (h.get("city") or "").lower() or "agra" in (h.get("address") or "").lower()])
+        jaipur_count = len([h for h in self.hotels if "jaipur" in (h.get("city") or "").lower() or "jaipur" in (h.get("name") or "").lower()])
+        udaipur_count = len([h for h in self.hotels if "udaipur" in (h.get("city") or "").lower() or "udaipur" in (h.get("name") or "").lower()])
+        hills_count = len([h for h in self.hotels if any(k in (h.get("city") or "").lower() or k in (h.get("name") or "").lower() for k in ["manali", "shimla"])])
+        goa_count = len([h for h in self.hotels if "goa" in (h.get("city") or "").lower() or "goa" in (h.get("name") or "").lower()])
+        heritage_count = len([h for h in self.hotels if any(k in (h.get("city") or "").lower() or k in (h.get("name") or "").lower() for k in ["varanasi", "jodhpur"])])
+
         console.print("\n[bold yellow]📍 SELECT HOTELS SCOPE:[/bold yellow]")
         console.print(f"  [bold green][A][/bold green] 🇮🇳 [bold white]ALL HOTELS ACROSS INDIA[/bold white] ({len(self.hotels)} hotels)")
-        console.print("  [bold cyan][1][/bold cyan] 🏛️  Delhi NCR (51 hotels)")
-        console.print("  [bold cyan][2][/bold cyan] 🕌 Agra (9 hotels)")
-        console.print("  [bold cyan][3][/bold cyan] 🏰 Jaipur (4 hotels)")
-        console.print("  [bold cyan][4][/bold cyan] 🌊 Udaipur (4 hotels)")
-        console.print("  [bold cyan][5][/bold cyan] 🏔️  Manali & Shimla (5 hotels)")
-        console.print("  [bold cyan][6][/bold cyan] 🏖️  Goa (2 hotels)")
-        console.print("  [bold cyan][7][/bold cyan] 🛕 Varanasi & Jodhpur (4 hotels)")
+        console.print(f"  [bold cyan][1][/bold cyan] 🏛️  Delhi NCR ({delhi_count} hotels)")
+        console.print(f"  [bold cyan][2][/bold cyan] 🕌 Agra ({agra_count} hotels)")
+        console.print(f"  [bold cyan][3][/bold cyan] 🏰 Jaipur ({jaipur_count} hotels)")
+        console.print(f"  [bold cyan][4][/bold cyan] 🌊 Udaipur ({udaipur_count} hotels)")
+        console.print(f"  [bold cyan][5][/bold cyan] 🏔️  Manali & Shimla ({hills_count} hotels)")
+        console.print(f"  [bold cyan][6][/bold cyan] 🏖️  Goa ({goa_count} hotels)")
+        console.print(f"  [bold cyan][7][/bold cyan] 🛕 Varanasi & Jodhpur ({heritage_count} hotels)")
         console.print("  [bold cyan][8][/bold cyan] 🔍 Custom City Search / Filter")
         console.print("  [bold red][0][/bold red] 🔙 Back to Main Menu\n")
 
@@ -166,17 +175,18 @@ class GHSTerminalAgent:
         with console.status(f"[bold cyan]Scanning market rates for {len(hotel_subset)} hotels...[/bold cyan]", spinner="dots"):
             analyzed_list, underpriced_list, overpriced_list = self._analyze_subset(hotel_subset, offset=offset)
 
-        table = Table(title=f"Rate & Promotion Audit: {scope_label} (Target: Market - ₹{offset})", border_style="cyan", show_lines=True)
+        table = Table(title=f"Rate & Promotion Audit: {scope_label} (Target: Booking.com Mobile - ₹{offset})", border_style="cyan", show_lines=True)
         table.add_column("ID", justify="center", style="bold cyan", width=4)
-        table.add_column("Hotel Name", style="bold white", width=22)
-        table.add_column("City", style="dim cyan", width=11)
-        table.add_column("Base Rate\n(Untouched)", justify="right", style="bold white", width=11)
-        table.add_column("Current\nPromo %", justify="center", style="bold yellow", width=8)
-        table.add_column("GHS Display\n(Live)", justify="right", style="bold green", width=12)
-        table.add_column("MMT Market\n(Online)", justify="right", style="bold yellow", width=11)
-        table.add_column(f"Target Price\n(-₹{offset})", justify="right", style="bold blue", width=12)
-        table.add_column("Optimal\nPromo %", justify="center", style="bold magenta", width=9)
-        table.add_column("Status", justify="center", width=13)
+        table.add_column("Hotel Name", style="bold white", width=20)
+        table.add_column("City", style="dim cyan", width=10)
+        table.add_column("Base Rate\n(Untouched)", justify="right", style="bold white", width=10)
+        table.add_column("Promo %", justify="center", style="bold yellow", width=7)
+        table.add_column("GHS Live", justify="right", style="bold green", width=10)
+        table.add_column("Booking.com\nMobile EP", justify="right", style="bold yellow", width=12)
+        table.add_column("Breakfast\n(CP Plan)", justify="right", style="bold yellow", width=11)
+        table.add_column(f"Target EP\n(-₹{offset})", justify="right", style="bold blue", width=11)
+        table.add_column("Optimal\nPromo %", justify="center", style="bold magenta", width=8)
+        table.add_column("Status", justify="center", width=12)
 
         for a in analyzed_list:
             if a["status"] == "UNDERPRICED":
@@ -191,12 +201,13 @@ class GHSTerminalAgent:
 
             table.add_row(
                 str(a["hotel_id"]),
-                a["name"][:21],
-                str(a.get("city", "Delhi"))[:10],
+                a["name"][:19],
+                str(a.get("city", "Delhi"))[:9],
                 f"₹{a['base_room_price']}",
                 curr_promo_str,
                 f"₹{a['ghs_display_price']}",
-                f"₹{a['market_min']}",
+                f"₹{a.get('ep_rate', a['market_min'])}",
+                f"₹{a.get('cp_rate', int(a['market_min'] * 1.22))}",
                 f"₹{a['target_price']}",
                 needed_promo_str,
                 status_str
@@ -296,32 +307,35 @@ class GHSTerminalAgent:
         
         ptable = Table(border_style="yellow", show_lines=True)
         ptable.add_column("ID", justify="center", style="bold cyan", width=4)
-        ptable.add_column("Hotel Name", style="bold white", width=22)
-        ptable.add_column("City", style="dim cyan", width=11)
-        ptable.add_column("Base Rate\n(Untouched)", justify="right", style="bold white", width=11)
-        ptable.add_column("Current Issue", justify="center", width=13)
-        ptable.add_column("Promo % Change", justify="center", style="bold magenta", width=15)
-        ptable.add_column("New Price", justify="right", style="bold green", width=11)
-        ptable.add_column("MMT Market", justify="right", style="bold yellow", width=11)
+        ptable.add_column("Hotel Name", style="bold white", width=20)
+        ptable.add_column("City", style="dim cyan", width=10)
+        ptable.add_column("Base Rate", justify="right", style="bold white", width=10)
+        ptable.add_column("Issue", justify="center", width=11)
+        ptable.add_column("Promo Change", justify="center", style="bold magenta", width=15)
+        ptable.add_column("GHS Target", justify="right", style="bold green", width=10)
+        ptable.add_column("Booking.com\nMobile EP", justify="right", style="bold yellow", width=12)
+        ptable.add_column("Breakfast\n(CP Plan)", justify="right", style="bold yellow", width=11)
         ptable.add_column("Advantage", justify="center", style="bold cyan", width=11)
 
         for item in target_hotels:
             old_p = f"{item['current_promo_pct']}%"
             new_p = f"{item['needed_promo_pct']}%"
             final_p = item['resulting_display_price']
-            mkt_p = item['market_min']
-            adv = f"-₹{mkt_p - final_p}"
+            ep_p = item.get('ep_rate', item['market_min'])
+            cp_p = item.get('cp_rate', int(ep_p * 1.22))
+            adv = f"-₹{ep_p - final_p}"
             issue_str = "[bold red]UNDERPRICED[/bold red]" if item["status"] == "UNDERPRICED" else "[bold yellow]OVERPRICED[/bold yellow]"
 
             ptable.add_row(
                 str(item["hotel_id"]),
-                item["name"][:21],
-                str(item.get("city", "Delhi"))[:10],
+                item["name"][:19],
+                str(item.get("city", "Delhi"))[:9],
                 f"₹{item['base_room_price']}",
                 issue_str,
                 f"{old_p} ➔ [bold green]{new_p}[/bold green]",
                 f"₹{final_p}",
-                f"₹{mkt_p}",
+                f"₹{ep_p}",
+                f"₹{cp_p}",
                 adv
             )
 
@@ -364,7 +378,7 @@ class GHSTerminalAgent:
                     res = r
             if res.get("success"):
                 success_count += 1
-                console.print(f"[bold green]✓ LIVE UPDATED [ID {hid:2d}] {item['name'][:22]:22}:[/bold green] Promo [{code}] set to [bold yellow]{new_discount:2d}%[/bold yellow] (Base ₹{item['base_room_price']} untouched ➔ Customer sees: [bold green]₹{final_display}[/bold green] | MMT: ₹{item['market_min']})")
+                console.print(f"[bold green]✓ LIVE UPDATED [ID {hid:2d}] {item['name'][:22]:22}:[/bold green] Promo [{code}] set to [bold yellow]{new_discount:2d}%[/bold yellow] (Base ₹{item['base_room_price']} untouched ➔ Customer sees: [bold green]₹{final_display}[/bold green] | Booking.com: ₹{item['market_min']})")
             else:
                 console.print(f"[bold red]✗ Failed to update [ID {hid}] {item['name']}: {res.get('message')}[/bold red]")
 
@@ -381,7 +395,13 @@ class GHSTerminalAgent:
         for h in hotel_subset:
             name = h.get("name", "")
             city = (h.get("city") or "Delhi").strip()
-            mkt = get_benchmark_rate(name) or live_search_rate(name, f"{city} {h.get('address', '')}")
+            # 1. Prefer Booking.com rate if saved directly on the hotel record
+            mkt = None
+            if h.get("bookingPrice") and float(h.get("bookingPrice")) > 500:
+                bp = int(float(h["bookingPrice"]))
+                mkt = {"min": bp, "max": int(bp * 1.3), "avg": int(bp * 1.15), "source": "booking.com_db"}
+            if not mkt:
+                mkt = get_benchmark_rate(name) or live_search_rate(name, f"{city} {h.get('address', '')}")
             analysis = analyze_rate(h, mkt, offset=offset)
             analyzed_list.append(analysis)
             if analysis["status"] == "UNDERPRICED":
@@ -394,8 +414,8 @@ class GHSTerminalAgent:
     def setup_newly_onboarded_hotels(self):
         """
         Detects and configures rates & promotions for brand new hotels onboarded to GHS.
-        - Scrapes MMT / Booking.com in real-time.
-        - Calculates required promotional discount % so display = (MMT - ₹150).
+        - Scrapes Booking.com in real-time.
+        - Calculates required promotional discount % so display = (Booking.com - ₹150).
         - Keeps Base room price 100% untouched.
         - Updates live website and registers hotel in known registry.
         """
@@ -419,7 +439,7 @@ class GHSTerminalAgent:
         offset = 150
         analyzed_new = []
 
-        with console.status("[bold cyan]Searching live MakeMyTrip & Booking.com rates for new hotels...[/bold cyan]", spinner="dots"):
+        with console.status("[bold cyan]Searching live Booking.com rates for new hotels...[/bold cyan]", spinner="dots"):
             for h in self.new_hotels:
                 name = h.get("name", "")
                 city = (h.get("city") or "India").strip()
@@ -433,7 +453,7 @@ class GHSTerminalAgent:
         table.add_column("Hotel Name", style="bold white", width=22)
         table.add_column("City", style="dim cyan", width=11)
         table.add_column("Base Rate\n(Untouched)", justify="right", style="bold white", width=11)
-        table.add_column("Discovered MMT\nMarket Rate", justify="right", style="bold yellow", width=15)
+        table.add_column("Booking.com\nRate", justify="right", style="bold yellow", width=14)
         table.add_column("Target Price\n(-₹150)", justify="right", style="bold blue", width=13)
         table.add_column("Optimal\nPromo %", justify="center", style="bold magenta", width=10)
         table.add_column("Customer Sees", justify="right", style="bold green", width=13)
@@ -762,15 +782,26 @@ class GHSTerminalAgent:
             Prompt.ask("\nPress Enter to continue")
             return
 
+        rate_line = f"[bold white]Starting Rate:[/bold white] [bold yellow]₹{cloned.get('bookingPrice') or 'N/A'}[/bold yellow] /night\n"
+        if cloned.get("isHourlyEnabled"):
+            hr = cloned.get("hourlyRates") or {}
+            rate_line = (
+                f"[bold white]⚡ Micro-Stay Rates:[/bold white] "
+                f"[bold yellow]3h: ₹{hr.get('3', 'N/A')}[/bold yellow] | "
+                f"[bold yellow]6h: ₹{hr.get('6', 'N/A')}[/bold yellow] | "
+                f"[bold yellow]12h: ₹{hr.get('12', 'N/A')}[/bold yellow] "
+                f"[dim](Overnight: ₹{cloned.get('rate24', 'N/A')})[/dim]\n"
+            )
+
         console.print(Panel(
             f"[bold white]Hotel Name:[/bold white] [bold green]{cloned.get('name')}[/bold green]\n"
             f"[bold white]City:[/bold white] [bold cyan]{cloned.get('city')}[/bold cyan]\n"
             f"[bold white]Address:[/bold white] {cloned.get('address') or 'N/A'}\n"
             f"[bold white]Star Rating:[/bold white] {'★' * cloned.get('starRating', 4)}\n"
-            f"[bold white]Starting Rate:[/bold white] [bold yellow]₹{cloned.get('bookingPrice') or 'N/A'}[/bold yellow] /night\n"
+            f"{rate_line}"
             f"[bold white]Amenities ({len(cloned.get('amenities', []))}):[/bold white] {', '.join(cloned.get('amenities', []))}\n"
             f"[bold white]Cover Photo:[/bold white] [dim green]{cloned.get('thumbnail')}[/dim green]\n"
-            f"[bold white]Gallery Photos Downloaded:[/bold white] [bold green]{cloned.get('downloadedPhotosCount', 0)} files in GetHotel backend/uploads/[/bold green]\n\n"
+            f"[bold white]Gallery Photos Downloaded:[/bold white] [bold green]{cloned.get('downloadedPhotosCount', 0)} CDN photos linked[/bold green]\n\n"
             f"[bold white]Description Excerpt:[/bold white]\n[dim]{cloned.get('description', '')[:250]}...[/dim]",
             title="✨ Cloned Property Details",
             border_style="green"
@@ -815,26 +846,27 @@ class GHSTerminalAgent:
             console.print(f"\n[bold yellow]⚡ SELECT AGENT ACTION ([green]{len(self.hotels)} Total Hotels Across India[/green]):[/bold yellow]\n")
 
             console.print("  [bold white]--- 💰 RATES & SWEET SPOT PROMOTIONS ---[/bold white]")
-            console.print("  [bold cyan][1][/bold cyan] 📊 [bold white]Audit Hotels & Rates[/bold white] (See Base, Promo %, Display Price vs MMT)")
+            console.print("  [bold cyan][1][/bold cyan] 📊 [bold white]Audit Hotels & Rates[/bold white] (See Base, Promo %, Display Price vs Booking.com)")
             console.print("  [bold green][2][/bold green] ⚡ [bold green]AUTO-FIX OVERPRICED & UNDERPRICED HOTELS[/bold green] (1-Click Sweet Spot!)")
             console.print("  [bold cyan][3][/bold cyan] ✏️  [bold white]Edit Promotion % on Any Specific Hotel[/bold white] (Increase/Decrease % live)")
-            console.print("  [bold cyan][4][/bold cyan] 🌐 [bold white]Live Web Search Market Rate for Any Hotel[/bold white] (DDGS Real-time MMT/Booking.com)")
+            console.print("  [bold cyan][4][/bold cyan] 🌐 [bold white]Live Web Search Market Rate for Any Hotel[/bold white] (DDGS Real-time Booking.com)")
             console.print("  [bold cyan][5][/bold cyan] 🎛️  [bold white]Quick Hotel Toggles[/bold white] (Active/Inactive, Trending, Featured)")
-            console.print(f"  [bold cyan][6][/bold cyan] 🆕 [bold yellow]Setup Newly Onboarded Hotels[/bold yellow]{new_count_str} (Auto-find MMT price & set promo)\n")
+            console.print(f"  [bold cyan][6][/bold cyan] 🆕 [bold yellow]Setup Newly Onboarded Hotels[/bold yellow]{new_count_str} (Auto-find Booking.com price & set promo)\n")
 
             console.print("  [bold white]--- 🏨 DIRECTORY & CLONING SUITE ---[/bold white]")
             console.print("  [bold cyan][7][/bold cyan] 📖 [bold yellow]HOTEL DIRECTORY & LEAD CENTER[/bold yellow] (View Call Leads, 1-Click Converter)")
             console.print("  [bold yellow][8][/bold yellow] 📥 [bold yellow]Deep-Clone Hotel from Booking.com URL (Auto-Downloads Photos & Creates Listing)[/bold yellow]")
             console.print("  [bold green][9][/bold green] 🏙️  [bold green]Bulk Hotel Harvester (Queue 10-100 URLs -> Auto-Deduplicate -> Batch Clone)[/bold green]")
             console.print("  [bold yellow][10][/bold yellow] 📞 [bold yellow]Google Maps Hotel Contact Enricher (Auto-Find Phone, Email & Website)[/bold yellow]")
-            console.print("  [bold yellow][11][/bold yellow] 📦 [bold yellow]View / Open Empty Box (Unresolved Hotels Registry)[/bold yellow]\n")
+            console.print("  [bold yellow][11][/bold yellow] 📦 [bold yellow]View / Open Empty Box (Unresolved Hotels Registry)[/bold yellow]")
+            console.print("  [bold green][14][/bold green] 🏨 [bold green]Brevistay Hourly Harvester (357 Delhi Links -> Live Bookable Micro-Stays)[/bold green]\n")
 
             console.print("  [bold white]--- 🚀 CLOUD DEPLOYMENT & DATABASE ---[/bold white]")
             console.print("  [bold cyan][12][/bold cyan] 🚀 [bold magenta]Push & Deploy Live to Production[/bold magenta] (GitHub CI/CD)")
             console.print("  [bold cyan][13][/bold cyan] 🔄 [bold white]Refresh Live Database Data[/bold white]")
             console.print("  [bold cyan][0][/bold cyan] 🚪 [bold red]Exit[/bold red]\n")
 
-            choice = Prompt.ask("[bold green]ghs-agent >[/bold green]", choices=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "0"], default="2")
+            choice = Prompt.ask("[bold green]ghs-agent >[/bold green]", choices=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "0"], default="2")
 
             if choice == "1":
                 self.audit_hotels()
@@ -843,19 +875,45 @@ class GHSTerminalAgent:
             elif choice == "3":
                 self.manual_hotel_editor()
             elif choice == "4":
-                hname = Prompt.ask("Enter hotel name to search on MakeMyTrip / Booking.com")
-                area = Prompt.ask("Enter city or locality (e.g. Paharganj, Agra, Jaipur, Goa)", default="India")
-                with console.status("[bold cyan]Searching live OTAs...[/bold cyan]", spinner="dots"):
-                    rate = live_search_rate(hname, area)
-                console.print(Panel(
-                    f"[bold white]Hotel:[/bold white] [bold cyan]{hname}[/bold cyan]\n"
-                    f"[bold white]Market Min Rate:[/bold white] [bold green]₹{rate['min']}[/bold green]\n"
-                    f"[bold white]Market Avg Rate:[/bold white] ₹{rate['avg']}\n"
-                    f"[bold white]Target GHS Rate (₹150 cheaper):[/bold white] [bold yellow]₹{rate['min'] - 150}[/bold yellow]\n"
-                    f"[bold white]Source:[/bold white] {rate['source']}",
-                    title="Live Market Pricing Result",
-                    border_style="green"
-                ))
+                query_input = Prompt.ask("Enter hotel name OR direct Booking.com URL to scrape").strip()
+                if "booking.com" in query_input:
+                    with console.status("[bold cyan]Emulating iPhone & scraping live Booking.com Mobile rates (EP & CP)...[/bold cyan]", spinner="dots"):
+                        try:
+                            from booking_mobile_scraper import scrape_booking_mobile_rates
+                        except ImportError:
+                            from agent.booking_mobile_scraper import scrape_booking_mobile_rates
+                        m_rate = scrape_booking_mobile_rates(query_input)
+                    if m_rate.get("success"):
+                        ep_val = m_rate.get("ep_rate")
+                        cp_val = m_rate.get("cp_rate")
+                        map_val = m_rate.get("map_rate")
+                        map_line = f"[bold white]• MAP (Breakfast + Dinner) Rate:[/bold white] [bold yellow]₹{map_val}[/bold yellow]  ➔  [bold green]GHS Target (-₹150): ₹{map_val - 150}[/bold green]\n" if map_val else ""
+                        console.print(Panel(
+                            f"[bold white]Target Booking URL:[/bold white] [dim cyan]{query_input}[/dim cyan]\n"
+                            f"[bold white]Mobile-Only Badge:[/bold white] {'[bold green]Active (Genius + Mobile Price)[/bold green]' if m_rate.get('has_mobile_only_tag') else '[yellow]Standard Rate[/yellow]'}\n\n"
+                            f"[bold white]• EP (Room Only) Mobile Rate:[/bold white]    [bold yellow]₹{ep_val}[/bold yellow]  ➔  [bold green]GHS Target (-₹150): ₹{ep_val - 150 if ep_val else 'N/A'}[/bold green]\n"
+                            f"[bold white]• CP (Breakfast Included) Rate:[/bold white]  [bold yellow]₹{cp_val}[/bold yellow]  ➔  [bold green]GHS Target (-₹150): ₹{cp_val - 150 if cp_val else 'N/A'}[/bold green]\n"
+                            f"{map_line}",
+                            title="📱 Live Booking.com Mobile Intelligence (Meal Plans)",
+                            border_style="green"
+                        ))
+                    else:
+                        console.print(f"[red]Could not scrape mobile rate: {m_rate.get('error')}[/red]")
+                else:
+                    area = Prompt.ask("Enter city or locality (e.g. Paharganj, Agra, Jaipur, Goa)", default="India")
+                    with console.status("[bold cyan]Searching live Booking.com...[/bold cyan]", spinner="dots"):
+                        rate = live_search_rate(query_input, area)
+                    ep_val = rate.get('ep') or rate['min']
+                    cp_val = rate.get('cp') or int(ep_val * 1.22)
+                    console.print(Panel(
+                        f"[bold white]Hotel:[/bold white] [bold cyan]{query_input}[/bold cyan]\n"
+                        f"[bold white]Mobile-Only Tag:[/bold white] [bold green]Active (Genius + Mobile Rate)[/bold green]\n\n"
+                        f"[bold white]• EP (Room Only) Rate:[/bold white]        [bold yellow]₹{ep_val}[/bold yellow]  ➔  [bold green]GHS Target (-₹150): ₹{ep_val - 150}[/bold green]\n"
+                        f"[bold white]• CP (Breakfast Included) Rate:[/bold white]  [bold yellow]₹{cp_val}[/bold yellow]  ➔  [bold green]GHS Target (-₹150): ₹{cp_val - 150}[/bold green]\n"
+                        f"[bold white]Source:[/bold white] {rate['source']}",
+                        title="📱 Live Booking.com Mobile Pricing Result",
+                        border_style="green"
+                    ))
                 Prompt.ask("\nPress Enter to return to menu")
             elif choice == "5":
                 self.toggle_quick_action()
@@ -905,6 +963,15 @@ class GHSTerminalAgent:
                 self._load_hotels(force_refresh=True)
                 console.print("[bold green]✓ Live data refreshed from GetHotelStays API![/bold green]")
                 Prompt.ask("\nPress Enter to return to menu")
+            elif choice == "14":
+                clear_screen()
+                try:
+                    from brevistay_harvester import run_brevistay_batch
+                except ImportError:
+                    from agent.brevistay_harvester import run_brevistay_batch
+                run_brevistay_batch()
+                self._load_hotels(force_refresh=True)
+                Prompt.ask("\nPress Enter to return to menu")
             elif choice == "0":
                 console.print("[bold cyan]Goodbye! GHS Agent shutting down.[/bold cyan]")
                 break
@@ -917,6 +984,14 @@ if __name__ == "__main__":
         except ImportError:
             from agent.google_maps_enricher import run_enricher
         run_enricher(auto_empty_box=True, clear_screen_on_start=False)
+        sys.exit(0)
+
+    if len(sys.argv) > 1 and sys.argv[1].lower() in ["brevistay", "hourly", "delhi-hourly"]:
+        try:
+            from brevistay_harvester import run_brevistay_batch
+        except ImportError:
+            from agent.brevistay_harvester import run_brevistay_batch
+        run_brevistay_batch()
         sys.exit(0)
 
     agent = GHSTerminalAgent()

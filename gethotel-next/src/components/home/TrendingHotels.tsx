@@ -22,6 +22,11 @@ interface Hotel {
 
 function TrendingHotelCard({ hotel }: { hotel: Hotel }) {
     const { mode } = useStayMode();
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+    const activeMode = mounted ? mode : 'nightly';
     const { toggle, isWishlisted } = useWishlist();
     const wishlisted = isWishlisted(hotel.id.toString());
     const [coupons, setCoupons] = useState<any[]>([]);
@@ -52,7 +57,7 @@ function TrendingHotelCard({ hotel }: { hotel: Hotel }) {
     }, [hotel.id]);
 
     const rooms = hotel.room || [];
-    const isHourly = mode === 'hourly';
+    const isHourly = activeMode === 'hourly';
     let basePrice = 0;
     const duration = "3";
     const priceLabel = isHourly ? `/ ${duration} hours` : "/ night";
@@ -203,9 +208,14 @@ export default function TrendingHotels({
     loading = false
 }: TrendingHotelsProps) {
     const { mode } = useStayMode();
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+    const activeMode = mounted ? mode : 'nightly';
     const displayHotels = (hotels || []).filter(hotel => {
         const rooms = hotel.room || [];
-        if (mode === 'hourly') {
+        if (activeMode === 'hourly') {
             return rooms.some((r: any) => r.isHourlyEnabled || r.is_hourly_enabled);
         } else {
             return rooms.length === 0 || rooms.some((r: any) => !r.isHourlyEnabled && !r.is_hourly_enabled);

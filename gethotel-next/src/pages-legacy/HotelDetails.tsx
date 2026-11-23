@@ -38,8 +38,12 @@ export default function HotelDetailPage({ hotelId, initialHotel }: HotelDetailPa
     const [loading, setLoading] = useState(!initialHotel);
     const [error, setError] = useState(false);
 
+    const slugify = (s: string) => String(s || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const cleanSlug = slugify(id);
+
     useEffect(() => {
-        if (initialHotel && (String(initialHotel.id) === id || initialHotel.slug === id)) {
+        const initialSlug = initialHotel ? slugify(initialHotel.name) : "";
+        if (initialHotel && (String(initialHotel.id) === id || initialHotel.slug === id || initialSlug === cleanSlug)) {
             setHotel(initialHotel);
             setLoading(false);
             return;
@@ -62,9 +66,6 @@ export default function HotelDetailPage({ hotelId, initialHotel }: HotelDetailPa
             } catch (err) {
                 console.error("Direct fetch failed, attempting fallback lookup:", err);
                 try {
-                    const slugify = (s: string) => String(s || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-                    const cleanSlug = slugify(id);
-
                     // Fallback 1: Query full hotels list
                     const listRes = await hotelApi.getHotels();
                     const hotelsList: any[] = listRes.data || [];
@@ -84,6 +85,22 @@ export default function HotelDetailPage({ hotelId, initialHotel }: HotelDetailPa
                             return;
                         }
                     }
+
+                    // Fallback 2: Check static Delhi hotels repository
+                    const { allDelhiHotels } = await import("@/lib/delhiHotelsHelper");
+                    const staticMatch = (allDelhiHotels as any[]).find((h: any) => 
+                        String(h.id) === id || 
+                        slugify(h.name) === cleanSlug || 
+                        slugify(h.name).includes(cleanSlug) || 
+                        cleanSlug.includes(slugify(h.name))
+                    );
+
+                    if (staticMatch) {
+                        setHotel(staticMatch);
+                        setError(false);
+                        return;
+                    }
+
                     setError(true);
                 } catch (fallbackErr) {
                     console.error("Fallback lookup failed:", fallbackErr);
@@ -95,7 +112,7 @@ export default function HotelDetailPage({ hotelId, initialHotel }: HotelDetailPa
         };
 
         fetchHotel();
-    }, [id]);
+    }, [id, initialHotel, cleanSlug]);
 
     if (loading) {
         return <Loader variant="fullscreen" text="Loading hotel details..." />;

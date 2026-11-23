@@ -1,5 +1,6 @@
 'use client';
 
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, ChevronRight, Clock } from "lucide-react";
 import Image from "@/components/common/Image";
@@ -98,7 +99,12 @@ export default function ExploreByDestinations({
     loading?: boolean 
 }) {
     const { mode } = useStayMode();
-    const isHourly = mode === 'hourly';
+    const [mounted, setMounted] = React.useState(false);
+    React.useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    const isHourly = (mounted ? mode : 'nightly') === 'hourly';
 
     const displayDestinations = isHourly
         ? (hourlyDestinations && hourlyDestinations.length > 0 ? hourlyDestinations : DEFAULT_HOURLY_DESTINATIONS)

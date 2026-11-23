@@ -8,18 +8,20 @@ document.addEventListener("DOMContentLoaded", async () => {
   const btnDownload = document.getElementById("btn-download");
   const btnClear = document.getElementById("btn-clear");
 
-  // 1. Check current tab
+  // 1. Check current tab (Supports Booking.com and Brevistay)
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   const isBooking = tab && tab.url && tab.url.includes("booking.com");
+  const isBrevistay = tab && tab.url && tab.url.includes("brevistay.com");
+  const isSupported = isBooking || isBrevistay;
 
-  if (!isBooking) {
+  if (!isSupported) {
     statusDot.className = "dot red";
-    pageStatus.innerText = "Please open a Booking.com search tab";
+    pageStatus.innerText = "Please open Booking.com or Brevistay";
     btnToggle.disabled = true;
     btnToggle.style.opacity = "0.5";
   } else {
     statusDot.className = "dot green";
-    pageStatus.innerText = "Connected to Booking.com tab";
+    pageStatus.innerText = isBrevistay ? "Connected to Brevistay (Hourly)" : "Connected to Booking.com";
   }
 
   // 2. Refresh UI stats from storage
@@ -43,14 +45,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       btnToggle.className = "btn btn-primary paused";
       btnToggle.querySelector(".btn-icon").innerText = "⏸️";
       statusDot.className = "dot yellow";
-      pageStatus.innerText = "Harvesting non-stop...";
+      pageStatus.innerText = isBrevistay ? "Harvesting Brevistay hourly hotels..." : "Harvesting Booking.com non-stop...";
     } else {
       btnToggleText.innerText = "Start Auto Harvest";
       btnToggle.className = "btn btn-primary";
       btnToggle.querySelector(".btn-icon").innerText = "🚀";
-      if (isBooking) {
+      if (isSupported) {
         statusDot.className = "dot green";
-        pageStatus.innerText = "Ready to harvest";
+        pageStatus.innerText = isBrevistay ? "Connected to Brevistay (Ready)" : "Connected to Booking.com (Ready)";
       }
     }
   }
@@ -64,7 +66,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  // 3. Toggle Start / Pause (via Native Storage State - Zero Connection Errors)
+  // 3. Toggle Start / Pause
   btnToggle.addEventListener("click", async () => {
     const data = await chrome.storage.local.get(["ghs_is_active"]);
     const willStart = !data.ghs_is_active;
@@ -84,7 +86,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const jsonString = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(hotels, null, 2));
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
-    const filename = `booking_delhi_hotels_${hotels.length}_${timestamp}.json`;
+    const prefix = isBrevistay ? "brevistay_hourly_hotels" : "booking_hotels";
+    const filename = `${prefix}_${hotels.length}_${timestamp}.json`;
 
     chrome.downloads.download({
       url: jsonString,

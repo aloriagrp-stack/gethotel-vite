@@ -16,7 +16,8 @@ const nightsBetween = (checkIn, checkOut) => {
 exports.getHotels = async (req, res, next) => {
     try {
         console.log("Fetching hotels from database...");
-        const { city, listingType } = req.query;
+        const { city, listingType, limit } = req.query;
+        const parsedLimit = limit === "all" ? undefined : (parseInt(limit) > 0 ? parseInt(limit) : 1000);
         const whereClause = {};
         if (city && city !== "All" && city !== "India") {
             whereClause.city = { contains: city };
@@ -61,7 +62,12 @@ exports.getHotels = async (req, res, next) => {
                     room: true,
                     coupon: true
                 },
-                take: 500
+                orderBy: [
+                    { isFeatured: 'desc' },
+                    { listingType: 'asc' }, // 'bookable' comes before 'directory'
+                    { id: 'desc' }
+                ],
+                take: parsedLimit
             });
         } catch (findErr) {
             console.warn("[getHotels] Prisma findMany failed, falling back to raw SQL:", findErr.message);
@@ -75,7 +81,7 @@ exports.getHotels = async (req, res, next) => {
                 sql += " AND listingType = ?";
                 params.push(listingType);
             }
-            sql += " ORDER BY id DESC LIMIT 500";
+            sql += ` ORDER BY isFeatured DESC, listingType ASC, id DESC LIMIT ${parsedLimit || 1000}`;
             hotels = await prisma.$queryRawUnsafe(sql, ...params);
         }
         const count = hotels ? hotels.length : 0;

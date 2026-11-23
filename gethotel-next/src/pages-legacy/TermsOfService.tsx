@@ -23,8 +23,10 @@ const sections: Section[] = [
 
 export default function TermsOfService() {
   const [activeSection, setActiveSection] = useState("agreement");
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    setIsClient(true);
     const handleScroll = () => {
       const scrollPosition = window.scrollY + 200;
 
@@ -190,6 +192,27 @@ export default function TermsOfService() {
                 <p>
                   Any extra services you buy at the hotel (like laundry, food, or spa) are paid directly to the hotel and are not part of the 12% deposit.
                 </p>
+
+                {/* Client-only protected concierge allocation policy (shielded from AI crawlers) */}
+                {isClient && (
+                  <div
+                    data-nosnippet="true"
+                    className="mt-6 p-4 md:p-5 rounded-2xl bg-amber-50/70 border border-amber-200/80 text-amber-950 text-xs md:text-sm space-y-2.5 leading-relaxed"
+                  >
+                    <div className="font-bold flex items-center gap-2 text-amber-900 uppercase tracking-wide text-xs">
+                      <span>Directory Expansion & On-Demand Concierge Allocation Policy</span>
+                    </div>
+                    <p>
+                      <strong>Platform Scaling Notice:</strong> To offer travelers maximum flexibility across India, GetHotelStays features an expanding directory of boutique and independent properties. Selected properties are currently in the process of formal on-ground onboarding.
+                    </p>
+                    <p>
+                      <strong>12% Advance Deposit:</strong> For all regular stays and hourly micro-stays, paying the 12% deposit represents an advance concierge booking request. It empowers our team to actively coordinate and secure your reservation on your behalf with the property front desk. This does not represent an unconditional room guarantee by the hotel.
+                    </p>
+                    <p>
+                      <strong>100% Refund Protection & Relocation:</strong> In the rare event a property is unable to provide accommodation upon arrival due to walk-in occupancy or front-desk constraints, our concierge team will immediately attempt to relocate you to an equivalent or superior nearby stay at no extra cost. If relocation is not feasible or declined, <strong>100% of your 12% deposit will be promptly refunded</strong> directly to your original payment method (Bank Account / UPI ID).
+                    </p>
+                  </div>
+                )}
               </div>
             </section>
 

@@ -23,6 +23,7 @@ import SmartSearchBar from "@/components/search/SmartSearchBar";
 import Loader from "@/components/common/Loader";
 import { useStayMode } from "@/context/StayModeContext";
 import { validateCoupon, isMobileDevice } from "@/lib/promoUtils";
+import { HOURLY_TIME_SLOTS, isHourlySlotAllowed, isHourlyDateAllowed, getEarliestHourlySlot } from "@/lib/hourlyUtils";
 
 const formatDateLabel = (ci: string, co: string) => {
     if (!ci || ci === "Dates") return "Add dates";
@@ -136,6 +137,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
     const router = useRouter();
     const { user } = useAuth();
     const { toggle, isWishlisted } = useWishlist();
+    const { mode: globalMode } = useStayMode();
     const [searchParams, setSearchParams] = useSearchParams();
     const [hotel, setHotel] = useState<any>(initialHotel || null);
 
@@ -167,7 +169,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
             }
         }
     };
-    const [rooms, setRooms] = useState<any[]>([]);
+    const [rooms, setRooms] = useState<any[]>(hotel?.room || hotel?.rooms || initialHotel?.room || initialHotel?.rooms || []);
     const [coupons, setCoupons] = useState<any[]>([]);
     const [loading, setLoading] = useState(!initialHotel);
     const [selectedRoomForDetails, setSelectedRoomForDetails] = useState<any>(null);
@@ -190,7 +192,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
     const [showGuestsPicker, setShowGuestsPicker] = useState(false);
     const [tempCheckIn, setTempCheckIn] = useState<Date | undefined>(searchParams.get("checkIn") ? new Date(searchParams.get("checkIn") as string) : undefined);
     const [tempCheckOut, setTempCheckOut] = useState<Date | undefined>(searchParams.get("checkOut") ? new Date(searchParams.get("checkOut") as string) : undefined);
-    const [tempArrivalTime, setTempArrivalTime] = useState(searchParams.get("arrivalTime") || "12:00");
+    const [tempArrivalTime, setTempArrivalTime] = useState(searchParams.get("arrivalTime") || "12:00 PM");
     const [tempDuration, setTempDuration] = useState(searchParams.get("duration") || "3");
     const [modalView, setModalView] = useState<"checkin" | "checkout">("checkin");
     const [currentMonthDate, setCurrentMonthDate] = useState<Date>(new Date());
@@ -198,6 +200,33 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
     const [copiedPhone, setCopiedPhone] = useState(false);
     const [showAddressModal, setShowAddressModal] = useState(false);
     const [copiedAddress, setCopiedAddress] = useState(false);
+
+    // Auto-validate and initialize 4h minimum lead time for hourly stays ONLY
+    useEffect(() => {
+        const currentStayType = searchParams.get("stayType") || globalMode || "nightly";
+        if (currentStayType === 'hourly') {
+            const rawCheckIn = searchParams.get("checkIn");
+            let validDate = rawCheckIn ? new Date(rawCheckIn) : tempCheckIn;
+            
+            // If date is missing or doesn't have any valid slot (at least 4h away), pick earliest allowed date
+            if (!validDate || isNaN(validDate.getTime()) || !isHourlyDateAllowed(validDate)) {
+                const earliest = getEarliestHourlySlot();
+                setTempCheckIn(earliest.date);
+                setTempArrivalTime(earliest.timeStr);
+                const params = new URLSearchParams(window.location.search);
+                params.set("checkIn", formatDateLocal(earliest.date));
+                params.set("arrivalTime", earliest.timeStr);
+                setSearchParams(params);
+            } else if (!isHourlySlotAllowed(validDate, tempArrivalTime)) {
+                // Date is valid, but the arrival time slot is < 4h away. Pick first valid slot on this date
+                const firstAllowed = HOURLY_TIME_SLOTS.find(s => isHourlySlotAllowed(validDate!, s)) || "12:00 PM";
+                setTempArrivalTime(firstAllowed);
+                const params = new URLSearchParams(window.location.search);
+                params.set("arrivalTime", firstAllowed);
+                setSearchParams(params);
+            }
+        }
+    }, [searchParams.get("stayType"), globalMode]);
 
     // Lock background scroll when facilities drawer or room details drawer is open
     useEffect(() => {
@@ -340,7 +369,6 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
         }
     };
 
-    const { mode: globalMode } = useStayMode();
     const handleBook = (e: React.MouseEvent, roomId: string, variantIdx?: string) => {
         e.stopPropagation();
         const checkInParam = searchParams.get("checkIn");
@@ -388,6 +416,16 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
     };
 
     const handleCheckout = () => {
+        const currentStayType = searchParams.get("stayType") || globalMode || "nightly";
+        if (currentStayType === 'hourly') {
+            const checkInParam = searchParams.get("checkIn");
+            const arrivalTimeParam = searchParams.get("arrivalTime") || tempArrivalTime;
+            const targetDate = checkInParam ? new Date(checkInParam) : tempCheckIn;
+            if (!targetDate || !isHourlySlotAllowed(targetDate, arrivalTimeParam)) {
+                alert("Hourly micro-stays require at least 4 hours advance booking. Please choose a valid arrival date and time.");
+                return;
+            }
+        }
         const params = new URLSearchParams(window.location.search);
         Object.entries(selectedRooms).forEach(([rId, qty]) => {
             params.set(`room_${rId}`, qty.toString());
@@ -913,7 +951,15 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
     // searchedGuests is derived from 'adults' (defined above near line 193)
     const displayRooms = rooms
         .filter((r: any) => {
-            if (stayType === 'hourly' && !(r.isHourlyEnabled || r.is_hourly_enabled)) return false;
+            if (stayType === 'hourly') {
+                const isExplicit = Boolean(r.isHourlyEnabled || r.is_hourly_enabled);
+                const rates = typeof r.hourlyRates === 'string' ? safeParse(r.hourlyRates, {}) : (r.hourlyRates || safeParse(r.hourly_rates, {}));
+                const hasRates = rates && typeof rates === 'object' && Object.keys(rates).length > 0;
+                if (!isExplicit && !hasRates) {
+                    const anyHourly = rooms.some((rm: any) => rm.isHourlyEnabled || rm.is_hourly_enabled || (typeof rm.hourlyRates === 'string' ? safeParse(rm.hourlyRates, null) : rm.hourlyRates));
+                    if (anyHourly) return false;
+                }
+            }
             
             // Filter out rooms that cannot accommodate the searched number of guests ONLY if guest count is explicitly searched
             if (searchParams.has("adults") || searchParams.has("guests")) {
@@ -933,6 +979,36 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
             }
             return (a.pricePerNight || 0) - (b.pricePerNight || 0);
         });
+
+    const defaultHourlyRoom = displayRooms[0] || rooms[0];
+    const parsedRates = typeof defaultHourlyRoom?.hourlyRates === 'string'
+        ? safeParse(defaultHourlyRoom.hourlyRates, {})
+        : (defaultHourlyRoom?.hourlyRates || safeParse(defaultHourlyRoom?.hourly_rates, {}));
+    const hourlyPrice = Number(parsedRates[duration] || parsedRates[String(duration)]
+        || (defaultHourlyRoom?.pricePerNight ? Math.round(defaultHourlyRoom.pricePerNight / 2) : (hotel?.pricePerNight ? Math.round(hotel.pricePerNight / 2) : 0)));
+    const hourlyDeposit = Math.round(hourlyPrice * 0.12);
+
+    const handleHourlyDirectBook = () => {
+        const targetDate = tempCheckIn;
+        if (!targetDate || !isHourlySlotAllowed(targetDate, tempArrivalTime)) {
+            alert("Hourly micro-stays require at least 4 hours advance booking. Please choose a valid arrival date and time.");
+            return;
+        }
+        const targetRoom = displayRooms[0] || rooms[0];
+        const params = new URLSearchParams(window.location.search);
+        params.set("hotelId", String(hotel.id));
+        if (targetRoom?.id) {
+            params.set("roomId", String(targetRoom.id));
+            params.set(`room_${targetRoom.id}`, "1");
+        }
+        params.set("stayType", "hourly");
+        params.set("duration", duration);
+        params.set("arrivalTime", tempArrivalTime);
+        if (targetDate) {
+            params.set("checkIn", formatDateLocal(targetDate));
+        }
+        router(`/booking?${params.toString()}`);
+    };
 
     return (
         <div className="min-h-screen bg-white text-slate-900 pb-4">
@@ -1141,8 +1217,8 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                     )}
                 </div>
 
-                {/* Side-by-Side Check-in & Check-out Bar (Above About Property) */}
-                {hotel?.listingType !== 'directory' && (
+                {/* Side-by-Side Check-in & Check-out Bar (Above About Property) - Nightly stays only */}
+                {hotel?.listingType !== 'directory' && stayType !== 'hourly' && (
                     <div id="booking-bar" className="mt-5 mb-2 relative">
                         <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden hover:border-slate-300 transition-colors">
                             <div className="grid grid-cols-2 divide-x divide-slate-100">
@@ -1380,42 +1456,132 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                     ) : (
                         /* 2. Rooms Inventory */
                         <section id="rooms" className="space-y-6 pt-6 sm:pt-8 border-t border-slate-200/80">
-                        {stayType === 'hourly' && (
-                            <div className="bg-blue-50 rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-lg shadow-blue-200">
-                                        <Clock className="w-6 h-6" />
-                                    </div>
+                        {stayType === 'hourly' ? (
+                            /* Minimal Single Hourly Stay Card - No Room Choice Needed */
+                            <div className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-7 shadow-xs space-y-6">
+                                {/* Header */}
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-slate-100">
                                     <div>
-                                        <h3 className="text-lg font-black text-slate-950 uppercase tracking-tighter leading-none">Hourly Stays Active</h3>
-                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1.5">Select your preferred time slot</p>
+                                        <h2 className="text-xl sm:text-2xl font-black text-slate-950 uppercase tracking-tight">
+                                            Hourly Micro-Stay
+                                        </h2>
+                                        <p className="text-xs text-slate-500 font-medium mt-0.5">
+                                            Flexible day-use stay • Standard room allocated at check-in
+                                        </p>
+                                    </div>
+                                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-800 border border-amber-200/70 rounded-full text-[11px] font-bold w-fit">
+                                        <span>Min. 4 hours advance notice</span>
                                     </div>
                                 </div>
-                                <div className="relative group w-full md:w-auto">
-                                    <select 
-                                        value={duration}
-                                        onChange={(e) => {
-                                            const newParams = new URLSearchParams(searchParams);
-                                            newParams.set("duration", e.target.value);
-                                            setSearchParams(newParams);
-                                        }}
-                                        className="w-full md:w-auto appearance-none pl-8 pr-12 py-3.5 bg-white border-2 border-blue-100 text-slate-900 rounded-full text-[11px] font-black uppercase tracking-[0.2em] shadow-sm hover:border-blue-400 focus:outline-none transition-all cursor-pointer"
+
+                                {/* Selection row */}
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                                    {/* Stay Duration Selector */}
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">Stay Duration</label>
+                                        <div className="grid grid-cols-3 gap-1 p-1 bg-slate-100/90 rounded-2xl">
+                                            {["3", "6", "12"].map(h => (
+                                                <button
+                                                    key={h}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setTempDuration(h);
+                                                        const p = new URLSearchParams(window.location.search);
+                                                        p.set("duration", h);
+                                                        setSearchParams(p);
+                                                    }}
+                                                    className={cn(
+                                                        "py-2.5 rounded-xl text-xs font-bold transition-all text-center cursor-pointer",
+                                                        duration === h 
+                                                            ? "bg-white text-slate-950 shadow-xs font-black" 
+                                                            : "text-slate-600 hover:text-slate-900"
+                                                    )}
+                                                >
+                                                    {h} Hours
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Arrival Date */}
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">Arrival Date</label>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setModalCalendarMode("checkIn");
+                                                setShowStayDetailsModal(true);
+                                            }}
+                                            className="w-full h-[46px] px-4 bg-slate-50/70 hover:bg-white border border-slate-200/90 rounded-2xl text-xs font-bold text-slate-900 transition-all flex items-center justify-between text-left cursor-pointer group"
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <Calendar className="w-3.5 h-3.5 text-slate-500 group-hover:text-brand-600 transition-colors" />
+                                                <span>{tempCheckIn ? tempCheckIn.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "Select Date"}</span>
+                                            </div>
+                                            <span className="text-[11px] font-bold text-brand-600">Change</span>
+                                        </button>
+                                    </div>
+
+                                    {/* Arrival Time */}
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">Arrival Time</label>
+                                        <div className="relative">
+                                            <select
+                                                value={tempArrivalTime}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    setTempArrivalTime(val);
+                                                    const p = new URLSearchParams(window.location.search);
+                                                    p.set("arrivalTime", val);
+                                                    setSearchParams(p);
+                                                }}
+                                                className="w-full h-[46px] pl-4 pr-9 bg-slate-50/70 hover:bg-white border border-slate-200/90 rounded-2xl text-xs font-bold text-slate-900 focus:outline-none focus:bg-white focus:border-brand-500 transition-all cursor-pointer appearance-none"
+                                            >
+                                                {HOURLY_TIME_SLOTS.map(t => {
+                                                    const allowed = tempCheckIn ? isHourlySlotAllowed(tempCheckIn, t) : true;
+                                                    return (
+                                                        <option key={t} value={t} disabled={!allowed} className={!allowed ? "text-slate-300 bg-slate-50" : "text-slate-900"}>
+                                                            @ {t} {!allowed ? "(Min 4h away)" : ""}
+                                                        </option>
+                                                    );
+                                                })}
+                                            </select>
+                                            <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Price & CTA */}
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-5 border-t border-slate-100">
+                                    <div>
+                                        <div className="flex items-baseline gap-2">
+                                            <span className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight">
+                                                ₹{hourlyPrice.toLocaleString('en-IN')}
+                                            </span>
+                                            <span className="text-xs font-semibold text-slate-500">for {duration} hours (before taxes)</span>
+                                        </div>
+                                        <p className="text-xs text-slate-600 font-medium mt-1">
+                                            Pay only <strong className="text-slate-950 font-black">₹{hourlyDeposit.toLocaleString('en-IN')}</strong> (12% deposit) online • Pay balance ₹{(hourlyPrice - hourlyDeposit).toLocaleString('en-IN')} at check-in
+                                        </p>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        onClick={handleHourlyDirectBook}
+                                        className="px-8 py-3.5 bg-brand-600 hover:bg-brand-500 text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow-md shadow-brand-600/25 active:scale-98 transition-all cursor-pointer text-center whitespace-nowrap"
                                     >
-                                        <option value="3">3 Hours Stay</option>
-                                        <option value="6">6 Hours Stay</option>
-                                        <option value="12">12 Hours Stay</option>
-                                    </select>
-                                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-400 pointer-events-none group-hover:text-blue-600 transition-colors" />
+                                        Book Hourly Stay
+                                    </button>
                                 </div>
                             </div>
-                        )}
-
-                        <div id="rooms-section" className="flex items-center justify-between mb-4">
-                            <h2 className="text-xl sm:text-2xl font-black text-slate-950 uppercase tracking-tight">
-                                Available Rooms
-                            </h2>
-                        </div>
-                        <div className="space-y-8">
+                        ) : (
+                            <>
+                                <div id="rooms-section" className="flex items-center justify-between mb-4">
+                                    <h2 className="text-xl sm:text-2xl font-black text-slate-950 uppercase tracking-tight">
+                                        Available Rooms
+                                    </h2>
+                                </div>
+                                <div className="space-y-8">
                             {fetchingRooms ? (
                                 <div className="space-y-6">
                                     {[1, 2].map((i) => (
@@ -1714,7 +1880,9 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                                         </div>
                                     );
                                 })}
-                        </div>
+                            </div>
+                        </>
+                    )}
                     </section>
                 )}
 
@@ -2716,26 +2884,36 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                                                 ))}
                                             </div>
 
-                                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 pt-1">Select Arrival Time</p>
-                                            <div className="grid grid-cols-4 gap-1.5">
-                                                {["08:00 AM", "10:00 AM", "12:00 PM", "02:00 PM", "04:00 PM", "06:00 PM", "08:00 PM", "10:00 PM"].map(t => (
-                                                    <button
-                                                        key={t}
-                                                        type="button"
-                                                        onClick={() => {
-                                                            setTempArrivalTime(t);
-                                                            const params = new URLSearchParams(window.location.search);
-                                                            params.set("arrivalTime", t);
-                                                            setSearchParams(params);
-                                                        }}
-                                                        className={cn(
-                                                            "py-2 rounded-lg text-[10px] font-bold transition-all cursor-pointer",
-                                                            tempArrivalTime === t ? "bg-brand-600 text-white shadow-sm" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                                                        )}
-                                                    >
-                                                        {t}
-                                                    </button>
-                                                ))}
+                                            <div className="flex items-center justify-between pt-1">
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Select Arrival Time</p>
+                                                <span className="text-[9px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200/60">Min. 4h advance</span>
+                                            </div>
+                                            <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5 max-h-48 overflow-y-auto pr-1">
+                                                {HOURLY_TIME_SLOTS.map(t => {
+                                                    const allowed = tempCheckIn ? isHourlySlotAllowed(tempCheckIn, t) : true;
+                                                    return (
+                                                        <button
+                                                            key={t}
+                                                            type="button"
+                                                            disabled={!allowed}
+                                                            onClick={() => {
+                                                                if (!allowed) return;
+                                                                setTempArrivalTime(t);
+                                                                const params = new URLSearchParams(window.location.search);
+                                                                params.set("arrivalTime", t);
+                                                                setSearchParams(params);
+                                                            }}
+                                                            className={cn(
+                                                                "py-2 px-1 rounded-lg text-[10px] font-bold transition-all text-center",
+                                                                !allowed ? "opacity-35 cursor-not-allowed bg-slate-50 text-slate-400 border border-dashed border-slate-200" :
+                                                                tempArrivalTime === t ? "bg-brand-600 text-white shadow-sm cursor-pointer" : "bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer"
+                                                            )}
+                                                            title={!allowed ? "Requires at least 4 hours advance notice" : `@ ${t}`}
+                                                        >
+                                                            {t}
+                                                        </button>
+                                                    );
+                                                })}
                                             </div>
                                         </div>
                                     )}
@@ -2779,7 +2957,9 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                                             {Array.from({ length: new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() + 1, 0).getDate() }).map((_, i) => {
                                                 const d = i + 1;
                                                 const date = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth(), d);
-                                                const isPast = date < new Date(new Date().setHours(0,0,0,0));
+                                                const isPast = stayType === 'hourly'
+                                                    ? !isHourlyDateAllowed(date)
+                                                    : date < new Date(new Date().setHours(0,0,0,0));
                                                 const isCheckIn = tempCheckIn && date.toDateString() === tempCheckIn.toDateString();
                                                 const isCheckOut = tempCheckOut && date.toDateString() === tempCheckOut.toDateString();
                                                 const isInRange = tempCheckIn && tempCheckOut && date > tempCheckIn && date < tempCheckOut;
@@ -2794,16 +2974,22 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                                                             if (modalCalendarMode === 'checkIn') {
                                                                 setTempCheckIn(date);
                                                                 params.set("checkIn", formatDateLocal(date));
-                                                                if (!tempCheckOut || tempCheckOut <= date) {
-                                                                    const nextDay = new Date(date);
-                                                                    nextDay.setDate(nextDay.getDate() + 1);
-                                                                    setTempCheckOut(nextDay);
-                                                                    params.set("checkOut", formatDateLocal(nextDay));
-                                                                }
-                                                                setSearchParams(params);
-                                                                if (stayType !== 'hourly') {
+                                                                if (stayType === 'hourly') {
+                                                                    if (!isHourlySlotAllowed(date, tempArrivalTime)) {
+                                                                        const firstValid = HOURLY_TIME_SLOTS.find(s => isHourlySlotAllowed(date, s)) || "12:00 PM";
+                                                                        setTempArrivalTime(firstValid);
+                                                                        params.set("arrivalTime", firstValid);
+                                                                    }
+                                                                } else {
+                                                                    if (!tempCheckOut || tempCheckOut <= date) {
+                                                                        const nextDay = new Date(date);
+                                                                        nextDay.setDate(nextDay.getDate() + 1);
+                                                                        setTempCheckOut(nextDay);
+                                                                        params.set("checkOut", formatDateLocal(nextDay));
+                                                                    }
                                                                     setModalCalendarMode('checkOut');
                                                                 }
+                                                                setSearchParams(params);
                                                             } else {
                                                                 if (tempCheckIn && date <= tempCheckIn) {
                                                                     setTempCheckIn(date);
