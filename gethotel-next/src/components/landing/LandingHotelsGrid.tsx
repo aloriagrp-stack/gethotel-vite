@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import HotelCard from "@/components/hotels/HotelCard";
 import type { Hotel } from "@/types";
 import { SlidersHorizontal, MapPin, ArrowUpDown } from "lucide-react";
+import { formatPrice } from "@/lib/utils";
 
 interface LandingHotelsGridProps {
   initialHotels: Hotel[];
@@ -13,6 +14,13 @@ interface LandingHotelsGridProps {
 export default function LandingHotelsGrid({ initialHotels, locationNote }: LandingHotelsGridProps) {
   const [selectedFilter, setSelectedFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("recommended");
+  const [, setCurrencyTrigger] = useState(0);
+
+  useEffect(() => {
+    const handleCurrencyChange = () => setCurrencyTrigger((prev) => prev + 1);
+    window.addEventListener("currencyChanged", handleCurrencyChange);
+    return () => window.removeEventListener("currencyChanged", handleCurrencyChange);
+  }, []);
 
   const filteredHotels = useMemo(() => {
     let list = [...initialHotels];
@@ -73,7 +81,7 @@ export default function LandingHotelsGrid({ initialHotels, locationNote }: Landi
                 : "bg-slate-100 text-slate-700 hover:bg-slate-200"
             }`}
           >
-            Under ₹1,200
+            Under {formatPrice(1200)}
           </button>
           <button
             onClick={() => setSelectedFilter("frontdesk")}
