@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Star, ArrowRight, Heart, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn, safeParse, getHotelUrl, formatPrice } from "@/lib/utils";
+import { getSanitizedHourlyRates } from "@/lib/hourlyUtils";
 import { useWishlist } from "@/context/WishlistContext";
 import { useStayMode } from "@/context/StayModeContext";
 import Image from "@/components/common/Image";
@@ -62,23 +63,19 @@ function TrendingHotelCard({ hotel }: { hotel: Hotel }) {
     const duration = "3";
     const priceLabel = isHourly ? `/ ${duration} hours` : "/ night";
 
-    if (rooms.length > 0) {
-        const eligibleRooms = isHourly
-            ? rooms.filter(r => r.isHourlyEnabled || r.is_hourly_enabled)
-            : rooms.filter(r => !r.isHourlyEnabled && !r.is_hourly_enabled);
+    if (isHourly) {
+        const targetSource = (() => {
+            const hrRoom = (hotel.room || []).find((r: any) => r.isHourlyEnabled || r.is_hourly_enabled || r.hourlyRates || r.hourly_rates);
+            return hrRoom || hotel;
+        })();
+        basePrice = getSanitizedHourlyRates(targetSource, hotel.pricePerNight).getPrice(duration);
+    } else if (rooms.length > 0) {
+        const eligibleRooms = rooms.filter(r => !r.isHourlyEnabled && !r.is_hourly_enabled);
         const targetRooms = eligibleRooms.length > 0 ? eligibleRooms : rooms;
-        const minRoom = targetRooms.reduce((prev, curr) => {
-            const getPrice = (r: any) => {
-                if (!isHourly) return r.pricePerNight;
-                const rates = typeof r.hourlyRates === 'string' ? safeParse(r.hourlyRates, {}) : (r.hourlyRates || safeParse(r.hourly_rates, {}));
-                return Number(rates[duration] || rates[String(duration)] || r.pricePerNight * 0.3);
-            };
-            return getPrice(prev) < getPrice(curr) ? prev : curr;
-        });
-        const rates = typeof minRoom.hourlyRates === 'string' ? safeParse(minRoom.hourlyRates, {}) : (minRoom.hourlyRates || safeParse(minRoom.hourly_rates, {}));
-        basePrice = isHourly ? Number(rates[duration] || rates[String(duration)] || minRoom.pricePerNight * 0.3) : minRoom.pricePerNight;
+        const minRoom = targetRooms.reduce((prev, curr) => (prev.pricePerNight < curr.pricePerNight ? prev : curr));
+        basePrice = minRoom.pricePerNight;
     } else {
-        basePrice = isHourly ? hotel.pricePerNight * 0.3 : hotel.pricePerNight;
+        basePrice = hotel.pricePerNight;
     }
 
     let maxDiscountPercent = 0;

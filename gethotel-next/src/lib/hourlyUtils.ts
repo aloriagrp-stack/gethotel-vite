@@ -85,3 +85,75 @@ export function formatLocalDateStr(date: Date): string {
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
 }
+
+export interface SanitizedHourlyRates {
+    r3: number;
+    r6: number;
+    r12: number;
+    rates: { "3": number; "6": number; "12": number };
+    getPrice: (dur: string | number) => number;
+}
+
+/**
+ * Strict Market-Standard Sanity & Strict Hierarchy Guarantee:
+ * Mathematically guarantees: Rate(3h) < Rate(6h) < Rate(12h)
+ * Used across HotelCard, HotelDetailContent, and checkout to ensure 100% price parity.
+ */
+export function getSanitizedHourlyRates(hotelOrRoom: any, fallbackNightly?: number): SanitizedHourlyRates {
+    const safeParse = (val: any, fallback: any) => {
+        if (!val) return fallback;
+        if (typeof val === 'object') return val;
+        try { return JSON.parse(val); } catch { return fallback; }
+    };
+
+    // 1. Extract raw hourly rates from hotel or room
+    const directRates = typeof hotelOrRoom?.hourlyRates === 'string'
+        ? safeParse(hotelOrRoom.hourlyRates, {})
+        : (hotelOrRoom?.hourlyRates || safeParse(hotelOrRoom?.hourly_rates, {}));
+
+    const nightly = Number(hotelOrRoom?.pricePerNight || fallbackNightly || 1499);
+
+    let raw3 = Number(directRates?.['3'] || directRates?.[3] || 0);
+    let raw6 = Number(directRates?.['6'] || directRates?.[6] || 0);
+    let raw12 = Number(directRates?.['12'] || directRates?.[12] || 0);
+
+    // 2. Sanitize 3-Hour Slot (Realistic budget range ₹499 - ₹2,200)
+    let r3 = raw3;
+    if (!r3 || r3 < 400 || r3 > 2200 || r3 >= nightly) {
+        r3 = Math.max(499, Math.min(2200, Math.round(nightly * 0.32)));
+    }
+
+    // 3. Sanitize 6-Hour Slot (Strictly > r3, realistic range)
+    let r6 = raw6;
+    const minSensibleR6 = Math.max(r3 + 200, Math.round(r3 * 1.30));
+    if (!r6 || r6 <= r3 || r6 > 3200 || r6 >= nightly) {
+        r6 = Math.max(minSensibleR6, Math.round(nightly * 0.48));
+    }
+    // Hard guarantee: r6 must strictly exceed r3
+    if (r6 <= r3) {
+        r6 = Math.round(r3 * 1.35);
+    }
+
+    // 4. Sanitize 12-Hour Slot (Strictly > r6)
+    let r12 = raw12;
+    const minSensibleR12 = Math.max(r6 + 250, Math.round(r6 * 1.25));
+    if (!r12 || r12 <= r6 || r12 > 4500) {
+        r12 = Math.max(minSensibleR12, Math.round(nightly * 0.68));
+    }
+    // Hard guarantee: r12 must strictly exceed r6
+    if (r12 <= r6) {
+        r12 = Math.round(r6 * 1.30);
+    }
+
+    const rates = { "3": r3, "6": r6, "12": r12 };
+
+    const getPrice = (dur: string | number): number => {
+        const d = String(dur);
+        if (d === "12") return r12;
+        if (d === "6") return r6;
+        return r3;
+    };
+
+    return { r3, r6, r12, rates, getPrice };
+}
+

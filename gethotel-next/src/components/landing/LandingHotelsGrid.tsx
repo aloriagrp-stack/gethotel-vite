@@ -5,6 +5,7 @@ import HotelCard from "@/components/hotels/HotelCard";
 import type { Hotel } from "@/types";
 import { SlidersHorizontal, MapPin, ArrowUpDown } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
+import { getSanitizedHourlyRates } from "@/lib/hourlyUtils";
 
 interface LandingHotelsGridProps {
   initialHotels: Hotel[];
@@ -27,9 +28,7 @@ export default function LandingHotelsGrid({ initialHotels, locationNote }: Landi
     let list = [...initialHotels];
 
     const getPrice = (h: any) => {
-      const hr = h.hourlyRates || {};
-      const rate = Number(hr[selectedDuration] || hr[String(selectedDuration)] || hr['3'] || (h.pricePerNight || 0) * 0.35);
-      return rate;
+      return getSanitizedHourlyRates(h, h.pricePerNight).getPrice(selectedDuration);
     };
 
     if (selectedFilter === "under1200") {

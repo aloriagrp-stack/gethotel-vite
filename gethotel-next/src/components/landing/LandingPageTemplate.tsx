@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Hotel } from "@/types";
 import LandingHotelsGrid from "./LandingHotelsGrid";
 import { ChevronRight, HelpCircle, ShieldCheck } from "lucide-react";
+import { getSanitizedHourlyRates } from "@/lib/hourlyUtils";
 
 export interface LandingSection {
   h2: string;
@@ -117,7 +118,8 @@ export default function LandingPageTemplate({
     name: h1,
     numberOfItems: hotels.length,
     itemListElement: hotels.map((h, idx) => {
-      const startingPrice = (h as any).hourlyRates?.['3'] || h.pricePerNight || 699;
+      const sanitized = getSanitizedHourlyRates(h, h.pricePerNight);
+      const startingPrice = sanitized.r3;
       return {
         "@type": "ListItem",
         position: idx + 1,

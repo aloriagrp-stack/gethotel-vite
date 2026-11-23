@@ -23,7 +23,7 @@ import SmartSearchBar from "@/components/search/SmartSearchBar";
 import Loader from "@/components/common/Loader";
 import { useStayMode } from "@/context/StayModeContext";
 import { validateCoupon, isMobileDevice } from "@/lib/promoUtils";
-import { HOURLY_TIME_SLOTS, isHourlySlotAllowed, isHourlyDateAllowed, getEarliestHourlySlot } from "@/lib/hourlyUtils";
+import { HOURLY_TIME_SLOTS, isHourlySlotAllowed, isHourlyDateAllowed, getEarliestHourlySlot, getSanitizedHourlyRates } from "@/lib/hourlyUtils";
 
 const formatDateLabel = (ci: string, co: string) => {
     if (!ci || ci === "Dates") return "Add dates";
@@ -971,21 +971,17 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
         })
         .sort((a: any, b: any) => {
             if (stayType === 'hourly') {
-                const rA = typeof a.hourlyRates === 'string' ? safeParse(a.hourlyRates, {}) : (a.hourlyRates || safeParse(a.hourly_rates, {}));
-                const rB = typeof b.hourlyRates === 'string' ? safeParse(b.hourlyRates, {}) : (b.hourlyRates || safeParse(b.hourly_rates, {}));
-                const pA = Number(rA[duration] || rA[String(duration)] || a.pricePerNight / 2);
-                const pB = Number(rB[duration] || rB[String(duration)] || b.pricePerNight / 2);
-                return pA - pB;
+                const sA = getSanitizedHourlyRates(a?.hourlyRates ? a : hotel, hotel?.pricePerNight);
+                const sB = getSanitizedHourlyRates(b?.hourlyRates ? b : hotel, hotel?.pricePerNight);
+                return sA.getPrice(duration) - sB.getPrice(duration);
             }
             return (a.pricePerNight || 0) - (b.pricePerNight || 0);
         });
 
     const defaultHourlyRoom = displayRooms[0] || rooms[0];
-    const parsedRates = typeof defaultHourlyRoom?.hourlyRates === 'string'
-        ? safeParse(defaultHourlyRoom.hourlyRates, {})
-        : (defaultHourlyRoom?.hourlyRates || safeParse(defaultHourlyRoom?.hourly_rates, {}));
-    const hourlyPrice = Number(parsedRates[duration] || parsedRates[String(duration)]
-        || (defaultHourlyRoom?.pricePerNight ? Math.round(defaultHourlyRoom.pricePerNight / 2) : (hotel?.pricePerNight ? Math.round(hotel.pricePerNight / 2) : 0)));
+    const defaultHourlySource = defaultHourlyRoom?.hourlyRates ? defaultHourlyRoom : hotel;
+    const sanitizedHourly = getSanitizedHourlyRates(defaultHourlySource, hotel?.pricePerNight);
+    const hourlyPrice = sanitizedHourly.getPrice(duration);
     const hourlyDeposit = Math.round(hourlyPrice * 0.12);
 
     const handleHourlyDirectBook = () => {
@@ -1652,9 +1648,8 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                                             {/* Desktop View: Individual Variant Cards */}
                                             <div className="hidden md:grid grid-cols-1 gap-6">
                                                 {displayItems.map((variant: any, vIdx: number) => {
-                                                    const rates = typeof room.hourlyRates === 'string' ? safeParse(room.hourlyRates, {}) : (room.hourlyRates || safeParse(room.hourly_rates, {}));
                                                     const isHourly = stayType === 'hourly';
-                                                    const hourlyPrice = isHourly ? Number(rates[duration] || rates[String(duration)] || room.pricePerNight / 2) : 0;
+                                                    const hourlyPrice = isHourly ? getSanitizedHourlyRates(room?.hourlyRates ? room : hotel, hotel?.pricePerNight).getPrice(duration) : 0;
                                                     const stayInfo = calculateStayPrice(isHourly ? hourlyPrice : variant.price, room, allAvailableCoupons);
                                                     const finalDisplayPrice = stayInfo.finalPrice;
 
@@ -1778,8 +1773,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                                                         return Array.isArray(p) ? (p[0] || {}) : p;
                                                     })();
                                                     const isFreeCancel = variant.policy?.toLowerCase().includes('free') || rPolMob.cancellation?.toLowerCase().includes('free');
-                                                    const rates = typeof room.hourlyRates === 'string' ? safeParse(room.hourlyRates, {}) : (room.hourlyRates || safeParse(room.hourly_rates, {}));
-                                                    const bPrice = stayType === 'hourly' ? (rates[duration] || rates[String(duration)] || room.pricePerNight / 2) : variant.price;
+                                                    const bPrice = stayType === 'hourly' ? getSanitizedHourlyRates(room?.hourlyRates ? room : hotel, hotel?.pricePerNight).getPrice(duration) : variant.price;
                                                     const sInfo = calculateStayPrice(bPrice, room, allAvailableCoupons);
 
                                                     return (
@@ -2384,8 +2378,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                                 <div className="max-w-md mx-auto space-y-3">
                                     <div className="flex items-center justify-between">
                                          {(() => {
-                                              const rates = typeof selectedRoomForDetails.hourlyRates === 'string' ? safeParse(selectedRoomForDetails.hourlyRates, {}) : (selectedRoomForDetails.hourlyRates || safeParse(selectedRoomForDetails.hourly_rates, {}));
-                                              const bPrice = stayType === 'hourly' ? (rates[duration] || rates[String(duration)] || selectedRoomForDetails.pricePerNight / 2) : selectedRoomForDetails.selectedVariant?.price;
+                                              const bPrice = stayType === 'hourly' ? getSanitizedHourlyRates(selectedRoomForDetails?.hourlyRates ? selectedRoomForDetails : hotel, hotel?.pricePerNight).getPrice(duration) : selectedRoomForDetails.selectedVariant?.price;
                                               const sInfo = calculateStayPrice(bPrice, selectedRoomForDetails, coupons);
                                               const stayNights = (() => {
                                                   if (stayType === 'hourly') return 1;
@@ -2673,8 +2666,7 @@ export default function HotelDetailContent({ id, initialHotel }: { id: string, i
                                     <div className="flex items-end justify-between gap-5">
                                          <div className="space-y-3 flex-1">
                                              {(() => {
-                                                 const rates = typeof selectedRoomForDetails.hourlyRates === 'string' ? safeParse(selectedRoomForDetails.hourlyRates, {}) : (selectedRoomForDetails.hourlyRates || safeParse(selectedRoomForDetails.hourly_rates, {}));
-                                                 const bPrice = stayType === 'hourly' ? (rates[duration] || rates[String(duration)] || selectedRoomForDetails.pricePerNight / 2) : selectedRoomForDetails.selectedVariant?.price;
+                                                 const bPrice = stayType === 'hourly' ? getSanitizedHourlyRates(selectedRoomForDetails?.hourlyRates ? selectedRoomForDetails : hotel, hotel?.pricePerNight).getPrice(duration) : selectedRoomForDetails.selectedVariant?.price;
                                                  const sInfo = calculateStayPrice(bPrice, selectedRoomForDetails, coupons);
                                                  const stayNights = (() => {
                                                      if (stayType === 'hourly') return 1;

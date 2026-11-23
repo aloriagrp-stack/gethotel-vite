@@ -6,6 +6,7 @@ import { MapPin, Star, Heart, ChevronLeft, ChevronRight, Check, CreditCard, Cloc
 import { motion } from "framer-motion";
 import type { Hotel } from "@/types";
 import { cn, formatPrice, safeParse, getHotelUrl } from "@/lib/utils";
+import { getSanitizedHourlyRates } from "@/lib/hourlyUtils";
 import { useWishlist } from "@/context/WishlistContext";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
@@ -90,57 +91,21 @@ export default function HotelCard({ hotel, className, stayMode, defaultDuration 
         return Math.max(0, discounted);
     };
 
-    // Direct hourly rates check from hotel object (Brevistay & static landing pages)
-    const directHourlyRates = typeof (hotel as any).hourlyRates === 'string'
-        ? safeParse((hotel as any).hourlyRates, {})
-        : ((hotel as any).hourlyRates || {});
+    // Strict hourly rates with guaranteed mathematical hierarchy (r3 < r6 < r12)
+    const targetHourlySource = (() => {
+        const directRates = typeof (hotel as any).hourlyRates === 'string'
+            ? safeParse((hotel as any).hourlyRates, {})
+            : ((hotel as any).hourlyRates || {});
+        if (directRates && Object.keys(directRates).length > 0) return hotel;
+        const hrRoom = targetRooms.find((r: any) => r.isHourlyEnabled || r.is_hourly_enabled || r.hourlyRates || r.hourly_rates);
+        return hrRoom || hotel;
+    })();
 
-    // Helper to calculate exact price for any duration (3, 6, 12 hours)
-    const getHourlyPriceForDuration = (dur: string) => {
-        let price = 0;
-
-        // 1. Check direct hotel-level hourly rates
-        if (directHourlyRates && Object.keys(directHourlyRates).length > 0) {
-            price = Number(
-                directHourlyRates[dur] || 
-                directHourlyRates[String(dur)] || 
-                (dur === "3" ? directHourlyRates["3"] : dur === "6" ? directHourlyRates["6"] : directHourlyRates["12"]) || 
-                0
-            );
-        }
-
-        // 2. Check room-level hourly rates if not found
-        if (!price && rooms.length > 0) {
-            const hourlyRooms = targetRooms.filter((r: any) => r.isHourlyEnabled || r.is_hourly_enabled);
-            const finalHourlyRooms = hourlyRooms.length > 0 ? hourlyRooms : targetRooms;
-
-            const minRoom = finalHourlyRooms.reduce((prev: any, curr: any) => {
-                const getPrice = (r: any) => {
-                    const rates = typeof r.hourlyRates === 'string' ? safeParse(r.hourlyRates, {}) : (r.hourlyRates || safeParse(r.hourly_rates, {}));
-                    return Number(rates[dur] || rates[String(dur)] || 0);
-                };
-                return getPrice(prev) < getPrice(curr) ? prev : curr;
-            });
-
-            const rates = typeof minRoom.hourlyRates === 'string' ? safeParse(minRoom.hourlyRates, {}) : (minRoom.hourlyRates || safeParse(minRoom.hourly_rates, {}));
-            price = Number(rates[dur] || rates[String(dur)] || 0);
-        }
-
-        // 3. Realistic Market-Standard Sanity Check & Guardrail:
-        const nightly = hotel.pricePerNight || 1499;
-        const maxSensibleRate = dur === "12" ? 3500 : dur === "6" ? 2800 : 2200;
-
-        if (!price || price > maxSensibleRate || price >= nightly || (price > 2500 && (hotel.starRating || 3) < 5)) {
-            const ratio = dur === "12" ? 0.65 : dur === "6" ? 0.45 : 0.32;
-            price = Math.max(dur === "12" ? 1199 : dur === "6" ? 899 : 499, Math.round(nightly * ratio));
-        }
-
-        return price;
-    };
-
-    const rate3 = getHourlyPriceForDuration("3");
-    const rate6 = getHourlyPriceForDuration("6");
-    const rate12 = getHourlyPriceForDuration("12");
+    const sanitizedHourly = getSanitizedHourlyRates(targetHourlySource, hotel.pricePerNight);
+    const rate3 = sanitizedHourly.r3;
+    const rate6 = sanitizedHourly.r6;
+    const rate12 = sanitizedHourly.r12;
+    const getHourlyPriceForDuration = (dur: string) => sanitizedHourly.getPrice(dur);
 
     if (mode === 'hourly') {
         const activeHourlyPrice = selectedDuration === "12" ? rate12 : selectedDuration === "6" ? rate6 : rate3;

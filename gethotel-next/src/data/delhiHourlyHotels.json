@@ -305,7 +305,7 @@
     "isHourlyEnabled": true,
     "hourlyRates": {
       "3": 1575,
-      "6": 3150,
+      "6": 2126,
       "12": 3675
     },
     "bookingUrl": "https://www.brevistay.com/hotels/ace-stayz-in-delhi-7662"
@@ -1438,7 +1438,7 @@
     "hourlyRates": {
       "3": 1628,
       "6": 2520,
-      "12": 6300
+      "12": 3276
     },
     "bookingUrl": "https://www.brevistay.com/hotels/dreamz-paschim-vihar-in-delhi-7677"
   },
@@ -2558,7 +2558,7 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 473,
+      "3": 499,
       "6": 630,
       "12": 998
     },
@@ -3007,7 +3007,7 @@
     "hourlyRates": {
       "3": 1575,
       "6": 2100,
-      "12": 6300
+      "12": 2730
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-arch-in-delhi-445"
   },
@@ -6436,8 +6436,8 @@
     "isHourlyEnabled": true,
     "hourlyRates": {
       "3": 1785,
-      "6": 3150,
-      "12": 4725
+      "6": 2410,
+      "12": 3133
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-laffaire-in-delhi-12719"
   },
@@ -6706,7 +6706,7 @@
   {
     "id": 1351,
     "name": "Hotel Lexus",
-    "address": "A-343, Meera Bagh, Outer Ring Road, Paschim Vihar, Delhi \u2013 110087",
+    "address": "A-343, Meera Bagh, Outer Ring Road, Paschim Vihar, Delhi – 110087",
     "city": "Delhi",
     "description": "Hotel Lexus is a verified, couple-friendly hotel located in Paschim Vihar, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
     "pricePerNight": 2625.0,
@@ -7243,7 +7243,7 @@
   {
     "id": 1363,
     "name": "Hotel Modesty",
-    "address": "84, Main Vasant Kunj Road, Adj. to Agarwal Sweets, Near ICICI Bank, Mahipalpur, New Delhi \u2013 110037",
+    "address": "84, Main Vasant Kunj Road, Adj. to Agarwal Sweets, Near ICICI Bank, Mahipalpur, New Delhi – 110037",
     "city": "Delhi",
     "description": "Hotel Modesty is a verified, couple-friendly hotel located in Mahipalpur, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
     "pricePerNight": 891.0,
@@ -7278,7 +7278,7 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 420,
+      "3": 499,
       "6": 734,
       "12": 891
     },
@@ -7918,7 +7918,7 @@
   {
     "id": 1378,
     "name": "Hotel Pearl Delhi Airport",
-    "address": "A-92 , Road Number 02 , Delhi Airport , Near Aerocity , NH 48 , Mahipalpur\u00a0,\u00a0New\u00a0Delhi",
+    "address": "A-92 , Road Number 02 , Delhi Airport , Near Aerocity , NH 48 , Mahipalpur , New Delhi",
     "city": "Delhi",
     "description": "Hotel Pearl Delhi Airport is a verified, couple-friendly hotel located in Mahipalpur, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
     "pricePerNight": 1999.0,
@@ -8767,7 +8767,7 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 374,
+      "3": 499,
       "6": 749,
       "12": 1124
     },

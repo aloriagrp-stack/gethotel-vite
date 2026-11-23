@@ -26,7 +26,7 @@ import { useAuth } from "@/context/AuthContext";
 import SEOHead from "@/components/common/SEOHead";
 import { validateCoupon } from "@/lib/promoUtils";
 import { loadRazorpay } from "@/lib/load-razorpay";
-import { isHourlySlotAllowed } from "@/lib/hourlyUtils";
+import { isHourlySlotAllowed, getSanitizedHourlyRates } from "@/lib/hourlyUtils";
 
 const guestSchema = z.object({
     firstName: z.string().min(2, "First name is required"),
@@ -379,7 +379,7 @@ function BookingContent() {
     })());
 
     const pricePerNight = isPackage ? packageTotalAmount : (isHourly
-        ? (safeParse(selectedRoom?.hourlyRates || selectedRoom?.hourly_rates, {})[duration] || (selectedRoom?.pricePerNight ? selectedRoom.pricePerNight / 2 : (hotel?.pricePerNight ? hotel.pricePerNight / 2 : 0)))
+        ? getSanitizedHourlyRates(selectedRoom?.hourlyRates ? selectedRoom : hotel, hotel?.pricePerNight).getPrice(duration)
         : (() => {
             const basePrice = selectedRoom?.selectedVariant?.price ? parseFloat(selectedRoom.selectedVariant.price) : (selectedRoom?.pricePerNight ?? hotel?.pricePerNight ?? 0);
             const priceDiff = selectedRoom?.dynamicPricePerNight ? (selectedRoom.dynamicPricePerNight - selectedRoom.pricePerNight) : 0;
@@ -424,8 +424,7 @@ function BookingContent() {
             selectedRoomsData.forEach(item => {
                 let itemNightPrice = item.pricePerNight;
                 if (isHourly) {
-                    const hourlyRates = safeParse(item.room?.hourlyRates || item.room?.hourly_rates, {});
-                    itemNightPrice = hourlyRates[duration] || (item.room?.pricePerNight ? item.room.pricePerNight / 2 : 0);
+                    itemNightPrice = getSanitizedHourlyRates(item.room?.hourlyRates ? item.room : hotel, hotel?.pricePerNight).getPrice(duration);
                 }
                 const itemTotal = itemNightPrice * item.quantity * (isHourly ? 1 : nights);
                 baseSubtotal += itemTotal;
