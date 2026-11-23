@@ -38,6 +38,14 @@ const socials = [
 
 export default function Footer() {
     const footerLinks = {
+        "Hourly Stays Delhi": [
+            { label: "Mahipalpur (Airport T3)", href: `/hourly/mahipalpur` },
+            { label: "New Delhi Railway Station", href: `/hourly/new-delhi-railway-station` },
+            { label: "Karol Bagh & Pusa Road", href: `/hourly/karol-bagh` },
+            { label: "Greater Kailash (GK 1 & 2)", href: `/hourly/greater-kailash` },
+            { label: "Yashobhoomi & Dwarka", href: `/hourly/yashobhoomi-dwarka` },
+            { label: "All Delhi Hourly Stays (100+ Areas)", href: `/hourly` },
+        ],
         "Partners": [
             { label: "List Your Property", href: `/list-property` },
             { label: "Partner Central", href: `/partner` },
@@ -61,7 +69,7 @@ export default function Footer() {
             <div className="w-full max-w-none mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-8">
                     {/* Brand Column */}
-                    <div className="md:col-span-6 space-y-3">
+                    <div className="md:col-span-4 space-y-3">
                         <Link to="/" className="inline-flex items-center gap-2 group">
                             <span className="text-xl md:text-2xl font-black tracking-tighter text-slate-950 group-hover:text-brand-600 transition-colors">
                                 GetHotelStays<span className="text-brand-600 not-italic">.</span>
@@ -91,8 +99,25 @@ export default function Footer() {
                         </div>
                     </div>
 
-                    {/* Partners & Legal Columns */}
-                    <div className="md:col-span-6 grid grid-cols-2 gap-6">
+                    {/* Columns: Hourly, Partners & Legal */}
+                    <div className="md:col-span-8 grid grid-cols-2 sm:grid-cols-3 gap-6">
+                        {/* Hourly Stays Delhi */}
+                        <div className="space-y-2.5">
+                            <h3 className="text-xs font-bold text-slate-950 uppercase tracking-wider">Hourly Stays (Delhi)</h3>
+                            <ul className="space-y-1.5">
+                                {footerLinks["Hourly Stays Delhi"].map((link, idx) => (
+                                    <li key={idx}>
+                                        <Link
+                                            to={link.href}
+                                            className="text-xs text-slate-600 hover:text-brand-600 transition-colors font-medium block leading-snug"
+                                        >
+                                            {link.label}
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
                         {/* Partners */}
                         <div className="space-y-2.5">
                             <h3 className="text-xs font-bold text-slate-950 uppercase tracking-wider">Partners</h3>
