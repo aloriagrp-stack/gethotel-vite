@@ -1,11 +1,21 @@
 import delhiHotelsRaw from "@/data/delhiHotelsLive.json";
+import delhiHourlyHotelsRaw from "@/data/delhiHourlyHotels.json";
 import type { Hotel } from "@/types";
 
 export const allDelhiHotels = delhiHotelsRaw as unknown as Hotel[];
+export const allDelhiHourlyHotels = (delhiHourlyHotelsRaw || []) as unknown as Hotel[];
 
 export function getHotelsByIds(ids: (number | string)[]): Hotel[] {
   const numIds = ids.map((id) => Number(id));
   return allDelhiHotels.filter((h) => numIds.includes(Number(h.id)));
+}
+
+export function getHourlyHotelsByIds(ids: (number | string)[]): Hotel[] {
+  const numIds = ids.map((id) => Number(id));
+  const list = allDelhiHourlyHotels.filter((h) => numIds.includes(Number(h.id)));
+  if (list.length > 0) return list;
+  // Fallback to general list if needed
+  return getHotelsByIds(ids);
 }
 
 export const DELHI_LANDING_HOTEL_MAP = {
