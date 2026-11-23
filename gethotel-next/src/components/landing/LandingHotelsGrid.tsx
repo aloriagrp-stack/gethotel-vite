@@ -14,6 +14,7 @@ interface LandingHotelsGridProps {
 export default function LandingHotelsGrid({ initialHotels, locationNote }: LandingHotelsGridProps) {
   const [selectedFilter, setSelectedFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("recommended");
+  const [selectedDuration, setSelectedDuration] = useState<string>("3");
   const [, setCurrencyTrigger] = useState(0);
 
   useEffect(() => {
@@ -25,11 +26,14 @@ export default function LandingHotelsGrid({ initialHotels, locationNote }: Landi
   const filteredHotels = useMemo(() => {
     let list = [...initialHotels];
 
+    const getPrice = (h: any) => {
+      const hr = h.hourlyRates || {};
+      const rate = Number(hr[selectedDuration] || hr[String(selectedDuration)] || hr['3'] || (h.pricePerNight || 0) * 0.35);
+      return rate;
+    };
+
     if (selectedFilter === "under1200") {
-      list = list.filter((h) => {
-        const rate3 = Number((h as any).hourlyRates?.['3'] || (h as any).hourlyRates?.[3] || (h.pricePerNight || 0) * 0.35);
-        return rate3 <= 1200;
-      });
+      list = list.filter((h) => getPrice(h) <= 1200);
     } else if (selectedFilter === "lift") {
       list = list.filter((h) => {
         const am: any = h.amenities;
@@ -51,29 +55,39 @@ export default function LandingHotelsGrid({ initialHotels, locationNote }: Landi
     }
 
     if (sortBy === "price_asc") {
-      list.sort((a, b) => {
-        const pA = Number((a as any).hourlyRates?.['3'] || (a.pricePerNight || 0) * 0.35);
-        const pB = Number((b as any).hourlyRates?.['3'] || (b.pricePerNight || 0) * 0.35);
-        return pA - pB;
-      });
+      list.sort((a, b) => getPrice(a) - getPrice(b));
     } else if (sortBy === "price_desc") {
-      list.sort((a, b) => {
-        const pA = Number((a as any).hourlyRates?.['3'] || (a.pricePerNight || 0) * 0.35);
-        const pB = Number((b as any).hourlyRates?.['3'] || (b.pricePerNight || 0) * 0.35);
-        return pB - pA;
-      });
+      list.sort((a, b) => getPrice(b) - getPrice(a));
     } else if (sortBy === "rating") {
       list.sort((a, b) => (b.guestRating || 0) - (a.guestRating || 0));
     }
 
     return list;
-  }, [initialHotels, selectedFilter, sortBy]);
+  }, [initialHotels, selectedFilter, sortBy, selectedDuration]);
 
   return (
     <section className="space-y-4">
-      {/* Controls Bar - Compact Single Row */}
-      <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-slate-200">
+      {/* Controls Bar - Compact Single Row with Duration Toggle */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pb-2.5 border-b border-slate-200">
         <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-none flex-1 pr-2">
+          {/* Global Duration Selector */}
+          <div className="flex items-center bg-slate-100 p-0.5 rounded-full border border-slate-200 shrink-0 mr-1 shadow-2xs">
+            {(["3", "6", "12"] as const).map((d) => (
+              <button
+                key={d}
+                type="button"
+                onClick={() => setSelectedDuration(d)}
+                className={`px-3 py-1 rounded-full text-xs font-black transition-all ${
+                  selectedDuration === d
+                    ? "bg-slate-950 text-white shadow-xs"
+                    : "text-slate-600 hover:text-slate-950"
+                }`}
+              >
+                {d}h Slot
+              </button>
+            ))}
+          </div>
+
           <button
             onClick={() => setSelectedFilter("all")}
             className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
@@ -145,7 +159,7 @@ export default function LandingHotelsGrid({ initialHotels, locationNote }: Landi
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredHotels.map((hotel) => (
             <div key={hotel.id} className="relative group flex flex-col">
-              <HotelCard hotel={hotel} stayMode="hourly" defaultDuration="3" />
+              <HotelCard hotel={hotel} stayMode="hourly" defaultDuration={selectedDuration} />
               {locationNote && (
                 <div className="mt-1 flex items-center gap-1.5 text-[11px] font-semibold text-brand-700 bg-brand-50 px-3 py-1 rounded-md border border-brand-100">
                   <MapPin className="w-3 h-3 text-brand-600 shrink-0" />

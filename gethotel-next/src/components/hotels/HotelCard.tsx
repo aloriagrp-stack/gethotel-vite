@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import type { Hotel } from "@/types";
 import { cn, formatPrice, safeParse, getHotelUrl } from "@/lib/utils";
 import { useWishlist } from "@/context/WishlistContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useStayMode } from "@/context/StayModeContext";
 
@@ -18,7 +18,7 @@ interface HotelCardProps {
     defaultDuration?: string;
 }
 
-export default function HotelCard({ hotel, className, stayMode, defaultDuration }: HotelCardProps) {
+export default function HotelCard({ hotel, className, stayMode, defaultDuration = "3" }: HotelCardProps) {
     const router = useRouter();
     const [searchParams] = useSearchParams();
     const { user } = useAuth();
@@ -29,7 +29,17 @@ export default function HotelCard({ hotel, className, stayMode, defaultDuration 
     const { mode: contextMode } = useStayMode();
     const isHourlyRoute = typeof window !== "undefined" && window.location.pathname.includes("/hourly");
     const mode = stayMode || (isHourlyRoute ? "hourly" : contextMode);
-    const duration = searchParams.get("duration") || defaultDuration || "3";
+    
+    // Dynamic Duration State (synced with prop or URL param)
+    const initialDuration = searchParams.get("duration") || defaultDuration || "3";
+    const [selectedDuration, setSelectedDuration] = useState<string>(initialDuration);
+
+    useEffect(() => {
+        if (defaultDuration) {
+            setSelectedDuration(defaultDuration);
+        }
+    }, [defaultDuration]);
+
     const hasExplicitGuests = searchParams.has("adults") || searchParams.has("guests");
     const adults = Number(searchParams.get("adults") || searchParams.get("guests") || "2");
 
@@ -85,49 +95,57 @@ export default function HotelCard({ hotel, className, stayMode, defaultDuration 
         ? safeParse((hotel as any).hourlyRates, {})
         : ((hotel as any).hourlyRates || {});
 
-    if (mode === 'hourly') {
-        let extractedHourlyPrice = 0;
+    // Helper to calculate exact price for any duration (3, 6, 12 hours)
+    const getHourlyPriceForDuration = (dur: string) => {
+        let price = 0;
 
         // 1. Check direct hotel-level hourly rates
         if (directHourlyRates && Object.keys(directHourlyRates).length > 0) {
-            extractedHourlyPrice = Number(
-                directHourlyRates[duration] || 
-                directHourlyRates[String(duration)] || 
-                directHourlyRates["3"] || 
-                directHourlyRates[3] || 
+            price = Number(
+                directHourlyRates[dur] || 
+                directHourlyRates[String(dur)] || 
+                (dur === "3" ? directHourlyRates["3"] : dur === "6" ? directHourlyRates["6"] : directHourlyRates["12"]) || 
                 0
             );
         }
 
         // 2. Check room-level hourly rates if not found
-        if (!extractedHourlyPrice && rooms.length > 0) {
+        if (!price && rooms.length > 0) {
             const hourlyRooms = targetRooms.filter((r: any) => r.isHourlyEnabled || r.is_hourly_enabled);
             const finalHourlyRooms = hourlyRooms.length > 0 ? hourlyRooms : targetRooms;
 
             const minRoom = finalHourlyRooms.reduce((prev: any, curr: any) => {
                 const getPrice = (r: any) => {
                     const rates = typeof r.hourlyRates === 'string' ? safeParse(r.hourlyRates, {}) : (r.hourlyRates || safeParse(r.hourly_rates, {}));
-                    return Number(rates[duration] || rates[String(duration)] || 0);
+                    return Number(rates[dur] || rates[String(dur)] || 0);
                 };
                 return getPrice(prev) < getPrice(curr) ? prev : curr;
             });
 
             const rates = typeof minRoom.hourlyRates === 'string' ? safeParse(minRoom.hourlyRates, {}) : (minRoom.hourlyRates || safeParse(minRoom.hourly_rates, {}));
-            extractedHourlyPrice = Number(rates[duration] || rates[String(duration)] || 0);
+            price = Number(rates[dur] || rates[String(dur)] || 0);
         }
 
-        // 3. Realistic Market-Standard Sanity Check:
-        // A 3-hour room in Delhi should never cost ₹5,000+ or exceed 50% of the overnight rate
+        // 3. Realistic Market-Standard Sanity Check & Guardrail:
         const nightly = hotel.pricePerNight || 1499;
-        const maxSensibleRate = duration === "12" ? 3500 : duration === "6" ? 2800 : 2200;
+        const maxSensibleRate = dur === "12" ? 3500 : dur === "6" ? 2800 : 2200;
 
-        if (!extractedHourlyPrice || extractedHourlyPrice > maxSensibleRate || extractedHourlyPrice >= nightly || (extractedHourlyPrice > 2500 && (hotel.starRating || 3) < 5)) {
-            const ratio = duration === "12" ? 0.65 : duration === "6" ? 0.45 : 0.32;
-            extractedHourlyPrice = Math.max(499, Math.round(nightly * ratio));
+        if (!price || price > maxSensibleRate || price >= nightly || (price > 2500 && (hotel.starRating || 3) < 5)) {
+            const ratio = dur === "12" ? 0.65 : dur === "6" ? 0.45 : 0.32;
+            price = Math.max(dur === "12" ? 1199 : dur === "6" ? 899 : 499, Math.round(nightly * ratio));
         }
 
-        basePrice = extractedHourlyPrice;
-        originalPrice = Math.round(extractedHourlyPrice * 1.35);
+        return price;
+    };
+
+    const rate3 = getHourlyPriceForDuration("3");
+    const rate6 = getHourlyPriceForDuration("6");
+    const rate12 = getHourlyPriceForDuration("12");
+
+    if (mode === 'hourly') {
+        const activeHourlyPrice = selectedDuration === "12" ? rate12 : selectedDuration === "6" ? rate6 : rate3;
+        basePrice = activeHourlyPrice;
+        originalPrice = Math.round(activeHourlyPrice * 1.35);
         hasDiscount = true;
         discountPercent = Math.round(((originalPrice - basePrice) / originalPrice) * 100);
     } else if (rooms.length > 0) {
@@ -205,6 +223,9 @@ export default function HotelCard({ hotel, className, stayMode, defaultDuration 
                 const params = new URLSearchParams(searchParams);
                 if (!params.has("stayType")) {
                     params.set("stayType", mode);
+                }
+                if (mode === "hourly") {
+                    params.set("duration", selectedDuration);
                 }
                 const targetUrl = `${getHotelUrl(hotel.id, hotel.name)}?${params.toString()}`;
                 try {
@@ -333,6 +354,38 @@ export default function HotelCard({ hotel, className, stayMode, defaultDuration 
                                     return null;
                                 })}
                             </div>
+
+                            {/* Micro-Stay 3h, 6h, 12h Interactive Slot Selector */}
+                            {mode === 'hourly' && (
+                                <div className="grid grid-cols-3 gap-1.5 mt-3 pt-2.5 border-t border-slate-100" onClick={(e) => e.stopPropagation()}>
+                                    {(['3', '6', '12'] as const).map((d) => {
+                                        const slotPrice = d === '3' ? rate3 : d === '6' ? rate6 : rate12;
+                                        const isSelected = selectedDuration === d;
+                                        return (
+                                            <button
+                                                key={d}
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    setSelectedDuration(d);
+                                                }}
+                                                className={cn(
+                                                    "flex flex-col items-center justify-center py-1.5 px-1 rounded-xl border text-center transition-all duration-200 cursor-pointer",
+                                                    isSelected 
+                                                        ? "bg-brand-50 border-brand-500 text-brand-900 shadow-2xs ring-1 ring-brand-500/20" 
+                                                        : "bg-slate-50/80 border-slate-200/80 text-slate-600 hover:bg-slate-100 hover:border-slate-300"
+                                                )}
+                                            >
+                                                <span className="text-[9px] font-bold uppercase tracking-wider">{d} Hours</span>
+                                                <span className={cn("text-xs font-black tracking-tight mt-0.5", isSelected ? "text-brand-700" : "text-slate-900")}>
+                                                    {formatPrice(slotPrice)}
+                                                </span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
                         
                         <div className="text-right">
@@ -379,7 +432,7 @@ export default function HotelCard({ hotel, className, stayMode, defaultDuration 
                             <div className="flex flex-col">
                                 <div className="flex items-baseline gap-2">
                                     <span className="text-[10px] font-black text-brand-600 uppercase tracking-widest leading-none">
-                                        {mode === 'hourly' ? `For ${duration} Hours` : 'Per Night'}
+                                        {mode === 'hourly' ? `For ${selectedDuration} Hours` : 'Per Night'}
                                     </span>
                                     <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">before taxes</span>
                                 </div>
