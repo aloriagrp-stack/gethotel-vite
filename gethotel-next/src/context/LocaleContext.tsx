@@ -49,15 +49,15 @@ interface LocaleContextType {
 
 const LocaleContext = createContext<LocaleContextType | undefined>(undefined);
 
-// Fallback rates if API fails
+// Fallback rates if API fails (aligned with live market rates)
 const fallbacks: Record<string, number> = {
     INR: 1,
-    USD: 0.012,
-    EUR: 0.011,
-    GBP: 0.0094,
-    JPY: 1.88,
-    AED: 0.044,
-    RUB: 1.05
+    USD: 0.0108, // ~ ₹92.5/USD
+    EUR: 0.0098, // ~ ₹101.6/EUR
+    GBP: 0.0082, // ~ ₹121.3/GBP
+    JPY: 1.72,   // ~ ₹0.58/JPY
+    AED: 0.0396, // ~ ₹25.2/AED
+    RUB: 1.15    // ~ ₹0.87/RUB
 };
 
 export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
