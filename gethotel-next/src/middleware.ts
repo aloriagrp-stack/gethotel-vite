@@ -45,7 +45,7 @@ export function middleware(request: NextRequest) {
     cleanPath = cleanPath.toLowerCase();
   }
 
-  // 3. Handle Language Prefixes (/en/hotels -> /hotels)
+  // 3. Handle Language Prefixes (/en/hotels -> internally rewrite to /hotels, preserving /en in browser URL)
   const segments = cleanPath.split('/').filter(Boolean);
   const firstSegment = segments[0];
 
@@ -53,7 +53,9 @@ export function middleware(request: NextRequest) {
     const remainingSegments = segments.slice(1);
     const targetPath = remainingSegments.length > 0 ? '/' + remainingSegments.join('/') : '/';
     const destination = new URL(targetPath + search, origin);
-    return NextResponse.redirect(destination, { status: 301 });
+    const response = NextResponse.rewrite(destination);
+    response.headers.set('x-user-locale', firstSegment.toLowerCase());
+    return response;
   }
 
   // 4. Handle Legacy 301 Redirections

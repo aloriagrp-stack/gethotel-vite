@@ -133,9 +133,11 @@ RewriteRule ^terms-&-conditions/?$ /terms-of-service [R=301,L]
 RewriteRule ^terms/?$ /terms-of-service [R=301,L]
 RewriteRule ^terms-of-service-&-conditions/?$ /terms-of-service [R=301,L]
 
-# 3. Multilingual /en/ 301 Redirects to Root (Enforce Canonical)
-RewriteRule ^(en|hi|es|fr|de|zh|ja|ar|ru|pt|bn|ta|te|mr|gu|kn|ml|pa|ur)/?$ / [R=301,L]
-RewriteRule ^(en|hi|es|fr|de|zh|ja|ar|ru|pt|bn|ta|te|mr|gu|kn|ml|pa|ur)/(.*)$ /$2 [R=301,L]
+# 3. Multilingual /en/ Support (Serve Internally & Preserve Locale in Browser URL)
+RewriteCond %{DOCUMENT_ROOT}/$2/index.html -f
+RewriteRule ^(en|hi|es|fr|de|zh|ja|ar|ru|pt|bn|ta|te|mr|gu|kn|ml|pa|ur)/(.*)$ /$2/index.html [L,QSA]
+
+RewriteRule ^(en|hi|es|fr|de|zh|ja|ar|ru|pt|bn|ta|te|mr|gu|kn|ml|pa|ur)/?$ /index.html [L,QSA]
 
 # 4. Folder index.html resolution
 RewriteCond %{DOCUMENT_ROOT}/$1/index.html -f
