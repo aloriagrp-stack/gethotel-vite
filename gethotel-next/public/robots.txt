@@ -24,6 +24,8 @@ Allow: /shimla-hotels
 Allow: /udaipur-hotels
 Allow: /couple-friendly-hotels-in-delhi
 Allow: /hourly-hotels-in-delhi
+Allow: /hourly/
+Allow: /hourly
 Allow: /hotels-near-delhi-airport
 Allow: /hotels-near-new-delhi-railway-station
 Allow: /hotels-in-connaught-place-delhi
