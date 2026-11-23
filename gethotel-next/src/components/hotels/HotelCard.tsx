@@ -31,15 +31,18 @@ export default function HotelCard({ hotel, className, stayMode, defaultDuration 
     const isHourlyRoute = typeof window !== "undefined" && window.location.pathname.includes("/hourly");
     const mode = stayMode || (isHourlyRoute ? "hourly" : contextMode);
     
-    // Dynamic Duration State (synced with prop or URL param)
-    const initialDuration = searchParams.get("duration") || defaultDuration || "3";
+    // Dynamic Duration State (synced with available slots and prop/URL param)
+    const availableSlots: string[] = (hotel as any).availableSlots || ["3", "6", "12"];
+    const rawDuration = searchParams.get("duration") || defaultDuration || "3";
+    const initialDuration = availableSlots.includes(rawDuration) ? rawDuration : (availableSlots[0] || "3");
     const [selectedDuration, setSelectedDuration] = useState<string>(initialDuration);
 
     useEffect(() => {
         if (defaultDuration) {
-            setSelectedDuration(defaultDuration);
+            const valid = availableSlots.includes(defaultDuration) ? defaultDuration : (availableSlots[0] || "3");
+            setSelectedDuration(valid);
         }
-    }, [defaultDuration]);
+    }, [defaultDuration, (hotel as any).availableSlots]);
 
     const hasExplicitGuests = searchParams.has("adults") || searchParams.has("guests");
     const adults = Number(searchParams.get("adults") || searchParams.get("guests") || "2");
@@ -320,31 +323,41 @@ export default function HotelCard({ hotel, className, stayMode, defaultDuration 
                                 })}
                             </div>
 
-                            {/* Micro-Stay 3h, 6h, 12h Interactive Slot Selector */}
+                            {/* Micro-Stay 3h, 6h, 12h Interactive Slot Selector (with Faded/Disabled Support) */}
                             {mode === 'hourly' && (
                                 <div className="grid grid-cols-3 gap-1.5 mt-3 pt-2.5 border-t border-slate-100" onClick={(e) => e.stopPropagation()}>
                                     {(['3', '6', '12'] as const).map((d) => {
+                                        const isAvailable = availableSlots.includes(d);
                                         const slotPrice = d === '3' ? rate3 : d === '6' ? rate6 : rate12;
-                                        const isSelected = selectedDuration === d;
+                                        const isSelected = selectedDuration === d && isAvailable;
                                         return (
                                             <button
                                                 key={d}
                                                 type="button"
+                                                disabled={!isAvailable}
+                                                title={!isAvailable ? `This property does not offer ${d} hours micro-stay` : `${d} Hours - ${formatPrice(slotPrice)}`}
                                                 onClick={(e) => {
                                                     e.preventDefault();
                                                     e.stopPropagation();
-                                                    setSelectedDuration(d);
+                                                    if (isAvailable) {
+                                                        setSelectedDuration(d);
+                                                    }
                                                 }}
                                                 className={cn(
-                                                    "flex flex-col items-center justify-center py-1.5 px-1 rounded-xl border text-center transition-all duration-200 cursor-pointer",
-                                                    isSelected 
-                                                        ? "bg-brand-50 border-brand-500 text-brand-900 shadow-2xs ring-1 ring-brand-500/20" 
-                                                        : "bg-slate-50/80 border-slate-200/80 text-slate-600 hover:bg-slate-100 hover:border-slate-300"
+                                                    "flex flex-col items-center justify-center py-1.5 px-1 rounded-xl border text-center transition-all duration-200",
+                                                    !isAvailable
+                                                        ? "opacity-35 bg-slate-100/70 border-slate-200 text-slate-400 cursor-not-allowed select-none"
+                                                        : isSelected 
+                                                            ? "bg-brand-50 border-brand-500 text-brand-900 shadow-2xs ring-1 ring-brand-500/20 cursor-pointer" 
+                                                            : "bg-slate-50/80 border-slate-200/80 text-slate-600 hover:bg-slate-100 hover:border-slate-300 cursor-pointer"
                                                 )}
                                             >
                                                 <span className="text-[9px] font-bold uppercase tracking-wider">{d} Hours</span>
-                                                <span className={cn("text-xs font-black tracking-tight mt-0.5", isSelected ? "text-brand-700" : "text-slate-900")}>
-                                                    {formatPrice(slotPrice)}
+                                                <span className={cn(
+                                                    "text-xs font-black tracking-tight mt-0.5",
+                                                    !isAvailable ? "line-through text-slate-400 font-medium text-[10px]" : isSelected ? "text-brand-700" : "text-slate-900"
+                                                )}>
+                                                    {isAvailable ? formatPrice(slotPrice) : "Unavailable"}
                                                 </span>
                                             </button>
                                         );
