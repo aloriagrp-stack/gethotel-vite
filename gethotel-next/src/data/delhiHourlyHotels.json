@@ -42,9 +42,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": "3820",
-      "6": "4100",
-      "12": "4520"
+      "3": 840,
+      "6": 1130,
+      "12": 1470
     },
     "bookingUrl": ""
   },
@@ -140,9 +140,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 1995,
-      "6": 2310,
-      "12": 2520
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/36-west-inn-in-delhi-12770"
   },
@@ -233,7 +233,7 @@
     "address": "C-233, Block C, Greater Kailash I, Near Mata Gujri Public School ,New Delhi, Delhi 110048",
     "city": "Delhi",
     "description": "Ace Residency is a verified, couple-friendly hotel located in Greater Kailash 1, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1899.0,
     "starRating": 3,
     "guestRating": 3.5,
     "reviewCount": 50,
@@ -262,9 +262,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2625,
-      "6": 2940,
-      "12": 3675
+      "3": 660,
+      "6": 890,
+      "12": 1160
     },
     "bookingUrl": "https://www.brevistay.com/hotels/ace-residency-in-delhi-38"
   },
@@ -361,7 +361,7 @@
     "address": "Khasra No. 99-102, opposite Police Station, Kapas Hera, New Delhi, 110037",
     "city": "Delhi",
     "description": "Airport Hotel Tashree is a verified, couple-friendly hotel located in Kapashera, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.6,
     "reviewCount": 50,
@@ -454,7 +454,7 @@
     "address": "198, Sukhdev Vihar Rd, Sukhdev Vihar, Okhla, New Delhi, Delhi 110025",
     "city": "Delhi",
     "description": "Amber Inn by Orion Hotels is a verified, couple-friendly hotel located in Okhla, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.5,
     "reviewCount": 50,
@@ -488,9 +488,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2204,
-      "6": 2414,
-      "12": 3674
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/amber-inn-by-orion-hotels-in-delhi-3538"
   },
@@ -500,7 +500,7 @@
     "address": "S- 539 School Block Shakrpur  Bharat Gas Agency Delhi 110092",
     "city": "Delhi",
     "description": "Anand Villa is a verified, couple-friendly hotel located in Laxmi Nagar, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 3,
     "guestRating": 3.5,
     "reviewCount": 50,
@@ -544,7 +544,7 @@
     "address": "S-164 School Block Shakrpur Part 1 Nearest Metro Laxmi Nagar  Delhi 110092",
     "city": "Delhi",
     "description": "Anand Villa One is a verified, couple-friendly hotel located in Laxmi Nagar, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 3,
     "guestRating": 4.1,
     "reviewCount": 50,
@@ -629,7 +629,7 @@
     "address": "Plot No.8, Pocket-8B, Near Indian Bank, Sector- 15, Rohini, North Delhi, Delhi -110085, India, Rohini, 110085 New Delhi, India, Plot No.8, Pocket-8B, Near Indian Bank, Sector- 15, Rohini, Nor",
     "city": "Delhi",
     "description": "AP Holidays is a 3-star property situated in New Delhi. Boasting an ATM, this property also provides guests with a restaurant.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.5,
     "reviewCount": 50,
@@ -673,9 +673,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 1874,
-      "6": 2061,
-      "12": 2343
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/ap-holidays-in-delhi-330"
   },
@@ -685,7 +685,7 @@
     "address": "A-53, Near IGI Airport, NH-08, Mahipalpur, New Delhi-110037",
     "city": "Delhi",
     "description": "Arch The Lohias is a verified, couple-friendly hotel located in Mahipalpur, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 6825.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.3,
     "reviewCount": 50,
@@ -720,9 +720,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2099,
-      "6": 2624,
-      "12": 6825
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/arch-the-lohias-in-delhi-8234"
   },
@@ -767,9 +767,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 1889,
-      "6": 1994,
-      "12": 2519
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/arch-the-venus-in-delhi-11023"
   },
@@ -823,9 +823,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 1950,
-      "6": 2414,
-      "12": 3464
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/asar-cp-outer-circle-by-orion-hotels-in-delhi-9121"
   },
@@ -870,9 +870,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2310,
-      "6": 2730,
-      "12": 3150
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/asar-elite-green-park-by-orion-hotels-in-delhi-4288"
   },
@@ -971,9 +971,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 3150,
-      "6": 3675,
-      "12": 4200
+      "3": 1470,
+      "6": 1980,
+      "12": 2570
     },
     "bookingUrl": "https://www.brevistay.com/hotels/bel-la-monde-hotel-chhattarpur-south-delhi-in-delhi-6559"
   },
@@ -1019,9 +1019,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 3675,
-      "6": 4200,
-      "12": 4725
+      "3": 999,
+      "6": 1350,
+      "12": 1750
     },
     "bookingUrl": "https://www.brevistay.com/hotels/bel-la-monde-hotel-nh8-in-delhi-6560"
   },
@@ -1031,7 +1031,7 @@
     "address": "Metro Pillar No. 511, Rohtak Rd, above Vishal Mega Mart, Peeragarhi, West Cabin Block, Mundka, New Delhi, Delhi 110041",
     "city": "Delhi",
     "description": "C Pearls Hotel and Banquet is a verified, couple-friendly hotel located in Mundka, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 3,
     "guestRating": 3.9,
     "reviewCount": 50,
@@ -1207,9 +1207,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 1999,
-      "6": 2499,
-      "12": 3000
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/cherish-at-imperial-club-of-india-in-delhi-7501"
   },
@@ -1254,9 +1254,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2100,
-      "6": 2625,
-      "12": 3150
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/corporate-park-in-delhi-10400"
   },
@@ -1311,7 +1311,7 @@
     "address": "A-14, Lala Lajpat Rai Marg, Vikram Vihar, Lajpat Nagar IV, Lajpat Nagar, New Delhi, Delhi 110024",
     "city": "Delhi",
     "description": "Delhieez is a verified, couple-friendly hotel located in Lajpat Nagar, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.5,
     "reviewCount": 50,
@@ -1344,9 +1344,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2499,
-      "6": 2898,
-      "12": 4200
+      "3": 1499,
+      "6": 2020,
+      "12": 2620
     },
     "bookingUrl": "https://www.brevistay.com/hotels/delhieez-in-delhi-2583"
   },
@@ -1404,7 +1404,7 @@
     "address": "B-18, First Floor, Shubham Enclave, Paschim Enclave, New Delhi-110063",
     "city": "Delhi",
     "description": "Dreamz Paschim Vihar is a verified, couple-friendly hotel located in Paschim Vihar, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 6300.0,
+    "pricePerNight": 1999.0,
     "starRating": 3,
     "guestRating": 3.8,
     "reviewCount": 50,
@@ -1536,7 +1536,7 @@
     "address": "F-666 Near Shree Maakhan, Ramphal Chowk Rd, Block F, Sector 7 Dwarka, Palam Colony, Delhi, 110075",
     "city": "Delhi",
     "description": "Elite Hotels is a verified, couple-friendly hotel located in Sector 7,Dwarka, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 3,
     "guestRating": 3.9,
     "reviewCount": 50,
@@ -1570,7 +1570,7 @@
     "address": "479, Block D, Palam Extension, Palam, New Delhi, Delhi 110075",
     "city": "Delhi",
     "description": "Embellish Inn is a verified, couple-friendly hotel located in Sector 7,Dwarka, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1899.0,
     "starRating": 3,
     "guestRating": 4.0,
     "reviewCount": 50,
@@ -1748,7 +1748,7 @@
     "address": "A1, 289, Pankha Rd, Block A1, Janakpuri, New Delhi, Delhi 110058",
     "city": "Delhi",
     "description": "Gold Inn is a verified, couple-friendly hotel located in Janakpuri, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.4,
     "reviewCount": 50,
@@ -1845,7 +1845,7 @@
     "address": "B2/15, Ambedkar Chowk, Ashok Vihar II, Pocket B 2, Phase II, Ashok Vihar, Delhi, 110052",
     "city": "Delhi",
     "description": "Golden Keys Inn is a verified, couple-friendly hotel located in Ashok Vihar, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.6,
     "reviewCount": 50,
@@ -1880,9 +1880,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2415,
-      "6": 3150,
-      "12": 3675
+      "3": 1499,
+      "6": 2020,
+      "12": 2620
     },
     "bookingUrl": "https://www.brevistay.com/hotels/golden-keys-inn-in-delhi-1701"
   },
@@ -1927,9 +1927,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 3375,
-      "6": 3562,
-      "12": 4650
+      "3": 1499,
+      "6": 2020,
+      "12": 2620
     },
     "bookingUrl": "https://www.brevistay.com/hotels/grand-ffour-in-delhi-7753"
   },
@@ -1972,9 +1972,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 1890,
-      "6": 2625,
-      "12": 3675
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/green-lotus-la-wisteria-inn-in-delhi-8696"
   },
@@ -1984,7 +1984,7 @@
     "address": "Plot No,91 ,Near Radisson Blue, Sector-13 Dwarka New Delhi -110075",
     "city": "Delhi",
     "description": "Green Lotus Residency is a verified, couple-friendly hotel located in Dwarka, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.9,
     "reviewCount": 50,
@@ -2020,9 +2020,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2625,
-      "6": 2940,
-      "12": 3360
+      "3": 1499,
+      "6": 2020,
+      "12": 2620
     },
     "bookingUrl": "https://www.brevistay.com/hotels/green-lotus-residency-in-delhi-3247"
   },
@@ -2064,9 +2064,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 1874,
-      "6": 2344,
-      "12": 2625
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/green-lotus-sai-international-in-delhi-5465"
   },
@@ -2076,7 +2076,7 @@
     "address": "B-17 Part 1 Jhilmil Industrial Area Opposite Jhilmil Metro Station, New Delhi, Delhi 110095",
     "city": "Delhi",
     "description": "Green Palms Hotel is a verified, couple-friendly hotel located in Dilshad garden,Opposite Jhilmil Metro Station, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.6,
     "reviewCount": 50,
@@ -2121,7 +2121,7 @@
     "address": "A - 415. Gali No. 11, Road No. 4, A Block, Mahipalpur Delhi 110037",
     "city": "Delhi",
     "description": "Gross Inn Plaza is a verified, couple-friendly hotel located in Mahipalpur, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1899.0,
     "starRating": 3,
     "guestRating": 4.2,
     "reviewCount": 50,
@@ -2308,7 +2308,7 @@
     "address": "A27/Road No 1, A block Mahipalpur Extension New Delhi 110037",
     "city": "Delhi",
     "description": "Hotel Aditya Inn is a verified, couple-friendly hotel located in Mahipalpur, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.3,
     "reviewCount": 50,
@@ -2478,7 +2478,7 @@
     "address": " A-11, Street 2, Block B, Mahipalpur Village, Mahipalpur, Delhi, 110037",
     "city": "Delhi",
     "description": "Hotel Airlift is a verified, couple-friendly hotel located in Mahipalpur, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5249.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.5,
     "reviewCount": 50,
@@ -2790,7 +2790,7 @@
     "address": "C-, 30, Hansraj Gupta Rd, C Block, Greater Kailash I, Delhi 110048",
     "city": "Delhi",
     "description": "Hotel Amara is a verified, couple-friendly hotel located in Greater Kailash 1, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 6825.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.5,
     "reviewCount": 50,
@@ -2827,9 +2827,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 4725,
-      "6": 5775,
-      "12": 6825
+      "3": 1499,
+      "6": 2020,
+      "12": 2620
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-amara-in-delhi-5507"
   },
@@ -2969,7 +2969,7 @@
     "address": "A-74, Rd Number 4, Block A, Mahipalpur Extension, Indira Gandhi International Airport, New Delhi, Delhi 110037",
     "city": "Delhi",
     "description": "Hotel Arch is a verified, couple-friendly hotel located in Mahipalpur, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.7,
     "reviewCount": 50,
@@ -3017,7 +3017,7 @@
     "address": "91, Bijwasan Rd, Kapashera Extension, New Delhi, Delhi 110037",
     "city": "Delhi",
     "description": "Hotel Arch Plaza is a verified, couple-friendly hotel located in Kapashera, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1899.0,
     "starRating": 3,
     "guestRating": 4.0,
     "reviewCount": 50,
@@ -3271,9 +3271,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2155,
-      "6": 2529,
-      "12": 2624
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-bel-morris-in-delhi-5239"
   },
@@ -3507,9 +3507,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2940,
-      "6": 3360,
-      "12": 3675
+      "3": 1290,
+      "6": 1740,
+      "12": 2260
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-cabana-in-delhi-10403"
   },
@@ -3617,7 +3617,7 @@
     "address": "A-207-A BASEMENT ROAD NO-9 MAHIPALPUR, Mahipalpur, 110037 New Delhi, India, A-207-A BASEMENT ROAD NO-9 MAHIPALPUR, 110037, India",
     "city": "Delhi",
     "description": "Hotel City Lite is situated in New Delhi, in the Mahipalpur district. This 4-star hotel offers room service, a 24-hour front desk and free WiFi.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 3,
     "guestRating": 4.2,
     "reviewCount": 50,
@@ -4111,9 +4111,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2100,
-      "6": 2777,
-      "12": 3838
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-dev-palace-in-delhi-7674"
   },
@@ -4252,7 +4252,7 @@
     "address": "25,26, UER II, Near shyam mandir pochanpur. Dwarka, Sector 23B, Delhi, 110075",
     "city": "Delhi",
     "description": "Hotel Diplomat Regency is a verified, couple-friendly hotel located in Yashobhoomi, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.5,
     "reviewCount": 50,
@@ -4501,9 +4501,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 1890,
-      "6": 2625,
-      "12": 3150
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-elvilla-in-delhi-7678"
   },
@@ -4697,7 +4697,7 @@
     "address": "Indira Gandhi International Airport, Road Number 2, NH-8, Mahipalpur, New Delhi, Delhi 110037",
     "city": "Delhi",
     "description": "Hotel Festival is a verified, couple-friendly hotel located in Mahipalpur, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.4,
     "reviewCount": 50,
@@ -4810,9 +4810,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 1890,
-      "6": 2205,
-      "12": 2625
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-gallivanto-inn-in-delhi-4057"
   },
@@ -5381,7 +5381,7 @@
     "address": "Sector 23, Dwarka link road, Near Sector- 21 metro station dwarka, New Delhi 110077",
     "city": "Delhi",
     "description": "Hotel Green Lotus is a verified, couple-friendly hotel located in Yashobhoomi, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 3,
     "guestRating": 3.7,
     "reviewCount": 50,
@@ -5406,9 +5406,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2100,
-      "6": 2415,
-      "12": 2940
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-green-lotus-in-delhi-63"
   },
@@ -5455,9 +5455,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2310,
-      "6": 2625,
-      "12": 3149
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-green-lotus-star-17-in-delhi-7366"
   },
@@ -5585,9 +5585,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2310,
-      "6": 2625,
-      "12": 3150
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-haris-court-in-delhi-6512"
   },
@@ -5681,7 +5681,7 @@
     "address": "A- 25, Vasant Kunj Rd, Block B, Mahipalpur Village, Mahipalpur, New -Delhi-110037",
     "city": "Delhi",
     "description": "Hotel Impress is a verified, couple-friendly hotel located in Mahipalpur, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 9440.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.5,
     "reviewCount": 50,
@@ -5716,9 +5716,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 5250,
-      "6": 7350,
-      "12": 9440
+      "3": 1499,
+      "6": 2020,
+      "12": 2620
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-impress-in-delhi-12635"
   },
@@ -5846,9 +5846,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2520,
-      "6": 2940,
-      "12": 3150
+      "3": 1290,
+      "6": 1740,
+      "12": 2260
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-ip-royal-in-delhi-4439"
   },
@@ -5858,7 +5858,7 @@
     "address": "F 665, Ramphal Chowk, Sector 7, Dwarka Delhi India 110075",
     "city": "Delhi",
     "description": "Hotel Ishtara Auberge is a verified, couple-friendly hotel located in Sector 7,Dwarka, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.4,
     "reviewCount": 50,
@@ -5933,9 +5933,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 1322,
-      "6": 1952,
-      "12": 2153
+      "3": 499,
+      "6": 670,
+      "12": 870
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-ivy-plaza-in-delhi-575"
   },
@@ -6032,7 +6032,7 @@
     "address": "New Delhi station Road Paharganj side New Delhi, Paharganj, 110055 New Delhi, India, New Delhi station Road Paharganj side New Delhi, 110055, India",
     "city": "Delhi",
     "description": "Hotel Kabeer is well situated in the centre of New Delhi. This 3-star hotel offers an ATM and a tour desk.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 3,
     "guestRating": 4.1,
     "reviewCount": 50,
@@ -6478,9 +6478,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 1999,
-      "6": 2499,
-      "12": 4725
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-laffaire-select-in-delhi-12744"
   },
@@ -6538,7 +6538,7 @@
     "address": "8892/95, Multani Dhanda, Paharganj, New Delhi, Delhi 110055",
     "city": "Delhi",
     "description": "Hotel Lals Haveli is a verified, couple-friendly hotel located in Paharganj, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 3,
     "guestRating": 4.1,
     "reviewCount": 50,
@@ -6706,7 +6706,7 @@
   {
     "id": 1351,
     "name": "Hotel Lexus",
-    "address": "A-343, Meera Bagh, Outer Ring Road, Paschim Vihar, Delhi – 110087",
+    "address": "A-343, Meera Bagh, Outer Ring Road, Paschim Vihar, Delhi \u2013 110087",
     "city": "Delhi",
     "description": "Hotel Lexus is a verified, couple-friendly hotel located in Paschim Vihar, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
     "pricePerNight": 2625.0,
@@ -6880,9 +6880,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 3045,
-      "6": 3570,
-      "12": 4410
+      "3": 1499,
+      "6": 2020,
+      "12": 2620
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-luxe-opera-nh8-in-delhi-6561"
   },
@@ -7147,9 +7147,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2625,
-      "6": 3150,
-      "12": 3675
+      "3": 999,
+      "6": 1350,
+      "12": 1750
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-mayur-in-delhi-4190"
   },
@@ -7159,7 +7159,7 @@
     "address": "Mata Chowk, Mahipalpur, Opposite Maruti Apra Showroom, Mahipalpur Extension, Mahipalpur, New Delhi, Delhi 110037",
     "city": "Delhi",
     "description": "Hotel Metro Tower is a verified, couple-friendly hotel located in Mata Chowk , Mahipalpur, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 3,
     "guestRating": 3.6,
     "reviewCount": 50,
@@ -7243,7 +7243,7 @@
   {
     "id": 1363,
     "name": "Hotel Modesty",
-    "address": "84, Main Vasant Kunj Road, Adj. to Agarwal Sweets, Near ICICI Bank, Mahipalpur, New Delhi – 110037",
+    "address": "84, Main Vasant Kunj Road, Adj. to Agarwal Sweets, Near ICICI Bank, Mahipalpur, New Delhi \u2013 110037",
     "city": "Delhi",
     "description": "Hotel Modesty is a verified, couple-friendly hotel located in Mahipalpur, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
     "pricePerNight": 891.0,
@@ -7638,9 +7638,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 1890,
-      "6": 2100,
-      "12": 2625
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-opera-in-delhi-8296"
   },
@@ -7771,9 +7771,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 1995,
-      "6": 2730,
-      "12": 3360
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-park-blue-airport-in-delhi-8464"
   },
@@ -7783,7 +7783,7 @@
     "address": "Near Bachpan A Play School, Block CD, Dakshini Pitampura, 4, Delhi, 110034",
     "city": "Delhi",
     "description": "Hotel Park Residency is a verified, couple-friendly hotel located in Pitampura, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1899.0,
     "starRating": 3,
     "guestRating": 4.0,
     "reviewCount": 50,
@@ -7817,9 +7817,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2625,
-      "6": 2835,
-      "12": 11799
+      "3": 660,
+      "6": 890,
+      "12": 1160
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-park-residency-in-delhi-2683"
   },
@@ -7829,7 +7829,7 @@
     "address": "A-130 Road No 4, Near Good Luck,Mahipalpur,Delhi 110037",
     "city": "Delhi",
     "description": "Hotel Pathway is a verified, couple-friendly hotel located in Mahipalpur, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 3,
     "guestRating": 3.4,
     "reviewCount": 50,
@@ -7864,9 +7864,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 1994,
-      "6": 2309,
-      "12": 2729
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-pathway-in-delhi-2462"
   },
@@ -7918,10 +7918,10 @@
   {
     "id": 1378,
     "name": "Hotel Pearl Delhi Airport",
-    "address": "A-92 , Road Number 02 , Delhi Airport , Near Aerocity , NH 48 , Mahipalpur , New Delhi",
+    "address": "A-92 , Road Number 02 , Delhi Airport , Near Aerocity , NH 48 , Mahipalpur\u00a0,\u00a0New\u00a0Delhi",
     "city": "Delhi",
     "description": "Hotel Pearl Delhi Airport is a verified, couple-friendly hotel located in Mahipalpur, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.7,
     "reviewCount": 50,
@@ -7955,9 +7955,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2520,
-      "6": 3045,
-      "12": 4095
+      "3": 1499,
+      "6": 2020,
+      "12": 2620
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-pearl-delhi-airport-in-delhi-1602"
   },
@@ -8325,7 +8325,7 @@
     "address": "Near Brijwasi Dairy, Opposite Reliance Tower, Near DTC Bus Stand, Ibrahimpur, Delhi, 110036",
     "city": "Delhi",
     "description": "Hotel Royal Avenue is a verified, couple-friendly hotel located in Ibrahimpur, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 3,
     "guestRating": 2.0,
     "reviewCount": 50,
@@ -8372,7 +8372,7 @@
     "address": "Deshbandhu Apartments, D-616, Chitaranjan Park,New Delhi,110019",
     "city": "Delhi",
     "description": "Hotel Royal Castle Grand is a verified, couple-friendly hotel located in Chittaranjan Park, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.6,
     "reviewCount": 50,
@@ -8408,9 +8408,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2310,
-      "6": 2835,
-      "12": 3360
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-royal-castle-grand-in-delhi-581"
   },
@@ -8638,9 +8638,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 1994,
-      "6": 2519,
-      "12": 3254
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-royal-saffron-by-majesta-stays-in-delhi-2288"
   },
@@ -8695,7 +8695,7 @@
     "address": "874 Gali Chandi Wali, Main Bazar Rd, Paharganj, New Delhi, Delhi 110055",
     "city": "Delhi",
     "description": "Hotel Saffron Inn is a verified, couple-friendly hotel located in Paharganj, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.5,
     "reviewCount": 50,
@@ -8918,7 +8918,7 @@
     "address": "Plot No. 127B, Pooth Kalan, Sector 20, Rohini, Delhi-110086",
     "city": "Delhi",
     "description": "Hotel Shagun Rohini Sec-20 is a verified, couple-friendly hotel located in Rohini, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 11799.0,
+    "pricePerNight": 1999.0,
     "starRating": 3,
     "guestRating": 3.9,
     "reviewCount": 50,
@@ -8953,9 +8953,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 11799,
-      "6": 11799,
-      "12": 11799
+      "3": 999,
+      "6": 1350,
+      "12": 1750
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-shagun-rohini-sec-20-in-delhi-8880"
   },
@@ -8965,7 +8965,7 @@
     "address": "Plot No 22 - Street Number -01, Near HDFC Bank, Kapashera, Delhi 110037",
     "city": "Delhi",
     "description": "Hotel Shivaka Inn is a verified, couple-friendly hotel located in Kapashera, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.8,
     "reviewCount": 50,
@@ -9132,9 +9132,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 3000,
-      "6": 3375,
-      "12": 3936
+      "3": 1380,
+      "6": 1860,
+      "12": 2420
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-signature-grand-in-delhi-7750"
   },
@@ -9177,9 +9177,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2098,
-      "6": 2623,
-      "12": 3673
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-signature-suites-in-delhi-10874"
   },
@@ -9232,7 +9232,7 @@
     "address": "F- 644, Ramphal Chowk,Dwarka,Sector-7 Delhi, 110075",
     "city": "Delhi",
     "description": "Hotel Silver Land is a verified, couple-friendly hotel located in Sector 7,Dwarka, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 3,
     "guestRating": 3.7,
     "reviewCount": 50,
@@ -9405,9 +9405,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2310,
-      "6": 2520,
-      "12": 3569
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-skon-boutique-by-orion-hotels-in-delhi-4419"
   },
@@ -9866,7 +9866,7 @@
     "address": "A-29, Behind Rohini Jail, Near Haiderpur, Sector 19, Rohini, Delhi - 110042",
     "city": "Delhi",
     "description": "Hotel The BM Velvet is a verified, couple-friendly hotel located in Rohini, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 3150.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.9,
     "reviewCount": 50,
@@ -9895,9 +9895,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 1260,
-      "6": 1733,
-      "12": 3150
+      "3": 799,
+      "6": 1199,
+      "12": 1599
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-the-bm-velvet-in-delhi-13203"
   },
@@ -9983,9 +9983,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2300,
-      "6": 2600,
-      "12": 3000
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-the-daffodils-in-delhi-8110"
   },
@@ -10076,9 +10076,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2812,
-      "6": 3281,
-      "12": 3750
+      "3": 999,
+      "6": 1350,
+      "12": 1750
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-the-jk-in-delhi-5500"
   },
@@ -10088,7 +10088,7 @@
     "address": "I Block Road, 110024 New Delhi, India, I Block Road, 110024",
     "city": "Delhi",
     "description": "HOTEL THE LAZEEZ is offering accommodation in New Delhi.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 3,
     "guestRating": 3.6,
     "reviewCount": 50,
@@ -10276,7 +10276,7 @@
     "address": "73 ,Vasant Kunj Road, Opposite Maruti Suzuki Arena , Mahipalpur , New Delhi, Delhi - 110037",
     "city": "Delhi",
     "description": "Hotel The Raj Palace is a verified, couple-friendly hotel located in Mahipalpur, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 8850.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.5,
     "reviewCount": 50,
@@ -10311,9 +10311,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 5250,
-      "6": 6300,
-      "12": 8850
+      "3": 1499,
+      "6": 2020,
+      "12": 2620
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-the-raj-palace-in-delhi-12639"
   },
@@ -10712,9 +10712,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2520,
-      "6": 2730,
-      "12": 3150
+      "3": 999,
+      "6": 1350,
+      "12": 1750
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-udman-chattarpur-in-delhi-5513"
   },
@@ -10724,7 +10724,7 @@
     "address": "N82, Outer Ring Road, Block N, Next to Panchsheel Club,  Panchsheel Park, Delhi 110049, India",
     "city": "Delhi",
     "description": "Hotel Udman Panchshila is a verified, couple-friendly hotel located in Panchsheel Park, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5040.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.7,
     "reviewCount": 50,
@@ -10760,9 +10760,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 4305,
-      "6": 4515,
-      "12": 5040
+      "3": 1499,
+      "6": 2020,
+      "12": 2620
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-udman-panchshila-in-delhi-5514"
   },
@@ -10805,9 +10805,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 11799,
-      "6": 11799,
-      "12": 11799
+      "3": 660,
+      "6": 890,
+      "12": 1160
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-unistar-in-delhi-3994"
   },
@@ -10904,7 +10904,7 @@
     "address": "KH-398/2, Rd Number 2, Block A, Mahipalpur, New Delhi, Delhi 110037",
     "city": "Delhi",
     "description": "Hotel Urban Tree is a verified, couple-friendly hotel located in Mahipalpur, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5249.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.5,
     "reviewCount": 50,
@@ -10945,7 +10945,7 @@
     "address": "Plot No. 1521, 27, Block 39E, Nai Walan, Karol Bagh, Delhi, 110005",
     "city": "Delhi",
     "description": "Hotel Vardhmaan Inn is a verified, couple-friendly hotel located in Karol Bagh, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1899.0,
     "starRating": 3,
     "guestRating": 3.5,
     "reviewCount": 50,
@@ -11254,7 +11254,7 @@
     "address": "A-3, Outer Ring Rd, Shubham Enclave, Main, Paschim Vihar, New Delhi, Delhi 110063",
     "city": "Delhi",
     "description": "Hotel Waterfall is a verified, couple-friendly hotel located in Paschim Vihar, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 3,
     "guestRating": 2.7,
     "reviewCount": 50,
@@ -11289,9 +11289,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2100,
-      "6": 2415,
-      "12": 2835
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-waterfall-in-delhi-1491"
   },
@@ -11381,9 +11381,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 5250,
-      "6": 5250,
-      "12": 5250
+      "3": 590,
+      "6": 800,
+      "12": 1030
     },
     "bookingUrl": "https://www.brevistay.com/hotels/hotel-white-saffron-in-delhi-1592"
   },
@@ -11439,7 +11439,7 @@
     "address": "Plot no 70, Metro station Gate no. 2,Dwarka Sector 9, Dwarka, New Delhi, Delhi 110077",
     "city": "Delhi",
     "description": "Hotel Yash Residency is a verified, couple-friendly hotel located in Sector 9,Dwarka, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1899.0,
     "starRating": 3,
     "guestRating": 4.0,
     "reviewCount": 50,
@@ -11479,7 +11479,7 @@
     "address": "518, Opposite Ram Mandir, Shree Nagar, Srinagar Garden, Shakurpur, Delhi, 110034",
     "city": "Delhi",
     "description": "Hotel Yellow Chilli is a verified, couple-friendly hotel located in Shakurpur, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 3,
     "guestRating": 3.9,
     "reviewCount": 50,
@@ -11689,9 +11689,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 1995,
-      "6": 2100,
-      "12": 2310
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/ikoy-hotel-in-delhi-8821"
   },
@@ -11735,9 +11735,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 1460,
-      "6": 1849,
-      "12": 2200
+      "3": 499,
+      "6": 670,
+      "12": 870
     },
     "bookingUrl": "https://www.brevistay.com/hotels/jageer-palace-in-delhi-2992"
   },
@@ -11791,7 +11791,7 @@
     "address": "16/21, W.E.A., Padam Singh Road, Karol Bagh, New Delhi, Delhi 110005",
     "city": "Delhi",
     "description": "Karat 87 Hotel is a verified, couple-friendly hotel located in Karol Bagh, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 3,
     "guestRating": 4.2,
     "reviewCount": 50,
@@ -11882,7 +11882,7 @@
     "address": "G T Road, Palla Bakhtawarpur Rd, Alipur, New Delhi, Delhi 110036",
     "city": "Delhi",
     "description": "Lavanya Motel is a verified, couple-friendly hotel located in Alipur, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.8,
     "reviewCount": 50,
@@ -12192,7 +12192,7 @@
     "address": "A-3/15, Sector -3, Rohini, New Delhi 110085",
     "city": "Delhi",
     "description": "MVM Residency is a verified, couple-friendly hotel located in Rohini, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1899.0,
     "starRating": 4,
     "guestRating": 4.8,
     "reviewCount": 50,
@@ -12228,9 +12228,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 1890,
-      "6": 2310,
-      "12": 2730
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/mvm-residency-in-delhi-3664"
   },
@@ -12323,9 +12323,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2100,
-      "6": 2415,
-      "12": 2940
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/mystique-melange-in-delhi-7487"
   },
@@ -12409,9 +12409,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 1890,
-      "6": 2310,
-      "12": 2940
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/nidra-hotel-in-delhi-8575"
   },
@@ -12448,9 +12448,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2625,
-      "6": 3150,
-      "12": 3675
+      "3": 999,
+      "6": 1350,
+      "12": 1750
     },
     "bookingUrl": "https://www.brevistay.com/hotels/niksen-hotels-at-saket-in-delhi-4658"
   },
@@ -12504,7 +12504,7 @@
     "address": "C-22, Greater Kailash 1, Kailash Colony, 110048 New Delhi, India, C-22, Greater Kailash 1, 110048",
     "city": "Delhi",
     "description": "NUO By juSTa is set in New Delhi, in the Kailash Colony district.",
-    "pricePerNight": 21650.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.6,
     "reviewCount": 50,
@@ -12546,9 +12546,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 16638,
-      "6": 16638,
-      "12": 21650
+      "3": 1499,
+      "6": 2020,
+      "12": 2620
     },
     "bookingUrl": "https://www.brevistay.com/hotels/nuo-by-justa-in-delhi-7814"
   },
@@ -12605,7 +12605,7 @@
     "address": "A-15/384, Road No. 2, Mahipalpur, Mahipalpur, 110037 New Delhi,",
     "city": "Delhi",
     "description": "Olivia Hotels Delhi Airport is a verified, couple-friendly hotel located in Mahipalpur, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5249.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.5,
     "reviewCount": 50,
@@ -12864,9 +12864,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2100,
-      "6": 2625,
-      "12": 4200
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/opo-the-royal-residency-in-delhi-40"
   },
@@ -12960,9 +12960,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2100,
-      "6": 3150,
-      "12": 3675
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/palm-green-hotel-and-resort-in-delhi-8997"
   },
@@ -12972,7 +12972,7 @@
     "address": "Plot 32, Central Business Dist, Shahdara, Delhi, 110095",
     "city": "Delhi",
     "description": "Park Plaza East Delhi is a verified, couple-friendly hotel located in Shahdara, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 6300.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.5,
     "reviewCount": 50,
@@ -13009,9 +13009,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 3675,
-      "6": 4725,
-      "12": 6300
+      "3": 1499,
+      "6": 2020,
+      "12": 2620
     },
     "bookingUrl": "https://www.brevistay.com/hotels/park-plaza-east-delhi-in-delhi-6190"
   },
@@ -13151,7 +13151,7 @@
     "address": "121, Block C, Shivalik Colony, Malviya Nagar, Delhi 110017",
     "city": "Delhi",
     "description": "Prime Residency is a verified, couple-friendly hotel located in Malviya Nagar, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.6,
     "reviewCount": 50,
@@ -13317,9 +13317,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2625,
-      "6": 3150,
-      "12": 3990
+      "3": 999,
+      "6": 1350,
+      "12": 1750
     },
     "bookingUrl": "https://www.brevistay.com/hotels/rose-mallow-hotel-in-delhi-6158"
   },
@@ -13378,7 +13378,7 @@
     "address": "Block L 70, Mahipalpur Extn, near IGI Airport, New Delhi, Delhi 110037",
     "city": "Delhi",
     "description": "Royal Inn IGI Airport is a verified, couple-friendly hotel located in New Delhi Airport, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.9,
     "reviewCount": 50,
@@ -13481,7 +13481,7 @@
     "address": "C-569, Service Rd, Block C, Saraswati Vihar, Pitam Pura, New Delhi, Delhi 110034",
     "city": "Delhi",
     "description": "Runway Residency is a verified, couple-friendly hotel located in Pitampura, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.4,
     "reviewCount": 50,
@@ -13509,9 +13509,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 3150,
-      "6": 3675,
-      "12": 5249
+      "3": 1499,
+      "6": 2020,
+      "12": 2620
     },
     "bookingUrl": "https://www.brevistay.com/hotels/runway-residency-in-delhi-534"
   },
@@ -13602,9 +13602,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2625,
-      "6": 2940,
-      "12": 3360
+      "3": 999,
+      "6": 1350,
+      "12": 1750
     },
     "bookingUrl": "https://www.brevistay.com/hotels/scoovey-the-bmk-hotel-in-delhi-4170"
   },
@@ -13828,7 +13828,7 @@
     "address": "G -1, Dwarka Link Rd, Bijwasan, Pushpanjali Farms, New Delhi, Delhi 110037",
     "city": "Delhi",
     "description": "Spara Boutique Resort is a verified, couple-friendly hotel located in Bijwasan, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.6,
     "reviewCount": 50,
@@ -13864,9 +13864,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 1890,
-      "6": 2100,
-      "12": 3675
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/spara-boutique-resort-in-delhi-2126"
   },
@@ -13876,7 +13876,7 @@
     "address": "CSC-1, DDA market, Shukra Bazar Rd, Sector 6, Rohini, Delhi, 110085",
     "city": "Delhi",
     "description": "Stellar Inn is a verified, couple-friendly hotel located in Rohini, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.4,
     "reviewCount": 50,
@@ -13909,9 +13909,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 1995,
-      "6": 2310,
-      "12": 2730
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/stellar-inn-in-delhi-3181"
   },
@@ -14049,7 +14049,7 @@
     "address": "H 3/25, Sector 18, Rohini,Delhi110089",
     "city": "Delhi",
     "description": "The Chaitanya is a verified, couple-friendly hotel located in Rohini, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 3,
     "guestRating": 3.8,
     "reviewCount": 50,
@@ -14124,9 +14124,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2520,
-      "6": 2940,
-      "12": 3360
+      "3": 1180,
+      "6": 1590,
+      "12": 2060
     },
     "bookingUrl": "https://www.brevistay.com/hotels/the-chapter-hotel-in-delhi-12960"
   },
@@ -14136,7 +14136,7 @@
     "address": "B-49, Inner Circle, Connaught Place, Connaught Place, 110001 New Delhi, India, B-49, Inner Circle, Connaught Place, 110001, India",
     "city": "Delhi",
     "description": "Featuring free Wi-Fi and flat-screen TVs in rooms, Hotel Corus is well-situated in the business hub of Connaught Place.",
-    "pricePerNight": 7350.0,
+    "pricePerNight": 1999.0,
     "starRating": 3,
     "guestRating": 3.9,
     "reviewCount": 50,
@@ -14178,9 +14178,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 5775,
-      "6": 6825,
-      "12": 7350
+      "3": 999,
+      "6": 1350,
+      "12": 1750
     },
     "bookingUrl": "https://www.brevistay.com/hotels/the-corus-hotel-in-delhi-8261"
   },
@@ -14229,9 +14229,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2100,
-      "6": 2625,
-      "12": 3150
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/the-golden-palms-hotel-and-spa-in-delhi-8848"
   },
@@ -14241,7 +14241,7 @@
     "address": "Kailash Colony Metro Station, A-60, Near, Block A, Kailash Colony, Greater Kailash, New Delhi, Delhi 110048",
     "city": "Delhi",
     "description": "The Grand Orion is a verified, couple-friendly hotel located in Kailash Colony, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.7,
     "reviewCount": 50,
@@ -14274,9 +14274,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2414,
-      "6": 2519,
-      "12": 3569
+      "3": 1499,
+      "6": 2020,
+      "12": 2620
     },
     "bookingUrl": "https://www.brevistay.com/hotels/the-grand-orion-in-delhi-2838"
   },
@@ -14286,7 +14286,7 @@
     "address": "Building no D8, shanti kunj, church/mall road vasant kunj near amma ashram, 110070",
     "city": "Delhi",
     "description": "The King Cave By Craftels is a verified, couple-friendly hotel located in Vasant Kunj, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.6,
     "reviewCount": 50,
@@ -14317,9 +14317,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 3675,
-      "6": 4200,
-      "12": 4725
+      "3": 1499,
+      "6": 2020,
+      "12": 2620
     },
     "bookingUrl": "https://www.brevistay.com/hotels/the-king-cave-by-craftels-in-delhi-504"
   },
@@ -14329,7 +14329,7 @@
     "address": "Building no D8, Shanti Kunj, Church Road, Vasant Kunj Near Amma Ashram, 110070",
     "city": "Delhi",
     "description": "The King Cave By Craftels With Private Jacuzzi is a verified, couple-friendly hotel located in Vasant Kunj, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 3,
     "guestRating": 4.0,
     "reviewCount": 50,
@@ -14362,9 +14362,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 4725,
-      "6": 5250,
-      "12": 5775
+      "3": 999,
+      "6": 1350,
+      "12": 1750
     },
     "bookingUrl": "https://www.brevistay.com/hotels/the-king-cave-by-craftels-with-private-jacuzzi-in-delhi-2369"
   },
@@ -14422,7 +14422,7 @@
     "address": "Building no D8, shanti kunj, church/mall road vasant kunj near amma ashram, 110070",
     "city": "Delhi",
     "description": "The Little Cave By Craftels is a verified, couple-friendly hotel located in Vasant Kunj, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.5,
     "reviewCount": 50,
@@ -14455,9 +14455,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2940,
-      "6": 3360,
-      "12": 3675
+      "3": 1499,
+      "6": 2020,
+      "12": 2620
     },
     "bookingUrl": "https://www.brevistay.com/hotels/the-little-cave-by-craftels-in-delhi-494"
   },
@@ -14608,7 +14608,7 @@
     "address": "N.S.I.C, Metro Station, NEHRU PLACE-2, near Okhla, Shambhu Dayal Bagh, Kalkaji, Delhi-110020",
     "city": "Delhi",
     "description": "The Meriton is a verified, couple-friendly hotel located in Nehru Place, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 6300.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.6,
     "reviewCount": 50,
@@ -14646,9 +14646,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 3500,
-      "6": 4400,
-      "12": 6300
+      "3": 1499,
+      "6": 2020,
+      "12": 2620
     },
     "bookingUrl": "https://www.brevistay.com/hotels/the-meriton-in-delhi-10999"
   },
@@ -14658,7 +14658,7 @@
     "address": "Cc 27, Block G, Nehru Enclave, Kalkaji, New Delhi, Delhi 110019",
     "city": "Delhi",
     "description": "The Oakland Plaza by Orion Hotels is a verified, couple-friendly hotel located in Nehru Place, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1899.0,
     "starRating": 3,
     "guestRating": 4.2,
     "reviewCount": 50,
@@ -14691,9 +14691,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2204,
-      "6": 2414,
-      "12": 2939
+      "3": 660,
+      "6": 890,
+      "12": 1160
     },
     "bookingUrl": "https://www.brevistay.com/hotels/the-oakland-plaza-by-orion-hotels-in-delhi-2409"
   },
@@ -14737,9 +14737,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2414,
-      "6": 2519,
-      "12": 3569
+      "3": 999,
+      "6": 1350,
+      "12": 1750
     },
     "bookingUrl": "https://www.brevistay.com/hotels/the-orion-elite-in-delhi-6288"
   },
@@ -14749,7 +14749,7 @@
     "address": "R Block, 53, Hansraj Gupta Rd, Phase 1, Greater Kailash, New Delhi, Delhi 110048",
     "city": "Delhi",
     "description": "The Orion-Greater Kailash is a verified, couple-friendly hotel located in Greater Kailash 1, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 3,
     "guestRating": 4.0,
     "reviewCount": 50,
@@ -14797,7 +14797,7 @@
     "address": "CC26, Block G, Nehru Enclave, Kalkaji, New Delhi, Delhi 110019",
     "city": "Delhi",
     "description": "The Orion Plaza is a verified, couple-friendly hotel located in Nehru Place, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.4,
     "reviewCount": 50,
@@ -14830,9 +14830,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2414,
-      "6": 2624,
-      "12": 3359
+      "3": 1499,
+      "6": 2020,
+      "12": 2620
     },
     "bookingUrl": "https://www.brevistay.com/hotels/the-orion-plaza-in-delhi-2410"
   },
@@ -14842,7 +14842,7 @@
     "address": "A-5, Nehru Place Flyover, Greater Kailash-1, Pamposh Enclave, Greater Kailash, New Delhi, Delhi 110048",
     "city": "Delhi",
     "description": "The Pamposh is a verified, couple-friendly hotel located in Nehru Place, Delhi. Exclusively enabled for flexible micro-stays (3, 6, 12 hours) and day-use bookings on GetHotelStays. Features premium air-conditioned rooms, instant contactless check-in, high-speed WiFi, and 100% privacy.",
-    "pricePerNight": 5833.0,
+    "pricePerNight": 1999.0,
     "starRating": 4,
     "guestRating": 4.4,
     "reviewCount": 50,
@@ -14875,9 +14875,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 3675,
-      "6": 4725,
-      "12": 5250
+      "3": 1499,
+      "6": 2020,
+      "12": 2620
     },
     "bookingUrl": "https://www.brevistay.com/hotels/the-pamposh-in-delhi-3628"
   },
@@ -15195,9 +15195,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2310,
-      "6": 2730,
-      "12": 3150
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/travellers-hotel-in-delhi-5433"
   },
@@ -15375,9 +15375,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2730,
-      "6": 2940,
-      "12": 3570
+      "3": 999,
+      "6": 1350,
+      "12": 1750
     },
     "bookingUrl": "https://www.brevistay.com/hotels/udman-luxe-chattarpur-in-delhi-5516"
   },
@@ -15507,9 +15507,9 @@
     ],
     "isHourlyEnabled": true,
     "hourlyRates": {
-      "3": 2100,
-      "6": 3150,
-      "12": 3675
+      "3": 799,
+      "6": 1099,
+      "12": 1499
     },
     "bookingUrl": "https://www.brevistay.com/hotels/yashobhoomi-inn-in-delhi-11974"
   },

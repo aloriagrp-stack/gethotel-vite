@@ -26,7 +26,10 @@ export default function LandingHotelsGrid({ initialHotels, locationNote }: Landi
     let list = [...initialHotels];
 
     if (selectedFilter === "under1200") {
-      list = list.filter((h) => (h.pricePerNight || 0) <= 1200);
+      list = list.filter((h) => {
+        const rate3 = Number((h as any).hourlyRates?.['3'] || (h as any).hourlyRates?.[3] || (h.pricePerNight || 0) * 0.35);
+        return rate3 <= 1200;
+      });
     } else if (selectedFilter === "lift") {
       list = list.filter((h) => {
         const am: any = h.amenities;
@@ -48,9 +51,17 @@ export default function LandingHotelsGrid({ initialHotels, locationNote }: Landi
     }
 
     if (sortBy === "price_asc") {
-      list.sort((a, b) => (a.pricePerNight || 0) - (b.pricePerNight || 0));
+      list.sort((a, b) => {
+        const pA = Number((a as any).hourlyRates?.['3'] || (a.pricePerNight || 0) * 0.35);
+        const pB = Number((b as any).hourlyRates?.['3'] || (b.pricePerNight || 0) * 0.35);
+        return pA - pB;
+      });
     } else if (sortBy === "price_desc") {
-      list.sort((a, b) => (b.pricePerNight || 0) - (a.pricePerNight || 0));
+      list.sort((a, b) => {
+        const pA = Number((a as any).hourlyRates?.['3'] || (a.pricePerNight || 0) * 0.35);
+        const pB = Number((b as any).hourlyRates?.['3'] || (b.pricePerNight || 0) * 0.35);
+        return pB - pA;
+      });
     } else if (sortBy === "rating") {
       list.sort((a, b) => (b.guestRating || 0) - (a.guestRating || 0));
     }
@@ -134,7 +145,7 @@ export default function LandingHotelsGrid({ initialHotels, locationNote }: Landi
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredHotels.map((hotel) => (
             <div key={hotel.id} className="relative group flex flex-col">
-              <HotelCard hotel={hotel} />
+              <HotelCard hotel={hotel} stayMode="hourly" defaultDuration="3" />
               {locationNote && (
                 <div className="mt-1 flex items-center gap-1.5 text-[11px] font-semibold text-brand-700 bg-brand-50 px-3 py-1 rounded-md border border-brand-100">
                   <MapPin className="w-3 h-3 text-brand-600 shrink-0" />

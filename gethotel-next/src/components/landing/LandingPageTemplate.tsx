@@ -116,40 +116,43 @@ export default function LandingPageTemplate({
     "@type": "ItemList",
     name: h1,
     numberOfItems: hotels.length,
-    itemListElement: hotels.map((h, idx) => ({
-      "@type": "ListItem",
-      position: idx + 1,
-      item: {
-        "@type": "Hotel",
-        name: h.name,
-        description: h.description || `${h.name} situated in ${h.city || "Delhi"}.`,
-        image: h.thumbnail || "https://gethotelstays.com/og-image.jpg",
-        priceRange: `₹${h.pricePerNight || 1200} - ₹${(h.pricePerNight || 1200) * 2}`,
-        address: {
-          "@type": "PostalAddress",
-          streetAddress: h.address || "Delhi",
-          addressLocality: h.city || "Delhi",
-          addressRegion: "Delhi",
-          addressCountry: "IN",
+    itemListElement: hotels.map((h, idx) => {
+      const startingPrice = (h as any).hourlyRates?.['3'] || h.pricePerNight || 699;
+      return {
+        "@type": "ListItem",
+        position: idx + 1,
+        item: {
+          "@type": "Hotel",
+          name: h.name,
+          description: h.description || `${h.name} situated in ${h.city || "Delhi"}.`,
+          image: h.thumbnail || "https://gethotelstays.com/og-image.jpg",
+          priceRange: `₹${startingPrice} - ₹${startingPrice * 2}`,
+          address: {
+            "@type": "PostalAddress",
+            streetAddress: h.address || "Delhi",
+            addressLocality: h.city || "Delhi",
+            addressRegion: "Delhi",
+            addressCountry: "IN",
+          },
+          starRating: {
+            "@type": "Rating",
+            ratingValue: String(h.starRating || 3),
+          },
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: String(h.guestRating && h.guestRating > 0 ? h.guestRating : 4.1),
+            reviewCount: String(h.reviewCount && h.reviewCount > 0 ? h.reviewCount : 50),
+          },
+          offers: {
+            "@type": "Offer",
+            price: String(startingPrice),
+            priceCurrency: "INR",
+            availability: "https://schema.org/InStock",
+            url: `https://gethotelstays.com/hotel/${h.id}-${(h.name || "hotel").toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+          },
         },
-        starRating: {
-          "@type": "Rating",
-          ratingValue: String(h.starRating || 3),
-        },
-        aggregateRating: {
-          "@type": "AggregateRating",
-          ratingValue: String(h.guestRating && h.guestRating > 0 ? h.guestRating : 4.1),
-          reviewCount: String(h.reviewCount && h.reviewCount > 0 ? h.reviewCount : 50),
-        },
-        offers: {
-          "@type": "Offer",
-          price: String(h.pricePerNight || 1200),
-          priceCurrency: "INR",
-          availability: "https://schema.org/InStock",
-          url: `https://gethotelstays.com/hotel/${h.id}-${(h.name || "hotel").toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
-        },
-      },
-    })),
+      };
+    }),
   };
 
   // Clean visible H1 (without trailing pipe suffixes for clean UI)

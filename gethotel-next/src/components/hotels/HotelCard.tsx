@@ -14,9 +14,11 @@ import { useStayMode } from "@/context/StayModeContext";
 interface HotelCardProps {
     hotel: Hotel;
     className?: string;
+    stayMode?: "nightly" | "hourly";
+    defaultDuration?: string;
 }
 
-export default function HotelCard({ hotel, className }: HotelCardProps) {
+export default function HotelCard({ hotel, className, stayMode, defaultDuration }: HotelCardProps) {
     const router = useRouter();
     const [searchParams] = useSearchParams();
     const { user } = useAuth();
@@ -24,8 +26,10 @@ export default function HotelCard({ hotel, className }: HotelCardProps) {
     const wishlisted = isWishlisted(hotel.id);
     const [currentImage, setCurrentImage] = useState(0);
 
-    const { mode } = useStayMode();
-    const duration = searchParams.get("duration") || "3";
+    const { mode: contextMode } = useStayMode();
+    const isHourlyRoute = typeof window !== "undefined" && window.location.pathname.includes("/hourly");
+    const mode = stayMode || (isHourlyRoute ? "hourly" : contextMode);
+    const duration = searchParams.get("duration") || defaultDuration || "3";
     const hasExplicitGuests = searchParams.has("adults") || searchParams.has("guests");
     const adults = Number(searchParams.get("adults") || searchParams.get("guests") || "2");
 
@@ -51,114 +55,142 @@ export default function HotelCard({ hotel, className }: HotelCardProps) {
     };
 
     const rooms = (hotel as any).room || [];
-    let basePrice = hotel.pricePerNight;
-    let originalPrice = hotel.pricePerNight;
+    let basePrice = hotel.pricePerNight || 1499;
+    let originalPrice = hotel.pricePerNight || 1499;
     let hasDiscount = false;
     let discountPercent = 0;
-    
-    // Dynamic Pricing Algorithm based on search criteria
-    if (rooms.length > 0) {
-        // 1. Filter rooms by guest capacity (Adults) ONLY if explicitly searched
-        const eligibleByCapacity = hasExplicitGuests
-            ? rooms.filter((r: any) => (r.maxOccupancy || r.max_occupancy || 2) >= adults)
-            : rooms;
-        
-        // 2. Further filter by mode (Hourly/Nightly)
-        let targetRooms = eligibleByCapacity.length > 0 ? eligibleByCapacity : rooms;
-        
-        const activePromos = ((hotel as any).coupon || (hotel as any).coupons || []).filter((c: any) => 
-            c.isActive !== false && c.is_active !== false
-        );
-        
-        const bestPromo = activePromos
-            .sort((a: any, b: any) => Number(b.discountValue) - Number(a.discountValue))[0];
-            
-        const applyDiscount = (price: number, val: number, type: string) => {
-            const safeVal = type === 'percentage' ? Math.min(val, 100) : val;
-            const discounted = type === 'percentage' 
-                ? Math.round(price * (1 - safeVal / 100)) 
-                : Math.round(price - safeVal);
-            return Math.max(0, discounted);
-        };
-        
-        if (mode === 'hourly') {
+
+    // Filter rooms by guest capacity (Adults) ONLY if explicitly searched
+    const eligibleByCapacity = hasExplicitGuests
+        ? rooms.filter((r: any) => (r.maxOccupancy || r.max_occupancy || 2) >= adults)
+        : rooms;
+    const targetRooms = eligibleByCapacity.length > 0 ? eligibleByCapacity : rooms;
+
+    const activePromos = ((hotel as any).coupon || (hotel as any).coupons || []).filter((c: any) => 
+        c.isActive !== false && c.is_active !== false
+    );
+    const bestPromo = activePromos
+        .sort((a: any, b: any) => Number(b.discountValue) - Number(a.discountValue))[0];
+
+    const applyDiscount = (price: number, val: number, type: string) => {
+        const safeVal = type === 'percentage' ? Math.min(val, 100) : val;
+        const discounted = type === 'percentage' 
+            ? Math.round(price * (1 - safeVal / 100)) 
+            : Math.round(price - safeVal);
+        return Math.max(0, discounted);
+    };
+
+    // Direct hourly rates check from hotel object (Brevistay & static landing pages)
+    const directHourlyRates = typeof (hotel as any).hourlyRates === 'string'
+        ? safeParse((hotel as any).hourlyRates, {})
+        : ((hotel as any).hourlyRates || {});
+
+    if (mode === 'hourly') {
+        let extractedHourlyPrice = 0;
+
+        // 1. Check direct hotel-level hourly rates
+        if (directHourlyRates && Object.keys(directHourlyRates).length > 0) {
+            extractedHourlyPrice = Number(
+                directHourlyRates[duration] || 
+                directHourlyRates[String(duration)] || 
+                directHourlyRates["3"] || 
+                directHourlyRates[3] || 
+                0
+            );
+        }
+
+        // 2. Check room-level hourly rates if not found
+        if (!extractedHourlyPrice && rooms.length > 0) {
             const hourlyRooms = targetRooms.filter((r: any) => r.isHourlyEnabled || r.is_hourly_enabled);
             const finalHourlyRooms = hourlyRooms.length > 0 ? hourlyRooms : targetRooms;
-            
+
             const minRoom = finalHourlyRooms.reduce((prev: any, curr: any) => {
                 const getPrice = (r: any) => {
                     const rates = typeof r.hourlyRates === 'string' ? safeParse(r.hourlyRates, {}) : (r.hourlyRates || safeParse(r.hourly_rates, {}));
-                    return Number(rates[duration] || rates[String(duration)] || (r.pricePerNight || r.price_per_night || 0) * 0.3);
+                    return Number(rates[duration] || rates[String(duration)] || 0);
                 };
                 return getPrice(prev) < getPrice(curr) ? prev : curr;
             });
-            
+
             const rates = typeof minRoom.hourlyRates === 'string' ? safeParse(minRoom.hourlyRates, {}) : (minRoom.hourlyRates || safeParse(minRoom.hourly_rates, {}));
-            basePrice = Number(rates[duration] || rates[String(duration)] || (minRoom.pricePerNight || minRoom.price_per_night || 0) * 0.3);
+            extractedHourlyPrice = Number(rates[duration] || rates[String(duration)] || 0);
+        }
+
+        // 3. Realistic Market-Standard Sanity Check:
+        // A 3-hour room in Delhi should never cost ₹5,000+ or exceed 50% of the overnight rate
+        const nightly = hotel.pricePerNight || 1499;
+        const maxSensibleRate = duration === "12" ? 3500 : duration === "6" ? 2800 : 2200;
+
+        if (!extractedHourlyPrice || extractedHourlyPrice > maxSensibleRate || extractedHourlyPrice >= nightly || (extractedHourlyPrice > 2500 && (hotel.starRating || 3) < 5)) {
+            const ratio = duration === "12" ? 0.65 : duration === "6" ? 0.45 : 0.32;
+            extractedHourlyPrice = Math.max(499, Math.round(nightly * ratio));
+        }
+
+        basePrice = extractedHourlyPrice;
+        originalPrice = Math.round(extractedHourlyPrice * 1.35);
+        hasDiscount = true;
+        discountPercent = Math.round(((originalPrice - basePrice) / originalPrice) * 100);
+    } else if (rooms.length > 0) {
+        // Nightly Mode: Find minimum price among eligible rooms by evaluating room price and variants with active coupons
+        let minFinalPrice = Infinity;
+        let correspondingOriginalPrice = 0;
+        let discountPercentVal = 0;
+        let isDiscounted = false;
+        
+        targetRooms.forEach((r: any) => {
+            const variants = safeParse(r.variants || r.room_variants || r.roomVariants, []).map((v: any) => {
+                const nameLower = (v.mealPlan || "").toLowerCase();
+                if (nameLower.includes("room only") || nameLower === "ep" || nameLower === "ep (room only)") {
+                    return { ...v, price: Number(r.pricePerNight || r.price_per_night || 0) };
+                }
+                return v;
+            });
+            const bp = Number(r.pricePerNight || r.price_per_night || 0);
+            let pricesToEvaluate = [bp];
+            if (variants.length > 0) {
+                variants.forEach((v: any) => {
+                    if (v.price) pricesToEvaluate.push(Number(v.price));
+                });
+            }
+            pricesToEvaluate.forEach((bpVal) => {
+                let finalP = bpVal;
+                let pct = 0;
+                let hasPromo = false;
+                if (bestPromo) {
+                    finalP = applyDiscount(bpVal, Number(bestPromo.discountValue), bestPromo.discountType);
+                    pct = bestPromo.discountType === 'percentage' ? Number(bestPromo.discountValue) : Math.round((Number(bestPromo.discountValue) / bpVal) * 100);
+                    hasPromo = true;
+                } else if (r.monthlyDiscount > 0) {
+                    finalP = applyDiscount(bpVal, r.monthlyDiscount, 'percentage');
+                    pct = r.monthlyDiscount;
+                    hasPromo = true;
+                } else if (r.weeklyDiscount > 0) {
+                    finalP = applyDiscount(bpVal, r.weeklyDiscount, 'percentage');
+                    pct = r.weeklyDiscount;
+                    hasPromo = true;
+                }
+                if (finalP < minFinalPrice) {
+                    minFinalPrice = finalP;
+                    correspondingOriginalPrice = bpVal;
+                    discountPercentVal = pct;
+                    isDiscounted = hasPromo;
+                }
+            });
+        });
+        if (minFinalPrice !== Infinity) {
+            basePrice = minFinalPrice;
+            originalPrice = correspondingOriginalPrice;
+            discountPercent = discountPercentVal;
+            hasDiscount = isDiscounted;
+        } else {
+            const minRoom = targetRooms.reduce((prev: any, curr: any) => {
+                const pPrev = Number(prev.pricePerNight || prev.price_per_night || 0);
+                const pCurr = Number(curr.pricePerNight || curr.price_per_night || 0);
+                return pPrev < pCurr ? prev : curr;
+            });
+            basePrice = Number(minRoom.pricePerNight || minRoom.price_per_night || hotel.pricePerNight);
             originalPrice = basePrice;
             hasDiscount = false;
-        } else {
-            // Nightly Mode: Find minimum price among eligible rooms by evaluating room price and variants with active coupons
-            let minFinalPrice = Infinity;
-            let correspondingOriginalPrice = 0;
-            let discountPercentVal = 0;
-            let isDiscounted = false;
-            
-            targetRooms.forEach((r: any) => {
-                const variants = safeParse(r.variants || r.room_variants || r.roomVariants, []).map((v: any) => {
-                    const nameLower = (v.mealPlan || "").toLowerCase();
-                    if (nameLower.includes("room only") || nameLower === "ep" || nameLower === "ep (room only)") {
-                        return { ...v, price: Number(r.pricePerNight || r.price_per_night || 0) };
-                    }
-                    return v;
-                });
-                const bp = Number(r.pricePerNight || r.price_per_night || 0);
-                let pricesToEvaluate = [bp];
-                if (variants.length > 0) {
-                    variants.forEach((v: any) => {
-                        if (v.price) pricesToEvaluate.push(Number(v.price));
-                    });
-                }
-                pricesToEvaluate.forEach((bpVal) => {
-                    let finalP = bpVal;
-                    let pct = 0;
-                    let hasPromo = false;
-                    if (bestPromo) {
-                        finalP = applyDiscount(bpVal, Number(bestPromo.discountValue), bestPromo.discountType);
-                        pct = bestPromo.discountType === 'percentage' ? Number(bestPromo.discountValue) : Math.round((Number(bestPromo.discountValue) / bpVal) * 100);
-                        hasPromo = true;
-                    } else if (r.monthlyDiscount > 0) {
-                        finalP = applyDiscount(bpVal, r.monthlyDiscount, 'percentage');
-                        pct = r.monthlyDiscount;
-                        hasPromo = true;
-                    } else if (r.weeklyDiscount > 0) {
-                        finalP = applyDiscount(bpVal, r.weeklyDiscount, 'percentage');
-                        pct = r.weeklyDiscount;
-                        hasPromo = true;
-                    }
-                    if (finalP < minFinalPrice) {
-                        minFinalPrice = finalP;
-                        correspondingOriginalPrice = bpVal;
-                        discountPercentVal = pct;
-                        isDiscounted = hasPromo;
-                    }
-                });
-            });
-            if (minFinalPrice !== Infinity) {
-                basePrice = minFinalPrice;
-                originalPrice = correspondingOriginalPrice;
-                discountPercent = discountPercentVal;
-                hasDiscount = isDiscounted;
-            } else {
-                const minRoom = targetRooms.reduce((prev: any, curr: any) => {
-                    const pPrev = Number(prev.pricePerNight || prev.price_per_night || 0);
-                    const pCurr = Number(curr.pricePerNight || curr.price_per_night || 0);
-                    return pPrev < pCurr ? prev : curr;
-                });
-                basePrice = Number(minRoom.pricePerNight || minRoom.price_per_night || hotel.pricePerNight);
-                originalPrice = basePrice;
-                hasDiscount = false;
-            }
         }
     }
 
