@@ -639,8 +639,7 @@ export default function SuperAdminDashboard() {
             trend: periodBadge,
             isUp: true,
             icon: TrendingUp,
-            badgeClass: "bg-emerald-50 text-emerald-700 border-emerald-200/70",
-            notice: overviewPeriod !== 'all_time' && displayGmv === 0 ? `All-Time: ₹${Math.round(allTimeGmv * 0.18).toLocaleString()}` : undefined
+            badgeClass: "bg-emerald-50 text-emerald-700 border-emerald-200/70"
         },
         {
             label: "Gross Volume (GMV)",
@@ -648,13 +647,12 @@ export default function SuperAdminDashboard() {
             trend: periodBadge,
             isUp: true,
             icon: CreditCard,
-            badgeClass: "bg-emerald-50 text-emerald-700 border-emerald-200/70",
-            notice: overviewPeriod !== 'all_time' && displayGmv === 0 ? `All-Time: ₹${allTimeGmv.toLocaleString()}` : undefined
+            badgeClass: "bg-emerald-50 text-emerald-700 border-emerald-200/70"
         },
         {
             label: "Direct Partner Hotels",
             value: finalBookable.toString(),
-            trend: "⚡ Bookable Direct",
+            trend: "Bookable",
             isUp: true,
             icon: Hotel,
             badgeClass: "bg-emerald-50 text-emerald-700 border-emerald-200/70"
@@ -662,7 +660,7 @@ export default function SuperAdminDashboard() {
         {
             label: "Directory Listings",
             value: finalDirectory.toString(),
-            trend: "📍 Directory",
+            trend: "Directory",
             isUp: true,
             icon: BookOpen,
             badgeClass: "bg-blue-50 text-blue-700 border-blue-200/70"
@@ -670,7 +668,7 @@ export default function SuperAdminDashboard() {
         {
             label: overviewPeriod === 'all_time' ? "Total Bookings" : "Bookings in Period",
             value: displayBookingsCount.toString(),
-            trend: overviewPeriod === 'all_time' ? "All-time" : `${bookings.length} All-Time`,
+            trend: periodBadge,
             isUp: true,
             icon: BarChart3,
             badgeClass: "bg-slate-100 text-slate-700 border-slate-200/70"
@@ -745,37 +743,25 @@ export default function SuperAdminDashboard() {
 
                     {activeTab === "overview" && (
                 <>
-                    {/* Time Range Selector & Date Range Bar */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 bg-white border border-slate-200/90 rounded-xl p-3 sm:px-4 sm:py-3 shadow-2xs">
-                        <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-xs font-medium text-slate-500 flex items-center gap-1.5">
-                                <Clock className="w-3.5 h-3.5 text-slate-400" />
-                                Accounting Period:
-                            </span>
-                            <div className="inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-200/80 px-2.5 py-1 rounded-lg text-emerald-800 font-semibold text-xs">
-                                <Calendar className="w-3.5 h-3.5 text-emerald-600" />
-                                <span>{periodDateLabel}</span>
-                            </div>
-                            {overviewPeriod === 'last_month' && (
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded-full border border-emerald-200">
-                                    Default (Last Month)
-                                </span>
-                            )}
+                    {/* Minimal Period Filter Strip */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-4">
+                        <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200/90 rounded-lg text-slate-700 text-xs shadow-2xs">
+                            <Calendar className="w-3.5 h-3.5 text-emerald-600" />
+                            <span className="font-semibold text-slate-900">{periodDateLabel}</span>
                         </div>
 
-                        <div className="flex items-center gap-2 w-full sm:w-auto">
-                            <label className="text-xs text-slate-500 font-medium whitespace-nowrap">Filter Period:</label>
+                        <div className="flex items-center gap-2">
                             <select
                                 value={overviewPeriod}
                                 onChange={(e) => setOverviewPeriod(e.target.value as any)}
-                                className="w-full sm:w-auto bg-slate-50 hover:bg-white border border-slate-300 text-slate-900 font-semibold text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:border-slate-900 transition-colors cursor-pointer shadow-2xs"
+                                className="bg-white border border-slate-300 text-slate-800 font-semibold text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:border-slate-900 shadow-2xs cursor-pointer"
                             >
-                                <option value="last_month">Last Month ({getPeriodInfo('last_month').rangeLabel})</option>
-                                <option value="this_month">This Month ({getPeriodInfo('this_month').rangeLabel})</option>
-                                <option value="last_30_days">Last 30 Days (Rolling)</option>
-                                <option value="today">Today ({getPeriodInfo('today').rangeLabel})</option>
+                                <option value="last_month">Last Month</option>
+                                <option value="this_month">This Month</option>
+                                <option value="last_30_days">Last 30 Days</option>
+                                <option value="today">Today</option>
                                 <option value="yesterday">Yesterday</option>
-                                <option value="all_time">All Time (Full Ledger - ₹{allTimeGmv.toLocaleString()})</option>
+                                <option value="all_time">All Time</option>
                             </select>
                         </div>
                     </div>
@@ -789,27 +775,14 @@ export default function SuperAdminDashboard() {
                                         <span className="text-slate-500 text-[11px] sm:text-xs font-medium truncate mr-1">{stat.label}</span>
                                         <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 shrink-0" />
                                     </div>
-                                    <div>
-                                        <div className="flex items-baseline justify-between flex-wrap gap-1">
-                                            <h3 className="text-lg sm:text-2xl font-bold text-slate-900 tracking-tight">{stat.value}</h3>
-                                            <span className={cn(
-                                                "text-[10px] sm:text-[11px] font-semibold px-1.5 sm:px-2 py-0.5 rounded-md border",
-                                                stat.badgeClass || (stat.isUp ? "bg-emerald-50 text-emerald-700 border-emerald-200/70" : "bg-rose-50 text-rose-700 border-rose-200/70")
-                                            )}>
-                                                {stat.trend}
-                                            </span>
-                                        </div>
-                                        {stat.notice && (
-                                            <button
-                                                type="button"
-                                                onClick={() => setOverviewPeriod('all_time')}
-                                                className="text-[10px] text-slate-400 hover:text-emerald-600 transition-colors mt-1.5 font-medium flex items-center gap-1 cursor-pointer"
-                                                title="Switch to All-Time view"
-                                            >
-                                                <span>{stat.notice}</span>
-                                                <span className="underline">→</span>
-                                            </button>
-                                        )}
+                                    <div className="flex items-baseline justify-between flex-wrap gap-1">
+                                        <h3 className="text-lg sm:text-2xl font-bold text-slate-900 tracking-tight">{stat.value}</h3>
+                                        <span className={cn(
+                                            "text-[10px] sm:text-[11px] font-semibold px-1.5 sm:px-2 py-0.5 rounded-md border",
+                                            stat.badgeClass || (stat.isUp ? "bg-emerald-50 text-emerald-700 border-emerald-200/70" : "bg-rose-50 text-rose-700 border-rose-200/70")
+                                        )}>
+                                            {stat.trend}
+                                        </span>
                                     </div>
                                 </div>
                             );
