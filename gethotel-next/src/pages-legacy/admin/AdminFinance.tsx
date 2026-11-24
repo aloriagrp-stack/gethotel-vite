@@ -134,22 +134,22 @@ export default function FinancialHubPage() {
             </div>
 
             {/* Top 4 KPI Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
                 {cards.map((card) => {
                     const Icon = card.icon;
                     return (
-                        <div key={card.label} className="bg-white border border-slate-200/90 rounded-xl shadow-xs p-5 hover:border-slate-300 transition-colors">
-                            <div className="flex justify-between items-center mb-3">
-                                <span className="text-slate-500 text-xs font-medium">{card.label}</span>
-                                <Icon className="w-4 h-4 text-slate-400" />
+                        <div key={card.label} className="bg-white border border-slate-200/90 rounded-xl shadow-xs p-3.5 sm:p-5 hover:border-slate-300 transition-colors flex flex-col justify-between">
+                            <div className="flex justify-between items-center mb-2 sm:mb-3">
+                                <span className="text-slate-500 text-[11px] sm:text-xs font-medium truncate mr-1">{card.label}</span>
+                                <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 shrink-0" />
                             </div>
-                            <div className="flex items-baseline justify-between mb-1">
-                                <h3 className="text-2xl font-semibold text-slate-900 tracking-tight">{card.value}</h3>
-                                <span className="text-[11px] font-medium px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400">
+                            <div className="flex items-baseline justify-between mb-1 flex-wrap gap-1">
+                                <h3 className="text-lg sm:text-2xl font-semibold text-slate-900 tracking-tight">{card.value}</h3>
+                                <span className="text-[10px] sm:text-[11px] font-medium px-1.5 sm:px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600">
                                     {card.trend}
                                 </span>
                             </div>
-                            <p className="text-[11px] text-slate-400">{card.sub}</p>
+                            <p className="text-[10px] sm:text-[11px] text-slate-400 truncate">{card.sub}</p>
                         </div>
                     );
                 })}

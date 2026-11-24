@@ -609,28 +609,28 @@ export default function SuperAdminDashboard() {
     }
 
     return (
-        <div className={cn(activeTab === "ai-copilot" ? "p-0 h-screen overflow-hidden flex flex-col" : "p-8", "min-w-0")}>
+        <div className={cn(activeTab === "ai-copilot" ? "p-0 h-screen overflow-hidden flex flex-col" : "p-0", "min-w-0")}>
             {activeTab !== "ai-copilot" && activeTab !== "destination-analytics" && activeTab !== "destinations" && activeTab !== "hotels" && activeTab !== "controlhub" && activeTab !== "directory" && (
-                <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 border-b border-slate-200/80 pb-5">
+                <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 border-b border-slate-200/80 pb-4">
                     <div>
-                        <h2 className="text-xl font-semibold text-slate-900 tracking-tight flex items-center gap-2.5">
+                        <h2 className="text-lg sm:text-xl font-semibold text-slate-900 tracking-tight flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-emerald-500" />
                             {activeTab === 'overview' ? 'Overview' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
                         </h2>
                         <p className="text-slate-500 text-xs mt-0.5">Monitoring platform statistics and property requests.</p>
                     </div>
-                    <div className="flex items-center gap-2.5">
-                        <div className="relative">
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <div className="relative flex-1 sm:w-56">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
                             <input
                                 type="text"
                                 placeholder="Search..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-9 pr-3 py-1.5 bg-white border border-slate-300 rounded-lg w-56 focus:outline-none focus:border-slate-900 text-xs text-slate-900 placeholder:text-slate-400 transition-colors shadow-2xs"
+                                className="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-slate-900 text-xs text-slate-900 placeholder:text-slate-400 transition-colors shadow-2xs"
                             />
                         </div>
-                        <button className="p-2 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg text-slate-500 hover:text-slate-900 transition-colors cursor-pointer shadow-2xs">
+                        <button className="p-2 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg text-slate-500 hover:text-slate-900 transition-colors cursor-pointer shadow-2xs shrink-0">
                             <Bell className="w-3.5 h-3.5" />
                         </button>
                     </div>
@@ -666,19 +666,19 @@ export default function SuperAdminDashboard() {
 
                     {activeTab === "overview" && (
                 <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-6">
+                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 mb-5">
                         {stats.map((stat: any) => {
                             const Icon = stat.icon;
                             return (
-                                <div key={stat.label} className="bg-white p-5 border border-slate-200/90 rounded-xl shadow-xs hover:border-slate-300 transition-colors">
-                                    <div className="flex justify-between items-center mb-3">
-                                        <span className="text-slate-500 text-xs font-medium">{stat.label}</span>
-                                        <Icon className="w-4 h-4 text-slate-400" />
+                                <div key={stat.label} className="bg-white p-3.5 sm:p-5 border border-slate-200/90 rounded-xl shadow-xs hover:border-slate-300 transition-colors flex flex-col justify-between">
+                                    <div className="flex justify-between items-center mb-2 sm:mb-3">
+                                        <span className="text-slate-500 text-[11px] sm:text-xs font-medium truncate mr-1">{stat.label}</span>
+                                        <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 shrink-0" />
                                     </div>
-                                    <div className="flex items-baseline justify-between">
-                                        <h3 className="text-2xl font-semibold text-slate-900 tracking-tight">{stat.value}</h3>
+                                    <div className="flex items-baseline justify-between flex-wrap gap-1">
+                                        <h3 className="text-lg sm:text-2xl font-bold text-slate-900 tracking-tight">{stat.value}</h3>
                                         <span className={cn(
-                                            "text-[11px] font-semibold px-2 py-0.5 rounded-md border",
+                                            "text-[10px] sm:text-[11px] font-semibold px-1.5 sm:px-2 py-0.5 rounded-md border",
                                             stat.badgeClass || (stat.isUp ? "bg-emerald-50 text-emerald-700 border-emerald-200/70" : "bg-rose-50 text-rose-700 border-rose-200/70")
                                         )}>
                                             {stat.trend}
@@ -691,29 +691,29 @@ export default function SuperAdminDashboard() {
 
                     {/* Conversion Intelligence & Destination Insights */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
-                        <div className="lg:col-span-2 bg-white border border-slate-200/90 rounded-xl shadow-xs p-5">
-                            <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-5 pb-3 border-b border-slate-100 flex items-center gap-2">
+                        <div className="lg:col-span-2 bg-white border border-slate-200/90 rounded-xl shadow-xs p-3.5 sm:p-5">
+                            <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-4 pb-3 border-b border-slate-100 flex items-center gap-2">
                                 <BarChart3 className="w-3.5 h-3.5 text-emerald-600" /> Conversion Intelligence
                             </h3>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6">
                                 <div>
                                     <p className="text-[11px] text-slate-500 font-medium mb-1">Search → Booking</p>
-                                    <p className="text-2xl font-semibold text-slate-900">{statsData?.conversionRate || '0'}%</p>
+                                    <p className="text-xl sm:text-2xl font-semibold text-slate-900">{statsData?.conversionRate || '0'}%</p>
                                     <p className="text-[11px] text-emerald-600 font-semibold mt-1">Healthy</p>
                                 </div>
                                 <div>
                                     <p className="text-[11px] text-slate-500 font-medium mb-1">Abandoned Checkout</p>
-                                    <p className="text-2xl font-semibold text-slate-900">{statsData?.abandonedRate || '0'}%</p>
+                                    <p className="text-xl sm:text-2xl font-semibold text-slate-900">{statsData?.abandonedRate || '0'}%</p>
                                     <p className="text-[11px] text-amber-600 font-semibold mt-1">Stable</p>
                                 </div>
                                 <div>
                                     <p className="text-[11px] text-slate-500 font-medium mb-1">Repeat Guest %</p>
-                                    <p className="text-2xl font-semibold text-slate-900">{statsData?.repeatGuestRate || '0'}%</p>
+                                    <p className="text-xl sm:text-2xl font-semibold text-slate-900">{statsData?.repeatGuestRate || '0'}%</p>
                                     <p className="text-[11px] text-blue-600 font-semibold mt-1">Growing</p>
                                 </div>
                                 <div>
                                     <p className="text-[11px] text-slate-500 font-medium mb-1">Avg. Booking Value</p>
-                                    <p className="text-2xl font-semibold text-slate-900">₹{(statsData?.avgBookingValue || 0).toLocaleString()}</p>
+                                    <p className="text-xl sm:text-2xl font-semibold text-slate-900">₹{(statsData?.avgBookingValue || 0).toLocaleString()}</p>
                                     <p className="text-[11px] text-slate-400 font-medium mt-1">Per stay</p>
                                 </div>
                             </div>

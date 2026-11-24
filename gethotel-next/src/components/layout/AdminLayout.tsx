@@ -108,6 +108,16 @@ export default function AdminLayout({ children }: { children?: React.ReactNode }
     ];
 
     const currentTab = new URLSearchParams(location.search).get('tab') || 'overview';
+    const allNavItems = navSections.flatMap(s => s.items);
+    const currentItem = allNavItems.find(i => i.tab === currentTab) || allNavItems[0];
+    const activeTabLabel = currentItem?.label || "Dashboard";
+
+    const bottomNavItems = [
+        { id: "overview", label: "Dashboard", icon: LayoutDashboard, tab: "overview" },
+        { id: "hotels", label: "Properties", icon: Hotel, tab: "hotels" },
+        { id: "bookings", label: "Bookings", icon: Calendar, tab: "bookings" },
+        { id: "news", label: "News Hub", icon: Newspaper, tab: "news" },
+    ];
 
     const handleLogout = async () => {
         try {
@@ -229,37 +239,58 @@ export default function AdminLayout({ children }: { children?: React.ReactNode }
                 </div>
             </aside>
 
-            {/* Mobile Header */}
-            <div className="md:hidden fixed top-0 left-0 right-0 h-14 bg-white border-b border-slate-200 px-4 flex items-center justify-between z-40">
-                <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-xs">
+            {/* Mobile Header (App Bar) */}
+            <div className="md:hidden fixed top-0 left-0 right-0 h-14 bg-white/95 backdrop-blur-md border-b border-slate-200/90 px-3.5 flex items-center justify-between z-40 shadow-2xs">
+                <div className="flex items-center gap-2 min-w-0">
+                    <div className="w-7 h-7 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
                         CH
                     </div>
-                    <span className="font-semibold text-sm text-slate-900">ControlHub</span>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="font-semibold text-xs text-slate-900">ControlHub</span>
+                        <span className="text-slate-300">/</span>
+                        <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-2 py-0.5 rounded-full truncate max-w-[130px]">
+                            {activeTabLabel}
+                        </span>
+                    </div>
                 </div>
-                <button
-                    type="button"
-                    onClick={() => setMobileOpen(!mobileOpen)}
-                    className="p-1.5 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 cursor-pointer"
-                >
-                    {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-                </button>
+                <div className="flex items-center gap-1">
+                    <button
+                        type="button"
+                        onClick={() => setMobileOpen(!mobileOpen)}
+                        className="p-2 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+                        aria-label="Toggle navigation drawer"
+                    >
+                        {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                    </button>
+                </div>
             </div>
 
             {/* Mobile Drawer */}
             {mobileOpen && (
-                <div className="md:hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex">
-                    <div className="w-72 bg-white h-full flex flex-col p-4 shadow-xl">
-                        <div className="flex items-center justify-between pb-4 border-b border-slate-200 mb-4">
-                            <span className="font-semibold text-sm text-slate-900">ControlHub Menu</span>
-                            <button onClick={() => setMobileOpen(false)} className="p-1 text-slate-500 hover:text-slate-900">
+                <div className="md:hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex animate-in fade-in duration-150">
+                    <div className="w-80 max-w-[85vw] bg-white h-full flex flex-col p-4 shadow-2xl">
+                        <div className="flex items-center justify-between pb-3.5 border-b border-slate-200/90 mb-3">
+                            <div className="flex items-center gap-2">
+                                <div className="w-7 h-7 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-xs">
+                                    CH
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold text-xs text-slate-900">Super Admin Portal</h3>
+                                    <p className="text-[10px] text-slate-400">All Modules &amp; Hubs</p>
+                                </div>
+                            </div>
+                            <button 
+                                onClick={() => setMobileOpen(false)} 
+                                className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors"
+                            >
                                 <X className="w-4 h-4" />
                             </button>
                         </div>
-                        <nav className="flex-1 overflow-y-auto space-y-4">
+
+                        <nav className="flex-1 overflow-y-auto space-y-4 pr-1 py-1">
                             {navSections.map(section => (
                                 <div key={section.title} className="space-y-1">
-                                    <p className="px-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                                    <p className="px-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
                                         {section.title}
                                     </p>
                                     {section.items.map(item => {
@@ -271,24 +302,33 @@ export default function AdminLayout({ children }: { children?: React.ReactNode }
                                                 type="button"
                                                 onClick={() => handleNavClick(item.tab)}
                                                 className={cn(
-                                                    "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-left",
-                                                    isActive ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"
+                                                    "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-left transition-colors",
+                                                    isActive 
+                                                        ? "bg-slate-900 text-white shadow-xs font-semibold" 
+                                                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                                                 )}
                                             >
-                                                <Icon className="w-4 h-4" />
-                                                <span>{item.label}</span>
+                                                <Icon className={cn("w-4 h-4 shrink-0", isActive ? "text-white" : "text-slate-500")} />
+                                                <span className="truncate">{item.label}</span>
                                             </button>
                                         );
                                     })}
                                 </div>
                             ))}
                         </nav>
-                        <div className="pt-4 border-t border-slate-200">
+
+                        <div className="pt-3 border-t border-slate-200/90 bg-slate-50/50 -mx-4 -mb-4 p-4 mt-2">
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="min-w-0">
+                                    <p className="text-xs font-semibold text-slate-900 truncate">{user?.name || "Super Admin"}</p>
+                                    <p className="text-[10px] text-slate-500 truncate">{user?.email || "admin@gethotelstays.com"}</p>
+                                </div>
+                            </div>
                             <button
                                 onClick={handleLogout}
-                                className="w-full flex items-center justify-center gap-2 py-2 text-xs font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                className="w-full flex items-center justify-center gap-2 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 border border-red-200/60 rounded-lg transition-colors cursor-pointer"
                             >
-                                <LogOut className="w-4 h-4" /> Logout
+                                <LogOut className="w-4 h-4" /> Sign Out
                             </button>
                         </div>
                     </div>
@@ -296,9 +336,57 @@ export default function AdminLayout({ children }: { children?: React.ReactNode }
                 </div>
             )}
 
+            {/* Mobile Bottom Dock (Shopify/Stripe-Style Native Experience) */}
+            <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white/95 backdrop-blur-md border-t border-slate-200/90 z-40 px-2 flex items-center justify-around shadow-lg">
+                {bottomNavItems.map(item => {
+                    const Icon = item.icon;
+                    const isActive = currentTab === item.tab;
+                    return (
+                        <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => handleNavClick(item.tab)}
+                            className={cn(
+                                "flex flex-col items-center justify-center gap-0.5 py-1 px-3 rounded-lg transition-colors cursor-pointer",
+                                isActive ? "text-slate-900" : "text-slate-400 hover:text-slate-600"
+                            )}
+                        >
+                            <div className={cn(
+                                "p-1 rounded-md transition-colors",
+                                isActive ? "bg-slate-900 text-white" : "text-slate-500"
+                            )}>
+                                <Icon className="w-4 h-4" />
+                            </div>
+                            <span className={cn(
+                                "text-[10px] tracking-tight",
+                                isActive ? "font-bold text-slate-900" : "font-medium text-slate-500"
+                            )}>
+                                {item.label}
+                            </span>
+                        </button>
+                    );
+                })}
+                <button
+                    type="button"
+                    onClick={() => setMobileOpen(true)}
+                    className={cn(
+                        "flex flex-col items-center justify-center gap-0.5 py-1 px-3 rounded-lg transition-colors cursor-pointer",
+                        mobileOpen ? "text-slate-900" : "text-slate-400 hover:text-slate-600"
+                    )}
+                >
+                    <div className={cn(
+                        "p-1 rounded-md transition-colors",
+                        mobileOpen ? "bg-slate-900 text-white" : "text-slate-500"
+                    )}>
+                        <Menu className="w-4 h-4" />
+                    </div>
+                    <span className="text-[10px] font-medium text-slate-500">More</span>
+                </button>
+            </nav>
+
             {/* Main Content Area */}
-            <main className="flex-1 min-w-0 bg-[#f8fafc] md:pt-0 pt-14 flex flex-col">
-                <div className="flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto">
+            <main className="flex-1 min-w-0 bg-[#f8fafc] md:pt-0 pt-14 pb-20 md:pb-8 flex flex-col">
+                <div className="flex-1 p-3.5 sm:p-6 md:p-8 max-w-7xl w-full mx-auto">
                     {children}
                 </div>
             </main>
