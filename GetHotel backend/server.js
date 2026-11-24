@@ -715,7 +715,15 @@ const mountCriticalRoutes = (prefix) => {
     app.put(`${prefix}/packages/hero-config`, protect, authorize('admin', 'superadmin', 'super_admin'), packageController.updateHeroConfig);
     app.post(`${prefix}/packages/import-json`, protect, authorize('admin', 'superadmin', 'super_admin'), packageController.importPackagesJson);
     app.post(`${prefix}/packages/ai-suggest`, protect, authorize('admin', 'superadmin', 'super_admin'), packageController.aiSuggestTours);
-    app.post(`${prefix}/packages/upload-image`, protect, authorize('admin', 'superadmin', 'super_admin', 'hotel_admin'), packageController.uploadImage);
+    app.post(`${prefix}/packages/upload-image`, protect, authorize('admin', 'superadmin', 'super_admin', 'hotel_admin'), packageController.uploadImage);
+
+    // GHS News & Editorial Publishing Routes (Super Admin Control)
+    const newsController = require('./controllers/newsController');
+    app.get(`${prefix}/admin/news`, protect, authorize('admin', 'superadmin', 'super_admin'), newsController.getArticles);
+    app.post(`${prefix}/admin/news`, protect, authorize('admin', 'superadmin', 'super_admin'), newsController.createArticle);
+    app.put(`${prefix}/admin/news/:id`, protect, authorize('admin', 'superadmin', 'super_admin'), newsController.updateArticle);
+    app.delete(`${prefix}/admin/news/:id`, protect, authorize('admin', 'superadmin', 'super_admin'), newsController.deleteArticle);
+    app.get(`${prefix}/news`, newsController.getArticles);
 
     // Explicit Hotel Importer Agent Routes
     app.post(`${prefix}/admin/importer/scraped-hotel`, async (req, res, next) => {

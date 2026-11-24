@@ -7,7 +7,7 @@ import {
     BarChart3, Settings, LogOut,
     Search, Clock,
     Calendar, LayoutTemplate, SlidersHorizontal, Star, Globe, Sparkles, Bot, Palmtree, Download, MapPin, BookOpen,
-    ChevronLeft, ChevronRight, Menu, X, Percent, Bell
+    ChevronLeft, ChevronRight, Menu, X, Percent, Bell, Newspaper
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -79,6 +79,7 @@ export default function AdminLayout({ children }: { children?: React.ReactNode }
         {
             title: "Content & Growth",
             items: [
+                { id: "news", label: "GHS News Hub", icon: Newspaper, tab: "news" },
                 { id: "destinations", label: "Destination Cards", icon: MapPin, tab: "destinations" },
                 { id: "tour-packages", label: "Tour Packages", icon: Palmtree, tab: "tour-packages" },
                 { id: "promotions", label: "Promotions & Coupons", icon: Percent, tab: "promotions" },

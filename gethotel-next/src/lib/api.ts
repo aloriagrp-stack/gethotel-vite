@@ -227,6 +227,10 @@ export const partnerApi = {
 };
 
 export const adminApi = {
+    getNewsArticles: () => apiFetch('/admin/news'),
+    createNewsArticle: (data: any) => apiFetch('/admin/news', { method: 'POST', body: JSON.stringify(data) }),
+    updateNewsArticle: (id: number, data: any) => apiFetch(`/admin/news/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+    deleteNewsArticle: (id: number) => apiFetch(`/admin/news/${id}`, { method: 'DELETE' }),
     getPartners: () => apiFetch('/admin/partners'),
     getUsers: () => apiFetch('/admin/users'),
     getPartnerRequests: () => apiFetch('/partner/requests'),

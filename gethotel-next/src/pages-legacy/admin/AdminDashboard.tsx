@@ -36,6 +36,7 @@ import AdminNotifications from "./AdminNotifications";
 import AdminDisputes from "./AdminDisputes";
 import AdminHotelImporter from "./AdminHotelImporter";
 import AdminDelhiSeo from "./AdminDelhiSeo";
+import AdminNewsHub from "./AdminNewsHub";
 import AdminHotelDetails from "./AdminHotelDetails";
 import { parseBookingBreakdown } from "@/lib/bookingBreakdown";
 
@@ -641,6 +642,7 @@ export default function SuperAdminDashboard() {
                     {activeTab === "addPartner" && <AdminAddPartner hotels={hotels.filter((h: any) => h.listingType !== 'directory')} partners={partners} setPartners={setPartners} />}
                     {activeTab === "ai-copilot" && <AdminAICopilot hotels={hotels.filter((h: any) => h.listingType !== 'directory')} loadingHotels={!loadedSections.hotels} />}
                     {activeTab === "tour-packages" && <AdminTourPackages />}
+                    {activeTab === "news" && <AdminNewsHub />}
                     {activeTab === "destinations" && <AdminDestinationsManager />}
                     {activeTab === "destination-analytics" && <AdminDestinationAnalytics />}
                     {activeTab === "ai-chats" && <AdminAIChats />}
