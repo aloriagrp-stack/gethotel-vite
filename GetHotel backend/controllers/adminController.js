@@ -353,6 +353,20 @@ exports.getAllHotels = async (req, res) => {
                 isFeatured: true,
                 isTrending: true,
                 hotelUsername: true,
+                listingType: true,
+                contactPhone: true,
+                contactEmail: true,
+                contactPerson: true,
+                websiteUrl: true,
+                callClicks: true,
+                emailClicks: true,
+                viewCount: true,
+                bookingUrl: true,
+                bookingPrice: true,
+                mmtUrl: true,
+                mmtPrice: true,
+                otaCurrency: true,
+                otaLastFetchedAt: true,
                 createdAt: true,
                 updatedAt: true,
                 userId: true,
@@ -363,7 +377,6 @@ exports.getAllHotels = async (req, res) => {
                         name: true,
                         pricePerNight: true,
                         isHourlyEnabled: true,
-                        roomType: true,
                         maxOccupancy: true
                     }
                 }
@@ -371,30 +384,9 @@ exports.getAllHotels = async (req, res) => {
             orderBy: { createdAt: 'desc' }
         });
 
-        // Fast augment with raw database fields to guarantee listingType and directory fields are present
-        try {
-            const rawDirRows = await prisma.$queryRawUnsafe(`
-                SELECT id, listingType, contactPhone, contactEmail, contactPerson, websiteUrl,
-                       callClicks, emailClicks, viewCount, bookingUrl, bookingPrice, mmtUrl, mmtPrice,
-                       otaCurrency, otaLastFetchedAt
-                FROM hotel
-            `);
-            if (rawDirRows && rawDirRows.length > 0) {
-                const rawMap = new Map();
-                rawDirRows.forEach(r => rawMap.set(r.id, r));
-                hotels.forEach(h => {
-                    const extra = rawMap.get(h.id);
-                    if (extra) {
-                        Object.assign(h, extra);
-                    }
-                });
-            }
-        } catch (rawErr) {
-            // Silently continue if raw fields not available
-        }
-
         res.json({ success: true, count: hotels.length, data: hotels });
     } catch (error) {
+        console.error('[getAllHotels Error]:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 };

@@ -296,8 +296,8 @@ export default function SuperAdminDashboard() {
                 return;
             }
 
-            // Pre-fetch data silently without showing full-screen flicker loader once initial load is done
-            if (Object.keys(loadedSections).length === 0) {
+            // Show loader if the current tab section is not yet loaded
+            if (!isTabLoaded(normalizedTab)) {
                 setLoading(true);
             }
 

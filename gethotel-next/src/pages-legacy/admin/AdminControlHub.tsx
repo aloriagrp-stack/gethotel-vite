@@ -250,7 +250,14 @@ export default function AdminControlHub({ hotels, loading = false }: AdminContro
                                     </tr>
                                 );
                             })}
-                            {displayedHotels.length === 0 && (
+                            {loading ? (
+                                <tr>
+                                    <td colSpan={4} className="py-12 text-center">
+                                        <div className="w-6 h-6 border-2 border-slate-900 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                                        <p className="text-xs text-slate-500 font-medium">Loading properties inventory...</p>
+                                    </td>
+                                </tr>
+                            ) : displayedHotels.length === 0 ? (
                                 <tr>
                                     <td colSpan={4} className="py-12 text-center">
                                         <ShieldAlert className="w-6 h-6 text-slate-400 mx-auto mb-2" />
@@ -259,7 +266,7 @@ export default function AdminControlHub({ hotels, loading = false }: AdminContro
                                         </p>
                                     </td>
                                 </tr>
-                            )}
+                            ) : null}
                         </tbody>
                     </table>
                 </div>
