@@ -115,9 +115,9 @@ if ($action === 'all' || $action === 'extract_frontend' || $action === 'extract_
     }
 }
 
-// 4. EXTRACT BLOGS (GHS NEWS)
-if ($action === 'all' || $action === 'extract_blogs' || $action === 'extract_all') {
-    echo "\n=== 4. EXTRACTING BLOGS.ZIP TO BLOGS.GETHOTELSTAYS.COM ===\n";
+// 4. EXTRACT & CLEAN BLOGS (GHS NEWS)
+if ($action === 'all' || $action === 'extract_blogs' || $action === 'extract_all' || $action === 'clean_blogs') {
+    echo "\n=== 4. EXTRACTING & CLEANING BLOGS.GETHOTELSTAYS.COM ===\n";
     $blogsZips = [
         '/home/vgyuvmpi/blogs.gethotelstays.com/blogs.zip',
         '/home/vgyuvmpi/public_html/blogs.zip'
@@ -128,6 +128,32 @@ if ($action === 'all' || $action === 'extract_blogs' || $action === 'extract_all
             extractZip($bz, $blogsDest);
             break;
         }
+    }
+
+    // Allowed HTML files (Only index.html + 10 authoritative dispatches)
+    $allowedHtml = [
+        'index.html',
+        'ai-moving-from-travel-inspiration-to-hotel-booking.html',
+        'openai-business-profiles-chatgpt-hotel-discovery.html',
+        'global-tourism-trends-un-tourism-world-bank-2026.html',
+        'vietnam-airlines-ahmedabad-hanoi-direct-flights-india.html',
+        'bloom-hotels-75-million-funding-kedaara-capital-india.html',
+        'ai-search-new-battleground-hotel-visibility.html',
+        'ai-concierges-whatsapp-messaging-qr-codes-hotels.html',
+        'smart-hotels-connected-operations-energy-management.html',
+        'skyscanner-hotel-inspiration-lists-travel-discovery.html',
+        'hotels-ai-adoption-gap-managers-frontline-teams.html'
+    ];
+
+    $dh = @opendir($blogsDest);
+    if ($dh) {
+        while (false !== ($f = @readdir($dh))) {
+            if (substr($f, -5) === '.html' && !in_array($f, $allowedHtml)) {
+                @unlink($blogsDest . $f);
+                echo "Deleted obsolete blog: $f\n";
+            }
+        }
+        @closedir($dh);
     }
 }
 
