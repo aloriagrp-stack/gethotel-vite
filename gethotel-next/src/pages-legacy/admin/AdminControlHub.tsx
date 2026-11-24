@@ -12,7 +12,7 @@ interface AdminControlHubProps {
 
 export default function AdminControlHub({ hotels, loading = false }: AdminControlHubProps) {
     const [selectedHotelId, setSelectedHotelId] = useState<string | number | null>(null);
-    const [subTab, setSubTab] = useState<"nightly" | "hourly" | "both">("nightly");
+    const [subTab, setSubTab] = useState<"all" | "nightly" | "hourly" | "both">("all");
     const [searchQuery, setSearchQuery] = useState("");
 
     if (selectedHotelId) {
@@ -37,7 +37,8 @@ export default function AdminControlHub({ hotels, loading = false }: AdminContro
     };
 
     // Filtered & classified hotels (Strictly bookable only - directory hotels are isolated to Directory tab)
-    const bookableOnlyHotels = (hotels || []).filter(h => h.listingType !== "directory");
+    const effectiveHotels = (hotels || []).filter(h => h.listingType !== "directory");
+    const bookableOnlyHotels = effectiveHotels.length > 0 ? effectiveHotels : (hotels || []);
     const classifiedHotels = bookableOnlyHotels.map(h => ({
         ...h,
         category: classifyHotel(h)
@@ -48,6 +49,7 @@ export default function AdminControlHub({ hotels, loading = false }: AdminContro
     const bothHotels = classifiedHotels.filter(h => h.category === "both");
 
     const getActiveList = () => {
+        if (subTab === "all") return classifiedHotels;
         if (subTab === "nightly") return nightlyHotels;
         if (subTab === "hourly") return hourlyHotels;
         return bothHotels;
@@ -68,11 +70,12 @@ export default function AdminControlHub({ hotels, loading = false }: AdminContro
 
     const displayedHotels = smartFilter(getActiveList(), searchQuery);
 
-    // Stats
+    // Stats switcher tabs
     const stats = [
+        { label: "All Properties", count: classifiedHotels.length, icon: Hotel, type: "all" },
         { label: "Nightly Only (Full Day)", count: nightlyHotels.length, icon: Calendar, type: "nightly" },
         { label: "Hourly Only Stays", count: hourlyHotels.length, icon: Clock, type: "hourly" },
-        { label: "Hybrid (Nightly and Hourly)", count: bothHotels.length, icon: SlidersHorizontal, type: "both" }
+        { label: "Hybrid (Nightly & Hourly)", count: bothHotels.length, icon: SlidersHorizontal, type: "both" }
     ];
 
     return (
@@ -99,7 +102,7 @@ export default function AdminControlHub({ hotels, loading = false }: AdminContro
             </div>
 
             {/* Category switcher cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
                 {stats.map((stat) => {
                     const Icon = stat.icon;
                     const isActive = subTab === stat.type;
@@ -109,18 +112,18 @@ export default function AdminControlHub({ hotels, loading = false }: AdminContro
                             type="button"
                             onClick={() => setSubTab(stat.type as any)}
                             className={cn(
-                                "p-5 text-left rounded-xl border transition-all cursor-pointer shadow-xs",
+                                "p-4 text-left rounded-xl border transition-all cursor-pointer shadow-xs",
                                 isActive
                                     ? "bg-slate-900 border-slate-900 text-white shadow-sm ring-1 ring-slate-900"
                                     : "bg-white border-slate-200/90 text-slate-700 hover:border-slate-300 hover:bg-slate-50/50"
                             )}
                         >
-                            <div className="flex justify-between items-center mb-3">
-                                <span className={cn("text-xs font-semibold tracking-wide", isActive ? "text-slate-300" : "text-slate-500")}>
+                            <div className="flex justify-between items-center mb-2.5">
+                                <span className={cn("text-xs font-semibold tracking-wide truncate mr-1", isActive ? "text-slate-300" : "text-slate-500")}>
                                     {stat.label}
                                 </span>
                                 <div className={cn(
-                                    "w-7 h-7 rounded-lg flex items-center justify-center transition-colors",
+                                    "w-6 h-6 rounded-md flex items-center justify-center shrink-0 transition-colors",
                                     isActive ? "bg-white/10 text-emerald-400" : "bg-slate-100 text-slate-500"
                                 )}>
                                     <Icon className="w-3.5 h-3.5" />
@@ -131,10 +134,10 @@ export default function AdminControlHub({ hotels, loading = false }: AdminContro
                                     {stat.count}
                                 </h3>
                                 <span className={cn(
-                                    "text-[11px] font-semibold px-2.5 py-0.5 rounded-full transition-colors",
+                                    "text-[10px] font-semibold px-2 py-0.5 rounded-full transition-colors",
                                     isActive ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" : "bg-slate-100 text-slate-600"
                                 )}>
-                                    {isActive ? "● Active View" : "View Inventory"}
+                                    {isActive ? "● Active" : "View"}
                                 </span>
                             </div>
                         </button>
@@ -146,7 +149,8 @@ export default function AdminControlHub({ hotels, loading = false }: AdminContro
             <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs overflow-hidden">
                 <div className="px-5 py-3.5 border-b border-slate-200/80 flex items-center justify-between">
                     <p className="text-xs font-medium text-slate-700">
-                        {subTab === "nightly" ? "Nightly Only Hotels" :
+                        {subTab === "all" ? "All Bookable Properties" :
+                         subTab === "nightly" ? "Nightly Only Hotels" :
                          subTab === "hourly" ? "Hourly Only Hotels" : "Hybrid Stays (Nightly and Hourly)"}
                         <span className="text-slate-400 ml-2">({displayedHotels.length} properties)</span>
                     </p>

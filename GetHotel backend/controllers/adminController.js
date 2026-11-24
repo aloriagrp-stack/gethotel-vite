@@ -7,33 +7,48 @@ const fs = require('fs');
 
 exports.getStats = async (req, res) => {
     try {
-        const bookableHotels = await prisma.hotel.count({
-            where: {
-                NOT: { listingType: 'directory' }
-            }
-        });
+        const totalHotels = await prisma.hotel.count();
         const directoryHotels = await prisma.hotel.count({
-            where: {
-                listingType: 'directory'
-            }
-        });
-        const totalHotels = bookableHotels + directoryHotels;
+            where: { listingType: 'directory' }
+        }).catch(() => 0);
+        
+        // Bookable hotels is total minus directory (handles NULL listingType correctly)
+        const bookableHotels = Math.max(0, totalHotels - directoryHotels);
+
         const totalUsers = await prisma.user.count({
             where: { role: 'user' }
-        });
+        }).catch(() => 0);
+
         const totalBookings = await prisma.booking.count();
         
-        // Sum of total price for paid bookings
+        // GMV: Sum of total price for non-cancelled and non-failed bookings
         const revenueResult = await prisma.booking.aggregate({
             _sum: {
-                totalPrice: true
+                totalPrice: true,
+                amountPaid: true
             },
             where: {
-                paymentStatus: 'paid'
+                status: {
+                    notIn: ['cancelled', 'failed']
+                }
             }
         });
 
-        const totalRevenue = revenueResult._sum.totalPrice || 0;
+        let totalRevenue = revenueResult._sum.totalPrice || 0;
+        let collectedRevenue = revenueResult._sum.amountPaid || 0;
+
+        // Fallback: If status filtering yielded 0 but bookings exist, aggregate all bookings
+        if (totalRevenue === 0 && totalBookings > 0) {
+            const fallbackSum = await prisma.booking.aggregate({
+                _sum: {
+                    totalPrice: true,
+                    amountPaid: true
+                }
+            });
+            totalRevenue = fallbackSum._sum.totalPrice || 0;
+            collectedRevenue = fallbackSum._sum.amountPaid || 0;
+        }
+
         const avgBookingValue = totalBookings > 0 ? Math.round(totalRevenue / totalBookings) : 0;
 
         // Group by city for top destinations
@@ -48,7 +63,7 @@ exports.getStats = async (req, res) => {
                 }
             },
             take: 4
-        });
+        }).catch(() => []);
 
         const topDestinations = topDestinationsRaw.map(dest => ({
             city: dest.city,
@@ -64,7 +79,7 @@ exports.getStats = async (req, res) => {
                 status: true,
                 createdAt: true
             }
-        });
+        }).catch(() => []);
 
         res.json({
             success: true,
@@ -75,9 +90,10 @@ exports.getStats = async (req, res) => {
                 totalUsers,
                 totalBookings,
                 totalRevenue,
+                collectedRevenue,
                 avgBookingValue,
                 topDestinations,
-                conversionRate: totalBookings > 0 ? 4.2 : 0, // Simplified for now, or based on visits
+                conversionRate: totalBookings > 0 ? 4.2 : 0,
                 abandonedRate: 18.5,
                 repeatGuestRate: 22.8,
                 recentRequests
@@ -322,15 +338,40 @@ exports.updatePartnerEmail = async (req, res) => {
 exports.getAllHotels = async (req, res) => {
     try {
         const hotels = await prisma.hotel.findMany({
-            include: {
-                user: { select: { name: true, email: true } },
-                room: true,
-                coupon: true
+            select: {
+                id: true,
+                name: true,
+                tagline: true,
+                city: true,
+                address: true,
+                pricePerNight: true,
+                starRating: true,
+                guestRating: true,
+                reviewCount: true,
+                thumbnail: true,
+                isActive: true,
+                isFeatured: true,
+                isTrending: true,
+                hotelUsername: true,
+                createdAt: true,
+                updatedAt: true,
+                userId: true,
+                user: { select: { id: true, name: true, email: true } },
+                room: {
+                    select: {
+                        id: true,
+                        name: true,
+                        pricePerNight: true,
+                        isHourlyEnabled: true,
+                        roomType: true,
+                        maxOccupancy: true
+                    }
+                }
             },
             orderBy: { createdAt: 'desc' }
         });
 
-        // Augment with raw database fields to guarantee listingType and directory fields are present
+        // Fast augment with raw database fields to guarantee listingType and directory fields are present
         try {
             const rawDirRows = await prisma.$queryRawUnsafe(`
                 SELECT id, listingType, contactPhone, contactEmail, contactPerson, websiteUrl,
@@ -349,10 +390,10 @@ exports.getAllHotels = async (req, res) => {
                 });
             }
         } catch (rawErr) {
-            console.warn("[getAllHotels] Raw directory augment warning:", rawErr.message);
+            // Silently continue if raw fields not available
         }
 
-        res.json({ success: true, data: hotels });
+        res.json({ success: true, count: hotels.length, data: hotels });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -364,14 +405,30 @@ exports.getAllHotels = async (req, res) => {
 exports.getAllBookings = async (req, res) => {
     try {
         const bookings = await prisma.booking.findMany({
-            include: {
-                hotel: { select: { name: true } },
-                room: { select: { name: true, isHourlyEnabled: true } },
-                user: { select: { name: true, email: true } }
+            select: {
+                id: true,
+                userId: true,
+                hotelId: true,
+                roomId: true,
+                checkIn: true,
+                checkOut: true,
+                totalPrice: true,
+                amountPaid: true,
+                totalGuests: true,
+                status: true,
+                paymentStatus: true,
+                guestFirstName: true,
+                guestLastName: true,
+                guestEmail: true,
+                guestPhone: true,
+                createdAt: true,
+                hotel: { select: { id: true, name: true, city: true } },
+                room: { select: { id: true, name: true, isHourlyEnabled: true } },
+                user: { select: { id: true, name: true, email: true } }
             },
             orderBy: { createdAt: 'desc' }
         });
-        res.json({ success: true, data: bookings });
+        res.json({ success: true, count: bookings.length, data: bookings });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }

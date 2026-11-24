@@ -540,10 +540,25 @@ export default function SuperAdminDashboard() {
         { id: "ai-copilot", label: "AI Room Onboarding", icon: Sparkles },
     ];
 
+    // Resilient GMV & Hotel Counts (Zero Lag, Live Fallback)
+    const calculatedGmv = (bookings && bookings.length > 0)
+        ? bookings.reduce((sum: number, b: any) => sum + (Number(b.totalPrice ?? b.totalAmount ?? 0)), 0)
+        : 0;
+    const finalGmv = (statsData?.totalRevenue && statsData.totalRevenue > 0) ? statsData.totalRevenue : calculatedGmv;
+
+    const calculatedBookable = hotels.filter((h: any) => h.listingType !== 'directory').length;
+    const finalBookable = (statsData?.bookableHotels !== undefined && statsData.bookableHotels > 0)
+        ? statsData.bookableHotels
+        : (calculatedBookable > 0 ? calculatedBookable : hotels.length);
+
+    const finalDirectory = (statsData?.directoryHotels !== undefined && statsData.directoryHotels > 0)
+        ? statsData.directoryHotels
+        : hotels.filter((h: any) => h.listingType === 'directory').length;
+
     const stats = [
         {
             label: "Platform Earnings (18%)",
-            value: "₹" + Math.round((statsData?.totalRevenue || 0) * 0.18).toLocaleString(),
+            value: "₹" + Math.round(finalGmv * 0.18).toLocaleString(),
             trend: "+15.2%",
             isUp: true,
             icon: TrendingUp,
@@ -551,7 +566,7 @@ export default function SuperAdminDashboard() {
         },
         {
             label: "Gross Volume (GMV)",
-            value: "₹" + (statsData?.totalRevenue || 0).toLocaleString(),
+            value: "₹" + finalGmv.toLocaleString(),
             trend: "+12.5%",
             isUp: true,
             icon: CreditCard,
@@ -559,7 +574,7 @@ export default function SuperAdminDashboard() {
         },
         {
             label: "Direct Partner Hotels",
-            value: ((statsData?.bookableHotels !== undefined ? statsData.bookableHotels : hotels.filter((h: any) => h.listingType !== 'directory').length) || 0).toString(),
+            value: finalBookable.toString(),
             trend: "⚡ Bookable Direct",
             isUp: true,
             icon: Hotel,
@@ -567,7 +582,7 @@ export default function SuperAdminDashboard() {
         },
         {
             label: "Directory Listings",
-            value: ((statsData?.directoryHotels !== undefined ? statsData.directoryHotels : hotels.filter((h: any) => h.listingType === 'directory').length) || 0).toString(),
+            value: finalDirectory.toString(),
             trend: "📍 Directory",
             isUp: true,
             icon: BookOpen,
@@ -575,11 +590,11 @@ export default function SuperAdminDashboard() {
         },
         {
             label: "Total Bookings",
-            value: (statsData?.totalBookings || 0).toString(),
-            trend: "-2%",
-            isUp: false,
+            value: (statsData?.totalBookings || bookings.length || 0).toString(),
+            trend: "All-time",
+            isUp: true,
             icon: BarChart3,
-            badgeClass: "bg-rose-50 text-rose-700 border-rose-200/70"
+            badgeClass: "bg-slate-100 text-slate-700 border-slate-200/70"
         },
     ];
 

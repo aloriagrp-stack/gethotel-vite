@@ -35,14 +35,14 @@ export default function FinancialHubPage() {
 
     // Financial Data Calculations
     const stats = useMemo(() => {
-        const totalGrossRevenue = bookings.reduce((acc, b) => acc + (b.totalAmount || 0), 0);
+        const totalGrossRevenue = bookings.reduce((acc, b) => acc + (Number(b.totalPrice ?? b.totalAmount ?? 0)), 0);
         const platformNetProfit = Math.round(totalGrossRevenue * 0.12);
         const hotelPayoutsTotal = Math.round(totalGrossRevenue * 0.88);
-        const paidBookingsCount = bookings.filter(b => b.status === "confirmed" || b.status === "completed" || b.status === "paid").length;
+        const paidBookingsCount = bookings.filter(b => b.status === "confirmed" || b.status === "completed" || b.status === "paid" || b.paymentStatus === "paid").length;
         const totalBookingsCount = bookings.length;
         const avgOrderValue = totalBookingsCount > 0 ? Math.round(totalGrossRevenue / totalBookingsCount) : 0;
-        const amountCollectedOnline = Math.round(totalGrossRevenue * 0.12);
-        const amountDueAtHotel = totalGrossRevenue - amountCollectedOnline;
+        const amountCollectedOnline = bookings.reduce((acc, b) => acc + (Number(b.amountPaid || 0)), 0) || Math.round(totalGrossRevenue * 0.12);
+        const amountDueAtHotel = Math.max(0, totalGrossRevenue - amountCollectedOnline);
 
         return {
             totalGrossRevenue,
@@ -61,12 +61,13 @@ export default function FinancialHubPage() {
         const map: Record<string, { hotelName: string; city: string; totalRevenue: number; bookingCount: number; platformFee: number; hotelPayout: number }> = {};
 
         bookings.forEach(b => {
-            const hName = b.hotelName || "Hotel Partner";
-            const amount = b.totalAmount || 0;
+            const hName = b.hotelName || b.hotel?.name || "Hotel Partner";
+            const bCity = b.city || b.hotel?.city || "India";
+            const amount = Number(b.totalPrice ?? b.totalAmount ?? 0);
             if (!map[hName]) {
                 map[hName] = {
                     hotelName: hName,
-                    city: b.city || "India",
+                    city: bCity,
                     totalRevenue: 0,
                     bookingCount: 0,
                     platformFee: 0,
