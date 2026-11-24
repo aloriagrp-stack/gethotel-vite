@@ -53,6 +53,7 @@ export default function Footer() {
         ],
         "Support & Legal": [
             { label: "About Us", href: `/about-us` },
+            { label: "Official GHS News", href: `https://news.gethotelstays.com` },
             { label: "Privacy Policy", href: `/privacy-policy` },
             { label: "Terms of Service", href: `/terms-of-service` },
             { label: "Refund & Cancellation", href: `/cancellation-policy` },
@@ -78,6 +79,18 @@ export default function Footer() {
                         <p className="text-xs text-slate-500 font-normal leading-relaxed max-w-sm">
                             India's verified hotel booking platform. Flexible options to pay 12% deposit or pay full online. Hourly and full-day stays across India.
                         </p>
+
+                        <div className="pt-0.5">
+                            <a
+                                href="https://news.gethotelstays.com"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-slate-800 hover:text-brand-600 bg-slate-100 hover:bg-slate-200/80 px-2.5 py-1 rounded-md transition-all border border-slate-200"
+                            >
+                                <span className="w-1.5 h-1.5 rounded-full bg-brand-600"></span>
+                                Official GHS News & Intelligence →
+                            </a>
+                        </div>
                         
                         <div className="flex items-center gap-2 pt-1">
                             {socials.map((s, idx) => {
@@ -107,12 +120,23 @@ export default function Footer() {
                             <ul className="space-y-1.5">
                                 {footerLinks["Hourly Stays Delhi"].map((link, idx) => (
                                     <li key={idx}>
-                                        <Link
-                                            to={link.href}
-                                            className="text-xs text-slate-600 hover:text-brand-600 transition-colors font-medium block leading-snug"
-                                        >
-                                            {link.label}
-                                        </Link>
+                                        {link.href.startsWith("http") ? (
+                                            <a
+                                                href={link.href}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-xs text-slate-600 hover:text-brand-600 transition-colors font-medium block leading-snug"
+                                            >
+                                                {link.label}
+                                            </a>
+                                        ) : (
+                                            <Link
+                                                to={link.href}
+                                                className="text-xs text-slate-600 hover:text-brand-600 transition-colors font-medium block leading-snug"
+                                            >
+                                                {link.label}
+                                            </Link>
+                                        )}
                                     </li>
                                 ))}
                             </ul>
@@ -124,12 +148,23 @@ export default function Footer() {
                             <ul className="space-y-1.5">
                                 {footerLinks["Partners"].map((link, idx) => (
                                     <li key={idx}>
-                                        <Link
-                                            to={link.href}
-                                            className="text-xs text-slate-600 hover:text-brand-600 transition-colors font-medium block leading-snug"
-                                        >
-                                            {link.label}
-                                        </Link>
+                                        {link.href.startsWith("http") ? (
+                                            <a
+                                                href={link.href}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-xs text-slate-600 hover:text-brand-600 transition-colors font-medium block leading-snug"
+                                            >
+                                                {link.label}
+                                            </a>
+                                        ) : (
+                                            <Link
+                                                to={link.href}
+                                                className="text-xs text-slate-600 hover:text-brand-600 transition-colors font-medium block leading-snug"
+                                            >
+                                                {link.label}
+                                            </Link>
+                                        )}
                                     </li>
                                 ))}
                             </ul>
@@ -141,12 +176,23 @@ export default function Footer() {
                             <ul className="space-y-1.5">
                                 {footerLinks["Support & Legal"].map((link, idx) => (
                                     <li key={idx}>
-                                        <Link
-                                            to={link.href}
-                                            className="text-xs text-slate-600 hover:text-brand-600 transition-colors font-medium block leading-snug"
-                                        >
-                                            {link.label}
-                                        </Link>
+                                        {link.href.startsWith("http") ? (
+                                            <a
+                                                href={link.href}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-xs text-slate-600 hover:text-brand-600 transition-colors font-medium block leading-snug"
+                                            >
+                                                {link.label}
+                                            </a>
+                                        ) : (
+                                            <Link
+                                                to={link.href}
+                                                className="text-xs text-slate-600 hover:text-brand-600 transition-colors font-medium block leading-snug"
+                                            >
+                                                {link.label}
+                                            </Link>
+                                        )}
                                     </li>
                                 ))}
                             </ul>
