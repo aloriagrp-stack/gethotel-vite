@@ -100,10 +100,14 @@ jobs:
           FTP_USER: ${{ secrets.FTP_USERNAME }}
           FTP_PASS: ${{ secrets.FTP_PASSWORD }}
         run: |
+          echo "Cloning blogs.gethotelstays.com public repo..."
+          rm -rf blogs.gethotelstays.com
+          git clone https://github.com/aloriagrp-stack/blogs.gethotelstays.com.git blogs.gethotelstays.com
           echo "Zipping blogs.gethotelstays.com..."
           cd "blogs.gethotelstays.com"
           zip -r ../blogs.zip . -x "_legacy_archive/*" -x "*.backup.*" -x "newly uploading blogs*/*" -x ".git/*" -x ".github/*"
           cd ..
+          ls -lh blogs.zip
           for i in {1..3}; do
             lftp -u "$FTP_USER","$FTP_PASS" "$FTP_SERVER" -e "set ftp:ssl-allow no; set ftp:passive-mode yes; set net:timeout 30; set net:max-retries 2; set net:reconnect-interval-base 2; set ftp:prefer-epsv false; put blogs.zip -o ./public_html/blogs.zip; bye" && break || {
               echo "FTP upload failed (attempt $i/3). Retrying in 3 seconds..."
