@@ -1,19 +1,65 @@
 'use client';
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { 
-    CreditCard, TrendingUp, 
-    DollarSign, Loader2, Download, 
-    Building2, Receipt, PieChart
+import {
+    CreditCard, TrendingUp,
+    DollarSign, Loader2, Download,
+    Building2, Receipt, PieChart,
+    Calendar, Clock
 } from "lucide-react";
 import { adminApi } from "@/lib/api";
+
+type FinancePeriodFilter = "last_month" | "this_month" | "last_30_days" | "today" | "yesterday" | "all";
+
+function getFinancePeriodInfo(period: string) {
+    const now = new Date();
+    let start: Date;
+    let end: Date;
+    let rangeLabel = "";
+
+    if (period === 'today') {
+        start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+        end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+        rangeLabel = start.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+    } else if (period === 'yesterday') {
+        const y = new Date(now);
+        y.setDate(y.getDate() - 1);
+        start = new Date(y.getFullYear(), y.getMonth(), y.getDate(), 0, 0, 0);
+        end = new Date(y.getFullYear(), y.getMonth(), y.getDate(), 23, 59, 59, 999);
+        rangeLabel = start.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+    } else if (period === 'this_month') {
+        start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
+        end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+        const s = start.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+        const e = end.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+        rangeLabel = `${s} – ${e}`;
+    } else if (period === 'last_month') {
+        start = new Date(now.getFullYear(), now.getMonth() - 1, 1, 0, 0, 0);
+        end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+        const s = start.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+        const e = end.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+        rangeLabel = `${s} – ${e}`;
+    } else if (period === 'last_30_days') {
+        start = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        end = now;
+        const s = start.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+        const e = end.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+        rangeLabel = `${s} – ${e}`;
+    } else {
+        start = new Date(0);
+        end = new Date(2100, 0, 1);
+        rangeLabel = "All Recorded Activity";
+    }
+
+    return { start, end, rangeLabel };
+}
 
 export default function FinancialHubPage() {
     const { user, loading: authLoading } = useAuth();
     const [loading, setLoading] = useState(true);
     const [bookings, setBookings] = useState<any[]>([]);
     const [hotels, setHotels] = useState<any[]>([]);
-    const [filterPeriod, setFilterPeriod] = useState<"all" | "this_month" | "this_year">("all");
+    const [filterPeriod, setFilterPeriod] = useState<FinancePeriodFilter>("last_month");
 
     useEffect(() => {
         const fetchFinanceData = async () => {
@@ -33,15 +79,34 @@ export default function FinancialHubPage() {
         if (user?.role === 'super_admin') fetchFinanceData();
     }, [user]);
 
+    const { start: periodStart, end: periodEnd, rangeLabel: periodDateLabel } = useMemo(() => {
+        return getFinancePeriodInfo(filterPeriod);
+    }, [filterPeriod]);
+
+    // Filter bookings based on period
+    const effectiveBookings = useMemo(() => {
+        if (!bookings || bookings.length === 0) return [];
+        if (filterPeriod === 'all') return bookings;
+
+        return bookings.filter((b: any) => {
+            const rawDate = b.createdAt || b.created_at || b.checkIn || b.check_in;
+            if (!rawDate) return false;
+            const d = new Date(typeof rawDate === "string" && !rawDate.includes("T") ? rawDate.replace(" ", "T") : rawDate);
+            if (isNaN(d.getTime())) return false;
+            return d >= periodStart && d <= periodEnd;
+        });
+    }, [bookings, filterPeriod, periodStart, periodEnd]);
+
     // Financial Data Calculations
     const stats = useMemo(() => {
-        const totalGrossRevenue = bookings.reduce((acc, b) => acc + (Number(b.totalPrice ?? b.totalAmount ?? 0)), 0);
+        const targetList = effectiveBookings;
+        const totalGrossRevenue = targetList.reduce((acc, b) => acc + (Number(b.totalPrice ?? b.totalAmount ?? 0)), 0);
         const platformNetProfit = Math.round(totalGrossRevenue * 0.12);
         const hotelPayoutsTotal = Math.round(totalGrossRevenue * 0.88);
-        const paidBookingsCount = bookings.filter(b => b.status === "confirmed" || b.status === "completed" || b.status === "paid" || b.paymentStatus === "paid").length;
-        const totalBookingsCount = bookings.length;
+        const paidBookingsCount = targetList.filter(b => b.status === "confirmed" || b.status === "completed" || b.status === "paid" || b.paymentStatus === "paid").length;
+        const totalBookingsCount = targetList.length;
         const avgOrderValue = totalBookingsCount > 0 ? Math.round(totalGrossRevenue / totalBookingsCount) : 0;
-        const amountCollectedOnline = bookings.reduce((acc, b) => acc + (Number(b.amountPaid || 0)), 0) || Math.round(totalGrossRevenue * 0.12);
+        const amountCollectedOnline = targetList.reduce((acc, b) => acc + (Number(b.amountPaid || 0)), 0) || Math.round(totalGrossRevenue * 0.12);
         const amountDueAtHotel = Math.max(0, totalGrossRevenue - amountCollectedOnline);
 
         return {
@@ -54,7 +119,7 @@ export default function FinancialHubPage() {
             amountCollectedOnline,
             amountDueAtHotel
         };
-    }, [bookings]);
+    }, [effectiveBookings]);
 
     // Hotel-wise P&L breakdown
     const hotelFinancialBreakdown = useMemo(() => {
@@ -112,20 +177,28 @@ export default function FinancialHubPage() {
                     </p>
                 </div>
 
-                <div className="flex items-center gap-2.5">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2.5">
+                    <div className="inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-200/80 px-2.5 py-1.5 rounded-lg text-emerald-800 font-semibold text-xs">
+                        <Calendar className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>{periodDateLabel}</span>
+                    </div>
+
                     <select
                         value={filterPeriod}
                         onChange={(e) => setFilterPeriod(e.target.value as any)}
-                        className="bg-white border border-slate-200 text-slate-700 font-medium text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:border-slate-300 cursor-pointer"
+                        className="bg-white border border-slate-300 text-slate-800 font-semibold text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:border-slate-900 cursor-pointer shadow-2xs"
                     >
-                        <option value="all">All Time</option>
-                        <option value="this_month">This Month</option>
-                        <option value="this_year">This Fiscal Year</option>
+                        <option value="last_month">Last Month ({getFinancePeriodInfo('last_month').rangeLabel})</option>
+                        <option value="this_month">This Month ({getFinancePeriodInfo('this_month').rangeLabel})</option>
+                        <option value="last_30_days">Last 30 Days (Rolling)</option>
+                        <option value="today">Today ({getFinancePeriodInfo('today').rangeLabel})</option>
+                        <option value="yesterday">Yesterday</option>
+                        <option value="all">All Time (Full History)</option>
                     </select>
 
-                    <button 
+                    <button
                         onClick={() => alert("Downloading Financial Ledger Statement (PDF)...")}
-                        className="px-3.5 py-1.5 bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 font-bold text-xs rounded-xl transition-colors cursor-pointer flex items-center gap-2 shadow-2xs"
+                        className="px-3.5 py-1.5 bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 font-bold text-xs rounded-lg transition-colors cursor-pointer flex items-center gap-2 shadow-2xs"
                     >
                         <Download className="w-3.5 h-3.5 text-slate-500" />
                         <span>Export</span>
@@ -157,7 +230,7 @@ export default function FinancialHubPage() {
 
             {/* 2 Column Layout: Breakdown & Settlement Ledger */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-                
+
                 {/* Left: Booking Flow Breakdown */}
                 <div className="lg:col-span-5 bg-white border border-slate-200/90 rounded-xl shadow-xs p-5 space-y-4">
                     <div className="flex items-center justify-between pb-3 border-b border-slate-200/60">

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate as useRouter, useSearchParams, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { hotelApi, adminApi } from "@/lib/api";
@@ -87,6 +87,52 @@ function StarRating({ rating }: { rating: number }) {
     );
 }
 
+// ─── Time Period Date Range Helper ──────────────────────────────────────────
+export type TimePeriodFilter = "last_month" | "this_month" | "last_30_days" | "today" | "yesterday" | "all_time";
+
+export function getPeriodInfo(period: string) {
+    const now = new Date();
+    let start: Date;
+    let end: Date;
+    let rangeLabel = "";
+
+    if (period === 'today') {
+        start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+        end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+        rangeLabel = start.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+    } else if (period === 'yesterday') {
+        const y = new Date(now);
+        y.setDate(y.getDate() - 1);
+        start = new Date(y.getFullYear(), y.getMonth(), y.getDate(), 0, 0, 0);
+        end = new Date(y.getFullYear(), y.getMonth(), y.getDate(), 23, 59, 59, 999);
+        rangeLabel = start.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+    } else if (period === 'this_month') {
+        start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
+        end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+        const s = start.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+        const e = end.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+        rangeLabel = `${s} – ${e}`;
+    } else if (period === 'last_month') {
+        start = new Date(now.getFullYear(), now.getMonth() - 1, 1, 0, 0, 0);
+        end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+        const s = start.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+        const e = end.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+        rangeLabel = `${s} – ${e}`;
+    } else if (period === 'last_30_days') {
+        start = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        end = now;
+        const s = start.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+        const e = end.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+        rangeLabel = `${s} – ${e}`;
+    } else {
+        start = new Date(0);
+        end = new Date(2100, 0, 1);
+        rangeLabel = "All Recorded Activity";
+    }
+
+    return { start, end, rangeLabel };
+}
+
 export default function SuperAdminDashboard() {
     const [searchParams] = useSearchParams();
     const location = useLocation();
@@ -124,6 +170,7 @@ export default function SuperAdminDashboard() {
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState<number | null>(null);
     const [loadedSections, setLoadedSections] = useState<Record<string, boolean>>({});
+    const [overviewPeriod, setOverviewPeriod] = useState<TimePeriodFilter>("last_month");
 
     // Users sub-tab
     const [usersSubTab, setUsersSubTab] = useState<"partners" | "customers">("partners");
@@ -540,11 +587,35 @@ export default function SuperAdminDashboard() {
         { id: "ai-copilot", label: "AI Room Onboarding", icon: Sparkles },
     ];
 
-    // Resilient GMV & Hotel Counts (Zero Lag, Live Fallback)
-    const calculatedGmv = (bookings && bookings.length > 0)
-        ? bookings.reduce((sum: number, b: any) => sum + (Number(b.totalPrice ?? b.totalAmount ?? 0)), 0)
-        : 0;
-    const finalGmv = (statsData?.totalRevenue && statsData.totalRevenue > 0) ? statsData.totalRevenue : calculatedGmv;
+    // Time-Range Calculation & Filtering (Default: Last Month)
+    const { start: periodStart, end: periodEnd, rangeLabel: periodDateLabel } = useMemo(() => {
+        return getPeriodInfo(overviewPeriod);
+    }, [overviewPeriod]);
+
+    // All-time GMV across the entire database
+    const allTimeGmv = (statsData?.totalRevenue && statsData.totalRevenue > 0)
+        ? statsData.totalRevenue
+        : (bookings && bookings.length > 0 ? bookings.reduce((sum: number, b: any) => sum + (Number(b.totalPrice ?? b.totalAmount ?? 0)), 0) : 0);
+
+    const periodBookings = useMemo(() => {
+        if (!bookings || bookings.length === 0) return [];
+        if (overviewPeriod === 'all_time') return bookings;
+
+        return bookings.filter((b: any) => {
+            const rawDate = b.createdAt || b.created_at || b.checkIn || b.check_in;
+            if (!rawDate) return false;
+            const d = new Date(typeof rawDate === "string" && !rawDate.includes("T") ? rawDate.replace(" ", "T") : rawDate);
+            if (isNaN(d.getTime())) return false;
+            return d >= periodStart && d <= periodEnd;
+        });
+    }, [bookings, overviewPeriod, periodStart, periodEnd]);
+
+    const validPeriodBookings = periodBookings.filter((b: any) => b.status !== 'cancelled' && b.status !== 'failed');
+    const periodGmv = validPeriodBookings.reduce((sum: number, b: any) => sum + (Number(b.totalPrice ?? b.totalAmount ?? 0)), 0);
+
+    const displayGmv = overviewPeriod === 'all_time' ? allTimeGmv : periodGmv;
+    const displayEarnings = Math.round(displayGmv * 0.18);
+    const displayBookingsCount = overviewPeriod === 'all_time' ? (statsData?.totalBookings || bookings.length || 0) : periodBookings.length;
 
     const calculatedBookable = hotels.filter((h: any) => h.listingType !== 'directory').length;
     const finalBookable = (statsData?.bookableHotels !== undefined && statsData.bookableHotels > 0)
@@ -555,22 +626,30 @@ export default function SuperAdminDashboard() {
         ? statsData.directoryHotels
         : hotels.filter((h: any) => h.listingType === 'directory').length;
 
+    const periodBadge = overviewPeriod === 'last_month' ? 'Last Month' :
+        overviewPeriod === 'this_month' ? 'This Month' :
+        overviewPeriod === 'last_30_days' ? 'Last 30 Days' :
+        overviewPeriod === 'today' ? 'Today' :
+        overviewPeriod === 'yesterday' ? 'Yesterday' : 'All-Time';
+
     const stats = [
         {
             label: "Platform Earnings (18%)",
-            value: "₹" + Math.round(finalGmv * 0.18).toLocaleString(),
-            trend: "+15.2%",
+            value: "₹" + displayEarnings.toLocaleString(),
+            trend: periodBadge,
             isUp: true,
             icon: TrendingUp,
-            badgeClass: "bg-emerald-50 text-emerald-700 border-emerald-200/70"
+            badgeClass: "bg-emerald-50 text-emerald-700 border-emerald-200/70",
+            notice: overviewPeriod !== 'all_time' && displayGmv === 0 ? `All-Time: ₹${Math.round(allTimeGmv * 0.18).toLocaleString()}` : undefined
         },
         {
             label: "Gross Volume (GMV)",
-            value: "₹" + finalGmv.toLocaleString(),
-            trend: "+12.5%",
+            value: "₹" + displayGmv.toLocaleString(),
+            trend: periodBadge,
             isUp: true,
             icon: CreditCard,
-            badgeClass: "bg-emerald-50 text-emerald-700 border-emerald-200/70"
+            badgeClass: "bg-emerald-50 text-emerald-700 border-emerald-200/70",
+            notice: overviewPeriod !== 'all_time' && displayGmv === 0 ? `All-Time: ₹${allTimeGmv.toLocaleString()}` : undefined
         },
         {
             label: "Direct Partner Hotels",
@@ -589,9 +668,9 @@ export default function SuperAdminDashboard() {
             badgeClass: "bg-blue-50 text-blue-700 border-blue-200/70"
         },
         {
-            label: "Total Bookings",
-            value: (statsData?.totalBookings || bookings.length || 0).toString(),
-            trend: "All-time",
+            label: overviewPeriod === 'all_time' ? "Total Bookings" : "Bookings in Period",
+            value: displayBookingsCount.toString(),
+            trend: overviewPeriod === 'all_time' ? "All-time" : `${bookings.length} All-Time`,
             isUp: true,
             icon: BarChart3,
             badgeClass: "bg-slate-100 text-slate-700 border-slate-200/70"
@@ -666,6 +745,41 @@ export default function SuperAdminDashboard() {
 
                     {activeTab === "overview" && (
                 <>
+                    {/* Time Range Selector & Date Range Bar */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 bg-white border border-slate-200/90 rounded-xl p-3 sm:px-4 sm:py-3 shadow-2xs">
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-xs font-medium text-slate-500 flex items-center gap-1.5">
+                                <Clock className="w-3.5 h-3.5 text-slate-400" />
+                                Accounting Period:
+                            </span>
+                            <div className="inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-200/80 px-2.5 py-1 rounded-lg text-emerald-800 font-semibold text-xs">
+                                <Calendar className="w-3.5 h-3.5 text-emerald-600" />
+                                <span>{periodDateLabel}</span>
+                            </div>
+                            {overviewPeriod === 'last_month' && (
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded-full border border-emerald-200">
+                                    Default (Last Month)
+                                </span>
+                            )}
+                        </div>
+
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                            <label className="text-xs text-slate-500 font-medium whitespace-nowrap">Filter Period:</label>
+                            <select
+                                value={overviewPeriod}
+                                onChange={(e) => setOverviewPeriod(e.target.value as any)}
+                                className="w-full sm:w-auto bg-slate-50 hover:bg-white border border-slate-300 text-slate-900 font-semibold text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:border-slate-900 transition-colors cursor-pointer shadow-2xs"
+                            >
+                                <option value="last_month">Last Month ({getPeriodInfo('last_month').rangeLabel})</option>
+                                <option value="this_month">This Month ({getPeriodInfo('this_month').rangeLabel})</option>
+                                <option value="last_30_days">Last 30 Days (Rolling)</option>
+                                <option value="today">Today ({getPeriodInfo('today').rangeLabel})</option>
+                                <option value="yesterday">Yesterday</option>
+                                <option value="all_time">All Time (Full Ledger - ₹{allTimeGmv.toLocaleString()})</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 mb-5">
                         {stats.map((stat: any) => {
                             const Icon = stat.icon;
@@ -675,14 +789,27 @@ export default function SuperAdminDashboard() {
                                         <span className="text-slate-500 text-[11px] sm:text-xs font-medium truncate mr-1">{stat.label}</span>
                                         <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 shrink-0" />
                                     </div>
-                                    <div className="flex items-baseline justify-between flex-wrap gap-1">
-                                        <h3 className="text-lg sm:text-2xl font-bold text-slate-900 tracking-tight">{stat.value}</h3>
-                                        <span className={cn(
-                                            "text-[10px] sm:text-[11px] font-semibold px-1.5 sm:px-2 py-0.5 rounded-md border",
-                                            stat.badgeClass || (stat.isUp ? "bg-emerald-50 text-emerald-700 border-emerald-200/70" : "bg-rose-50 text-rose-700 border-rose-200/70")
-                                        )}>
-                                            {stat.trend}
-                                        </span>
+                                    <div>
+                                        <div className="flex items-baseline justify-between flex-wrap gap-1">
+                                            <h3 className="text-lg sm:text-2xl font-bold text-slate-900 tracking-tight">{stat.value}</h3>
+                                            <span className={cn(
+                                                "text-[10px] sm:text-[11px] font-semibold px-1.5 sm:px-2 py-0.5 rounded-md border",
+                                                stat.badgeClass || (stat.isUp ? "bg-emerald-50 text-emerald-700 border-emerald-200/70" : "bg-rose-50 text-rose-700 border-rose-200/70")
+                                            )}>
+                                                {stat.trend}
+                                            </span>
+                                        </div>
+                                        {stat.notice && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setOverviewPeriod('all_time')}
+                                                className="text-[10px] text-slate-400 hover:text-emerald-600 transition-colors mt-1.5 font-medium flex items-center gap-1 cursor-pointer"
+                                                title="Switch to All-Time view"
+                                            >
+                                                <span>{stat.notice}</span>
+                                                <span className="underline">→</span>
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             );
