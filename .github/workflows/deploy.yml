@@ -105,12 +105,12 @@ jobs:
           zip -r ../blogs.zip . -x "_legacy_archive/*" -x "*.backup.*" -x "newly uploading blogs*/*" -x ".git/*" -x ".github/*"
           cd ..
           for i in {1..3}; do
-            lftp -u "$FTP_USER","$FTP_PASS" "$FTP_SERVER" -e "set ftp:ssl-allow no; set ftp:passive-mode yes; set net:timeout 30; set net:max-retries 2; set net:reconnect-interval-base 2; set ftp:prefer-epsv false; put blogs.zip -o ./blogs.gethotelstays.com/blogs.zip; bye" && break || {
+            lftp -u "$FTP_USER","$FTP_PASS" "$FTP_SERVER" -e "set ftp:ssl-allow no; set ftp:passive-mode yes; set net:timeout 30; set net:max-retries 2; set net:reconnect-interval-base 2; set ftp:prefer-epsv false; put blogs.zip -o ./public_html/blogs.zip; bye" && break || {
               echo "FTP upload failed (attempt $i/3). Retrying in 3 seconds..."
               sleep 3
             }
           done
-          echo "Blogs zip uploaded successfully."
+          echo "Blogs zip uploaded successfully to ./public_html/blogs.zip."
 
       - name: Trigger Remote Extraction & Env Update
         run: |
