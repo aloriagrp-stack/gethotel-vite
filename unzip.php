@@ -115,4 +115,20 @@ if ($action === 'all' || $action === 'extract_frontend' || $action === 'extract_
     }
 }
 
+// 4. EXTRACT BLOGS (GHS NEWS)
+if ($action === 'all' || $action === 'extract_blogs' || $action === 'extract_all') {
+    echo "\n=== 4. EXTRACTING BLOGS.ZIP TO BLOGS.GETHOTELSTAYS.COM ===\n";
+    $blogsZips = [
+        '/home/vgyuvmpi/blogs.gethotelstays.com/blogs.zip',
+        '/home/vgyuvmpi/public_html/blogs.zip'
+    ];
+    $blogsDest = '/home/vgyuvmpi/blogs.gethotelstays.com/';
+    foreach ($blogsZips as $bz) {
+        if (file_exists($bz)) {
+            extractZip($bz, $blogsDest);
+            break;
+        }
+    }
+}
+
 echo "\nALL REQUESTED OPERATIONS COMPLETED SUCCESSFULLY.\n";

@@ -94,6 +94,24 @@ jobs:
             }
           done
 
+      - name: Deploy Blogs (GHS NEWS) to cPanel
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USER: ${{ secrets.FTP_USERNAME }}
+          FTP_PASS: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          echo "Zipping blogs.gethotelstays.com..."
+          cd "blogs.gethotelstays.com"
+          zip -r ../blogs.zip . -x "_legacy_archive/*" -x "*.backup.*" -x "newly uploading blogs*/*" -x ".git/*" -x ".github/*"
+          cd ..
+          for i in {1..3}; do
+            lftp -u "$FTP_USER","$FTP_PASS" "$FTP_SERVER" -e "set ftp:ssl-allow no; set ftp:passive-mode yes; set net:timeout 30; set net:max-retries 2; set net:reconnect-interval-base 2; set ftp:prefer-epsv false; put blogs.zip -o ./blogs.gethotelstays.com/blogs.zip; bye" && break || {
+              echo "FTP upload failed (attempt $i/3). Retrying in 3 seconds..."
+              sleep 3
+            }
+          done
+          echo "Blogs zip uploaded successfully."
+
       - name: Trigger Remote Extraction & Env Update
         run: |
           echo "Updating live .env configurations..."
@@ -108,7 +126,10 @@ jobs:
           echo "3. Extracting Main Frontend..."
           curl -sS --max-time 120 "https://gethotelstays.com/unzip.php?action=extract_frontend" || true
 
-          echo "4. Triggering Passenger Process Restart..."
+          echo "4. Extracting Blogs (GHS NEWS & sw.js)..."
+          curl -sS --max-time 60 "https://gethotelstays.com/unzip.php?action=extract_blogs" || true
+
+          echo "5. Triggering Passenger Process Restart..."
           curl -sS --max-time 45 "https://gethotelstays.com/api/maintenance/fix-db?token=gethotel_maint_2026" || true
           curl -sS --max-time 30 "https://gethotelstays.com/api/test?restart=true&fix_token=gethotel_maint_2026" || true
 
