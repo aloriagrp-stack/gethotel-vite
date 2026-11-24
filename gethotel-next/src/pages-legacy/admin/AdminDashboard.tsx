@@ -88,9 +88,9 @@ function StarRating({ rating }: { rating: number }) {
 }
 
 // ─── Time Period Date Range Helper ──────────────────────────────────────────
-export type TimePeriodFilter = "last_month" | "this_month" | "last_30_days" | "today" | "yesterday" | "all_time";
+export type TimePeriodFilter = "last_month" | "this_month" | "last_30_days" | "today" | "yesterday" | "all_time" | "custom";
 
-export function getPeriodInfo(period: string) {
+export function getPeriodInfo(period: string, customStartStr?: string, customEndStr?: string) {
     const now = new Date();
     let start: Date;
     let end: Date;
@@ -124,6 +124,14 @@ export function getPeriodInfo(period: string) {
         const s = start.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
         const e = end.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
         rangeLabel = `${s} – ${e}`;
+    } else if (period === 'custom') {
+        const sDate = customStartStr ? new Date(`${customStartStr}T00:00:00`) : new Date(now.getFullYear(), now.getMonth() - 1, 1, 0, 0, 0);
+        const eDate = customEndStr ? new Date(`${customEndStr}T23:59:59.999`) : new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+        start = isNaN(sDate.getTime()) ? new Date(0) : sDate;
+        end = isNaN(eDate.getTime()) ? new Date() : eDate;
+        const s = start.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+        const e = end.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+        rangeLabel = s === e ? s : `${s} – ${e}`;
     } else {
         start = new Date(0);
         end = new Date(2100, 0, 1);
@@ -171,6 +179,22 @@ export default function SuperAdminDashboard() {
     const [actionLoading, setActionLoading] = useState<number | null>(null);
     const [loadedSections, setLoadedSections] = useState<Record<string, boolean>>({});
     const [overviewPeriod, setOverviewPeriod] = useState<TimePeriodFilter>("last_month");
+    const [customStartDate, setCustomStartDate] = useState<string>(() => {
+        const now = new Date();
+        const d = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+    });
+    const [customEndDate, setCustomEndDate] = useState<string>(() => {
+        const now = new Date();
+        const d = new Date(now.getFullYear(), now.getMonth(), 0);
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+    });
 
     // Users sub-tab
     const [usersSubTab, setUsersSubTab] = useState<"partners" | "customers">("partners");
@@ -589,8 +613,8 @@ export default function SuperAdminDashboard() {
 
     // Time-Range Calculation & Filtering (Default: Last Month)
     const { start: periodStart, end: periodEnd, rangeLabel: periodDateLabel } = useMemo(() => {
-        return getPeriodInfo(overviewPeriod);
-    }, [overviewPeriod]);
+        return getPeriodInfo(overviewPeriod, customStartDate, customEndDate);
+    }, [overviewPeriod, customStartDate, customEndDate]);
 
     // All-time GMV across the entire database
     const allTimeGmv = (statsData?.totalRevenue && statsData.totalRevenue > 0)
@@ -630,7 +654,8 @@ export default function SuperAdminDashboard() {
         overviewPeriod === 'this_month' ? 'This Month' :
         overviewPeriod === 'last_30_days' ? 'Last 30 Days' :
         overviewPeriod === 'today' ? 'Today' :
-        overviewPeriod === 'yesterday' ? 'Yesterday' : 'All-Time';
+        overviewPeriod === 'yesterday' ? 'Yesterday' :
+        overviewPeriod === 'custom' ? 'Custom' : 'All-Time';
 
     const stats = [
         {
@@ -745,9 +770,39 @@ export default function SuperAdminDashboard() {
                 <>
                     {/* Minimal Period Filter Strip */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-4">
-                        <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200/90 rounded-lg text-slate-700 text-xs shadow-2xs">
-                            <Calendar className="w-3.5 h-3.5 text-emerald-600" />
-                            <span className="font-semibold text-slate-900">{periodDateLabel}</span>
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <button
+                                type="button"
+                                onClick={() => setOverviewPeriod(overviewPeriod === 'custom' ? 'last_month' : 'custom')}
+                                title="Click to choose custom dates"
+                                className="inline-flex items-center gap-2 px-3 py-1.5 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-lg text-slate-700 text-xs shadow-2xs transition-colors cursor-pointer"
+                            >
+                                <Calendar className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                <span className="font-semibold text-slate-900">{periodDateLabel}</span>
+                                {overviewPeriod !== 'custom' && (
+                                    <span className="text-[10px] text-slate-400 font-normal ml-0.5">(Custom)</span>
+                                )}
+                            </button>
+
+                            {overviewPeriod === 'custom' && (
+                                <div className="inline-flex items-center gap-1.5 sm:gap-2 bg-white border border-emerald-300 ring-1 ring-emerald-500/20 rounded-lg px-2.5 py-1 shadow-2xs text-xs">
+                                    <span className="text-[11px] text-slate-500 font-medium">From:</span>
+                                    <input
+                                        type="date"
+                                        value={customStartDate}
+                                        onChange={(e) => setCustomStartDate(e.target.value)}
+                                        className="text-xs font-semibold text-slate-900 bg-transparent focus:outline-none cursor-pointer"
+                                    />
+                                    <span className="text-slate-300">|</span>
+                                    <span className="text-[11px] text-slate-500 font-medium">To:</span>
+                                    <input
+                                        type="date"
+                                        value={customEndDate}
+                                        onChange={(e) => setCustomEndDate(e.target.value)}
+                                        className="text-xs font-semibold text-slate-900 bg-transparent focus:outline-none cursor-pointer"
+                                    />
+                                </div>
+                            )}
                         </div>
 
                         <div className="flex items-center gap-2">
@@ -761,6 +816,7 @@ export default function SuperAdminDashboard() {
                                 <option value="last_30_days">Last 30 Days</option>
                                 <option value="today">Today</option>
                                 <option value="yesterday">Yesterday</option>
+                                <option value="custom">Custom Date Range...</option>
                                 <option value="all_time">All Time</option>
                             </select>
                         </div>
